@@ -18,7 +18,11 @@ return [
 
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-cloud') : 'arquivos/disco-cloud',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/publico/cloud' : env('AWS_URL'),
 
 
@@ -32,7 +36,11 @@ return [
         'disco-cliente' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-cliente') : 'arquivos/disco-cliente',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/storage' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/storage/anexo',
@@ -45,7 +53,11 @@ return [
         'disco-fornecedor' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-fornecedor') : 'arquivos/disco-fornecedor',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/administracao/fornecedor' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/administracao/fornecedor/anexo',
@@ -58,7 +70,11 @@ return [
         'disco-servicofornecedor' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-servicofornecedor') : 'arquivos/disco-servicofornecedor',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/fornecedor/servico' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/fornecedor/servico/anexo',
@@ -71,7 +87,11 @@ return [
         'disco-ocorrencia' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-ocorrencia') : 'arquivos/disco-ocorrencia',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/ocorrencia' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/ocorrencia/anexo',
@@ -84,7 +104,11 @@ return [
         'disco-fotocurriculo' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-fotocurriculo') : 'arquivos/disco-fotocurriculo',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/admissao' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/admissao/anexo',
@@ -97,7 +121,11 @@ return [
         'documentos-funcionarios' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/documentos-funcionarios') : 'arquivos/documentos-funcionarios',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/funcionarios' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/funcionarios/anexo',
@@ -110,7 +138,11 @@ return [
         'evidencia-medidas' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/medidas-evidencia') : 'arquivos/medidas-evidencia',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/historico/medidas-administrativas' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/historico/medidas-administrativas/anexo',
@@ -123,7 +155,11 @@ return [
         'evidencia-cih' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/cih-evidencia') : 'arquivos/cih-evidencia',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/apontamento/cih' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/apontamento/cih/anexo',
@@ -136,7 +172,11 @@ return [
         'disco-documentospreadmissao' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-documentospreadmissao') : 'arquivos/disco-documentospreadmissao',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/documentos' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/documentos/anexo',
@@ -149,7 +189,11 @@ return [
         'disco-dossie' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-dossie') : 'arquivos/disco-dossie',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/historico/dossie' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/historico/dossie/anexo',
@@ -163,7 +207,11 @@ return [
         'requisicao-vaga' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/requisicao-vaga') : 'arquivos/requisicao-vaga',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/planejamento/requisicao-vaga' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/planejamento/requisicao-vaga/anexo',
@@ -177,7 +225,11 @@ return [
         'listapresenca' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/lista-presenca') : 'arquivos/lista-presenca',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/treinamento/listapresenca' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/treinamento/listapresenca/anexo',
@@ -191,7 +243,11 @@ return [
         'disco-ponto-eletronico' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => env('FILESYSTEM_DRIVER')=='local' ? storage_path('app/g/arquivos/disco-ponto-eletronico'):'disco-ponto-eletronico',
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER')=='local' ? env('APP_URL') . '/g/controle-ponto/ponto-eletronico/fotos':env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/storage/anexo',
@@ -216,7 +272,11 @@ return [
             //'driver' => 's3',
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
             'root' => storage_path('app/g'),
-            \App\Models\Sistema::configAws(),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
             'url' => env('FILESYSTEM_DRIVER')=='local' ? env('APP_URL') . '/g':env('AWS_URL'),
 
 
