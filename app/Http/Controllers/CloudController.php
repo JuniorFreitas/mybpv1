@@ -142,31 +142,12 @@ class CloudController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-
-        $path = Arquivo::buscaPath($arquivo);
-        if ($path == false) {
-            return response("", 404);
-        } else {
-            $conteudo = Arquivo::buscaConteudo($arquivo);
-            header("Content-type: " . Arquivo::getMimeType($path));
-            header('Content-Length: ' . filesize($path));
-            echo $conteudo;
-        }
+        return Arquivo::anexoShow([Arquivo::DISCO_CLOUD], $arquivo);
     }
 
     //anexo ou foto
     public function download($arquivo)
     {
-        //Fazer a validacao (middleware) de download para resumo-cliente , resumo-ocorrencias, aqui se nescessario...
-        $disco = Arquivo::nomeDisco(Arquivo::DISCO_CLOUD);
-
-        $url = Arquivo::buscaPath($arquivo);
-        if ($url) {
-            $model = Arquivo::findByArquivo($arquivo);
-
-            return response()->download($url, $model->nome . $model->extensao);
-        } else {
-            return response("", 404);
-        }
+        return Arquivo::anexoDownload([Arquivo::DISCO_CLOUD], $arquivo);
     }
 }
