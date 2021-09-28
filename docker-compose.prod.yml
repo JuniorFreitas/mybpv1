@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - ENABLE_SCHEDULE=true
+      - ENABLE_WORKER=false
+      - ENABLE_HORIZON=true
+      - ENABLE_WEBSOCKETS=false
+      - ENABLE_SUPERVISOR_GUI=true
+      - SUPERVISORD_USER=mastertag
+      - SUPERVISORD_PASS=Savf7w{00
+      - VIRTUAL_HOST=sistema.mybp.com.br
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=sistema.mybp.com.br
+      - LETSENCRYPT_EMAIL=naoresponda@mybp.com.br
+
+    env_file:
+      - .env
+
+    volumes:
+      - .:/usr/share/nginx/html
+      - ./.deploy/storage/logs:/usr/share/nginx/html/storage/logs
+
+    ports:
+      - "8080:80"
+      - "6001:6001"
+      - "9001:9001"
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - ./.deploy/storage/mysql:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    command: --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./.deploy/storage/redis:/data
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PORT: 6379
+
+networks:
+  default:
+    external:
+      name: nginx-proxy

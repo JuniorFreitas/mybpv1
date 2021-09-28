@@ -1,0 +1,386 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use MasterTag\DataHora;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
+
+/**
+ * App\Models\Cliente
+ *
+ * @property int $id
+ * @property string $tipo_cliente
+ * @property string|null $cnpj
+ * @property string|null $cpf
+ * @property string|null $nome
+ * @property string|null $apelido
+ * @property string $tipo
+ * @property string|null $razao_social
+ * @property string|null $nome_fantasia
+ * @property int $area_id
+ * @property string|null $ramo
+ * @property string|null $cep
+ * @property string|null $logradouro
+ * @property string|null $numero
+ * @property string|null $complemento
+ * @property string|null $bairro
+ * @property string|null $municipio
+ * @property string|null $uf
+ * @property string|null $contato
+ * @property string|null $email
+ * @property string|null $tel_principal
+ * @property mixed|null $aniversario
+ * @property string|null $como_conheceu
+ * @property string|null $como_conheceu_outro
+ * @property string|null $politica_ehs
+ * @property bool $ativo
+ * @property mixed|null $created_at
+ * @property mixed|null $updated_at
+ * @property-read \App\Models\Area|null $Area
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AreaEtiqueta[] $AreasEtiquetas
+ * @property-read int|null $areas_etiquetas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Logo
+ * @property-read int|null $logo_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ServicosCliente[] $ServicosCliente
+ * @property-read int|null $servicos_cliente_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ServicosProspects[] $ServicosProspect
+ * @property-read int|null $servicos_prospect_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ClienteTelefone[] $Telefones
+ * @property-read int|null $telefones_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $endereco_completo
+ * @property mixed $inicio
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereAniversario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereApelido($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereAreaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereBairro($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereCep($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereCnpj($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereComoConheceu($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereComoConheceuOutro($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereComplemento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereContato($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereCpf($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereLogradouro($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereMunicipio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereNomeFantasia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereNumero($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente wherePoliticaEhs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereRamo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereRazaoSocial($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereTelPrincipal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereTipoCliente($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereUf($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereUpdatedAt($value)
+ * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FormaPagamento[] $FormasPagamento
+ * @property-read int|null $formas_pagamento_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Funcionarios
+ * @property-read int|null $funcionarios_count
+ * @property-read \App\Models\PesquisaClimaCliente|null $PesquisaClimaCliente
+ * @property-read \App\Models\User|null $Usuario
+ * @property-read \App\Models\ParabensEnviado|null $Parabens
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Vaga[] $Cargos
+ * @property-read int|null $cargos_count
+ */
+class Cliente extends Model
+{
+    use HasFactory, LogsActivity;
+
+    protected static $logFillable = true;
+    protected static $logName = 'cliente';
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = "";
+    }
+
+    protected $table = 'clientes';
+
+    protected $fillable = [
+        'id',
+        'tipo_cliente',
+        'cnpj',
+        'cpf',
+        'nome',
+        'tipo',
+        'razao_social',
+        'nome_fantasia',
+        'area_id',
+        'ramo',
+        'cep',
+        'logradouro',
+        'numero',
+        'complemento',
+        'bairro',
+        'municipio',
+        'uf',
+        'contato',
+        'email',
+        'aniversario',
+        'como_conheceu',
+        'como_conheceu_outro',
+        'apelido',
+        'tel_principal',
+        'politica_ehs',
+        'ativo',
+        'created_at',
+        'updated_at',
+
+    ];
+    protected $casts = [
+        'id' => 'int',
+        'tipo_cliente' => 'string',
+        'cnpj' => 'string',
+        'cpf' => 'string',
+        'nome' => 'string',
+        'tipo' => 'string',
+        'razao_social' => 'string',
+        'nome_fantasia' => 'string',
+        'area_id' => 'int',
+        'ramo' => 'string',
+        'cep' => 'string',
+        'logradouro' => 'string',
+        'numero' => 'string',
+        'complemento' => 'string',
+        'bairro' => 'string',
+        'municipio' => 'string',
+        'uf' => 'string',
+        'contato' => 'string',
+        'email' => 'string',
+        'aniversario' => 'date:d/m/Y',
+        'como_conheceu' => 'string',
+        'como_conheceu_outro' => 'string',
+        'apelido' => 'string',
+        'tel_principal' => 'string',
+        'politica_ehs' => 'string',
+        'ativo' => 'boolean',
+        'created_at' => 'date:d/m/Y',
+        'updated_at' => 'date:d/m/Y',
+    ];
+
+    public const BPSE = 1; // Empresa BPSE
+
+    protected $appends = ['endereco_completo'];
+
+    public const TIPO_PESSOA_FISICA = 'Pessoa Física';
+    public const TIPO_PESSOA_JURIDICA = 'Pessoa Jurídica';
+
+    public const TIPO_CONTRATO_FIXO = 'Fixo';
+    public const TIPO_CONTRATO_SPOT = 'Spot';
+    public const TIPO_CONTRATO_PROPOSTA = 'Proposta';
+
+    public function getRazaoSocialAttribute()
+    {
+        return "BPSE";
+    }
+
+//    public function getCnpjAttribute()
+//    {
+//        $cnpj = $this->attributes['cnpj'];
+//        $pt1 = substr($cpf, 4, 3);
+//        $pt2 = substr($cpf, 8, 3);
+//
+//        return "XXX.{$pt1}.{$pt2}-XX";
+////        return $pt1 . '.XXX.XXX-' . $pt2;
+//    }
+
+    public function getEnderecoCompletoAttribute()
+    {
+        $endereco = $this->logradouro;
+        $bairro = $this->bairro;
+        $cep = $this->cep;
+        $numero = $this->numero ? $this->numero : 'S/N';
+        $complemento = $this->complemento;
+
+        if ($complemento) {
+            $endereco_completo = "{$endereco}, {$complemento}, {$numero}, {$bairro}, {$cep}, {$this->municipio}-{$this->uf}";
+        } else {
+            $endereco_completo = "{$endereco}, {$numero}, {$bairro}, {$cep}, {$this->municipio}-{$this->uf}";
+        }
+
+        return $endereco_completo;
+    }
+
+
+    //Acessor ->inicio
+    public function getInicioAttribute($value)
+    {
+        $data = new DataHora($this->attributes['inicio']);
+        return $data->dataCompleta();
+    }
+
+    //Modificador ->inicio
+    public function setInicioAttribute($value)
+    {
+        $data = new DataHora($value);
+        $this->attributes['inicio'] = $data->dataInsert();
+    }
+
+    //Acessor ->aniversario
+    public function getAniversarioAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['aniversario']);
+            return $data->dia() . '/' . $data->mes();
+        } else {
+            $this->attributes['aniversario'] = null;
+        }
+    }
+
+    //Modificador ->aniversario
+    public function setAniversarioAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = $value . '/' . date('Y H:i:s');
+            $this->attributes['aniversario'] = (new DataHora($data))->dataInsert();
+        } else {
+            $this->attributes['aniversario'] = null;
+        }
+    }
+
+    //Acessor ->aniversario
+    public function getCreatedAtAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['created_at']);
+            return $data->dataHoraInsert();
+//            return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto();
+        } else {
+            $this->attributes['created_at'] = null;
+        }
+    }
+
+    //Modificador ->created_at
+    public function setCreatedAtAttribute($value)
+    {
+        if (!is_null($value)) {
+            $this->attributes['created_at'] = (new DataHora($value))->dataHoraInsert();
+        } else {
+            $this->attributes['created_at'] = null;
+        }
+    } //Acessor ->aniversario
+
+    public function getUpdatedAtAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['updated_at']);
+            return $data->dataHoraInsert();
+//            return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto();
+        } else {
+            $this->attributes['updated_at'] = null;
+        }
+    }
+
+    //Modificador ->updated_at
+    public function setUpdatedAtAttribute($value)
+    {
+        if (!is_null($value)) {
+            $this->attributes['updated_at'] = (new DataHora($value))->dataHoraInsert();
+        } else {
+            $this->attributes['updated_at'] = null;
+        }
+    }
+
+    public function Usuario()
+    {
+        return $this->hasOne(User::class, 'id', 'id');
+    }
+
+    public function Area()
+    {
+        return $this->hasOne(Area::class, 'id', 'area_id');
+    }
+
+    public function Telefones()
+    {
+        return $this->hasMany(ClienteTelefone::class, 'cliente_id', 'id');
+    }
+
+    public function ServicosCliente()
+    {
+        return $this->hasMany(ServicosCliente::class, 'cliente_id', 'id')->orderByDesc('id');
+    }
+
+    public function ServicosProspect()
+    {
+        return $this->hasMany(ServicosProspects::class, 'cliente_id', 'id');
+    }
+
+    public function PesquisaClimaCliente()
+    {
+        return $this->hasOne(PesquisaClimaCliente::class, 'cliente_id', 'id');
+    }
+
+    public function Logo()
+    {
+        return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id');
+    }
+
+    public function AreasEtiquetas()
+    {
+        return $this->belongsToMany(AreaEtiqueta::class, 'cliente_area_etiquetas', 'cliente_id', 'area_etiqueta_id')->withPivot(['numero_supervisor']);
+    }
+
+    public function Funcionarios()
+    {
+        return $this->belongsToMany(User::class, 'cliente_funcionarios', 'cliente_id', 'funcionario_id');
+    }
+
+    public function Parabens()
+    {
+        return $this->hasOne(ParabensEnviado::class, 'cliente_id', 'id');
+    }
+
+    public function Cargos()
+    {
+        return $this->belongsToMany(Vaga::class, 'cliente_cargo', 'cliente_id', 'cargo_id');
+    }
+
+    protected static function booted()
+    {
+        static::updating(function ($model) {
+            if (env('MIGRATION') != 'ajeita_banco') {
+                if ($model->tipo == self::TIPO_PESSOA_JURIDICA) {
+                    $model->Usuario->find($model->id)->update([
+                        'nome' => $model->razao_social,
+                        'login' => $model->email,
+                        'ativo' => $model->ativo
+                    ]);
+                } else {
+                    $model->Usuario->find($model->id)->update([
+                        'nome' => $model->nome,
+                        'login' => $model->email,
+                        'ativo' => $model->ativo
+                    ]);
+                }
+            }
+        });
+
+        static::addGlobalScope('scopeCliente', function (Builder $builder) {
+            $builder->whereIn('id', auth()->user()->ClientesEmpresa->pluck('id'));
+        });
+    }
+
+}

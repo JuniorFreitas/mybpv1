@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AddForeignKeysToEntrevistaDesligamentosTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('entrevista_desligamentos', function (Blueprint $table) {
+            $table->foreign('feedback_id')->references('id')->on('feedback_curriculos')->onUpdate('CASCADE')->onDelete('CASCADE');
+            $table->foreign('formulario_id')->references('id')->on('formularios')->onUpdate('RESTRICT')->onDelete('CASCADE');
+            $table->foreign('user_entrevista')->references('id')->on('users')->onUpdate('CASCADE')->onDelete('CASCADE');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('entrevista_desligamentos', function (Blueprint $table) {
+            $table->dropForeign('entrevista_desligamentos_feedback_id_foreign');
+            $table->dropForeign('entrevista_desligamentos_formulario_id_foreign');
+            $table->dropForeign('entrevista_desligamentos_user_entrevista_foreign');
+        });
+    }
+}

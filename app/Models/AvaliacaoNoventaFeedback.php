@@ -1,0 +1,123 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use MasterTag\DataHora;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
+
+/**
+ * App\Models\AvaliacaoNoventaFeedback
+ *
+ * @property int $id
+ * @property int $feedback_id
+ * @property int $pergunta_id
+ * @property int $gestor_id usuário em sessãos
+ * @property int $nota
+ * @property string $gestor_imediato
+ * @property string|null $observacao
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\FeedbackCurriculo $Feedback
+ * @property-read \App\Models\AvaliacaoNoventaDias $Pergunta
+ * @property-read \App\User $Usuario
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereGestorImediato($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereNota($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback wherePerguntaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereUpdatedAt($value)
+ * @mixin \Eloquent
+ * @property int $quantidade_avaliacao
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoNoventaFeedbackQuantidade[] $AvaliacaoQuantidade
+ * @property-read int|null $avaliacao_quantidade_count
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereQuantidadeAvaliacao($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read int|null $activities_count
+ */
+class AvaliacaoNoventaFeedback extends Model
+{
+    use LogsActivity;
+
+    protected static $logFillable = true;
+    protected static $logName = 'AvaliacaoNoventaFeedback';
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
+
+    public function getDescriptionForEvent(string $eventName)
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = "";
+    }
+
+
+    protected $fillable = [
+        'feedback_id',
+        'pergunta_id',
+        'gestor_id',
+        'nota',
+        'quantidade_avaliacao',
+        'observacao',
+        'gestor_imediato'
+    ];
+    protected $casts = [
+        'feedback_id' => 'int',
+        'pergunta_id' => 'int',
+        'gestor_id' => 'int',
+        'nota' => 'int',
+        'quantidade_avaliacao' => 'int',
+        'gestor_imediato' => 'string'
+    ];
+    protected $table = 'avaliacao_noventa_feedbacks';
+
+
+    //Acessor ->created_at
+    public function getCreatedAtAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($this->attributes['created_at']);
+            return $data->dataCompleta();
+        }
+    }
+
+    //Modificador ->created_at
+    public function setCreatedAtAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($value);
+            $this->attributes['created_at'] = $data->dataInsert();
+        }
+    }
+
+    public function Pergunta()
+    {
+        return $this->hasOne(AvaliacaoNoventaDias::class, 'id', 'pergunta_id');
+    }
+
+    public function Feedback()
+    {
+        return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
+    }
+
+    public function AvaliacaoQuantidade()
+    {
+        return $this->hasMany(AvaliacaoNoventaFeedbackQuantidade::class, 'feedback_id', 'feedback_id');
+    }
+
+    public function Usuario()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_id');
+    }
+}

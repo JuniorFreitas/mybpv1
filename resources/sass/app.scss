@@ -1,0 +1,507 @@
+//// Fonts
+//@import url('https://fonts.googleapis.com/css?family=Nunito');
+//@import url('https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap');
+
+//// Bootstrap
+//@import '~bootstrap/scss/bootstrap';
+
+//Core files
+@import "~bootstrap/scss/mixins.scss";
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "../template/scss/variables";
+@import "../template/scss/bootstrap";
+
+//Toastr
+@import "~toastr/toastr";
+//bootstrap daterangerpicker
+@import "~bootstrap-daterangepicker/daterangepicker.css";
+// Structure
+@import "../template/scss/custom/fonts/fonts";
+
+@import "../template/scss/custom/structure/general";
+@import "../template/scss/custom/structure/topbar";
+@import "../template/scss/custom/structure/page-head";
+@import "../template/scss/custom/structure/footer";
+@import "../template/scss/custom/structure/right-sidebar";
+@import "../template/scss/custom/structure/vertical";
+@import "../template/scss/custom/structure/horizontal-nav";
+@import "../template/scss/custom/structure/layouts";
+
+// Components
+@import "../template/scss/custom/components/waves";
+@import "../template/scss/custom/components/avatar";
+@import "../template/scss/custom/components/accordion";
+@import "../template/scss/custom/components/helper";
+@import "../template/scss/custom/components/preloader";
+@import "../template/scss/custom/components/forms";
+@import "../template/scss/custom/components/widgets";
+@import "../template/scss/custom/components/demos";
+@import "../template/scss/custom/components/print";
+
+// Plugins
+@import "../template/scss/custom/plugins/custom-scrollbar";
+//@import "../template/scss/custom/plugins/calendar";
+//@import "../template/scss/custom/plugins/dragula";
+//@import "../template/scss/custom/plugins/session-timeout";
+//@import "../template/scss/custom/plugins/range-slider";
+//@import "../template/scss/custom/plugins/sweatalert2";
+//@import "../template/scss/custom/plugins/rating";
+@import "../template/scss/custom/plugins/toastr";
+//@import "../template/scss/custom/plugins/cropperjs";
+//@import "../template/scss/custom/plugins/parsley";
+//@import "../template/scss/custom/plugins/select2";
+//@import "../template/scss/custom/plugins/switch";
+//@import "../template/scss/custom/plugins/timepicker";
+//@import "../template/scss/custom/plugins/datepicker";
+//@import "../template/scss/custom/plugins/form-editors";
+//@import "../template/scss/custom/plugins/form-upload";
+//@import "../template/scss/custom/plugins/form-wizard";
+//@import "../template/scss/custom/plugins/responsive-table";
+//@import "../template/scss/custom/plugins/table-editable";
+//@import "../template/scss/custom/plugins/apexcharts";
+//@import "../template/scss/custom/plugins/echarts";
+//@import "../template/scss/custom/plugins/flot";
+//@import "../template/scss/custom/plugins/sparkline-chart";
+//@import "../template/scss/custom/plugins/google-map";
+//@import "../template/scss/custom/plugins/vector-maps";
+//@import "../template/scss/custom/plugins/leaflet-maps";
+
+// Pages
+//@import "../template/scss/custom/pages/authentication";
+//@import "../template/scss/custom/pages/ecommerce";
+//@import "../template/scss/custom/pages/email";
+//@import "../template/scss/custom/pages/file-manager";
+@import "../template/scss/custom/pages/chat";
+//@import "../template/scss/custom/pages/projects";
+//@import "../template/scss/custom/pages/contacts";
+//@import "../template/scss/custom/pages/crypto";
+//@import "../template/scss/custom/pages/coming-soon";
+//@import "../template/scss/custom/pages/timeline";
+//@import "../template/scss/custom/pages/extras-pages";
+
+//Driver Js
+@import "~driver.js/src/driver";
+
+#conteudo{
+    margin-top: .75em;
+}
+.page-title-box {
+    padding-bottom: 0px !important;
+}
+[v-cloak] {
+    display: block;
+    padding: 50px 0;
+}
+/*h4, h5, p, .form-check-label{
+    word-break: break-all;
+}*/
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.corrigiDatepicker{
+    margin-top: -19px;
+}
+
+[v-cloak]:before {
+    content: "";
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin-top: -10px;
+    margin-left: -10px;
+    border-radius: 50%;
+    border: 4px solid #ccc;
+    border-top-color: #164157;
+    animation: spinner 0.6s linear infinite;
+    text-indent: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+[v-cloak]>* {
+    display: none;
+
+}
+#app:not([v-cloak]) {
+    opacity: 1;
+    -webkit-animation-name: cloak-fade-in;
+    animation-name: cloak-fade-in;
+    -webkit-animation-duration: 10s;
+    animation-duration: 10s;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+}
+
+.form-check-input{
+    cursor: pointer;
+    margin-top: 0.2rem;
+}
+
+.cursor-pointer{
+    cursor: pointer;
+}
+
+.form-check-input:disabled{
+    cursor: no-drop;
+}
+button:disabled{
+    cursor: no-drop;
+}
+
+// Modal Customizaçao
+//.modal-header {
+//    background: blue;
+//    color: white
+//}
+//
+//.btClose {
+//    color: white
+//}
+
+
+
+
+//fieldset e legend
+fieldset {
+    border: 1px solid #ddd !important;
+    margin: 1rem 0px;
+    min-width: 0;
+    padding: 1rem 1rem;
+    position: relative;
+    border-radius: 0.45rem;
+    background-color: #f6f6f6;
+}
+
+legend {
+    font-size: .76rem;
+    margin-bottom: 0px;
+    width: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 1em 5px 1em;
+    background-color: $primary;
+    color: $white;
+    text-transform: uppercase;
+}
+
+button {
+    transition: all .100s;
+}
+
+button:hover {
+    transition: all .100s;
+}
+
+
+//table mobile
+table.tabela {
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    table-layout: fixed;
+}
+
+table.tabela tr {
+    background-color: $white;
+    border: 1px solid #ddd;
+    padding: .35em;
+}
+
+table.tabela th,
+table.tabela td {
+    padding: .625em;
+    text-align: center;
+}
+
+table.tabela th {
+    font-size: .85em;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.tabela > tbody tr:nth-child(odd) { //efeito zebra
+    background-color: #ececec !important
+}
+
+.tabela > tbody tr:hover { //efeito zebra
+    background-color: #d2d2d2 !important
+}
+
+@media screen and (max-width: 600px) {
+    .tabela > tbody tr:nth-child(odd) { //efeito zebra
+        background-color: $white !important
+    }
+
+    .tabela > tbody tr:hover { //efeito zebra
+        background-color: #d2d2d2 !important
+    }
+
+    table.tabela {
+        border: 0;
+    }
+
+    table.tabela thead {
+        border: none;
+        clip: rect(0 0 0 0);
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        width: 1px;
+    }
+
+
+    table.tabela tr {
+        border-bottom: 3px solid #ddd;
+        display: block;
+        margin-bottom: .625em;
+    }
+
+    table.tabela td {
+        border-bottom: 1px solid #ddd;
+        display: block;
+        font-size: .9em;
+        text-align: right;
+    }
+
+    table.tabela td::before {
+        /*
+        * aria-label has no advantage, it won't be read inside a table
+        content: attr(aria-label);
+        */
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    table.tabela td:last-child {
+        border-bottom: 0;
+    }
+
+}
+
+// forms
+/*
+.btn {
+    line-height: 0.5 !important;
+}
+.form-control {
+    height: 2rem;
+    font-size: 0.85rem;
+}
+
+.input-group-prepend {
+    height: 2rem;
+}
+
+.input-group > .form-control:not(:first-child), .input-group > .custom-select:not(:first-child) {
+    height: 2rem;
+}
+
+.input-group > .form-control, .input-group > .form-control-plaintext, .input-group > .custom-select, .input-group > .custom-file {
+    height: 2rem;
+    font-size: 0.85rem;
+}
+
+.input-group > .form-control:not(:first-child), .input-group > .custom-select:not(:first-child) {
+    height: 2rem;
+    line-height: 1;
+    font-size: 0.85rem;
+}
+
+.input-group > .input-group-prepend > .btn, .input-group > .input-group-prepend > .input-group-text, .input-group > .input-group-append:not(:last-child) > .btn, .input-group > .input-group-append:not(:last-child) > .input-group-text, .input-group > .input-group-append:last-child > .btn:not(:last-child):not(.dropdown-toggle), .input-group > .input-group-append:last-child > .input-group-text:not(:last-child) {
+    height: 2rem;
+    font-size: 0.8rem;
+}
+
+label {
+    margin-bottom: 0.1rem;
+    font-size: 0.85rem;
+}
+
+*/
+
+.form-control:disabled, .form-control[readonly] {
+    background-color: #e0e0e0dd;
+    opacity: 1;
+    cursor: no-drop;
+}
+
+//dropdown Navbar
+.navbar-header .dropdown.show .header-item {
+    background-color: #103240;
+}
+
+
+// Navs (Tabs) Pill
+.nav-tabs .nav-link {
+    border-radius: 0px;
+    font-size: .75rem;
+    color: $corPrincipal;
+    background-color: rgba(24, 64, 86, 0.3);
+    transition: background-color 0.2s ease;
+}
+
+.nav-tabs > li:nth-child(1) > a {
+    border-top-left-radius: 0.5rem;
+}
+
+.nav-tabs > li:nth-last-child(1) > a {
+    border-top-right-radius: 0.5rem;
+}
+
+.nav-tabs .nav-link.active, .nav-tabs .show > .nav-link {
+    color: $white;
+    background-color: $corPrincipal;
+    border-color: transparent;
+}
+
+.nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
+    border-color: transparent;
+    background-color: $corPrincipalHover;
+    color: $white;
+    transition: background-color 0.2s ease;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: $white;
+    background-color: $corPrincipal;
+}
+
+.nav-link:hover {
+    //color: $corPrincipalHover;
+    color: $corPrincipalHover;
+    transition: color 0.2s ease;
+    //background-color: $corPrincipalHover;
+}
+
+.nav-tabs{
+    border-bottom: none;
+}
+
+.tab-content {
+    border: 1px solid #DDD !important;
+    border-bottom-left-radius: 0.5rem !important;
+    border-bottom-right-radius: 0.5rem !important;
+}
+
+.textPlain {
+    background: transparent;
+    border: none;
+}
+
+.textPlain:read-only {
+    background: transparent;
+    border: none;
+}
+
+.btnPlain, .btnPlain:hover, .btnPlain:active, .btnPlain:visited, .btnPlain:focus {
+    background: transparent !important;
+    border: none !important;
+}
+/*
+
+:root {
+    --input-padding-x: 0.75rem;
+    --input-padding-y: 0.75rem;
+}
+
+$color-grey: #555;
+//removing default placeholders
+.form-group input {
+    &::-webkit-input-placeholder {
+        color: transparent;
+    }
+    &:-moz-placeholder {
+        color: transparent;
+    }
+    &::-moz-placeholder {
+        color: transparent;
+    }
+    &:-ms-input-placeholder {
+        color: transparent;
+    }
+}
+
+
+.form-group {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.form-group > input,
+.form-group > label {
+    padding: var(--input-padding-y) var(--input-padding-x);
+}
+
+.form-group > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    margin-bottom: 0; !* Override default `<label>` margin *!
+    line-height: 1.5;
+    color: $color-grey;
+    cursor: text; !* Match the input under the label *!
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    transition: all 0.1s ease-in-out;
+}
+
+.form-group input {
+    font-size: 1rem;
+
+    &:not(:placeholder-shown) {
+        padding-top: calc(
+            var(--input-padding-y) + var(--input-padding-y) * (2 / 3)
+        );
+        padding-bottom: calc(var(--input-padding-y) / 3);
+
+        ~ label {
+            padding-top: calc(var(--input-padding-y) / 3);
+            padding-bottom: calc(var(--input-padding-y) / 3);
+            font-size: 0.85rem;
+            color: lighten($color-grey, 15%);
+        }
+    }
+}
+
+!* Fallback for Edge
+-------------------------------------------------- *!
+@supports (-ms-ime-align: auto) {
+    .form-group {
+        > label {
+            display: none;
+        }
+        input::-ms-input-placeholder {
+            color: $color-grey;
+        }
+    }
+}
+
+!* Fallback for IE
+-------------------------------------------------- *!
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    .form-group {
+        > label {
+            display: none;
+        }
+        input:-ms-input-placeholder {
+            color: $color-grey;
+        }
+    }
+}
+*/

@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use MasterTag\DataHora;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
+
+/**
+ * App\Models\AtaReuniao
+ *
+ * @property int $id
+ * @property int $quem_cadastrou Usuario da sessão
+ * @property string $local
+ * @property mixed $data_inicio
+ * @property mixed $data_fim
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoAcao[] $Acoes
+ * @property-read int|null $acoes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoAssunto[] $Assuntos
+ * @property-read int|null $assuntos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoParticipante[] $Participantes
+ * @property-read int|null $participantes_count
+ * @property-read \App\Models\User $QuemCadastrou
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoTipo[] $Tipos
+ * @property-read int|null $tipos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereDataFim($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereDataInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereLocal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereQuemCadastrou($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
+class AtaReuniao extends Model
+{
+    use LogsActivity;
+
+    protected static $logFillable = true;
+    protected static $logName = 'atareuniao';
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = "";
+    }
+
+
+    protected $fillable = [
+        'id',
+        'quem_cadastrou',
+        'local',
+        'data_inicio',
+        'data_fim',
+    ];
+
+    protected $casts = [
+        'quem_cadastrou' => 'int',
+        'local' => 'string',
+        'data_inicio' => 'string',
+        'data_fim' => 'string',
+    ];
+
+
+    //Acessor ->data_inicio
+    public function getDataInicioAttribute($value)
+    {
+        $data = new DataHora($this->attributes['data_inicio']);
+        return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto();
+    }
+
+    //Acessor ->data_fim
+    public function getDataFimAttribute($value)
+    {
+        $data = new DataHora($this->attributes['data_fim']);
+        return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto();
+    }
+
+//    //Modificador ->data_inicio
+//    public function setDataInicioAttribute($value)
+//    {
+//        if ($value) {
+//            $this->attributes['data_inicio'] = (new DataHora())->dataHoraInsert();
+//        }
+//    }
+//
+//    //Modificador ->data_fim
+//    public function setDataFimAttribute($value)
+//    {
+//        if ($value) {
+//            $this->attributes['data_fim'] = (new DataHora())->dataHoraInsert();
+//        }
+//    }
+
+    public function QuemCadastrou()
+    {
+        return $this->hasOne(User::class, 'id', 'quem_cadastrou');
+    }
+
+    public function Assuntos()
+    {
+        return $this->hasMany(AtaReuniaoAssunto::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Tipos()
+    {
+        return $this->hasMany(AtaReuniaoTipo::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Acoes()
+    {
+        return $this->hasMany(AtaReuniaoAcao::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Participantes()
+    {
+        return $this->hasMany(AtaReuniaoParticipante::class, 'ata_reuniao_id', 'id');
+    }
+}

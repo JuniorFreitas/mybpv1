@@ -1,0 +1,32 @@
+@extends('layouts.mail.layout')
+@section('titulo', 'E-mail de desclassificacao')
+@section('conteudo')
+
+    <table border="0" cellpadding="0" width="97%" style="width: 97%;">
+        <tr>
+            <td>
+                <img src="https://sgibpse.com.br/imagens/bepinhas/branca_2.png" alt="Bepinha">
+            </td>
+            <td style="text-align: justify">
+                Olá, <strong>{{ $dados['nome'] }}</strong>! Tudo bem?<br><br>
+
+                Gostaríamos de agradecer a sua participação em nosso processo seletivo.<br><br>
+
+                É muito bom ver o interesse de quem quer crescer e se desenvolver com a gente!<br><br>
+
+                Sua participação foi encerrada nessa fase, mas entendemos que nenhuma avaliação deve ser levada em conta
+                de maneira isolada. Por esse motivo, vamos manter seu cadastro em nosso banco de dados para futuras
+                oportunidades em nossa empesa.<br><br>
+
+                Temos diversas <a href="https://site.bpse.com.br/vagas-abertas">vagas</a>, além desta. Para não perder
+                nenhuma delas, acesse nossa <a href="https://site.bpse.com.br">Plataforma de
+                    Recrutamento & Seleção</a> e mantenha o seu cadastro atualizado.<br><br>
+
+                Abraços!<br><br>
+
+                Equipe de R&S - BPSE
+                <br><br>
+            </td>
+        </tr>
+    </table>
+@endsection

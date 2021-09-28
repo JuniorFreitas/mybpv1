@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{env('APP_NAME')}}</title>
+    <!-- Scripts -->
+    <script src="{{ asset('js/app.js') }}" defer></script>
+
+    <!-- Styles -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
+    <script src="https://www.google.com/recaptcha/api.js?hl=pt-BR" async defer></script>
+    <script type="text/javascript">
+        function onSubmit(token) {
+            document.getElementById("demo-form").submit();
+        }
+
+        function getToken(dados) {
+            document.getElementById('token').value = dados;
+        }
+
+        function limpaToken() {
+            document.getElementById('token').value = '';
+        }
+
+        function erroToken() {
+            alert('Erro ao validar o reCapTcha. Tente mais tarde')
+            document.getElementById('token').value = '';
+        }
+    </script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
+          integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
+    <style>
+        .my-login-page .footer {
+            margin: inherit;
+        }
+
+
+        .footer {
+            margin-top: 20px;
+            width: 100%;
+            height: inherit;
+            line-height: inherit;
+        }
+
+        .social-links a {
+            font-size: 18px;
+            display: inline-block;
+            background: #0F4C60;
+            color: #fff;
+            line-height: 1;
+            padding: 8px 0;
+            margin-right: 4px;
+            border-radius: 50%;
+            text-align: center;
+            width: 36px;
+            height: 36px;
+            transition: .3s;
+        }
+
+        .social-links a:hover {
+            background: #031E2D;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="my-login-page"
+      style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
+    {{--      style="background: url({{assets('imagens/bg-business.jpg')}});"--}}
+>
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 min-vh-100 d-flex flex-column justify-content-center">
+                <div class="row">
+                    <div class="col-lg-6 col-md-8 mx-auto">
+                        <div class="card rounded shadow shadow-sm">
+                            <div class="card-header">
+                                <img src="{{ asset('images/logo_bpse_color.png') }}" class="img-fluid" alt="logo_bpse">
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" id="demo-form" action="{{ route('login') }}">
+                                    @csrf
+                                    <div class="form-group">
+                                        <label for="login">Usuário</label>
+                                        <input id="login" type="text"
+                                               class="form-control{{ $errors->has('login') ? ' is-invalid' : '' }}"
+                                               name="login"
+                                               value="" required autofocus>
+                                        @if($errors->has('login'))
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $errors->first('login') }}</strong>
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="password">Senha</label>
+                                        <input id="password" type="password" class="form-control {{ $errors->has('password') ? ' is-invalid' : '' }}"
+                                               name="password" required>
+                                        @if($errors->has('password'))
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $errors->first('password') }}</strong>
+                                            </span>
+                                        @endif
+                                        <a href="{{route('password.request')}}" class="float-right text-default">Esqueceu a Senha?</a>
+                                    </div>
+
+{{--                                    <div class="form-group" style="display: none">--}}
+{{--                                        <div class="custom-checkbox custom-control">--}}
+{{--                                            <input type="checkbox" name="remember" id="remember"--}}
+{{--                                                   class="custom-control-input tbtn-default">--}}
+{{--                                            <label for="remember" class="custom-control-label">Lembrar-me</label>--}}
+{{--                                        </div>--}}
+{{--                                    </div>--}}
+
+                                    <div class="pb-3 ">
+                                        {{--                                        <div class="g-recaptcha form-group" data-sitekey="{{env('RECAPTCHA_SITE_KEY')}}"--}}
+                                        {{--                                             data-callback="getToken"--}}
+                                        {{--                                             data-expired-callback="limpaToken"--}}
+                                        {{--                                             data-error-callback="erroToken"></div>--}}
+                                        <input type="hidden" ref="token" id="token">
+                                        @if($errors->has('g-recaptcha-response'))
+                                            <span class="text-danger">
+                                                <strong>{{ $errors->first('g-recaptcha-response') }}</strong>
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <div class="form-group m-0">
+                                        <button data-sitekey="{{env('RECAPTCHA_SITE_KEY')}}" data-callback='onSubmit' type="submit" class="btn btn-primary btn-block g-recaptcha">
+                                            ENTRAR NO SISTEMA
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="py-3 d-flex justify-content-center">
+                                    <img src="https://site.bpse.com.br/img/logo_procem.png" alt=""
+                                         class=" " style="height: 130px">
+                                    <img src="https://site.bpse.com.br/img/selo_gptw.png" alt="" class=" "
+                                         style="height: 130px">
+                                </div>
+
+                                <div class="social-links d-flex justify-content-around">
+                                    <a href="https://instagram.com/sejabpse" target="_blank" class="instagram"><i
+                                            class="fab fa-instagram"></i></a>
+                                    <a href="https://www.linkedin.com/company/bpse/" target="_blank" class="linkedin"><i
+                                            class="fab fa-linkedin"></i></a>
+                                    <a href="https://fb.com/bpse1" target="_blank" class="facebook"><i
+                                            class="fab fa-facebook"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>

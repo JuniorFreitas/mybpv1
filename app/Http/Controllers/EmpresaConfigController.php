@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\EmpresaConfig;
+use App\Models\FormaPagamento;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class EmpresaConfigController extends Controller {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index() {
+        return view('g.controle-ponto.configuracoes.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create() {
+
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request) {
+
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param \App\Models\EmpresaConfig $empresaConfig
+     * @return \Illuminate\Http\Response
+     */
+    public function show(EmpresaConfig $config) {
+
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param \App\Models\EmpresaConfig $config
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(EmpresaConfig $config) {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\EmpresaConfig $config
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, EmpresaConfig $config) {
+
+        $dados = $request->input();
+
+        $dadosValidados = \Validator::make($dados, [
+            'tipo_frequencia' => 'required|min:1',
+            'limite_tolerancia' => 'required|numeric|min:1',
+            'tempo_limite_falta' => 'required|numeric|min:1',
+            'tempo_limite_saida' => 'required|numeric|min:1',
+            'dia_nova_frequencia' => 'required|numeric|min:1',
+        ]);
+
+
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao salvar as configuraçôes da empresa',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        } else {
+            $config->update($dados);
+
+
+            return response()->json([], 200);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param \App\Models\EmpresaConfig $config
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(EmpresaConfig $config) {
+    }
+
+    public function getPermissoes(Request $request) {
+
+        return response()->json([
+            'perimetros_insert' => auth()->user()->can('perimetros_insert'),
+            'perimetros_update' => auth()->user()->can('perimetros_update'),
+            'perimetros_delete' => auth()->user()->can('perimetros_delete'),
+            'perimetros_funcionarios' => auth()->user()->can('perimetros_funcionarios'),
+            'config_empresa' => auth()->user()->can('config_empresa'),
+        ]);
+    }
+
+    public function atualizarFuncionarios(Request $request) {
+
+        $resultado = auth()->user()->Empresa->EmpresaFuncionarios();
+        $porPagina = $request->get('porPagina');
+        $busca = false;
+        if ($request->filled('campoBusca')) {
+            $busca = $request->get('campoBusca');
+            $resultado = $resultado->where('nome', 'like', '%' . $busca . '%');
+        } else {
+            $resultado = $resultado->orderBy('nome'); // senao busca tudo
+        }
+        $resultado->with([
+            'Empresa:id,nome',
+            'PerimetrosFuncionario:id,descricao'
+        ]);
+
+        $resultado = $resultado->paginate($porPagina);
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => $resultado->items(),
+        ]);
+    }
+}

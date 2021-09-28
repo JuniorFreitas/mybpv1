@@ -1,0 +1,120 @@
+<?php
+
+namespace App\Models;
+
+use App\Scopes\ScopeClientesEmpresa;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * App\Models\Beneficio
+ *
+ * @property int $id
+ * @property string $nome
+ * @property int $tipobeneficio_id
+ * @property int $cliente_id
+ * @property float $valor
+ * @property string $aplicacao
+ * @property string $periodicidade
+ * @property float $valor_descontado
+ * @property string $opcao_desconto
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Beneficio[] $BeneficioFeedback
+ * @property-read int|null $beneficio_feedback_count
+ * @property-read \App\Models\TipoBeneficio $TipoBeneficio
+ * @property-read mixed $valor_format
+ * @property-read mixed $valordescontado_format
+ * @property-write mixed $valordescontado
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereAplicacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereClienteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereOpcaoDesconto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio wherePeriodicidade($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereTipobeneficioId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereValor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereValorDescontado($value)
+ * @mixin \Eloquent
+ * @property-read \App\Models\Cliente|null $Cliente
+ */
+class Beneficio extends Model
+{
+    protected $fillable = [
+        'nome',
+        'tipobeneficio_id',
+        'cliente_id',
+        'valor',
+        'aplicacao',
+        'periodicidade',
+        'valor_descontado',
+        'opcao_desconto',
+    ];
+
+    protected $casts = [
+        'nome' => 'string',
+        'tipobeneficio_id' => 'int',
+        'cliente_id' => 'int',
+        'valor' => 'float',
+        'aplicacao' => 'string',
+        'periodicidade' => 'string',
+        'valor_descontado' => 'float',
+        'opcao_desconto' => 'string',
+    ];
+
+    protected $table = 'beneficios';
+
+
+    protected $appends = ['valor_format', 'valordescontado_format'];
+
+    //Modificador ->valor
+    public function setValorAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['valor'] = Sistema::DinheiroInsert($value);
+        }
+    }
+
+    public function getValorFormatAttribute()
+    {
+        return number_format($this->attributes['valor'], 2, ',', '.');
+    }
+
+    //Modificador ->valor
+    public function setValordescontadoAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['valor_descontado'] = Sistema::DinheiroInsert($value);
+        }
+    }
+
+    public function getValordescontadoFormatAttribute()
+    {
+        return number_format($this->attributes['valor_descontado'], 2, ',', '.');
+    }
+
+    public function TipoBeneficio()
+    {
+        return $this->hasOne(TipoBeneficio::class, 'id', 'tipobeneficio_id');
+    }
+
+    public function BeneficioFeedback()
+    {
+        return $this->belongsToMany(Beneficio::class, 'beneficio_feedbacks', 'beneficio_id', 'feedback_id');
+    }
+
+    public function Cliente()
+    {
+        return $this->hasOne(Cliente::class, 'id', 'cliente_id');
+    }
+
+    //Scopo de ClienteID (Empresa)
+    protected static function booted()
+    {
+        static::addGlobalScope(new ScopeClientesEmpresa);
+    }
+}

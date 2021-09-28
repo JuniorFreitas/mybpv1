@@ -1,0 +1,198 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use MasterTag\DataHora;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
+
+/**
+ * App\Models\Intermitente
+ *
+ * @property int $id
+ * @property int $feedback_id somente quem foi admitido
+ * @property int $cliente_id Cliente empresa
+ * @property int $user_lancamento_id Responsavel pelo lançamenro usuario em sessão
+ * @property int|null $area_id
+ * @property int|null $tipo_id
+ * @property string|null $obs_lancamento Responsavel pela aprovação usuario em sessão
+ * @property mixed $data_lancamento
+ * @property string $acao
+ * @property int|null $user_aprovacao_id Responsavel pela aprovação usuario em sessão
+ * @property string|null $obs_aprovacao Responsavel pela aprovação usuario em sessão
+ * @property mixed|null $data_aprovacao
+ * @property string|null $status aberto, aprovado
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
+ * @property-read \App\Models\AreaEtiqueta $Area
+ * @property-read \App\Models\Clientes $Cliente
+ * @property-read \App\Models\FeedbackCurriculo $Colaborador
+ * @property-read \App\Models\User $ResponsavelAprovacao
+ * @property-read \App\Models\User $ResponsavelLancamento
+ * @property-read \App\Models\IntermitenteTipo $Tipo
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereAcao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereAreaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereClienteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereDataLancamento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereObsLancamento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereTipoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereUserAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereUserLancamentoId($value)
+ * @mixin \Eloquent
+ * @property string $encerramento_previsto
+ * @property bool|null $devolve_epi
+ * @property bool|null $devolve_cracha
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\IntermitenteProrrogacao[] $Prorrogacao
+ * @property-read int|null $prorrogacao_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDevolveCracha($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDevolveEpi($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEncerramentoPrevisto($value)
+ */
+class Intermitente extends Model
+{
+    use LogsActivity;
+
+    protected static $logFillable = true;
+    protected static $logName = 'intermitente';
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
+
+    public function getDescriptionForEvent(string $eventName)
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = "";
+    }
+
+    protected $fillable = [
+        'tipo_id',
+        'feedback_id',
+        'cliente_id',
+        'area_id',
+        'user_lancamento_id',
+        'obs_lancamento',
+        'data_lancamento',
+        'acao',
+        'user_aprovacao_id',
+        'obs_aprovacao',
+        'data_aprovacao',
+        'status',
+        'devolve_epi',
+        'devolve_cracha',
+    ];
+
+    protected $casts = [
+        'id' => 'int',
+        'tipo_id' => 'int',
+        'feedback_id' => 'int',
+        'area_id' => 'int',
+        'cliente_id' => 'int',
+        'user_lancamento_id' => 'int',
+        'obs_lancamento' => 'string',
+        'data_lancamento' => 'string',
+        'acao' => 'string',
+        'user_aprovacao_id' => 'int',
+        'obs_aprovacao' => 'string',
+        'data_aprovacao' => 'string',
+        'status' => 'string',
+        'devolve_epi' => 'boolean',
+        'devolve_cracha' => 'boolean',
+    ];
+
+    public function getDataLancamentoAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($this->attributes['data_lancamento']);
+            return $data->dataCompleta() . ' às ' . $data->horaCompleta();
+        }
+    }
+
+    //Modificador ->data_fim
+    public function setDataLancamentoAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($value);
+            $this->attributes['data_lancamento'] = $data->dataHoraInsert();
+        }
+    }
+
+    public function getDataAprovacaoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['data_aprovacao']);
+            return $data->dataCompleta() . ' às ' . $data->horaCompleta();
+        } else {
+            return null;
+        }
+    }
+
+    //Modificador ->data_fim
+    public function setDataAprovacaoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($value);
+            $this->attributes['data_aprovacao'] = $data->dataHoraInsert();
+        } else {
+            $this->attributes['data_aprovacao'] = null;
+        }
+    }
+
+    public function Cliente()
+    {
+        return $this->hasOne(Clientes::class, 'id', 'cliente_id');
+    }
+
+    public function Tipo()
+    {
+        return $this->hasOne(IntermitenteTipo::class, 'id', 'tipo_id');
+    }
+
+    public function Colaborador()
+    {
+        return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
+    }
+
+    public function ResponsavelLancamento()
+    {
+        return $this->hasOne(User::class, 'id', 'user_lancamento_id');
+    }
+
+    public function Area()
+    {
+        return $this->hasOne(AreaEtiqueta::class, 'id', 'area_id');
+    }
+
+    public function ResponsavelAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
+
+    public function Prorrogacao()
+    {
+        return $this->hasMany(IntermitenteProrrogacao::class, 'intermitente_id', 'id');
+    }
+
+    public function Anexos()
+    {
+        return $this->belongsToMany(Arquivo::class, 'intermitente_evidencias', 'intermitente_id', 'arquivo_id');
+    }
+}
