@@ -62,6 +62,16 @@ class AddCampoEmpresaIdAllTable extends Migration
             $table->unsignedBigInteger('empresa_id')->nullable();
             $table->foreign('empresa_id')->references('id')->on('users');
         });
+
+        Schema::table('clouds', function (Blueprint $table) {
+            $table->unsignedBigInteger('empresa_id')->nullable();
+            $table->foreign('empresa_id')->references('id')->on('users');
+        });
+
+        Schema::table('grupo_clouds', function (Blueprint $table) {
+            $table->unsignedBigInteger('empresa_id')->nullable();
+            $table->foreign('empresa_id')->references('id')->on('users');
+        });
     }
 
     /**
