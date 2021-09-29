@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Scopes\ScopeEmpresa;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 
@@ -36,6 +37,7 @@ class PlanejamentoDiario extends Model
         'user_id',
         'tarefas_agendadas',
         'importante',
+        'empresa_id'
     ];
 
     protected $casts = [
@@ -43,6 +45,7 @@ class PlanejamentoDiario extends Model
         'importante',
         'data' => 'string',
         'user_id' => 'int',
+        'empresa_id' => 'int'
     ];
 
     public function getDataAttribute($value)
@@ -65,6 +68,13 @@ class PlanejamentoDiario extends Model
     public function Tarefas()
     {
         return $this->hasMany(PlanejamentoDiarioTarefas::class, 'planejamento_id', 'id');
+    }
+
+
+    //Scopo de ClienteID (Empresa)
+    protected static function booted()
+    {
+        static::addGlobalScope(new ScopeEmpresa);
     }
 
 }
