@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
@@ -33,6 +33,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Cloud extends Model
 {
     use HasFactory, LogsActivity;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'cloud';
@@ -49,8 +50,8 @@ class Cloud extends Model
         $activity->descricao = "";
     }
 
-    protected $fillable = ['nome'];
-    protected $casts = ['id' => 'int', 'nome' => 'string'];
+    protected $fillable = ['nome','empresa_id'];
+    protected $casts = ['id' => 'int', 'empresa_id' => 'int', 'nome' => 'string'];
 
     public function Itens()
     {
@@ -60,12 +61,6 @@ class Cloud extends Model
     public function Raiz()
     {
         return $this->hasMany(ItensCloud::class, 'cloud_id', 'id')->whereNull('pertence');
-    }
-
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeEmpresa);
     }
 
 }

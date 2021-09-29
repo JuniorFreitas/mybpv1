@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
@@ -33,6 +33,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class GrupoCloud extends Model
 {
     use HasFactory, LogsActivity;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'grupo_cloud';
@@ -50,10 +51,11 @@ class GrupoCloud extends Model
     }
 
     protected $fillable = [
-        'nome', 'descricao', 'ativo'
+        'nome', 'empresa_id', 'descricao', 'ativo'
     ];
     protected $casts = [
         'id' => 'int',
+        'empresa_id' => 'int',
         'nome' => 'string',
         'descricao' => 'string',
         'ativo' => 'boolean',
@@ -76,12 +78,6 @@ class GrupoCloud extends Model
     public function Usuarios()
     {
         return $this->hasMany(User::class, 'grupo_cloud_id', 'id');
-    }
-
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeEmpresa);
     }
 
 }
