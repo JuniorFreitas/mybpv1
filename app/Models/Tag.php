@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Tag extends Model
 {
+    use TenantTrait;
+
     protected $table='tags';
     protected $fillable = ['nome','empresa_id'];
     protected $casts = [
@@ -28,10 +31,4 @@ class Tag extends Model
     ];
     public $timestamps = false;
 
-
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeEmpresa);
-    }
 }

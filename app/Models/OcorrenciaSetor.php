@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -23,6 +24,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class OcorrenciaSetor extends Model {
     use LogsActivity;
+    use TenantTrait;
+
     protected static $logFillable = true;
     protected static $logName = 'ocorrencias';
     protected static $logOnlyDirty = true;
@@ -45,10 +48,4 @@ class OcorrenciaSetor extends Model {
     ];
     public $timestamps = false;
 
-
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeEmpresa);
-    }
 }

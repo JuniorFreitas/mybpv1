@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 
@@ -32,6 +33,8 @@ use MasterTag\DataHora;
  */
 class PlanejamentoDiario extends Model
 {
+    use TenantTrait;
+
     protected $fillable = [
         'data',
         'user_id',
@@ -68,13 +71,6 @@ class PlanejamentoDiario extends Model
     public function Tarefas()
     {
         return $this->hasMany(PlanejamentoDiarioTarefas::class, 'planejamento_id', 'id');
-    }
-
-
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeEmpresa);
     }
 
 }

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
@@ -35,6 +35,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Vencimento extends Model
 {
     use HasFactory, LogsActivity;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'vencimento';
@@ -73,9 +74,4 @@ class Vencimento extends Model
         'empresa_id' => 'int'
     ];
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeEmpresa);
-    }
 }
