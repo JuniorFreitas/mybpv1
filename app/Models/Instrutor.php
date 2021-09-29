@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Scopes\ScopeEmpresa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,7 +40,7 @@ class Instrutor extends Model
 
     protected $table = 'instrutores';
 
-    protected $fillable = ['id', 'nome', 'cargo', 'registro', 'arquivo_id', 'assinatura', 'ativo'];
+    protected $fillable = ['id', 'nome', 'cargo', 'registro', 'arquivo_id', 'assinatura', 'ativo', 'empresa_id'];
     protected $casts = [
         'id' => 'int',
         'nome' => 'string',
@@ -47,7 +48,8 @@ class Instrutor extends Model
         'registro' => 'string',
         'arquivo_id' => 'int',
         'assinatura' => 'string',
-        'ativo' => 'boolean'
+        'ativo' => 'boolean',
+        'empresa_id' => 'int'
     ];
 
     public function Anexos()
@@ -56,4 +58,9 @@ class Instrutor extends Model
     }
 
 
+    //Scopo de ClienteID (Empresa)
+    protected static function booted()
+    {
+        static::addGlobalScope(new ScopeEmpresa);
+    }
 }

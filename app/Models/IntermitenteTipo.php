@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Scopes\ScopeEmpresa;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -24,6 +25,13 @@ use Illuminate\Database\Eloquent\Model;
  */
 class IntermitenteTipo extends Model
 {
-    protected $fillable = ['label', 'ativo'];
-    protected $casts = ['label' => 'string', 'ativo' => 'boolean'];
+    protected $fillable = ['label', 'ativo','empresa_id'];
+    protected $casts = ['label' => 'string', 'ativo' => 'boolean','empresa_id' => 'int'];
+
+
+    //Scopo de ClienteID (Empresa)
+    protected static function booted()
+    {
+        static::addGlobalScope(new ScopeEmpresa);
+    }
 }

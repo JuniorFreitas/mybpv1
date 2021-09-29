@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Scopes\ScopeEmpresa;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -36,12 +37,18 @@ class OcorrenciaSetor extends Model {
     }
 
     protected $table = 'ocorrencias_setores';
-    protected $fillable = ['nome'];
+    protected $fillable = ['nome','empresa_id'];
     protected $casts = [
         'id' => 'int',
         'nome' => 'string',
+        'empresa_id' => 'int'
     ];
     public $timestamps = false;
 
 
+    //Scopo de ClienteID (Empresa)
+    protected static function booted()
+    {
+        static::addGlobalScope(new ScopeEmpresa);
+    }
 }

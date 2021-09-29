@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
+use App\Scopes\ScopeEmpresa;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
@@ -67,6 +68,7 @@ class AtaReuniao extends Model
         'local',
         'data_inicio',
         'data_fim',
+        'empresa_id'
     ];
 
     protected $casts = [
@@ -74,6 +76,7 @@ class AtaReuniao extends Model
         'local' => 'string',
         'data_inicio' => 'string',
         'data_fim' => 'string',
+         'empresa_id' => 'int'
     ];
 
 
@@ -130,5 +133,11 @@ class AtaReuniao extends Model
     public function Participantes()
     {
         return $this->hasMany(AtaReuniaoParticipante::class, 'ata_reuniao_id', 'id');
+    }
+
+    //Scopo de ClienteID (Empresa)
+    protected static function booted()
+    {
+        static::addGlobalScope(new ScopeEmpresa);
     }
 }

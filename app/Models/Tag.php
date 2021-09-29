@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Scopes\ScopeEmpresa;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -19,10 +20,18 @@ use Illuminate\Database\Eloquent\Model;
 class Tag extends Model
 {
     protected $table='tags';
-    protected $fillable = ['nome'];
+    protected $fillable = ['nome','empresa_id'];
     protected $casts = [
         'id' => 'int',
         'nome' => 'string',
+        'empresa_id' => 'int'
     ];
     public $timestamps = false;
+
+
+    //Scopo de ClienteID (Empresa)
+    protected static function booted()
+    {
+        static::addGlobalScope(new ScopeEmpresa);
+    }
 }
