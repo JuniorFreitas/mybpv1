@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
 class EmpresaTreinamento extends Model
 {
     use HasFactory;
+    use TenantTrait;
 
     protected $table = 'empresa_treinamentos';
     protected $fillable = [
@@ -47,10 +48,4 @@ class EmpresaTreinamento extends Model
         'empresa_id' => 'int'
     ];
 
-
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeEmpresa);
-    }
 }

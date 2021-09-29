@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
@@ -45,6 +46,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class AtaReuniao extends Model
 {
     use LogsActivity;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'atareuniao';
@@ -76,7 +78,7 @@ class AtaReuniao extends Model
         'local' => 'string',
         'data_inicio' => 'string',
         'data_fim' => 'string',
-         'empresa_id' => 'int'
+        'empresa_id' => 'int'
     ];
 
 
@@ -135,9 +137,4 @@ class AtaReuniao extends Model
         return $this->hasMany(AtaReuniaoParticipante::class, 'ata_reuniao_id', 'id');
     }
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeEmpresa);
-    }
 }

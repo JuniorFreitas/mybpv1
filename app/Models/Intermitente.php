@@ -158,7 +158,7 @@ class Intermitente extends Model
 
     public function Cliente()
     {
-        return $this->hasOne(Clientes::class, 'id', 'cliente_id');
+        return $this->hasOne(Cliente::class, 'id', 'cliente_id');
     }
 
     public function Tipo()
