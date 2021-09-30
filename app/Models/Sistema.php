@@ -483,4 +483,27 @@ class Sistema
             'endpoint' => env('AWS_ENDPOINT')
         ];
     }
+
+    //Mudar depois para a
+    public static function pg($resultado, $mergeArray = [])
+    {
+        $itens = array_merge([
+            'itens' => $resultado->items()
+        ], $mergeArray);
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => $itens
+        ]);
+    }
+
+    public static function ativaDesativa($model)
+    {
+        $model->ativo = !$model->ativo;
+        $model->save();
+        $model->refresh();
+        return response()->json(['ativo' => $model->ativo]);
+    }
 }

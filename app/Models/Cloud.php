@@ -29,6 +29,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Cloud whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cloud whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Cloud whereEmpresaId($value)
  */
 class Cloud extends Model
 {

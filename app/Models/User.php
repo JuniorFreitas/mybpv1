@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeEmpresa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -247,6 +246,8 @@ class User extends Authenticatable {
         $datahora = new DataHora($value);
         $this->attributes['ultimo_acesso'] = $datahora->dataHoraInsert();
     }
+
+    //relacionamento Tokens() esta dentro de HasApiTokens::class
 
     public function Papel() {
         return $this->hasOne(Papel::class, 'id', 'grupo_id');

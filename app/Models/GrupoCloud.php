@@ -29,6 +29,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereNome($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereEmpresaId($value)
  */
 class GrupoCloud extends Model
 {
