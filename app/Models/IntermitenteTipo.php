@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteTipo whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteTipo whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteTipo whereEmpresaId($value)
  */
 class IntermitenteTipo extends Model
 {

@@ -37,6 +37,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereUserEncaminhouId($value)
  * @mixin \Eloquent
+ * @property string $token
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereToken($value)
  */
 class ExameFuncionario extends Model
 {

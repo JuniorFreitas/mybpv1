@@ -55,14 +55,14 @@ class SimuladoCandidatoResposta extends Model
     protected $primaryKey = 'simulado_vaga_id';
     protected $fillable = [
         'simulado_vaga_id',
-        'curriculo_id',
+        'feedback_id',
         'simulado_resposta_id',
         'simulado_pergunta_id',
     ];
 
     protected $casts = [
         'simulado_vaga_id' => 'int',
-        'curriculo_id' => 'int',
+        'feedback_id' => 'int',
         'simulado_resposta_id' => 'int',
         'simulado_pergunta_id' => 'int',
     ];
@@ -82,6 +82,11 @@ class SimuladoCandidatoResposta extends Model
     public function Candidato()
     {
         return $this->hasOne(Curriculo::class, 'id', 'curriculo_id');
+    }
+
+    public function Feedback()
+    {
+        return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
     }
 
     public function Perguntas()

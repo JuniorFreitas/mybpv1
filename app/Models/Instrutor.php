@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereRegistro($value)
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
  * @property-read int|null $anexos_count
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereEmpresaId($value)
  */
 class Instrutor extends Model
 {

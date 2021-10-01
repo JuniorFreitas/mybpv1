@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereLabel($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereEmpresaId($value)
  */
 class AreaEtiqueta extends Model
 {

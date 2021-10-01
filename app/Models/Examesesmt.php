@@ -7,6 +7,37 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 
+/**
+ * App\Models\Examesesmt
+ *
+ * @property int $id
+ * @property int $exame_funcionario_id
+ * @property int $empresa_id
+ * @property bool $exame_realizado
+ * @property array $resultado
+ * @property mixed $data_realizacao
+ * @property mixed $data_vencimento
+ * @property bool $vencido
+ * @property int $user_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereDataRealizacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereDataVencimento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereExameFuncionarioId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereExameRealizado($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereResultado($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereVencido($value)
+ * @mixin \Eloquent
+ */
 class Examesesmt extends Model
 {
     use HasFactory;

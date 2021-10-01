@@ -30,6 +30,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereUserId($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereEmpresaId($value)
  */
 class PlanejamentoDiario extends Model
 {

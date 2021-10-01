@@ -29,6 +29,8 @@ const app = new Vue({
             simulado_vaga_id: '',
             simulado_id: '',
             curriculo_id: '',
+            empresa_id: '',
+            vagas_abertas_id: '',
 
         }
     },
@@ -36,6 +38,8 @@ const app = new Vue({
         this.formUser.vaga_id = parseInt($('#vaga_id').val());
         this.formUser.simulado_vaga_id = parseInt($('#simulado_vaga_id').val());
         this.formUser.simulado_id = parseInt($('#simulado_id').val());
+        this.formUser.empresa_id = parseInt($('#empresa_id').val());
+        this.formUser.vagas_abertas_id = parseInt($('#vagas_abertas_id').val());
         this.formVinculoDefault = _.cloneDeep(this.formVinculo) //copia
     },
     methods: {
@@ -60,12 +64,13 @@ const app = new Vue({
                 .then(response => {
                     let data = response.data;
                     this.formUser.curriculo_id = data.curriculo.id;
+                    this.formUser.feedback_id = data.curriculo.feed_back.id;
                     this.autenticado = data.autenticado;
-                    if (!data.curriculo.vinculo) {
-                        this.formVinculo.curriculo_id = data.curriculo.id;
-                        this.formVinculo.vaga_id = data.curriculo.feed_back.vaga_id;
-                        $('#vinculo').modal('show');
-                    }
+                    // if (!data.curriculo.vinculo) {
+                    //     this.formVinculo.curriculo_id = data.curriculo.id;
+                    //     this.formVinculo.vaga_id = data.curriculo.feed_back.vaga_id;
+                    //     $('#vinculo').modal('show');
+                    // }
                     this.preloadAutenticacao = false;
                 })
                 .catch(error => {
