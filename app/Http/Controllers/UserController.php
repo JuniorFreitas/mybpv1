@@ -49,6 +49,7 @@ class UserController extends Controller
             'grupo_id' => 'required|numeric',
             'grupo_cloud_id' => 'required|numeric',
             'ativo' => 'required|boolean',
+            'empresa_id' => 'required'
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -60,6 +61,7 @@ class UserController extends Controller
             $dados['tipo'] = Papel::find($dados['grupo_id'])->nome;
             $dados['password'] = bcrypt($dados['password']);
             $dados['cadastrou'] = auth()->id();
+
 
             User::create($dados);
             return response()->json([], 201);
@@ -188,7 +190,7 @@ class UserController extends Controller
         $this->authorize('usuarios');
         $porPagina = $request->get('porPagina');
 
-        $resultado = User::with('Papel:id,nome')->whereEmpresaId(auth()->user()->empresa_id);
+        $resultado = User::with('Papel:id,nome');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
@@ -204,4 +206,12 @@ class UserController extends Controller
         ]);
 
     }
+
+    public function buscaGrupoEmpresa($empresa_id)
+    {
+        $papeis = Papel::whereEmpresaId($empresa_id)->get();
+
+        return response()->json(['papeis' => $papeis], 200);
+    }
+
 }

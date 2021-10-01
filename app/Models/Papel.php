@@ -32,7 +32,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|Papel whereEmpresaId($value)
  */
-class Papel extends Model {
+class Papel extends Model
+{
     use HasFactory, LogsActivity;
 
     protected static $logFillable = true;
@@ -40,17 +41,19 @@ class Papel extends Model {
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
 
-    public function getDescriptionForEvent(string $eventName): string {
+    public function getDescriptionForEvent(string $eventName): string
+    {
         return $eventName;
     }
 
-    public function tapActivity(Activity $activity, string $eventName) {
+    public function tapActivity(Activity $activity, string $eventName)
+    {
         $activity->descricao = "";
     }
 
     protected $table = 'papeis';
     protected $fillable = [
-        'id', 'nome', 'email', 'descricao', 'ativo'
+        'id', 'nome', 'email', 'descricao', 'ativo', 'empresa_id'
     ];
     protected $casts = [
         'id' => 'int',
@@ -61,19 +64,21 @@ class Papel extends Model {
         'ativo' => 'boolean',
     ];
 
-    public function usesTimestamps(): bool {
+    public function usesTimestamps(): bool
+    {
         return false;
     }
 
-    public function habilidades() {
+    public function habilidades()
+    {
         return $this->belongsToMany(Habilidade::class, 'papeis_habilidades');
     }
 
     //Scopo de ClienteID (Empresa)
-    protected static function booted() {
-        static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
-        static::addGlobalScope(new ScopeEmpresa);
-    }
+//    protected static function booted() {
+//        static::creating(function ($model) {
+//            $model->empresa_id = auth()->user()->empresa_id;
+//        });
+//        static::addGlobalScope(new ScopeEmpresa);
+//    }
 }

@@ -76,6 +76,7 @@ class ClientesController extends Controller
             'ativo' => 'required',
         ];
 
+
         array_merge($validar, $validaComum);
 
         if (!isset($dados['telefones'])) {
@@ -99,11 +100,13 @@ class ClientesController extends Controller
                     'nome' => $dados['tipo'] == Cliente::TIPO_PESSOA_JURIDICA ? $dados['razao_social'] : $dados['nome'],
                     'password' => bcrypt('mybp2021'),
                     'login' => $dados['email'],
-                    'tipo' => 'Cliente',
+                    'tipo' => 'Empresa',
                     'temp' => false,
                     'empresa_id' => auth()->user()->empresa_id,
-                    'ativo' => $dados['ativo'],
+                    'ativo' => true,
                 ]);
+
+                User::find($user->id)->update(['empresa_id' => $user->id]);
 
                 auth()->user()->ClientesEmpresa()->attach($user->id);
 
@@ -526,6 +529,14 @@ class ClientesController extends Controller
         $cliente->ativo = !$cliente->ativo;
         $cliente->save();
         $cliente->refresh();
+
+        $users = User::whereEmpresaId($cliente->id)->get();
+        foreach ($users as $user) {
+            $user['ativo'] = $cliente->ativo;
+            $user->save();
+            $user->refresh();
+        }
+
         return response()->json(['ativo' => $cliente->ativo], 201);
     }
 

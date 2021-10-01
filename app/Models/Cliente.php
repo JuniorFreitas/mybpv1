@@ -147,8 +147,8 @@ class Cliente extends Model
         'ativo',
         'created_at',
         'updated_at',
-
     ];
+
     protected $casts = [
         'id' => 'int',
         'tipo_cliente' => 'string',
@@ -191,10 +191,10 @@ class Cliente extends Model
     public const TIPO_CONTRATO_SPOT = 'Spot';
     public const TIPO_CONTRATO_PROPOSTA = 'Proposta';
 
-    public function getRazaoSocialAttribute()
-    {
-        return "BPSE";
-    }
+//    public function getRazaoSocialAttribute()
+//    {
+//        return "BPSE";
+//    }
 
 //    public function getCnpjAttribute()
 //    {

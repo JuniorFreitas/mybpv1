@@ -10,18 +10,18 @@
             <span v-show="preloadAjax">
                 <i class="fa fa-spinner fa-pulse"></i> Carregando...
             </span>
-            <div class="alert alert-success alert-dismissible" v-show="cadastrado">
-                <h4>
-                    <i class="icon fa fa-check"></i>
-                    Papel cadastrado com sucesso!
-                </h4>
-            </div>
-            <div class="alert alert-success alert-dismissible" v-show="atualizado">
-                <h4>
-                    <i class="icon fa fa-check"></i>
-                    Papel alterado com sucesso!
-                </h4>
-            </div>
+{{--            <div class="alert alert-success alert-dismissible" v-show="cadastrado">--}}
+{{--                <h4>--}}
+{{--                    <i class="icon fa fa-check"></i>--}}
+{{--                    Papel cadastrado com sucesso!--}}
+{{--                </h4>--}}
+{{--            </div>--}}
+{{--            <div class="alert alert-success alert-dismissible" v-show="atualizado">--}}
+{{--                <h4>--}}
+{{--                    <i class="icon fa fa-check"></i>--}}
+{{--                    Papel alterado com sucesso!--}}
+{{--                </h4>--}}
+{{--            </div>--}}
             <form v-show="!preloadAjax && (!cadastrado && !atualizado)" id="form">
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
@@ -40,27 +40,40 @@
                     <div role="tabpanel" class="tab-pane active" id="abaIdentificacao">
                         <div class="form-group">
                             <label>Nome</label>
-                            <input type="text" class="form-control form-control-sm" id="nome"
+                            <input type="text" class="form-control form-control-sm" v-model="form.nome"
                                    placeholder="Nome do papel"
                                    autocomplete="off" onblur="valida_campo_vazio(this,3)">
                         </div>
 
                         <div class="form-group">
                             <label>E-mail</label>
-                            <input type="text" class="form-control form-control-sm" id="email" placeholder="Um e-mail"
+                            <input type="text" class="form-control form-control-sm" v-model="form.email"
+                                   placeholder="Um e-mail"
                                    autocomplete="off" onblur="validaEmailVazio(this)">
                         </div>
 
                         <div class="form-group">
+                            <label>Empresa</label>
+                            <select class="form-control form-control-sm" v-model="form.empresa_id"
+                                    onchange="valida_campo_vazio(this,1)"
+                                    onblur="valida_campo_vazio(this,1)">
+                                <option value="">Selecione...</option>
+                                @foreach (\App\Models\Cliente::whereAtivo(true)->get() as $cliente)
+                                    <option value="{{$cliente->id}}">{{$cliente->nome_fantasia}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label>Descrição</label>
-                            <input type="text" class="form-control form-control-sm" id="descricao"
+                            <input type="text" class="form-control form-control-sm" v-model="form.descricao"
                                    placeholder="Descrição do papel"
                                    autocomplete="off" onblur="valida_campo_vazio(this,3)">
                         </div>
 
                         <div class="form-group">
                             <label>Ativo</label>
-                            <select id="ativo" class="form-control form-control-sm">
+                            <select v-model="form.ativo" class="form-control form-control-sm">
                                 <option value="true">Sim</option>
                                 <option value="false">Não</option>
                             </select>
@@ -88,7 +101,6 @@
                                     </th>
                                 </tr>
                                 </thead>
-
                                 <tbody>
 
                                 <tr v-for="habilidade in listaDeHabilidades">
@@ -107,14 +119,10 @@
                                             <span class="fa fa-times" aria-hidden="true"></span>
                                         </a>
                                     </td>
-
                                 </tr>
-
                                 </tbody>
                             </table>
-
                         </div>
-
                     </div>
                 </div>
             </form>

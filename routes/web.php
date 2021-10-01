@@ -671,6 +671,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         //Alterar senha
         Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('can:alterar-senha');
         Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('can:alterar-senha');
+
+        //busca os grupos da uma empresa
+        Route::get('usuario/busca-grupo-empresa/{empresa_id}', [\App\Http\Controllers\UserController::class, 'buscaGrupoEmpresa'])->name('buscaGrupoEmpresa')->middleware('can:usuarios');
+
     });
 
     //Financeiro
@@ -725,7 +729,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         // Feriados
         Route::group(['as' => 'feriados.'], function () {
-            Route::put('feriados/{feriado}/ativa-desativa',[\App\Http\Controllers\FeriadoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:feriados');
+            Route::put('feriados/{feriado}/ativa-desativa', [\App\Http\Controllers\FeriadoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:feriados');
             Route::post('feriados/search', [\App\Http\Controllers\FeriadoController::class, 'searchFeriado'])->name('search')->middleware('can:feriados');
             Route::post('feriados/atualizar', [\App\Http\Controllers\FeriadoController::class, 'atualizar'])->name('atualizar')->middleware('can:feriados');
         });

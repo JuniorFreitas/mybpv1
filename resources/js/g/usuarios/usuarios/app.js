@@ -8,6 +8,7 @@ const app = new Vue({
         atualizado: false,
         urlAjax: '',
         apagado: false,
+        grupoempresa: false,
 
         form: {
             alterarSenha: false,
@@ -18,11 +19,11 @@ const app = new Vue({
             password_confirmation: '',
             grupo_id: '',
             grupo_cloud_id: '',
-            cliente_id: '',
+            empresa_id: '',
             ativo: true,
         },
         formDefault: null,
-
+        listaPapeis: [],
         lista: [],
         dados: {},
         controle: {
@@ -115,6 +116,18 @@ const app = new Vue({
                 }).catch(error => {
                 this.preloadAjax = false;
             });
+        },
+
+        selecionaEmpresa(id) {
+            this.grupoempresa = false;
+            axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
+                .then(response => {
+                    if (response.status === 200) {
+                        let data = response.data;
+                        this.listaPapeis = data.papeis;
+                        this.grupoempresa = true;
+                    }
+                })
         },
 
         carregou(dados) {
