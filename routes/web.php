@@ -879,7 +879,7 @@ Route::group(['as' => 'provas.'], function () {
     Route::post('prova/salvar-vinculo', [\App\Http\Controllers\SimuladoCandidatoController::class, 'salvarVinculo'])->name('prova.salvarVinculo');
 
 
-    Route::get('provas/{vaga_id}/{simulado_id}/{slug}', [\App\Http\Controllers\SimuladoCandidatoController::class, 'index'])->name('prova.simulado');
+    Route::get('provas/{empresa_id}/{vagas_abertas_id}/{simulado_id}', [\App\Http\Controllers\SimuladoCandidatoController::class, 'index'])->name('prova.simulado');
 
 });
 

@@ -44,6 +44,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $feedback_id
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereFeedbackId($value)
  * @property-read mixed $tempo_execucao
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereEmpresaId($value)
  */
 class SimuladoCandidato extends Model
 {
@@ -66,22 +68,24 @@ class SimuladoCandidato extends Model
 
     protected $fillable = [
         'simulado_vaga_id',
-        'curriculo_id',
+        'feedback_id',
         'duracao_segundos',
         'finalizado',
         'data_finalizacao',
         'acertos',
         'status',
+        'empresa_id',
     ];
     protected $casts = [
         'id' => 'int',
         'simulado_vaga_id' => 'int',
-        'curriculo_id' => 'int',
+        'feedback_id' => 'int',
         'duracao_segundos' => 'int',
         'finalizado' => 'boolean',
         'data_finalizacao' => 'date:d/m/Y',
         'acertos' => 'int',
         'status' => 'string',
+        'empresa_id' => 'int',
     ];
 
     //Acessor ->data_finalizacao
@@ -111,7 +115,7 @@ class SimuladoCandidato extends Model
 
     public function Candidato()
     {
-        return $this->hasOne(Curriculo::class, 'id', 'curriculo_id');
+        return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
     }
 
 //    public function SimuladoAlunoResposta()

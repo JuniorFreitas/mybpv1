@@ -66,80 +66,80 @@
 <body>
 <div id="app" v-cloak>
 
-    <modal id="vinculo" size="g" titulo="Informações" :fechar="false">
-        <template slot="conteudo">
-            <fieldset>
-                <legend>Informações</legend>
-                <div class="form-group">
-                    <label>
-                        Têm parentes trabalhando no Grupo Equatorial (consanguíneos, por afinidade ou relação
-                        íntima)?</label>
-                    <select class="form-control" v-model="formVinculo.parente" onblur="valida_campo_vazio(this,1)"
-                            onchange="valida_campo_vazio(this,1)">
-                        <option value="">Selecione...</option>
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
-                </div>
+{{--    <modal id="vinculo" size="g" titulo="Informações" :fechar="false">--}}
+{{--        <template slot="conteudo">--}}
+{{--            <fieldset>--}}
+{{--                <legend>Informações</legend>--}}
+{{--                <div class="form-group">--}}
+{{--                    <label>--}}
+{{--                        Têm parentes trabalhando no Grupo Equatorial (consanguíneos, por afinidade ou relação--}}
+{{--                        íntima)?</label>--}}
+{{--                    <select class="form-control" v-model="formVinculo.parente" onblur="valida_campo_vazio(this,1)"--}}
+{{--                            onchange="valida_campo_vazio(this,1)">--}}
+{{--                        <option value="">Selecione...</option>--}}
+{{--                        <option :value="true">Sim</option>--}}
+{{--                        <option :value="false">Não</option>--}}
+{{--                    </select>--}}
+{{--                </div>--}}
 
-                <template v-if="formVinculo.parente">
+{{--                <template v-if="formVinculo.parente">--}}
 
-                    <div class="form-group">
-                        <label>Nome:</label>
-                        <input type="text" class="form-control" v-model="formVinculo.nome"
-                               onblur="valida_campo_vazio(this,1)">
-                    </div>
+{{--                    <div class="form-group">--}}
+{{--                        <label>Nome:</label>--}}
+{{--                        <input type="text" class="form-control" v-model="formVinculo.nome"--}}
+{{--                               onblur="valida_campo_vazio(this,1)">--}}
+{{--                    </div>--}}
 
-                    <div class="form-group">
-                        <label>Função:</label>
-                        <input type="text" class="form-control" v-model="formVinculo.funcao"
-                               onblur="valida_campo_vazio(this,1)">
-                    </div>
+{{--                    <div class="form-group">--}}
+{{--                        <label>Função:</label>--}}
+{{--                        <input type="text" class="form-control" v-model="formVinculo.funcao"--}}
+{{--                               onblur="valida_campo_vazio(this,1)">--}}
+{{--                    </div>--}}
 
-                    <div class="form-group">
-                        <label>Qual o grau de parentesco com esta pessoa:</label>
-                        <input type="text" class="form-control" v-model="formVinculo.grau_parentesco"
-                               onblur="valida_campo_vazio(this,1)">
-                    </div>
-                </template>
+{{--                    <div class="form-group">--}}
+{{--                        <label>Qual o grau de parentesco com esta pessoa:</label>--}}
+{{--                        <input type="text" class="form-control" v-model="formVinculo.grau_parentesco"--}}
+{{--                               onblur="valida_campo_vazio(this,1)">--}}
+{{--                    </div>--}}
+{{--                </template>--}}
 
-                <div class="form-group">
-                    <label>Já foi empregado no Grupo Equatorial ou empresas parceiras?</label>
-                    <select class="form-control" v-model="formVinculo.foi_empregado"
-                            onblur="valida_campo_vazio(this,1)"
-                            onchange="valida_campo_vazio(this,1)">
-                        <option value="">Selecione...</option>
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
-                </div>
+{{--                <div class="form-group">--}}
+{{--                    <label>Já foi empregado no Grupo Equatorial ou empresas parceiras?</label>--}}
+{{--                    <select class="form-control" v-model="formVinculo.foi_empregado"--}}
+{{--                            onblur="valida_campo_vazio(this,1)"--}}
+{{--                            onchange="valida_campo_vazio(this,1)">--}}
+{{--                        <option value="">Selecione...</option>--}}
+{{--                        <option :value="true">Sim</option>--}}
+{{--                        <option :value="false">Não</option>--}}
+{{--                    </select>--}}
+{{--                </div>--}}
 
-                <div class="form-group" v-if="formVinculo.foi_empregado">
-                    <label>Já foi empregado no Grupo Equatorial ou empresas parceiras?</label>
-                    <select class="form-control" v-model="formVinculo.local_empregado"
-                            onblur="valida_campo_vazio(this,1)"
-                            onchange="valida_campo_vazio(this,1)">
-                        <option value="">Selecione...</option>
-                        <option value="Equatorial Maranhão / Cemar">Equatorial Maranhão / Cemar</option>
-                        <option value="Celpa">Celpa</option>
-                        <option value="55 Soluções">55 Soluções</option>
-                        <option value="55 Atende">55 Atende</option>
-                        <option value="Outras empresas parceiras">Outras empresas parceiras</option>
-                    </select>
-                </div>
+{{--                <div class="form-group" v-if="formVinculo.foi_empregado">--}}
+{{--                    <label>Já foi empregado no Grupo Equatorial ou empresas parceiras?</label>--}}
+{{--                    <select class="form-control" v-model="formVinculo.local_empregado"--}}
+{{--                            onblur="valida_campo_vazio(this,1)"--}}
+{{--                            onchange="valida_campo_vazio(this,1)">--}}
+{{--                        <option value="">Selecione...</option>--}}
+{{--                        <option value="Equatorial Maranhão / Cemar">Equatorial Maranhão / Cemar</option>--}}
+{{--                        <option value="Celpa">Celpa</option>--}}
+{{--                        <option value="55 Soluções">55 Soluções</option>--}}
+{{--                        <option value="55 Atende">55 Atende</option>--}}
+{{--                        <option value="Outras empresas parceiras">Outras empresas parceiras</option>--}}
+{{--                    </select>--}}
+{{--                </div>--}}
 
-                <div class="form-group" v-if="formVinculo.local_empregado === 'Outras empresas parceiras'">
-                    <label>Nome da empresa parceira:</label>
-                    <input type="text" class="form-control" v-model="formVinculo.outra_empresa_parceira"
-                           onblur="valida_campo_vazio(this,1)">
-                </div>
+{{--                <div class="form-group" v-if="formVinculo.local_empregado === 'Outras empresas parceiras'">--}}
+{{--                    <label>Nome da empresa parceira:</label>--}}
+{{--                    <input type="text" class="form-control" v-model="formVinculo.outra_empresa_parceira"--}}
+{{--                           onblur="valida_campo_vazio(this,1)">--}}
+{{--                </div>--}}
 
-            </fieldset>
-        </template>
-        <template slot="rodape">
-            <button class="btn btn-primary" @click="salvarVinculo"><i class="fa fa-save"></i> Salvar</button>
-        </template>
-    </modal>
+{{--            </fieldset>--}}
+{{--        </template>--}}
+{{--        <template slot="rodape">--}}
+{{--            <button class="btn btn-primary" @click="salvarVinculo"><i class="fa fa-save"></i> Salvar</button>--}}
+{{--        </template>--}}
+{{--    </modal>--}}
 
     <div class="container-fluid"
          style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
@@ -155,17 +155,20 @@
                                 </div>
                                 <div class="card-body">
                                     <form @submit.prevent="autenticar" class="form" role="form" id="formAutenticar">
+
                                         <input type="hidden" id="vaga_id" value="{{$simulado->vaga_id}}">
                                         <input type="hidden" id="simulado_vaga_id" value="{{$simulado->id}}">
                                         <input type="hidden" id="simulado_id" value="{{$simulado->Simulado->id}}">
+                                        <input type="hidden" id="empresa_id" value="{{$empresa_id}}">
+                                        <input type="hidden" id="vagas_abertas_id" value="{{$vagas_abertas_id}}">
                                         <div class="form-group">
                                             <label for="cpf">CPF</label>
-                                            <input type="text" class="form-control" autofocus
+                                            <input value="040.870.766-60" type="text" class="form-control" autofocus
                                                    v-model="formUser.cpf" v-mascara:cpf onblur="valida_cpf_vazio(this)">
                                         </div>
                                         <div class="form-group">
                                             <label>Data nascimento</label>
-                                            <input type="text" class="form-control"
+                                            <input value="27/10/1980" type="text" class="form-control"
                                                    v-model="formUser.nascimento" v-mascara:data
                                                    onblur="valida_data_vazio(this)">
                                         </div>
@@ -175,21 +178,21 @@
                                         </button>
                                     </form>
 
-                                    <div class="footer py-3 d-flex justify-content-center">
-                                        <img src="https://site.bpse.com.br/img/logo_procem.png" alt=""
-                                             class=" " style="height: 130px">
-                                        <img src="https://site.bpse.com.br/img/selo_gptw.png" alt="" class=" "
-                                             style="height: 130px">
-                                    </div>
+{{--                                    <div class="footer py-3 d-flex justify-content-center">--}}
+                                    {{--                                        <img src="https://site.bpse.com.br/img/logo_procem.png" alt=""--}}
+                                    {{--                                             class=" " style="height: 130px">--}}
+                                    {{--                                        <img src="https://site.bpse.com.br/img/selo_gptw.png" alt="" class=" "--}}
+                                    {{--                                             style="height: 130px">--}}
+                                    {{--                                    </div>--}}
 
-                                    <div class="social-links d-flex justify-content-around">
-                                        <a href="https://instagram.com/sejabpse" target="_blank" class="instagram"><i
-                                                class="fab fa-instagram"></i></a>
-                                        <a href="https://www.linkedin.com/company/bpse/" target="_blank"
-                                           class="linkedin"><i class="fab fa-linkedin"></i></a>
-                                        <a href="https://fb.com/bpse1" target="_blank" class="facebook"><i
-                                                class="fab fa-facebook"></i></a>
-                                    </div>
+                                    {{--                                    <div class="social-links d-flex justify-content-around">--}}
+                                    {{--                                        <a href="https://instagram.com/sejabpse" target="_blank" class="instagram"><i--}}
+                                    {{--                                                class="fab fa-instagram"></i></a>--}}
+                                    {{--                                        <a href="https://www.linkedin.com/company/bpse/" target="_blank"--}}
+                                    {{--                                           class="linkedin"><i class="fab fa-linkedin"></i></a>--}}
+                                    {{--                                        <a href="https://fb.com/bpse1" target="_blank" class="facebook"><i--}}
+                                    {{--                                                class="fab fa-facebook"></i></a>--}}
+                                    {{--                                    </div>--}}
 
                                 </div>
                             </div>
@@ -217,8 +220,11 @@
 
         <div class="row bg-white py-3">
             <div class="col-12">
-                <simulado :vaga_id="formUser.vaga_id" :simulado_id="formUser.simulado_id"
+                <simulado :vagas_abertas_id="formUser.vagas_abertas_id"
+                          :empresa_id="formUser.empresa_id"
+                          :simulado_id="formUser.simulado_id"
                           :simulado_vaga_id="formUser.simulado_vaga_id"
+                          :feedback_id="formUser.feedback_id"
                           :curriculo_id="formUser.curriculo_id"></simulado>
             </div>
         </div>

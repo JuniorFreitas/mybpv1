@@ -188,11 +188,6 @@
 
 export default {
     props: {
-        vaga_id: {
-            type: Number,
-            required: true,
-            default: () => ''
-        },
 
         simulado_id: {
             type: Number,
@@ -207,6 +202,24 @@ export default {
         },
 
         curriculo_id: {
+            type: Number,
+            required: true,
+            default: () => ''
+        },
+
+        empresa_id: {
+            type: Number,
+            required: true,
+            default: () => ''
+        },
+
+        vagas_abertas_id: {
+            type: Number,
+            required: true,
+            default: () => ''
+        },
+
+        feedback_id: {
             type: Number,
             required: true,
             default: () => ''
@@ -364,9 +377,11 @@ export default {
         Responder(obj) {
             this.respondendo = true;
             axios.post(`${URL_SITE}/prova/responder`, {
-                vaga_id: this.vaga_id,
                 simulado_vaga_id: this.simulado_vaga_id,
                 curriculo_id: this.curriculo_id,
+                feedback_id: this.feedback_id,
+                vagas_abertas_id: this.vagas_abertas_id,
+                empresa_id: this.empresa_id,
                 simulado_pergunta_id: obj.id,
                 simulado_resposta_id: obj.simulado_resposta_id,
             }).then(response => {
@@ -403,10 +418,12 @@ export default {
         gravaTempo() {
             if (!this.finalizado && this.tempo > 0) {
                 axios.post(`${URL_SITE}/prova/grava-tempo`, {
-                    vaga_id: this.vaga_id,
                     simulado_id: this.simulado_id,
                     simulado_vaga_id: this.simulado_vaga_id,
                     curriculo_id: this.curriculo_id,
+                    vagas_abertas_id: this.vagas_abertas_id,
+                    empresa_id: this.empresa_id,
+                    feedback_id: this.feedback_id,
                     tempo: this.tempo
                 });
             }
@@ -418,10 +435,12 @@ export default {
         finalizarSimulado() {
             this.finalizando = true;
             axios.post(`${URL_SITE}/prova/finalizar`, {
-                vaga_id: this.vaga_id,
                 simulado_vaga_id: this.simulado_vaga_id,
                 simulado_id: this.simulado_id,
                 curriculo_id: this.curriculo_id,
+                feedback_id: this.feedback_id,
+                vagas_abertas_id: this.vagas_abertas_id,
+                empresa_id: this.empresa_id,
                 tempo: this.tempo
             }).then(response => {
                 this.finalizando = false;
@@ -436,10 +455,12 @@ export default {
 
         getSimulado() {
             axios.post(`${URL_SITE}/prova/get-simulado`, {
-                vaga_id: this.vaga_id,
                 simulado_vaga_id: this.simulado_vaga_id,
                 simulado_id: this.simulado_id,
-                curriculo_id: this.curriculo_id
+                curriculo_id: this.curriculo_id,
+                vagas_abertas_id: this.vagas_abertas_id,
+                empresa_id: this.empresa_id,
+                feedback_id: this.feedback_id,
             })
                 .then(response => {
                     let data = response.data;

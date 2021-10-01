@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $nome
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Tag whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Tag whereNome($value)
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Tag whereEmpresaId($value)
  */
 class Tag extends Model
 {

@@ -163,6 +163,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\ClassificacaoRescisaoCurriculo|null $ClassificacaoRescisao
  * @property-read \App\Models\MotivoRescisaoCurriculo|null $MotivoRescisao
  * @property-read \App\Models\TipoAvisoCurriculo|null $TipoAviso
+ * @property int|null $empresa_id
+ * @property int|null $vagas_abertas_id
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagasAbertasId($value)
  */
 class FeedbackCurriculo extends Model
 {
@@ -213,6 +217,8 @@ class FeedbackCurriculo extends Model
         'envia_whatsapp',
         'data_envia_whatsapp',
         'user_envia_whatsapp',
+        'vagas_abertas_id',
+        'empresa_id',
     ];
     protected $casts = [
         'id' => 'int',
@@ -239,6 +245,8 @@ class FeedbackCurriculo extends Model
         'envia_whatsapp' => 'boolean',
         'data_envia_whatsapp' => 'string',
         'user_envia_whatsapp' => 'int',
+        'vagas_abertas_id' => 'int',
+        'empresa_id' => 'int',
     ];
 
     protected function serializeDate(DateTimeInterface $date) {
@@ -740,6 +748,6 @@ class FeedbackCurriculo extends Model
             $model->usuario_entrevista_marcado = auth()->id();
         });
 
-        static::addGlobalScope(new ScopeClientesEmpresa);
+//        static::addGlobalScope(new ScopeClientesEmpresa);
     }
 }

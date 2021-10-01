@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereEmpresaId($value)
  */
 class EmpresaTreinamento extends Model
 {
