@@ -1,7 +1,7 @@
 const app = new Vue({
     el: '#app',
     data: {
-        tituloJanela: 'Cadastrando papeis',
+        tituloJanela: '',
         preloadAjax: false,
         editando: false,
         id: 0,//id_curso
@@ -10,6 +10,16 @@ const app = new Vue({
         atualizado: false,
         urlAjax: '',
         apagado: false,
+
+        form: {
+            id: '',
+            nome: '',
+            descricao: '',
+            email: '',
+            ativo: '',
+            empresa_id: '',
+            listaDeHabilidades: '',
+        },
 
         lista: [],
         listaDeHabilidades: [],
@@ -29,9 +39,9 @@ const app = new Vue({
                 habilidade.acesso = valor;
             });
         },
-        formNovo: function () {
-            $('#janelaTitulo').html('Cadastrando papeis');
-            $('#form')[0].reset();
+        formNovo() {
+            this.tituloJanela = 'Cadastrando papeis'
+            formReset();
 
             this.preloadAjax = true;
             this.cadastrado = false;
@@ -40,92 +50,90 @@ const app = new Vue({
             formReset();
 
             $.get(`${URL_ADMIN}/papeis/novo`)
-                .done((data)=> {
-                    this.listaDeHabilidades=data;
+                .done((data) => {
+                    this.listaDeHabilidades = data;
                     this.preloadAjax = false;
                 });
         },
-        cadastrar: function () {
+        cadastrar() {
 
             $('#janelaCadastrar :input:visible:enabled').trigger('blur');
-            if($('#janelaCadastrar :input:visible:enabled.is-invalid').length){
+            if ($('#janelaCadastrar :input:visible:enabled.is-invalid').length) {
                 alert('Verificar os erros');
                 return false;
             }
 
-            var dados = {};
-            dados.nome = $('#nome').val();
-            dados.descricao = $('#descricao').val();
-            dados.email = $('#email').val();
-            dados.ativo = $('#ativo').val();
-            dados.listaDeHabilidades = this.listaDeHabilidades;
+            this.form.listaDeHabilidades = this.listaDeHabilidades;
             this.preloadAjax = true;
 
-            $.post(`${URL_ADMIN}/papeis`, dados)
-                .done((data)=> {
-                    app.preloadAjax = false;
-                    app.cadastrado = true;
-                    $('#controle button:eq(0)').click();
-                });
+            axios.post(`${URL_ADMIN}/papeis`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.preloadAjax = false;
+                        mostraSucesso('', 'Papel cadastrado com sucesso!');
+                        $('#janelaCadastrar').modal('hide');
+                        this.$refs.componente.buscar();
+                        // $('#controle button:eq(0)').click();
+                    }
+                }).catch(error => {
+                this.preloadAjax = false;
+            });
         },
-        formAlterar: function (id) {
-            app.id = id;
-
-            $('#janelaTitulo').html('Alterando papeis');
+        formAlterar(id) {
+            this.tituloJanela = 'Alterando papeis'
+            formReset();
             this.cadastrado = false;
             this.atualizado = false;
             this.editando = false;
 
             this.preloadAjax = true;
 
-            $.get(`${URL_ADMIN}/papeis/${id}/editar`)
-                .done((data) => {
+            axios.get(`${URL_ADMIN}/papeis/${id}/editar`)
+                .then(response => {
 
-                app.preloadAjax = false;
-                this.listaDeHabilidades=data.listaDeHabilidade;
+                    if (response.status === 201) {
+                        this.preloadAjax = false;
+                        let data = response.data;
+                        this.listaDeHabilidades = data.listaDeHabilidade;
 
-                $('#nome').val(data.papel.nome);
-                $('#descricao').val(data.papel.descricao);
-                $('#email').val(data.papel.email);
-                $('#ativo').val(data.papel.ativo.toString());
+                        Object.assign(this.form, data.papel);
 
-                //ligando os botoes
-                var habilidades_papel = data.papel.habilidades;
-                _.forEach(app.listaDeHabilidades, function (habilidade) {
-                    var achou = _.find(habilidades_papel, {'id': habilidade.id});
-                    if (achou) {
-                        habilidade.acesso = true;
+                        //ligando os botoes
+                        var habilidades_papel = data.papel.habilidades;
+                        _.forEach(this.listaDeHabilidades, function (habilidade) {
+                            var achou = _.find(habilidades_papel, {'id': habilidade.id});
+                            if (achou) {
+                                habilidade.acesso = true;
+                            }
+                        });
+                        this.editando = true;
                     }
-                });
-
-                app.editando = true;
-
+                }).catch(error => {
+                this.preloadAjax = false;
             });
-
-
         },
-        alterar: function () {
+        alterar() {
             $('#janelaCadastrar :input:visible:enabled').trigger('blur');
-            if($('#janelaCadastrar :input:visible:enabled.is-invalid').length){
+            if ($('#janelaCadastrar :input:visible:enabled.is-invalid').length) {
                 alert('Verificar os erros');
                 return false;
             }
 
-            var dados = {};
-            dados.nome = $('#nome').val();
-            dados.descricao = $('#descricao').val();
-            dados.email = $('#email').val();
-            dados.ativo = $('#ativo').val();
-            dados.listaDeHabilidades = this.listaDeHabilidades;
-            dados._method = 'PUT';
+            this.form.listaDeHabilidades = this.listaDeHabilidades;
             this.preloadAjax = true;
 
-            $.post(`${URL_ADMIN}/papeis/${this.id}`, dados)
-                .done((data)=>{
-                this.preloadAjax = false;
-                this.atualizado = true;
-                $('#controle button:eq(0)').click();
+            axios.put(`${URL_ADMIN}/papeis/${this.form.id}`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.preloadAjax = false;
+                        this.atualizado = true;
+                        mostraSucesso('', 'Papel alterado com sucesso!');
+                        $('#janelaCadastrar').modal('hide');
+                        this.$refs.componente.buscar();
+                    }
 
+                }).catch(error => {
+                this.preloadAjax = false;
             });
         },
         janelaConfirmar: function (id) {
@@ -140,13 +148,13 @@ const app = new Vue({
             this.preloadAjax = true;
 
             $.post(`${URL_ADMIN}/papeis/${this.id}`, dados)
-                .done( (data)=> {
+                .done((data) => {
 
-                app.preloadAjax = false;
-                app.apagado = true;
-                $('#controle button:eq(0)').click();
+                    app.preloadAjax = false;
+                    app.apagado = true;
+                    $('#controle button:eq(0)').click();
 
-            });
+                });
         },
 
         carregou: function (dados) {

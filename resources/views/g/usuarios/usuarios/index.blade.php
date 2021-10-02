@@ -30,8 +30,7 @@
                            onblur="valida_campo_vazio(this,3)">
                 </div>
 
-                <div class="form-check" v-if="editando">
-
+                <div class="form-check mb-3" v-if="editando">
                     <label class="form-check-label">
                         <input class="form-check-input" type="checkbox" v-model="form.alterarSenha">
                         Redefinir senha
@@ -54,14 +53,24 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Empresa</label>
+                    <select class="form-control form-control-sm" v-model="form.empresa_id"
+                            onchange="valida_campo_vazio(this,1)"
+                            onblur="valida_campo_vazio(this,1)" @change="selecionaEmpresa(form.empresa_id)">
+                        <option value="">Selecione...</option>
+                        @foreach (\App\Models\Cliente::whereAtivo(true)->get() as $cliente)
+                            <option value="{{$cliente->id}}">{{$cliente->nome_fantasia}}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group" v-if="grupoempresa">
                     <label>Grupo</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_id"
                             onchange="valida_campo_vazio(this,1)"
                             onblur="valida_campo_vazio(this,1)">
                         <option value="">Selecione...</option>
-                        @foreach ($listaDePapeis as $papel)
-                            <option value="{{$papel->id}}">{{$papel->nome}}</option>
-                        @endforeach
+                        <option v-for="papel in listaPapeis" :value="papel.id">@{{papel.nome}}</option>
                     </select>
                 </div>
 
@@ -73,18 +82,6 @@
                         <option value="">Selecione...</option>
                         @foreach (\App\Models\GrupoCloud::get() as $grupo_cloud)
                             <option value="{{$grupo_cloud->id}}">{{$grupo_cloud->nome}}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Cliente</label>
-                    <select class="form-control form-control-sm" v-model="form.cliente_id"
-                            onchange="valida_campo_vazio(this,1)"
-                            onblur="valida_campo_vazio(this,1)">
-                        <option value="">Selecione...</option>
-                        @foreach (\App\Models\Cliente::whereAtivo(true)->get() as $cliente)
-                            <option value="{{$cliente->id}}">{{$cliente->nome_fantasia}}</option>
                         @endforeach
                     </select>
                 </div>
@@ -124,33 +121,33 @@
     <fieldset>
         <legend>Filtragem por</legend>
 
-    <div class="row">
-        <div class="col-md-4 column">
-            <form id="formBusca" @keypress.enter="$refs.componente.buscar()" onsubmit="return false;">
-                <div class="form-group">
-                    <label>Buscar:</label>
-                    <div class="input-group input-group-sm">
+        <div class="row">
+            <div class="col-md-4 column">
+                <form id="formBusca" @keypress.enter="$refs.componente.buscar()" onsubmit="return false;">
+                    <div class="form-group">
+                        <label>Buscar:</label>
+                        <div class="input-group input-group-sm">
                         <span class="input-group-prepend">
                             <i class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></i>
                         </span>
-                        <input type="text" id="campoBusca" v-model="controle.dados.campoBusca"
-                               placeholder="Nome do usuário" autocomplete="off"
-                               class="form-control form-control-sm">
+                            <input type="text" id="campoBusca" v-model="controle.dados.campoBusca"
+                                   placeholder="Nome do usuário" autocomplete="off"
+                                   class="form-control form-control-sm">
+                        </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
-    </div>
-    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar"><i
-            :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-        Atualizar
-    </button>
-    @can('usuarios_insert')
-        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
-                @click="formNovo()">
-            Criar novo usuário
+        <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar"><i
+                :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+            Atualizar
         </button>
-    @endcan
+        @can('usuarios_insert')
+            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
+                    @click="formNovo()">
+                Criar novo usuário
+            </button>
+        @endcan
     </fieldset>
 
     <p class="text-center" v-if="controle.carregando">

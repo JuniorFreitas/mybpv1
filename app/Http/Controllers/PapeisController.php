@@ -32,35 +32,33 @@ class PapeisController extends Controller
             return $habilidade;
         });
 
-        return response()->json($listaDeHabilidades,201);
+        return response()->json($listaDeHabilidades, 201);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-
-
         $this->authorize('papel_insert');
-
         $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] =='true' ? true:false;
+        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
             'email' => 'required|email',
             'descricao' => 'required|min:3',
             'ativo' => 'required|boolean',
+            'empresa_id' => 'required',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao cadastrar papel',
                 'erros' => $dadosValidados->errors()
-            ],400);
+            ], 400);
         } else {
             $papel = Papel::create($dados);
             $habilidades = collect($request->listaDeHabilidades)->filter(function ($habilidade) {
@@ -70,27 +68,27 @@ class PapeisController extends Controller
             })->pluck('id');
             $papel->habilidades()->attach($habilidades);
 
-            return response()->json([],201);
+            return response()->json([], 201);
         }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Papel $papel
+     * @param \App\Models\Papel $papel
      * @return \Illuminate\Http\Response
      */
     public function show(Papel $papel)
     {
 
-        return response()->json($papel,201);
+        return response()->json($papel, 201);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Papel $papel
-     * @return \Illuminate\Http\Response
+     * @param \App\Models\Papel $papel
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function edit(Papel $papel)
     {
@@ -102,15 +100,15 @@ class PapeisController extends Controller
             return $habilidade;
         });
 
-        return response()->json(['listaDeHabilidade'=>$listaDeHabilidades,'papel'=>$papel],201);
+        return response()->json(['listaDeHabilidade' => $listaDeHabilidades, 'papel' => $papel], 201);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
-     * @param  \App\Models\Papel $papel
-     * @return \Illuminate\Http\Response
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Papel $papel
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function update(Request $request, Papel $papel)
     {
@@ -118,19 +116,20 @@ class PapeisController extends Controller
         $this->authorize('papel_update');
 
         $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] =='true' ? true:false;
+        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
             'email' => 'required|email',
             'descricao' => 'required|min:3',
             'ativo' => 'required|boolean',
+            'empresa_id' => 'required',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao alterar papel',
                 'erros' => $dadosValidados->errors()
-            ],400);
+            ], 400);
         } else {
             $papel->update($dados);
             $habilidades = collect($request->listaDeHabilidades)->filter(function ($habilidade) {
@@ -139,14 +138,14 @@ class PapeisController extends Controller
                 }
             })->pluck('id');
             $papel->habilidades()->sync($habilidades);
-            return response()->json([],201);
+            return response()->json([], 201);
         }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Papel $papel
+     * @param \App\Models\Papel $papel
      * @return \Illuminate\Http\Response
      */
     public function destroy(Papel $papel)
@@ -162,28 +161,25 @@ class PapeisController extends Controller
         $porPagina = $request->get('porPagina');
         $busca = false;
 
+        $resultado = Papel::orderBy('nome');
+
         if ($request->has('campoBusca')) {
-
             $busca = $request->get('campoBusca');
-
             if (intval($busca) > 0) { // se encontrar um numero
-                $resultado = Papel::where('id', '=', intval($busca))->orderBy('nome');
-
+                $resultado = $resultado->where('id', '=', intval($busca));
             } else {
-                $resultado = Papel::where('nome', 'like', '%' . $busca . '%')->orderBy('nome');
+                $resultado = $resultado->where('nome', 'like', '%' . $busca . '%');
             }
-        } else {
-            $resultado = Papel::orderBy('nome'); // senao busca tudo
         }
 
         $resultado = $resultado->paginate($porPagina);
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => $resultado->items()
         ]);
-
     }
 
     public function ativaDesativa(Papel $papel)
