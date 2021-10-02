@@ -36,6 +36,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereValidade($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereEmpresaId($value)
  */
 class TreinamentoSgi extends Model
 {

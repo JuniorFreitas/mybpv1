@@ -35,6 +35,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga whereOnline($value)
+ * @property int|null $empresa_id
+ * @property int|null $vagas_abertas_id
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereVagasAbertasId($value)
  */
 class SimuladoVaga extends Model
 {
@@ -61,7 +65,9 @@ class SimuladoVaga extends Model
         'data_inicio',
         'data_fim',
         'duracao',
-        'online'
+        'online',
+        'empresa_id',
+        'vagas_abertas_id',
     ];
 
     protected $casts = [
@@ -70,7 +76,9 @@ class SimuladoVaga extends Model
         'data_inicio' => 'date:d/m/Y',
         'data_fim' => 'date:d/m/Y',
         'duracao' => 'int',
-        'online' => 'boolean'
+        'online' => 'boolean',
+        'empresa_id' => 'int',
+        'vagas_abertas_id' => 'int',
     ];
 
     protected $appends = ['duracao_segundos'];

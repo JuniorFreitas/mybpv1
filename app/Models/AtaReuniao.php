@@ -42,6 +42,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereQuemCadastrou($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereEmpresaId($value)
  */
 class AtaReuniao extends Model
 {

@@ -31,6 +31,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read mixed $qnt_questoes
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereEmpresaId($value)
  */
 class Simulado extends Model
 {

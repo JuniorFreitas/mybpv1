@@ -53,6 +53,28 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico wherePeriodoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int $empresa_id
+ * @property int $ocorrencia_id
+ * @property int $duracao
+ * @property int|null $duracao_normal
+ * @property int|null $duracao_extra
+ * @property int|null $duracao_noturna
+ * @property string $tipo_frequencia
+ * @property int $tempo_limite_falta
+ * @property int $tempo_limite_saida
+ * @property int $limite_tolerancia
+ * @property int $verificado
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoNormal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoNoturna($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereLimiteTolerancia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereOcorrenciaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTempoLimiteFalta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTempoLimiteSaida($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTipoFrequencia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereVerificado($value)
  */
 class PontoEletronico extends Model
 {

@@ -31,6 +31,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  * @property int|null $ordem
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereOrdem($value)
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereEmpresaId($value)
  */
 class Vencimento extends Model
 {
