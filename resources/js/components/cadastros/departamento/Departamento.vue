@@ -16,17 +16,6 @@
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
-                                    <label>Cliente</label>
-                                    <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
-                                            onchange="valida_campo_vazio(this,1)" v-model="form.cliente_id">
-                                        <option :value="''">Selecione</option>
-                                        <option v-for="item in listaClientes" :value="item.id">{{item.nome_fantasia}}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
                                     <label>Ativo</label>
                                     <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
                                             onchange="valida_campo_vazio(this,1)" v-model="form.ativo">
@@ -36,7 +25,6 @@
                                     </select>
                                 </div>
                             </div>
-
                         </div>
                     </fieldset>
                 </div>
@@ -105,7 +93,6 @@
                     <tr class="bg-default">
                         <td class="text-center">Nº</td>
                         <td class="text-center">Nome</td>
-                        <td class="text-center">Cliente</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Ação</td>
                     </tr>
@@ -114,7 +101,6 @@
                     <tr v-for="item in lista">
                         <td class="text-center">{{ item.id }}</td>
                         <td class="text-center">{{ item.label }}</td>
-                        <td class="text-center">{{ item.cliente.nome_fantasia }}</td>
                         <td class="text-center">{{ item.ativo === true ? 'Ativo' : 'Inativo' }}</td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-primary mb-1" data-toggle="modal"
@@ -126,7 +112,6 @@
                     </tbody>
                 </table>
             </div>
-
             <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                                 :url="urlPaginacao" :por-pagina="qntPag"
                                 :dados="controle.dados"
@@ -134,197 +119,196 @@
         </div>
     </div>
 </template>
-
 <script>
-    import controlePaginacao from '../../ControlePaginacao';
-    import modal from '../../Modal';
+import controlePaginacao from '../../ControlePaginacao';
+import modal from '../../Modal';
 
-    export default {
-        components: {
-            modal,
-            controlePaginacao,
+export default {
+    components: {
+        modal,
+        controlePaginacao,
+    },
+    props: {
+        qntPag: {
+            type: Number,
+            required: false,
+            default: 20
         },
-        props: {
-            qntPag: {
-                type: Number,
-                required: false,
-                default: 20
-            },
-            filtro: {
-                type: Boolean,
-                required: false,
-                default: true
-            },
-            modal: { // modal Pai
-                type: String,
-                required: false,
-                default: ''
-            },
+        filtro: {
+            type: Boolean,
+            required: false,
+            default: true
         },
-        mounted() {
-            this.atualizar();
-            this.formDefault = _.cloneDeep(this.form);
+        modal: { // modal Pai
+            type: String,
+            required: false,
+            default: ''
         },
-        data() {
-            return {
-                hash: String(Math.random()).substr(2),
-                titulo_janela: '',
+    },
+    mounted() {
+        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form);
+    },
+    data() {
+        return {
+            hash: String(Math.random()).substr(2),
+            titulo_janela: '',
 
-                preload: false,
-                editando: false,
-                cadastrado: false,
+            preload: false,
+            editando: false,
+            cadastrado: false,
 
-                form: {
-                    label: '',
-                    cliente_id: '',
-                    ativo: '',
+            form: {
+                label: '',
+                cliente_id: '',
+                ativo: '',
+            },
+
+            formDefault: null,
+
+            lista: [],
+            listaClientes: [],
+
+            urlPaginacao: `${URL_ADMIN}/cadastro/departamento/atualizar`,
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: '',
                 },
-
-                formDefault: null,
-
-                lista: [],
-                listaClientes: [],
-
-                urlPaginacao: `${URL_ADMIN}/cadastro/departamento/atualizar`,
-                controle: {
-                    carregando: false,
-                    dados: {
-                        campoBusca: '',
-                    },
-                },
-            }
-        },
-        methods: {
-            formNovo() {
-                this.form = _.cloneDeep(this.formDefault) //copia
-                this.titulo_janela = 'Departamento';
-                this.editando = false;
-                this.cadastrado = false;
-                this.preload = false;
-                formReset();
-                setupCampo();
-            },
-
-            cadastrar() {
-                $('#janelaCadastrar :input:visible').trigger('blur');
-                if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                    mostraErro('', 'Verificar os erros');
-                    return false;
-                }
-                this.preload = true;
-                axios.post(`${URL_ADMIN}/cadastro/departamento`, this.form)
-                    .then(res => {
-                        if (res.status === 201) {
-                            $('#janelaCadastrar').modal('hide');
-                            mostraSucesso('', 'Departamento cadastrado com sucesso');
-                            this.cadastrado = true;
-                            this.preload = false;
-                            this.atualizar();
-                        }
-                    })
-                    .catch(error => {
-                        this.cadastrado = false;
-                        this.preload = false;
-                    });
-            },
-            alterarDepartamento(departamento) {
-                this.cadastrado = false;
-                this.editando = true;
-                this.titulo_janela = "Alterando Departamento";
-                formReset();
-
-                this.form = _.cloneDeep(this.formDefault) //copia
-
-                axios.get(`${URL_ADMIN}/cadastro/departamento/${departamento}/editar`)
-                    .then(response => {
-                        Object.assign(this.form, response.data);
-                        this.editando = true;
-                        setupCampo();
-                    }).catch(
-                    error => (this.preloadAjax = false)
-                );
-
-            },
-            alterarformDepartamento() {
-                formReset();
-                $('#janelaCadastrar :input:enabled').trigger('blur');
-
-                if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                    mostraErro('', 'Verificar os erros');
-                    return false;
-                }
-
-                this.preload = true;
-
-                axios.put(`${URL_ADMIN}/cadastro/departamento/${this.form.id}`, this.form).then(response => {
-                    $('#janelaCadastrar').modal('hide');
-                    mostraSucesso('', 'Departamento atualizado com sucesso');
-                    this.preload = false;
-                    this.atualizado = true;
-                    this.atualizar();
-                }).catch(error => (this.preload = false));
-
-            },
-            carregou(dados) {
-                this.lista = dados.items;
-                this.listaClientes = dados.clientes;
-                this.controle.carregando = false;
-            },
-            carregando() {
-                this.controle.carregando = true;
-            },
-            atualizar() {
-                this.$refs.componente.atual = 1;
-                this.$refs.componente.buscar();
             },
         }
+    },
+    methods: {
+        formNovo() {
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.titulo_janela = 'Departamento';
+            this.editando = false;
+            this.cadastrado = false;
+            this.preload = false;
+            formReset();
+            setupCampo();
+        },
 
+        cadastrar() {
+            $('#janelaCadastrar :input:visible').trigger('blur');
+            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+                mostraErro('', 'Verificar os erros');
+                return false;
+            }
+            this.preload = true;
+            axios.post(`${URL_ADMIN}/cadastro/departamento`, this.form)
+                .then(res => {
+                    if (res.status === 201) {
+                        $('#janelaCadastrar').modal('hide');
+                        mostraSucesso('', 'Departamento cadastrado com sucesso');
+                        this.cadastrado = true;
+                        this.preload = false;
+                        this.atualizar();
+                    }
+                })
+                .catch(error => {
+                    this.cadastrado = false;
+                    this.preload = false;
+                });
+        },
+        alterarDepartamento(departamento) {
+            this.cadastrado = false;
+            this.editando = true;
+            this.titulo_janela = "Alterando Departamento";
+            formReset();
+
+            this.form = _.cloneDeep(this.formDefault) //copia
+
+            axios.get(`${URL_ADMIN}/cadastro/departamento/${departamento}/editar`)
+                .then(response => {
+                    Object.assign(this.form, response.data);
+                    this.editando = true;
+                    setupCampo();
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
+
+        },
+        alterarformDepartamento() {
+            formReset();
+            $('#janelaCadastrar :input:enabled').trigger('blur');
+
+            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros');
+                return false;
+            }
+
+            this.preload = true;
+
+            axios.put(`${URL_ADMIN}/cadastro/departamento/${this.form.id}`, this.form).then(response => {
+                $('#janelaCadastrar').modal('hide');
+                mostraSucesso('', 'Departamento atualizado com sucesso');
+                this.preload = false;
+                this.atualizado = true;
+                this.atualizar();
+            }).catch(error => (this.preload = false));
+
+        },
+        carregou(dados) {
+            this.lista = dados.items;
+            this.listaClientes = dados.clientes;
+            this.controle.carregando = false;
+        },
+        carregando() {
+            this.controle.carregando = true;
+        },
+        atualizar() {
+            this.$refs.componente.atual = 1;
+            this.$refs.componente.buscar();
+        },
     }
+
+}
 </script>
 
 <style scoped>
-    .card {
-        border: none;
-        background: transparent;
-    }
+.card {
+    border: none;
+    background: transparent;
+}
 
-    ul.timeline {
-        list-style-type: none;
-        position: relative;
-    }
+ul.timeline {
+    list-style-type: none;
+    position: relative;
+}
 
-    ul.timeline:before {
-        content: ' ';
-        background: #d4d9df;
-        display: inline-block;
-        position: absolute;
-        left: 29px;
-        width: 2px;
-        height: 100%;
-        z-index: 400;
-    }
+ul.timeline:before {
+    content: ' ';
+    background: #d4d9df;
+    display: inline-block;
+    position: absolute;
+    left: 29px;
+    width: 2px;
+    height: 100%;
+    z-index: 400;
+}
 
-    ul.timeline > li {
-        margin: 20px 0;
-        padding-left: 20px;
-    }
+ul.timeline > li {
+    margin: 20px 0;
+    padding-left: 20px;
+}
 
-    ul.timeline > li:before {
-        content: ' ';
-        background: white;
-        display: inline-block;
-        position: absolute;
-        border-radius: 50%;
-        border: 3px solid #184056;
-        left: 20px;
-        width: 20px;
-        height: 20px;
-        z-index: 400;
-    }
+ul.timeline > li:before {
+    content: ' ';
+    background: white;
+    display: inline-block;
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid #184056;
+    left: 20px;
+    width: 20px;
+    height: 20px;
+    z-index: 400;
+}
 
-    .trackind {
-        padding: .5rem .8rem;
-        background-color: #f4f4f4;
-        border-radius: .5rem;
-    }
+.trackind {
+    padding: .5rem .8rem;
+    background-color: #f4f4f4;
+    border-radius: .5rem;
+}
 </style>

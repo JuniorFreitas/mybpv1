@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeClientesEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -28,28 +29,30 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TipoBeneficio extends Model
 {
+    use TenantTrait;
+
     protected $fillable = [
         'nome',
-        'cliente_id',
+        'empresa_id',
         'ativo'
     ];
 
     protected $casts = [
         'nome' => 'string',
-        'cliente_id' => 'int',
+        'empresa_id' => 'int',
         'ativo' => 'boolean'
     ];
 
     protected $table = 'tipo_beneficios';
 
-    public function Cliente()
+    public function Empresa()
     {
-        return $this->hasOne(Cliente::class, 'id', 'cliente_id');
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeClientesEmpresa);
-    }
+//    //Scopo de ClienteID (Empresa)
+//    protected static function booted()
+//    {
+//        static::addGlobalScope(new ScopeClientesEmpresa);
+//    }
 }

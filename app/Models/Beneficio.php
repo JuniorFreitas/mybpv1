@@ -47,7 +47,7 @@ class Beneficio extends Model
     protected $fillable = [
         'nome',
         'tipobeneficio_id',
-        'cliente_id',
+        'empresa_id',
         'valor',
         'aplicacao',
         'periodicidade',
@@ -58,7 +58,7 @@ class Beneficio extends Model
     protected $casts = [
         'nome' => 'string',
         'tipobeneficio_id' => 'int',
-        'cliente_id' => 'int',
+        'empresa_id' => 'int',
         'valor' => 'float',
         'aplicacao' => 'string',
         'periodicidade' => 'string',
@@ -107,14 +107,14 @@ class Beneficio extends Model
         return $this->belongsToMany(Beneficio::class, 'beneficio_feedbacks', 'beneficio_id', 'feedback_id');
     }
 
-    public function Cliente()
+    public function Empresa()
     {
-        return $this->hasOne(Cliente::class, 'id', 'cliente_id');
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeClientesEmpresa);
-    }
+//    //Scopo de ClienteID (Empresa)
+//    protected static function booted()
+//    {
+//        static::addGlobalScope(new ScopeClientesEmpresa);
+//    }
 }

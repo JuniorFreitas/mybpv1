@@ -48,7 +48,6 @@ class BeneficioController extends Controller
             [
                 'nome' => 'required',
                 'tipobeneficio_id' => 'required',
-                'cliente_id' => 'required',
                 'valor' => 'required',
                 'aplicacao' => 'required',
                 'periodicidade' => 'required',
@@ -86,7 +85,6 @@ class BeneficioController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'nome' => 'required|min:1',
-                'cliente_id' => 'required|numeric',
                 'ativo' => 'required|boolean'
             ]
         );
@@ -184,10 +182,9 @@ class BeneficioController extends Controller
     {
         $this->authorize('beneficio');
         $porPagina = $request->get('porPagina');
-        $resultado = Beneficio::with('TipoBeneficio', 'Cliente');
-        $tipos = TipoBeneficio::whereHas('Cliente')->get();
-        $tiposAtivos = TipoBeneficio::where('ativo', true)->with('Cliente')->get();
-        $clientes = Cliente::where('ativo', true)->get();
+        $resultado = Beneficio::with('TipoBeneficio');
+        $tipos = TipoBeneficio::whereHas('Empresa')->get();
+        $tiposAtivos = TipoBeneficio::where('ativo', true)->get();
 
 
         // se tiver busca
@@ -215,7 +212,6 @@ class BeneficioController extends Controller
                 'items' => $resultado->items(),
                 'tipos' => $tipos,
                 'tiposAtivos' => $tiposAtivos,
-                'clientes' => $clientes,
                 'permissoes' => $permissoes,
             ]
         ], 200);

@@ -35,7 +35,7 @@
                         </thead>
                         <tbody>
                         <tr v-for="item in tipos">
-                            <td class="text-center">{{item.nome}}</td>
+                            <td class="text-center">{{ item.nome }}</td>
                             <td class="text-center">
                                 <bt-ativo :rota="`cadastro/beneficios/${item.id}/ativa-desativa`"
                                           :model="item"></bt-ativo>
@@ -61,21 +61,10 @@
                 <fieldset v-if="!preloadTipo">
                     <legend>Cadastro de Tipo</legend>
                     <div class="row">
-                        <div class="col-12">
+                        <div class="col-12 mb-2">
                             <label>Nome</label>
                             <input class="form-control" type="text"
                                    onblur="valida_campo_vazio(this,1)" v-model="formTipo.nome">
-                        </div>
-
-                        <div class="col-12" v-if="cliente_id === 0">
-                            <label>Cliente</label>
-                            <select v-model="formTipo.cliente_id"
-                                    onchange="valida_campo_vazio(this,1)"
-                                    onblur="valida_campo_vazio(this,1)" class="custom-select">
-                                <option value="">Selecione</option>
-                                <option v-for="item in clientes" :value="item.id">{{ item.nome_fantasia }}
-                                </option>
-                            </select>
                         </div>
 
                         <div class="col-12">
@@ -116,17 +105,6 @@
                                 <input type="text" v-model="form.nome" class="form-control"
                                        onblur="valida_campo_vazio(this,1)">
                             </div>
-                            <div class="col-12" v-if="cliente_id === 0">
-                                <label>Cliente</label>
-                                <select v-model="form.cliente_id"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        onblur="valida_campo_vazio(this,1)" class="custom-select">
-                                    <option value="">Selecione</option>
-                                    <option v-for="item in clientes" :value="item.id">{{ item.nome_fantasia }}
-                                    </option>
-                                </select>
-                            </div>
-
                             <div class="col-6">
                                 <label>Tipo</label>
                                 <select v-model="form.tipobeneficio_id"
@@ -258,7 +236,6 @@
                     <tr class="bg-default">
                         <td class="text-center">Nº</td>
                         <td class="text-center">Nome</td>
-                        <td class="text-center" v-if="cliente_id === 0">Cliente</td>
                         <td class="text-center">Tipo do Beneficio</td>
                         <td class="text-center">Valor do Benefício</td>
                         <td class="text-center">Periodicidade</td>
@@ -269,14 +246,13 @@
                     </thead>
                     <tbody>
                     <tr v-for="beneficio in lista">
-                        <td class="text-center">{{beneficio.id}}</td>
-                        <td class="text-center">{{beneficio.nome}}</td>
-                        <td class="text-center" v-if="cliente_id === 0">{{beneficio.cliente.nome_fantasia}}</td>
-                        <td class="text-center">{{beneficio.tipo_beneficio.nome}}</td>
-                        <td class="text-center">{{"R$ "+beneficio.valor_format}}</td>
-                        <td class="text-center">{{beneficio.periodicidade}}</td>
-                        <td class="text-center">{{beneficio.opcao_desconto}}</td>
-                        <td class="text-center">{{"R$ "+beneficio.valordescontado_format}}</td>
+                        <td class="text-center">{{ beneficio.id }}</td>
+                        <td class="text-center">{{ beneficio.nome }}</td>
+                        <td class="text-center">{{ beneficio.tipo_beneficio.nome }}</td>
+                        <td class="text-center">{{ "R$ " + beneficio.valor_format }}</td>
+                        <td class="text-center">{{ beneficio.periodicidade }}</td>
+                        <td class="text-center">{{ beneficio.opcao_desconto }}</td>
+                        <td class="text-center">{{ "R$ " + beneficio.valordescontado_format }}</td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-primary"
                                     @click="alterarBeneficio(beneficio.id)"

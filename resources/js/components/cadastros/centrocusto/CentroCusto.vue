@@ -7,24 +7,11 @@
                 <fieldset v-if="!preload">
                     <legend>Cadastro de Centro de Custo</legend>
                     <div class="row">
-
-                        <div class="col-12" v-if="cliente_id === 0">
-                            <label>Cliente</label>
-                            <select v-model="form.cliente_id"
-                                    onchange="valida_campo_vazio(this,1)"
-                                    onblur="valida_campo_vazio(this,1)" class="custom-select">
-                                <option value="">Selecione</option>
-                                <option v-for="item in clientes" :value="item.id">{{ item.nome_fantasia }}
-                                </option>
-                            </select>
-                        </div>
-
                         <div class="col-12">
                             <label>Nome</label>
                             <input class="form-control" type="text"
                                    onblur="valida_campo_vazio(this,1)" v-model="form.label">
                         </div>
-
                         <div class="col-12">
                             <div class="switchToggle">
                                 <input type="checkbox" v-model="form.ativo" id="switch">
@@ -46,8 +33,6 @@
                 </button>
             </template>
         </modal>
-
-        <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
@@ -65,15 +50,12 @@
                         </div>
                     </div>
                 </div>
-
-
                 <div class="col-12 col-md-12">
                     <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
                             @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-
                     <button type="button" class="btn btn-sm btn-secondary"
                             @click="formNovo"
                             data-toggle="modal"
@@ -99,7 +81,6 @@
                     <thead>
                     <tr class="bg-default">
                         <td class="text-center">Nº</td>
-                        <td class="text-center" v-if="cliente_id === 0">Cliente</td>
                         <td class="text-center">Nome</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Opções</td>
@@ -108,7 +89,6 @@
                     <tbody>
                     <tr v-for="centrocusto in lista">
                         <td class="text-center">{{centrocusto.id}}</td>
-                        <td class="text-center" v-if="cliente_id === 0">{{centrocusto.cliente.nome_fantasia}}</td>
                         <td class="text-center">{{centrocusto.label}}</td>
                         <td class="text-center">
                             <bt-ativo :rota="`cadastro/centrocusto/${centrocusto.id}/ativa-desativa`"
@@ -191,7 +171,7 @@ export default {
 
             form: {
                 label: '',
-                cliente_id: '',
+                empresa_id: '',
                 ativo: true,
             },
             formDefault: null,

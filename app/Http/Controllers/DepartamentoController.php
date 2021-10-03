@@ -43,7 +43,7 @@ class DepartamentoController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'label' => 'required',
-                'cliente_id' => 'required',
+//                'empresa_id' => 'required',
                 'ativo' => 'required',
             ]
         );
@@ -104,7 +104,7 @@ class DepartamentoController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'label' => 'required',
-                'cliente_id' => 'required',
+//                'empresa_id' => 'required',
                 'ativo' => 'required',
             ]
         );
@@ -135,9 +135,7 @@ class DepartamentoController extends Controller
     public function atualizar(Request $request)
     {
         $this->authorize('cadastro_departamento_update');
-        $resultado = Departamento::with('Cliente');
-
-        $clientes = Cliente::whereAtivo(true)->get();
+        $resultado = Departamento::with('Empresa');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
@@ -151,7 +149,6 @@ class DepartamentoController extends Controller
             'total' => $resultado->total(),
             'dados' =>
                 [
-                    'clientes' => $clientes,
                     'items' => $resultado->items()
                 ]
         ]);
