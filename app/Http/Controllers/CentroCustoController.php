@@ -144,9 +144,7 @@ class CentroCustoController extends Controller
     {
         $this->authorize('centrocusto');
         $porPagina = $request->get('porPagina');
-        $resultado = CentroCusto::with('Cliente')->orderBy('id');
-        $clientes = Cliente::where('ativo', true)->get();
-
+        $resultado = CentroCusto::with('Empresa')->orderBy('id');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
@@ -159,7 +157,6 @@ class CentroCustoController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'items' => $resultado->items(),
-                'clientes' => $clientes
             ]
         ], 200);
     }

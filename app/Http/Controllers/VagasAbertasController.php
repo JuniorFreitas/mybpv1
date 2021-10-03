@@ -94,7 +94,7 @@ class VagasAbertasController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\VagasAbertas $vagas_aberta
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function update(Request $request, VagasAbertas $vagas_aberta)
     {

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeClientesEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,20 +30,20 @@ use Illuminate\Database\Eloquent\Model;
  */
 class CentroCusto extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
 
-    protected $fillable = ['label', 'cliente_id', 'ativo'];
-    protected $casts = ['id' => 'int', 'label' => 'string', 'cliente_id' => 'int', 'ativo' => 'boolean'];
+    protected $fillable = ['label', 'empresa_id', 'ativo'];
+    protected $casts = ['id' => 'int', 'label' => 'string', 'empresa_id' => 'int', 'ativo' => 'boolean'];
 
-    public function Cliente()
+    public function Empresa()
     {
-        return $this->hasOne(Cliente::class, 'id', 'cliente_id');
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::addGlobalScope(new ScopeClientesEmpresa);
-    }
+//    //Scopo de ClienteID (Empresa)
+//    protected static function booted()
+//    {
+//        static::addGlobalScope(new ScopeClientesEmpresa);
+//    }
 
 }

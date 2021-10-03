@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
@@ -34,7 +35,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Vaga extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'vaga';
@@ -52,8 +53,8 @@ class Vaga extends Model
     }
 
     protected $table = 'vagas';
-    protected $fillable = ['categoria_id', 'nome', 'ativo'];
-    protected $casts = ['id' => 'int', 'categoria_id' => 'int', 'nome' => 'string', 'ativo' => 'boolean'];
+    protected $fillable = ['categoria_id', 'nome', 'ativo', 'empresa_id'];
+    protected $casts = ['id' => 'int', 'categoria_id' => 'int', 'nome' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int'];
 
     public function usesTimestamps()
     {
@@ -73,5 +74,10 @@ class Vaga extends Model
     public function EtapaStatus()
     {
         return $this->hasMany(Etapas::class, 'vaga_id', 'id')->orderByDesc('updated_at');
+    }
+
+    public function Empresa()
+    {
+        return $this->hasOne(Cliente::class, 'id', 'cliente_id');
     }
 }

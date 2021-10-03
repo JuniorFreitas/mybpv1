@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,23 +30,24 @@ use Illuminate\Database\Eloquent\Model;
 class Departamento extends Model
 {
     use HasFactory;
+    use TenantTrait;
 
     protected $table = 'departamentos';
 
     protected $fillable = [
         'label',
-        'cliente_id',
+        'empresa_id',
         'ativo'
     ];
 
     protected $casts = [
         'label' => 'string',
-        'cliente_id' => 'int',
+        'empresa_id' => 'int',
         'ativo' => 'boolean'
     ];
 
-    public function Cliente()
+    public function Empresa()
     {
-        return $this->hasOne(Cliente::class, 'id', 'cliente_id');
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 }
