@@ -110,7 +110,7 @@ class AdmissaoController extends Controller
         try {
             DB::beginTransaction();
 
-            $empresa_id = User::find($dadosFeedback['$cliente_id'])->empresa_id;
+            $empresa_id = 39765;
 
             $user = User::whereHas('Curriculo', function ($q) use ($dadosCurriculo) {
                 $q->whereCpf($dadosCurriculo['cpf']);
