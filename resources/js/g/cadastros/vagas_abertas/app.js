@@ -1,16 +1,15 @@
-import autocomplete from '../../../components/AutoComplete'
-import configTinyMCE from '../../../components/configTinyMCE';
-import Editor from '@tinymce/tinymce-vue';
+import { tinyPadrao } from "../../../utils";
+import autocomplete from "../../../components/AutoComplete";
+import Editor from "@tinymce/tinymce-vue";
 
 const app = new Vue({
-    el: '#app',
+    el: "#app",
     components: {
         autocomplete,
         Editor,
     },
     data: {
-        config: configTinyMCE,
-        tituloJanela: 'Cadastrando Vaga',
+        tituloJanela: "Cadastrando Vaga",
         preloadAjax: false,
         editando: false,
         apagado: false,
@@ -21,20 +20,27 @@ const app = new Vue({
         todos_municipios: `autocomplete/todos-municipios`,
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
+        tinyPadrao,
+        URL_SITE,
 
         form: {
-            vaga_id: '',
+            vaga_id: "",
 
-            autocomplete_label_vaga_modal: '',
-            autocomplete_label_vaga_modal_anterior: '',
+            autocomplete_label_vaga_modal: "",
+            autocomplete_label_vaga_modal_anterior: "",
 
-            autocomplete_label_municipio_modal: '',
-            autocomplete_label_municipio_modal_anterior: '',
+            autocomplete_label_municipio_modal: "",
+            autocomplete_label_municipio_modal_anterior: "",
 
-            descricao: '',
-            requerimentos: '',
-            municipio_id: '',
-            ativo: true,
+            descricao: "",
+            requerimentos: "",
+            municipio_id: "",
+
+            simulados: [],
+            simuladosDelete: [],
+
+            ativo: true
+
         },
 
         formDefault: null,
@@ -44,21 +50,43 @@ const app = new Vue({
         atualizado: false,
 
         lista: [],
+        listaSimulados: [],
 
         controle: {
             carregando: false,
             dados: {
                 campoBusca: "",
-                campoStatus: "",
-            },
+                campoStatus: ""
+            }
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formDefault = _.cloneDeep(this.form); //copia
         this.atualizar();
         // this.listaVagas();
     },
     methods: {
+        addLISimulado() {
+            const obj = {};
+            obj.novo = true;
+
+            obj.vaga_id = this.form.vaga_id
+            obj.vagas_abertas_id = this.form.id
+            obj.simulado_id = ''
+            obj.duracao = 30
+            obj.online = true
+            obj.ativo = false
+
+            this.form.simulados.push(obj);
+        },
+
+        removerLISimulado(index) {
+            if (this.editando && !this.form.simulados[index].novo) {
+                this.form.simuladosDelete.push(this.form.simulados[index].id);
+            }
+            this.form.simulados.splice(index, 1);
+        },
+
         selecionaVagaModal(obj) {
             this.form.vaga_id = obj.id;
             this.form.autocomplete_label_vaga_modal = obj.label;
@@ -66,15 +94,15 @@ const app = new Vue({
         },
         resetaCampoVagaModal() {
             if (this.form.autocomplete_label_vaga_modal_anterior !== this.form.autocomplete_label_vaga_modal) {
-                this.form.autocomplete_label_vaga_modal_anterior = '';
-                this.form.autocomplete_label_vaga_modal = '';
-                this.form.vaga_id = '';
+                this.form.autocomplete_label_vaga_modal_anterior = "";
+                this.form.autocomplete_label_vaga_modal = "";
+                this.form.vaga_id = "";
 
                 setTimeout(() => {
-                    if (this.form.vaga_id === '') {
-                        valida_campo_vazio($('#' + this.hash), 1);
-                        $('#janelaCadastrar #' + this.hash).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Vaga não pode ficar vazio');
+                    if (this.form.vaga_id === "") {
+                        valida_campo_vazio($("#" + this.hash), 1);
+                        $("#janelaCadastrar #" + this.hash).focus().trigger("blur");
+                        mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
                     }
                 }, 100);
             }
@@ -87,15 +115,15 @@ const app = new Vue({
         },
         resetaCampoMunicipioModal() {
             if (this.form.autocomplete_label_municipio_modal_anterior !== this.form.autocomplete_label_municipio_modal) {
-                this.form.autocomplete_label_municipio_modal_anterior = '';
-                this.form.autocomplete_label_municipio_modal = '';
-                this.form.municipio_id = '';
+                this.form.autocomplete_label_municipio_modal_anterior = "";
+                this.form.autocomplete_label_municipio_modal = "";
+                this.form.municipio_id = "";
 
                 setTimeout(() => {
-                    if (this.form.municipio_id === '') {
-                        valida_campo_vazio($('#mun_' + this.hash), 1);
-                        $('#janelaCadastrar #mun_' + this.hash).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Cidade não pode ficar vazio');
+                    if (this.form.municipio_id === "") {
+                        valida_campo_vazio($("#mun_" + this.hash), 1);
+                        $("#janelaCadastrar #mun_" + this.hash).focus().trigger("blur");
+                        mostraErro("Erro", "O Campo Cidade não pode ficar vazio");
                     }
                 }, 100);
             }
@@ -112,7 +140,7 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preloadAjax = false;
-                })
+                });
         },
 
         formNovo() {
@@ -125,29 +153,29 @@ const app = new Vue({
             formReset();
             setupCampo();
 
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
             this.leitura = false;
 
         },
         cadastrar() {
             formReset();
-            if (this.form.vaga_id === '') {
-                valida_campo_vazio($('#' + this.hash), 1);
-                $('#janelaCadastrar #' + this.hash).focus().trigger('blur');
-                mostraErro('Erro', 'O campo vaga não pode ficar vazio');
+            if (this.form.vaga_id === "") {
+                valida_campo_vazio($("#" + this.hash), 1);
+                $("#janelaCadastrar #" + this.hash).focus().trigger("blur");
+                mostraErro("Erro", "O campo vaga não pode ficar vazio");
                 return false;
             }
-            if (this.form.municipio_id === '') {
-                valida_campo_vazio($('#mun_' + this.hash), 1);
-                $('#janelaCadastrar #mun_' + this.hash).focus().trigger('blur');
-                mostraErro('Erro', 'O Campo Cidade não pode ficar vazio');
+            if (this.form.municipio_id === "") {
+                valida_campo_vazio($("#mun_" + this.hash), 1);
+                $("#janelaCadastrar #mun_" + this.hash).focus().trigger("blur");
+                mostraErro("Erro", "O Campo Cidade não pode ficar vazio");
                 return false;
             }
 
-            $('#janelaCadastrar :input:enabled').trigger('blur');
+            $("#janelaCadastrar :input:enabled").trigger("blur");
 
-            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
+            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
                 return false;
             }
 
@@ -169,7 +197,7 @@ const app = new Vue({
             this.preloadAjax = true;
             formReset();
 
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
             this.leitura = true;
 
             axios.get(`${URL_ADMIN}/cadastro/vagas-abertas/${id}/editar`)
@@ -178,8 +206,8 @@ const app = new Vue({
                     this.form.autocomplete_label_vaga_modal = response.data.vaga.nome;
                     this.form.autocomplete_label_vaga_modal_anterior = response.data.vaga.nome;
 
-                    this.form.autocomplete_label_municipio_modal = response.data.municipio.nome + ' - ' + response.data.municipio.uf;
-                    this.form.autocomplete_label_municipio_modal_anterior = response.data.municipio.nome + ' - ' + response.data.municipio.uf;
+                    this.form.autocomplete_label_municipio_modal = response.data.municipio.nome + " - " + response.data.municipio.uf;
+                    this.form.autocomplete_label_municipio_modal_anterior = response.data.municipio.nome + " - " + response.data.municipio.uf;
                     this.editando = true;
                     this.preloadAjax = false;
                     setupCampo();
@@ -191,14 +219,14 @@ const app = new Vue({
 
         alterar() {
             formReset();
-            $('#janelaCadastrar :input:enabled').trigger('blur');
+            $("#janelaCadastrar :input:enabled").trigger("blur");
 
-            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
+            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
                 return false;
             }
 
-            this.form._method = 'PUT';
+            this.form._method = "PUT";
             this.preloadAjax = true;
 
             axios.put(`${URL_ADMIN}/cadastro/vagas-abertas/${this.form.id}`, this.form).then(response => {
@@ -210,7 +238,8 @@ const app = new Vue({
         },
 
         carregou(dados) {
-            this.lista = dados;
+            this.lista = dados.itens;
+            this.listaSimulados = dados.simulados;
             this.controle.carregando = false;
         },
 
@@ -221,6 +250,6 @@ const app = new Vue({
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
-        },
+        }
     }
 });

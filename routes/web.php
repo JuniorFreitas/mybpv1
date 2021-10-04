@@ -193,6 +193,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::resource('aniversariantes', \App\Http\Controllers\AniversariantesController::class)->middleware('can:aniversariantes');
         });
     });
+
     //Cadastro
     Route::group(['prefix' => 'cadastro'], function () {
         Route::group(['as' => 'instrutor.'], function () {
@@ -230,6 +231,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('empresa-exame/atualizar', [\App\Http\Controllers\EmpresaExameController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_empresa_exame');
             Route::put('empresa-exame/{id}/ativa-desativa', [\App\Http\Controllers\EmpresaExameController::class, 'ativaDesativa'])->name('empresa_exame.ativaDesativa')->middleware('can:cadastro_empresa_exame');
             Route::resource('empresa-exame', \App\Http\Controllers\EmpresaExameController::class)->middleware('can:cadastro_empresa_exame');
+        });
+
+        Route::group(['as' => 'provas.'], function () {
+            Route::post('provas/atualizar', [\App\Http\Controllers\SimuladoController::class, 'atualizar'])->name('provas.atualizar');
+            Route::put('provas/{prova}/ativa-desativa', [\App\Http\Controllers\SimuladoController::class, 'ativaDesativa'])->name('provas.ativaDesativa');
+            Route::resource('provas', \App\Http\Controllers\SimuladoController::class);
         });
 
         Route::group(['as' => 'beneficios.'], function () {

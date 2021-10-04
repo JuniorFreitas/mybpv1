@@ -31,7 +31,7 @@
 
                 <div class="form-group">
                     <label for="descricao">Descrição</label>
-                    <editor :api-key='config.key' v-model="form.descricao" :init="config"></editor>
+                    <editor :api-key='tinyPadrao.key' v-model="form.descricao" :init="tinyPadrao"></editor>
                 </div>
 
                 <div class="form-group">
@@ -45,12 +45,78 @@
                                  @onselect="selecionaMunicipioModal"></autocomplete>
                 </div>
 
+                <fieldset>
+                    <legend>Provas</legend>
+
+                    <button class="btn btn-sm btn-primary mb-3" @click="addLISimulado">
+                        <i class="fa fa-plus"></i> Adicionar
+                    </button>
+
+                    <fieldset class=" mb-2" v-if="form.simulados.length > 0"
+                              v-for="(obj, index) in form.simulados" :key="index">
+                        <legend>#@{{ index + 1 }}</legend>
+                        <div class="row">
+
+                            <div class="col-md-4">
+                                <label>Prova</label>
+
+                                <select class="form-control" v-model="obj.simulado_id"
+                                        onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
+                                    <option value="">Selecione...</option>
+                                    <option v-for="item in listaSimulados" :value="item.id">
+                                        @{{ item.titulo }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label>Duração em minutos</label>
+                                <input type="number" min="15" placeholder="duração da prova" v-model="obj.duracao" v-mascara:numero
+                                       class="form-control"
+                                       onblur="valida_campo_vazio(this,1)">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Online</label>
+                                <select class="form-control" v-model="obj.online"
+                                        onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Ativo</label>
+                                <select class="form-control" v-model="obj.ativo"
+                                        onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12" v-if="obj.simulado_id">
+{{--                                <p>Link da prova: <span v-text="`${URL_SITE}/provas/${obj.vagas_abertas_id}/${obj.simulado_id}/${listaSimulados.find(el => el.id === obj.simulado_id).titulo}`"></span></p>--}}
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <button class="btn btn-sm btn-danger" @click="removerLISimulado(index)"><i
+                                        class="fa fa-times"></i> Remover
+                                </button>
+
+                                <button class="btn btn-sm btn-primary mt" @click="addLISimulado" v-show="index >=1">
+                                    <i class="fa fa-plus"></i> Adicionar
+                                </button>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                </fieldset>
+
                 <div class="form-group">
                     <div class="switchToggle">
                         <input type="checkbox" v-model="form.ativo" id="switch">
                         <label for="switch">Ativo</label>
                     </div>
-                </div>
 
             </form>
         </template>
@@ -145,7 +211,7 @@
 
 
                     <td>
-                        <span v-html="vaga.descricao"></span>
+                        <span v-html="vaga.descricao.substring(0,300)"></span>
                     </td>
 
                     <td>

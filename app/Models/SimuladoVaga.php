@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
+use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -43,6 +46,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class SimuladoVaga extends Model
 {
     use LogsActivity;
+    use HasApiTokens;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'SimuladoVaga';
@@ -68,6 +73,7 @@ class SimuladoVaga extends Model
         'online',
         'empresa_id',
         'vagas_abertas_id',
+        'ativo'
     ];
 
     protected $casts = [
@@ -79,7 +85,10 @@ class SimuladoVaga extends Model
         'online' => 'boolean',
         'empresa_id' => 'int',
         'vagas_abertas_id' => 'int',
+        'ativo' => 'boolean'
     ];
+
+    public $timestamps = false;
 
     protected $appends = ['duracao_segundos'];
 
@@ -106,5 +115,27 @@ class SimuladoVaga extends Model
     public function Perguntas()
     {
         return $this->hasMany(SimuladoPergunta::class, 'simulado_id', 'simulado_id');
+    }
+
+    public function VagasAbertas()
+    {
+        return $this->hasMany(VagasAbertas::class, 'id', 'vagas_abertas_id');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $model->data_inicio = (new DataHora())->dataHoraInsert();
+            $model->data_fim = (new DataHora())->dataHoraInsert();
+        });
+
+        static::updating(function ($model) {
+            $model->data_inicio = (new DataHora())->dataHoraInsert();
+            $model->data_fim = (new DataHora())->dataHoraInsert();
+        });
+
+//        static::updating(function ($model) {
+//            $model->data_inicio = auth()->id();
+//        });
     }
 }
