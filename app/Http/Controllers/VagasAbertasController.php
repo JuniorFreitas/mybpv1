@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Simulado;
 use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use MasterTag\DataHora;
 
 class VagasAbertasController extends Controller
 {
@@ -54,7 +56,22 @@ class VagasAbertasController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-                VagasAbertas::create($dados);
+                $vagas_aberta = VagasAbertas::create($dados);
+
+                if (isset($dados['simulados'])) {
+                    foreach ($dados['simulados'] as $simulado) {
+                        $simulado['data_inicio'] = (new DataHora())->dataHoraInsert();
+                        $simulado['data_fim'] = (new DataHora())->dataHoraInsert();
+                        $simulado['online'] = $simulado['online'] == 'true';
+                        $simulado['ativo'] = $simulado['ativo'] == 'true';
+
+                        if (isset($simulado['novo'])) {
+                            $vagas_aberta->Simulados()->create($simulado);
+                        } else {
+                            $vagas_aberta->Simulados->find($simulado['id'])->update($simulado);
+                        }
+                    }
+                }
                 DB::commit();
                 return response()->json([], 201);
 
@@ -86,7 +103,7 @@ class VagasAbertasController extends Controller
      */
     public function edit(VagasAbertas $vagas_aberta)
     {
-        return $vagas_aberta->load('Municipio', 'Vaga');
+        return $vagas_aberta->load('Municipio', 'Vaga','Simulados');
     }
 
     /**
@@ -116,6 +133,26 @@ class VagasAbertasController extends Controller
             try {
                 DB::beginTransaction();
                 $vagas_aberta->update($dados);
+                if (isset($dados['simuladosDelete'])) {
+                    foreach ($dados['simuladosDelete'] as $id) {
+                        $vagas_aberta->Simulados->find($id)->delete();
+                    }
+                }
+
+                if (isset($dados['simulados'])) {
+                    foreach ($dados['simulados'] as $simulado) {
+                        $simulado['data_inicio'] = (new DataHora())->dataHoraInsert();
+                        $simulado['data_fim'] = (new DataHora())->dataHoraInsert();
+                        $simulado['online'] = $simulado['online'] == 'true';
+                        $simulado['ativo'] = $simulado['ativo'] == 'true';
+
+                        if (isset($simulado['novo'])) {
+                            $vagas_aberta->Simulados()->create($simulado);
+                        } else {
+                            $vagas_aberta->Simulados->find($simulado['id'])->update($simulado);
+                        }
+                    }
+                }
                 DB::commit();
                 return response()->json([], 201);
 
@@ -154,12 +191,13 @@ class VagasAbertasController extends Controller
         }
 
         $resultado = $resultado->orderByDesc('updated_at')->paginate(50);
+        $simulados = Simulado::whereAtivo(true)->orderBy('titulo')->get();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $resultado->items()
+            'dados' => ['itens' => $resultado->items(), 'simulados' => $simulados]
         ]);
     }
 

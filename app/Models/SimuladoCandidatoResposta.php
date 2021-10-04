@@ -32,6 +32,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $activities_count
  * @property int|null $feedback_id
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta whereFeedbackId($value)
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  */
 class SimuladoCandidatoResposta extends Model
 {

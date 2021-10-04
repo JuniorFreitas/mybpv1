@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * App\VagasAbertas
@@ -35,19 +37,26 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\Municipio $Municipio
  * @property-read \App\Models\Vaga $Vaga
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereVagaId($value)
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereEmpresaId($value)
  */
 class VagasAbertas extends Model
 {
+    use HasApiTokens;
+    use TenantTrait;
+
     protected $fillable = [
         'vaga_id',
         'descricao',
         'municipio_id',
+        'empresa_id',
         'ativo',
     ];
     protected $casts = [
         'vaga_id' => 'int',
         'descricao' => 'string',
         'municipio_id' => 'int',
+        'empresa_id' => 'int',
         'ativo' => 'boolean',
     ];
 
@@ -60,4 +69,15 @@ class VagasAbertas extends Model
     {
         return $this->hasOne(Municipio::class, 'id', 'municipio_id');
     }
+
+    public function Simulados()
+    {
+        return $this->hasMany(SimuladoVaga::class, 'vagas_abertas_id', 'id');
+    }
+
+    public function SimuladosAtivos()
+    {
+        return $this->hasMany(SimuladoVaga::class, 'vaga_aberta_id', 'id')->whereAtivo(true);
+    }
+
 }

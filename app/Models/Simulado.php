@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -37,6 +39,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class Simulado extends Model
 {
     use LogsActivity;
+    use HasApiTokens;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'Simulado';
@@ -53,8 +57,8 @@ class Simulado extends Model
         $activity->descricao = "";
     }
 
-    protected $fillable = ['titulo', 'ativo'];
-    protected $casts = ['id' => 'int', 'titulo' => 'string', 'ativo' => 'boolean'];
+    protected $fillable = ['titulo', 'ativo', 'empresa_id'];
+    protected $casts = ['id' => 'int', 'titulo' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int'];
 
     protected $appends = ['slug', 'qnt_questoes'];
 

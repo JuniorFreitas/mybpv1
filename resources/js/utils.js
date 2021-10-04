@@ -98,7 +98,35 @@ exports.optionDriver = {
 }
 
 exports.tinyPadrao = {
-    toolbar: ['bold italic underline'],
+    toolbar: ['undo redo fontselect fontsizeselect | bold italic underline'],
+    menubar: false,
+    statusbar: true,
+    schema: 'html5',
+    width: '100%',
+    height: 650,
+    resize: true,
+    language: 'pt_BR',
+    language_url: `${URL_SITE}/js/tinymce/langs/pt_BR.js`,
+    branding: false,
+    fontsize_formats: '12pt',
+    plugins: 'paste',
+    paste_auto_cleanup_on_paste: true,
+    paste_remove_styles: true,
+    paste_remove_styles_if_webkit: true,
+    paste_strip_class_attributes: true,
+    content_style: 'body { font-size: 12pt; font-family: Arial; }',
+    setup: function(ed) {
+        ed.on('init', function(e) {
+            ed.execCommand('fontName', false, 'Arial')
+            ed.execCommand('fontSize', false, '12pt')
+        })
+    },
+    key: process.env.MIX_TYNEKEY
+}
+
+
+exports.tinyProva = {
+    toolbar: ['undo redo fontselect fontsizeselect | bold italic | alignleft aligncenter alignright alignjustify | insert table | bullist numlist link table '],
     menubar: false,
     statusbar: true,
     schema: 'html5',
@@ -108,13 +136,17 @@ exports.tinyPadrao = {
     language: 'pt_BR',
     language_url: `${URL_SITE}/js/tinymce/langs/pt_BR.js`,
     branding: false,
+    font_formats: "Arial=arial,helvetica,sans-serif;Arial Black=arial black,avant garde;",
     fontsize_formats: '12pt 14pt 18pt 24pt 36pt',
-    plugins: 'paste',
     paste_auto_cleanup_on_paste: true,
     paste_remove_styles: true,
     paste_remove_styles_if_webkit: true,
     paste_strip_class_attributes: true,
     content_style: 'body { font-size: 12pt; font-family: Arial; }',
+    plugins: "image, table, paste",
+    image_class_list: [
+        {title: 'Responsiva', value: 'img-fluid'},
+    ],
     setup: function(ed) {
         ed.on('init', function(e) {
             ed.execCommand('fontName', false, 'Arial')

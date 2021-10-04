@@ -149,7 +149,7 @@
             @endcan
             @can('cadastro_provas')
                 <li>
-                    <a href="{{route('g.usuarios.usuarios.index')}}" key="provas">
+                    <a href="{{route('g.provas.provas.index')}}" key="provas">
                         Provas
                     </a>
                 </li>
