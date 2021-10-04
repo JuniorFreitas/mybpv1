@@ -312,7 +312,7 @@
         <template slot="conteudo">
             <div class="row">
                 <div class="col-12">
-                    <p class="text-justify">Os Termos de Uso e Política de Privacidade do SGIBPSE foram atualizados em
+                    <p class="text-justify">Os Termos de Uso e Política de Privacidade do MyBP foram atualizados em
                         30/11/2020.
                         <br>Para continuar, é necessário ler e aceitar o documento atualizado.</p>
                     <div class="form-group form-check">
