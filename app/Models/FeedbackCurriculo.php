@@ -748,6 +748,6 @@ class FeedbackCurriculo extends Model
             $model->usuario_entrevista_marcado = auth()->id();
         });
 
-//        static::addGlobalScope(new ScopeClientesEmpresa);
+        static::addGlobalScope(new ScopeClientesEmpresa);
     }
 }

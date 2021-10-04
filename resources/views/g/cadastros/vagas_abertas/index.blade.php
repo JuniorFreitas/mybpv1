@@ -18,11 +18,11 @@
             <form v-if="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
 
                 <div class="form-group">
-                    <label for="">Informe a Vaga</label>
+                    <label for="">Informe o cargo</label>
                     <autocomplete :caminho="vagas_ativas"
                                   :valido="form.vaga_id !== ''"
                                   v-model="form.autocomplete_label_vaga_modal"
-                                  placeholder="Selecione uma vaga"
+                                  placeholder="Selecione um cargo"
                                   :disabled="editando"
                                   :id="hash"
                                   @onblur="resetaCampoVagaModal"
