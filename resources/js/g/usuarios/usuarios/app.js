@@ -81,7 +81,8 @@ const app = new Vue({
 
             axios.get(`${URL_ADMIN}/usuarios/${id}/editar`)
                 .then(response => {
-                    Object.assign(this.form, response.data)
+                    Object.assign(this.form, response.data.usuario)
+                    this.listaPapeis = response.data.papeis
                     this.form.password = '';
                     this.editando = true;
                     this.preloadAjax = false;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GrupoCloud;
 use App\Models\Papel;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -47,6 +48,7 @@ class UserController extends Controller
             'login' => 'unique:users,login',
             'password' => 'required|confirmed|min:3',
             'grupo_id' => 'required|numeric',
+            'tipo' => 'required',
             'grupo_cloud_id' => 'required|numeric',
             'ativo' => 'required|boolean',
             'empresa_id' => 'required'
@@ -58,7 +60,7 @@ class UserController extends Controller
             ], 400);
         } else {
 
-            $dados['tipo'] = Papel::find($dados['grupo_id'])->nome;
+//            $dados['tipo'] = Papel::find($dados['grupo_id'])->nome;
             $dados['password'] = bcrypt($dados['password']);
             $dados['cadastrou'] = auth()->id();
 
@@ -78,8 +80,11 @@ class UserController extends Controller
     public function edit(User $usuario)
     {
         $this->authorize('usuarios_update');
-        $usuario->load('papel:id,nome');
-        return $usuario;
+        $usuario->load('papel:id,nome', 'Empresa');
+
+        $papeis = Papel::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
+
+        return response()->json(['usuario' => $usuario,'papeis' => $papeis], 200);
     }
 
 
@@ -108,6 +113,7 @@ class UserController extends Controller
             'grupo_id' => 'required|numeric',
             'grupo_cloud_id' => 'required|numeric',
             'ativo' => 'required|boolean',
+            'tipo' => 'required',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -190,7 +196,14 @@ class UserController extends Controller
         $this->authorize('usuarios');
         $porPagina = $request->get('porPagina');
 
-        $resultado = User::with('Papel:id,nome');
+        if (auth()->user()->empresa_id === 104) {
+            $resultado = User::with('Papel:id,nome', 'Empresa')
+                ->where('tipo', '!=', 'Pessoa')
+                ->where('tipo', '!=', 'Empresa');
+        } else {
+            $resultado = User::with('Papel:id,nome')
+                ->where('empresa_id', auth()->user()->empresa_id);
+        }
 
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')

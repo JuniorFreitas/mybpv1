@@ -52,7 +52,7 @@
                            autocomplete="off" onblur="valida_campo_vazio(this,3)">
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" v-if="form.empresa_id === 104">
                     <label>Empresa</label>
                     <select class="form-control form-control-sm" v-model="form.empresa_id"
                             onchange="valida_campo_vazio(this,1)"
@@ -64,7 +64,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" v-if="grupoempresa">
+                <div class="form-group" v-if="grupoempresa || editando">
                     <label>Grupo</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_id"
                             onchange="valida_campo_vazio(this,1)"
@@ -74,7 +74,7 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" v-if="form.empresa_id === 104">
                     <label>Grupo cloud</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_cloud_id"
                             onchange="valida_campo_vazio(this,1)"
