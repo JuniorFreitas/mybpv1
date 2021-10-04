@@ -18,12 +18,15 @@ const app = new Vue({
             password: '',
             password_confirmation: '',
             grupo_id: '',
+            tipo: '',
             grupo_cloud_id: '',
             empresa_id: '',
             ativo: true,
         },
+        empresa_id: '',
         formDefault: null,
         listaPapeis: [],
+        listaCloud: [],
         lista: [],
         dados: {},
         controle: {
@@ -126,13 +129,15 @@ const app = new Vue({
                     if (response.status === 200) {
                         let data = response.data;
                         this.listaPapeis = data.papeis;
+                        this.listaCloud = data.cloud;
                         this.grupoempresa = true;
                     }
                 })
         },
 
         carregou(dados) {
-            this.lista = dados;
+            this.lista = dados.resultado;
+            this.empresa_id = dados.empresa;
             this.controle.carregando = false;
         },
         carregando() {

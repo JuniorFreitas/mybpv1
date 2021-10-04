@@ -84,7 +84,7 @@ class UserController extends Controller
 
         $papeis = Papel::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
 
-        return response()->json(['usuario' => $usuario,'papeis' => $papeis], 200);
+        return response()->json(['usuario' => $usuario, 'papeis' => $papeis], 200);
     }
 
 
@@ -94,7 +94,6 @@ class UserController extends Controller
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['alterarSenha'] = $dados['alterarSenha'] == 'true' ? true : false;
-        $dados['tipo'] = Papel::find($dados['grupo_id'])->nome;
 
         if ($dados['alterarSenha']) {
             if ($dados['password'] !== $dados['password_confirmation']) {
@@ -210,12 +209,17 @@ class UserController extends Controller
                 ->orWhere('id', $request->campoBusca);
         }
 
+        $empresa = auth()->user()->empresa_id;
+
         $resultado = $resultado->orderBy('nome')->paginate($porPagina);
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $resultado->items()
+            'dados' => [
+                'resultado' => $resultado->items(),
+                'empresa' => $empresa
+            ],
         ]);
 
     }
@@ -223,8 +227,9 @@ class UserController extends Controller
     public function buscaGrupoEmpresa($empresa_id)
     {
         $papeis = Papel::whereEmpresaId($empresa_id)->get();
+        $grupo_cloud = GrupoCloud::whereEmpresaId($empresa_id)->get();
 
-        return response()->json(['papeis' => $papeis], 200);
+        return response()->json(['papeis' => $papeis, 'cloud' => $grupo_cloud], 200);
     }
 
 }
