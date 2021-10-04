@@ -21,7 +21,9 @@ class ScopeEmpresa implements Scope
             if(auth()->user()){
                 return $builder->where('empresa_id', auth()->user()->empresa_id);
             }
-        } else {
+        }
+
+        else {
             return $builder->whereHas('Pessoa', function ($query) {
                 $query->whereEmpresaId(auth()->user()->empresa_id);
             });

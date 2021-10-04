@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
@@ -395,6 +396,7 @@ class ParecerRh extends Model
         static::updating(function ($model) {
             $model->entrevistador = auth()->id();
         });
+
 
     }
 }
