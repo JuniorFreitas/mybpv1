@@ -684,6 +684,15 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
     });
 
+    Route::group(['as' => 'perfil.'], function () {
+        Route::get('perfil/{id}', [\App\Http\Controllers\UserController::class, 'perfilUsuario'])->name('perfilUsuario');
+        Route::put('perfil/{id}', [\App\Http\Controllers\UserController::class, 'atualizaPerfilUsuario'])->name('atualizaPerfilUsuario');
+        Route::post('perfil/anexo/uploadAnexos', [\App\Http\Controllers\UserController::class, 'uploadAnexos'])->name('upload-anexos-perfil');
+        Route::get('perfil/anexo/{arquivo}', [\App\Http\Controllers\UserController::class, 'anexoShow'])->name('anexo-show-perfil');
+        Route::get('perfil/anexoDownload/{arquivo}', [\App\Http\Controllers\UserController::class, 'download'])->name('anexo-download-perfil');
+        Route::delete('perfil/anexo/{arquivo}', [\App\Http\Controllers\UserController::class, 'anexoDelete'])->name('anexo-delete-perfil');
+    });
+
     //Financeiro
     Route::group(['as' => 'financeiro.'], function () {
 

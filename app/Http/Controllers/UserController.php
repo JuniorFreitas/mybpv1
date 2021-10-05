@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Arquivo;
 use App\Models\Papel;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -214,4 +215,72 @@ class UserController extends Controller
         return response()->json(['papeis' => $papeis], 200);
     }
 
+    public function perfilUsuario($id)
+    {
+        $user = User::find($id)->load('FotoPerfil');
+        return response()->json(['user' => $user]);
+    }
+
+    public function atualizaPerfilUsuario(Request $request, $id)
+    {
+        $dados = $request->input();
+
+        $usuario = User::find($id);
+
+        $dadosValidados = \Validator::make($dados, [
+            'nome' => 'required|min:3',
+            'login' => 'required|min:3',
+        ]);
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao atualizar os dados do usuário',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        } else {
+            $usuario->update($dados);
+
+            if (isset($dados['foto_perfilDel'])) {
+                foreach ($dados['foto_perfilDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            // inseri uma nova foto de anexo
+            if (isset($dados['foto_perfil'])) {
+                foreach ($dados['foto_perfil'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $usuario->FotoPerfil()->attach($arquivo->id);
+                    }
+                }
+            }
+
+            return response()->json([], 201);
+        }
+    }
+
+    public function uploadAnexos(Request $request)
+    {
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_PERFIL_USUARIO);
+    }
+
+    public function anexoShow(Request $request, $arquivo)
+    {
+        return Arquivo::anexoShow([Arquivo::DISCO_PERFIL_USUARIO], $arquivo);
+    }
+
+    public function anexoDelete(Request $request, $arquivo)
+    {
+        return Arquivo::anexoDelete([Arquivo::DISCO_PERFIL_USUARIO], $arquivo);
+    }
+
+    //anexo ou foto
+    public function downloadPerfil(Request $request, $arquivo)
+    {
+        return Arquivo::anexoDownload([Arquivo::DISCO_PERFIL_USUARIO], $arquivo);
+    }
 }
