@@ -14,7 +14,6 @@
             <div class="alert alert-success alert-dismissible" v-show="atualizado">
                 <h4><i class="icon fa fa-check"></i>Usuário alterado com sucesso!</h4>
             </div>
-
             <form v-show="!preloadAjax && (!cadastrado && !atualizado)" id="form">
                 <div class="form-group">
                     <label>Nome do usuário</label>
@@ -29,14 +28,12 @@
                            autocomplete="off"
                            onblur="valida_campo_vazio(this,3)">
                 </div>
-
                 <div class="form-check mb-3" v-if="editando">
                     <label class="form-check-label">
                         <input class="form-check-input" type="checkbox" v-model="form.alterarSenha">
                         Redefinir senha
                     </label>
                 </div>
-
                 <div class="form-group" v-if="editando && form.alterarSenha || !editando">
                     <label>Senha</label>
                     <input type="password" class="form-control form-control-sm" v-model="form.password"
@@ -44,15 +41,13 @@
                            autocomplete="off"
                            onblur="valida_campo_vazio(this,3)">
                 </div>
-
                 <div class="form-group" v-if="editando && form.alterarSenha || !editando">
                     <label>Redigitar senha</label>
                     <input type="password" class="form-control form-control-sm" v-model="form.password_confirmation"
                            placeholder="Redigitar senha"
                            autocomplete="off" onblur="valida_campo_vazio(this,3)">
                 </div>
-
-                <div class="form-group">
+                <div class="form-group" v-if="empresa_id === 104">
                     <label>Empresa</label>
                     <select class="form-control form-control-sm" v-model="form.empresa_id"
                             onchange="valida_campo_vazio(this,1)"
@@ -63,8 +58,7 @@
                         @endforeach
                     </select>
                 </div>
-
-                <div class="form-group" v-if="grupoempresa">
+                <div class="form-group" v-if="grupoempresa || empresa_id === 104">
                     <label>Grupo</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_id"
                             onchange="valida_campo_vazio(this,1)"
@@ -73,19 +67,25 @@
                         <option v-for="papel in listaPapeis" :value="papel.id">@{{papel.nome}}</option>
                     </select>
                 </div>
-
-                <div class="form-group">
+                <div class="form-group" v-if="grupoempresa || empresa_id === 104">
                     <label>Grupo cloud</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_cloud_id"
                             onchange="valida_campo_vazio(this,1)"
                             onblur="valida_campo_vazio(this,1)">
                         <option value="">Selecione...</option>
-                        @foreach (\App\Models\GrupoCloud::get() as $grupo_cloud)
-                            <option value="{{$grupo_cloud->id}}">{{$grupo_cloud->nome}}</option>
-                        @endforeach
+                        <option v-for="cloud in listaCloud" :value="cloud.id">@{{cloud.nome}}</option>
                     </select>
                 </div>
-
+                <div class="form-group">
+                    <label>Tipo de Usuário</label>
+                    <select class="form-control form-control-sm" v-model="form.tipo"
+                            onchange="valida_campo_vazio(this,1)"
+                            onblur="valida_campo_vazio(this,1)">
+                        <option value="">Selecione...</option>
+                        <option value="Administrador">Administrador</option>
+                        <option value="Funcionario">Funcionário</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label>Ativo</label>
                     <select class="form-control form-control-sm" v-model="form.ativo">

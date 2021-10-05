@@ -48,6 +48,18 @@
                                 </div>
 
                                 <div class="form-group">
+                                    <label>Empresa</label>
+                                    <select class="form-control form-control-sm" v-model="form.empresa_id"
+                                            onchange="valida_campo_vazio(this,1)"
+                                            onblur="valida_campo_vazio(this,1)">
+                                        <option value="">Selecione...</option>
+                                        @foreach (\App\Models\Cliente::whereAtivo(true)->get() as $cliente)
+                                            <option value="{{$cliente->id}}">{{$cliente->nome_fantasia}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
                                     <label>Descrição</label>
                                     <input type="text" class="form-control" v-model="form.descricao"
                                            placeholder="Descrição do grupo"

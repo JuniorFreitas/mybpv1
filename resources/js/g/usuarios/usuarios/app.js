@@ -18,12 +18,15 @@ const app = new Vue({
             password: '',
             password_confirmation: '',
             grupo_id: '',
+            tipo: '',
             grupo_cloud_id: '',
             empresa_id: '',
             ativo: true,
         },
+        empresa_id: '',
         formDefault: null,
         listaPapeis: [],
+        listaCloud: [],
         lista: [],
         dados: {},
         controle: {
@@ -81,7 +84,9 @@ const app = new Vue({
 
             axios.get(`${URL_ADMIN}/usuarios/${id}/editar`)
                 .then(response => {
-                    Object.assign(this.form, response.data)
+                    Object.assign(this.form, response.data.usuario)
+                    this.listaPapeis = response.data.papeis
+                    this.listaCloud = response.data.cloud;
                     this.form.password = '';
                     this.editando = true;
                     this.preloadAjax = false;
@@ -125,13 +130,15 @@ const app = new Vue({
                     if (response.status === 200) {
                         let data = response.data;
                         this.listaPapeis = data.papeis;
+                        this.listaCloud = data.cloud;
                         this.grupoempresa = true;
                     }
                 })
         },
 
         carregou(dados) {
-            this.lista = dados;
+            this.lista = dados.resultado;
+            this.empresa_id = dados.empresa;
             this.controle.carregando = false;
         },
         carregando() {
