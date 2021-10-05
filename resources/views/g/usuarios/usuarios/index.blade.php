@@ -58,7 +58,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group" v-if="grupoempresa">
+                <div class="form-group" v-if="grupoempresa || empresa_id === 104">
                     <label>Grupo</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_id"
                             onchange="valida_campo_vazio(this,1)"
@@ -67,7 +67,7 @@
                         <option v-for="papel in listaPapeis" :value="papel.id">@{{papel.nome}}</option>
                     </select>
                 </div>
-                <div class="form-group" v-if="grupoempresa">
+                <div class="form-group" v-if="grupoempresa || empresa_id === 104">
                     <label>Grupo cloud</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_cloud_id"
                             onchange="valida_campo_vazio(this,1)"

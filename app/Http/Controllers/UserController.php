@@ -83,8 +83,9 @@ class UserController extends Controller
         $usuario->load('papel:id,nome', 'Empresa');
 
         $papeis = Papel::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
+        $cloud = GrupoCloud::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
 
-        return response()->json(['usuario' => $usuario, 'papeis' => $papeis], 200);
+        return response()->json(['usuario' => $usuario, 'papeis' => $papeis,'cloud' => $cloud], 200);
     }
 
 

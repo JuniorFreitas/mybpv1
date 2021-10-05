@@ -86,6 +86,7 @@ const app = new Vue({
                 .then(response => {
                     Object.assign(this.form, response.data.usuario)
                     this.listaPapeis = response.data.papeis
+                    this.listaCloud = response.data.cloud;
                     this.form.password = '';
                     this.editando = true;
                     this.preloadAjax = false;

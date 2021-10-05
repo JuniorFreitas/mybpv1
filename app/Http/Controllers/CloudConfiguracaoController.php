@@ -33,7 +33,7 @@ class CloudConfiguracaoController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -45,6 +45,7 @@ class CloudConfiguracaoController extends Controller
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:2|unique:grupo_clouds,nome',
             'descricao' => 'required|min:2',
+            'empresa_id' => 'required',
             'ativo' => 'required|boolean',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -113,6 +114,7 @@ class CloudConfiguracaoController extends Controller
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:2|unique:grupo_clouds,nome,' . $grupocloud->id,
             'descricao' => 'required|min:3',
+            'empresa_id' => 'required',
             'ativo' => 'required|boolean',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..

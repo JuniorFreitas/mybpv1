@@ -10,6 +10,7 @@ const app = new Vue({
 
         form: {
             nome: '',
+            empresa_id: '',
             descricao: '',
             ativo: true,
             habilidades: [],
