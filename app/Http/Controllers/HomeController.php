@@ -29,7 +29,8 @@ class HomeController extends Controller
 
     public function dashboard()
     {
-        return view('g.dashboard.index');
+        $empresa = auth()->user()->empresa_id;
+        return view('g.dashboard.index', compact('empresa'));
     }
 
     public function concordarTermos()

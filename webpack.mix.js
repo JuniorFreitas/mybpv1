@@ -19,7 +19,7 @@ const mix = require('laravel-mix');
 
 mix.sass('resources/sass/app.scss', 'public/css');
 
-mix.copy('resources/css/icons.min.css','public/css');
+mix.copy('resources/css/icons.min.css', 'public/css');
 
 // mix.js('resources/js/app.js', 'public/js')
 //     .sass('resources/sass/app.scss', 'public/css');
@@ -62,18 +62,18 @@ mix.js('resources/js/app.js', 'public/js')
     .js('resources/js/g/administracao/planejamentodiario/app.js', 'public/js/g/planejamentodiario/')
     .js('resources/js/g/administracao/aniversariantes/app.js', 'public/js/g/aniversariantes/')
     //Cadastros
-    .js('resources/js/g/cadastros/treinamentoindustria/app.js','public/js/g/treinamentoindustria/')
-    .js('resources/js/g/cadastros/treinamentosgi/app.js','public/js/g/treinamentosgi/')
-    .js('resources/js/g/cadastros/departamento/app.js','public/js/g/departamento/')
-    .js('resources/js/g/cadastros/instrutor/app.js','public/js/g/instrutor/')
-    .js('resources/js/g/cadastros/empresatreinamento/app.js','public/js/g/empresatreinamento/')
-    .js('resources/js/g/cadastros/empresa-exame/app.js','public/js/g/empresaexame/')
-    .js('resources/js/g/cadastros/provas/app.js','public/js/g/cadastro/provas/')
-    .js('resources/js/g/cadastros/beneficio/app.js','public/js/g/beneficio/')
-    .js('resources/js/g/cadastros/vagas/app.js','public/js/g/vagas/')
-    .js('resources/js/g/cadastros/vagas_abertas/app.js','public/js/g/vagas_abertas/')
-    .js('resources/js/g/cadastros/areas/app.js','public/js/g/areas/')
-    .js('resources/js/g/cadastros/centrocusto/app.js','public/js/g/centrocusto/')
+    .js('resources/js/g/cadastros/treinamentoindustria/app.js', 'public/js/g/treinamentoindustria/')
+    .js('resources/js/g/cadastros/treinamentosgi/app.js', 'public/js/g/treinamentosgi/')
+    .js('resources/js/g/cadastros/departamento/app.js', 'public/js/g/departamento/')
+    .js('resources/js/g/cadastros/instrutor/app.js', 'public/js/g/instrutor/')
+    .js('resources/js/g/cadastros/empresatreinamento/app.js', 'public/js/g/empresatreinamento/')
+    .js('resources/js/g/cadastros/empresa-exame/app.js', 'public/js/g/empresaexame/')
+    .js('resources/js/g/cadastros/provas/app.js', 'public/js/g/cadastro/provas/')
+    .js('resources/js/g/cadastros/beneficio/app.js', 'public/js/g/beneficio/')
+    .js('resources/js/g/cadastros/vagas/app.js', 'public/js/g/vagas/')
+    .js('resources/js/g/cadastros/vagas_abertas/app.js', 'public/js/g/vagas_abertas/')
+    .js('resources/js/g/cadastros/areas/app.js', 'public/js/g/areas/')
+    .js('resources/js/g/cadastros/centrocusto/app.js', 'public/js/g/centrocusto/')
 
     //Curriculos
     .js('resources/js/g/curriculos/recrutamento/app.js', 'public/js/g/recrutamento/')
@@ -172,6 +172,8 @@ mix.js('resources/js/app.js', 'public/js')
     //controle de exames
     .js('resources/js/g/controle-exames/app.js', 'public/js/g/controle-exames/')
 
+    //Perfil Usuário
+    .js('resources/js/g/perfil/app.js', 'public/js/g/perfil')
 
     .copyDirectory('resources/js/tinymce', 'public/js/tinymce')
 ;
@@ -186,7 +188,6 @@ mix.babel([
     'resources/js/jquery.mask.js',
     'resources/js/jquery.maskMoney.js',
 ], 'public/js/funcoes.js');
-
 
 
 mix.disableNotifications();
