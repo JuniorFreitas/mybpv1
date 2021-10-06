@@ -308,4 +308,9 @@ class User extends Authenticatable {
         return $this->belongsToMany(EmpresaEscala::class, 'funcionario_escalas', 'funcionario_id', 'escala_id');
     }
 
+    public function FotoPerfil()
+    {
+        return $this->belongsToMany(Arquivo::class, 'user_anexos', 'user_id', 'arquivo_id');
+    }
+
 }

@@ -203,6 +203,23 @@ return [
             'visibility' => 'public',
 
         ],
+        'disco-perfil-usuario' => [
+            'driver' => env('FILESYSTEM_DRIVER', 'local'),
+            'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-perfil-usuario') : 'arquivos/disco-perfil-usuario',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/perfil' : env('AWS_URL'),
+
+            'urlShow' => env('APP_URL') . '/g/perfil/anexo',
+            'urlDownload' => env('APP_URL') . '/g/perfil/anexo',
+            'urlThumb' => env('APP_URL') . '/g/perfil/anexo',
+            'urlDelete' => env('APP_URL') . '/g/perfil/anexo',
+            'visibility' => 'public',
+
+        ],
 
         'requisicao-vaga' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),

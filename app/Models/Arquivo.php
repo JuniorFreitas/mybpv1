@@ -173,7 +173,8 @@ class Arquivo extends Model
         'requisicao-vaga',
         'disco-ponto-eletronico',
         'public',
-        's3'
+        's3',
+        'disco-perfil-usuario'
     ];
 
 
@@ -193,6 +194,7 @@ class Arquivo extends Model
     public const DISCO_PUBLICO = 'public';
     public const DISCO_PONTO_ELETRONICO = 'disco-ponto-eletronico';
     public const S3 = 's3';
+    public const DISCO_PERFIL_USUARIO = 'disco-perfil-usuario';
 
     //Acessor ->data
     public function getUrlAttribute()
@@ -232,6 +234,8 @@ class Arquivo extends Model
                     return config('filesystems.disks.public.urlShow') . "/{$this->file}";
                 case 's3':
                     return config('filesystems.disks.s3.urlShow') . "/{$this->file}";
+                case 'disco-perfil-usuario':
+                    return config('filesystems.disks.disco-perfil-usuario.urlShow') . "/{$this->file}";
             }
             return $url;
         }
@@ -277,6 +281,8 @@ class Arquivo extends Model
                     return config('filesystems.disks.public.urlThumb') . "/{$this->thumb}";
                 case 's3':
                     return config('filesystems.disks.s3.urlThumb') . "/{$this->thumb}";
+                case 'disco-perfil-usuario':
+                    return config('filesystems.disks.disco-perfil-usuario.urlThumb') . "/{$this->thumb}";
 
             }
             return $url;
@@ -320,6 +326,8 @@ class Arquivo extends Model
                     return config('filesystems.disks.public.urlDownload') . "/{$this->file}";
                 case 's3':
                     return config('filesystems.disks.s3.urlDownload') . "/{$this->file}";
+                case 'disco-perfil-usuario':
+                    return config('filesystems.disks.disco-perfil-usuario.urlDownload') . "/{$this->file}";
             }
         }
         return "";
@@ -361,6 +369,8 @@ class Arquivo extends Model
                     return config('filesystems.disks.public.urlDelete') . "/{$this->file}";
                 case 's3':
                     return config('filesystems.disks.s3.urlDelete') . "/{$this->file}";
+                case 'disco-perfil-usuario':
+                    return config('filesystems.disks.disco-perfil-usuario.urlDelete') . "/{$this->file}";
             }
         }
         return "";
