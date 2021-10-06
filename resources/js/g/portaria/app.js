@@ -151,19 +151,19 @@ const app = new Vue({
         },
 
         selecionaMunicipioModal(obj) {
-            this.form.curriculo.municipio_id = obj.id;
-            this.form.curriculo.autocomplete_label_municipio_modal = obj.label;
-            this.form.curriculo.autocomplete_label_municipio_modal_anterior = obj.label;
+            this.form.feedback.curriculo.municipio_id = obj.id;
+            this.form.feedback.curriculo.autocomplete_label_municipio_modal = obj.label;
+            this.form.feedback.curriculo.autocomplete_label_municipio_modal_anterior = obj.label;
         },
 
         resetaCampoMunicipioModal() {
-            if (this.form.curriculo.autocomplete_label_municipio_modal_anterior !== this.form.curriculo.autocomplete_label_municipio_modal) {
-                this.form.curriculo.autocomplete_label_municipio_modal_anterior = '';
-                this.form.curriculo.autocomplete_label_municipio_modal = '';
-                this.form.curriculo.municipio_id = '';
+            if (this.form.feedback.curriculo.autocomplete_label_municipio_modal_anterior !== this.form.feedback.curriculo.autocomplete_label_municipio_modal) {
+                this.form.feedback.curriculo.autocomplete_label_municipio_modal_anterior = '';
+                this.form.feedback.curriculo.autocomplete_label_municipio_modal = '';
+                this.form.feedback.curriculo.municipio_id = '';
 
                 setTimeout(() => {
-                    if (this.form.curriculo.municipio_id === '') {
+                    if (this.form.feedback.curriculo.municipio_id === '') {
                         valida_campo_vazio($('#mun_' + this.hash), 1);
                         $('#janelaAdmissaoAvulsa #mun_' + this.hash).focus().trigger('blur');
                         mostraErro('Erro', 'O Campo Município não pode ficar vazio');

@@ -4,11 +4,7 @@
 @section('content')
     <modal id="filtroColunas" titulo="Mostrar e Ocultar colunas">
         <template slot="conteudo">
-            <div class="custom-control custom-switch mb-2" v-if="cliente_id === 0">
-                <input type="checkbox" v-model="colunasTabela.cliente" @click="colunasTabela.cliente = !colunasTabela.cliente" class="custom-control-input" id="cliente">
-                <label class="custom-control-label"
-                       for="cliente">EMPRESA</label>
-            </div>
+
 
             <div class="custom-control custom-switch mb-2">
                 <input type="checkbox" v-model="colunasTabela.pcd" @click="colunasTabela.pcd = !colunasTabela.pcd" class="custom-control-input" id="pcd">
@@ -438,19 +434,6 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3" v-if="cliente_id === 0">
-                    <div class="form-group">
-                        <label>Cliente</label>
-                        <autocomplete :disabled="controle.carregando"
-                                      :caminho="controle.dados.caminho_cliente_autocomplete"
-                                      :valido="controle.dados.campoCliente !== ''"
-                                      v-model="controle.dados.autocomplete_label_cliente"
-                                      placeholder="Por cliente"
-                                      @onblur="resetaCampoCliente"
-                                     @onselect="selecionaCliente"></autocomplete>
-                    </div>
-                </div>
-
                 <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                     <div class="form-group">
                         <label>Estado</label>
@@ -538,11 +521,11 @@
                     <input type="hidden" name="campoUf" :value="controle.dados.campoUf">
                     <input type="hidden" name="campoRota" :value="controle.dados.campoRota">
                     <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
-                    <button type="submit" class="btn btn-sm btn-primary mb-1"
-                            :disabled="(selecionados.length === 0  && controle.dados.campoCliente === '' ||  lista.length===0 ) || controle.carregando">
-                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
-                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>
+{{--                    <button type="submit" class="btn btn-sm btn-primary mb-1"--}}
+{{--                            :disabled="(selecionados.length === 0  && controle.dados.campoCliente === '' ||  lista.length===0 ) || controle.carregando">--}}
+{{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
+{{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
+{{--                    </button>--}}
                 </form>
             </div>
         </div>
