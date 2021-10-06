@@ -165,89 +165,87 @@ class Curriculo extends Model
 
     protected $table = 'curriculos';
     protected $fillable = [
-//        'id',
-        'cpf',
-        'nome',
-        'cnh',
-        'sexo',
-        'nascimento',
-        'logradouro',
-        'complemento',
-        'bairro',
-        'municipio',
-        'uf',
-        'cep',
-        'email',
-        'filiacao_pai',
-        'filiacao_mae',
-        'formacao',
-        'formacao_instituicao',
-        'formacao_curso',
-        'formacao_status',
-        'vaga_pretendida',
-        'pcd',
-        'cid',
-        'viajar',
-        'uf_vaga',
-        'municipio_id',
-        'lido',
-        'usuario_lido',
-        'datalido',
-        'rg',
-        'orgao_expeditor',
-        'carteira_trabalho'
+        "cpf",
+        "rg",
+        "orgao_expeditor",
+        "carteira_trabalho",
+        "nome",
+        "cnh",
+        "nascimento",
+        "logradouro",
+        "complemento",
+        "bairro",
+        "municipio",
+        "uf",
+        "cep",
+        "email",
+        "formacao",
+        "formacao_instituicao",
+        "formacao_curso",
+        "formacao_status",
+        "vaga_pretendida",
+        "uf_vaga",
+        "municipio_id",
+        "pcd",
+        "cid",
+        "viajar",
+        "lido",
+        "usuario_lido",
+        "created_at",
+        "updated_at",
+        "datalido",
+        "filiacao_pai",
+        "filiacao_mae",
 
     ];
     protected $casts = [
-        'id' => 'int',
-        'cpf' => 'string',
-        'nome' => 'string',
-        'cnh' => 'string',
-        'sexo' => 'string',
-        'nascimento' => 'string',
-        'logradouro' => 'string',
-        'complemento' => 'string',
-        'bairro' => 'string',
-        'municipio' => 'string',
-        'uf' => 'string',
-        'cep' => 'string',
-        'email' => 'string',
-        'filiacao_pai' => 'string',
-        'filiacao_mae' => 'string',
-        'formacao' => 'int',
-        'formacao_instituicao' => 'string',
-        'formacao_curso' => 'string',
-        'formacao_status' => 'string',
-        'vaga_pretendida' => 'int',
-        'pcd' => 'boolean',
-        'viajar' => 'boolean',
-        'cid' => 'string',
-        'uf_vaga' => 'string',
-        'municipio_id' => 'int',
-        'lido' => 'boolean',
-        'datalido' => 'string',
-        'usuario_lido' => 'int',
-        'rg' => 'string',
-        'orgao_expeditor' => 'string',
-        'carteira_trabalho' => 'string'
+        "id" => "int",
+        "cpf" => "string",
+        "rg" => "string",
+        "orgao_expeditor" => "string",
+        "carteira_trabalho" => "string",
+        "nome" => "string",
+        "cnh" => "string",
+        "nascimento" => "string",
+        "logradouro" => "string",
+        "complemento" => "string",
+        "bairro" => "string",
+        "municipio" => "string",
+        "uf" => "string",
+        "cep" => "string",
+        "email" => "string",
+        "formacao" => "int",
+        "formacao_instituicao" => "string",
+        "formacao_curso" => "string",
+        "formacao_status" => "string",
+        "vaga_pretendida" => "int",
+        "uf_vaga" => "string",
+        "municipio_id" => "int",
+        "pcd" => "boolean",
+        "cid" => "string",
+        "viajar" => "boolean",
+        "lido" => "boolean",
+        "usuario_lido" => "int",
+        "created_at" => "string",
+        "updated_at" => "string",
+        "datalido" => "string",
+        "filiacao_pai" => "string",
+        "filiacao_mae" => "string",
     ];
 
     protected $appends = ['idade', 'endereco_completo', 'rg_format'];
 
-    protected $hidden = [
-        'cpf'
-    ];
 
 //    public function getCpfFormatAttribute()
-//    public function getCpfAttribute()
-//    {
-//        $cpf = $this->attributes['cpf'];
-//        $pt1 = substr($cpf, 4, 3);
-//        $pt2 = substr($cpf, 8, 3);
-//
-//        return "XXX.{$pt1}.{$pt2}-XX";
-////        return $pt1 . '.XXX.XXX-' . $pt2;
-//    }
+    public function getCpfFormatAttribute()
+    {
+        $cpf = $this->attributes['cpf'];
+        $pt1 = substr($cpf, 4, 3);
+        $pt2 = substr($cpf, 8, 3);
+
+        return "XXX.{$pt1}.{$pt2}-XX";
+//        return $pt1 . '.XXX.XXX-' . $pt2;
+    }
 
 
     public function getRgFormatAttribute()
@@ -514,8 +512,6 @@ class Curriculo extends Model
     {
         return $this->hasOne(ParabensEnviado::class, 'curriculo_id', 'id');
     }
-
-
 
     //Scopo de ClienteID (Empresa)
     protected static function booted()

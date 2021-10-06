@@ -1,14 +1,14 @@
-import endereco from '../../../components/Endereco'
-import datepicker from '../../../components/DatePicker'
-import upload from '../../../components/Upload'
-import telefone from '../../../components/Telefones'
-import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
-import FormResultadoIntegrado from '../../../components/entrevistas/FormResultadoIntegrado'
-import formAdmissao from '../../../components/admissao/processo/formAdmissao'
+import endereco from "../../../components/Endereco";
+import datepicker from "../../../components/DatePicker";
+import upload from "../../../components/Upload";
+import telefone from "../../../components/Telefones";
+import DadosPessoais from "../../../components/entrevistas/DadosPessoaisTexto";
+import FormResultadoIntegrado from "../../../components/entrevistas/FormResultadoIntegrado";
+import formAdmissao from "../../../components/admissao/processo/formAdmissao";
 
 
 const app = new Vue({
-    el: '#app',
+    el: "#app",
     components: {
         endereco,
         datepicker,
@@ -19,7 +19,7 @@ const app = new Vue({
         FormResultadoIntegrado
     },
     data: {
-        tituloJanela: 'Admissão',
+        tituloJanela: "Admissão",
         preload: false,
         editando: false,
         apagado: false,
@@ -31,7 +31,8 @@ const app = new Vue({
         disabledInput: false,
         btnBuscar: false,
 
-        cliente_id: '',
+        AUTENTICADO,
+        cliente_id: "",
         cliente_area_id: 0,
 
         colunasTabela: {
@@ -48,7 +49,7 @@ const app = new Vue({
         exibiFormulario: false,
         possuiCadastro: false,
 
-        urlAnexoUpload: '',
+        urlAnexoUpload: "",
         anexoUploadAndamento: false,
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
@@ -56,6 +57,7 @@ const app = new Vue({
         todos_municipios: `autocomplete/todos-municipios`,
 
         URL_ADMIN,
+
         selecionados: [],
         selecionaTudo: false,
 
@@ -65,92 +67,92 @@ const app = new Vue({
             cadastrando: false,
 
             curriculo: {
-                cpf: '',
-                nome: '',
-                nascimento: '',
-                pcd: '',
-                cid: '',
-                email: '',
-                logradouro: '',
-                complemento: '',
-                bairro: '',
-                municipio: '',
-                uf: '',
-                cep: '',
-                municipio_id: '',
+                cpf: "",
+                nome: "",
+                nascimento: "",
+                pcd: "",
+                cid: "",
+                email: "",
+                logradouro: "",
+                complemento: "",
+                bairro: "",
+                municipio: "",
+                uf: "",
+                cep: "",
+                municipio_id: "",
 
-                filiacao_pai: '',
-                filiacao_mae: '',
+                filiacao_pai: "",
+                filiacao_mae: "",
 
                 formacao: 7,
-                formacao_curso: '',
+                formacao_curso: "",
 
-                autocomplete_label_municipio_modal: '',
-                autocomplete_label_municipio_modal_anterior: '',
+                autocomplete_label_municipio_modal: "",
+                autocomplete_label_municipio_modal_anterior: "",
 
                 telefones: [{
-                    detalhe: '',
+                    detalhe: "",
                     novo: true,
-                    numero: '',
-                    pais: '55',
-                    ramal: '',
-                    tipo: 'whatsapp',
+                    numero: "",
+                    pais: "55",
+                    ramal: "",
+                    tipo: "whatsapp",
                     principal: true
                 }]
             },
 
             feedback: {
-                selecionado: 'sim',
-                vaga_id: '',
-                cliente_id: '',
+                selecionado: "sim",
+                vaga_id: "",
+
                 interesse: true,
 
-                autocomplete_label_vaga_modal: '',
-                autocomplete_label_vaga_modal_anterior: '',
+                autocomplete_label_vaga_modal: "",
+                autocomplete_label_vaga_modal_anterior: "",
 
-                autocomplete_label_cliente_modal: '',
-                autocomplete_label_cliente_modal_anterior: ''
+                autocomplete_label_cliente_modal: "",
+                autocomplete_label_cliente_modal_anterior: ""
             },
 
             parecer_rh: {
-                ex_funcionario: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
-                turnos_seis_por_dois: '',
-                indicacao: '',
-                indicado_por: ''
+                ex_funcionario: "",
+                calca: "",
+                bota: "",
+                camisa_protecao: "",
+                camisa_meia: "",
+                turnos_seis_por_dois: "",
+                indicacao: "",
+                indicado_por: ""
             },
 
             parecer_tecnica: {
-                indicado_area: '',
-                experiencia_cargas_rigger: '',
-                opera_plat_movel: '',
-                opera_plat_ponte: ''
+                indicado_area: "",
+                experiencia_cargas_rigger: "",
+                opera_plat_movel: "",
+                opera_plat_ponte: ""
             },
 
             parecer_rota: {
-                bairro_rota: '',
-                ponto_referencia_rota: '',
-                ponto_referencia_residencia: ''
+                bairro_rota: "",
+                ponto_referencia_rota: "",
+                ponto_referencia_residencia: ""
             },
 
             parecer_teste: {
-                qual_teste: '',
-                parecer_final_teste: ''
+                qual_teste: "",
+                parecer_final_teste: ""
             },
 
             resultado_integrado: {
-                documentos_entregue: '',
-                documentos_entregue_data: '',
-                encaminhado_exame: '',
-                encaminhado_exame_data: '',
-                encaminhado_treinamento: '',
-                encaminhado_treinamento_data: '',
-                excessao: '',
-                autorizado_por: '',
-                responsavel_envio: ''
+                documentos_entregue: "",
+                documentos_entregue_data: "",
+                encaminhado_exame: "",
+                encaminhado_exame_data: "",
+                encaminhado_treinamento: "",
+                encaminhado_treinamento_data: "",
+                excessao: "",
+                autorizado_por: "",
+                responsavel_envio: ""
             },
 
             admissao: null
@@ -159,22 +161,22 @@ const app = new Vue({
         formAvulsaDefault: null,
 
         form: {
-            id: '',
-            vaga_id: '',
-            autocomplete_label_vaga_modal: '',
-            autocomplete_label_vaga_modal_anterior: '',
+            id: "",
+            vaga_id: "",
+            autocomplete_label_vaga_modal: "",
+            autocomplete_label_vaga_modal_anterior: "",
 
-            cliente_id: '',
-            autocomplete_label_cliente_modal: '',
-            autocomplete_label_cliente_modal_anterior: '',
+            cliente_id: "",
+            autocomplete_label_cliente_modal: "",
+            autocomplete_label_cliente_modal_anterior: "",
 
 
             curriculo: {
-                nome: '',
-                nascimento: '',
-                municipio_id: '',
-                autocomplete_label_municipio_modal: '',
-                autocomplete_label_municipio_modal_anterior: ''
+                nome: "",
+                nascimento: "",
+                municipio_id: "",
+                autocomplete_label_municipio_modal: "",
+                autocomplete_label_municipio_modal_anterior: ""
             },
 
             certificados_nr: [],
@@ -183,145 +185,145 @@ const app = new Vue({
             cursos_formacoesDelete: [],
 
             parecer_rh: {
-                feedback_id: '',
-                formulario_id: '',
-                destro: '',
-                ex_funcionario: '',
-                cnh: '',
-                cnh_tipo: '',
-                mora_com_quem: '',
-                rota_bairro: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
-                casado: '',
-                tempodeconvivencia: '',
-                filhos: '',
-                qnt_filhos: '',
-                conjuge_trabalha: '',
-                trabalho_conjuge: '',
-                religioso: '',
-                religiao_praticante: '',
-                fuma: '',
-                frequencia_fuma: '',
-                bebe: '',
-                frequencia_bebe: '',
-                nr_dez: '',
-                indicacao: '',
-                indicado_por: '',
-                alumar_experiencia: '',
-                alumar_experiencia_area: '',
-                outra_industria_experiencia: '',
-                outra_industria_nome: '',
-                grau_instrucao: '',
-                horaextra: '',
-                turnos_seis_por_dois: '',
-                noturno: '',
-                acidente_trabalho: '',
-                acidente_trabalho_qual: '',
-                afastamento_inss: '',
-                afastamento_inss_qual: '',
-                situacao_saude: '',
-                comportamento_seguro: '',
-                energia_para_trabalho: '',
-                postura: '',
-                historico_profissional: '',
-                historico_educacional: '',
-                objetivos_expectativas: '',
-                auto_imagem: '',
-                competencias: '',
-                comportamento_etico: '',
-                comprometimento: '',
-                comunicacao: '',
-                cultura_qualidade: '',
-                foco_cliente: '',
-                iniciativa: '',
-                orientacao_resultados: '',
-                trabalho_equipe: '',
-                parecer_final: '',
-                parecer_final_um: '',
-                nota: '',
-                comentarios: '',
-                entrevistador: '',
-                quem_entrevistou: '',
+                feedback_id: "",
+                formulario_id: "",
+                destro: "",
+                ex_funcionario: "",
+                cnh: "",
+                cnh_tipo: "",
+                mora_com_quem: "",
+                rota_bairro: "",
+                calca: "",
+                bota: "",
+                camisa_protecao: "",
+                camisa_meia: "",
+                casado: "",
+                tempodeconvivencia: "",
+                filhos: "",
+                qnt_filhos: "",
+                conjuge_trabalha: "",
+                trabalho_conjuge: "",
+                religioso: "",
+                religiao_praticante: "",
+                fuma: "",
+                frequencia_fuma: "",
+                bebe: "",
+                frequencia_bebe: "",
+                nr_dez: "",
+                indicacao: "",
+                indicado_por: "",
+                alumar_experiencia: "",
+                alumar_experiencia_area: "",
+                outra_industria_experiencia: "",
+                outra_industria_nome: "",
+                grau_instrucao: "",
+                horaextra: "",
+                turnos_seis_por_dois: "",
+                noturno: "",
+                acidente_trabalho: "",
+                acidente_trabalho_qual: "",
+                afastamento_inss: "",
+                afastamento_inss_qual: "",
+                situacao_saude: "",
+                comportamento_seguro: "",
+                energia_para_trabalho: "",
+                postura: "",
+                historico_profissional: "",
+                historico_educacional: "",
+                objetivos_expectativas: "",
+                auto_imagem: "",
+                competencias: "",
+                comportamento_etico: "",
+                comprometimento: "",
+                comunicacao: "",
+                cultura_qualidade: "",
+                foco_cliente: "",
+                iniciativa: "",
+                orientacao_resultados: "",
+                trabalho_equipe: "",
+                parecer_final: "",
+                parecer_final_um: "",
+                nota: "",
+                comentarios: "",
+                entrevistador: "",
+                quem_entrevistou: "",
 
-                nota_digitacao: '',
-                dinamicadegrupo: '',
-                obs_dinamicadegrupo: '',
-                experiencia_callcenter: '',
-                disponibilidade_horarios: '',
-                turnos_seis_por_um: '',
-                horario_preferencial: '',
-                obs_call: '',
-                obs_horario: '',
+                nota_digitacao: "",
+                dinamicadegrupo: "",
+                obs_dinamicadegrupo: "",
+                experiencia_callcenter: "",
+                disponibilidade_horarios: "",
+                turnos_seis_por_um: "",
+                horario_preferencial: "",
+                obs_call: "",
+                obs_horario: "",
 
 
                 individual_rh: {
-                    parecer: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: '',
-                    avaliacao_psicologica: ''
+                    parecer: "",
+                    nota: "",
+                    entrevistado_por: "",
+                    comentario: "",
+                    avaliacao_psicologica: ""
                 },
 
                 gestor_rh: {
-                    parecer: '',
-                    indicado_para: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: ''
+                    parecer: "",
+                    indicado_para: "",
+                    nota: "",
+                    entrevistado_por: "",
+                    comentario: ""
                 },
 
                 entrevista_rh: {
-                    parecer: '',
-                    indicado_para: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: ''
+                    parecer: "",
+                    indicado_para: "",
+                    nota: "",
+                    entrevistado_por: "",
+                    comentario: ""
                 }
             },
             admissao: {
-                feedback_id: '',
-                area_etiqueta_id: '',
-                contrato: '',
-                funcao: '',
-                cargo: '',
-                salario: '0,00',
-                status: '',
-                documento: '',
-                documento_portaria: '',
-                tipo_admissao: '',
-                tipo_treinamento: '',
-                treinamento: '',
-                data_treinamento: '',
-                carteira_treinamento: '',
-                nr_trinta_tres: '',
-                data_nr_trinta_tres: '',
-                nr_trinta_cinco: '',
-                data_nr_trinta_cinco: '',
-                trinta_dois_sessenta: '',
-                data_trinta_dois_sessenta: '',
-                numero_cracha: '',
-                data_aso: '',
-                foto_escaneada: '',
-                status_carteira_treinamento: '',
-                data_admissao: '',
+                feedback_id: "",
+                area_etiqueta_id: "",
+                contrato: "",
+                funcao: "",
+                cargo: "",
+                salario: "0,00",
+                status: "",
+                documento: "",
+                documento_portaria: "",
+                tipo_admissao: "",
+                tipo_treinamento: "",
+                treinamento: "",
+                data_treinamento: "",
+                carteira_treinamento: "",
+                nr_trinta_tres: "",
+                data_nr_trinta_tres: "",
+                nr_trinta_cinco: "",
+                data_nr_trinta_cinco: "",
+                trinta_dois_sessenta: "",
+                data_trinta_dois_sessenta: "",
+                numero_cracha: "",
+                data_aso: "",
+                foto_escaneada: "",
+                status_carteira_treinamento: "",
+                data_admissao: "",
 
-                data_entrega_area: '',
-                biometria: '',
-                data_biometria: '',
+                data_entrega_area: "",
+                biometria: "",
+                data_biometria: "",
 
-                indicado_por: '',
-                indicado_area: '',
+                indicado_por: "",
+                indicado_area: "",
 
-                filiacao_pai: '',
-                filiacao_mae: '',
-                nome: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
+                filiacao_pai: "",
+                filiacao_mae: "",
+                nome: "",
+                calca: "",
+                bota: "",
+                camisa_protecao: "",
+                camisa_meia: "",
 
                 foto_tres: [],
                 foto_tresDel: []
@@ -343,461 +345,411 @@ const app = new Vue({
             carregando: false,
             dados: {
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                autocomplete_label_anterior: '',
-                autocomplete_label: '',
+                autocomplete_label_anterior: "",
+                autocomplete_label: "",
                 caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
-                autocomplete_label_cliente_anterior: '',
-                autocomplete_label_cliente: '',
+                autocomplete_label_cliente_anterior: "",
+                autocomplete_label_cliente: "",
                 pages: 20,
-                cliente_custom: '',
-                campoBusca: '',
-                campoVaga: '',
-                campoLido: '',
-                campoFiltro: '',
-                campoPcd: '',
-                campoCliente: '',
-                campoUf: 'MA'
+                cliente_custom: "",
+                campoBusca: "",
+                campoVaga: "",
+                campoLido: "",
+                campoFiltro: "",
+                campoPcd: "",
+                campoCliente: "",
+                campoUf: "MA"
             }
         }
     },
     computed: {
         comAdm() {
             return this.lista.filter(item => {
-                return item.admissao
-            })
+                return item.admissao;
+            });
         },
         tudoMarcado() {
-            let totalItens = this.comAdm.length
-            let totalEncontrado = 0
+            let totalItens = this.comAdm.length;
+            let totalEncontrado = 0;
 
             if (totalItens === 0) {
-                return false
+                return false;
             }
 
             this.comAdm.forEach(item => {
-                let id = item.id
+                let id = item.id;
                 if (this.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++
+                    totalEncontrado++;
                     //faz nada
                 } else {
-                    return false
+                    return false;
                 }
-            })
-            let resultado = totalItens === totalEncontrado
-            this.selecionaTudo = resultado
-            return resultado
+            });
+            let resultado = totalItens === totalEncontrado;
+            this.selecionaTudo = resultado;
+            return resultado;
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form) //copia
-        this.formAvulsaDefault = _.cloneDeep(this.formAvulsa) //copia
-        this.formResultadoIntegradoDefault = _.cloneDeep(this.formResultadoIntegrado) //copia
-        this.cliente_id = $('#cliente_id').val()
+        this.formDefault = _.cloneDeep(this.form); //copia
+        this.formAvulsaDefault = _.cloneDeep(this.formAvulsa); //copia
+        this.formResultadoIntegradoDefault = _.cloneDeep(this.formResultadoIntegrado); //copia
+        this.cliente_id = $("#cliente_id").val();
         if (this.cliente_id) { //diferente de BPSE
-            this.controle.dados.campoCliente = parseInt(this.cliente_id)
-            this.controle.dados.cliente_custom = parseInt(this.cliente_id)
+            this.controle.dados.campoCliente = parseInt(this.cliente_id);
+            this.controle.dados.cliente_custom = parseInt(this.cliente_id);
         }
-        this.atualizar()
-        this.listaVagas()
+        this.atualizar();
+        this.listaVagas();
     },
     methods: {
         selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo
+            this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
                 this.comAdm.map(item => {
-                    let id = item.id
+                    let id = item.id;
                     if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id)
+                        this.selecionados.push(id);
                     }
-                })
+                });
             } else {
                 this.comAdm.map(item => {
-                    let id = item.id
-                    let index = this.selecionados.indexOf(id)
+                    let id = item.id;
+                    let index = this.selecionados.indexOf(id);
                     if (index >= 0) {
-                        this.selecionados.splice(index, 1)
+                        this.selecionados.splice(index, 1);
                     }
-                })
+                });
             }
         },
         // AVULSA
         buscaCpf() {
             if (valida_cpf_vazio(this.$refs.cpf)) {
                 if (this.formAvulsa.curriculo.cpf.length === 14) {
-                    this.disabledInput = true
-                    this.exibiFormulario = false
-                    this.formAvulsa.preload = true
+                    this.disabledInput = true;
+                    this.exibiFormulario = false;
+                    this.formAvulsa.preload = true;
 
                     axios.post(`${URL_ADMIN}/admissao/busca-cpf`, {
                         cpf: this.formAvulsa.curriculo.cpf
                     }).then(response => {
-                        let data = response.data
+                        let data = response.data;
                         if (data.achou) {
-                            Object.assign(this.formAvulsa, response.data)
-                            this.exibiFormulario = true
-                            this.formAvulsa.preload = false
+                            Object.assign(this.formAvulsa, response.data);
+                            this.exibiFormulario = true;
+                            this.formAvulsa.preload = false;
                         }
 
                         if (!data.achou) {
-                            let cpf = this.formAvulsa.curriculo.cpf
-                            this.formAvulsa = _.cloneDeep(this.formAvulsaDefault)
-                            this.formAvulsa.curriculo.cpf = cpf
-                            this.exibiFormulario = true
-                            this.formAvulsa.preload = false
+                            let cpf = this.formAvulsa.curriculo.cpf;
+                            this.formAvulsa = _.cloneDeep(this.formAvulsaDefault);
+                            this.formAvulsa.curriculo.cpf = cpf;
+                            this.exibiFormulario = true;
+                            this.formAvulsa.preload = false;
                         }
                     })
                         .catch(error => {
-                            this.formAvulsa.preload = false
-                            this.disabledInput = false
-                            this.exibiFormulario = false
-                        })
+                            this.formAvulsa.preload = false;
+                            this.disabledInput = false;
+                            this.exibiFormulario = false;
+                        });
                 }
             } else {
-                this.disabledInput = false
-                this.exibiFormulario = false
-                this.formAvulsa.preload = false
+                this.disabledInput = false;
+                this.exibiFormulario = false;
+                this.formAvulsa.preload = false;
             }
 
         },
 
         selecionaMunicipioModal(obj) {
-            this.formAvulsa.curriculo.municipio_id = obj.id
-            this.formAvulsa.curriculo.autocomplete_label_municipio_modal = obj.label
-            this.formAvulsa.curriculo.autocomplete_label_municipio_modal_anterior = obj.label
+            this.formAvulsa.curriculo.municipio_id = obj.id;
+            this.formAvulsa.curriculo.autocomplete_label_municipio_modal = obj.label;
+            this.formAvulsa.curriculo.autocomplete_label_municipio_modal_anterior = obj.label;
         },
 
         resetaCampoMunicipioModal() {
             if (this.formAvulsa.curriculo.autocomplete_label_municipio_modal_anterior !== this.formAvulsa.curriculo.autocomplete_label_municipio_modal) {
-                this.formAvulsa.curriculo.autocomplete_label_municipio_modal_anterior = ''
-                this.formAvulsa.curriculo.autocomplete_label_municipio_modal = ''
-                this.formAvulsa.curriculo.municipio_id = ''
+                this.formAvulsa.curriculo.autocomplete_label_municipio_modal_anterior = "";
+                this.formAvulsa.curriculo.autocomplete_label_municipio_modal = "";
+                this.formAvulsa.curriculo.municipio_id = "";
 
                 setTimeout(() => {
-                    if (this.formAvulsa.curriculo.municipio_id === '') {
-                        valida_campo_vazio($('#mun_' + this.hash), 1)
-                        $('#janelaAdmissaoAvulsa #mun_' + this.hash).focus().trigger('blur')
-                        mostraErro('Erro', 'O Campo Município não pode ficar vazio')
+                    if (this.formAvulsa.curriculo.municipio_id === "") {
+                        valida_campo_vazio($("#mun_" + this.hash), 1);
+                        $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
+                        mostraErro("Erro", "O Campo Município não pode ficar vazio");
                     }
-                }, 100)
+                }, 100);
             }
         },
 
         selecionaVagaModal(obj) {
-            this.formAvulsa.feedback.vaga_id = obj.id
-            this.formAvulsa.feedback.autocomplete_label_vaga_modal = obj.label
-            this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = obj.label
+            this.formAvulsa.feedback.vaga_id = obj.id;
+            this.formAvulsa.feedback.autocomplete_label_vaga_modal = obj.label;
+            this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = obj.label;
         },
         resetaCampoVagaModal() {
             if (this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior !== this.formAvulsa.feedback.autocomplete_label_vaga_modal) {
-                this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = ''
-                this.formAvulsa.feedback.autocomplete_label_vaga_modal = ''
-                this.formAvulsa.feedback.vaga_id = ''
+                this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = "";
+                this.formAvulsa.feedback.autocomplete_label_vaga_modal = "";
+                this.formAvulsa.feedback.vaga_id = "";
                 setTimeout(() => {
-                    if (this.formAvulsa.feedback.vaga_id === '') {
-                        mostraErro('Erro', 'O Campo Vaga não pode ficar vazio')
+                    if (this.formAvulsa.feedback.vaga_id === "") {
+                        mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
                     }
-                }, 100)
+                }, 100);
             }
         },
         selecionaClienteModal(obj) {
             setTimeout(() => {
-                this.formAvulsa.feedback.cliente_id = 0
-                this.formAvulsa.feedback.cliente_id = obj.id
-                this.formAvulsa.feedback.autocomplete_label_cliente_modal = obj.label
-                this.formAvulsa.feedback.autocomplete_label_cliente_modal_anterior = obj.label
-            }, 50)
+                this.formAvulsa.feedback.cliente_id = 0;
+                this.formAvulsa.feedback.cliente_id = obj.id;
+                this.formAvulsa.feedback.autocomplete_label_cliente_modal = obj.label;
+                this.formAvulsa.feedback.autocomplete_label_cliente_modal_anterior = obj.label;
+            }, 50);
         },
         resetaCampoClienteModal() {
             if (this.formAvulsa.feedback.autocomplete_label_cliente_modal_anterior !== this.formAvulsa.feedback.autocomplete_label_cliente_modal) {
-                this.formAvulsa.feedback.autocomplete_label_cliente_modal_anterior = ''
-                this.formAvulsa.feedback.autocomplete_label_cliente_modal = ''
-                this.formAvulsa.feedback.cliente_id = ''
+                this.formAvulsa.feedback.autocomplete_label_cliente_modal_anterior = "";
+                this.formAvulsa.feedback.autocomplete_label_cliente_modal = "";
+                this.formAvulsa.feedback.cliente_id = "";
                 setTimeout(() => {
-                    if (this.formAvulsa.feedback.cliente_id === '') {
-                        mostraErro('', 'O Campo Cliente não pode ficar vazio')
+                    if (this.formAvulsa.feedback.cliente_id === "") {
+                        mostraErro("", "O Campo Cliente não pode ficar vazio");
                     }
-                }, 100)
+                }, 100);
             }
 
         },
 
         formCadastraAvulsa() {
-            this.exibiFormulario = false
-            this.disabledInput = false
-            this.formAvulsa = _.cloneDeep(this.formAvulsaDefault) //copia
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.exibiFormulario = false;
+            this.disabledInput = false;
+            this.formAvulsa = _.cloneDeep(this.formAvulsaDefault); //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
 
-            this.form.foto_tres = []
-            this.form.foto_tresDel = []
+            this.form.foto_tres = [];
+            this.form.foto_tresDel = [];
 
-            formReset()
-            setupCampo()
+            formReset();
+            setupCampo();
         },
 
         CadastraAvulsa() {
-            formReset()
+            formReset();
 
-            if (this.formAvulsa.feedback.vaga_id === '') {
-                valida_campo_vazio($('#vaga_' + this.hash), 1)
-                $('#janelaAdmissaoAvulsa #vaga_' + this.hash).focus().trigger('blur')
-                mostraErro('', 'O campo vaga não pode ficar vazio')
-                return false
+            if (this.formAvulsa.feedback.vaga_id === "") {
+                valida_campo_vazio($("#vaga_" + this.hash), 1);
+                $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O campo vaga não pode ficar vazio");
+                return false;
             }
 
-            if (this.formAvulsa.curriculo.municipio_id === '') {
-                valida_campo_vazio($('#mun_' + this.hash), 1)
-                $('#janelaAdmissaoAvulsa #mun_' + this.hash).focus().trigger('blur')
-                mostraErro('', 'O Campo Cidade não pode ficar vazio')
-                return false
+            if (this.formAvulsa.curriculo.municipio_id === "") {
+                valida_campo_vazio($("#mun_" + this.hash), 1);
+                $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O Campo Cidade não pode ficar vazio");
+                return false;
             }
 
-            if (this.formAvulsa.feedback.cliente_id === '') {
-                valida_campo_vazio($('#cliente_' + this.hash), 1)
-                $('#janelaAdmissaoAvulsa #cliente_' + this.hash).focus().trigger('blur')
-                mostraErro('', 'O Campo Cliente não pode ficar vazio')
-                return false
+            if (this.formAvulsa.feedback.cliente_id === "") {
+                valida_campo_vazio($("#cliente_" + this.hash), 1);
+                $("#janelaAdmissaoAvulsa #cliente_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O Campo Cliente não pode ficar vazio");
+                return false;
             }
 
             if (this.formAvulsa.curriculo.telefones.length === 0) {
                 this.formAvulsa.curriculo.telefones.push({
-                    detalhe: '',
+                    detalhe: "",
                     novo: true,
-                    numero: '',
-                    pais: '55',
-                    ramal: '',
-                    tipo: 'whatsapp'
-                })
-                mostraErro('', 'Insira pelo menos UM telefone de contato')
-                return false
+                    numero: "",
+                    pais: "55",
+                    ramal: "",
+                    tipo: "whatsapp"
+                });
+                mostraErro("", "Insira pelo menos UM telefone de contato");
+                return false;
             }
 
 
-            $('#janelaAdmissaoAvulsa :input:visible').trigger('blur')
-            if ($('#janelaAdmissaoAvulsa :input:visible.is-invalid').length) {
-                mostraErro('', 'Verifique os erros')
-                return false
+            $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
+            if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os erros");
+                return false;
             }
 
-            this.formAvulsa.admissao = this.form.admissao
-            this.formAvulsa.preload = true
+            this.formAvulsa.admissao = this.form.admissao;
+            this.formAvulsa.preload = true;
 
 
             axios.post(`${URL_ADMIN}/admissao`, this.formAvulsa)
                 .then(response => {
                     if (response.status === 201) {
-                        this.formAvulsa.preload = false
-                        this.formAvulsa.cadastrado = true
-                        this.atualizar()
+                        this.formAvulsa.preload = false;
+                        this.formAvulsa.cadastrado = true;
+                        this.atualizar();
                     }
-                }).catch(error => (this.formAvulsa.preload = false))
+                }).catch(error => (this.formAvulsa.preload = false));
         },
 
         //GERAL
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = ''
-                this.controle.dados.autocomplete_label = ''
-                this.controle.dados.campoVaga = ''
+                this.controle.dados.autocomplete_label_anterior = "";
+                this.controle.dados.autocomplete_label = "";
+                this.controle.dados.campoVaga = "";
             }
         },
 
         selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id
-            this.controle.dados.autocomplete_label = obj.label
-            this.controle.dados.autocomplete_label_anterior = obj.label
+            this.controle.dados.campoVaga = obj.id;
+            this.controle.dados.autocomplete_label = obj.label;
+            this.controle.dados.autocomplete_label_anterior = obj.label;
         },
 
         resetaCampoCliente() {
             if (this.controle.dados.autocomplete_label_cliente_anterior !== this.controle.dados.autocomplete_label_cliente) {
-                this.controle.dados.autocomplete_label_cliente_anterior = ''
-                this.controle.dados.autocomplete_label_cliente = ''
-                this.controle.dados.campoCliente = ''
+                this.controle.dados.autocomplete_label_cliente_anterior = "";
+                this.controle.dados.autocomplete_label_cliente = "";
+                this.controle.dados.campoCliente = "";
             }
         },
 
         selecionaCliente(obj) {
-            this.controle.dados.campoCliente = obj.id
-            this.controle.dados.autocomplete_label_cliente = obj.label
-            this.controle.dados.autocomplete_label_cliente_anterior = obj.label
+            this.controle.dados.campoCliente = obj.id;
+            this.controle.dados.autocomplete_label_cliente = obj.label;
+            this.controle.dados.autocomplete_label_cliente_anterior = obj.label;
         },
 
         //Form Normal
         formEntrevistar(id) {
-            Object.assign(this.form, this.formDefault)
+            Object.assign(this.form, this.formDefault);
 
-            this.form.id = id
-            this.cadastrado = false
-            this.atualizado = false
-            this.cadastrando = false
-            this.visualizar = false
-            this.editando = false
+            this.form.id = id;
+            this.cadastrado = false;
+            this.atualizado = false;
+            this.cadastrando = false;
+            this.visualizar = false;
+            this.editando = false;
 
-            this.preload = true
-            this.preloadForm = true
+            this.preload = true;
+            this.preloadForm = true;
 
-            this.tituloJanela = `#${id}`
+            this.tituloJanela = `#${id}`;
 
-            formReset()
+            formReset();
             axios.get(`${URL_ADMIN}/admissao/${id}/editar`)
                 .then(response => {
-                    let data = response.data
-                    let admissao = data.feedback.admissao
-                    Object.assign(this.form, data.feedback)
+                    let data = response.data;
+                    let admissao = data.feedback.admissao;
+                    Object.assign(this.form, data.feedback);
 
                     //Se não tiver parecer_rh
-                    this.form.admissao = admissao ? admissao : _.cloneDeep(this.formDefault.admissao)
+                    this.form.admissao = admissao ? admissao : _.cloneDeep(this.formDefault.admissao);
 
 
                     if (admissao) {
-                        this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id ? admissao.area_etiqueta_id : ''
-                        this.form.admissao.documento = admissao.documento ? admissao.documento : ''
-                        this.form.admissao.documento_portaria = admissao.documento_portaria ? admissao.documento_portaria : ''
-                        this.form.admissao.tipo_admissao = admissao.tipo_admissao ? admissao.tipo_admissao : ''
-                        this.form.admissao.tipo_treinamento = admissao.tipo_treinamento ? admissao.tipo_treinamento : ''
-                        this.form.admissao.treinamento = admissao.treinamento ? admissao.treinamento : ''
-                        this.form.admissao.nr_trinta_tres = admissao.nr_trinta_tres ? admissao.nr_trinta_tres : ''
-                        this.form.admissao.nr_trinta_cinco = admissao.nr_trinta_cinco ? admissao.nr_trinta_cinco : ''
-                        this.form.admissao.trinta_dois_sessenta = admissao.trinta_dois_sessenta ? admissao.trinta_dois_sessenta : ''
-                        this.form.admissao.foto_escaneada = admissao.foto_escaneada ? admissao.foto_escaneada : ''
-                        this.form.admissao.status_carteira_treinamento = admissao.status_carteira_treinamento ? admissao.status_carteira_treinamento : ''
-                        this.form.admissao.data_admissao = admissao.data_admissao ? admissao.data_admissao : ''
-                        this.form.admissao.data_aso = admissao.data_aso ? admissao.data_aso : ''
-                        this.form.admissao.salario = admissao.salario ? admissao.salario : '0,00'
+                        this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id ? admissao.area_etiqueta_id : "";
+                        this.form.admissao.documento = admissao.documento ? admissao.documento : "";
+                        this.form.admissao.documento_portaria = admissao.documento_portaria ? admissao.documento_portaria : "";
+                        this.form.admissao.tipo_admissao = admissao.tipo_admissao ? admissao.tipo_admissao : "";
+                        this.form.admissao.tipo_treinamento = admissao.tipo_treinamento ? admissao.tipo_treinamento : "";
+                        this.form.admissao.treinamento = admissao.treinamento ? admissao.treinamento : "";
+                        this.form.admissao.nr_trinta_tres = admissao.nr_trinta_tres ? admissao.nr_trinta_tres : "";
+                        this.form.admissao.nr_trinta_cinco = admissao.nr_trinta_cinco ? admissao.nr_trinta_cinco : "";
+                        this.form.admissao.trinta_dois_sessenta = admissao.trinta_dois_sessenta ? admissao.trinta_dois_sessenta : "";
+                        this.form.admissao.foto_escaneada = admissao.foto_escaneada ? admissao.foto_escaneada : "";
+                        this.form.admissao.status_carteira_treinamento = admissao.status_carteira_treinamento ? admissao.status_carteira_treinamento : "";
+                        this.form.admissao.data_admissao = admissao.data_admissao ? admissao.data_admissao : "";
+                        this.form.admissao.data_aso = admissao.data_aso ? admissao.data_aso : "";
+                        this.form.admissao.salario = admissao.salario ? admissao.salario : "0,00";
                     }
 
-                    this.form.parecer_rh.indicado_por = data.feedback.parecer_rh ? data.feedback.parecer_rh.indicado_por : ''
-                    this.form.parecer_rh.calca = data.feedback.parecer_rh ? data.feedback.parecer_rh.calca : ''
-                    this.form.parecer_rh.bota = data.feedback.parecer_rh ? data.feedback.parecer_rh.bota : ''
-                    this.form.parecer_rh.camisa_protecao = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_protecao : ''
-                    this.form.parecer_rh.camisa_meia = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_meia : ''
+                    this.form.parecer_rh.indicado_por = data.feedback.parecer_rh ? data.feedback.parecer_rh.indicado_por : "";
+                    this.form.parecer_rh.calca = data.feedback.parecer_rh ? data.feedback.parecer_rh.calca : "";
+                    this.form.parecer_rh.bota = data.feedback.parecer_rh ? data.feedback.parecer_rh.bota : "";
+                    this.form.parecer_rh.camisa_protecao = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_protecao : "";
+                    this.form.parecer_rh.camisa_meia = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_meia : "";
 
-                    this.form.parecer_tecnica.indicado_area = data.parecer_tecnica ? data.parecer_tecnica.indicado_area : ''
+                    this.form.parecer_tecnica.indicado_area = data.parecer_tecnica ? data.parecer_tecnica.indicado_area : "";
 
-                    this.tituloJanela = `#${data.feedback.id} Entrevista - ${data.feedback.curriculo.nome}`
-                    this.cadastrando = true
-                    this.preload = false
+                    this.tituloJanela = `#${data.feedback.id} Entrevista - ${data.feedback.curriculo.nome}`;
+                    this.cadastrando = true;
+                    this.preload = false;
                 })
                 .catch(error => {
-                    this.preload = false
-                })
+                    this.preload = false;
+                });
         },
 
 
         alterar() {
-            $('#janelaCadastrar :input:visible').trigger('blur')
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                mostraErro('', 'Verifique os erros')
-                return false
+            $("#janelaCadastrar :input:visible").trigger("blur");
+            if ($("#janelaCadastrar :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os erros");
+                return false;
             }
-            this.preload = true
+            this.preload = true;
 
             axios.put(`${URL_ADMIN}/admissao/${this.form.id}`, this.form)
                 .then(response => {
-                    this.preload = false
-                    this.atualizado = true
-                    this.$refs.componente.buscar()
+                    this.preload = false;
+                    this.atualizado = true;
+                    this.$refs.componente.buscar();
                 }).catch(error => {
-                this.preload = false
-            })
+                this.preload = false;
+            });
 
         },
         apagar() {
-            this.erros = []
-            this.form._method = 'DELETE'
-            this.preload = true
+            this.erros = [];
+            this.form._method = "DELETE";
+            this.preload = true;
 
             $.post(`${URL_ADMIN}/admissao/${this.form.id}`, this.form)
                 .done((data) => {
-                    this.preload = false
-                    this.apagado = true
-                    this.atualizar()
+                    this.preload = false;
+                    this.apagado = true;
+                    this.atualizar();
                 })
                 .fail((data) => {
-                    this.preload = false
-                    this.erros = data.erros
-                    mostraErro(data.responseJSON)
-                })
+                    this.preload = false;
+                    this.erros = data.erros;
+                    mostraErro(data.responseJSON);
+                });
         },
 
         listaVagas() {
-            this.preload = true
-            $.get(`${URL_PUBLICO}/lista-vagas`)
-                .done((data) => {
-                    this.preload = false
-                    this.vagas = data.vagas
+            this.preload = true;
+            axios.get(`${URL_PUBLICO}/lista-vagas`)
+                .then(res => {
+                    this.preload = false;
+                    this.vagas = res.data.vagas;
                 })
-                .fail((data) => {
-                    this.preload = false
-                })
-        },
-
-        usuarioAutenticado() {
-            this.controle.carregando = true
-            axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-                .then(response => {
-                    let data = response.data
-                    this.cliente_id = data.cliente_id
-                    this.cliente_area_id = data.area_id
-
-                    if (this.cliente_id > 0) {
-
-                        if (this.cliente_area_id === 1) { //for Industrial
-                            this.colunasTabela.cliente = false
-                            this.colunasTabela.pcd = false
-                            this.colunasTabela.rh_nota = true
-                            this.colunasTabela.rota_transporte = true
-                            this.colunasTabela.entrevista_tecnica = true
-                            this.colunasTabela.teste_pratico = true
-                            this.colunasTabela.parecer_individual = false
-                            this.colunasTabela.nota_individual = false
-                        }
-                        if (this.cliente_area_id > 1) { //for Servico ou Comercio
-                            this.colunasTabela.cliente = false
-                            this.colunasTabela.pcd = true
-                            this.colunasTabela.rh_nota = false
-                            this.colunasTabela.rota_transporte = false
-                            this.colunasTabela.entrevista_tecnica = false
-                            this.colunasTabela.teste_pratico = false
-                            this.colunasTabela.parecer_individual = true
-                            this.colunasTabela.nota_individual = true
-                        }
-
-                    } else {
-                        this.colunasTabela.cliente = true
-                        this.colunasTabela.pcd = false
-                        this.colunasTabela.rh_nota = true
-                        this.colunasTabela.rota_transporte = false
-                        this.colunasTabela.entrevista_tecnica = false
-                        this.colunasTabela.teste_pratico = false
-                        this.colunasTabela.parecer_individual = true
-                        this.colunasTabela.nota_individual = false
-                    }
-
-                    this.colunasTabela.cliente = this.cliente_id === 0
-                    this.controle.dados.campoCliente = this.cliente_id !== 0 ? this.cliente_id : this.controle.dados.campoCliente
-                })
-                .catch(error => {
-                    this.preload = false
-                })
+                .catch(err => {
+                    this.preload = false;
+                });
         },
 
         janelaConfirmar(id) {
-            this.form.id = id
-            this.apagado = false
+            this.form.id = id;
+            this.apagado = false;
 
-            this.preload = false
+            this.preload = false;
         },
         carregou(dados) {
-            this.lista = dados
-            this.selecionaTudo = this.tudoMarcado
-            this.controle.carregando = false
+            this.lista = dados.itens;
+            this.selecionaTudo = this.tudoMarcado;
+            this.controle.carregando = false;
         },
         carregando() {
-            this.controle.carregando = true
+            this.controle.carregando = true;
         },
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs.componente.atual = 1;
+            this.$refs.componente.buscar();
         }
     }
-})
+});

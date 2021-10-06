@@ -252,20 +252,6 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Empresa</label>
-                                        <autocomplete :caminho="controle.dados.caminho_cliente_autocomplete"
-                                                      :valido="formAvulsa.feedback.cliente_id !== ''"
-                                                      v-model="formAvulsa.feedback.autocomplete_label_cliente_modal"
-                                                      :id="`cliente_${hash}`"
-                                                      :formsm="false"
-                                                      placeholder="Selecione um cliente"
-                                                      @onblur="resetaCampoClienteModal"
-                                                      @onselect="selecionaClienteModal"></autocomplete>
-                                    </div>
-                                </div>
-
                                 <div class="col-12 col-sm-6 col-md-3">
                                     <div class="form-group">
                                         <label>Ex funcionário</label>
@@ -527,8 +513,7 @@
 
                         <fieldset>
                             <legend>Admissão</legend>
-                            <form-admissao :form="form.admissao" :cliente_id='formAvulsa.feedback.cliente_id'
-                                           v-if='formAvulsa.feedback.cliente_id > 0'></form-admissao>
+                            <form-admissao :form="form.admissao"></form-admissao>
 
                             <div class="col-12">
                                 <fieldset>
@@ -691,20 +676,6 @@
                                        v-model="form.curriculo.filiacao_mae" :disabled="visualizar"
                                        placeholder="Nome da Mãe"
                                        autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Empresa</label>
-                                <input type="text" class="form-control"
-                                       v-if="form.cliente.razao_social"
-                                       readonly="readonly" disabled="disabled"
-                                       :value="form.cliente.razao_social">
-                                <input type="text" class="form-control"
-                                       v-if="!form.cliente.razao_social"
-                                       readonly="readonly" disabled="disabled"
-                                       :value="form.cliente.nome">
                             </div>
                         </div>
 
@@ -1443,7 +1414,7 @@
                             <i class="fa fa-search-plus"></i>
                         </button>
 
-                        <a v-if="item.admissao" :href="`admissao/${item.curriculo.id}/pdf`"
+                        <a v-if="item.admissao" :href="`admissao/${item.id}/pdf`"
                            class="btn btn-sm btn-primary mb-2" content="Gerar PDF" v-tippy
                            target="_blank">
                             <i class="fa fa-file-pdf"></i>

@@ -235,7 +235,6 @@ class Sistema
     public static function convertBase($arquivo, $storage = null)
     {
         if (!$storage) {
-            return 'aqui';
             $path = storage_path($arquivo);
         } else {
             $path = $arquivo;
@@ -460,7 +459,8 @@ class Sistema
         curl_close($ch);
     }
 
-    public static function uuid($data = null) {
+    public static function uuid($data = null)
+    {
         // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
         $data = $data ?? random_bytes(16);
         assert(strlen($data) == 16);
@@ -474,7 +474,8 @@ class Sistema
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
-    public static function configAws(){
+    public static function configAws()
+    {
         return [
             'key' => env('AWS_ACCESS_KEY_ID'),
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
@@ -507,7 +508,40 @@ class Sistema
         return response()->json(['ativo' => $model->ativo]);
     }
 
-    public static function stateful(){
+    public static function stateful()
+    {
         return "localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1";
+    }
+
+    public static function keyCache($key)
+    {
+       return "empresa_id_" . auth()->user()->empresa_id."_".$key;
+    }
+
+    /**
+     * @param $key
+     * @param $data
+     * @param null $expiration
+     * @return mixed
+     */
+
+    public static function putCache($key, $data, $expiration = null)
+    {
+        return \Cache::put(self::keyCache($key), $data, $expiration);
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     */
+    public static function getCache($key)
+    {
+        return \Cache::get(self::keyCache($key));
+    }
+
+
+    public static function deleteCache($key)
+    {
+        self::keyCache($key);
     }
 }

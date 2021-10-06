@@ -43,7 +43,7 @@ class AdmissaoController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -55,18 +55,18 @@ class AdmissaoController extends Controller
         $dadosCurriculo['uf_vaga'] = substr($dadosCurriculo['autocomplete_label_municipio_modal'], -2, 2);
         $dadosCurriculo['rg'] = null;
 
-        $dadosCurriculo['pcd'] = $dadosCurriculo['pcd'] == 'true' ? true : false;
+        $dadosCurriculo['pcd'] = $dadosCurriculo['pcd'] == 'true';
 
         $dadosFeedback = $dados['feedback'];
-        $dadosFeedback['interesse'] = $dadosFeedback['interesse'] == 'true' ? true : false;
+        $dadosFeedback['interesse'] = $dadosFeedback['interesse'] == 'true';
         $dadosFeedback['usuario_entrevista_marcado'] = auth()->id();
         $dadosFeedback['data_entrevista'] = null;
         $dadosFeedback['selecionado'] = 'sim';
 
         $dadosParecerRh = $dados['parecer_rh'];
-        $dadosParecerRh['ex_funcionario'] = $dadosParecerRh['ex_funcionario'] == 'true' ? true : false;
-        $dadosParecerRh['indicacao'] = $dadosParecerRh['indicacao'] == 'true' ? true : false;
-        $dadosParecerRh['turnos_seis_por_dois'] = $dadosParecerRh['turnos_seis_por_dois'] == 'true' ? true : false;
+        $dadosParecerRh['ex_funcionario'] = $dadosParecerRh['ex_funcionario'] == 'true';
+        $dadosParecerRh['indicacao'] = $dadosParecerRh['indicacao'] == 'true';
+        $dadosParecerRh['turnos_seis_por_dois'] = $dadosParecerRh['turnos_seis_por_dois'] == 'true';
         $dadosParecerRh['entrevistador'] = auth()->id();
 
         $dadosParecerRota = $dados['parecer_rota'];
@@ -74,9 +74,9 @@ class AdmissaoController extends Controller
         $dadosParecerRota['aprovado_por'] = auth()->id();
 
         $dadosParecerTecnica = $dados['parecer_tecnica'];
-        $dadosParecerTecnica['experiencia_cargas_rigger'] = $dadosParecerTecnica['experiencia_cargas_rigger'] == 'true' ? true : false;
-        $dadosParecerTecnica['opera_plat_movel'] = $dadosParecerTecnica['opera_plat_movel'] == 'true' ? true : false;
-        $dadosParecerTecnica['opera_plat_ponte'] = $dadosParecerTecnica['opera_plat_ponte'] == 'true' ? true : false;
+        $dadosParecerTecnica['experiencia_cargas_rigger'] = $dadosParecerTecnica['experiencia_cargas_rigger'] == 'true';
+        $dadosParecerTecnica['opera_plat_movel'] = $dadosParecerTecnica['opera_plat_movel'] == 'true';
+        $dadosParecerTecnica['opera_plat_ponte'] = $dadosParecerTecnica['opera_plat_ponte'] == 'true';
         $dadosParecerTecnica['entrevistado_por'] = auth()->id();
 
         $dadosParecerTeste = $dados['parecer_teste'];
@@ -90,13 +90,13 @@ class AdmissaoController extends Controller
 
         $dadosResultadoIntegrado = $dados['resultado_integrado'];
 
-        $dadosResultadoIntegrado['documentos_entregue'] = $dadosResultadoIntegrado['documentos_entregue'] == 'true' ? true : false;
+        $dadosResultadoIntegrado['documentos_entregue'] = $dadosResultadoIntegrado['documentos_entregue'] == 'true';
         $dadosResultadoIntegrado['documentos_entregue_data'] = $dadosResultadoIntegrado['documentos_entregue_data'] ? (new DataHora($dadosResultadoIntegrado['documentos_entregue_data']))->dataInsert() : null;
 
-        $dadosResultadoIntegrado['encaminhado_exame'] = $dadosResultadoIntegrado['encaminhado_exame'] == 'true' ? true : false;
+        $dadosResultadoIntegrado['encaminhado_exame'] = $dadosResultadoIntegrado['encaminhado_exame'] == 'true';
         $dadosResultadoIntegrado['encaminhado_exame_data'] = $dadosResultadoIntegrado['encaminhado_exame_data'] ? (new DataHora($dadosResultadoIntegrado['encaminhado_exame_data']))->dataInsert() : null;
 
-        $dadosResultadoIntegrado['encaminhado_treinamento'] = $dadosResultadoIntegrado['encaminhado_treinamento'] == 'true' ? true : false;
+        $dadosResultadoIntegrado['encaminhado_treinamento'] = $dadosResultadoIntegrado['encaminhado_treinamento'] == 'true';
         $dadosResultadoIntegrado['encaminhado_treinamento_data'] = $dadosResultadoIntegrado['encaminhado_treinamento_data'] ? (new DataHora($dadosResultadoIntegrado['encaminhado_treinamento_data']))->dataInsert() : null;
 
         $dadosResultadoIntegrado['usuario_id'] = auth()->id();
@@ -110,23 +110,25 @@ class AdmissaoController extends Controller
         try {
             DB::beginTransaction();
 
-            $empresa_id = 39765;
+            $empresa_id = auth()->user()->empresa_id;
 
             $user = User::whereHas('Curriculo', function ($q) use ($dadosCurriculo) {
                 $q->whereCpf($dadosCurriculo['cpf']);
             });
 
+            $userObj = [
+                'nome' => $dadosCurriculo['nome'],
+                'login' => $dadosCurriculo['email'],
+                'password' => Sistema::SenhaCpf($dadosCurriculo['cpf']),
+                'tipo' => isset($dadosCurriculo['tipo']) ?: 'Funcionario',
+                'ativo' => true,
+                'temp' => false,
+                'termos' => false,
+                'empresa_id' => $empresa_id
+            ];
+
             if ($user->count() === 0) {
-                $usuario = $user->create([
-                    'nome' => $dadosCurriculo['nome'],
-                    'login' => $dadosCurriculo['email'],
-                    'password' => Sistema::SenhaCpf($dadosCurriculo['cpf']),
-                    'tipo' => 'Pessoa',
-                    'ativo' => true,
-                    'temp' => false,
-                    'termos' => false,
-                    'empresa_id' => $empresa_id
-                ]);
+                $usuario = $user->create($userObj);
 
                 $usuario->Curriculo()->create($dadosCurriculo);
 
@@ -152,7 +154,7 @@ class AdmissaoController extends Controller
 
                 if (isset($dadosCurriculo['telefones'])) {
                     foreach ($dadosCurriculo['telefones'] as $linha) {
-                        $linha['principal'] = $linha['principal'] == 'true' ? true : false;
+                        $linha['principal'] = $linha['principal'] == 'true';
                         if (!isset($linha['id'])) {
                             $telPrincipal = $candidato->Telefones()->create($linha)->id;
                             if ($linha['principal']) {
@@ -167,35 +169,25 @@ class AdmissaoController extends Controller
                     }
                 }
 
-                $candidatoId = $candidato->FeedBack()->create($dadosFeedback)->id;
+                $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
-                $curriculo = FeedbackCurriculo::whereCurriculoId($candidatoId)->first();
-                $curriculo->ParecerRh()->create($dadosParecerRh);
-                $curriculo->ParecerRota()->create($dadosParecerRota);
-                $curriculo->ParecerTecnica()->create($dadosParecerTecnica);
-                $curriculo->ParecerTeste()->create($dadosParecerTeste);
-                $curriculo->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+                $feedback->ParecerRh()->create($dadosParecerRh);
+                $feedback->ParecerRota()->create($dadosParecerRota);
+                $feedback->ParecerTecnica()->create($dadosParecerTecnica);
+                $feedback->ParecerTeste()->create($dadosParecerTeste);
+                $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                $curriculo->Admissao()->create($dadosAdmissao);
+                $feedback->Admissao()->create($dadosAdmissao);
             } else {
+
                 $dadosAdmissao['editado_usuario_id'] = auth()->id();
                 // 1- Busca o Candidato
                 $user = $user->first();
-                $user->update([
-                    'nome' => $dadosCurriculo['nome'],
-                    'login' => $dadosCurriculo['email'],
-                    'password' => Sistema::SenhaCpf($dadosCurriculo['cpf']),
-                    'tipo' => 'Pessoa',
-                    'ativo' => true,
-                    'temp' => false,
-                    'termos' => false,
-                    'empresa_id' => $empresa_id
-                ]);
+                $user->update($userObj);
 
                 $candidato = $user->Curriculo;
                 // 2- Atualiza as informações na tabela curriculo
                 $candidato->update([
-                    'cpf' => $dadosCurriculo['cpf'],
                     'nome' => $dadosCurriculo['nome'],
                     'nascimento' => $dadosCurriculo['nascimento'],
                     'pcd' => $dadosCurriculo['pcd'],
@@ -233,7 +225,7 @@ class AdmissaoController extends Controller
                 // 3- telefones para adição
                 if (isset($dadosCurriculo['telefones'])) {
                     foreach ($dadosCurriculo['telefones'] as $linha) {
-                        $linha['principal'] = $linha['principal'] == 'true' ? true : false;
+                        $linha['principal'] = $linha['principal'] == 'true';
                         if (!isset($linha['id'])) {
                             $telPrincipal = $candidato->Telefones()->create($linha)->id;
                             if ($linha['principal']) {
@@ -254,12 +246,15 @@ class AdmissaoController extends Controller
                 $candidato->FeedBack->ParecerTecnica ? $candidato->FeedBack->ParecerTecnica->update($dadosParecerTecnica) : $candidato->FeedBack->ParecerTecnica()->create($dadosParecerTecnica);
                 $candidato->FeedBack->ParecerTeste ? $candidato->FeedBack->ParecerTeste->update($dadosParecerTeste) : $candidato->FeedBack->ParecerTeste()->create($dadosParecerTeste);
                 $candidato->FeedBack->ResultadoIntegrado ? $candidato->FeedBack->ResultadoIntegrado->update($dadosResultadoIntegrado) : $candidato->FeedBack->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                $candidato->FeedBack->Admissao()->create($dadosAdmissao);
             }
             DB::commit();
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "error ADMISSAO AVULSA STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($dados);
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
@@ -306,7 +301,7 @@ class AdmissaoController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\Admissao $admissao
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function edit(FeedbackCurriculo $admissao)
     {
@@ -346,7 +341,6 @@ class AdmissaoController extends Controller
         $feedback = $admissao;
         $admissaoDados = $dados['admissao'];
 
-//
 //        if ($request->filled('admissao.foto_escaneada')) {
 //            $dados['foto_escaneada'] = $dados['foto_escaneada'] == 'true' ? true : false;
 //        }
@@ -367,13 +361,11 @@ class AdmissaoController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-
                 $feedback->Curriculo->update([
                     'nome' => $dados['curriculo']['nome'],
                     'filiacao_pai' => $dados['curriculo']['filiacao_pai'],
                     'filiacao_mae' => $dados['curriculo']['filiacao_mae'],
                 ]);
-
 
                 if ($feedback->parecerRh) {
                     $feedback->parecerRh->update(
@@ -440,9 +432,12 @@ class AdmissaoController extends Controller
         //
     }
 
-    public function atualizar(Request $request)
+    /**
+     * @param Request $request
+     * @return FeedbackCurriculo|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     */
+    protected function filtro(Request $request)
     {
-
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado')
             ->with(
                 'Admissao:id,feedback_id,status,numero_cracha',
@@ -494,15 +489,19 @@ class AdmissaoController extends Controller
             });
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        $resultado = $resultado->orderByDesc('created_at');
 
+        return $resultado;
+    }
 
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => $resultado->items()
-        ]);
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function atualizar(Request $request)
+    {
+        $pg = $this->filtro($request)->paginate($request->porPag ?: 20);
+        return Sistema::pg($pg);
     }
 
     // Anexos-------------------------------------------------
@@ -527,13 +526,15 @@ class AdmissaoController extends Controller
         return Arquivo::anexoDownload([Arquivo::DISCO_FOTOCURRICULO], $arquivo);
     }
 
-
     //PDF
-    public function getFichaPdf($curriculo_id)
+    public function getFichaPdf(FeedbackCurriculo $feedback)
     {
-        $dados = ResultadoIntegrado::whereCurriculoId($curriculo_id)->first();
+//        $dados = ResultadoIntegrado::whereFeedbackId($curriculo_id)->first();
 
-//        $dados = $curriculo_id;
+//        $dados = $feedback;
+
+        $dados = $feedback->load('ResultadoIntegrado');
+
         $pdf = PDF::loadView('pdf.admissao.ficha', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("ficha_admissao_" . ($dados->Curriculo->nome) . ".pdf");
@@ -598,7 +599,7 @@ class AdmissaoController extends Controller
             if ($curriculo->count() > 0) {
                 $curriculo = $curriculo->first();
 
-                $curriculo->pcd = $curriculo->pcd ? $curriculo->pcd : false;
+                $curriculo->pcd = $curriculo->pcd ?: false;
 
                 $curriculo->autocomplete_label_municipio_modal = $curriculo->Cidade ? $curriculo->Cidade->nome . ' - ' . $curriculo->Cidade->uf : '';
                 $curriculo->autocomplete_label_municipio_modal_anterior = $curriculo->Cidade ? $curriculo->Cidade->nome . ' - ' . $curriculo->Cidade->uf : '';
@@ -686,7 +687,6 @@ class AdmissaoController extends Controller
                     $resultadoIntegrado->autorizado_por = '';
                     $resultadoIntegrado->responsavel_envio = '';
                 }
-
 
                 return response()->json(
                     [
