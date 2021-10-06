@@ -129,6 +129,7 @@ class AdmissaoController extends Controller
 
             if ($user->count() === 0) {
                 $usuario = $user->create($userObj);
+                $usuario->BancoConta ? $usuario->BancoConta->update($dados['curriculo']['banco_conta']) : $usuario->BancoConta()->create($dados['curriculo']['banco_conta']);
 
                 $usuario->Curriculo()->create($dadosCurriculo);
 
@@ -184,6 +185,7 @@ class AdmissaoController extends Controller
                 // 1- Busca o Candidato
                 $user = $user->first();
                 $user->update($userObj);
+                $user->BancoConta ? $user->BancoConta->update($dados['curriculo']['banco_conta']) : $user->BancoConta()->create($dados['curriculo']['banco_conta']);
 
                 $candidato = $user->Curriculo;
                 // 2- Atualiza as informações na tabela curriculo
@@ -311,6 +313,7 @@ class AdmissaoController extends Controller
             'Admissao',
             'Curriculo.Formacao',
             'Curriculo.FotoTres',
+            'Curriculo.BancoConta',
             'parecerRh',
             'parecerTecnica',
             'parecerRota',
@@ -321,7 +324,6 @@ class AdmissaoController extends Controller
             'Cliente.AreasEtiquetas',
             'TelPrincipal'
         );
-
 
         return response()->json(['feedback' => $feedback], 200);
     }
@@ -387,6 +389,12 @@ class AdmissaoController extends Controller
                     $feedback->parecerTecnica()->create(['indicado_area' => $dados['parecer_tecnica']['indicado_area']]);
                 }
 
+                $dados['curriculo']['banco_conta']['user_id'] = $feedback->curriculo_id;
+
+                $user = User::find($dados['curriculo']['banco_conta']['user_id']);
+
+                $user->BancoConta ? $user->BancoConta->update($dados['curriculo']['banco_conta']) : $user->BancoConta()->create($dados['curriculo']['banco_conta']);
+
                 if (isset($dados['curriculo']['foto_tresDel'])) {
                     foreach ($dados['curriculo']['foto_tresDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
@@ -405,6 +413,9 @@ class AdmissaoController extends Controller
                         }
                     }
                 }
+//                $dados['curriculo']['banco_conta']['user_id'] = $feedback->curriculo_id;
+//                $feedback->Curriculo->BancoConta ? $feedback->Curriculo->BancoConta->update($dados['curriculo']['banco_conta']) : $feedback->Curriculo->BancoConta()->create($dados['curriculo']['banco_conta']);
+
 
                 $feedback->Admissao ? $feedback->Admissao->update($admissaoDados) : $feedback->Admissao()->create($admissaoDados);
 
@@ -415,6 +426,7 @@ class AdmissaoController extends Controller
             } catch (\Exception $e) {
                 DB::rollback();
                 $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                return $msg;
                 \Log::debug($msg);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }

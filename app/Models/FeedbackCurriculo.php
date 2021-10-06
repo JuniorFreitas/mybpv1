@@ -728,6 +728,7 @@ class FeedbackCurriculo extends Model
             ->whereTipo('ArquivamentoDossie');
     }
 
+
     /**/
     //scopeManual
 //    public function scopeEmpresa($query)

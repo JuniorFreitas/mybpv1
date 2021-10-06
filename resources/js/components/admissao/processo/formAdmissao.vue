@@ -212,6 +212,7 @@
             </div>
         </div>
 
+
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Biometria</label>
@@ -230,6 +231,15 @@
                 <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar"
                        v-model="form.data_biometria" v-mascara:data
                        onblur="valida_data(this)">
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6">
+            <div class="form-group">
+                <label>PIS</label>
+                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                       :disabled="visualizar"
+                       v-model="form.pis">
             </div>
         </div>
 
@@ -282,7 +292,8 @@ export default {
                 calca: "",
                 bota: "",
                 camisa_protecao: "",
-                camisa_meia: ""
+                camisa_meia: "",
+                pis: ""
 
             }
         },

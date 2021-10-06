@@ -1,4 +1,5 @@
 import endereco from "../../../components/Endereco";
+import DadosBancarios from "../../../components/DadosBancarios";
 import datepicker from "../../../components/DatePicker";
 import upload from "../../../components/Upload";
 import telefone from "../../../components/Telefones";
@@ -16,7 +17,8 @@ const app = new Vue({
         telefone,
         DadosPessoais,
         formAdmissao,
-        FormResultadoIntegrado
+        FormResultadoIntegrado,
+        DadosBancarios
     },
     data: {
         tituloJanela: "Admissão",
@@ -89,6 +91,15 @@ const app = new Vue({
 
                 autocomplete_label_municipio_modal: "",
                 autocomplete_label_municipio_modal_anterior: "",
+
+                banco_conta: {
+                    banco: "Banco do Brasil",
+                    agencia: "",
+                    conta: "",
+                    pix: false,
+                    tipochavepix: "",
+                    chavepix: ""
+                },
 
                 telefones: [{
                     detalhe: "",
@@ -176,7 +187,17 @@ const app = new Vue({
                 nascimento: "",
                 municipio_id: "",
                 autocomplete_label_municipio_modal: "",
-                autocomplete_label_municipio_modal_anterior: ""
+                autocomplete_label_municipio_modal_anterior: "",
+
+                banco_conta: {
+                    banco: "Banco do Brasil",
+                    agencia: "",
+                    conta: "",
+                    pix: false,
+                    tipochavepix: "",
+                    chavepix: ""
+                },
+
             },
 
             certificados_nr: [],
@@ -305,6 +326,7 @@ const app = new Vue({
                 trinta_dois_sessenta: "",
                 data_trinta_dois_sessenta: "",
                 numero_cracha: "",
+                pis: "",
                 data_aso: "",
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
@@ -649,6 +671,19 @@ const app = new Vue({
                     //Se não tiver parecer_rh
                     this.form.admissao = admissao ? admissao : _.cloneDeep(this.formDefault.admissao);
 
+
+                    if (!data.feedback.curriculo.banco_conta) {
+                        this.form.curriculo.banco_conta = _.cloneDeep({
+                            banco: "Banco do Brasil",
+                            agencia: "",
+                            conta: "",
+                            pix: false,
+                            tipochavepix: "",
+                            chavepix: ""
+                        });
+                    }else{
+                        Object.assign(this.form.curriculo.banco_conta, data.curriculo.banco_conta);
+                    }
 
                     if (admissao) {
                         this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id ? admissao.area_etiqueta_id : "";
