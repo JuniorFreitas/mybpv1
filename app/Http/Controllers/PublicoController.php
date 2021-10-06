@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AreaEtiqueta;
 use App\Models\CentroCusto;
 use App\Models\Cliente;
+use App\Models\Sistema;
 use App\Models\Vaga;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -51,8 +52,10 @@ class PublicoController extends Controller
 
     public function listaAreasEtiquetasCliente(Request $request, Cliente $cliente)
     {
+        $key = "listaAreasEtiquetasCliente";
+//        $data = $cliente->AreasEtiquetas()->whereAtivo(true)->get();
+//        $cache = Sistema::getCache($key) ?: Sistema::putCache($key, $data);
         return response()->json($cliente->AreasEtiquetas()->whereAtivo(true)->get());
-//        return response()->json(['areas' => AreaEtiqueta::whereAtivo(true)->get()], 200);
     }
 
     public function listaCentroCusto(Request $request)

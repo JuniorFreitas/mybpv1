@@ -16,67 +16,68 @@
 
                     - <strong>{{ $dados->Curriculo->idade }} anos</strong> | PCD:
                     <strong>{{ $dados->Curriculo->PCD ? 'Sim' : 'Não' }}</strong> | CNH:
-                    <strong>{{ $dados->Feedback->ParecerRh->cnh ? $dados->Feedback->ParecerRh->cnh_tipo : 'Não possui' }}</strong>
+                    <strong>{{ $dados->ParecerRh->cnh ? $dados->ParecerRh->cnh_tipo : 'Não possui' }}</strong>
                     <br>
-                    Calça: <strong>{{ $dados->Feedback->ParecerRh->calca }}</strong> |
-                    Bota: <strong>{{ $dados->Feedback->ParecerRh->bota }}</strong> | C.
-                    Meia: <strong>{{ $dados->Feedback->ParecerRh->camisa_meia }}</strong> | C.
-                    Proteção: <strong>{{ $dados->Feedback->ParecerRh->camisa_protecao }}</strong>
+                    Calça: <strong>{{ $dados->ParecerRh->calca }}</strong> |
+                    Bota: <strong>{{ $dados->ParecerRh->bota }}</strong> | C.
+                    Meia: <strong>{{ $dados->ParecerRh->camisa_meia }}</strong> | C.
+                    Proteção: <strong>{{ $dados->ParecerRh->camisa_protecao }}</strong>
                     <br>
                     Empresa:
-                    <strong>{{ $dados->Feedback->Cliente->razao_social ? $dados->Feedback->Cliente->razao_social : $dados->Feedback->Cliente->nome }}</strong>
-                    | Vaga: <strong>{{ $dados->Feedback->VagaSelecionada->nome }}</strong>
+                    <strong>{{ $dados->Cliente->razao_social ? $dados->Cliente->razao_social : $dados->Cliente->nome }}</strong>
+                    | Vaga: <strong>{{ $dados->VagaSelecionada->nome }}</strong>
                     <br>
                     Contato:
-                    <strong>{{ $dados->Feedback->TelPrincipal ? $dados->Feedback->TelPrincipal->numero: 'Não informado' }}</strong>
+                    <strong>{{ $dados->TelPrincipal ? $dados->TelPrincipal->numero: 'Não informado' }}</strong>
                     | E-mail: <span
                         style="text-transform: lowercase"><strong>{{ $dados->Curriculo->email }}</strong></span> |
                     Ex Funcionário:
-                    <strong>{{ $dados->Feedback->ParecerRh->ex_funcionario == true ? 'Sim' : 'Não' }}</strong>
+                    <strong>{{ $dados->ParecerRh->ex_funcionario == true ? 'Sim' : 'Não' }}</strong>
                     <br>
                     Disponibilidade para turnos 6X2:
-                    <strong>{{ $dados->Feedback->ParecerRh->turnos_seis_por_dois ? 'Sim' : 'Não' }}</strong> |
-                    @if ($dados->Feedback->ParecerRh->indicado)
+                    <strong>{{ $dados->ParecerRh->turnos_seis_por_dois ? 'Sim' : 'Não' }}</strong> |
+                    @if ($dados->ParecerRh->indicado)
                         Indicado por:
-                        <strong>{{ $dados->Feedback->ParecerRh->indicado_por}}</strong>
+                        <strong>{{ $dados->ParecerRh->indicado_por}}</strong>
                         |
                     @endif
                     Indicado para qual área:
-                    <strong>{{ $dados->Feedback->ParecerTecnica->indicado_area ? $dados->Feedback->ParecerTecnica->indicado_area : 'Não informado' }}</strong>
+                    <strong>{{ $dados->ParecerTecnica->indicado_area ? $dados->ParecerTecnica->indicado_area : 'Não informado' }}</strong>
                     <br>
                     Endereço: <strong>{{ $dados->Curriculo->logradouro }}, {{ $dados->Curriculo->bairro }}
                         , {{ $dados->Curriculo->municipio }}/{{ $dados->Curriculo->uf }}</strong>
                     <br>
                     Bairro Rota:
-                    <strong>{{ $dados->Feedback->ParecerRota ? $dados->Feedback->ParecerRota->bairro_rota : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->bairro_rota : 'Não Informado' }}</strong>
                     | Ponto
                     Referência
                     Rota:
-                    <strong>{{ $dados->Feedback->ParecerRota ? $dados->Feedback->ParecerRota->ponto_referencia_rota : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_rota : 'Não Informado' }}</strong>
                     | Ponto
                     Referência
                     Bairro:
-                    <strong>{{ $dados->Feedback->ParecerRota ? $dados->Feedback->ParecerRota->ponto_referencia_residencia : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_residencia : 'Não Informado' }}</strong>
                     <br>
                     Teste aplicado:
-                    <strong>{{ $dados->Feedback->ParecerTeste ? $dados->Feedback->ParecerTeste->qual_teste : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->qual_teste : 'Não Informado' }}</strong>
                     | Resultado Teste Prático:
-                    <strong>{{ $dados->Feedback->ParecerTeste ? $dados->Feedback->ParecerTeste->parecer_final_teste : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->parecer_final_teste : 'Não Informado' }}</strong>
                     <br>
                     Rigger:
-                    <strong>{{ $dados->Feedback->ParecerTeste ? $dados->Feedback->ParecerTeste->experiencia_cargas_rigger ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->experiencia_cargas_rigger ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
                     |
                     Plataforma Movél:
-                    <strong>{{ $dados->Feedback->ParecerTeste ? $dados->Feedback->ParecerTeste->opera_plat_movel ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->opera_plat_movel ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
                     |
                     Ponte Rolante:
-                    <strong>{{ $dados->Feedback->ParecerTeste ? $dados->Feedback->ParecerTeste->opera_plat_ponte ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->opera_plat_ponte ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
                 </p>
             </td>
             <td width="4.5cm" style="border-left: 1px solid #666666;" align="center">
-                @if (count($dados->Admissao->FotoTres)>0)
+
+                @if (count($dados->Curriculo->FotoTres)>0)
                     <img
-                        src="{{\App\Models\Sistema::convertBase('app/g/arquivos/disco-fotocurriculo/'.$dados->Admissao->FotoTres[0]->file)}}"
+                        src="{{\App\Models\Sistema::convertBase('app/g/arquivos/disco-fotocurriculo/'.$dados->Curriculo->FotoTres[0]->file)}}"
                         style="height: 4cm; ">
                 @else
                     <img
@@ -113,7 +114,8 @@
                     Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta }}</strong> <br>
                     Número Crachá: <strong>{{ $dados->Admissao->numero_cracha }}</strong> <br>
                     Data do ASO: <strong>{{ $dados->Admissao->data_aso }}</strong> <br>
-                    Status Carteira de Treinamento e Etiqueta: <strong>{{ $dados->Admissao->status_carteira_treinamento }}</strong> <br>
+                    Status Carteira de Treinamento e Etiqueta:
+                    <strong>{{ $dados->Admissao->status_carteira_treinamento }}</strong> <br>
                     Status: <strong>{{ $dados->Admissao->status }}</strong> <br>
                     Data da Admissão: <strong>{{ $dados->Admissao->data_admissao }}</strong> <br>
                 </p>
@@ -121,7 +123,9 @@
         </tr>
     </table>
     <br>
-    <p style="font-size: 9pt; color: #666666">Data da Emissão da ficha: {{ (new \MasterTag\DataHora())->dataCompleta()}} às {{ (new \MasterTag\DataHora())->horaCompleta()}}</p>
-    <p style="font-size: 9pt; color: #666666">Usuario que emitou a ficha: {{ \Illuminate\Support\Facades\Auth::user()->nome }}</p>
+    <p style="font-size: 9pt; color: #666666">Data da Emissão da ficha: {{ (new \MasterTag\DataHora())->dataCompleta()}}
+        às {{ (new \MasterTag\DataHora())->horaCompleta()}}</p>
+    <p style="font-size: 9pt; color: #666666">Usuario que emitou a
+        ficha: {{ \Illuminate\Support\Facades\Auth::user()->nome }}</p>
 
 @endsection

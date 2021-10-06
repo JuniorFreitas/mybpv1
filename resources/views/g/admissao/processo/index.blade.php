@@ -252,20 +252,6 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Empresa</label>
-                                        <autocomplete :caminho="controle.dados.caminho_cliente_autocomplete"
-                                                      :valido="formAvulsa.feedback.cliente_id !== ''"
-                                                      v-model="formAvulsa.feedback.autocomplete_label_cliente_modal"
-                                                      :id="`cliente_${hash}`"
-                                                      :formsm="false"
-                                                      placeholder="Selecione um cliente"
-                                                      @onblur="resetaCampoClienteModal"
-                                                      @onselect="selecionaClienteModal"></autocomplete>
-                                    </div>
-                                </div>
-
                                 <div class="col-12 col-sm-6 col-md-3">
                                     <div class="form-group">
                                         <label>Ex funcionário</label>
@@ -527,8 +513,12 @@
 
                         <fieldset>
                             <legend>Admissão</legend>
-                            <form-admissao :form="form.admissao" :cliente_id='formAvulsa.feedback.cliente_id'
-                                           v-if='formAvulsa.feedback.cliente_id > 0'></form-admissao>
+                            <form-admissao :form="form.admissao"></form-admissao>
+
+                            <div class="col-12">
+                                <dados-bancarios :model="formAvulsa.curriculo.banco_conta"></dados-bancarios>
+                            </div>
+
 
                             <div class="col-12">
                                 <fieldset>
@@ -696,20 +686,6 @@
 
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
-                                <label>Empresa</label>
-                                <input type="text" class="form-control"
-                                       v-if="form.cliente.razao_social"
-                                       readonly="readonly" disabled="disabled"
-                                       :value="form.cliente.razao_social">
-                                <input type="text" class="form-control"
-                                       v-if="!form.cliente.razao_social"
-                                       readonly="readonly" disabled="disabled"
-                                       :value="form.cliente.nome">
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
                                 <label>Vaga</label>
                                 <input type="text" class="form-control" disabled="disabled" readonly="readonly"
                                        :value="form.vaga_selecionada.nome">
@@ -859,6 +835,10 @@
                     <form-admissao :form="form.admissao" :visualizar='visualizar'
                                    :cliente_id='form.cliente_id'></form-admissao>
 
+                    <div class="col-12">
+                        <dados-bancarios :model="form.curriculo.banco_conta"></dados-bancarios>
+                    </div>
+
                     <div class='col-12'>
                         <fieldset>
                             <legend>FOTO ESCANEADA</legend>
@@ -872,265 +852,6 @@
                                     @onFinalizado='anexoUploadAndamento=false'></upload>
                         </fieldset>
                     </div>
-
-                    {{--                    <div class="row">--}}
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Área</label>--}}
-                    {{--                                <select class="form-control" v-model="form.admissao.area_etiqueta_id"--}}
-                    {{--                                        :disabled="visualizar">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option :value="item.id"--}}
-                    {{--                                            v-for="item in form.cliente.areas_etiquetas">--}}
-                    {{--                                        @{{ item.label }}--}}
-                    {{--                                    </option>--}}
-                    {{--                                </select>--}}
-
-
-                    {{--                                --}}{{--<span class="input-group-prepend">--}}
-                    {{--                                    <span class="input-group-text">Contrato</span>--}}
-                    {{--                                </span>--}}
-                    {{--                                    <input type="text" class="form-control" onblur="valida_campo(this,2)"--}}
-                    {{--                                           v-model="form.contrato">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Função</label>--}}
-                    {{--                                <input type="text" class="form-control" onblur="valida_campo_vazio(this,2)"--}}
-                    {{--                                       :disabled="visualizar"--}}
-                    {{--                                       v-model="form.admissao.funcao">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Cargo</label>--}}
-                    {{--                                <input type="text" class="form-control" onblur="valida_campo_vazio(this,2)"--}}
-                    {{--                                       :disabled="visualizar"--}}
-                    {{--                                       v-model="form.admissao.cargo">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Salário R$</label>--}}
-                    {{--                                <input type="text" class="form-control" v-mascara:dinheiro :disabled="visualizar"--}}
-                    {{--                                       v-model="form.admissao.salario">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Documento</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo(this,1)"--}}
-                    {{--                                        onblur="valida_campo(this,1)" :disabled="visualizar"--}}
-                    {{--                                        v-model="form.admissao.documento">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="PENDENTE">PENDENTE</option>--}}
-                    {{--                                    <option value="INCOMPLETO">INCOMPLETO</option>--}}
-                    {{--                                    <option value="CONCLUIDO">CONCLUIDO</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Documento Portaria</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo(this,1)"--}}
-                    {{--                                        onblur="valida_campo(this,1)" :disabled="visualizar"--}}
-                    {{--                                        v-model="form.admissao.documento_portaria">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="PENDENTE">PENDENTE</option>--}}
-                    {{--                                    <option value="CONCLUIDO">CONCLUIDO</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Tipo de admissão</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo(this,1)"--}}
-                    {{--                                        onblur="valida_campo(this,1)" :disabled="visualizar"--}}
-                    {{--                                        v-model="form.admissao.tipo_admissao">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="TEMPORARIO">TEMPORARIO</option>--}}
-                    {{--                                    <option value="INTERMITENTE">INTERMITENTE</option>--}}
-                    {{--                                    <option value="DETERMINADO">DETERMINADO</option>--}}
-                    {{--                                    <option value="FIXO">FIXO</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Treinamento</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo(this,1)"--}}
-                    {{--                                        onblur="valida_campo(this,1)" :disabled="visualizar"--}}
-                    {{--                                        v-model="form.admissao.treinamento">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="AGENDAR">AGENDAR</option>--}}
-                    {{--                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-                    {{--                                    <option value="REALIZADO">REALIZADO</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6" v-if="form.admissao.treinamento == 'REALIZADO'">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Tipo de Treinamento</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo(this,1)"--}}
-                    {{--                                        onblur="valida_campo(this,1)" :disabled="visualizar"--}}
-                    {{--                                        v-model="form.admissao.tipo_treinamento">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="COMPLETO">COMPLETO</option>--}}
-                    {{--                                    <option value="PARADA">PARADA</option>--}}
-                    {{--                                    <option value="LARGO">LARGO</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>NR 33</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo(this,1)"--}}
-                    {{--                                        onblur="valida_campo(this,1)" :disabled="visualizar"--}}
-                    {{--                                        v-model="form.admissao.nr_trinta_tres">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="AGENDAR">AGENDAR</option>--}}
-                    {{--                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-                    {{--                                    <option value="REALIZADO">REALIZADO</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>NR 35</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo(this,1)"--}}
-                    {{--                                        onblur="valida_campo(this,1)" :disabled="visualizar"--}}
-                    {{--                                        v-model="form.admissao.nr_trinta_cinco">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="AGENDAR">AGENDAR</option>--}}
-                    {{--                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-                    {{--                                    <option value="REALIZADO">REALIZADO</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Número Crachá</label>--}}
-                    {{--                                <input type="text" class="form-control" onblur="valida_campo(this,2)"--}}
-                    {{--                                       :disabled="visualizar"--}}
-                    {{--                                       v-model="form.admissao.numero_cracha">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Data do ASO</label>--}}
-                    {{--                                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar"--}}
-                    {{--                                       v-model="form.admissao.data_aso" v-mascara:data--}}
-                    {{--                                       onblur="valida_data(this)"--}}
-                    {{--                                       @blur="validaData">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Status Carteira de Treinamento e Etiqueta</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo(this,1)" :disabled="visualizar"--}}
-                    {{--                                        onblur="valida_campo(this,1)"--}}
-                    {{--                                        v-model="form.admissao.status_carteira_treinamento">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="PENDENTE">PENDENTE</option>--}}
-                    {{--                                    <option value="AGUARDANDO TREINAMENTO">AGUARDANDO TREINAMENTO</option>--}}
-                    {{--                                    <option value="ENTREGUE">ENTREGUE</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Status</label>--}}
-                    {{--                                <select class="form-control" onchange="valida_campo_vazio(this,1)"--}}
-                    {{--                                        :disabled="visualizar"--}}
-                    {{--                                        onblur="valida_campo_vazio(this,1)"--}}
-                    {{--                                        v-model="form.admissao.status">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option value="AGUARDANDO QUALIFICAÇÃO">AGUARDANDO QUALIFICAÇÃO</option>--}}
-                    {{--                                    <option value="PRONTO PARA ADMISSAO">PRONTO PARA ADMISSAO</option>--}}
-                    {{--                                    <option value="ADMITIDO">ADMITIDO</option>--}}
-                    {{--                                    <option value="STAND BY">STAND BY</option>--}}
-                    {{--                                    <option value="PENDENTE ASO">PENDENTE ASO</option>--}}
-                    {{--                                    <option value="PENDENTE DOCUMENTO">PENDENTE DOCUMENTO</option>--}}
-                    {{--                                    <option value="PENDENTE TREINAMENTO">PENDENTE TREINAMENTO</option>--}}
-                    {{--                                    <option value="CANCELADO">CANCELADO</option>--}}
-                    {{--                                    <option value="ENCAMINHADO EXAME">ENCAMINHADO EXAME</option>--}}
-                    {{--                                    <option value="DESISTÊNCIA">DESISTÊNCIA</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Data da Admissão</label>--}}
-                    {{--                                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar"--}}
-                    {{--                                       v-model="form.admissao.data_admissao" v-mascara:data--}}
-                    {{--                                       onblur="valida_data(this)"--}}
-                    {{--                                       @blur="validaDataAdmissao">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Data da Entrega na área</label>--}}
-                    {{--                                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar"--}}
-                    {{--                                       v-model="form.admissao.data_entrega_area" v-mascara:data--}}
-                    {{--                                       onblur="valida_data(this)">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Biometria</label>--}}
-                    {{--                                <select class="form-control" :disabled="visualizar"--}}
-                    {{--                                        v-model="form.admissao.biometria">--}}
-                    {{--                                    <option value="">Selecione</option>--}}
-                    {{--                                    <option :value="true">SIM</option>--}}
-                    {{--                                    <option :value="false">NÃO</option>--}}
-                    {{--                                </select>--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12 col-sm-6" v-if="form.admissao.biometria">--}}
-                    {{--                            <div class="form-group">--}}
-                    {{--                                <label>Data Biometria</label>--}}
-                    {{--                                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar"--}}
-                    {{--                                       v-model="form.admissao.data_biometria" v-mascara:data--}}
-                    {{--                                       onblur="valida_data(this)">--}}
-                    {{--                            </div>--}}
-                    {{--                        </div>--}}
-
-                    {{--                        <div class="col-12">--}}
-                    {{--                            <fieldset>--}}
-                    {{--                                <legend>FOTO ESCANEADA</legend>--}}
-                    {{--                                <upload :model="form.curriculo.foto_tres"--}}
-                    {{--                                        :model-delete="form.curriculo.foto_tresDel" :leitura="visualizar"--}}
-                    {{--                                        url="{{ route('g.admissao.admissao.upload-anexos') }}"--}}
-                    {{--                                        :apenas-imagens="true"--}}
-                    {{--                                        :quantidade="1"--}}
-                    {{--                                        label="Selecionar Imagem"--}}
-                    {{--                                        @onProgresso="anexoUploadAndamento=true"--}}
-                    {{--                                        @onFinalizado="anexoUploadAndamento=false"></upload>--}}
-                    {{--                            </fieldset>--}}
-                    {{--                        </div>--}}
-
-                    {{--                    </div>--}}
-
-
                 </fieldset>
             </div>
         </template>
@@ -1303,11 +1024,11 @@
                     <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">
                     <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">
                     <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
-                    <button type="submit" class="btn btn-sm btn-primary mb-1"
+<!--                    <button type="submit" class="btn btn-sm btn-primary mb-1"
                             :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
                         <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
                                                                                v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>
+                    </button>-->
                 </form>
             </div>
         </div>
@@ -1443,7 +1164,7 @@
                             <i class="fa fa-search-plus"></i>
                         </button>
 
-                        <a v-if="item.admissao" :href="`admissao/${item.curriculo.id}/pdf`"
+                        <a v-if="item.admissao" :href="`admissao/${item.id}/pdf`"
                            class="btn btn-sm btn-primary mb-2" content="Gerar PDF" v-tippy
                            target="_blank">
                             <i class="fa fa-file-pdf"></i>

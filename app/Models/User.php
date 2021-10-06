@@ -104,7 +104,8 @@ use MasterTag\DataHora;
  * @property-read int|null $escalas_funcionario_count
  * @property mixed $loginl
  */
-class User extends Authenticatable {
+class User extends Authenticatable
+{
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
@@ -193,7 +194,8 @@ class User extends Authenticatable {
     }
 
     // retorna um array de habilidades
-    public function listaDeHabilidades() {
+    public function listaDeHabilidades()
+    {
         if (count($this->listaDeHabilidade) == 0) {
             // buscar no banco qual é o papel dele. e dair fazer o array com todas as habilidades que ele tem
             $lista = collect([]);
@@ -217,100 +219,126 @@ class User extends Authenticatable {
         return $this->listaDeHabilidade;
     }
 
-    public function getLoginlAttribute($value) {
+    public function getLoginlAttribute($value)
+    {
         return trim(mb_strtolower($value));
     }
 
     //Modificador ->nascimento
-    public function setLoginlAttribute($value) {
+    public function setLoginlAttribute($value)
+    {
         $this->attributes['login'] = trim(mb_strtolower($value));
     }
 
-    public function Curriculo() {
+    public function Curriculo()
+    {
         return $this->hasOne(Curriculo::class, 'id', 'id');
     }
 
-    public function Cliente() {
+    public function Cliente()
+    {
         return $this->hasOne(Cliente::class, 'id', 'id');
     }
 
-    public function Empresa() {
+    public function Empresa()
+    {
         return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
-    public function Fornecedor() {
+    public function Fornecedor()
+    {
         return $this->hasOne(Fornecedor::class, 'id', 'id');
     }
 
-    public function setUltimoAcessoAttribute($value) {
+    public function setUltimoAcessoAttribute($value)
+    {
         $datahora = new DataHora($value);
         $this->attributes['ultimo_acesso'] = $datahora->dataHoraInsert();
     }
 
     //relacionamento Tokens() esta dentro de HasApiTokens::class
 
-    public function Papel() {
+    public function Papel()
+    {
         return $this->hasOne(Papel::class, 'id', 'grupo_id');
     }
 
-    public function GrupoCloud() {
+    public function GrupoCloud()
+    {
         return $this->hasOne(GrupoCloud::class, 'id', 'grupo_cloud_id');
     }
 
-    public function Feedback() {
+    public function Feedback()
+    {
         return $this->hasOne(FeedbackCurriculo::class, 'curriculo_id', 'id');
     }
 
-    public function ArquivamentoDossie() {
+    public function ArquivamentoDossie()
+    {
         return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
             ->withPivot(['tipo', 'feedback_id', 'label'])
             ->whereTipo('ArquivamentoDossie');
     }
 
-    public function ClientesEmpresa() {
+    public function ClientesEmpresa()
+    {
         return $this->belongsToMany(User::class, 'empresa_clientes', 'empresa_id', 'cliente_id', 'empresa_id');
     }
 
-    public function ClienteFuncionarios() {
+    public function ClienteFuncionarios()
+    {
         return $this->belongsToMany(User::class, 'cliente_funcionarios', 'funcionario_id', 'cliente_id');
     }
 
-    public function EmpresaFuncionarios() {
+    public function EmpresaFuncionarios()
+    {
         return $this->belongsToMany(User::class, 'empresa_funcionarios', 'empresa_id', 'funcionario_id');
     }
 
-    public function FornecedoresEmpresa() {
+    public function FornecedoresEmpresa()
+    {
         return $this->belongsToMany(User::class, 'empresa_fornecedores', 'empresa_id', 'fornecedor_id', 'empresa_id');
     }
 
-    public function FormasPagamento() {
+    public function FormasPagamento()
+    {
         return $this->hasMany(FormaPagamento::class, 'empresa_id', 'id');
     }
 
     //--------------------------------
-    public function ConfigEmpresa() {
+    public function ConfigEmpresa()
+    {
         return $this->hasOne(EmpresaConfig::class, 'empresa_id', 'empresa_id');
     }
 
-    public function PerimetrosEmpresa() {
+    public function PerimetrosEmpresa()
+    {
         return $this->hasMany(EmpresaPerimetro::class, 'empresa_id', 'empresa_id');
     }
 
-    public function PerimetrosFuncionario() {
+    public function PerimetrosFuncionario()
+    {
         return $this->belongsToMany(EmpresaPerimetro::class, 'funcionario_perimetros', 'funcionario_id', 'perimetro_id');
     }
 
-    public function EmpresaEscalas() {
+    public function EmpresaEscalas()
+    {
         return $this->hasMany(EmpresaEscala::class, 'empresa_id', 'empresa_id');
     }
 
-    public function EscalasFuncionario() {
+    public function EscalasFuncionario()
+    {
         return $this->belongsToMany(EmpresaEscala::class, 'funcionario_escalas', 'funcionario_id', 'escala_id');
     }
 
     public function FotoPerfil()
     {
         return $this->belongsToMany(Arquivo::class, 'user_anexos', 'user_id', 'arquivo_id');
+    }
+
+    public function BancoConta()
+    {
+        return $this->hasOne(UsuarioConta::class, 'user_id','id');
     }
 
 }

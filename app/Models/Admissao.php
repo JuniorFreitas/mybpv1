@@ -213,7 +213,8 @@ class Admissao extends Model
         'preenchido_por_ssma',
         'data_entrega_area',
         'biometria',
-        'data_biometria'
+        'data_biometria',
+        'pix'
     ];
     protected $casts = [
         'id' => 'int',
@@ -264,7 +265,8 @@ class Admissao extends Model
         'preenchido_por_ssma' => 'string',
         'data_entrega_area' => 'string',
         'biometria' => 'boolean',
-        'data_biometria' => 'string'
+        'data_biometria' => 'string',
+        'pis' => 'string'
     ];
 
     public function getCipaAttribute($value)

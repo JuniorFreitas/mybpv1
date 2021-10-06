@@ -147,6 +147,6 @@ class RequisicaoVaga extends Model
             $model->user_id = auth()->id();
         });
 
-        static::addGlobalScope(new ScopeClientesEmpresa);
+//        static::addGlobalScope(new ScopeClientesEmpresa);
     }
 }

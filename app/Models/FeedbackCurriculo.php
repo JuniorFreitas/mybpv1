@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeClientesEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -171,6 +172,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class FeedbackCurriculo extends Model
 {
     use HasFactory, LogsActivity;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'Feedback';
@@ -193,7 +195,6 @@ class FeedbackCurriculo extends Model
     }
 
     protected $fillable = [
-        'id',
         'selecionado',
         'vaga_id',
         'usuario_entrevista_marcado',
@@ -748,6 +749,6 @@ class FeedbackCurriculo extends Model
             $model->usuario_entrevista_marcado = auth()->id();
         });
 
-        static::addGlobalScope(new ScopeClientesEmpresa);
+//        static::addGlobalScope(new ScopeClientesEmpresa);
     }
 }
