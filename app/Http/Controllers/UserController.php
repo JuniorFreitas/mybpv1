@@ -7,6 +7,7 @@ use App\Models\Papel;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+
 class UserController extends Controller
 {
     /**
