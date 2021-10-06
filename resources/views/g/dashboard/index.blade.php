@@ -334,97 +334,183 @@
 
         <div id="sandbox-container"></div>
 
-        <div class="col-12 col-lg-10">
-            <div class="row">
-                <div class="col-xl-5 col-lg-6 mt-3">
-                    <div class="card card-stats mb-4 mb-xl-0 text-white"
-                         style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col">
-                                    <h5 class="card-title text-uppercase text-white mt-5 mb-4">Missão</h5>
-                                    <p class="">Nós queremos ser os MELHORES. Por isso, desenvolvemos e
-                                        executamos estratégias para
-                                        atuar como protagonista de transformação no negócio, gerando uma troca benéfica,
-                                        encantadora, rentável, duradoura e exclusiva entre as partes envolvidas.
-                                    </p>
+        @if($empresa == 104)
+            <div class="col-12 col-lg-10">
+                <div class="row">
+                    <div class="col-xl-5 col-lg-6 mt-3">
+                        <div class="card card-stats mb-4 mb-xl-0 text-white"
+                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-white mt-5 mb-4">Missão</h5>
+                                        <p class="">Nós queremos ser os MELHORES. Por isso, desenvolvemos e
+                                            executamos estratégias para
+                                            atuar como protagonista de transformação no negócio, gerando uma troca
+                                            benéfica,
+                                            encantadora, rentável, duradoura e exclusiva entre as partes envolvidas.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-xl-5 col-lg-6 mt-3">
-                    <div class="card card-stats mb-4 mb-xl-0 text-white"
-                         style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col">
-                                    <h5 class="card-title text-uppercase text-white mt-5 mb-4">Visão</h5>
-                                    <p class="">Fazer da BPSE a mais EFICIENTE, ATRATIVA e COBIÇADA
-                                        marca de
-                                        serviços e soluções em Gestão de RH e QSSMA no Maranhão até 2022.
-                                    </p>
+                    <div class="col-xl-5 col-lg-6 mt-3">
+                        <div class="card card-stats mb-4 mb-xl-0 text-white"
+                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-white mt-5 mb-4">Visão</h5>
+                                        <p class="">Fazer da BPSE a mais EFICIENTE, ATRATIVA e COBIÇADA
+                                            marca de
+                                            serviços e soluções em Gestão de RH e QSSMA no Maranhão até 2022.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-xl-5 col-lg-6 mt-3">
-                    <div class="card card-stats mb-4 mb-xl-0 text-white"
-                         style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col">
-                                    <h5 class="card-title text-uppercase text-white mt-5 mb-4">Valores</h5>
-                                    <p class="">
-                                        <i class="fa fa-check"></i> Respeito é o princípio <br>
-                                        <i class="fa fa-check"></i> Engajamento e entusiasmo <br>
-                                        <i class="fa fa-check"></i> Agilidade com qualidade <br>
-                                        <i class="fa fa-check"></i> Sentimento de dono <br>
-                                        <i class="fa fa-check"></i> Amor em cada detalhe <br>
-                                        <i class="fa fa-check"></i> Foco em resultado sustentável <br>
-                                        <i class="fa fa-check"></i> Ética e transparência <br>
-                                        <i class="fa fa-check"></i> Desenvolvimento de pessoas
-                                    </p>
+                    <div class="col-xl-5 col-lg-6 mt-3">
+                        <div class="card card-stats mb-4 mb-xl-0 text-white"
+                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-white mt-5 mb-4">Valores</h5>
+                                        <p class="">
+                                            <i class="fa fa-check"></i> Respeito é o princípio <br>
+                                            <i class="fa fa-check"></i> Engajamento e entusiasmo <br>
+                                            <i class="fa fa-check"></i> Agilidade com qualidade <br>
+                                            <i class="fa fa-check"></i> Sentimento de dono <br>
+                                            <i class="fa fa-check"></i> Amor em cada detalhe <br>
+                                            <i class="fa fa-check"></i> Foco em resultado sustentável <br>
+                                            <i class="fa fa-check"></i> Ética e transparência <br>
+                                            <i class="fa fa-check"></i> Desenvolvimento de pessoas
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-xl-5 col-lg-6 mt-3">
-                    <div class="card card-stats mb-4 mb-xl-0 text-white"
-                         style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col">
-                                    <h5 class="card-title text-uppercase text-white mt-5 mb-4">POLÍTICA DE GESTÃO DA
-                                        QUALIDADE</h5>
-                                    <p class="">
-                                        A BPSE é uma empresa que oferece Soluções em Gestão de Recursos Humanos,
-                                        Departamento de
-                                        Pessoal, Saúde e Segurança & Meio Ambiente, Treinamentos e Desenvolvimento, nos
-                                        estados
-                                        do MA, PA e SP. <br>
+                    <div class="col-xl-5 col-lg-6 mt-3">
+                        <div class="card card-stats mb-4 mb-xl-0 text-white"
+                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-white mt-5 mb-4">POLÍTICA DE GESTÃO DA
+                                            QUALIDADE</h5>
+                                        <p class="">
+                                            A BPSE é uma empresa que oferece Soluções em Gestão de Recursos Humanos,
+                                            Departamento de
+                                            Pessoal, Saúde e Segurança & Meio Ambiente, Treinamentos e Desenvolvimento,
+                                            nos
+                                            estados
+                                            do MA, PA e SP. <br>
 
-                                        Com o Jeito BPSE de atender, buscamos parcerias duradouras agregando valor aos
-                                        negócios
-                                        dos clientes, garantindo o atendimento dos requisitos legais e estatutários,
-                                        trabalhando
-                                        continuamente para o aperfeiçoamento dos serviços.
-                                    </p>
+                                            Com o Jeito BPSE de atender, buscamos parcerias duradouras agregando valor
+                                            aos
+                                            negócios
+                                            dos clientes, garantindo o atendimento dos requisitos legais e estatutários,
+                                            trabalhando
+                                            continuamente para o aperfeiçoamento dos serviços.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-12 col-lg-2 d-flex">
-            <img src="{{ asset('images/bep.png') }}" class="img-fluid align-self-end" alt="">
-        </div>
+            <div class="col-12 col-lg-2 d-flex">
+                <img src="{{ asset('images/bep.png') }}" class="img-fluid align-self-end" alt="">
+            </div>
+        @else
+            <div class="col-12 col-lg-10">
+                <div class="row">
+                    <div class="col-xl-5 col-lg-6 mt-3">
+                        <div class="card card-stats mb-4 mb-xl-0 text-white"
+                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-white mt-5 mb-4">Missão</h5>
+                                        <p class="">Oferecer serviços na área de Manutenção Civil e de Refratários com qualidade,
+                                            segurança e respeito ao meio-ambiente,
+                                            desenvolvendo colaboradores através de uma gestão participativa, buscando a
+                                            excelência empresarial no mercado de São Luís.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-5 col-lg-6 mt-3">
+                        <div class="card card-stats mb-4 mb-xl-0 text-white"
+                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-white mt-5 mb-4">Visão</h5>
+                                        <p class="">
+                                            A Pillar aspira ser reconhecida dentro do Estado do Maranhão, como uma empresa de
+                                            Manutenção / Construção Civil sólida, lucrativa e empreendedora,
+                                            voltada para seu crescente desenvolvimento.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-5 col-lg-6 mt-3">
+                        <div class="card card-stats mb-4 mb-xl-0 text-white"
+                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-white mt-5 mb-4">Valores</h5>
+                                        <p class="">
+                                            <i class="fa fa-check"></i> Satisfação dos clientes. <br>
+                                            <i class="fa fa-check"></i> Valorização dos colaboradores. <br>
+                                            <i class="fa fa-check"></i> Lucro como resultado. <br>
+                                            <i class="fa fa-check"></i> Melhoria contínua de seus processos. <br>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-5 col-lg-6 mt-3">
+                        <div class="card card-stats mb-4 mb-xl-0 text-white"
+                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <h5 class="card-title text-uppercase text-white mt-5 mb-4">POLÍTICA</h5>
+                                        <p class="">
+                                            A Pillar tem como compromisso a satisfação de seus clientes e a valorização de seus colaboradores,
+                                            através da melhoria contínua dos seus processos, operando dentro dos princípios de segurança
+                                            estabelecidos e em perfeita harmonia com o meio ambiente.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-2 d-flex">
+                <img src="{{ asset('images/bep.png') }}" class="img-fluid align-self-end" alt="">
+            </div>
+        @endif
+
     </div>
 @endsection
 @push('js')
@@ -435,7 +521,7 @@
             data: {
                 check: false
             },
-            mounted: function() {
+            mounted: function () {
                 @if(!auth()->user()->termos)
                 $('#termosdeuso_popup').modal('show')
                 @endif
