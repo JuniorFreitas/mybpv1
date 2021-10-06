@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Arquivo;
 use App\Models\GrupoCloud;
 use App\Models\Papel;
 use App\Models\User;
