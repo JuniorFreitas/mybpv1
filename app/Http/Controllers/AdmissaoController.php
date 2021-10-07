@@ -11,6 +11,7 @@ use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
+use App\Models\UsuarioConta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -129,7 +130,9 @@ class AdmissaoController extends Controller
 
             if ($user->count() === 0) {
                 $usuario = $user->create($userObj);
-                $usuario->BancoConta ? $usuario->BancoConta->update($dados['curriculo']['banco_conta']) : $usuario->BancoConta()->create($dados['curriculo']['banco_conta']);
+
+                $dados['curriculo']['banco_conta']['user_id'] = $usuario->id;
+                UsuarioConta::criarAtualizar($usuario->id, $dados['curriculo']['banco_conta']);
 
                 $usuario->Curriculo()->create($dadosCurriculo);
 
@@ -185,7 +188,9 @@ class AdmissaoController extends Controller
                 // 1- Busca o Candidato
                 $user = $user->first();
                 $user->update($userObj);
-                $user->BancoConta ? $user->BancoConta->update($dados['curriculo']['banco_conta']) : $user->BancoConta()->create($dados['curriculo']['banco_conta']);
+
+                $dados['curriculo']['banco_conta']['user_id'] = $user->id;
+                UsuarioConta::criarAtualizar($user->id, $dados['curriculo']['banco_conta']);
 
                 $candidato = $user->Curriculo;
                 // 2- Atualiza as informações na tabela curriculo
@@ -430,9 +435,7 @@ class AdmissaoController extends Controller
 
                 $dados['curriculo']['banco_conta']['user_id'] = $feedback->curriculo_id;
 
-                $user = User::find($dados['curriculo']['banco_conta']['user_id']);
-
-                $user->BancoConta ? $user->BancoConta->update($dados['curriculo']['banco_conta']) : $user->BancoConta()->create($dados['curriculo']['banco_conta']);
+                UsuarioConta::criarAtualizar($feedback->curriculo_id, $dados['curriculo']['banco_conta']);
 
                 if (isset($dados['curriculo']['foto_tresDel'])) {
                     foreach ($dados['curriculo']['foto_tresDel'] as $id_anexo) {
@@ -452,12 +455,8 @@ class AdmissaoController extends Controller
                         }
                     }
                 }
-//                $dados['curriculo']['banco_conta']['user_id'] = $feedback->curriculo_id;
-//                $feedback->Curriculo->BancoConta ? $feedback->Curriculo->BancoConta->update($dados['curriculo']['banco_conta']) : $feedback->Curriculo->BancoConta()->create($dados['curriculo']['banco_conta']);
-
 
                 $feedback->Admissao ? $feedback->Admissao->update($admissaoDados) : $feedback->Admissao()->create($admissaoDados);
-
 
                 DB::commit();
                 return response()->json([], 201);

@@ -55,4 +55,14 @@ class UsuarioConta extends Model
         'tipochavepix' => 'string',
         'chavepix' => 'string',
     ];
+
+    public static function criarAtualizar($id,$array)
+    {
+        $usuarioConta = UsuarioConta::whereUserId($id);
+        if ($usuarioConta->count() == 0) {
+            $usuarioConta->create($array);
+        }else{
+            $usuarioConta->update($array);
+        }
+    }
 }
