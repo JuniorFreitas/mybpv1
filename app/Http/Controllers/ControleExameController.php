@@ -88,8 +88,8 @@ class ControleExameController extends Controller
 
                 $dtEmailColaborador = [
                     'clinica' => $empExame,
-//                    'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
-                    'email' => trim(mb_strtolower('atendimento@mybp.com.br')),
+                    'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
+//                    'email' => trim(mb_strtolower('atendimento@mybp.com.br')),
                     'assunto' => "Encaminhamento de Exame {$tipoExame}",
                     'colaborador' => $colaborador->Curriculo->nome,
                     'tipoExame' => $tipoExame,
