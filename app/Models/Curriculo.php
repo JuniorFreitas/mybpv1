@@ -515,10 +515,6 @@ class Curriculo extends Model
         return $this->hasOne(ParabensEnviado::class, 'curriculo_id', 'id');
     }
 
-    public function BancoConta()
-    {
-        return $this->hasOne(UsuarioConta::class, 'user_id','id');
-    }
 
     //Scopo de ClienteID (Empresa)
     protected static function booted()

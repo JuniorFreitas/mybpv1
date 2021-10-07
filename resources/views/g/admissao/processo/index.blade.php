@@ -519,7 +519,7 @@
                             <legend>Admissão</legend>
                             <form-admissao :form="form.admissao"></form-admissao>
 
-                            <dados-bancarios :model="formAvulsa.curriculo.banco_conta"></dados-bancarios>
+                            <dados-bancarios :model="formAvulsa.banco_conta"></dados-bancarios>
 
                             <div class="col-12">
                                 <fieldset>
@@ -851,7 +851,7 @@
                                    :cliente_id='form.cliente_id'></form-admissao>
 
                     <div class="col-12">
-                        <dados-bancarios :model="form.curriculo.banco_conta"></dados-bancarios>
+                        <dados-bancarios :model="form.banco_conta"></dados-bancarios>
                     </div>
 
                     <div class='col-12'>

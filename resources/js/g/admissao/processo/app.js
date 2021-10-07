@@ -91,14 +91,7 @@ const app = new Vue({
                 autocomplete_label_municipio_modal: "",
                 autocomplete_label_municipio_modal_anterior: "",
 
-                banco_conta: {
-                    banco: "Banco do Brasil",
-                    agencia: "",
-                    conta: "",
-                    pix: false,
-                    tipochavepix: "",
-                    chavepix: ""
-                },
+
 
                 telefones: [{
                     detalhe: "",
@@ -122,7 +115,16 @@ const app = new Vue({
                 autocomplete_label_vaga_modal_anterior: "",
 
                 autocomplete_label_cliente_modal: "",
-                autocomplete_label_cliente_modal_anterior: ""
+                autocomplete_label_cliente_modal_anterior: "",
+
+                banco_conta: {
+                    banco: "Banco do Brasil",
+                    agencia: "",
+                    conta: "",
+                    pix: false,
+                    tipochavepix: "",
+                    chavepix: ""
+                },
             },
 
             parecer_rh: {
@@ -181,6 +183,14 @@ const app = new Vue({
             autocomplete_label_cliente_modal: "",
             autocomplete_label_cliente_modal_anterior: "",
 
+            banco_conta: {
+                banco: "Banco do Brasil",
+                agencia: "",
+                conta: "",
+                pix: false,
+                tipochavepix: "",
+                chavepix: ""
+            },
 
             curriculo: {
                 nome: "",
@@ -188,15 +198,6 @@ const app = new Vue({
                 municipio_id: "",
                 autocomplete_label_municipio_modal: "",
                 autocomplete_label_municipio_modal_anterior: "",
-
-                banco_conta: {
-                    banco: "Banco do Brasil",
-                    agencia: "",
-                    conta: "",
-                    pix: false,
-                    tipochavepix: "",
-                    chavepix: ""
-                },
 
             },
 
