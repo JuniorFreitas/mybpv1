@@ -138,8 +138,15 @@ class AdmissaoController extends Controller
 
                 $candidato = Curriculo::find($usuario->id);
 
-                if (isset($dadosAdmissao['foto_tres'])) {
-                    foreach ($dadosAdmissao['foto_tres'] as $index => $anexo) {
+                if (isset($dadosCurriculo['foto_tresDelete'])) {
+                    foreach ($dadosCurriculo['foto_tresDelete'] as $id_anexo) {
+                        $arquivo = Arquivo::find($id_anexo);
+                        $arquivo->excluir();
+                    }
+                }
+
+                if (isset($dadosCurriculo['foto_tres'])) {
+                    foreach ($dadosCurriculo['foto_tres'] as $index => $anexo) {
                         $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
                         if ($arquivo) {
                             $arquivo->temporario = false;
@@ -329,7 +336,8 @@ class AdmissaoController extends Controller
             'Cliente:id,razao_social,cnpj,nome,cpf,area_id',
             'Cliente.Area',
             'Cliente.AreasEtiquetas',
-            'TelPrincipal'
+            'TelPrincipal',
+            'BancoConta'
         );
 
         $feedback->BancoConta->banco = $feedback->BancoConta->banco ?: 'Banco do Brasil';

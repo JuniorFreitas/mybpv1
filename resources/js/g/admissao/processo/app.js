@@ -198,7 +198,8 @@ const app = new Vue({
                 municipio_id: "",
                 autocomplete_label_municipio_modal: "",
                 autocomplete_label_municipio_modal_anterior: "",
-
+                foto_tres: [],
+                foto_tresDel: [],
             },
 
             certificados_nr: [],

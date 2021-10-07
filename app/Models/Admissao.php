@@ -216,7 +216,7 @@ class Admissao extends Model
         'data_entrega_area',
         'biometria',
         'data_biometria',
-        'pix'
+        'pis'
     ];
     protected $casts = [
         'id' => 'int',
