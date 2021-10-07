@@ -26,6 +26,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @property-read \App\Models\User|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereEmpresaId($value)
  */
 class Departamento extends Model
 {

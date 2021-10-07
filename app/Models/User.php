@@ -103,6 +103,9 @@ use MasterTag\DataHora;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaEscala[] $EscalasFuncionario
  * @property-read int|null $escalas_funcionario_count
  * @property mixed $loginl
+ * @property-read \App\Models\UsuarioConta|null $BancoConta
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoPerfil
+ * @property-read int|null $foto_perfil_count
  */
 class User extends Authenticatable
 {

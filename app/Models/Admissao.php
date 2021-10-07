@@ -141,6 +141,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereCargo($value)
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoTres
  * @property-read int|null $foto_tres_count
+ * @property string|null $pis
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao wherePis($value)
  */
 class Admissao extends Model
 {

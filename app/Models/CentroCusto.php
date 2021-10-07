@@ -27,6 +27,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @property-read \App\Models\User|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereEmpresaId($value)
  */
 class CentroCusto extends Model
 {

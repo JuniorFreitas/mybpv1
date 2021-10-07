@@ -35,6 +35,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read mixed $qnt_questoes
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereEmpresaId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
+ * @property-read int|null $tokens_count
  */
 class Simulado extends Model
 {

@@ -22,10 +22,7 @@
                     Bota: <strong>{{ $dados->ParecerRh->bota }}</strong> | C.
                     Meia: <strong>{{ $dados->ParecerRh->camisa_meia }}</strong> | C.
                     Proteção: <strong>{{ $dados->ParecerRh->camisa_protecao }}</strong>
-                    <br>
-                    Empresa:
-                    <strong>{{ $dados->Cliente->razao_social ? $dados->Cliente->razao_social : $dados->Cliente->nome }}</strong>
-                    | Vaga: <strong>{{ $dados->VagaSelecionada->nome }}</strong>
+                    <br> Vaga: <strong>{{ $dados->VagaSelecionada->nome }}</strong>
                     <br>
                     Contato:
                     <strong>{{ $dados->TelPrincipal ? $dados->TelPrincipal->numero: 'Não informado' }}</strong>
@@ -59,18 +56,18 @@
                     <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_residencia : 'Não Informado' }}</strong>
                     <br>
                     Teste aplicado:
-                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->qual_teste : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->parecer_final_teste ?: 'Não Informado' }}</strong>
                     | Resultado Teste Prático:
-                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->parecer_final_teste : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->parecer_final_teste ?: 'Não Informado' }}</strong>
                     <br>
                     Rigger:
-                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->experiencia_cargas_rigger ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->experiencia_cargas_rigger ?: 'Não Informado' }}</strong>
                     |
                     Plataforma Movél:
-                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->opera_plat_movel ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->opera_plat_movel ?: 'Não Informado' }}</strong>
                     |
                     Ponte Rolante:
-                    <strong>{{ $dados->ParecerTeste ? $dados->ParecerTeste->opera_plat_ponte ? 'Sim' : 'Não' : 'Não Informado' }}</strong>
+                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->opera_plat_ponte ?: 'Não Informado' }}</strong>
                 </p>
             </td>
             <td width="4.5cm" style="border-left: 1px solid #666666;" align="center">

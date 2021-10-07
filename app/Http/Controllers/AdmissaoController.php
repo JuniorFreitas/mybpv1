@@ -74,9 +74,9 @@ class AdmissaoController extends Controller
         $dadosParecerRota['aprovado_por'] = auth()->id();
 
         $dadosParecerTecnica = $dados['parecer_tecnica'];
-        $dadosParecerTecnica['experiencia_cargas_rigger'] = $dadosParecerTecnica['experiencia_cargas_rigger'] == 'true';
-        $dadosParecerTecnica['opera_plat_movel'] = $dadosParecerTecnica['opera_plat_movel'] == 'true';
-        $dadosParecerTecnica['opera_plat_ponte'] = $dadosParecerTecnica['opera_plat_ponte'] == 'true';
+//        $dadosParecerTecnica['experiencia_cargas_rigger'] = $dadosParecerTecnica['experiencia_cargas_rigger'] == 'true';
+//        $dadosParecerTecnica['opera_plat_movel'] = $dadosParecerTecnica['opera_plat_movel'] == 'true';
+//        $dadosParecerTecnica['opera_plat_ponte'] = $dadosParecerTecnica['opera_plat_ponte'] == 'true';
         $dadosParecerTecnica['entrevistado_por'] = auth()->id();
 
         $dadosParecerTeste = $dados['parecer_teste'];
@@ -156,7 +156,7 @@ class AdmissaoController extends Controller
                 if (isset($dadosCurriculo['telefones'])) {
                     foreach ($dadosCurriculo['telefones'] as $linha) {
                         $linha['principal'] = $linha['principal'] == 'true';
-                        if (!isset($linha['id'])) {
+                        if ($linha['id'] == 0) {
                             $telPrincipal = $candidato->Telefones()->create($linha)->id;
                             if ($linha['principal']) {
                                 $dadosFeedback['telefone_id'] = $telPrincipal;
@@ -164,7 +164,7 @@ class AdmissaoController extends Controller
                         } else {
                             $candidato->Telefones->find($linha['id'])->update($linha);
                             if ($linha['principal']) {
-                                $dadosFeedback['telefone_id'] = $linha['id'];
+                                $dados['telefone_id'] = $linha['id'];
                             }
                         }
                     }
@@ -224,23 +224,24 @@ class AdmissaoController extends Controller
                         TelefoneCurriculo::find($index)->delete();
                     }
                 }
-                // 3- telefones para adição
+
                 if (isset($dadosCurriculo['telefones'])) {
                     foreach ($dadosCurriculo['telefones'] as $linha) {
                         $linha['principal'] = $linha['principal'] == 'true';
-                        if (!isset($linha['id'])) {
-                            $telPrincipal = $candidato->Telefones()->create($linha)->id;
+                        if ($linha['id'] == 0) {
+                            $telPrincipal = $candidato->Telefones()->create($linha);
                             if ($linha['principal']) {
-                                $dadosFeedback['telefone_id'] = $telPrincipal;
+                                $dadosFeedback['telefone_id'] = $telPrincipal->id;
                             }
                         } else {
                             $candidato->Telefones->find($linha['id'])->update($linha);
                             if ($linha['principal']) {
-                                $dadosFeedback['telefone_id'] = $linha['id'];
+                                $dados['telefone_id'] = $linha['id'];
                             }
                         }
                     }
                 }
+
                 // 4- Atualiza ou cria o FeedbackCurriculo
                 $candidato->FeedBack ? $candidato->FeedBack->update($dadosFeedback) : $candidato->FeedBack()->create($dadosFeedback);
                 $candidato->FeedBack->ParecerRh ? $candidato->FeedBack->ParecerRh->update($dadosParecerRh) : $candidato->FeedBack->ParecerRh()->create($dadosParecerRh);
@@ -313,6 +314,7 @@ class AdmissaoController extends Controller
             'Admissao',
             'Curriculo.Formacao',
             'Curriculo.FotoTres',
+            'Curriculo.Telefones',
             'Curriculo.BancoConta',
             'parecerRh',
             'parecerTecnica',
@@ -324,6 +326,43 @@ class AdmissaoController extends Controller
             'Cliente.AreasEtiquetas',
             'TelPrincipal'
         );
+
+        $feedback->Curriculo->BancoConta->banco = $feedback->Curriculo->BancoConta->banco ?: 'Banco do Brasil';
+        $feedback->Curriculo->BancoConta->agencia = $feedback->Curriculo->BancoConta->agencia ?: '';
+        $feedback->Curriculo->BancoConta->conta = $feedback->Curriculo->BancoConta->conta ?: '';
+        $feedback->Curriculo->BancoConta->pix = $feedback->Curriculo->BancoConta->pix ?: false;
+        $feedback->Curriculo->BancoConta->tipochavepix = $feedback->Curriculo->BancoConta->tipochavepix ?: '';
+        $feedback->Curriculo->BancoConta->chavepix = $feedback->Curriculo->BancoConta->chavepix ?: '';
+
+        $feedback->Admissao->documento = $feedback->Admissao->documento ?: '';
+        $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: '';
+        $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: '';
+        $feedback->Admissao->treinamento = $feedback->Admissao->treinamento ?: '';
+        $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?: '';
+        $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: '';
+        $feedback->Admissao->status_carteira_treinamento = $feedback->Admissao->status_carteira_treinamento ?: '';
+        $feedback->Admissao->area_etiqueta_id = $feedback->Admissao->area_etiqueta_id ?: "";
+        $feedback->Admissao->documento = $feedback->Admissao->documento ?: "";
+        $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: "";
+        $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: "";
+        $feedback->Admissao->tipo_treinamento = $feedback->Admissao->tipo_treinamento ?: "";
+        $feedback->Admissao->treinamento = $feedback->Admissao->treinamento ?: "";
+        $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?: "";
+        $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: "";
+        $feedback->Admissao->trinta_dois_sessenta = $feedback->Admissao->trinta_dois_sessenta ?: "";
+        $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?: "";
+        $feedback->Admissao->status_carteira_treinamento = $feedback->Admissao->status_carteira_treinamento ?: "";
+        $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?: "";
+        $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
+        $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
+
+        $feedback->parecerRh->indicado_por = $feedback->parecerRh->indicado_por ?: "";
+        $feedback->parecerRh->calca = $feedback->parecerRh->calca ?: "";
+        $feedback->parecerRh->bota = $feedback->parecerRh->bota ?: "";
+        $feedback->parecerRh->camisa_protecao = $feedback->parecerRh->camisa_protecao ?: "";
+        $feedback->parecerRh->camisa_meia = $feedback->parecerRh->camisa_meia ?: "";
+
+        $feedback->parecerTecnica->indicado_area = $feedback->parecerTecnica->indicado_area ?: "";
 
         return response()->json(['feedback' => $feedback], 200);
     }
@@ -426,7 +465,6 @@ class AdmissaoController extends Controller
             } catch (\Exception $e) {
                 DB::rollback();
                 $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                return $msg;
                 \Log::debug($msg);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
@@ -461,7 +499,7 @@ class AdmissaoController extends Controller
                 'Cliente.Area',
             );
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
@@ -655,10 +693,10 @@ class AdmissaoController extends Controller
                     $parecerTecnica = $curriculo->FeedBack->parecerTecnica;
                 } else {
                     $parecerTecnica = new \stdClass();
-                    $parecerTecnica->indicado_area = '';
-                    $parecerTecnica->experiencia_cargas_rigger = '';
-                    $parecerTecnica->opera_plat_movel = '';
-                    $parecerTecnica->opera_plat_ponte = '';
+                    $parecerTecnica->indicado_area = 'NÃO SE APLICA';
+                    $parecerTecnica->experiencia_cargas_rigger = 'NÃO SE APLICA';
+                    $parecerTecnica->opera_plat_movel = 'NÃO SE APLICA';
+                    $parecerTecnica->opera_plat_ponte = 'NÃO SE APLICA';
                 }
 
 
@@ -683,10 +721,11 @@ class AdmissaoController extends Controller
                 if ($curriculo->FeedBack && $curriculo->FeedBack->ResultadoIntegrado) {
                     $resultadoIntegrado = $curriculo->FeedBack->ResultadoIntegrado;
 
-                    $resultadoIntegrado->documentos_entregue = $resultadoIntegrado->documentos_entregue ? $resultadoIntegrado->documentos_entregue : false;
-                    $resultadoIntegrado->encaminhado_exame = $resultadoIntegrado->encaminhado_exame ? $resultadoIntegrado->encaminhado_exame : false;
-                    $resultadoIntegrado->encaminhado_treinamento = $resultadoIntegrado->encaminhado_treinamento ? $resultadoIntegrado->encaminhado_treinamento : false;
-                    $resultadoIntegrado->excessao = $resultadoIntegrado->excessao ? $resultadoIntegrado->excessao : false;
+                    $resultadoIntegrado->documentos_entregue = $resultadoIntegrado->documentos_entregue ?: false;
+                    $resultadoIntegrado->encaminhado_exame = $resultadoIntegrado->encaminhado_exame ?: false;
+                    $resultadoIntegrado->encaminhado_treinamento = $resultadoIntegrado->encaminhado_treinamento ?: false;
+                    $resultadoIntegrado->excessao = $resultadoIntegrado->excessao ?: false;
+
                 } else {
                     $resultadoIntegrado = new \stdClass();
                     $resultadoIntegrado->documentos_entregue = '';

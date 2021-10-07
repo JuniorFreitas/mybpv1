@@ -41,6 +41,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereValorDescontado($value)
  * @mixin \Eloquent
  * @property-read \App\Models\Cliente|null $Cliente
+ * @property int|null $empresa_id
+ * @property-read \App\Models\User|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereEmpresaId($value)
  */
 class Beneficio extends Model
 {

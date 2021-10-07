@@ -7,7 +7,6 @@ import DadosPessoais from "../../../components/entrevistas/DadosPessoaisTexto";
 import FormResultadoIntegrado from "../../../components/entrevistas/FormResultadoIntegrado";
 import formAdmissao from "../../../components/admissao/processo/formAdmissao";
 
-
 const app = new Vue({
     el: "#app",
     components: {
@@ -103,13 +102,14 @@ const app = new Vue({
 
                 telefones: [{
                     detalhe: "",
-                    novo: true,
+                    id: 0,
                     numero: "",
                     pais: "55",
+                    principal: true,
                     ramal: "",
-                    tipo: "whatsapp",
-                    principal: true
-                }]
+                    tipo: "whatsapp"
+                }],
+                telefonesDelete:[]
             },
 
             feedback: {
@@ -138,9 +138,9 @@ const app = new Vue({
 
             parecer_tecnica: {
                 indicado_area: "",
-                experiencia_cargas_rigger: "",
-                opera_plat_movel: "",
-                opera_plat_ponte: ""
+                experiencia_cargas_rigger: "NÃO SE APLICA",
+                opera_plat_movel: "NÃO SE APLICA",
+                opera_plat_ponte: "NÃO SE APLICA"
             },
 
             parecer_rota: {
@@ -585,9 +585,10 @@ const app = new Vue({
             if (this.formAvulsa.curriculo.telefones.length === 0) {
                 this.formAvulsa.curriculo.telefones.push({
                     detalhe: "",
-                    novo: true,
+                    id: 0,
                     numero: "",
                     pais: "55",
+                    principal: true,
                     ramal: "",
                     tipo: "whatsapp"
                 });
@@ -670,37 +671,6 @@ const app = new Vue({
 
                     //Se não tiver parecer_rh
                     this.form.admissao = admissao ? admissao : _.cloneDeep(this.formDefault.admissao);
-
-
-                    if (!data.feedback.curriculo.banco_conta) {
-                        this.form.curriculo.banco_conta = _.cloneDeep({
-                            banco: "Banco do Brasil",
-                            agencia: "",
-                            conta: "",
-                            pix: false,
-                            tipochavepix: "",
-                            chavepix: ""
-                        });
-                    }else{
-                        Object.assign(this.form.curriculo.banco_conta, data.curriculo.banco_conta);
-                    }
-
-                    if (admissao) {
-                        this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id ? admissao.area_etiqueta_id : "";
-                        this.form.admissao.documento = admissao.documento ? admissao.documento : "";
-                        this.form.admissao.documento_portaria = admissao.documento_portaria ? admissao.documento_portaria : "";
-                        this.form.admissao.tipo_admissao = admissao.tipo_admissao ? admissao.tipo_admissao : "";
-                        this.form.admissao.tipo_treinamento = admissao.tipo_treinamento ? admissao.tipo_treinamento : "";
-                        this.form.admissao.treinamento = admissao.treinamento ? admissao.treinamento : "";
-                        this.form.admissao.nr_trinta_tres = admissao.nr_trinta_tres ? admissao.nr_trinta_tres : "";
-                        this.form.admissao.nr_trinta_cinco = admissao.nr_trinta_cinco ? admissao.nr_trinta_cinco : "";
-                        this.form.admissao.trinta_dois_sessenta = admissao.trinta_dois_sessenta ? admissao.trinta_dois_sessenta : "";
-                        this.form.admissao.foto_escaneada = admissao.foto_escaneada ? admissao.foto_escaneada : "";
-                        this.form.admissao.status_carteira_treinamento = admissao.status_carteira_treinamento ? admissao.status_carteira_treinamento : "";
-                        this.form.admissao.data_admissao = admissao.data_admissao ? admissao.data_admissao : "";
-                        this.form.admissao.data_aso = admissao.data_aso ? admissao.data_aso : "";
-                        this.form.admissao.salario = admissao.salario ? admissao.salario : "0,00";
-                    }
 
                     this.form.parecer_rh.indicado_por = data.feedback.parecer_rh ? data.feedback.parecer_rh.indicado_por : "";
                     this.form.parecer_rh.calca = data.feedback.parecer_rh ? data.feedback.parecer_rh.calca : "";
