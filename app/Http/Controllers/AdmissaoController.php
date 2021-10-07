@@ -451,10 +451,11 @@ class AdmissaoController extends Controller
                             $arquivo->temporario = false;
                             $arquivo->chave = '';
                             $arquivo->save();
-                            $feedback->FotoTres()->attach($arquivo->id, ['tipo' => 'foto3x4']);
+                            $feedback->Curriculo->FotoTres()->attach($arquivo->id, ['tipo' => 'foto3x4']);
                         }
                     }
                 }
+
 
                 $feedback->Admissao ? $feedback->Admissao->update($admissaoDados) : $feedback->Admissao()->create($admissaoDados);
 
@@ -465,6 +466,7 @@ class AdmissaoController extends Controller
                 DB::rollback();
                 $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
+                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
