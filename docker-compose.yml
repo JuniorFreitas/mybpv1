@@ -8,9 +8,9 @@ services:
       dockerfile: Dockerfile
     container_name: app
     restart: unless-stopped
-    depends_on:
-      - mysql
-      - redis
+#    depends_on:
+#      - mysql
+#      - redis
     environment:
       - ENABLE_SCHEDULE=false
       - ENABLE_WORKER=false
@@ -36,34 +36,34 @@ services:
     networks:
       - mastertag
 
-  mysql:
-    image: mysql:5.7
-    container_name: mysql
-    restart: unless-stopped
-    ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DATABASE=${DB_DATABASE}
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-    volumes:
-      - ./.deploy/storage/mysql:/var/lib/mysql
-    networks:
-      - mastertag
+#  mysql:
+#    image: mysql:5.7
+#    container_name: mysql
+#    restart: unless-stopped
+#    ports:
+#      - "3306:3306"
+#    environment:
+#      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+#      - MYSQL_DATABASE=${DB_DATABASE}
+#      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+#    volumes:
+#      - ./.deploy/storage/mysql:/var/lib/mysql
+#    networks:
+#      - mastertag
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    restart: unless-stopped
-    command: --appendonly yes --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - ./.deploy/storage/redis:/data
-    ports:
-      - "6379:6379"
-    environment:
-      REDIS_PORT: 6379
-    networks:
-      - mastertag
+#  redis:
+#    image: redis:latest
+#    container_name: redis
+#    restart: unless-stopped
+#    command: --appendonly yes --requirepass ${REDIS_PASSWORD}
+#    volumes:
+#      - ./.deploy/storage/redis:/data
+#    ports:
+#      - "6379:6379"
+#    environment:
+#      REDIS_PORT: 6379
+#    networks:
+#      - mastertag
 
 networks:
   mastertag:

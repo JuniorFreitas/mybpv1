@@ -179,7 +179,7 @@
                                         <div class="row">
                                             <div class="col-12">
                                                 <telefone :model="formAvulsa.curriculo.telefones" :pais="false"
-                                                          :modelDelete="formAvulsa.curriculo.telefonesDelete"
+                                                          :model-delete="formAvulsa.curriculo.telefonesDelete"
                                                           :qnt_min="1"
                                                           :ramal="false"></telefone>
                                             </div>
@@ -834,7 +834,7 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <telefone :model="form.curriculo.telefones" :pais="false"
-                                                  :modelDelete="form.curriculo.telefonesDelete"
+                                                  :model-delete="form.curriculo.telefonesDelete"
                                                   :qnt_min="1"
                                                   :ramal="false"></telefone>
                                     </div>
