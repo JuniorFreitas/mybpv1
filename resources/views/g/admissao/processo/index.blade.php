@@ -96,7 +96,7 @@
                                            :disabled="disabledInput"
                                            @blur="buscaCpf"
                                            @keypress="buscaCpf"
-                                           autocomplete="mastertag" v-mascara:cpf>
+                                           autocomplete="mybp" v-mascara:cpf>
                                 </div>
                             </div>
                             <template v-if="exibiFormulario">
@@ -105,7 +105,7 @@
                                         <label>Nome</label>
                                         <input type="text" class="form-control" v-model="formAvulsa.curriculo.nome"
                                                placeholder="Nome"
-                                               autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">
+                                               autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-4">
@@ -115,7 +115,7 @@
                                                v-model="formAvulsa.curriculo.nascimento"
                                                placeholder="Ex: 10/10/2010"
                                                v-mascara:data
-                                               autocomplete="mastertag" onblur="valida_data_vazio(this)">
+                                               autocomplete="mybp" onblur="valida_data_vazio(this)">
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-4">
@@ -124,7 +124,7 @@
                                         <input type="text" class="form-control"
                                                v-model="formAvulsa.curriculo.filiacao_pai"
                                                placeholder="Nome do Pai"
-                                               autocomplete="mastertag">
+                                               autocomplete="mybp">
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-4">
@@ -133,7 +133,7 @@
                                         <input type="text" class="form-control"
                                                v-model="formAvulsa.curriculo.filiacao_mae"
                                                placeholder="Nome da Mãe"
-                                               autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">
+                                               autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-4">
@@ -141,7 +141,7 @@
                                         <label>E-mail</label>
                                         <input type="text" class="form-control" v-model="formAvulsa.curriculo.email"
                                                placeholder="Ex.: email@email.com"
-                                               autocomplete="mastertag" onblur="validaEmailVazio(this)">
+                                               autocomplete="mybp" onblur="validaEmailVazio(this)">
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-4">
@@ -179,8 +179,8 @@
                                         <div class="row">
                                             <div class="col-12">
                                                 <telefone :model="formAvulsa.curriculo.telefones" :pais="false"
+                                                          :modelDelete="formAvulsa.curriculo.telefonesDelete"
                                                           :qnt_min="1"
-                                                          :qnt_max="1"
                                                           :ramal="false"></telefone>
                                             </div>
                                         </div>
@@ -208,7 +208,7 @@
                                                     <input type="text" class="form-control"
                                                            v-model="formAvulsa.curriculo.formacao_curso"
                                                            placeholder="Ex: Administração"
-                                                           autocomplete="mastertag" onblur="valida_campo_vazio(this,1)">
+                                                           autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
                                                 </div>
                                             </div>
                                         </div>
@@ -295,7 +295,7 @@
                                         <input type="text" class="form-control"
                                                v-model="formAvulsa.parecer_rh.indicado_por"
                                                placeholder="Nome"
-                                               autocomplete="mastertag" onblur="valida_campo_vazio(this,1)">
+                                               autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
                                     </div>
                                 </div>
 
@@ -307,7 +307,7 @@
                                         <input type="text" class="form-control"
                                                v-model="formAvulsa.parecer_tecnica.indicado_area"
                                                placeholder="Área"
-                                               autocomplete="mastertag">
+                                               autocomplete="mybp">
                                     </div>
                                 </div>
 
@@ -395,7 +395,7 @@
                                                     <input type="text" class="form-control"
                                                            v-model="formAvulsa.parecer_rota.bairro_rota"
                                                            placeholder="Bairro"
-                                                           autocomplete="mastertag">
+                                                           autocomplete="mybp">
                                                 </div>
                                             </div>
 
@@ -405,7 +405,7 @@
                                                     <input type="text" class="form-control"
                                                            v-model="formAvulsa.parecer_rota.ponto_referencia_rota"
                                                            placeholder="Ponto de referência"
-                                                           autocomplete="mastertag">
+                                                           autocomplete="mybp">
                                                 </div>
                                             </div>
 
@@ -415,7 +415,7 @@
                                                     <input type="text" class="form-control"
                                                            v-model="formAvulsa.parecer_rota.ponto_referencia_residencia"
                                                            placeholder="Ponto de referência"
-                                                           autocomplete="mastertag">
+                                                           autocomplete="mybp">
                                                 </div>
                                             </div>
                                         </div>
@@ -432,7 +432,7 @@
                                                     <input type="text" class="form-control"
                                                            v-model="formAvulsa.parecer_teste.ponto_referencia_residencia"
                                                            placeholder="Teste"
-                                                           autocomplete="mastertag">
+                                                           autocomplete="mybp">
                                                 </div>
                                             </div>
 
@@ -442,6 +442,7 @@
                                                     <select class="form-control"
                                                             v-model="formAvulsa.parecer_teste.parecer_final_teste">
                                                         <option value="">Selecione</option>
+                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>
                                                         <option value="favoravel">Favorável</option>
                                                         <option value="restricao">Restrição</option>
                                                         <option value="desfavoravel">Desfavorável</option>
@@ -464,8 +465,9 @@
                                                     <select class="form-control"
                                                             v-model="formAvulsa.parecer_tecnica.experiencia_cargas_rigger">
                                                         <option :value="null">NÃO INFORMADO</option>
-                                                        <option :value="true">Sim</option>
-                                                        <option :value="false">Não</option>
+                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>
+                                                        <option value="Sim">Sim</option>
+                                                        <option value="Não">Não</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -477,8 +479,9 @@
                                                     <select class="form-control"
                                                             v-model="formAvulsa.parecer_tecnica.opera_plat_movel">
                                                         <option :value="null">NÃO INFORMADO</option>
-                                                        <option :value="true">Sim</option>
-                                                        <option :value="false">Não</option>
+                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>
+                                                        <option value="Sim">Sim</option>
+                                                        <option value="Não">Não</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -489,8 +492,9 @@
                                                     <select class="form-control"
                                                             v-model="formAvulsa.parecer_tecnica.opera_plat_ponte">
                                                         <option :value="null">NÃO INFORMADO</option>
-                                                        <option :value="true">Sim</option>
-                                                        <option :value="false">Não</option>
+                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>
+                                                        <option value="true">Sim</option>
+                                                        <option value="false">Não</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -515,10 +519,7 @@
                             <legend>Admissão</legend>
                             <form-admissao :form="form.admissao"></form-admissao>
 
-                            <div class="col-12">
-                                <dados-bancarios :model="formAvulsa.curriculo.banco_conta"></dados-bancarios>
-                            </div>
-
+                            <dados-bancarios :model="formAvulsa.curriculo.banco_conta"></dados-bancarios>
 
                             <div class="col-12">
                                 <fieldset>
@@ -670,7 +671,7 @@
                                 <input type="text" class="form-control"
                                        v-model="form.curriculo.filiacao_pai" :disabled="visualizar"
                                        placeholder="Nome do Pai"
-                                       autocomplete="mastertag">
+                                       autocomplete="mybp">
                             </div>
                         </div>
 
@@ -680,7 +681,7 @@
                                 <input type="text" class="form-control"
                                        v-model="form.curriculo.filiacao_mae" :disabled="visualizar"
                                        placeholder="Nome da Mãe"
-                                       autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">
+                                       autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
                             </div>
                         </div>
 
@@ -804,7 +805,7 @@
                                     <label>Rigger</label>
                                     <input type="text" class="form-control" disabled="disabled"
                                            readonly="readonly"
-                                           :value="form.parecer_tecnica.experiencia_cargas_rigger ? 'Sim' : 'Não'">
+                                           :value="form.parecer_tecnica.experiencia_cargas_rigger">
                                 </div>
                             </div>
 
@@ -813,7 +814,7 @@
                                     <label>Plataforma Movél</label>
                                     <input type="text" class="form-control" disabled="disabled"
                                            readonly="readonly"
-                                           :value="form.parecer_tecnica.opera_plat_movel ? 'Sim' : 'Não'">
+                                           :value="form.parecer_tecnica.opera_plat_movel">
                                 </div>
                             </div>
 
@@ -822,10 +823,24 @@
                                     <label>Ponte Rolante</label>
                                     <input type="text" class="form-control" disabled="disabled"
                                            readonly="readonly"
-                                           :value="form.parecer_tecnica.opera_plat_ponte ? 'Sim' : 'Não'">
+                                           :value="form.parecer_tecnica.opera_plat_ponte">
                                 </div>
                             </div>
                         </template>
+
+                        <div class="col-12">
+                            <fieldset>
+                                <legend>Contato</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <telefone :model="form.curriculo.telefones" :pais="false"
+                                                  :modelDelete="form.curriculo.telefonesDelete"
+                                                  :qnt_min="1"
+                                                  :ramal="false"></telefone>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
                     </div>
                 </fieldset>
 
@@ -903,7 +918,7 @@
                     <label>CPF</label>
                     <input type="text"
                            placeholder="Buscar por cpf"
-                           autocomplete="mastertag"
+                           autocomplete="mybp"
                            onblur="valida_cpf(this)"
                            v-mascara:cpf
                            class="form-control form-control-sm" :disabled="controle.carregando"
@@ -1024,11 +1039,11 @@
                     <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">
                     <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">
                     <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
-<!--                    <button type="submit" class="btn btn-sm btn-primary mb-1"
-                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
-                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>-->
+                    <!--                    <button type="submit" class="btn btn-sm btn-primary mb-1"
+                                                :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                                            <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
+                                                                                                   v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                                        </button>-->
                 </form>
             </div>
         </div>

@@ -42,6 +42,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $vagas_abertas_id
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereVagasAbertasId($value)
+ * @property bool $ativo
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
+ * @property-read int|null $vagas_abertas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
+ * @property-read int|null $tokens_count
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereAtivo($value)
  */
 class SimuladoVaga extends Model
 {

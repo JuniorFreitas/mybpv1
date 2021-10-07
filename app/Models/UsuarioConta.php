@@ -5,6 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\UsuarioConta
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property string|null $banco
+ * @property string|null $agencia
+ * @property string|null $conta
+ * @property bool $pix
+ * @property string|null $tipochavepix
+ * @property string|null $chavepix
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta query()
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereAgencia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereBanco($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereChavepix($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereConta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta wherePix($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereTipochavepix($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereUserId($value)
+ * @mixin \Eloquent
+ */
 class UsuarioConta extends Model
 {
     use HasFactory;

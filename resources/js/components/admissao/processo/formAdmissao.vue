@@ -4,6 +4,8 @@
             <div class="form-group">
                 <label>Área</label>
                 <select class="form-control" v-model="form.area_etiqueta_id"
+                        onchange="valida_campo_vazio(this,1)"
+                        onchange="valida_campo_vazio(this,1)"
                         :disabled="visualizar">
                     <option value="">Selecione</option>
                     <option :value="item.id"

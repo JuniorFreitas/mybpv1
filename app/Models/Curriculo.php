@@ -143,6 +143,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Treinamento|null $Treinamentos
  * @property-read \App\Models\User|null $Pessoa
  * @property-read \App\Models\ParabensEnviado|null $Parabens
+ * @property-read \App\Models\UsuarioConta|null $BancoConta
+ * @property-read mixed $cpf_format
  */
 class Curriculo extends Model
 {
