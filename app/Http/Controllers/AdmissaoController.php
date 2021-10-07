@@ -320,7 +320,7 @@ class AdmissaoController extends Controller
             'Curriculo.Formacao',
             'Curriculo.FotoTres',
             'Curriculo.Telefones',
-            'Curriculo.BancoConta',
+            'BancoConta',
             'parecerRh',
             'parecerTecnica',
             'parecerRota',
@@ -332,12 +332,12 @@ class AdmissaoController extends Controller
             'TelPrincipal'
         );
 
-        $feedback->Curriculo->BancoConta->banco = $feedback->Curriculo->BancoConta->banco ?: 'Banco do Brasil';
-        $feedback->Curriculo->BancoConta->agencia = $feedback->Curriculo->BancoConta->agencia ?: '';
-        $feedback->Curriculo->BancoConta->conta = $feedback->Curriculo->BancoConta->conta ?: '';
-        $feedback->Curriculo->BancoConta->pix = $feedback->Curriculo->BancoConta->pix ?: false;
-        $feedback->Curriculo->BancoConta->tipochavepix = $feedback->Curriculo->BancoConta->tipochavepix ?: '';
-        $feedback->Curriculo->BancoConta->chavepix = $feedback->Curriculo->BancoConta->chavepix ?: '';
+        $feedback->BancoConta->banco = $feedback->BancoConta->banco ?: 'Banco do Brasil';
+        $feedback->BancoConta->agencia = $feedback->BancoConta->agencia ?: '';
+        $feedback->BancoConta->conta = $feedback->BancoConta->conta ?: '';
+        $feedback->BancoConta->pix = $feedback->BancoConta->pix ?: false;
+        $feedback->BancoConta->tipochavepix = $feedback->BancoConta->tipochavepix ?: '';
+        $feedback->BancoConta->chavepix = $feedback->BancoConta->chavepix ?: '';
 
         $feedback->Admissao->documento = $feedback->Admissao->documento ?: '';
         $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: '';

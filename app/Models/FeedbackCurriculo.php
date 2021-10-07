@@ -532,6 +532,11 @@ class FeedbackCurriculo extends Model
         return $this->hasOne(Treinamento::class, 'feedback_id', 'id');
     }
 
+    public function BancoConta()
+    {
+        return $this->hasOne(UsuarioConta::class, 'user_id','curriculo_id');
+    }
+
     public function DocSelecao()
     {
         return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
