@@ -193,20 +193,18 @@ class Fornecedor extends Model
     {
 
         static::updating(function ($model) {
-            if (env('MIGRATION') != 'ajeita_banco') {
-                if ($model->tipo_pessoa == self::PESSOA_JURIDICA) {
-                    $model->Usuario->find($model->id)->update([
-                        'nome' => $model->razao_social,
-                        'login' => $model->email,
-                        'ativo' => $model->ativo
-                    ]);
-                } else {
-                    $model->Usuario->find($model->id)->update([
-                        'nome' => $model->nome,
-                        'login' => $model->email,
-                        'ativo' => $model->ativo
-                    ]);
-                }
+            if ($model->tipo_pessoa == self::PESSOA_JURIDICA) {
+                $model->Usuario->find($model->id)->update([
+                    'nome' => $model->razao_social,
+                    'login' => $model->email,
+                    'ativo' => $model->ativo
+                ]);
+            } else {
+                $model->Usuario->find($model->id)->update([
+                    'nome' => $model->nome,
+                    'login' => $model->email,
+                    'ativo' => $model->ativo
+                ]);
             }
         });
 
