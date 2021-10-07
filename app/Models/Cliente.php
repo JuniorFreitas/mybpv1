@@ -361,7 +361,6 @@ class Cliente extends Model
     protected static function booted()
     {
         static::updating(function ($model) {
-            if (env('MIGRATION') != 'ajeita_banco') {
                 if ($model->tipo == self::TIPO_PESSOA_JURIDICA) {
                     $model->Usuario->find($model->id)->update([
                         'nome' => $model->razao_social,
@@ -375,7 +374,6 @@ class Cliente extends Model
                         'ativo' => $model->ativo
                     ]);
                 }
-            }
         });
 
         static::addGlobalScope('scopeCliente', function (Builder $builder) {

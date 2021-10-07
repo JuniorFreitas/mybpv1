@@ -515,17 +515,19 @@ class Curriculo extends Model
         return $this->hasOne(ParabensEnviado::class, 'curriculo_id', 'id');
     }
 
+    public function User()
+    {
+        return $this->hasOne(User::class, 'id', 'id');
+    }
 
     //Scopo de ClienteID (Empresa)
     protected static function booted()
     {
         static::updating(function ($model) {
-            if (env('MIGRATION') != 'ajeita_banco') {
-                $model->Usuario->find($model->id)->update([
-                    'nome' => $model->nome,
-                    'login' => $model->email,
-                ]);
-            }
+            $model->User->find($model->id)->update([
+                'nome' => $model->nome,
+                'login' => $model->email,
+            ]);
         });
 
         static::addGlobalScope(new ScopeEmpresa);
