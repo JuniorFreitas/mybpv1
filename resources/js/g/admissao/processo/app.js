@@ -91,7 +91,8 @@ const app = new Vue({
                 autocomplete_label_municipio_modal: "",
                 autocomplete_label_municipio_modal_anterior: "",
 
-
+                foto_tres: [],
+                foto_tres_delete: [],
 
                 telefones: [{
                     detalhe: "",
@@ -199,7 +200,7 @@ const app = new Vue({
                 autocomplete_label_municipio_modal: "",
                 autocomplete_label_municipio_modal_anterior: "",
                 foto_tres: [],
-                foto_tresDel: [],
+                foto_tres_delete: [],
             },
 
             certificados_nr: [],
@@ -306,6 +307,7 @@ const app = new Vue({
                     comentario: ""
                 }
             },
+
             admissao: {
                 feedback_id: "",
                 area_etiqueta_id: "",
