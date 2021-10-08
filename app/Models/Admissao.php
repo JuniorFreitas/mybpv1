@@ -314,7 +314,7 @@ class Admissao extends Model
     }
 
     //Acessor ->data_nr_trinta_tres
-    public function getDataBiometriaAreaAttribute($value)
+    public function getDataBiometriaAttribute($value)
     {
         if ($value) {
             $data = new DataHora($this->attributes['data_biometria']);
@@ -323,7 +323,7 @@ class Admissao extends Model
     }
 
     //Modificador ->data_nr_trinta_tres
-    public function setDataBiometriaAreaAttribute($value)
+    public function setDataBiometriaAttribute($value)
     {
         if ($value) {
             $data = new DataHora($value);

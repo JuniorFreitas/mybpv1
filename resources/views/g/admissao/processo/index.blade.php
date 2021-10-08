@@ -519,13 +519,13 @@
                             <legend>Admissão</legend>
                             <form-admissao :form="form.admissao"></form-admissao>
 
-                            <dados-bancarios :model="formAvulsa.banco_conta"></dados-bancarios>
+                            <dados-bancarios :model="formAvulsa.feedback.banco_conta"></dados-bancarios>
 
                             <div class="col-12">
                                 <fieldset>
                                     <legend>FOTO ESCANEADA</legend>
-                                    <upload :model="form.admissao.foto_tres"
-                                            :model-delete="form.admissao.foto_tresDel"
+                                    <upload :model="formAvulsa.curriculo.foto_tres"
+                                            :model-delete="formAvulsa.curriculo.foto_tres_delete"
                                             url="{{ route('g.admissao.admissao.upload-anexos') }}"
                                             :apenas-imagens="true"
                                             :quantidade="1"
@@ -858,7 +858,7 @@
                         <fieldset>
                             <legend>FOTO ESCANEADA</legend>
                             <upload :model='form.curriculo.foto_tres'
-                                    :model-delete='form.curriculo.foto_tresDel' :leitura='visualizar'
+                                    :model-delete='form.curriculo.foto_tres_delete' :leitura='visualizar'
                                     url="{{ route('g.admissao.admissao.upload-anexos') }}"
                                     :apenas-imagens='true'
                                     :quantidade='1'

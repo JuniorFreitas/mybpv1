@@ -75,9 +75,7 @@ class AdmissaoController extends Controller
         $dadosParecerRota['aprovado_por'] = auth()->id();
 
         $dadosParecerTecnica = $dados['parecer_tecnica'];
-//        $dadosParecerTecnica['experiencia_cargas_rigger'] = $dadosParecerTecnica['experiencia_cargas_rigger'] == 'true';
-//        $dadosParecerTecnica['opera_plat_movel'] = $dadosParecerTecnica['opera_plat_movel'] == 'true';
-//        $dadosParecerTecnica['opera_plat_ponte'] = $dadosParecerTecnica['opera_plat_ponte'] == 'true';
+
         $dadosParecerTecnica['entrevistado_por'] = auth()->id();
 
         $dadosParecerTeste = $dados['parecer_teste'];
@@ -131,8 +129,8 @@ class AdmissaoController extends Controller
             if ($user->count() === 0) {
                 $usuario = $user->create($userObj);
 
-                $dados['curriculo']['banco_conta']['user_id'] = $usuario->id;
-                UsuarioConta::criarAtualizar($usuario->id, $dados['curriculo']['banco_conta']);
+                $dados['feedback']['banco_conta']['user_id'] = $usuario->id;
+                UsuarioConta::criarAtualizar($usuario->id, $dados['feedback']['banco_conta']);
 
                 $usuario->Curriculo()->create($dadosCurriculo);
 
@@ -218,6 +216,13 @@ class AdmissaoController extends Controller
                     'formacao' => $dadosCurriculo['formacao'],
                     'formacao_curso' => $dadosCurriculo['formacao_curso'],
                 ]);
+
+                if (isset($dadosAdmissao['foto_tres_delete'])) {
+                    foreach ($dadosAdmissao['foto_tres_delete'] as $id_anexo) {
+                        $arquivo = Arquivo::find($id_anexo);
+                        $arquivo->excluir();
+                    }
+                }
                 // 3- coloca a foto 3x4
                 if (isset($dadosAdmissao['foto_tres'])) {
                     foreach ($dadosAdmissao['foto_tres'] as $index => $anexo) {
@@ -271,6 +276,7 @@ class AdmissaoController extends Controller
             $msg = "error ADMISSAO AVULSA STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($dados);
             \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
@@ -346,6 +352,8 @@ class AdmissaoController extends Controller
         $feedback->BancoConta->pix = $feedback->BancoConta->pix ?: false;
         $feedback->BancoConta->tipochavepix = $feedback->BancoConta->tipochavepix ?: '';
         $feedback->BancoConta->chavepix = $feedback->BancoConta->chavepix ?: '';
+
+        $feedback->Curriculo->foto_tres_delete = [];
 
         $feedback->Admissao->documento = $feedback->Admissao->documento ?: '';
         $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: '';
@@ -441,12 +449,12 @@ class AdmissaoController extends Controller
                     $feedback->parecerTecnica()->create(['indicado_area' => $dados['parecer_tecnica']['indicado_area']]);
                 }
 
-                $dados['curriculo']['banco_conta']['user_id'] = $feedback->curriculo_id;
+                $dados['banco_conta']['user_id'] = $feedback->curriculo_id;
 
-                UsuarioConta::criarAtualizar($feedback->curriculo_id, $dados['curriculo']['banco_conta']);
+                UsuarioConta::criarAtualizar($feedback->curriculo_id, $dados['banco_conta']);
 
-                if (isset($dados['curriculo']['foto_tresDel'])) {
-                    foreach ($dados['curriculo']['foto_tresDel'] as $id_anexo) {
+                if (isset($dados['curriculo']['foto_tres_delete'])) {
+                    foreach ($dados['curriculo']['foto_tres_delete'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
                     }
