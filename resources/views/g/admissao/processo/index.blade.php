@@ -141,7 +141,7 @@
                                         <label>E-mail</label>
                                         <input type="text" class="form-control" v-model="formAvulsa.curriculo.email"
                                                placeholder="Ex.: email@email.com"
-                                               autocomplete="mybp" onblur="validaEmailVazio(this)">
+                                               autocomplete="mybp" onblur="validaEmail(this)">
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-4">
@@ -319,10 +319,7 @@
                                                 <div class="form-group">
                                                     <label>Calça</label>
 
-                                                    <select onchange="valida_campo_vazio(this,1)"
-                                                            onblur="valida_campo_vazio(this,1)"
-                                                            class="form-control" v-model="formAvulsa.parecer_rh.calca"
-                                                    >
+                                                    <select class="form-control" v-model="formAvulsa.parecer_rh.calca">
                                                         <option value="">Selecione</option>
                                                         @foreach(range(34,56) as $i)
                                                             <option value="{{$i}}">{{$i}}</option>
@@ -334,11 +331,8 @@
                                             <div class="col-12 col-sm-6 col-md-3">
                                                 <div class="form-group">
                                                     <label>Bota</label>
-                                                    <select onchange="valida_campo_vazio(this,1)"
-                                                            onblur="valida_campo_vazio(this,1)"
-                                                            class="form-control" :disabled="visualizar"
-                                                            v-model="formAvulsa.parecer_rh.bota"
-                                                    >
+                                                    <select class="form-control" :disabled="visualizar"
+                                                            v-model="formAvulsa.parecer_rh.bota">
                                                         <option value="">Selecione</option>
                                                         @foreach(range(33,50) as $i)
                                                             <option value="{{$i}}">{{$i}}</option>
@@ -350,13 +344,8 @@
                                             <div class="col-12 col-sm-6 col-md-3">
                                                 <div class="form-group">
                                                     <label>Camisa proteção</label>
-
-                                                    <select onchange="valida_campo_vazio(this,1)"
-                                                            onblur="valida_campo_vazio(this,1)"
-                                                            class="form-control"
-                                                            v-model="formAvulsa.parecer_rh.camisa_protecao"
-
-                                                    >
+                                                    <select class="form-control"
+                                                            v-model="formAvulsa.parecer_rh.camisa_protecao">
                                                         <option value="">Selecione</option>
                                                         @foreach(range(2,6) as $i)
                                                             <option value="{{$i}}">{{$i}}</option>
@@ -368,9 +357,7 @@
                                             <div class="col-12 col-sm-6 col-md-3">
                                                 <div class="form-group">
                                                     <label>Camisa de meia</label>
-                                                    <select onchange="valida_campo_vazio(this,1)"
-                                                            onblur="valida_campo_vazio(this,1)"
-                                                            class="form-control"
+                                                    <select class="form-control"
                                                             v-model="formAvulsa.parecer_rh.camisa_meia">
                                                         <option value="">Selecione</option>
                                                         <option value="P">P</option>
@@ -600,8 +587,7 @@
                             <div class="form-group">
                                 <label>Calça</label>
 
-                                <select onchange="valida_campo_vazio(this,1)" :disabled="visualizar"
-                                        onblur="valida_campo_vazio(this,1)"
+                                <select :disabled="visualizar"
                                         class="form-control"
                                         v-model="form.parecer_rh.calca"
                                 >
@@ -616,8 +602,7 @@
                         <div class="col-12 col-sm-3">
                             <div class="form-group">
                                 <label>Bota</label>
-                                <select onchange="valida_campo_vazio(this,1)"
-                                        onblur="valida_campo_vazio(this,1)"
+                                <select
                                         class="form-control" :disabled="visualizar"
                                         v-model="form.parecer_rh.bota"
                                 >
@@ -633,12 +618,7 @@
                             <div class="form-group">
                                 <label>Camisa proteção</label>
 
-                                <select onchange="valida_campo_vazio(this,1)" :disabled="visualizar"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        class="form-control"
-                                        v-model="form.parecer_rh.camisa_protecao"
-
-                                >
+                                <select :disabled="visualizar" class="form-control" v-model="form.parecer_rh.camisa_protecao">
                                     <option value="">Selecione</option>
                                     @foreach(range(2,6) as $i)
                                         <option value="{{$i}}">{{$i}}</option>
@@ -650,8 +630,7 @@
                         <div class="col-12 col-sm-3">
                             <div class="form-group">
                                 <label>Camisa de meia</label>
-                                <select onchange="valida_campo_vazio(this,1)" :disabled="visualizar"
-                                        onblur="valida_campo_vazio(this,1)"
+                                <select :disabled="visualizar"
                                         class="form-control"
                                         v-model="form.parecer_rh.camisa_meia">
                                     <option value="">Selecione</option>

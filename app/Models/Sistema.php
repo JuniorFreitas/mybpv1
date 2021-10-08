@@ -9,6 +9,7 @@ class Sistema
 {
 
     public const UrlServidor = 'http://159.89.154.53:8991/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS';
+    public const EMAILPADRAO = 'sistema@mybp.com.br';
 
     public static function nomeDoGrupo()
     {
