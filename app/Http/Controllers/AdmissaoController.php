@@ -102,6 +102,8 @@ class AdmissaoController extends Controller
         $dadosResultadoIntegrado['selecionado'] = 'sim';
         $dadosResultadoIntegrado['obs'] = 'ADMISSÃO AVULSA';
 
+        $dadosCurriculo['email'] = $dadosCurriculo['email'] == "" ? Sistema::EMAILPADRAO : $dadosCurriculo['email'];
+
         if (count($dadosCurriculo['telefones']) == 0) {
             return response()->json(['msg' => 'Por favor insira um telefone'], 400);
         }
@@ -403,6 +405,7 @@ class AdmissaoController extends Controller
         $feedback = $admissao;
         $admissaoDados = $dados['admissao'];
 
+        $dados['curriculo']['email'] = $dados['curriculo']['email'] == "" ? Sistema::EMAILPADRAO : $dados['curriculo']['email'];
 //        if ($request->filled('admissao.foto_escaneada')) {
 //            $dados['foto_escaneada'] = $dados['foto_escaneada'] == 'true' ? true : false;
 //        }
@@ -425,6 +428,7 @@ class AdmissaoController extends Controller
                 DB::beginTransaction();
                 $feedback->Curriculo->update([
                     'nome' => $dados['curriculo']['nome'],
+                    'email' => $dados['curriculo']['email'],
                     'filiacao_pai' => $dados['curriculo']['filiacao_pai'],
                     'filiacao_mae' => $dados['curriculo']['filiacao_mae'],
                 ]);
