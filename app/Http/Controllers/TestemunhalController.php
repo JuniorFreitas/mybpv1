@@ -194,7 +194,7 @@ class TestemunhalController extends Controller
     // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {
-        return Arquivo::uploadAnexos($request, Arquivo::Apen, Arquivo::DISCO_PUBLICO);
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_PUBLICO);
     }
 
     public function anexoShow(Request $request, $arquivo)

@@ -88,7 +88,8 @@ class Arquivo extends Model
     //const UPDATED_AT = 'atualizado_em';
 
 
-    protected $appends = ['url', 'urlThumb', 'urlDownload', 'urlDelete'];
+//    protected $appends = ['urlThumb', 'urlDownload'];
+//    protected $appends = ['url', 'urlThumb', 'urlDownload', 'urlDelete'];
 
     // MIME_TYPE ARQUIVOS
     const MIME_GIF = "image/gif";
@@ -205,7 +206,8 @@ class Arquivo extends Model
             switch (self::nomeDisco($this->file)) {
 
                 case 'disco-fotocurriculo':
-                    return config('filesystems.disks.disco-fotocurriculo.urlShow') . "/{$this->file}";
+                    return env('AWS_URL') . "/arquivos/" . self::DISCO_FOTOCURRICULO . "/{$this->file}";
+//                    return config('filesystems.disks.disco-fotocurriculo.urlShow') . "/{$this->file}";
                 case 'disco-cloud':
                     return config('filesystems.disks.disco-cloud.urlShow') . "/{$this->file}";
                 case 'disco-cliente':
@@ -235,6 +237,7 @@ class Arquivo extends Model
                 case 's3':
                     return config('filesystems.disks.s3.urlShow') . "/{$this->file}";
                 case 'disco-perfil-usuario':
+//                    return env('AWS_URL') . "/arquivos/" . self::DISCO_PERFIL_USUARIO . "/{$this->file}";
                     return config('filesystems.disks.disco-perfil-usuario.urlShow') . "/{$this->file}";
             }
             return $url;
@@ -252,7 +255,7 @@ class Arquivo extends Model
             switch (self::nomeDisco($this->file)) {
 
                 case 'disco-fotocurriculo':
-                    return config('filesystems.disks.disco-fotocurriculo.urlThumb') . "/{$this->thumb}";
+                    return env('AWS_URL') . "/arquivos/" . self::DISCO_FOTOCURRICULO . "/{$this->thumb}";
                 case 'disco-cloud':
                     return config('filesystems.disks.disco-cloud.urlThumb') . "/{$this->thumb}";
                 case 'disco-cliente':
@@ -282,6 +285,7 @@ class Arquivo extends Model
                 case 's3':
                     return config('filesystems.disks.s3.urlThumb') . "/{$this->thumb}";
                 case 'disco-perfil-usuario':
+//                    return env('AWS_URL') . "/arquivos/" . self::DISCO_PERFIL_USUARIO . "/{$this->thumb}";
                     return config('filesystems.disks.disco-perfil-usuario.urlThumb') . "/{$this->thumb}";
 
             }
@@ -327,6 +331,7 @@ class Arquivo extends Model
                 case 's3':
                     return config('filesystems.disks.s3.urlDownload') . "/{$this->file}";
                 case 'disco-perfil-usuario':
+//                    return env('AWS_URL') . "/arquivos/" . self::DISCO_PERFIL_USUARIO . "/{$this->file}";
                     return config('filesystems.disks.disco-perfil-usuario.urlDownload') . "/{$this->file}";
             }
         }
@@ -370,6 +375,7 @@ class Arquivo extends Model
                 case 's3':
                     return config('filesystems.disks.s3.urlDelete') . "/{$this->file}";
                 case 'disco-perfil-usuario':
+//                    return env('AWS_URL') . "/arquivos/" . self::DISCO_PERFIL_USUARIO . "/{$this->file}";
                     return config('filesystems.disks.disco-perfil-usuario.urlDelete') . "/{$this->file}";
             }
         }
@@ -656,6 +662,53 @@ class Arquivo extends Model
         return $model;
     }
 
+    public static function gravaArquivoOld(Request $request, $nomePost, $nomeDisco): Arquivo
+    {
+        //Dados do arquivo
+        $path = $request->file($nomePost)->path();
+        $nome = Arquivo::pegarNomeArquivo($request->file($nomePost)->getClientOriginalName());
+        $bytes = $request->file($nomePost)->getSize();
+        $extensao = $request->file($nomePost)->extension(); // sem ponto
+        $imagem = Arquivo::seForImagem($path);
+
+        $nomeDoArquivo = $request->file($nomePost)->store(null, $nomeDisco); // grava o arquivo direto do request
+
+        //Se for Arquivo de imagem fazer dois arquivos
+        if ($imagem) {
+            $file = $request->file($nomePost);
+            //Imagem Grande
+            $imgGrande = Image::make($file);
+            $tamanhoFinal = Arquivo::maiorComprimento($file->path()) > 800 ? 800 : Arquivo::maiorComprimento($file->path());
+            $tamanhoReal = Arquivo::calculaLaguraAlturaProporcional($file, $tamanhoFinal);
+            $imgG = $imgGrande->resize($tamanhoReal['largura'], $tamanhoReal['altura'])->stream()->detach();
+            Storage::disk($nomeDisco)->put($nomeDoArquivo, $imgG);
+
+            //Thumb
+            $imgThumb = Image::make($file);
+            $nomeArquivoThumb = Arquivo::gerarNomeThumb($nomeDoArquivo);
+            $tamanhoThumb = Arquivo::calculaLaguraAlturaProporcional($file, 200);
+
+            $thumb = $imgThumb->resize($tamanhoThumb['largura'], $tamanhoThumb['altura'])->stream()->detach();
+            Storage::disk($nomeDisco)->put($nomeArquivoThumb, $thumb);
+        }
+
+        $dados = [
+            'quem_enviou' => auth()->id(),
+            'nome' => $nome,
+            'imagem' => $imagem,
+            'layout' => $imagem ? self::pegarLayout($file->path()) : null,
+            'extensao' => "." . $extensao,
+            'file' => $nomeDoArquivo,
+            'thumb' => $imagem ? $nomeArquivoThumb : null,
+            'bytes' => $bytes,
+            'temporario' => true,
+            'chave' => $request->get('chave'),
+        ];
+
+        $model = self::create($dados);
+        return $model;
+    }
+
     public static function gravaArquivoReal(Request $request, $nomePost, $nomeDisco): Arquivo
     {
         //Dados do arquivo
@@ -744,31 +797,31 @@ class Arquivo extends Model
     // Apagar do banco e do disco qualquer arquivo passando somente o nome unico (campo file da tabela arquivos)
     public static function apagar($nome)
     {
-        $disco = self::disco($nome);
-
-        if ($disco && $disco->exists($nome)) {
-            $model = self::findByArquivo($nome);
-            if ($model) {
-                if ($model->imagem) {
-                    $disco->delete($model->file);
-                    $disco->delete($model->thumb);
-                } else {
-                    $disco->delete($model->file);
-                }
-                $model->delete();
-                return true;
-            } else {
-                return false;
-            }
-
-        }
-        return false;
+//        $disco = self::disco($nome);
+//
+//        if ($disco && $disco->exists($nome)) {
+//            $model = self::findByArquivo($nome);
+//            if ($model) {
+//                if ($model->imagem) {
+//                    $disco->delete($model->file);
+//                    $disco->delete($model->thumb);
+//                } else {
+//                    $disco->delete($model->file);
+//                }
+//                $model->delete();
+//                return true;
+//            } else {
+//                return false;
+//            }
+//
+//        }
+//        return false;
 
     }
 
     public function excluir()
     {
-        $disco = self::disco($this->file);
+       /* $disco = self::disco($this->file);
 
         if ($disco && $disco->exists($this->file)) {
 
@@ -781,7 +834,7 @@ class Arquivo extends Model
 
         }
         $this->delete(); //apagar este model, e automaticamente apagar em cascata
-        return true;
+        return true;*/
     }
 
     public static function uploadAnexos(Request $request, array $permitidos, $disco)
@@ -808,43 +861,38 @@ class Arquivo extends Model
 
     }
 
-    public static function anexoShow(array $discoPermitidos, $arquivo)
+    public static function anexoShow($disco, $arquivo)
     {
-        $path = self::buscaPath($arquivo);
-        $disco = self::nomeDisco($arquivo);
-        $permitidos = $discoPermitidos;
+        $file_info = new finfo(FILEINFO_MIME_TYPE);
+        $img = file_get_contents(env('AWS_URL') . '/arquivos/' . $disco . '/' . $arquivo);
+        $mime_type = $file_info->buffer($img);
 
-        if ($path == false) {
-            return response("", 404);
-        }
-
-        if (in_array($disco, $permitidos) == false) {
-            return response("", 404);
-        }
-        return \Storage::disk($disco)->response($arquivo);
+//        return response()->download(env('AWS_URL') . '/arquivos/' . $disco . '/' . $arquivo,'ok.png');
+        return response($img)->header('Content-type', $mime_type);
     }
 
-    public static function anexoDownload(array $discoPermitidos, $arquivo)
+    public static function anexoDownload($discoPermitidos, $arquivo)
     {
-        $disco = self::nomeDisco($arquivo);
-        $url = self::buscaPath($arquivo);
+        $file_info = new finfo(FILEINFO_MIME_TYPE);
+        $path = env('AWS_URL') . '/arquivos/' . $discoPermitidos . '/' . $arquivo;
+        try {
+            $img = file_get_contents($path);
+            $mime_type = $file_info->buffer($img);
+            $item = Arquivo::whereFile($arquivo)->first(['nome', 'extensao']);
 
-        if (in_array($disco, $discoPermitidos) == false) {
-            return response("", 404);
+            return response()->streamDownload(function () use ($img, $item) {
+                echo $img;
+            }, $item->nome . $item->extensao);
+
+        } catch (\Exception $e) {
+            abort(404);
         }
 
-        if ($url) {
-            $item = Arquivo::whereFile($arquivo)->first(['nome']);
-            $metadados = Storage::disk($disco)->getDriver()->getMetadata($arquivo);
-            return Storage::disk(Arquivo::DISCO_CLOUD)->download($metadados['path'], $item->nome . '.' . $metadados['extension']);
-        }
-
-        return response("", 404);
     }
 
     public static function anexoDelete(array $discoPermitidos, $arquivo)
     {
-        $disco = self::nomeDisco($arquivo);
+        /*$disco = self::nomeDisco($arquivo);
         $permitidos = $discoPermitidos;
         $model = self::findByArquivo($arquivo);
 
@@ -857,7 +905,7 @@ class Arquivo extends Model
             return response("", 200);
         }
 
-        return response("Não foi possível apagar o anexo", 400);
+        return response("Não foi possível apagar o anexo", 400);*/
     }
 
     //Modificador ->data

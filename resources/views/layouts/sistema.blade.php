@@ -48,7 +48,7 @@
             </div>
         </div>
 
-        <barra-top :usuario="{{ auth()->user()->load('Papel','FotoPerfil') }}"></barra-top>
+        <barra-top :usuario="AUTENTICADO"></barra-top>
 
         <div class="main-content">
             <div class="page-content" style="padding: 15px 15px 15px 7px;">
