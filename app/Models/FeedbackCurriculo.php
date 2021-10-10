@@ -168,6 +168,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $vagas_abertas_id
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagasAbertasId($value)
+ * @property-read \App\Models\UsuarioConta|null $BancoConta
  */
 class FeedbackCurriculo extends Model
 {

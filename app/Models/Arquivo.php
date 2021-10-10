@@ -47,6 +47,10 @@ use Intervention\Image\ImageManagerStatic as Image;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo query()
  * @property int $bytes
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereBytes($value)
+ * @property string|null $disco
+ * @property int|null $s3
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereDisco($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereS3($value)
  */
 class Arquivo extends Model
 {
