@@ -25,6 +25,8 @@
                         <upload label="Selecionar anexo(s)"
                                 :dados-ajax="{usuario_id: usuario.id}"
                                 :model="form.foto_perfil"
+                                :apenas-imagens="true"
+                                :quantidade="1"
                                 :model-delete="form.foto_perfilDel" :url="urlAnexoUpload"
                                 @onprogresso="anexoUploadAndamento=true"
                                 @onfinalizado="anexoUploadAndamento=false" :multi="true"></upload>
