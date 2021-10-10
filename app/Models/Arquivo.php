@@ -63,6 +63,7 @@ class Arquivo extends Model
         'bytes',
         'temporario',
         'chave',
+        'disco',
         'created_at',
         'updated_at',
     ];
@@ -70,7 +71,6 @@ class Arquivo extends Model
         'id' => 'int',
         'quem_enviou' => 'int', //user_id que enviou
         'nome' => 'string', // ou titulo
-        //'url' => 'string',
         'imagem' => 'boolean',
         'layout' => 'string',
         'extensao' => 'string',
@@ -79,17 +79,13 @@ class Arquivo extends Model
         'bytes' => 'int',
         'temporario' => 'boolean',
         'chave' => 'string',
+        'disco' => 'string',
         'created_at' => 'datetime:d/m/Y H:i:s',
         'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
     public $timestamps = true;
-    //protected $dateFormat = 'U';
-    //const CREATED_AT = 'criado_em';
-    //const UPDATED_AT = 'atualizado_em';
 
-
-//    protected $appends = ['urlThumb', 'urlDownload'];
-//    protected $appends = ['url', 'urlThumb', 'urlDownload', 'urlDelete'];
+    protected $appends = ['url', 'urlThumb', 'urlDownload', 'urlDelete'];
 
     // MIME_TYPE ARQUIVOS
     const MIME_GIF = "image/gif";
@@ -159,26 +155,7 @@ class Arquivo extends Model
         self::MIME_ZIP2,
     ];
 
-    public static $discos = [
-        'disco-cloud',
-        'disco-fotocurriculo',
-        'disco-cliente',
-        'disco-fornecedor',
-        'disco-servicofornecedor',
-        'disco-ocorrencia',
-        'evidencia-cih',
-        'evidencia-medidas',
-        'disco-documentospreadmissao',
-        'disco-dossie',
-        'listapresenca',
-        'requisicao-vaga',
-        'disco-ponto-eletronico',
-        'public',
-        's3',
-        'disco-perfil-usuario'
-    ];
-
-
+    public const S3 = 's3';
     public const DISCO_CLOUD = 'disco-cloud';
     public const DISCO_FOTOCURRICULO = 'disco-fotocurriculo';
     public const DISCO_CLIENTE = 'disco-cliente';
@@ -194,234 +171,193 @@ class Arquivo extends Model
     public const DISCO_REQUISICAO_VAGA = 'requisicao-vaga';
     public const DISCO_PUBLICO = 'public';
     public const DISCO_PONTO_ELETRONICO = 'disco-ponto-eletronico';
-    public const S3 = 's3';
     public const DISCO_PERFIL_USUARIO = 'disco-perfil-usuario';
+    public const DISCO_WEEKLY_REPORT = 'disco-weekly-report';
 
-    //Acessor ->data
+    /**
+     * @return string
+     */
     public function getUrlAttribute()
     {
-        $url = self::buscaUrl($this->file);
-        if ($url) {
-            $url = str_replace("/" . $this->file, '', $url);
-            switch (self::nomeDisco($this->file)) {
-
-                case 'disco-fotocurriculo':
-                    return env('AWS_URL') . "/arquivos/" . self::DISCO_FOTOCURRICULO . "/{$this->file}";
-//                    return config('filesystems.disks.disco-fotocurriculo.urlShow') . "/{$this->file}";
-                case 'disco-cloud':
-                    return config('filesystems.disks.disco-cloud.urlShow') . "/{$this->file}";
-                case 'disco-cliente':
-                    return config('filesystems.disks.disco-cliente.urlShow') . "/{$this->file}";
-                case 'disco-fornecedor':
-                    return config('filesystems.disks.disco-fornecedor.urlShow') . "/{$this->file}";
-                case 'disco-servicofornecedor':
-                    return config('filesystems.disks.disco-servicofornecedor.urlShow') . "/{$this->file}";
-                case 'disco-ocorrencia':
-                    return config('filesystems.disks.disco-ocorrencia.urlShow') . "/{$this->file}";
-                case 'evidencia-cih':
-                    return config('filesystems.disks.evidencia-cih.urlShow') . "/{$this->file}";
-                case 'evidencia-medidas':
-                    return config('filesystems.disks.evidencia-medidas.urlShow') . "/{$this->file}";
-                case 'listapresenca':
-                    return config('filesystems.disks.listapresenca.urlShow') . "/{$this->file}";
-                case 'disco-documentospreadmissao':
-                    return config('filesystems.disks.disco-documentospreadmissao.urlShow') . "/{$this->file}";
-                case 'requisicao-vaga':
-                    return config('filesystems.disks.requisicao-vaga.urlShow') . "/{$this->file}";
-                case 'disco-dossie':
-                    return config('filesystems.disks.disco-dossie.urlShow') . "/{$this->file}";
-                case 'disco-ponto-eletronico':
-                    return config('filesystems.disks.disco-ponto-eletronico.urlShow') . "/{$this->file}";
-                case 'public':
-                    return config('filesystems.disks.public.urlShow') . "/{$this->file}";
-                case 's3':
-                    return config('filesystems.disks.s3.urlShow') . "/{$this->file}";
-                case 'disco-perfil-usuario':
-//                    return env('AWS_URL') . "/arquivos/" . self::DISCO_PERFIL_USUARIO . "/{$this->file}";
-                    return config('filesystems.disks.disco-perfil-usuario.urlShow') . "/{$this->file}";
-            }
-            return $url;
+        switch ($this->disco) {
+            case self::DISCO_FOTOCURRICULO:
+                return config('filesystems.disks.disco-fotocurriculo.urlShow') . "/{$this->file}";
+            case self::DISCO_CLOUD:
+                return config('filesystems.disks.disco-cloud.urlShow') . "/{$this->file}";
+            case self::DISCO_CLIENTE:
+                return config('filesystems.disks.disco-cliente.urlShow') . "/{$this->file}";
+            case self::DISCO_FORNECEDOR:
+                return config('filesystems.disks.disco-fornecedor.urlShow') . "/{$this->file}";
+            case self::DISCO_SERVICO_FORNECEDOR:
+                return config('filesystems.disks.disco-servicofornecedor.urlShow') . "/{$this->file}";
+            case self::DISCO_OCORRENCIA:
+                return config('filesystems.disks.disco-ocorrencia.urlShow') . "/{$this->file}";
+            case self::DISCO_CIH:
+                return config('filesystems.disks.evidencia-cih.urlShow') . "/{$this->file}";
+            case self::DISCO_MEDIDAS:
+                return config('filesystems.disks.evidencia-medidas.urlShow') . "/{$this->file}";
+            case self::DISCO_TREINAMENTO_LISTA_PRESENCA:
+                return config('filesystems.disks.listapresenca.urlShow') . "/{$this->file}";
+            case self::DISCO_DOCUMENTOS_PRE_ADMISSAO:
+                return config('filesystems.disks.disco-documentospreadmissao.urlShow') . "/{$this->file}";
+            case self::DISCO_REQUISICAO_VAGA:
+                return config('filesystems.disks.requisicao-vaga.urlShow') . "/{$this->file}";
+            case self::DISCO_DOSSIE:
+                return config('filesystems.disks.disco-dossie.urlShow') . "/{$this->file}";
+            case self::DISCO_PONTO_ELETRONICO:
+                return config('filesystems.disks.disco-ponto-eletronico.urlShow') . "/{$this->file}";
+            case self::DISCO_PUBLICO:
+                return config('filesystems.disks.public.urlShow') . "/{$this->file}";
+            case self::S3:
+                return config('filesystems.disks.s3.urlShow') . "/{$this->file}";
+            case self::DISCO_PERFIL_USUARIO:
+                return config('filesystems.disks.disco-perfil-usuario.urlShow') . "/{$this->file}";
+            case self::DISCO_WEEKLY_REPORT:
+                return config('filesystems.disks.disco-weekly-report.urlShow') . "/{$this->file}";
+            default:
+                return "";
         }
-        return "";
-
-        //return $this->attributes['nome'] . $this->attributes['extensao'];
     }
 
+    /**
+     * @return string
+     */
     public function getUrlThumbAttribute()
     {
-        $url = self::buscaUrl($this->thumb);
-        if ($url) {
-            $url = str_replace("/" . $this->thumb, '', $url);
-            switch (self::nomeDisco($this->file)) {
-
-                case 'disco-fotocurriculo':
-                    return env('AWS_URL') . "/arquivos/" . self::DISCO_FOTOCURRICULO . "/{$this->thumb}";
-                case 'disco-cloud':
-                    return config('filesystems.disks.disco-cloud.urlThumb') . "/{$this->thumb}";
-                case 'disco-cliente':
-                    return config('filesystems.disks.disco-cliente.urlThumb') . "/{$this->thumb}";
-                case 'disco-fornecedor':
-                    return config('filesystems.disks.disco-fornecedor.urlThumb') . "/{$this->thumb}";
-                case 'disco-servicofornecedor':
-                    return config('filesystems.disks.disco-servicofornecedor.urlThumb') . "/{$this->thumb}";
-                case 'disco-ocorrencia':
-                    return config('filesystems.disks.disco-ocorrencia.urlThumb') . "/{$this->thumb}";
-                case 'evidencia-cih':
-                    return config('filesystems.disks.evidencia-cih.urlThumb') . "/{$this->thumb}";
-                case 'evidencia-medidas':
-                    return config('filesystems.disks.evidencia-medidas.urlThumb') . "/{$this->thumb}";
-                case 'listapresenca':
-                    return config('filesystems.disks.listapresenca.urlThumb') . "/{$this->thumb}";
-                case 'disco-documentospreadmissao':
-                    return config('filesystems.disks.disco-documentospreadmissao.urlThumb') . "/{$this->thumb}";
-                case 'requisicao-vaga':
-                    return config('filesystems.disks.requisicao-vaga.urlThumb') . "/{$this->thumb}";
-                case 'disco-dossie':
-                    return config('filesystems.disks.disco-dossie.urlThumb') . "/{$this->thumb}";
-                case 'disco-ponto-eletronico':
-                    return config('filesystems.disks.disco-ponto-eletronico.urlThumb') . "/{$this->thumb}";
-                case 'public':
-                    return config('filesystems.disks.public.urlThumb') . "/{$this->thumb}";
-                case 's3':
-                    return config('filesystems.disks.s3.urlThumb') . "/{$this->thumb}";
-                case 'disco-perfil-usuario':
-//                    return env('AWS_URL') . "/arquivos/" . self::DISCO_PERFIL_USUARIO . "/{$this->thumb}";
-                    return config('filesystems.disks.disco-perfil-usuario.urlThumb') . "/{$this->thumb}";
-
-            }
-            return $url;
+        switch ($this->disco) {
+            case self::DISCO_FOTOCURRICULO:
+                return config('filesystems.disks.disco-fotocurriculo.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_CLOUD:
+                return config('filesystems.disks.disco-cloud.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_CLIENTE:
+                return config('filesystems.disks.disco-cliente.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_FORNECEDOR:
+                return config('filesystems.disks.disco-fornecedor.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_SERVICO_FORNECEDOR:
+                return config('filesystems.disks.disco-servicofornecedor.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_OCORRENCIA:
+                return config('filesystems.disks.disco-ocorrencia.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_CIH:
+                return config('filesystems.disks.evidencia-cih.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_MEDIDAS:
+                return config('filesystems.disks.evidencia-medidas.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_TREINAMENTO_LISTA_PRESENCA:
+                return config('filesystems.disks.listapresenca.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_DOCUMENTOS_PRE_ADMISSAO:
+                return config('filesystems.disks.disco-documentospreadmissao.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_REQUISICAO_VAGA:
+                return config('filesystems.disks.requisicao-vaga.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_DOSSIE:
+                return config('filesystems.disks.disco-dossie.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_PONTO_ELETRONICO:
+                return config('filesystems.disks.disco-ponto-eletronico.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_PUBLICO:
+                return config('filesystems.disks.public.urlThumb') . "/{$this->thumb}";
+            case self::S3:
+                return config('filesystems.disks.s3.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_PERFIL_USUARIO:
+                return config('filesystems.disks.disco-perfil-usuario.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_WEEKLY_REPORT:
+                return config('filesystems.disks.disco-weekly-report.urlThumb') . "/{$this->thumb}";
+            default:
+                return "";
         }
-        return "";
     }
 
+    /**
+     * @return string
+     */
     public function getUrlDownloadAttribute()
     {
-        $url = self::buscaUrl($this->file);
-        if ($url) {
-            $url = str_replace("/" . $this->file, '', $url);
-            switch (self::nomeDisco($this->file)) {
-                case 'disco-fotocurriculo':
-                    return config('filesystems.disks.disco-fotocurriculo.urlDownload') . "/{$this->file}";
-                case 'disco-cloud':
-                    return config('filesystems.disks.disco-cloud.urlDownload') . "/{$this->file}";
-                case 'disco-cliente':
-                    return config('filesystems.disks.disco-cliente.urlDownload') . "/{$this->file}";
-                case 'disco-fornecedor':
-                    return config('filesystems.disks.disco-fornecedor.urlDownload') . "/{$this->file}";
-                case 'disco-servicofornecedor':
-                    return config('filesystems.disks.disco-servicofornecedor.urlDownload') . "/{$this->file}";
-                case 'disco-ocorrencia':
-                    return config('filesystems.disks.disco-ocorrencia.urlDownload') . "/{$this->file}";
-                case 'evidencia-cih':
-                    return config('filesystems.disks.evidencia-cih.urlDownload') . "/{$this->file}";
-                case 'evidencia-medidas':
-                    return config('filesystems.disks.evidencia-medidas.urlDownload') . "/{$this->file}";
-                case 'listapresenca':
-                    return config('filesystems.disks.listapresenca.urlDownload') . "/{$this->file}";
-                case 'disco-documentospreadmissao':
-                    return config('filesystems.disks.disco-documentospreadmissao.urlDownload') . "/{$this->file}";
-                case 'requisicao-vaga':
-                    return config('filesystems.disks.requisicao-vaga.urlDownload') . "/{$this->file}";
-                case 'disco-dossie':
-                    return config('filesystems.disks.disco-dossie.urlDownload') . "/{$this->file}";
-                case 'disco-ponto-eletronico':
-                    return config('filesystems.disks.disco-ponto-eletronico.urlDownload') . "/{$this->file}";
-                case 'public':
-                    return config('filesystems.disks.public.urlDownload') . "/{$this->file}";
-                case 's3':
-                    return config('filesystems.disks.s3.urlDownload') . "/{$this->file}";
-                case 'disco-perfil-usuario':
-//                    return env('AWS_URL') . "/arquivos/" . self::DISCO_PERFIL_USUARIO . "/{$this->file}";
-                    return config('filesystems.disks.disco-perfil-usuario.urlDownload') . "/{$this->file}";
-            }
+        switch ($this->disco) {
+            case self::DISCO_FOTOCURRICULO:
+                return config('filesystems.disks.disco-fotocurriculo.urlDownload') . "/{$this->file}";
+            case self::DISCO_CLOUD:
+                return config('filesystems.disks.disco-cloud.urlDownload') . "/{$this->file}";
+            case self::DISCO_CLIENTE:
+                return config('filesystems.disks.disco-cliente.urlDownload') . "/{$this->file}";
+            case self::DISCO_FORNECEDOR:
+                return config('filesystems.disks.disco-fornecedor.urlDownload') . "/{$this->file}";
+            case self::DISCO_SERVICO_FORNECEDOR:
+                return config('filesystems.disks.disco-servicofornecedor.urlDownload') . "/{$this->file}";
+            case self::DISCO_OCORRENCIA:
+                return config('filesystems.disks.disco-ocorrencia.urlDownload') . "/{$this->file}";
+            case self::DISCO_CIH:
+                return config('filesystems.disks.evidencia-cih.urlDownload') . "/{$this->file}";
+            case self::DISCO_MEDIDAS:
+                return config('filesystems.disks.evidencia-medidas.urlDownload') . "/{$this->file}";
+            case self::DISCO_TREINAMENTO_LISTA_PRESENCA:
+                return config('filesystems.disks.listapresenca.urlDownload') . "/{$this->file}";
+            case self::DISCO_DOCUMENTOS_PRE_ADMISSAO:
+                return config('filesystems.disks.disco-documentospreadmissao.urlDownload') . "/{$this->file}";
+            case self::DISCO_REQUISICAO_VAGA:
+                return config('filesystems.disks.requisicao-vaga.urlDownload') . "/{$this->file}";
+            case self::DISCO_DOSSIE:
+                return config('filesystems.disks.disco-dossie.urlDownload') . "/{$this->file}";
+            case self::DISCO_PONTO_ELETRONICO:
+                return config('filesystems.disks.disco-ponto-eletronico.urlDownload') . "/{$this->file}";
+            case self::DISCO_PUBLICO:
+                return config('filesystems.disks.public.urlDownload') . "/{$this->file}";
+            case self::S3:
+                return config('filesystems.disks.s3.urlDownload') . "/{$this->file}";
+            case self::DISCO_PERFIL_USUARIO:
+                return config('filesystems.disks.disco-perfil-usuario.urlDownload') . "/{$this->file}";
+            case self::DISCO_WEEKLY_REPORT:
+                return config('filesystems.disks.disco-weekly-report.urlDownload') . "/{$this->file}";
+            default:
+                return "";
         }
-        return "";
     }
 
+    /**
+     * @return string
+     */
     public function getUrlDeleteAttribute()
     {
-        $url = self::buscaUrl($this->file);
-        if ($url) {
-            $url = str_replace("/" . $this->file, '', $url);
-            switch (self::nomeDisco($this->file)) {
-                case 'disco-fotocurriculo':
-                    return config('filesystems.disks.disco-fotocurriculo.urlDelete') . "/{$this->file}";
-                case 'disco-cloud':
-                    return config('filesystems.disks.disco-cloud.urlDelete') . "/{$this->file}";
-                case 'disco-cliente':
-                    return config('filesystems.disks.disco-cliente.urlDelete') . "/{$this->file}";
-                case 'disco-fornecedor':
-                    return config('filesystems.disks.disco-fornecedor.urlDelete') . "/{$this->file}";
-                case 'disco-servicofornecedor':
-                    return config('filesystems.disks.disco-servicofornecedor.urlDelete') . "/{$this->file}";
-                case 'disco-ocorrencia':
-                    return config('filesystems.disks.disco-ocorrencia.urlDelete') . "/{$this->file}";
-                case 'evidencia-cih':
-                    return config('filesystems.disks.evidencia-cih.urlDelete') . "/{$this->file}";
-                case 'evidencia-medidas':
-                    return config('filesystems.disks.evidencia-medidas.urlDelete') . "/{$this->file}";
-                case 'listapresenca':
-                    return config('filesystems.disks.listapresenca.urlDelete') . "/{$this->file}";
-                case 'disco-documentospreadmissao':
-                    return config('filesystems.disks.disco-documentospreadmissao.urlDelete') . "/{$this->file}";
-                case 'requisicao-vaga':
-                    return config('filesystems.disks.requisicao-vaga.urlDelete') . "/{$this->file}";
-                case 'disco-dossie':
-                    return config('filesystems.disks.disco-dossie.urlDelete') . "/{$this->file}";
-                case 'disco-ponto-eletronico':
-                    return config('filesystems.disks.disco-ponto-eletronico.urlDelete') . "/{$this->file}";
-                case 'public':
-                    return config('filesystems.disks.public.urlDelete') . "/{$this->file}";
-                case 's3':
-                    return config('filesystems.disks.s3.urlDelete') . "/{$this->file}";
-                case 'disco-perfil-usuario':
-//                    return env('AWS_URL') . "/arquivos/" . self::DISCO_PERFIL_USUARIO . "/{$this->file}";
-                    return config('filesystems.disks.disco-perfil-usuario.urlDelete') . "/{$this->file}";
-            }
+        switch ($this->disco) {
+            case self::DISCO_FOTOCURRICULO:
+                return config('filesystems.disks.disco-fotocurriculo.urlDelete') . "/{$this->file}";
+            case self::DISCO_CLOUD:
+                return config('filesystems.disks.disco-cloud.urlDelete') . "/{$this->file}";
+            case self::DISCO_CLIENTE:
+                return config('filesystems.disks.disco-cliente.urlDelete') . "/{$this->file}";
+            case self::DISCO_FORNECEDOR:
+                return config('filesystems.disks.disco-fornecedor.urlDelete') . "/{$this->file}";
+            case self::DISCO_SERVICO_FORNECEDOR:
+                return config('filesystems.disks.disco-servicofornecedor.urlDelete') . "/{$this->file}";
+            case self::DISCO_OCORRENCIA:
+                return config('filesystems.disks.disco-ocorrencia.urlDelete') . "/{$this->file}";
+            case self::DISCO_CIH:
+                return config('filesystems.disks.evidencia-cih.urlDelete') . "/{$this->file}";
+            case self::DISCO_MEDIDAS:
+                return config('filesystems.disks.evidencia-medidas.urlDelete') . "/{$this->file}";
+            case self::DISCO_TREINAMENTO_LISTA_PRESENCA:
+                return config('filesystems.disks.listapresenca.urlDelete') . "/{$this->file}";
+            case self::DISCO_DOCUMENTOS_PRE_ADMISSAO:
+                return config('filesystems.disks.disco-documentospreadmissao.urlDelete') . "/{$this->file}";
+            case self::DISCO_REQUISICAO_VAGA:
+                return config('filesystems.disks.requisicao-vaga.urlDelete') . "/{$this->file}";
+            case self::DISCO_DOSSIE:
+                return config('filesystems.disks.disco-dossie.urlDelete') . "/{$this->file}";
+            case self::DISCO_PONTO_ELETRONICO:
+                return config('filesystems.disks.disco-ponto-eletronico.urlDelete') . "/{$this->file}";
+            case self::DISCO_PUBLICO:
+                return config('filesystems.disks.public.urlDelete') . "/{$this->file}";
+            case self::S3:
+                return config('filesystems.disks.s3.urlDelete') . "/{$this->file}";
+            case self::DISCO_PERFIL_USUARIO:
+                return config('filesystems.disks.disco-perfil-usuario.urlDelete') . "/{$this->file}";
+            case self::DISCO_WEEKLY_REPORT:
+                return config('filesystems.disks.disco-weekly-report.urlDelete') . "/{$this->file}";
+            default:
+                return "";
         }
-        return "";
     }
 
-    public static function findByArquivo($arquivo)
-    {
-        $arquivo = self::whereFile($arquivo)->get()->first();
-        if ($arquivo) {
-            return $arquivo;
-        }
-        return false;
-    }
-
-    //retorn uma URL abosoluta
-    public static function buscaUrl($arquivo)
-    {
-        $disco = self::disco($arquivo);
-        if ($disco) {
-            return $disco->url($arquivo);
-        }
-        return false;
-    }
-
-    //Retorna o Path
-    public static function buscaPath($arquivo)
-    {
-        $disco = self::disco($arquivo);
-        if ($disco) {
-            return $disco->path($arquivo);
-        }
-
-        return false;
-    }
-
-    public static function buscaConteudo($arquivo)
-    {
-        $disco = self::disco($arquivo);
-        if ($disco) {
-            return $disco->get($arquivo);
-        }
-
-        return false;
-    }
-
+    /**
+     * @param $path
+     * @return mixed|string
+     */
     public static function getMimeType($path)
     {
         $file = $path;
@@ -431,46 +367,40 @@ class Arquivo extends Model
         return $partes[0];
     }
 
-    //localiza em que disco esse arquivo esta
-    private static function disco($arquivo)
-    {
-        foreach (self::$discos as $disco) {
-            if (Storage::disk($disco)->exists($arquivo)) {
-                return Storage::disk($disco);
-            }
-        }
-        return false;
-    }
-
-    public static function nomeDisco($arquivo)
-    {
-        foreach (self::$discos as $disco) {
-            if (Storage::disk($disco)->exists($arquivo)) {
-                return $disco;
-            }
-        }
-        return false;
-    }
-
+    /**
+     * @param $nome
+     * @return string
+     */
     public static function gerarNomeFoto($nome)
     {
         $partes = explode('.', $nome);
         return $partes[0] . '_g.' . $partes[1]; // nome_g.jpg por exemplo
     }
 
+    /**
+     * @param $nome
+     * @return string
+     */
     public static function gerarNomeThumb($nome)
     {
         $partes = explode('.', $nome);
         return $partes[0] . '_p.' . $partes[1]; // nome_p.jpg por exemplo
     }
 
-    // pegar o nome do arquivo sem extensao
+    /**
+     * @param $nome
+     * @return mixed|string
+     */
     public static function pegarNomeArquivo($nome)
     {
         $partes = explode('.', $nome);
         return $partes[0];
     }
 
+    /**
+     * @param $path
+     * @return array
+     */
     public static function pegarDimensoes($path)
     {
         $tamanhos = getimagesize($path);
@@ -480,9 +410,12 @@ class Arquivo extends Model
         ];
     }
 
+    /**
+     * @param $path
+     * @return bool
+     */
     public static function seForImagem($path)
     {
-
         $mime = mime_content_type($path);
 
         $tipo = substr($mime, 0, 5);
@@ -494,6 +427,10 @@ class Arquivo extends Model
 
     }
 
+    /**
+     * @param $path
+     * @return string
+     */
     public static function pegarLayout($path)
     {
         if (self::seForImagem($path)) {
@@ -514,6 +451,10 @@ class Arquivo extends Model
         }
     }
 
+    /**
+     * @param $path
+     * @return false|mixed
+     */
     public static function maiorComprimento($path)
     {
         if (self::seForImagem($path)) {
@@ -524,6 +465,11 @@ class Arquivo extends Model
         return false;
     }
 
+    /**
+     * @param $path
+     * @param $novaLargura
+     * @return array
+     */
     public static function calculaLaguraAlturaProporcional($path, $novaLargura)
     {
         $largura = self::pegarDimensoes($path)['largura'];
@@ -544,6 +490,12 @@ class Arquivo extends Model
         ];
     }
 
+    /**
+     * @param Request $request
+     * @param $nomePost
+     * @param $nomeDisco
+     * @return Arquivo
+     */
     public static function gravaArquivoCliente(Request $request, $nomePost, $nomeDisco): Arquivo
     {
         //Dados do arquivo
@@ -592,6 +544,7 @@ class Arquivo extends Model
                 'bytes' => $bytes,
                 'temporario' => true,
                 'chave' => $request->get('chave'),
+                'disco' => $nomeDisco
             ];
 
         } else {
@@ -606,15 +559,20 @@ class Arquivo extends Model
                 'bytes' => $bytes,
                 'temporario' => true,
                 'chave' => $request->get('chave'),
+                'disco' => $nomeDisco
             ];
         }
 
         $model = self::create($dados);
         return $model;
-
-
     }
 
+    /**
+     * @param Request $request
+     * @param $nomePost
+     * @param $nomeDisco
+     * @return Arquivo
+     */
     public static function gravaArquivo(Request $request, $nomePost, $nomeDisco): Arquivo
     {
         //Dados do arquivo
@@ -656,59 +614,19 @@ class Arquivo extends Model
             'bytes' => $bytes,
             'temporario' => true,
             'chave' => $request->get('chave'),
+            'disco' => $nomeDisco,
         ];
 
         $model = self::create($dados);
         return $model;
     }
 
-    public static function gravaArquivoOld(Request $request, $nomePost, $nomeDisco): Arquivo
-    {
-        //Dados do arquivo
-        $path = $request->file($nomePost)->path();
-        $nome = Arquivo::pegarNomeArquivo($request->file($nomePost)->getClientOriginalName());
-        $bytes = $request->file($nomePost)->getSize();
-        $extensao = $request->file($nomePost)->extension(); // sem ponto
-        $imagem = Arquivo::seForImagem($path);
-
-        $nomeDoArquivo = $request->file($nomePost)->store(null, $nomeDisco); // grava o arquivo direto do request
-
-        //Se for Arquivo de imagem fazer dois arquivos
-        if ($imagem) {
-            $file = $request->file($nomePost);
-            //Imagem Grande
-            $imgGrande = Image::make($file);
-            $tamanhoFinal = Arquivo::maiorComprimento($file->path()) > 800 ? 800 : Arquivo::maiorComprimento($file->path());
-            $tamanhoReal = Arquivo::calculaLaguraAlturaProporcional($file, $tamanhoFinal);
-            $imgG = $imgGrande->resize($tamanhoReal['largura'], $tamanhoReal['altura'])->stream()->detach();
-            Storage::disk($nomeDisco)->put($nomeDoArquivo, $imgG);
-
-            //Thumb
-            $imgThumb = Image::make($file);
-            $nomeArquivoThumb = Arquivo::gerarNomeThumb($nomeDoArquivo);
-            $tamanhoThumb = Arquivo::calculaLaguraAlturaProporcional($file, 200);
-
-            $thumb = $imgThumb->resize($tamanhoThumb['largura'], $tamanhoThumb['altura'])->stream()->detach();
-            Storage::disk($nomeDisco)->put($nomeArquivoThumb, $thumb);
-        }
-
-        $dados = [
-            'quem_enviou' => auth()->id(),
-            'nome' => $nome,
-            'imagem' => $imagem,
-            'layout' => $imagem ? self::pegarLayout($file->path()) : null,
-            'extensao' => "." . $extensao,
-            'file' => $nomeDoArquivo,
-            'thumb' => $imagem ? $nomeArquivoThumb : null,
-            'bytes' => $bytes,
-            'temporario' => true,
-            'chave' => $request->get('chave'),
-        ];
-
-        $model = self::create($dados);
-        return $model;
-    }
-
+    /**
+     * @param Request $request
+     * @param $nomePost
+     * @param $nomeDisco
+     * @return Arquivo
+     */
     public static function gravaArquivoReal(Request $request, $nomePost, $nomeDisco): Arquivo
     {
         //Dados do arquivo
@@ -742,101 +660,38 @@ class Arquivo extends Model
             'bytes' => $bytes,
             'temporario' => true,
             'chave' => $request->get('chave'),
+            'disco' => $nomeDisco,
         ];
 
         $model = self::create($dados);
         return $model;
 
-        //Dados do arquivo
-        /* $path = $request->file($nomePost)->path();
-         $extensao = $request->file($nomePost)->extension(); // sem ponto
-         $tmExt = strlen('.' . $extensao);
-
-         $nome = substr($request->file($nomePost)->getClientOriginalName(), 0, -$tmExt);
-         $bytes = $request->file($nomePost)->getSize();
-
-         $imagem = Arquivo::seForImagem($path);
-         $largura = null;
-         $altura = null;
-
-         $nomeDoArquivo = $request->file($nomePost)->store(null, $nomeDisco); // grava o arquivo direto do request
-         //Se for Arquivo de imagem fazer dois arquivos
-         if ($imagem) {
-             $file = $request->file($nomePost);
-
-             $thumb_path = Storage::disk($nomeDisco)->path(Arquivo::gerarNomeThumb($nomeDoArquivo));
-             $fotoGrande_path = Storage::disk($nomeDisco)->path(Arquivo::gerarNomeFoto($nomeDoArquivo));
-
-             //Thumb
-             $novas = Arquivo::calculaLaguraAlturaProporcional($file, 75);
-             Image::make($file)->resize($novas['largura'], $novas['altura'])->save($thumb_path);
-
- //            Storage::disk($nomeDisco)->delete($nomeDoArquivo);//apagar o original
-         }
-
-         $dados = [
-             'quem_enviou' => Auth::id(), //user_id que enviou
-             'nome' => $nome, // ou titulo
-             'imagem' => $imagem,
-             'layout' => $imagem ? self::pegarLayout($fotoGrande_path) : null,
-             'extensao' => "." . $extensao,
-             'file' => $imagem ? Arquivo::gerarNomeFoto($nomeDoArquivo) : $nomeDoArquivo,
-             'thumb' => $imagem ? Arquivo::gerarNomeThumb($nomeDoArquivo) : null,
-             'bytes' => $bytes,
-             'temporario' => true,
-             'chave' => $request->get('chave'),
-         ];
-
-
-         $model = self::create($dados);
-         return $model;
- */
-
     }
 
-    // Apagar do banco e do disco qualquer arquivo passando somente o nome unico (campo file da tabela arquivos)
-    public static function apagar($nome)
-    {
-//        $disco = self::disco($nome);
-//
-//        if ($disco && $disco->exists($nome)) {
-//            $model = self::findByArquivo($nome);
-//            if ($model) {
-//                if ($model->imagem) {
-//                    $disco->delete($model->file);
-//                    $disco->delete($model->thumb);
-//                } else {
-//                    $disco->delete($model->file);
-//                }
-//                $model->delete();
-//                return true;
-//            } else {
-//                return false;
-//            }
-//
-//        }
-//        return false;
-
-    }
-
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function excluir()
     {
-       /* $disco = self::disco($this->file);
-
-        if ($disco && $disco->exists($this->file)) {
-
+        $disco = Storage::disk($this->disco);
+        if ($disco->exists($this->file)) {
             if ($this->imagem) {
-                $disco->delete($this->file);
                 $disco->delete($this->thumb);
-            } else {
-                $disco->delete($this->file);
             }
-
+            $disco->delete($this->file);
+            $this->delete();
+            return true;
         }
-        $this->delete(); //apagar este model, e automaticamente apagar em cascata
-        return true;*/
+        return false;
     }
 
+    /**
+     * @param Request $request
+     * @param array $permitidos
+     * @param $disco
+     * @return \Illuminate\Http\JsonResponse
+     */
     public static function uploadAnexos(Request $request, array $permitidos, $disco)
     {
         if ($request->file('arquivo')->isValid()) {
@@ -861,57 +716,58 @@ class Arquivo extends Model
 
     }
 
+    /**
+     * @param $disco
+     * @param $arquivo
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
     public static function anexoShow($disco, $arquivo)
     {
-        $file_info = new finfo(FILEINFO_MIME_TYPE);
-        $img = file_get_contents(env('AWS_URL') . '/arquivos/' . $disco . '/' . $arquivo);
-        $mime_type = $file_info->buffer($img);
-
-//        return response()->download(env('AWS_URL') . '/arquivos/' . $disco . '/' . $arquivo,'ok.png');
-        return response($img)->header('Content-type', $mime_type);
+        if (Storage::disk($disco)->exists($arquivo)) {
+            return \Storage::disk($disco)->response($arquivo);
+        }
+        abort(404);
     }
 
-    public static function anexoDownload($discoPermitidos, $arquivo)
+    /**
+     * @param $disco
+     * @param $arquivo
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public static function anexoDownload($disco, $arquivo)
     {
-        $file_info = new finfo(FILEINFO_MIME_TYPE);
-        $path = env('AWS_URL') . '/arquivos/' . $discoPermitidos . '/' . $arquivo;
-        try {
-            $img = file_get_contents($path);
-            $mime_type = $file_info->buffer($img);
-            $item = Arquivo::whereFile($arquivo)->first(['nome', 'extensao']);
-
-            return response()->streamDownload(function () use ($img, $item) {
-                echo $img;
-            }, $item->nome . $item->extensao);
-
-        } catch (\Exception $e) {
-            abort(404);
+        if (Storage::disk($disco)->exists($arquivo)) {
+            $item = Arquivo::whereFile($arquivo)->whereDisco($disco)->orWhere('thumb', $arquivo)->first(['nome', 'extensao']);
+            return Storage::disk($disco)->download($arquivo, $item->nome . $item->extensao);
         }
-
+        abort(404);
     }
 
-    public static function anexoDelete(array $discoPermitidos, $arquivo)
+    /**
+     * @param $disco
+     * @param $arquivo
+     * @return bool|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     */
+    public static function anexoDelete($disco, $arquivo)
     {
-        /*$disco = self::nomeDisco($arquivo);
-        $permitidos = $discoPermitidos;
-        $model = self::findByArquivo($arquivo);
-
-        if (in_array($disco, $permitidos) == false) {
-            return response("", 404);
-        }
+        $model = Arquivo::whereFile($arquivo)
+            ->whereDisco($disco)
+            ->orWhere('thumb', $arquivo)
+            ->first(['id', 'nome', 'file', 'imagem', 'thumb', 'extensao', 'temporario']);
 
         if ($model && $model->temporario) {
-            self::apagar($arquivo);
-            return response("", 200);
+            $discoStorage = Storage::disk($disco);
+            if ($discoStorage->exists($arquivo)) {
+                if ($model->imagem) {
+                    $discoStorage->delete($model->thumb);
+                }
+                $discoStorage->delete($model->file);
+                $model->delete();
+                return true;
+            }
+            return response("", 404);
         }
-
-        return response("Não foi possível apagar o anexo", 400);*/
+        return response("", 404);
     }
 
-    //Modificador ->data
-    /*public function setUrlAttribute($value)
-    {
-        $data = new DataHora($value);
-        $this->attributes['data'] = $data->dataInsert();
-    }*/
 }

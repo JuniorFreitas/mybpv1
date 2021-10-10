@@ -808,6 +808,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     //Weekley report
     Route::group(['as' => 'weekly-report.'], function () {
 
+        //Anexos s3
+        Route::get('weekly-report/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoShow'])->name('anexo-tarefa.anexo-show');
+        Route::get('weekly-report/anexoDownload/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'download'])->name('anexo-tarefa.anexo-download');
+        Route::delete('weekly-report/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoDelete'])->name('anexo-tarefa.anexo-delete');
+
+
         //Itens
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/checklist/{checklist}/item/{item}', [\App\Http\Controllers\ChecklistsTarefaItemController::class, 'update'])->name('update');
         Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/checklist/{checklist}/item/{item}', [\App\Http\Controllers\ChecklistsTarefaItemController::class, 'destroy'])->name('destroy');

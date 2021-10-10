@@ -496,17 +496,17 @@ class DocumentosPreAdmissaoController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);
     }
 }

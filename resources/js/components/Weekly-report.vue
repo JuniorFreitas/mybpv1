@@ -332,20 +332,20 @@
                                                              y="0px">
                                                             <path
                                                                 d="M128,0c-17.6,0-32,14.4-32,32v448c0,17.6,14.4,32,32,32h320c17.6,0,32-14.4,32-32V128L352,0H128z"
-                                                                style="fill:#E2E5E7;"/>
+                                                                style="fill:#E2E5E7;" />
                                                             <path d="M384,128h96L352,0v96C352,113.6,366.4,128,384,128z"
-                                                                  style="fill:#B0B7BD;"/>
+                                                                  style="fill:#B0B7BD;" />
                                                             <polygon points="480,224 384,128 480,128 "
-                                                                     style="fill:#CAD1D8;"/>
+                                                                     style="fill:#CAD1D8;" />
                                                             <path
                                                                 d="M416,416c0,8.8-7.2,16-16,16H48c-8.8,0-16-7.2-16-16V256c0-8.8,7.2-16,16-16h352c8.8,0,16,7.2,16,16 V416z"
-                                                                style="fill:#184056;"/>
+                                                                style="fill:#184056;" />
                                                             <g><!--	<path style="fill:#FFFFFF;" d=""/>-->
                                                                 <text style="font-size:130px;fill:#FFFFFF;" x="45"
                                                                       y="380">{{ anexo.extensao }}</text></g>
                                                             <path
                                                                 d="M400,432H96v16h304c8.8,0,16-7.2,16-16v-16C416,424.8,408.8,432,400,432z"
-                                                                style="fill:#CAD1D8;"/>
+                                                                style="fill:#CAD1D8;" />
                                                             <g></g>
                                                             <g></g>
                                                             <g></g>
@@ -381,34 +381,34 @@
                                                         </div>
                                                         <p v-if="!anexo.enviando" class="card-text">
 
-                                                                <span class="dropdown mb-1">
-                                                                    <a class="dropdown-toggle" data-toggle="dropdown"
-                                                                       href="#" role="button"
-                                                                       @click.prevent="abrirFormEditarTituloAnexo(anexo)">
-                                                                        Editar
-                                                                    </a>
-                                                        <div aria-labelledby="dropdownMenuLink"
-                                                             class="dropdown-menu mb-1">
-                                                            <div class="card" style="width: 300px">
-                                                                <div class="card-header">
-                                                                    Vincular nome
-                                                                </div>
-                                                                <div class="card-body">
-                                                                    <div class="form-group">
-                                                                        <input :ref="`campoTituloAnexo${anexo.id}`"
-                                                                               v-model="tituloEditarAnexo"
-                                                                               class="form-control" type="text"
-                                                                               @keydown.enter="updateAnexo(anexo)">
+                                                        <div class="dropdown mb-1">
+                                                            <a class="dropdown-toggle" data-toggle="dropdown"
+                                                               href="#" role="button"
+                                                               @click.prevent="abrirFormEditarTituloAnexo(anexo)">
+                                                                Editar
+                                                            </a>
+                                                            <div aria-labelledby="dropdownMenuLink"
+                                                                 class="dropdown-menu mb-1">
+                                                                <div class="card" style="width: 300px">
+                                                                    <div class="card-header">
+                                                                        Vincular nome
                                                                     </div>
-                                                                    <button class="btn  btn-sm btn-success"
-                                                                            @click="updateAnexo(anexo)">Atualizar
-                                                                    </button>
+                                                                    <div class="card-body">
+                                                                        <div class="form-group">
+                                                                            <input :ref="`campoTituloAnexo${anexo.id}`"
+                                                                                   v-model="tituloEditarAnexo"
+                                                                                   class="form-control" type="text"
+                                                                                   @keydown.enter="updateAnexo(anexo)">
+                                                                        </div>
+                                                                        <button class="btn  btn-sm btn-success"
+                                                                                @click="updateAnexo(anexo)">Atualizar
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        </span>
-                                                        -
-                                                        <span class="dropdown mb-1">
+                                                            </div>
+                                                            -
+                                                            <span class="dropdown mb-1">
                                                                     <a class="dropdown-toggle" data-toggle="dropdown"
                                                                        href="#" role="button">
                                                                         Excluir
@@ -431,12 +431,12 @@
                                                                     </div>
                                                                 </span>
 
-                                                        </p>
-                                                        <small v-if="!anexo.enviando" class="text-muted">Adcionado:
-                                                            {{ anexo.created_at }}</small>
+                                                            </p>
+                                                            <small v-if="!anexo.enviando" class="text-muted">Adcionado:
+                                                                {{ anexo.created_at }}</small>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
                                         </td>
                                     </tr>
                                     </tbody>
@@ -616,19 +616,21 @@
 
                             <div class="col-12">
                                 <h4><i class="fas fa-tasks"></i> Atividades</h4>
-                                <h5 class="text-center" v-show="TAREFA && TAREFA.logs.length===0">Nenhuma atividade recente</h5>
+                                <h5 class="text-center" v-show="TAREFA && TAREFA.logs.length===0">Nenhuma atividade
+                                    recente</h5>
                             </div>
                             <div class="col-12" v-if="TAREFA && TAREFA.logs && TAREFA.logs.length > 0">
                                 <div class="row">
                                     <div class="media mt-2 ml-2" v-for="atividade in TAREFA.logs">
                                         <div class="avatar-xs mr-3">
                                                 <span class="avatar-title bg-primary rounded-circle font-size-16">
-                                                    {{atividade.usuario.nome.toUpperCase() | formataNome}}
+                                                    {{ atividade.usuario.nome.toUpperCase() | formataNome }}
                                                 </span>
                                         </div>
                                         <div class="media-body">
                                             <!-- <h6 class="mt-0 mb-1"></h6>-->
-                                            <p class="card-text"><strong>{{atividade.usuario.nome}}</strong> {{atividade.descricao}}
+                                            <p class="card-text"><strong>{{ atividade.usuario.nome }}</strong>
+                                                {{ atividade.descricao }}
                                                 <br>
                                                 {{ atividade.created_at }}
                                             </p>
@@ -714,7 +716,8 @@
                         <!-- Lembretes  -->
                         <div class="form-group mt-2" v-if="TAREFA.datahora_entrega!=null">
                             <label for="comboxLembreteTarefa">Definir lembrete</label>
-                            <select class="form-control form-control-sm" id="comboxLembreteTarefa" v-model="TAREFA.lembreteText" @change="updateTarefaLembrete">
+                            <select class="form-control form-control-sm" id="comboxLembreteTarefa"
+                                    v-model="TAREFA.lembreteText" @change="updateTarefaLembrete">
                                 <option :value="null">Nenhum</option>
                                 <option value="5m">5 minutos antes</option>
                                 <option value="10m">10 minutos antes</option>
@@ -800,7 +803,8 @@
                 <div class="row">
                     <div class="col-sm-10 col-12">
                         <div class="row mr-1" style="overflow-x:auto; min-height: 80vh;">
-                            <draggable v-model="arrayListas" class="d-flex" draggable=".listaTarefa" ghost-class="placeholder"
+                            <draggable v-model="arrayListas" class="d-flex" draggable=".listaTarefa"
+                                       ghost-class="placeholder"
                                        group="listaTarefas"
                                        handle=".corpoListaTarefa" @change="moveuLista">
                                 <!-- elemento lista-->
@@ -884,10 +888,12 @@
                                                             <p v-if="TAREFA!=null || (formTarefa.lista_id===null || (LISTA && LISTA.id!==lista.id))"
                                                                class="card-text">
                                                                 <i class="fas fa-tasks"></i>
-                                                                <template v-if="lista.tarefas.length > 0">Adicionar outra
+                                                                <template v-if="lista.tarefas.length > 0">Adicionar
+                                                                    outra
                                                                     tarefa
                                                                 </template>
-                                                                <template v-if="lista.tarefas.length === 0">Adicionar uma
+                                                                <template v-if="lista.tarefas.length === 0">Adicionar
+                                                                    uma
                                                                     tarefa
                                                                 </template>
                                                             </p>
@@ -939,13 +945,15 @@
                                             <div class="card-text">
                                                 <input
                                                     ref="formNovaLista" v-model="formLista.titulo" :disabled="preload"
-                                                    class="form-control mb-2" placeholder="Insira o título da lista" type="text"
+                                                    class="form-control mb-2" placeholder="Insira o título da lista"
+                                                    type="text"
                                                     @keydown.enter="addLista">
                                                 <button :disabled="preload"
                                                         class="btn btn-sm btn-success waves-effect waves-light"
                                                         @click="addLista">Adicionar lista
                                                 </button>
-                                                <button :disabled="preload" class="btn btn-sm btn-outline-primary border-0"
+                                                <button :disabled="preload"
+                                                        class="btn btn-sm btn-outline-primary border-0"
                                                         @click.stop="fecharCampos()">
                                                     <i class="fas fa-times fa-2x"></i>
                                                 </button>
@@ -966,12 +974,13 @@
                                 <div class="media">
                                     <div class="avatar-xs mr-3">
                                         <span class="avatar-title bg-primary rounded-circle font-size-16">
-                                            {{atividade.usuario.nome.toUpperCase() | formataNome}}
+                                            {{ atividade.usuario.nome.toUpperCase() | formataNome }}
                                         </span>
                                     </div>
                                     <div class="media-body">
                                         <!-- <h6 class="mt-0 mb-1"></h6>-->
-                                        <p class="card-text mt-2"><strong>{{atividade.usuario.nome}}</strong> {{atividade.descricao}}</p>
+                                        <p class="card-text mt-2"><strong>{{ atividade.usuario.nome }}</strong>
+                                            {{ atividade.descricao }}</p>
                                     </div>
                                 </div>
                                 <p class="card-text mt-2">{{ atividade.created_at }}</p>
@@ -999,7 +1008,7 @@ import upload from "../components/Upload";
 export default {
     filters: {
         nl2br,
-        formataNome,
+        formataNome
     },
     components: {
         draggable,
@@ -1015,8 +1024,8 @@ export default {
         },
         modalPai: {
             type: String,
-            required: false,
-        },
+            required: false
+        }
     },
     data() {
         return {
@@ -1036,7 +1045,7 @@ export default {
             preloadQuadro: false,
             formQuadros: {
                 id: null,
-                titulo: '',
+                titulo: ""
             },
             alterandoQuadro: null,
 
@@ -1045,24 +1054,24 @@ export default {
                 preload: false,
                 delete: false,
                 erro: false,
-                msg: '',
+                msg: ""
             },
 
             //QUADRO: null,
             QUADRO_ID: null,
             formQuadrosDefault: null,
-            atividadesQuadro:[],
+            atividadesQuadro: [],
 
             //Tela Listas --------------------
             formLista: {
                 id: null,
                 quadro_id: null,
                 user_id: null,
-                titulo: '',
+                titulo: "",
                 ordem: null,
                 created_at: null,
                 updated_at: null,
-                tarefas: [],
+                tarefas: []
             },
             preloadFormLista: false,
             formListaDefault: null,
@@ -1074,7 +1083,7 @@ export default {
                 preload: false,
                 delete: false,
                 erro: false,
-                msg: '',
+                msg: ""
             },
 
             //LISTA: null,
@@ -1086,19 +1095,19 @@ export default {
                 id: null,
                 lista_id: null,
                 user_id: null,
-                titulo: '',
-                descricao: '',
+                titulo: "",
+                descricao: "",
                 ordem: null,
                 datahora_entrega: null,
                 created_at: null,
                 updated_at: null,
                 preload: false,
-                membros: [],
+                membros: []
             },
             formTarefaDefault: null,
             tarefaEditandoTitulo: false,
             tarefaEditandoDescricao: false,
-            autoCompleteNovoMembros: '',
+            autoCompleteNovoMembros: "",
             TAREFA_ANTERIOR: null, // para evento de mover tarefa entre listas
             TAREFA_ID: null,
 
@@ -1107,7 +1116,7 @@ export default {
                 preload: false,
                 delete: false,
                 erro: false,
-                msg: '',
+                msg: ""
             },
             anexoUploadAndamento: false,
 
@@ -1121,31 +1130,31 @@ export default {
             formItem: {
                 id: null,
                 checklist_id: null,
-                titulo: '',
+                titulo: "",
                 concluido: false,
                 ordem: null,
-                preload: false,
+                preload: false
             },
             checklistItemIdEditando: null,
             // Anexos -----------------------
-            tituloEditarAnexo: '',
+            tituloEditarAnexo: ""
 
 
         };
     },
     computed: {
         rotaTarefa() {
-            return `weekly-report/${this.id}/quadros/${this.QUADRO_ID}/listas/${this.LISTA_ID}/tarefas/${this.TAREFA_ID}`
+            return `weekly-report/${this.id}/quadros/${this.QUADRO_ID}/listas/${this.LISTA_ID}/tarefas/${this.TAREFA_ID}`;
         },
         rotaChecklist() {
-            return `weekly-report/${this.id}/quadros/${this.QUADRO_ID}/listas/${this.LISTA_ID}/tarefas/${this.TAREFA_ID}/checklist/${this.CHECKLIST_ID}`
+            return `weekly-report/${this.id}/quadros/${this.QUADRO_ID}/listas/${this.LISTA_ID}/tarefas/${this.TAREFA_ID}/checklist/${this.CHECKLIST_ID}`;
         },
         rotaChecklistItem() {
-            return `weekly-report/${this.id}/quadros/${this.QUADRO_ID}/listas/${this.LISTA_ID}/tarefas/${this.TAREFA_ID}/checklist/${this.CHECKLIST_ID}/item/${this.ITEM_ID}`
+            return `weekly-report/${this.id}/quadros/${this.QUADRO_ID}/listas/${this.LISTA_ID}/tarefas/${this.TAREFA_ID}/checklist/${this.CHECKLIST_ID}/item/${this.ITEM_ID}`;
         },
         QUADRO() {
             let quadro = null;
-            let busca = _.find(this.listaQuadros, {id: this.QUADRO_ID});
+            let busca = _.find(this.listaQuadros, { id: this.QUADRO_ID });
             if (busca) {
                 return busca;
             }
@@ -1153,7 +1162,7 @@ export default {
         },
         LISTA() {
             let lista = null;
-            let busca = _.find(this.arrayListas, {id: this.LISTA_ID});
+            let busca = _.find(this.arrayListas, { id: this.LISTA_ID });
             if (busca) {
                 return busca;
             }
@@ -1162,20 +1171,20 @@ export default {
         TAREFA() {
             let tarefa = null;
             this.arrayListas.forEach((lista) => {
-                let tarefaFind = _.find(lista.tarefas, {id: this.TAREFA_ID});
+                let tarefaFind = _.find(lista.tarefas, { id: this.TAREFA_ID });
                 if (tarefaFind) {
-                    tarefa = tarefaFind
+                    tarefa = tarefaFind;
                     return false;
                 }
-            })
+            });
             return tarefa;
         },
         CHECKLIST() {
             let checklist = null;
             if (this.TAREFA_ID) {
-                let checklistFind = _.find(this.TAREFA.checklists, {id: this.CHECKLIST_ID});
+                let checklistFind = _.find(this.TAREFA.checklists, { id: this.CHECKLIST_ID });
                 if (checklistFind) {
-                    checklist = checklistFind
+                    checklist = checklistFind;
                 }
             }
 
@@ -1184,9 +1193,9 @@ export default {
         ITEM() {
             let item = null;
             if (this.CHECKLIST_ID) {
-                let itemFind = _.find(this.CHECKLIST.itens, {id: this.ITEM_ID});
+                let itemFind = _.find(this.CHECKLIST.itens, { id: this.ITEM_ID });
                 if (itemFind) {
-                    item = itemFind
+                    item = itemFind;
                 }
             }
 
@@ -1194,7 +1203,7 @@ export default {
         },
         url_tarefa_anexos() {
             //return `${this.rotaTarefa}/uploadAnexo`
-            return `${this.rotaTarefa}/uploadAnexos`
+            return `${this.rotaTarefa}/uploadAnexos`;
         }
     },
     mounted() {
@@ -1229,37 +1238,37 @@ export default {
 
         // Logs
         Echo.join(`weekly-report.log.${this.id}`)
-            .listen('.log', (e) => {
-                if(e.log.tarefa_id!=null){
-                    if(this.TAREFA_ID === e.log.tarefa_id){
+            .listen(".log", (e) => {
+                if (e.log.tarefa_id != null) {
+                    if (this.TAREFA_ID === e.log.tarefa_id) {
                         this.TAREFA.logs.unshift(e.log);
                     }
-                }else{
+                } else {
                     this.atividadesQuadro.unshift(e.log);
                 }
             });
 
         // Quadros
         Echo.join(`weekly-report.quadros.${this.id}`)
-            .listen('.insert', (e) => {
+            .listen(".insert", (e) => {
                 this.listaQuadros.push(e.quadro);
             })
-            .listen('.update', (e) => {
-                let quadroFind = _.find(this.listaQuadros, {id: e.quadro.id});
+            .listen(".update", (e) => {
+                let quadroFind = _.find(this.listaQuadros, { id: e.quadro.id });
                 if (quadroFind) {
                     Object.assign(quadroFind, e.quadro);
                 }
             })
-            .listen('.delete', (e) => {
-                let indexDelete = _.findIndex(this.listaQuadros, {id: e.id});
+            .listen(".delete", (e) => {
+                let indexDelete = _.findIndex(this.listaQuadros, { id: e.id });
                 this.listaQuadros.splice(indexDelete, 1);
             });
 
         // Lista de tarefas
         Echo.join(`weekly-report.listas.${this.id}`)
-            .listen('.insert', (e) => {
+            .listen(".insert", (e) => {
                 e.lista.forEach((lista) => {
-                    let listaFind = _.find(this.arrayListas, {id: lista.id});
+                    let listaFind = _.find(this.arrayListas, { id: lista.id });
                     if (listaFind) {
                         Object.assign(listaFind, lista);
                     } else {
@@ -1268,9 +1277,9 @@ export default {
                 });
                 //this.arrayListas = e.lista;
             })
-            .listen('.update', (e) => {
+            .listen(".update", (e) => {
                 e.lista.forEach((lista) => {
-                    let listaFind = _.find(this.arrayListas, {id: lista.id});
+                    let listaFind = _.find(this.arrayListas, { id: lista.id });
                     if (listaFind) {
                         Object.assign(listaFind, lista);
                     } else {
@@ -1278,38 +1287,38 @@ export default {
                     }
                 });
             })
-            .listen('.delete', (e) => {
+            .listen(".delete", (e) => {
                 e.lista.forEach((lista) => {
-                    let listaFind = _.find(this.arrayListas, {id: lista.id});
+                    let listaFind = _.find(this.arrayListas, { id: lista.id });
                     if (listaFind) {
                         Object.assign(listaFind, lista);
                     }
                 });
                 //agaga da lista pelo ID
-                let listaFindDelete = _.findIndex(this.arrayListas, {id: e.idDelete});
+                let listaFindDelete = _.findIndex(this.arrayListas, { id: e.idDelete });
                 if (listaFindDelete !== -1) {
                     this.arrayListas.splice(listaFindDelete, 1);
                 }
             })
-            .listen('.ordenar', (e) => {
+            .listen(".ordenar", (e) => {
                 e.lista.forEach((lista) => {
-                    let listaFind = _.find(this.arrayListas, {id: lista.id});
+                    let listaFind = _.find(this.arrayListas, { id: lista.id });
                     if (listaFind) {
                         Object.assign(listaFind, lista);
                     }
                 });
-                this.arrayListas = _.orderBy(this.arrayListas, ['ordem']);
+                this.arrayListas = _.orderBy(this.arrayListas, ["ordem"]);
             });
 
         // Tarefas
         Echo.join(`weekly-report.tarefas.${this.id}`)
-            .listen('.insert', (e) => {
+            .listen(".insert", (e) => {
                 e.tarefas.forEach((tarefa) => {
                     //busca em todas as lista, onde essa tarefa esta...
-                    let listaFind = _.find(this.arrayListas, {id: tarefa.lista_id});
+                    let listaFind = _.find(this.arrayListas, { id: tarefa.lista_id });
                     if (listaFind) {
                         //encontrou a lista, entao atualiza a tarefa ou inserir
-                        let tarefaFind = _.find(listaFind.tarefas, {id: tarefa.id});
+                        let tarefaFind = _.find(listaFind.tarefas, { id: tarefa.id });
                         if (tarefaFind) {
                             Object.assign(tarefaFind, tarefa);
                         } else {
@@ -1318,22 +1327,22 @@ export default {
                     }
                 });
             })
-            .listen('.update', (e) => {
+            .listen(".update", (e) => {
                 this.arrayListas.forEach((lista) => {
-                    let tarefaFind = _.find(lista.tarefas, {id: e.tarefa.id});
+                    let tarefaFind = _.find(lista.tarefas, { id: e.tarefa.id });
                     if (tarefaFind) {
                         Object.assign(tarefaFind, e.tarefa);
                         return false;
                     }
                 });
             })
-            .listen('.delete', (e) => {
+            .listen(".delete", (e) => {
                 e.tarefas.forEach((tarefa) => {
                     //busca em todas as lista, onde essa tarefa esta...
-                    let listaFind = _.find(this.arrayListas, {id: tarefa.lista_id});
+                    let listaFind = _.find(this.arrayListas, { id: tarefa.lista_id });
                     if (listaFind) {
                         //encontrou a lista, entao atualiza a tarefa
-                        let tarefaFind = _.find(listaFind.tarefas, {id: tarefa.id});
+                        let tarefaFind = _.find(listaFind.tarefas, { id: tarefa.id });
                         if (tarefaFind) {
                             Object.assign(tarefaFind, tarefa);
                         }
@@ -1343,14 +1352,14 @@ export default {
                 // removendo o ID da tarefa em alguma lista
                 this.arrayListas.forEach((lista) => {
                     //agora ir nas taregas
-                    let tarefaFindDelete = _.findIndex(lista.tarefas, {id: e.idDelete});
+                    let tarefaFindDelete = _.findIndex(lista.tarefas, { id: e.idDelete });
                     if (tarefaFindDelete !== -1) {
                         lista.tarefas.splice(tarefaFindDelete, 1);
                         return false;
                     }
                 });
             })
-            .listen('.ordenar', (e) => {
+            .listen(".ordenar", (e) => {
                 //setTimeout(() => {
                 this.podeMoverTarefa = false;
                 if (e.tarefas.length === 0) {
@@ -1366,7 +1375,7 @@ export default {
                         });
                     }
                     //inserir
-                    let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+                    let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                     if (listaFind) {
                         e.tarefas.forEach((novaTarefa) => {
                             let buscarTarefa = _.find(listaFind.tarefas, (tarefa) => tarefa.id === novaTarefa.id);
@@ -1377,20 +1386,20 @@ export default {
                             }
                         });
                         //listaFind.tarefas = e.tarefas;
-                        listaFind.tarefas = _.orderBy(listaFind.tarefas, ['ordem']);
+                        listaFind.tarefas = _.orderBy(listaFind.tarefas, ["ordem"]);
                     }
 
                 }
                 //}, 5000);
 
             })
-            .listen('.ordenarChecklist', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".ordenarChecklist", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarafa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarafa_id });
                     if (tarefaFind) {
-                        tarefaFind.checklists = e.checklists
-                        tarefaFind.checklists = _.orderBy(tarefaFind.checklists, ['ordem']);
+                        tarefaFind.checklists = e.checklists;
+                        tarefaFind.checklists = _.orderBy(tarefaFind.checklists, ["ordem"]);
                     }
 
                 }
@@ -1398,28 +1407,28 @@ export default {
 
             })
 
-            .listen('.updateMembro', (e) => {
+            .listen(".updateMembro", (e) => {
                 this.arrayListas.forEach((lista) => {
-                    let tarefaFind = _.find(lista.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(lista.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
                         tarefaFind.membros = e.membros;
                         return false;
                     }
-                })
+                });
 
             })
-            .listen('.updateDataHoraInicio', (e) => {
+            .listen(".updateDataHoraInicio", (e) => {
                 this.arrayListas.forEach((lista) => {
-                    let tarefaFind = _.find(lista.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(lista.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
                         tarefaFind.datahora_inicio = e.datahora_inicio;
                         return false;
                     }
                 });
             })
-            .listen('.updateDataHoraEntrega', (e) => {
+            .listen(".updateDataHoraEntrega", (e) => {
                 this.arrayListas.forEach((lista) => {
-                    let tarefaFind = _.find(lista.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(lista.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
                         tarefaFind.datahora_entrega = e.datahora_entrega;
                         tarefaFind.concluido = e.concluido;
@@ -1431,31 +1440,31 @@ export default {
 
         // Anexos tarefas
         Echo.join(`weekly-report.tarefas.anexos.${this.id}`)
-            .listen('.insert', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".insert", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
                         tarefaFind.anexos = e.anexos;
                         return false;
                     }
                 }
             })
-            .listen('.update', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".update", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
                         tarefaFind.anexos = e.anexos;
                         return false;
                     }
                 }
             })
-            .listen('.delete', (e) => {
+            .listen(".delete", (e) => {
 
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
                         tarefaFind.anexos = e.anexos;
                         return false;
@@ -1465,13 +1474,13 @@ export default {
 
         // Checklists
         Echo.join(`weekly-report.tarefas.checklists.${this.id}`)
-            .listen('.insert', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".insert", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
                         e.checklists.forEach((checklist) => {
-                            let checkListFind = _.find(tarefaFind.checklists, {id: checklist.id});
+                            let checkListFind = _.find(tarefaFind.checklists, { id: checklist.id });
                             if (checkListFind) {
                                 Object.assign(checkListFind, checklist);
                             } else {
@@ -1481,13 +1490,13 @@ export default {
                     }
                 }
             })
-            .listen('.update', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".update", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
                         e.checklists.forEach((checklist) => {
-                            let checkListFind = _.find(tarefaFind.checklists, {id: checklist.id});
+                            let checkListFind = _.find(tarefaFind.checklists, { id: checklist.id });
                             if (checkListFind) {
                                 Object.assign(checkListFind, checklist);
                             }
@@ -1495,12 +1504,12 @@ export default {
                     }
                 }
             })
-            .listen('.delete', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".delete", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
-                        let checklistFind = _.findIndex(tarefaFind.checklists, {id: e.checklist_id});
+                        let checklistFind = _.findIndex(tarefaFind.checklists, { id: e.checklist_id });
                         if (checklistFind !== -1) {
                             tarefaFind.checklists.splice(checklistFind, 1);
                             return false;
@@ -1508,58 +1517,58 @@ export default {
                     }
                 }
             })
-            .listen('.ordenar_itens', (e) => {
+            .listen(".ordenar_itens", (e) => {
                 //setTimeout(() => {
-                    this.podeMoverItem = false;
-                    if(e.checklist.itens.length === 0) {
-                        return false;
-                    } else {
-                        let listaFind = _.find(this.arrayListas, {id: e.lista_id});
-                        if (listaFind) {
-                            let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
-                            if (tarefaFind) {
-                                //remover de outras checklists
-                                let outrasChecklists = tarefaFind.checklists.filter(cl => cl.id !== e.checklist.id);
-                                if (outrasChecklists) {
-                                    //de todas essas listas...remover todos esse itens que chegaram
-                                    outrasChecklists.forEach((novaCL) => {
-                                        e.checklist.itens.forEach((novoItem) => {
-                                            _.remove(outrasChecklists.itens, (o) => o.id === novoItem.id);
-                                        });
-                                    });
-                                }
-                                //inserir
-                                let checklistFind = _.find(tarefaFind.checklists, {id: e.checklist.id});
-                                if (checklistFind) {
+                this.podeMoverItem = false;
+                if (e.checklist.itens.length === 0) {
+                    return false;
+                } else {
+                    let listaFind = _.find(this.arrayListas, { id: e.lista_id });
+                    if (listaFind) {
+                        let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
+                        if (tarefaFind) {
+                            //remover de outras checklists
+                            let outrasChecklists = tarefaFind.checklists.filter(cl => cl.id !== e.checklist.id);
+                            if (outrasChecklists) {
+                                //de todas essas listas...remover todos esse itens que chegaram
+                                outrasChecklists.forEach((novaCL) => {
                                     e.checklist.itens.forEach((novoItem) => {
-                                        let buscarItem = _.find(checklistFind.itens, (item) => item.id === novoItem.id);
-                                        if (buscarItem) {
-                                            Object.assign(buscarItem, novoItem);
-                                        } else {
-                                            checklistFind.itens.push(novoItem);
-                                        }
+                                        _.remove(outrasChecklists.itens, (o) => o.id === novoItem.id);
                                     });
-                                    //checklistFind.itens = e.checklist.itens;
-                                    checklistFind.itens = _.orderBy(checklistFind.itens, ['ordem']);
-                                }
+                                });
+                            }
+                            //inserir
+                            let checklistFind = _.find(tarefaFind.checklists, { id: e.checklist.id });
+                            if (checklistFind) {
+                                e.checklist.itens.forEach((novoItem) => {
+                                    let buscarItem = _.find(checklistFind.itens, (item) => item.id === novoItem.id);
+                                    if (buscarItem) {
+                                        Object.assign(buscarItem, novoItem);
+                                    } else {
+                                        checklistFind.itens.push(novoItem);
+                                    }
+                                });
+                                //checklistFind.itens = e.checklist.itens;
+                                checklistFind.itens = _.orderBy(checklistFind.itens, ["ordem"]);
                             }
                         }
                     }
+                }
 
                 //}, 5000);
             });
 
         // Checklists > itens
         Echo.join(`weekly-report.tarefas.checklists.itens.${this.id}`)
-            .listen('.insert', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".insert", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
-                        let checklistFind = _.find(tarefaFind.checklists, {id: e.checklist_id});
+                        let checklistFind = _.find(tarefaFind.checklists, { id: e.checklist_id });
                         if (checklistFind) {
                             e.itens.forEach((item) => {
-                                let itemFind = _.find(checklistFind.itens, {id: item.id});
+                                let itemFind = _.find(checklistFind.itens, { id: item.id });
                                 if (itemFind) {
                                     Object.assign(itemFind, item);
                                 } else {
@@ -1571,14 +1580,14 @@ export default {
                     }
                 }
             })
-            .listen('.update', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".update", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
-                        let checklistFind = _.find(tarefaFind.checklists, {id: e.checklist_id});
+                        let checklistFind = _.find(tarefaFind.checklists, { id: e.checklist_id });
                         if (checklistFind) {
-                            let itemFind = _.find(checklistFind.itens, {id: e.item_id});
+                            let itemFind = _.find(checklistFind.itens, { id: e.item_id });
                             if (itemFind) {
                                 itemFind.titulo = e.item.titulo;
                                 itemFind.concluido = e.item.concluido;
@@ -1588,14 +1597,14 @@ export default {
                     }
                 }
             })
-            .listen('.delete', (e) => {
-                let listaFind = _.find(this.arrayListas, {id: e.lista_id});
+            .listen(".delete", (e) => {
+                let listaFind = _.find(this.arrayListas, { id: e.lista_id });
                 if (listaFind) {
-                    let tarefaFind = _.find(listaFind.tarefas, {id: e.tarefa_id});
+                    let tarefaFind = _.find(listaFind.tarefas, { id: e.tarefa_id });
                     if (tarefaFind) {
-                        let checklistFind = _.find(tarefaFind.checklists, {id: e.checklist_id});
+                        let checklistFind = _.find(tarefaFind.checklists, { id: e.checklist_id });
                         if (checklistFind) {
-                            let itemFind = _.findIndex(checklistFind.itens, {id: e.item_id});
+                            let itemFind = _.findIndex(checklistFind.itens, { id: e.item_id });
                             if (itemFind !== -1) {
                                 checklistFind.itens.splice(itemFind, 1);
                                 return false;
@@ -1627,7 +1636,7 @@ export default {
         },
         updateQuadro() {
             if (this.alterandoQuadro && this.alterandoQuadro.titulo.trim() === "") {
-                mostraErro('', "Informa um nome para o quadro");
+                mostraErro("", "Informa um nome para o quadro");
                 return false;
             }
             if (this.alterandoQuadro) {
@@ -1640,12 +1649,12 @@ export default {
             this.formApagarQuadro.preload = false;
             this.formApagarQuadro.delete = false;
             this.formApagarQuadro.erro = false;
-            this.formApagarQuadro.msg = '';
+            this.formApagarQuadro.msg = "";
 
         },
         deleteQuadro() {
             this.formApagarQuadro.preload = true;
-            axios.delete(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.formApagarQuadro.id}`,)
+            axios.delete(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.formApagarQuadro.id}`)
                 .then((response) => {
                     this.formApagarQuadro.preload = false;
                     this.formApagarQuadro.delete = true;
@@ -1675,17 +1684,17 @@ export default {
         abriFormNovaLista() {
             this.formLista.quadro_id = this.QUADRO.id;
             setTimeout(() => {
-                this.$refs.formNovaLista.focus()
+                this.$refs.formNovaLista.focus();
             }, 100);
         },
         fecharCampos() {
             // nova lista
             if (this.formLista.quadro_id != null) {
-                this.formLista.quadro_id = null
+                this.formLista.quadro_id = null;
             }
             // nova tarefa
             if (this.formTarefa.lista_id != null) {
-                this.formTarefa.lista_id = null
+                this.formTarefa.lista_id = null;
             }
             // nova item do checklist
             /*if (this.formItem.checklist_id != null) {
@@ -1702,13 +1711,13 @@ export default {
                     this.formLista.titulo = "";
                     this.preload = false;
                     setTimeout(() => {
-                        this.$refs.formNovaLista.focus()
+                        this.$refs.formNovaLista.focus();
                     }, 100);
                 })
                 .catch((data) => {
                     this.preload = false;
                     setTimeout(() => {
-                        this.$refs.formNovaLista.focus()
+                        this.$refs.formNovaLista.focus();
                     }, 100);
                 });
 
@@ -1716,7 +1725,7 @@ export default {
         },
         updateLista() {
             if (this.alterandoLista && this.alterandoLista.titulo.trim() === "") {
-                mostraErro('', "Informa um nome para a lista");
+                mostraErro("", "Informa um nome para a lista");
                 return false;
             }
             if (this.alterandoLista) {
@@ -1729,11 +1738,11 @@ export default {
             this.formApagarLista.preload = false;
             this.formApagarLista.delete = false;
             this.formApagarLista.erro = false;
-            this.formApagarLista.msg = '';
+            this.formApagarLista.msg = "";
         },
         deleteLista() {
             this.formApagarLista.preload = true;
-            axios.delete(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${this.formApagarLista.id}`,)
+            axios.delete(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${this.formApagarLista.id}`)
                 .then((response) => {
                     this.formApagarLista.preload = false;
                     this.formApagarLista.delete = true;
@@ -1755,10 +1764,10 @@ export default {
             let novaLista = this.arrayListas.map((obj) => {
                 return {
                     id: obj.id,
-                    ordem: obj.ordem,
-                }
-            })
-            axios.put(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas`, {novaLista})
+                    ordem: obj.ordem
+                };
+            });
+            axios.put(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas`, { novaLista })
                 .then((response) => {
                     //this.arrayListas = response.data.lista;
                     //this.pode_insert = data.pode_insert;
@@ -1779,8 +1788,8 @@ export default {
         },
         autoresize() {
             let textArea = this.$refs.campoDescricaoTarefa;
-            textArea.style.height = 'auto';
-            textArea.style.height = (textArea.scrollHeight + 30) + 'px';
+            textArea.style.height = "auto";
+            textArea.style.height = (textArea.scrollHeight + 30) + "px";
             textArea.scrollTop = textArea.scrollHeight;
             //window.scrollTo(window.scrollLeft,(textArea.scrollTop + textArea.scrollHeight));
         },
@@ -1797,7 +1806,7 @@ export default {
             this.preload = true;
             axios.post(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${this.LISTA.id}/tarefas`, tarefa)
                 .then((response) => {
-                    this.formTarefa.titulo = '';
+                    this.formTarefa.titulo = "";
                     this.preload = false;
                     //this.listaQuadros = response.data.lista;
                     setTimeout(() => {
@@ -1817,8 +1826,8 @@ export default {
             this.formApagarTarefa.preload = false;
             this.formApagarTarefa.delete = false;
             this.formApagarTarefa.erro = false;
-            this.formApagarTarefa.msg = '';
-            $('#janelaApagarTarefa').modal('show');
+            this.formApagarTarefa.msg = "";
+            $("#janelaApagarTarefa").modal("show");
         },
         deleteTarefa() {
             this.formApagarTarefa.preload = true;
@@ -1839,7 +1848,7 @@ export default {
                 TAREFA = event.moved.element;
                 let ordem = 1;
                 let LISTA = null;
-                let listaFind = _.find(this.arrayListas, {id: TAREFA.lista_id});
+                let listaFind = _.find(this.arrayListas, { id: TAREFA.lista_id });
                 if (listaFind) {
                     listaFind.tarefas.forEach((obj) => {
                         obj.ordem = ordem;
@@ -1851,17 +1860,17 @@ export default {
                         return {
                             id: obj.id,
                             lista_id: obj.lista_id,
-                            ordem: obj.ordem,
-                        }
-                    })
+                            ordem: obj.ordem
+                        };
+                    });
                     axios.put(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${LISTA.id}/tarefas`, {
-                        'evento': 'moveu',
-                        'novaLista': novaLista
+                        "evento": "moveu",
+                        "novaLista": novaLista
                     });
                 }
             }
             if (event.removed) {
-                let LISTA = _.find(this.arrayListas, {id: this.TAREFA_ANTERIOR.lista_id});
+                let LISTA = _.find(this.arrayListas, { id: this.TAREFA_ANTERIOR.lista_id });
                 if (LISTA) {
                     let ordem = 1;
                     LISTA.tarefas.forEach((obj) => {
@@ -1873,12 +1882,12 @@ export default {
                         return {
                             id: obj.id,
                             lista_id: obj.lista_id,
-                            ordem: obj.ordem,
-                        }
-                    })
+                            ordem: obj.ordem
+                        };
+                    });
                     axios.put(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${LISTA.id}/tarefas`, {
-                        'evento': 'remover',
-                        'novaLista': novaLista
+                        "evento": "remover",
+                        "novaLista": novaLista
                     });
                 }
             }
@@ -1888,12 +1897,12 @@ export default {
                 let LISTA = null;
                 // varrer todas as listas
                 this.arrayListas.forEach((lista) => {
-                    let novoLugar = _.find(lista.tarefas, {id: TAREFA.id});
+                    let novoLugar = _.find(lista.tarefas, { id: TAREFA.id });
                     if (novoLugar) {
                         LISTA = lista;
                         return false;
                     }
-                })
+                });
                 if (LISTA) {
                     let ordem = 1;
                     LISTA.tarefas.forEach((obj) => {
@@ -1905,13 +1914,13 @@ export default {
                         return {
                             id: obj.id,
                             lista_id: obj.lista_id,
-                            ordem: obj.ordem,
-                        }
-                    })
+                            ordem: obj.ordem
+                        };
+                    });
                     axios.put(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${LISTA.id}/tarefas`, {
-                        'evento': 'adicionar',
-                        'novaLista': novaLista,
-                        'tarefa_id': this.TAREFA_ANTERIOR.id
+                        "evento": "adicionar",
+                        "novaLista": novaLista,
+                        "tarefa_id": this.TAREFA_ANTERIOR.id
                     });
 
 
@@ -1922,11 +1931,11 @@ export default {
         verTarefa(objTarefa, objLista) {
             this.LISTA_ID = objLista.id;
             this.formTarefa.lista_id = this.LISTA.id;
-            this.TAREFA_ID = objTarefa.id
+            this.TAREFA_ID = objTarefa.id;
             this.formTarefa.preload = true;
             axios.get(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${this.LISTA.id}/tarefas/${this.TAREFA.id}`)
                 .then((response) => {
-                    Vue.set(this.TAREFA, 'logs', []);
+                    Vue.set(this.TAREFA, "logs", []);
                     Object.assign(this.TAREFA, response.data);
                     this.formTarefa.preload = false;
                 })
@@ -1937,97 +1946,97 @@ export default {
         },
         updateTarefa() {
             if (this.tarefaEditandoTitulo && this.TAREFA.titulo.trim() === "") {
-                mostraErro('', "Informa um título para a tarefa");
+                mostraErro("", "Informa um título para a tarefa");
                 return false;
             }
             if (this.tarefaEditandoTitulo || this.tarefaEditandoDescricao) {
                 axios.put(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${this.LISTA.id}/tarefas/${this.TAREFA.id}`, {
                     titulo: this.TAREFA.titulo,
-                    descricao: this.TAREFA.descricao,
+                    descricao: this.TAREFA.descricao
                 });
             }
             this.tarefaEditandoTitulo = false;
             this.tarefaEditandoDescricao = false;
 
         },
-        updateTarefaLembrete(){
+        updateTarefaLembrete() {
             axios.put(`${URL_ADMIN}/weekly-report/${this.id}/quadros/${this.QUADRO.id}/listas/${this.LISTA.id}/tarefas/${this.TAREFA.id}`, {
-                lembrete: this.TAREFA.lembreteText,
+                lembrete: this.TAREFA.lembreteText
             });
         },
         updataConcluirTarefa() {
             axios.put(`${this.rotaTarefa}`, {
-                concluido: this.TAREFA.concluido,
+                concluido: this.TAREFA.concluido
             });
         },
         //membros
         addMembro(usuario) {
-            this.autoCompleteNovoMembros = '';
-            let encontrar = _.find(this.TAREFA.membros, {id: usuario.id});
+            this.autoCompleteNovoMembros = "";
+            let encontrar = _.find(this.TAREFA.membros, { id: usuario.id });
             if (encontrar) {
-                mostraErro('', 'O membro já está na tarefa')
+                mostraErro("", "O membro já está na tarefa");
                 return false;
             }
             axios.put(`${this.rotaTarefa}/updateMembro`, {
                 user_id: usuario.id,
-                acao: 'add'
+                acao: "add"
             });
         },
         removerMembro(usuario) {
-            this.autoCompleteNovoMembros = '';
+            this.autoCompleteNovoMembros = "";
             axios.put(`${this.rotaTarefa}/updateMembro`, {
                 user_id: usuario.id,
-                acao: 'remove'
+                acao: "remove"
             });
         },
         //cronograma
         addDataHoraInicio() {
             if (this.TAREFA.datahora_inicio == null) {
-                this.TAREFA.datahora_inicio = moment().hour(8).minute(0).format('L [às] HH:mm');
+                this.TAREFA.datahora_inicio = moment().hour(8).minute(0).format("L [às] HH:mm");
             }
             axios.put(`${this.rotaTarefa}/updateDataHoraInicio`, {
                 tarefa_id: this.TAREFA.id,
                 datahora: this.TAREFA.datahora_inicio,
-                acao: 'add'
+                acao: "add"
             });
         },
         removerDataHoraInicio() {
             this.TAREFA.datahora_inicio = null;
             axios.put(`${this.rotaTarefa}/updateDataHoraInicio`, {
                 tarefa_id: this.TAREFA.id,
-                acao: 'remove'
+                acao: "remove"
             });
         },
         addDataHoraEntrega() {
             if (this.TAREFA.datahora_entrega == null) {
-                this.TAREFA.datahora_entrega = moment().add(2, 'days').format('L [às] HH:mm');
+                this.TAREFA.datahora_entrega = moment().add(2, "days").format("L [às] HH:mm");
             }
             axios.put(`${this.rotaTarefa}/updateDataHoraEntrega`, {
                 tarefa_id: this.TAREFA.id,
                 datahora: this.TAREFA.datahora_entrega,
-                acao: 'add',
-                lembrete: this.TAREFA.lembreteText,
+                acao: "add",
+                lembrete: this.TAREFA.lembreteText
             });
         },
         removerDataHoraEntrega() {
             this.TAREFA.datahora_entrega = null;
             axios.put(`${this.rotaTarefa}/updateDataHoraEntrega`, {
                 tarefa_id: this.TAREFA.id,
-                acao: 'remove'
+                acao: "remove"
             });
         },
         //checklist
         addCheckList() {
             let nomeChecklist = this.$refs.campoTituloCheckList.value;
             if (nomeChecklist === "") {
-                mostraErro('', 'Escolha um título para a checklist');
+                mostraErro("", "Escolha um título para a checklist");
                 return false;
             }
-            this.$refs.campoTituloCheckList.value = 'Checklist';
+            this.$refs.campoTituloCheckList.value = "Checklist";
             axios.post(`${this.rotaTarefa}/checklist`, {
-                titulo: nomeChecklist,
+                titulo: nomeChecklist
             }).then((response) => {
-                this.abriFormNovoItem({id: response.data.id});
+                this.abriFormNovoItem({ id: response.data.id });
             });
         },
         editarTituloChecklist(objChecklist) {
@@ -2039,14 +2048,14 @@ export default {
         updateChecklist() {
             if (this.CHECKLIST) {
                 if (this.CHECKLIST.titulo.trim() === "") {
-                    mostraErro('', 'Escolha um título para a checklist');
+                    mostraErro("", "Escolha um título para a checklist");
                     return false;
                 }
                 let titulo = this.CHECKLIST.titulo;
                 axios.put(`${this.rotaChecklist}`, {
-                    titulo: titulo,
+                    titulo: titulo
                 });
-                this.checklistIdEditando = null
+                this.checklistIdEditando = null;
                 this.CHECKLIST_ID = null;
             }
         },
@@ -2065,27 +2074,27 @@ export default {
             let novaLista = this.TAREFA.checklists.map((obj) => {
                 return {
                     id: obj.id,
-                    ordem: obj.ordem,
-                }
-            })
-            axios.put(`${this.rotaTarefa}/atualizarOrdemCheckList`, {novaLista});
+                    ordem: obj.ordem
+                };
+            });
+            axios.put(`${this.rotaTarefa}/atualizarOrdemCheckList`, { novaLista });
         },
         //Itens do checklist
         infoProgresso(objChecklist) {
             if (objChecklist.itens.length > 0) {
-                let progresso = objChecklist.itens.filter(item => item.concluido).length
+                let progresso = objChecklist.itens.filter(item => item.concluido).length;
                 let total = objChecklist.itens.length;
                 return {
                     total,
                     progresso,
                     pct: pctDoValor(progresso, total)
-                }
+                };
             }
             return {
                 total: 0,
                 progresso: 0,
                 pct: 0
-            }
+            };
 
         },
         abriFormNovoItem(objChecklist) {
@@ -2105,14 +2114,14 @@ export default {
         },
         addNovoItemChecklist() {
             if (this.formItem.checklist_id != null) {
-                if (this.formItem.titulo === '') {
+                if (this.formItem.titulo === "") {
                     this.CHECKLIST_ID = null;
                     return false;
                 }
                 axios.post(`${this.rotaChecklist}/item`, {
-                    titulo: this.formItem.titulo,
+                    titulo: this.formItem.titulo
                 });
-                this.formItem.titulo = '';
+                this.formItem.titulo = "";
 
             }
 
@@ -2126,15 +2135,15 @@ export default {
             this.formItem.titulo = this.ITEM.titulo;
             setTimeout(() => {
                 this.$refs[`campoInputItem${this.ITEM_ID}`][0].focus();
-            }, 100)
+            }, 100);
 
         },
         updateItem() {
             if (this.checklistItemIdEditando) {
                 if (this.ITEM.titulo.trim() === "") {
                     this.ITEM.titulo = this.formItem.titulo;
-                    this.formItem.titulo = '';
-                    this.checklistItemIdEditando = null
+                    this.formItem.titulo = "";
+                    this.checklistItemIdEditando = null;
                     this.CHECKLIST_ID = null;
                     this.ITEM_ID = null;
 
@@ -2144,8 +2153,8 @@ export default {
                 axios.put(`${this.rotaChecklistItem}`, {
                     titulo: titulo
                 });
-                this.formItem.titulo = '';
-                this.checklistItemIdEditando = null
+                this.formItem.titulo = "";
+                this.checklistItemIdEditando = null;
                 this.CHECKLIST_ID = null;
                 this.ITEM_ID = null;
 
@@ -2155,7 +2164,7 @@ export default {
             this.CHECKLIST_ID = objItem.checklist_id;
             this.ITEM_ID = objItem.id;
             axios.put(`${this.rotaChecklistItem}`, {
-                concluido: objItem.concluido,
+                concluido: objItem.concluido
             });
             this.CHECKLIST_ID = null;
             this.ITEM_ID = null;
@@ -2183,12 +2192,12 @@ export default {
                     return {
                         id: obj.id,
                         checklist_id: obj.checklist_id,
-                        ordem: obj.ordem,
-                    }
-                })
+                        ordem: obj.ordem
+                    };
+                });
                 axios.put(`${this.rotaChecklist}/atualizarOrdemItens`, {
-                    'evento': 'moveu',
-                    'novaLista': novaLista
+                    "evento": "moveu",
+                    "novaLista": novaLista
                 });
                 this.CHECKLIST_ID = null;
             }
@@ -2199,7 +2208,7 @@ export default {
                 let novaChecklist = null;
                 // varrer todas as checklist
                 this.TAREFA.checklists.forEach((ck) => {
-                    let checkListFind = _.find(ck.itens, {id: ITEM.id});
+                    let checkListFind = _.find(ck.itens, { id: ITEM.id });
                     if (checkListFind) {
                         novaChecklist = ck;
                         return false;
@@ -2216,18 +2225,18 @@ export default {
                         return {
                             id: obj.id,
                             checklist_id: obj.checklist_id,
-                            ordem: obj.ordem,
-                        }
-                    })
+                            ordem: obj.ordem
+                        };
+                    });
                     axios.put(`${this.rotaTarefa}/checklist/${novaChecklist.id}/atualizarOrdemItens/`, {
-                        'evento': 'adicionar',
-                        'novaChecklist': lista
+                        "evento": "adicionar",
+                        "novaChecklist": lista
                     });
                 }
             }
             if (event.removed) {
                 // varrer todas as checklist
-                let antigaChecklist = _.find(this.TAREFA.checklists, {id: this.ITEM_ANTERIOR.checklist_id});
+                let antigaChecklist = _.find(this.TAREFA.checklists, { id: this.ITEM_ANTERIOR.checklist_id });
                 if (antigaChecklist) {
                     let ordem = 1;
                     antigaChecklist.itens.forEach((obj) => {
@@ -2239,12 +2248,12 @@ export default {
                         return {
                             id: obj.id,
                             lista_id: obj.lista_id,
-                            ordem: obj.ordem,
-                        }
-                    })
+                            ordem: obj.ordem
+                        };
+                    });
                     axios.put(`${this.rotaTarefa}/checklist/${antigaChecklist.id}/atualizarOrdemItens/`, {
-                        'evento': 'remover',
-                        'antigaChecklist': lista
+                        "evento": "remover",
+                        "antigaChecklist": lista
                     });
 
 
@@ -2253,26 +2262,26 @@ export default {
         },
         //Anexos
         abrirFormEditarTituloAnexo(objAnexo) {
-            this.tituloEditarAnexo = objAnexo.nome
+            this.tituloEditarAnexo = objAnexo.nome;
             setTimeout(() => {
                 this.$refs[`campoTituloAnexo${objAnexo.id}`][0].focus();
-            }, 100)
+            }, 100);
         },
         updateAnexo(objAnexo) {
             if (this.tituloEditarAnexo.trim() === "") {
-                mostraErro('', 'O anexo precisa de um nome')
+                mostraErro("", "O anexo precisa de um nome");
                 return false;
             }
             objAnexo.nome = this.tituloEditarAnexo;
             axios.put(`${this.rotaTarefa}/anexo/${objAnexo.id}`, {
-                nome: objAnexo.nome,
+                nome: objAnexo.nome
             });
 
         },
         deleteAnexo(objAnexo) {
 
             axios.delete(`${this.rotaTarefa}/anexo/${objAnexo.file}`);
-            let indexDelete = _.findIndex(this.TAREFA.anexos, {id: objAnexo.id});
+            let indexDelete = _.findIndex(this.TAREFA.anexos, { id: objAnexo.id });
             this.TAREFA.anexos.splice(indexDelete, 1);
         }
 

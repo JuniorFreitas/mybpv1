@@ -583,18 +583,18 @@ class AdmissaoController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_FOTOCURRICULO], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_FOTOCURRICULO, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_FOTOCURRICULO], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_FOTOCURRICULO, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_FOTOCURRICULO], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_FOTOCURRICULO, $arquivo);
     }
 
     //PDF

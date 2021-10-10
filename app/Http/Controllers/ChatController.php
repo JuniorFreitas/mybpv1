@@ -50,7 +50,7 @@ class ChatController extends Controller
             \Cache::rememberForever("contatosEmpresa" . auth()->user()->empresa_id, function () {
                 return User::select(['id', 'nome', 'empresa_id'])
                     ->whereAtivo(true)
-                    ->whereTipo(User::ADMINISTRADOR)->whereEmpresaId(auth()->user()->empresa_id)
+                    ->whereIn("tipo", [User::ADMINISTRADOR, User::FUNCIONARIO])->whereEmpresaId(auth()->user()->empresa_id)
                     ->whereNotIn('id', [auth()->id()])
                     ->orderBy('nome')->get();
             });

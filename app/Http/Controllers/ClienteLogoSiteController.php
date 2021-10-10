@@ -171,19 +171,19 @@ class ClienteLogoSiteController extends Controller
 
     public function fotoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_PUBLICO], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_PUBLICO, $arquivo);
     }
 
     public function fotoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_PUBLICO], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_PUBLICO, $arquivo);
 
     }
 
     //anexo ou foto
     public function fotoDownload(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_PUBLICO], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_PUBLICO, $arquivo);
     }
 
     public function atualizar()
