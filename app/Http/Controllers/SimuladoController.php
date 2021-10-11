@@ -75,44 +75,47 @@ class SimuladoController extends Controller
                 $prova = Simulado::create($dados);
 
                 foreach ($perguntas as $pergunta) {
-                    //Verifico se tem Respostas
-                    if (!isset($pergunta['respostas'])) {
-                        return response()->json([
-                            'msg' => 'ERRO: É necessário inserir uma opção para questão',
-                        ], 400);
-                    }
-                    //Converte Imagens para a url base
+                    //Verifica se o tipo da prova é objetiva
+                    if ($dados['tipo_prova'] === 'objetiva') {
+                        //Verifico se tem Respostas
+                        if (!isset($pergunta['respostas'])) {
+                            return response()->json([
+                                'msg' => 'ERRO: É necessário inserir uma opção para questão',
+                            ], 400);
+                        }
+                        //Converte Imagens para a url base
 //                    $pergunta['enunciado'] = str_replace('../responsive_filemanager/', asset('') . "responsive_filemanager/", $pergunta['enunciado']);
 //                    $pergunta['enunciado'] = str_replace('<img src="' . asset(''), '<img class="img-fluid d-block mx-auto" src="' . asset(''), $pergunta['enunciado']);
 
-                    $respostas = collect($pergunta['respostas']);
+                        $respostas = collect($pergunta['respostas']);
 
-                    // Se possuir somente 1 ou nenhuma questão
-                    if ($respostas->count() <= 1) {
-                        return response()->json([
-                            'msg' => 'ERRO: A Questão' . $pergunta['enunciado'] . ' deve ter MAIS de uma OPÇÃO',
-                        ], 400);
-                    }
+                        // Se possuir somente 1 ou nenhuma questão
+                        if ($respostas->count() <= 1) {
+                            return response()->json([
+                                'msg' => 'ERRO: A Questão' . $pergunta['enunciado'] . ' deve ter MAIS de uma OPÇÃO',
+                            ], 400);
+                        }
 
-                    // Se não tiver nenhuma opção
-                    if ($respostas->where('correto')->count() == 0) {
-                        return response()->json([
-                            'msg' => 'A Questão' . $pergunta['enunciado'] . ' não possui nenhuma OPÇÃO MARCADA como CORRETA',
-                        ], 400);
-                    }
+                        // Se não tiver nenhuma opção
+                        if ($respostas->where('correto')->count() == 0) {
+                            return response()->json([
+                                'msg' => 'A Questão' . $pergunta['enunciado'] . ' não possui nenhuma OPÇÃO MARCADA como CORRETA',
+                            ], 400);
+                        }
 
-                    // Se Houver a Opção e tiver mais de 1 true
-                    if ($respostas->where('correto')->count() > 1) {
-                        return response()->json([
-                            'msg' => 'A Questão' . $pergunta['enunciado'] . ' possui mais de uma OPÇÃO MARCADA como CORRETA',
-                        ], 400);
-                    }
+                        // Se Houver a Opção e tiver mais de 1 true
+                        if ($respostas->where('correto')->count() > 1) {
+                            return response()->json([
+                                'msg' => 'A Questão' . $pergunta['enunciado'] . ' possui mais de uma OPÇÃO MARCADA como CORRETA',
+                            ], 400);
+                        }
 
-                    // Se Houver Respostas duplicada
-                    if ($respostas->duplicates('resposta')->count() > 0) {
-                        return response()->json([
-                            'msg' => 'Verifique as respostas duplicadas',
-                        ], 400);
+                        // Se Houver Respostas duplicada
+                        if ($respostas->duplicates('resposta')->count() > 0) {
+                            return response()->json([
+                                'msg' => 'Verifique as respostas duplicadas',
+                            ], 400);
+                        }
                     }
 
                     if (isset($pergunta['perguntasDelete'])) {
@@ -123,9 +126,11 @@ class SimuladoController extends Controller
 
                     $perg = $prova->Perguntas()->create($pergunta);
 
-                    foreach ($respostas as $resposta) {
-                        $resposta['simulado_pergunta_id'] = $perg->id;
-                        SimuladoResposta::create($resposta);
+                    if ($dados['tipo_prova'] === 'objetiva') {
+                        foreach ($respostas as $resposta) {
+                            $resposta['simulado_pergunta_id'] = $perg->id;
+                            SimuladoResposta::create($resposta);
+                        }
                     }
                 };
 

@@ -53,6 +53,7 @@ class VagasAbertas extends Model
 
     protected $fillable = [
         'vaga_id',
+        'titulo',
         'descricao',
         'municipio_id',
         'empresa_id',
@@ -60,6 +61,7 @@ class VagasAbertas extends Model
     ];
     protected $casts = [
         'vaga_id' => 'int',
+        'titulo' => 'string',
         'descricao' => 'string',
         'municipio_id' => 'int',
         'empresa_id' => 'int',

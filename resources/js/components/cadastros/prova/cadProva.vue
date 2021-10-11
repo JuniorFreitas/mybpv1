@@ -15,6 +15,17 @@
                                            onblur="valida_campo_vazio(this,1)">
                                 </div>
                             </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label>Tipo da prova</label>
+                                    <select class="form-control" onblur="valida_campo_vazio(this,1)"
+                                            onchange="valida_campo_vazio(this,1)" v-model="form.tipo_prova">
+                                        <option :value="''">Selecione</option>
+                                        <option :value="'objetiva'">Objetiva</option>
+                                        <option :value="'subjetiva'">Subjetiva</option>
+                                    </select>
+                                </div>
+                            </div>
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
@@ -31,9 +42,10 @@
                         </div>
                     </fieldset>
 
-                    <fieldset>
-                        <legend>Questões</legend>
-                        <button class="btn btn-sm btn-primary mb-2" @click="addLiQuestao($event.target)">Adicionar Questão
+                    <fieldset v-if="form.tipo_prova === 'objetiva'">
+                        <legend>Questões Objetivas</legend>
+                        <button class="btn btn-sm btn-primary mb-2" @click="addLiQuestao($event.target)">Adicionar
+                            Questão
                         </button>
                         <div class="accordion" id="prova">
                             <div class="card mb-3 border" v-for="(objperg, ind) in form.perguntas"
@@ -49,11 +61,12 @@
                                     </h2>
                                 </div>
 
-                                <div :id="`collapse${objperg.id}`" class="collapse" :aria-labelledby="objperg.id"
+                                <div :id="`collapse${objperg.id}`" class="collapse show" :aria-labelledby="objperg.id"
                                      data-parent="#prova">
                                     <div class="card-body">
-                                        <a class="btn btn-sm btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
-                                            <i class="fa fa-trash"></i> Apagar questão
+                                        <a class="btn btn-sm btn-danger" href="javascript://"
+                                           @click="removerLIQuestao(ind)">
+                                            <i class="fa fa-trash"></i> Apagar questão {{ ind + 1 }}
                                         </a>
 
                                         <div class="col-12 mt-2">
@@ -63,7 +76,8 @@
                                         </div>
 
                                         <div class="col-12 mt-3 mb-3">
-                                            <button class="btn btn-sm btn-primary" @click="addLIResposta(ind, $event.target)">
+                                            <button class="btn btn-sm btn-primary"
+                                                    @click="addLIResposta(ind, $event.target)">
                                                 Adicionar opção
                                             </button>
                                         </div>
@@ -109,8 +123,9 @@
 
                                     </div>
 
-                                    <a class="btn btn-sm btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
-                                        <i class="fa fa-trash"></i> Apagar questão
+                                    <a class="btn btn-sm btn-danger" href="javascript://"
+                                       @click="removerLIQuestao(ind)">
+                                        <i class="fa fa-trash"></i> Apagar questão {{ ind + 1 }}
                                     </a>
                                 </div>
 
@@ -120,6 +135,62 @@
                         </div>
 
                     </fieldset>
+
+                    <fieldset v-if="form.tipo_prova === 'subjetiva'">
+                        <legend>Questões Subjetivas</legend>
+                        <button class="btn btn-sm btn-primary mb-2" @click="addLiQuestao($event.target)">Adicionar
+                            Questão
+                        </button>
+                        <div class="accordion" id="provaSub">
+                            <div class="card mb-3 border" v-for="(objperg, ind) in form.perguntas"
+                                 v-show="form.perguntas.length> 0">
+                                <div class="card-header" style="background: #072433; color: white" :id="objperg.id">
+                                    <h2 class="mb-0">
+                                        <a class="btn btn-link btn-block text-left" href="javascript://"
+                                           data-toggle="collapse"
+                                           :data-target="`#collapse${objperg.id}`" aria-expanded="true"
+                                           :aria-controls="`collapse${objperg.id}`">
+                                            Questão - {{ ind + 1 }}
+                                        </a>
+                                    </h2>
+                                </div>
+
+                                <div :id="`collapse${objperg.id}`" class="collapse show" :aria-labelledby="objperg.id"
+                                     data-parent="#provaSub">
+                                    <div class="card-body">
+                                        <a class="btn btn-sm btn-danger" href="javascript://"
+                                           @click="removerLIQuestao(ind)">
+                                            <i class="fa fa-trash"></i> Apagar questão {{ ind + 1 }}
+                                        </a>
+
+                                        <div class="col-12 mt-2">
+                                            <label>Enunciado</label>
+                                            <editor :api-key="tinyProva.key"
+                                                    v-model="objperg.enunciado" :init="tinyProva"></editor>
+                                        </div>
+
+                                        <div class="col-12 mt-2">
+                                            <label>Quantidade de linhas para resposta</label>
+                                            <input class="form-control" v-model="objperg.qnt_linhas" type="text"
+                                                   placeholder="Informe o número de linhas"
+                                                   onblur="valida_campo_vazio(this,1)">
+                                        </div>
+
+                                    </div>
+
+                                    <a class="btn btn-sm btn-danger" href="javascript://"
+                                       @click="removerLIQuestao(ind)">
+                                        <i class="fa fa-trash"></i> Apagar questão {{ ind + 1 }}
+                                    </a>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </fieldset>
+
                 </div>
             </template>
             <template slot="rodape">
@@ -142,7 +213,7 @@
                     <div class="form-group">
                         <label>Buscar</label>
                         <input type="text"
-                               placeholder="Buscar por razão social"
+                               placeholder="Buscar por título"
                                autocomplete="off"
                                class="form-control form-control-sm" :disabled="controle.carregando"
                                v-model="controle.dados.campoBusca">
@@ -219,7 +290,7 @@
 import controlePaginacao from "../../ControlePaginacao";
 import editor from "@tinymce/tinymce-vue";
 import modal from "../../Modal";
-import { tinyProva } from "../../../utils";
+import {tinyProva} from "../../../utils";
 
 export default {
     components: {
@@ -261,6 +332,7 @@ export default {
             form: {
                 titulo: "",
                 ativo: true,
+                tipo_prova: '',
                 perguntas: [],
                 perguntasDelete: [],
                 respostasDelete: []
@@ -284,6 +356,7 @@ export default {
             let objperg = {};
             objperg.nova = true;
             objperg.enunciado = "";
+            objperg.qnt_linhas = "";
             objperg.respostas = [];
             objperg.respostasDelete = [];
             this.form.perguntas.push(objperg);
@@ -311,7 +384,7 @@ export default {
 
         formNovo() {
             this.form = _.cloneDeep(this.formDefault); //copia
-            this.titulo_janela = "Empresa Exame";
+            this.titulo_janela = "Montagem da Prova";
             this.editando = false;
             this.cadastrado = false;
             this.preload = false;

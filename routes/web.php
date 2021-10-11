@@ -257,6 +257,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
             Route::put('vagas-abertas/{vagas_aberta}/ativa-desativa', [\App\Http\Controllers\VagasAbertasController::class, 'ativaDesativa'])->name('vagas_abertas.ativaDesativa')->middleware('can:vagas_abertas_update');
             Route::post('vagas-abertas/atualizar', [\App\Http\Controllers\VagasAbertasController::class, 'atualizar'])->name('vagas_abertas.atualizar')->middleware('can:vagas_abertas');
+            Route::get('vagas-abertas/prova/{simulado}/{vaga_aberta}', [\App\Http\Controllers\VagasAbertasController::class, 'vagaAbertaSimulado'])->name('vagas_abertas.vagaAbertaSimulado')->middleware('can:vagas_abertas');
             Route::resource('vagas-abertas', \App\Http\Controllers\VagasAbertasController::class)->middleware('can:vagas_abertas');
         });
 
