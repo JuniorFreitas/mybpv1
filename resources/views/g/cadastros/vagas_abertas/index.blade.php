@@ -26,7 +26,13 @@
                                   :disabled="editando"
                                   :id="hash"
                                   @onblur="resetaCampoVagaModal"
-                                 @onselect="selecionaVagaModal"></autocomplete>
+                                  @onselect="selecionaVagaModal"></autocomplete>
+                </div>
+
+                <div class="form-group">
+                    <label for="descricao">Descrição</label>
+                    <input class="form-control" v-model="form.titulo" onblur="valida_campo_vazio(this,1)" placeholder="Informe o título da vaga"
+                    >
                 </div>
 
                 <div class="form-group">
@@ -42,7 +48,7 @@
                                   placeholder="Selecione um municipio"
                                   :id="`mun_${hash}`"
                                   @onblur="resetaCampoMunicipioModal"
-                                 @onselect="selecionaMunicipioModal"></autocomplete>
+                                  @onselect="selecionaMunicipioModal"></autocomplete>
                 </div>
 
                 <fieldset>
@@ -61,6 +67,7 @@
                                 <label>Prova</label>
 
                                 <select class="form-control" v-model="obj.simulado_id"
+                                        @change="selecionaSimulado(obj.simulado_id, index)"
                                         onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
                                     <option value="">Selecione...</option>
                                     <option v-for="item in listaSimulados" :value="item.id">
@@ -69,14 +76,15 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-3" v-if="obj.tipo_prova === 'objetiva'">
                                 <label>Duração em minutos</label>
-                                <input type="number" min="15" placeholder="duração da prova" v-model="obj.duracao" v-mascara:numero
+                                <input type="number" min="15" placeholder="duração da prova" v-model="obj.duracao"
+                                       v-mascara:numero
                                        class="form-control"
                                        onblur="valida_campo_vazio(this,1)">
                             </div>
 
-                            <div class="col-md-2">
+                            <div class="col-md-2" v-if="obj.tipo_prova === 'objetiva'">
                                 <label>Online</label>
                                 <select class="form-control" v-model="obj.online"
                                         onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
@@ -94,8 +102,11 @@
                                 </select>
                             </div>
 
-                            <div class="col-12" v-if="obj.simulado_id">
-{{--                                <p>Link da prova: <span v-text="`${URL_SITE}/provas/${obj.vagas_abertas_id}/${obj.simulado_id}/${listaSimulados.find(el => el.id === obj.simulado_id).titulo}`"></span></p>--}}
+                            <div class="col-md-4 mt-4" v-if="obj.tipo_prova === 'subjetiva'">
+                                <label>Imprimir Prova:</label>
+                                <button class="btn btn-sm btn-primary" @click="imprimeProva(obj.simulado_id, form.id)">
+                                    <i class="fa fa-files-pdf"></i> Gerar PDF
+                                </button>
                             </div>
 
                             <div class="col-12 mt-3">
@@ -117,6 +128,7 @@
                         <input type="checkbox" v-model="form.ativo" id="switch">
                         <label for="switch">Ativo</label>
                     </div>
+                </div>
 
             </form>
         </template>
@@ -208,7 +220,6 @@
                     <td>
                         @{{vaga.vaga.nome}}
                     </td>
-
 
                     <td>
                         <span v-html="vaga.descricao.substring(0,300)"></span>

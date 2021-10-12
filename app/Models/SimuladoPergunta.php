@@ -48,6 +48,7 @@ class SimuladoPergunta extends Model
         'simulado_id',
         'enunciado',
         'solucao_tempo',
+        'qnt_linhas'
     ];
 
     protected $casts = [
@@ -55,6 +56,7 @@ class SimuladoPergunta extends Model
         'simulado_id' => 'int',
         'enunciado' => 'string',
         'solucao_tempo' => 'string',
+        'qnt_linhas' => 'int',
     ];
 
     public $timestamps = false;

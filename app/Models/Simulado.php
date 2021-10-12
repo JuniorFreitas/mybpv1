@@ -59,8 +59,19 @@ class Simulado extends Model
         $activity->descricao = "";
     }
 
-    protected $fillable = ['titulo', 'ativo', 'empresa_id'];
-    protected $casts = ['id' => 'int', 'titulo' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int'];
+    protected $fillable = [
+        'titulo',
+        'tipo_prova',
+        'ativo',
+        'empresa_id'
+    ];
+    protected $casts = [
+        'id' => 'int',
+        'titulo' => 'string',
+        'tipo_prova' => 'string',
+        'ativo' => 'boolean',
+        'empresa_id' => 'int'
+    ];
 
     protected $appends = ['slug', 'qnt_questoes'];
 

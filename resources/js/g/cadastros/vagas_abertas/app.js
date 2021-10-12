@@ -1,4 +1,4 @@
-import { tinyPadrao } from "../../../utils";
+import {tinyPadrao} from "../../../utils";
 import autocomplete from "../../../components/AutoComplete";
 import Editor from "@tinymce/tinymce-vue";
 
@@ -33,6 +33,7 @@ const app = new Vue({
             autocomplete_label_municipio_modal_anterior: "",
 
             descricao: "",
+            titulo: "",
             requerimentos: "",
             municipio_id: "",
 
@@ -74,6 +75,7 @@ const app = new Vue({
             obj.vagas_abertas_id = this.form.id
             obj.simulado_id = ''
             obj.duracao = 30
+            obj.tipo_prova = ''
             obj.online = true
             obj.ativo = false
 
@@ -235,6 +237,15 @@ const app = new Vue({
                 this.atualizar();
             }).catch(error => (this.preloadAjax = false));
 
+        },
+
+        selecionaSimulado(simulado_id, index) {
+            let simulado = _.find(this.listaSimulados, {'id': simulado_id});
+            this.form.simulados[index].tipo_prova = simulado.tipo_prova;
+        },
+
+        imprimeProva(simulado, vaga_aberta) {
+            window.location.href = `${URL_ADMIN}/cadastro/vagas-abertas/prova/${simulado}/${vaga_aberta}`;
         },
 
         carregou(dados) {
