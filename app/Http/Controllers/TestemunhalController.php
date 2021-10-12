@@ -194,22 +194,22 @@ class TestemunhalController extends Controller
     // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {
-        return Arquivo::uploadAnexos($request, Arquivo::Apen, Arquivo::DISCO_PUBLICO);
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_PUBLICO);
     }
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_PUBLICO], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_PUBLICO, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_PUBLICO], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_PUBLICO, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_PUBLICO], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_PUBLICO, $arquivo);
     }
 }

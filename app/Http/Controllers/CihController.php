@@ -318,18 +318,18 @@ class CihController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_CIH], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_CIH, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_CIH], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_CIH, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_CIH], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_CIH, $arquivo);
     }
 
 

@@ -469,18 +469,18 @@ class FornecedorController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_FORNECEDOR], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_FORNECEDOR, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_FORNECEDOR], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_FORNECEDOR, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_FORNECEDOR], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_FORNECEDOR, $arquivo);
     }
 
     // Anexos-------------------------------------------------
@@ -507,17 +507,17 @@ class FornecedorController extends Controller
 
     public function anexoServicoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_SERVICO_FORNECEDOR], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_SERVICO_FORNECEDOR, $arquivo);
     }
 
     public function anexoServicoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_SERVICO_FORNECEDOR], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_SERVICO_FORNECEDOR, $arquivo);
     }
 
     //anexo ou foto
     public function downloadServico(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_SERVICO_FORNECEDOR], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_SERVICO_FORNECEDOR, $arquivo);
     }
 }

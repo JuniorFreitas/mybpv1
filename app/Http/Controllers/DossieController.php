@@ -789,17 +789,17 @@ class DossieController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_DOSSIE], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_DOSSIE, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_DOSSIE], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_DOSSIE, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_DOSSIE], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_DOSSIE, $arquivo);
     }
 }

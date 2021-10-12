@@ -354,6 +354,65 @@ class ParecerRh extends Model
         'obs_horario' => 'string',
     ];
 
+    public function setCalcaAttribute($value)
+    {
+        if (!is_null($value)) {
+            $this->attributes['calca'] = $value;
+        }else{
+            $this->attributes['calca'] = null;
+        }
+    }
+
+    //Acessor ->datalido
+    public function getCalcaAttribute($value)
+    {
+        return is_null($value) ? "" : $value;
+    }
+
+    public function setCamisaMeiaAttribute($value)
+    {
+        if (!is_null($value)) {
+            $this->attributes['camisa_meia'] = $value;
+        }else{
+            $this->attributes['camisa_meia'] = null;
+        }
+    }
+
+    //Acessor ->datalido
+    public function getCamisaMeiaAttribute($value)
+    {
+        return is_null($value) ? "" : $value;
+    }
+
+    public function setCamisaProtecaoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $this->attributes['camisa_protecao'] = $value;
+        }else{
+            $this->attributes['camisa_protecao'] = null;
+        }
+    }
+
+    //Acessor ->datalido
+    public function getCamisaProtecaoAttribute($value)
+    {
+        return is_null($value) ? "" : $value;
+    }
+
+    public function setBotaAttribute($value)
+    {
+        if (!is_null($value)) {
+            $this->attributes['bota'] = $value;
+        }else{
+            $this->attributes['bota'] = null;
+        }
+    }
+
+    //Acessor ->datalido
+    public function getBotaAttribute($value)
+    {
+        return is_null($value) ? "" : $value;
+    }
 
     //Acessor ->datalido
     public function getDataEntrevistaAttribute($value)

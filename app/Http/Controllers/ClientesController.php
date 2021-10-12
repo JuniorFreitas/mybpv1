@@ -572,18 +572,18 @@ class ClientesController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_CLIENTE], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_CLIENTE, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_CLIENTE], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_CLIENTE, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::download([Arquivo::DISCO_CLIENTE], $arquivo);
+        return Arquivo::download(Arquivo::DISCO_CLIENTE, $arquivo);
     }
 
     // Logo-------------------------------------------------
@@ -594,18 +594,18 @@ class ClientesController extends Controller
 
     public function logoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_CLIENTE], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_CLIENTE, $arquivo);
     }
 
     public function logoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_CLIENTE], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_CLIENTE, $arquivo);
     }
 
     //foto
     public function logoDownload(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_CLIENTE], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_CLIENTE, $arquivo);
     }
 
     //PDF
