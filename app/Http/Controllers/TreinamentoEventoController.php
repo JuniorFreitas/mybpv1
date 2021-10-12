@@ -328,17 +328,17 @@ class TreinamentoEventoController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_TREINAMENTO_LISTA_PRESENCA], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_TREINAMENTO_LISTA_PRESENCA, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_TREINAMENTO_LISTA_PRESENCA], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_TREINAMENTO_LISTA_PRESENCA, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_TREINAMENTO_LISTA_PRESENCA], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_TREINAMENTO_LISTA_PRESENCA, $arquivo);
     }
 }

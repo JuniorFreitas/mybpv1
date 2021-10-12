@@ -142,12 +142,12 @@ class CloudController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_CLOUD], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $arquivo);
     }
 
     //anexo ou foto
     public function download($arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_CLOUD], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
     }
 }

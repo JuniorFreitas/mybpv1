@@ -185,17 +185,17 @@ class RequisicaoVagaController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_REQUISICAO_VAGA], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_REQUISICAO_VAGA, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_REQUISICAO_VAGA], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_REQUISICAO_VAGA, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_REQUISICAO_VAGA], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_REQUISICAO_VAGA, $arquivo);
     }
 }

@@ -478,18 +478,18 @@ class ItensCloudController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_CLOUD], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_CLOUD], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_CLOUD, $arquivo);
     }
 
     //anexo ou foto
     public function download($arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_CLOUD], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
     }
 
 

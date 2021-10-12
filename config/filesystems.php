@@ -23,7 +23,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/publico/cloud' : env('AWS_URL'),
+
 
 
             'urlShow' => env('APP_URL') . '/publico/cloud/anexo',
@@ -41,7 +41,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/storage' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/storage/anexo',
             'urlDownload' => env('APP_URL') . '/g/storage/anexo',
@@ -58,7 +58,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/administracao/fornecedor' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/administracao/fornecedor/anexo',
             'urlDownload' => env('APP_URL') . '/g/administracao/fornecedor/anexo',
@@ -75,7 +75,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/fornecedor/servico' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/fornecedor/servico/anexo',
             'urlDownload' => env('APP_URL') . '/g/fornecedor/servico/anexo',
@@ -92,7 +92,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/ocorrencia' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/ocorrencia/anexo',
             'urlDownload' => env('APP_URL') . '/g/ocorrencia/anexo',
@@ -109,7 +109,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/admissao' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/admissao/anexo',
             'urlDownload' => env('APP_URL') . '/g/admissao/anexo',
@@ -126,7 +126,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/funcionarios' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/funcionarios/anexo',
             'urlDownload' => env('APP_URL') . '/g/funcionarios/anexo',
@@ -143,7 +143,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/historico/medidas-administrativas' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/historico/medidas-administrativas/anexo',
             'urlDownload' => env('APP_URL') . '/g/historico/medidas-administrativas/anexo',
@@ -160,7 +160,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/apontamento/cih' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/apontamento/cih/anexo',
             'urlDownload' => env('APP_URL') . '/g/apontamento/cih/anexo',
@@ -177,7 +177,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/documentos' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/documentos/anexo',
             'urlDownload' => env('APP_URL') . '/g/documentos/anexo',
@@ -194,7 +194,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/historico/dossie' : env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/historico/dossie/anexo',
             'urlDownload' => env('APP_URL') . '/g/historico/dossie/anexo',
@@ -211,13 +211,36 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/perfil' : env('AWS_URL'),
+//
 
             'urlShow' => env('APP_URL') . '/g/perfil/anexo',
             'urlDownload' => env('APP_URL') . '/g/perfil/anexo',
             'urlThumb' => env('APP_URL') . '/g/perfil/anexo',
             'urlDelete' => env('APP_URL') . '/g/perfil/anexo',
             'visibility' => 'public',
+
+        ],
+
+        'disco-weekly-report' => [
+            'driver' => env('FILESYSTEM_DRIVER', 'local'),
+            'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-weekly_report') : 'arquivos/disco-weekly_report',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
+//
+            'urlShow' => env('APP_URL').'/g/weekly-report/anexo',
+            'urlDownload' => env('APP_URL').'/g/weekly-report/anexo',
+            'urlThumb' => env('APP_URL').'/g/weekly-report/anexo',
+            'urlDelete' => env('APP_URL').'/g/weekly-report/anexo',
+            'visibility' => 'public',
+
+//            'urlShow' => env('APP_URL') . '/g/perfil/anexo',
+//            'urlDownload' => env('APP_URL') . '/g/perfil/anexo',
+//            'urlThumb' => env('APP_URL') . '/g/perfil/anexo',
+//            'urlDelete' => env('APP_URL') . '/g/perfil/anexo',
+//            'visibility' => 'public',
 
         ],
 
@@ -229,7 +252,6 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/planejamento/requisicao-vaga' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/planejamento/requisicao-vaga/anexo',
             'urlDownload' => env('APP_URL') . '/g/planejamento/requisicao-vaga/anexo',
@@ -247,7 +269,6 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . '/g/treinamento/listapresenca' : env('AWS_URL'),
 
             'urlShow' => env('APP_URL') . '/g/treinamento/listapresenca/anexo',
             'urlDownload' => env('APP_URL') . '/g/treinamento/listapresenca/anexo',
@@ -259,29 +280,34 @@ return [
 
         'disco-ponto-eletronico' => [
             'driver' => env('FILESYSTEM_DRIVER', 'local'),
-            'root' => env('FILESYSTEM_DRIVER')=='local' ? storage_path('app/g/arquivos/disco-ponto-eletronico'):'disco-ponto-eletronico',
+            'root' => env('FILESYSTEM_DRIVER')=='local' ? storage_path('app/g/arquivos/disco-ponto-eletronico'):'arquivos/disco-ponto-eletronico',
             'key' => env('AWS_ACCESS_KEY_ID'),
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER')=='local' ? env('APP_URL') . '/g/controle-ponto/ponto-eletronico/fotos':env('AWS_URL'),
+
 
             'urlShow' => env('APP_URL') . '/g/storage/anexo',
             'urlDownload' => env('APP_URL') . '/g/storage/anexo',
             'urlThumb' => env('APP_URL') . '/g/storage/anexo',
             'urlDelete' => env('APP_URL') . '/g/storage/anexo',
             'visibility' => 'public',
-            /*'urlShow' => env('APP_URL').'/g/storage/anexo',
-            'urlDownload' => env('APP_URL').'/g/storage/anexo',
-            'urlThumb' => env('APP_URL').'/g/storage/anexo',
-            'urlDelete' => env('APP_URL').'/g/storage/anexo',*/
 
         ],
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'endpoint' => env('AWS_ENDPOINT'),
+
+            'urlShow' => env('APP_URL') . '/g/storage/anexo',
+            'urlDownload' => env('APP_URL') . '/g/storage/anexo',
+            'urlThumb' => env('APP_URL') . '/g/storage/anexo',
+            'urlDelete' => env('APP_URL') . '/g/storage/anexo',
             'visibility' => 'public',
         ],
 
@@ -294,7 +320,7 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'url' => env('FILESYSTEM_DRIVER')=='local' ? env('APP_URL') . '/g':env('AWS_URL'),
+
 
 
             'urlShow' => env('APP_URL').'/g/storage/anexo',

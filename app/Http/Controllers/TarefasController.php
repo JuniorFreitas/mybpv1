@@ -17,16 +17,19 @@ use App\Models\Tarefa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Mail;
 use MasterTag\DataHora;
 
-class TarefasController extends Controller {
+class TarefasController extends Controller
+{
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
+    public function index()
+    {
         //
     }
 
@@ -35,7 +38,8 @@ class TarefasController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function create() {
+    public function create()
+    {
         //
     }
 
@@ -45,7 +49,8 @@ class TarefasController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista) {
+    public function store(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista)
+    {
         $dadosValidados = \Validator::make($request->all(), [
             'titulo' => 'required|min:1',
         ]);
@@ -87,7 +92,9 @@ class TarefasController extends Controller {
      * @param \App\Models\Tarefa $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa) {
+    public function show(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
+        return $tarefa;
         $tarefa->load('Logs');
         return $tarefa;
     }
@@ -98,7 +105,8 @@ class TarefasController extends Controller {
      * @param \App\Models\Tarefa $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function edit(Tarefa $tarefa) {
+    public function edit(Tarefa $tarefa)
+    {
         //
     }
 
@@ -109,7 +117,8 @@ class TarefasController extends Controller {
      * @param \App\Models\Tarefa $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa) {
+    public function update(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
         $dadosValidados = \Validator::make($request->all(), [
             'titulo' => 'min:1',
             //'descricao' => 'min:1',
@@ -150,7 +159,8 @@ class TarefasController extends Controller {
      * @param \App\Models\Tarefa $tarefa
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa) {
+    public function destroy(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
         try {
             \DB::beginTransaction();
             //todo apagar todos os anexos das tarefas
@@ -174,7 +184,8 @@ class TarefasController extends Controller {
         }
     }
 
-    public function atualizarOrdem(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista) {
+    public function atualizarOrdem(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista)
+    {
         if ($request->evento == 'moveu') {
             foreach ($request->novaLista as $obj) {
                 $id = $obj['id'];
@@ -202,7 +213,8 @@ class TarefasController extends Controller {
 
     }
 
-    public function updateMembro(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa) {
+    public function updateMembro(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
 
         if ($request->acao == 'add') {
             $tarefa->Membros()->attach($request->user_id);
@@ -246,7 +258,8 @@ class TarefasController extends Controller {
 
     }
 
-    public function updateDataHoraInicio(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa) {
+    public function updateDataHoraInicio(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
 
         if ($request->acao == 'add') {
 
@@ -269,7 +282,8 @@ class TarefasController extends Controller {
 
     }
 
-    public function updateDataHoraEntrega(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa) {
+    public function updateDataHoraEntrega(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
 
         if ($request->acao == 'add') {
 
@@ -298,7 +312,8 @@ class TarefasController extends Controller {
 
     }
 
-    public function atualizarOrdemCheckList(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa) {
+    public function atualizarOrdemCheckList(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
         foreach ($request->novaLista as $obj) {
             $id = $obj['id'];
             ChecklistsTarefa::whereTarefaId($tarefa->id)->whereId($id)->update($obj);
@@ -308,18 +323,13 @@ class TarefasController extends Controller {
     }
 
     // Anexos-------------------------------------------------
-    public function uploadAnexos(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa) {
+    public function uploadAnexos(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
         if ($request->file('arquivo')->isValid()) {
             $mimeType = $request->file('arquivo')->getMimeType();
-            $permitidos = [
-                Arquivo::MIME_JPEG,
-                Arquivo::MIME_PNG,
-                Arquivo::MIME_PDF,
-                Arquivo::MIME_JPG,
-                Arquivo::MIME_GIF,
-            ];
-            if (in_array($mimeType, $permitidos)) {
-                $arquivo = Arquivo::gravaArquivo($request, 'arquivo', Arquivo::S3);
+
+            if (in_array($mimeType, Arquivo::MIMEAPENASIMAGENSPDF)) {
+                $arquivo = Arquivo::gravaArquivo($request, 'arquivo', Arquivo::DISCO_WEEKLY_REPORT);
                 $arquivo->temporario = false;
                 $arquivo->chave = null;
                 $arquivo->save();
@@ -342,32 +352,17 @@ class TarefasController extends Controller {
                 'erros' => []
             ], 400);
         }
-
-
     }
 
-    public function anexoShow(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, $arquivo) {
-
-        $path = Arquivo::buscaPath($arquivo);
-        if ($path == false) {
-            return response("", 404);
-        } else {
-            $disco = Arquivo::nomeDisco($arquivo);
-            $permitidos = [
-                Arquivo::S3
-            ];
-
-            if (in_array($disco, $permitidos) == false) {
-                return response("", 404);
-            }
-
-
-            return \Storage::disk($disco)->response($arquivo);
+    public function anexoShow(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, $arquivo)
+    {
+        if (Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->exists($arquivo)) {
+            return \Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->response($arquivo);
         }
     }
 
-    public function anexoUpdate(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, Arquivo $arquivo) {
-
+    public function anexoUpdate(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, Arquivo $arquivo)
+    {
         $dadosValidados = \Validator::make($request->all(), [
             'nome' => 'min:1',
         ]);
@@ -380,61 +375,47 @@ class TarefasController extends Controller {
         }
         try {
             \DB::beginTransaction();
-
             $arquivo->update($request->only(['nome']));
-
             \DB::commit();
-
             Event::dispatch(new AnexoEvent($tarefa, AnexoEvent::UPDATE));
 
-            return response()->json([], 200);
-
+            return response()->json([]);
         } catch (\Exception $e) {
             \DB::rollBack();
             return response()->json(['msg' => $e->getMessage()], 400);
         }
     }
 
-    public function anexoDelete(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, $arquivo) {
-        //Se esta apagando realmente um anexo_imovel
-        $disco = Arquivo::nomeDisco($arquivo);
-        $permitidos = [
-            Arquivo::S3
-        ];
-        if (in_array($disco, $permitidos) == false) {
-            return response("", 404);
-        }
-        //Apagar
-        $model = Arquivo::findByArquivo($arquivo);
-        if ($model) {
-            Arquivo::apagar($arquivo);
-            Event::dispatch(new AnexoEvent($tarefa, AnexoEvent::DELETE));
-            LogWeekly::create(['quadro_id' => $quadro->id, 'tarefa_id' => $tarefa->id, 'descricao' => "excluiu o anexo {$model->nome}{$model->extensao} desta tarefa"]);
-            return response()->json([], 200);
+    public function anexoDelete(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, $arquivo)
+    {
+        $model = Arquivo::whereFile($arquivo)
+            ->whereDisco(Arquivo::DISCO_WEEKLY_REPORT)
+            ->orWhere('thumb', $arquivo)
+            ->first(['id', 'nome', 'file', 'imagem', 'thumb', 'extensao', 'temporario']);
 
-        } else {
+        if ($model) {
+            $discoStorage = Storage::disk(Arquivo::DISCO_WEEKLY_REPORT);
+            if ($discoStorage->exists($arquivo)) {
+                if ($model->imagem) {
+                    $discoStorage->delete($model->thumb);
+                }
+                $discoStorage->delete($model->file);
+                $model->delete();
+                Event::dispatch(new AnexoEvent($tarefa, AnexoEvent::DELETE));
+                LogWeekly::create(['quadro_id' => $quadro->id, 'tarefa_id' => $tarefa->id, 'descricao' => "excluiu o anexo {$model->nome}{$model->extensao} desta tarefa"]);
+                return response()->json([], 200);
+            }
             return response("Não foi possível apagar o anexo", 400);
         }
-
     }
 
-    public function download(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, $arquivo) {
-        //Fazer a validacao (middleware) de download para anexos-cliente , anexos-ocorrencias, aqui se nescessario...
-        $disco = Arquivo::nomeDisco($arquivo);
-        $permitidos = [
-            Arquivo::S3
-        ];
-        if (in_array($disco, $permitidos) == false) {
-            return response("", 404);
+    public function download(Request $request, User $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, $arquivo)
+    {
+        if (Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->exists($arquivo)) {
+            $item = Arquivo::whereFile($arquivo)->whereDisco(Arquivo::DISCO_WEEKLY_REPORT)->orWhere('thumb', $arquivo)->first(['nome', 'extensao']);
+            return Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->download($arquivo, $item->nome . $item->extensao);
         }
-
-        $url = Arquivo::buscaPath($arquivo);
-        if ($url) {
-            $model = Arquivo::findByArquivo($arquivo);
-            return response()->download($url, $model->nome . $model->extensao);
-        } else {
-            return response("", 404);
-        }
+        abort(404);
     }
 
 }

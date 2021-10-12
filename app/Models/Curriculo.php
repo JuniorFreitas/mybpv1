@@ -145,6 +145,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\ParabensEnviado|null $Parabens
  * @property-read \App\Models\UsuarioConta|null $BancoConta
  * @property-read mixed $cpf_format
+ * @property-read \App\Models\User|null $User
  */
 class Curriculo extends Model
 {

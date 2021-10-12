@@ -164,7 +164,7 @@ class UserController extends Controller
                 'area_id' => 0,
                 'config_empresa' => auth()->user()->ConfigEmpresa,
                 'empresa_id' => auth()->user()->empresa_id,
-                'user_id' => auth()->id()
+                'user_id' => auth()->id(),
             ];
         }
 
@@ -289,17 +289,17 @@ class UserController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_PERFIL_USUARIO], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_PERFIL_USUARIO, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_PERFIL_USUARIO], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_PERFIL_USUARIO, $arquivo);
     }
 
     //anexo ou foto
-    public function downloadPerfil(Request $request, $arquivo)
+    public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload([Arquivo::DISCO_PERFIL_USUARIO], $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_PERFIL_USUARIO, $arquivo);
     }
 }

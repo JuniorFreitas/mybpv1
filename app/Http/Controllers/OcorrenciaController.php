@@ -314,12 +314,12 @@ class OcorrenciaController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow([Arquivo::DISCO_OCORRENCIA], $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_OCORRENCIA, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete([Arquivo::DISCO_OCORRENCIA], $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_OCORRENCIA, $arquivo);
     }
 
     //anexo ou foto
