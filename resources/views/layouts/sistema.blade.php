@@ -7,8 +7,10 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <title>{{ env('APP_NAME') }}</title>
+    @if(\App\Models\Sistema::verificaHdev())
+        <meta name="robots" content="noindex">
+    @endif
     <meta name="msapplication-TileColor" content="#072433">
     <meta name="msapplication-TileImage" content="{{asset('images/icons/ms-icon-144x144.png')}}">
     <meta name="theme-color" content="#072433">
@@ -103,11 +105,11 @@
 <script src="{{ mix('js/app.js') }}"></script>
 <script src="{{ asset('js/funcoes.js') }}"></script>
 <script>
-    (function ($) {
-        'use strict';
+    (function($) {
+        "use strict";
 
         function initActiveMenu() {/* === following js will activate the menu in left side bar based on url ====*/
-            $("#sidebar-menu a").each(function () {
+            $("#sidebar-menu a").each(function() {
                 var pageUrl = window.location.href.split(/[?#]/)[0];
                 if (this.href === pageUrl) {
                     $(this).addClass("active");
@@ -122,35 +124,35 @@
         }
 
         function initMenuItemScroll() {/* focus active menu in left sidebar*/
-            $(document).ready(function () {
+            $(document).ready(function() {
                 if ($("#sidebar-menu").length > 0 && $("#sidebar-menu .mm-active .active").length > 0) {
                     var activeMenu = $("#sidebar-menu .mm-active .active").offset().top;
                     if (activeMenu > 300) {
                         activeMenu = activeMenu - 300;
-                        $(".simplebar-content-wrapper").animate({scrollTop: activeMenu}, "slow");
+                        $(".simplebar-content-wrapper").animate({ scrollTop: activeMenu }, "slow");
                     }
                 }
             });
         }
 
         function initDropdownMenu() {
-            $('.dropdown-menu a.dropdown-toggle').on('click', function (e) {
-                if (!$(this).next().hasClass('show')) {
-                    $(this).parents('.dropdown-menu').first().find('.show').removeClass("show");
+            $(".dropdown-menu a.dropdown-toggle").on("click", function(e) {
+                if (!$(this).next().hasClass("show")) {
+                    $(this).parents(".dropdown-menu").first().find(".show").removeClass("show");
                 }
                 var $subMenu = $(this).next(".dropdown-menu");
-                $subMenu.toggleClass('show');
+                $subMenu.toggleClass("show");
                 return false;
             });
         }
 
         function initComponents() {
-            $(function () {
-                $('[data-toggle="tooltip"]').tooltip()
-            })
-            $(function () {
-                $('[data-toggle="popover"]').popover()
-            })
+            $(function() {
+                $("[data-toggle=\"tooltip\"]").tooltip();
+            });
+            $(function() {
+                $("[data-toggle=\"popover\"]").popover();
+            });
         }
 
         function init() {
@@ -162,7 +164,7 @@
         }
 
         init();
-    })(jQuery)
+    })(jQuery);
 </script>
 @stack('js')
 <script>

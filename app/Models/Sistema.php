@@ -516,7 +516,7 @@ class Sistema
 
     public static function keyCache($key)
     {
-       return "empresa_id_" . auth()->user()->empresa_id."_".$key;
+        return "empresa_id_" . auth()->user()->empresa_id . "_" . $key;
     }
 
     /**
@@ -544,5 +544,11 @@ class Sistema
     public static function deleteCache($key)
     {
         self::keyCache($key);
+    }
+
+    public static function verificaHdev()
+    {
+        $host = explode('.',\request()->getHost());
+        return $host[0] == 'hdev';
     }
 }
