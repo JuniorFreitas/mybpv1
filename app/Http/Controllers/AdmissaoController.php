@@ -184,8 +184,8 @@ class AdmissaoController extends Controller
 
                 $feedback->ParecerRh()->create($dadosParecerRh);
                 $feedback->ParecerRota()->create($dadosParecerRota);
+                dd($dadosParecerTecnica);
                 $feedback->ParecerTecnica()->create($dadosParecerTecnica);
-                //colocar um dd
                 $feedback->ParecerTeste()->create($dadosParecerTeste);
                 $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
