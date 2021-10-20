@@ -133,14 +133,16 @@ class AdmissaoController extends Controller
 
 
                 $usuario = $user->create($userObj);
-                print_r('Usuario');
-                print_r($usuario);
+
                 $dados['feedback']['banco_conta']['user_id'] = $usuario->id;
                 UsuarioConta::criarAtualizar($usuario->id, $dados['feedback']['banco_conta']);
 
                 $usuario->Curriculo()->create($dadosCurriculo);
-
+                print_r('Dados Curriculo');
+                print_r($dadosCurriculo);
                 $candidato = Curriculo::find($usuario->id);
+                print_r('Candidato');
+                print_r($candidato);
 
                 if (isset($dadosCurriculo['foto_tresDelete'])) {
                     foreach ($dadosCurriculo['foto_tresDelete'] as $id_anexo) {
