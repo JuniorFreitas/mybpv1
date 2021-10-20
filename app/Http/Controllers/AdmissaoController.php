@@ -129,11 +129,12 @@ class AdmissaoController extends Controller
             ];
 
             if ($user->count() === 0) {
-                print_r('Dentro do IF');
-                print_r($userObj);
+
+
 
                 $usuario = $user->create($userObj);
-
+                print_r('Usuario');
+                print_r($usuario);
                 $dados['feedback']['banco_conta']['user_id'] = $usuario->id;
                 UsuarioConta::criarAtualizar($usuario->id, $dados['feedback']['banco_conta']);
 
