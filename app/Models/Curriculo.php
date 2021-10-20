@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
