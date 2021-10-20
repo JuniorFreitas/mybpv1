@@ -129,20 +129,14 @@ class AdmissaoController extends Controller
             ];
 
             if ($user->count() === 0) {
-
-
-
                 $usuario = $user->create($userObj);
 
                 $dados['feedback']['banco_conta']['user_id'] = $usuario->id;
                 UsuarioConta::criarAtualizar($usuario->id, $dados['feedback']['banco_conta']);
-                print_r('Dados Curriculo');
-                print_r($dadosCurriculo);
 
                 $usuario->Curriculo()->create($dadosCurriculo);
+
                 $candidato = Curriculo::find($usuario->id);
-                print_r('Candidato');
-                print_r($candidato);
 
                 if (isset($dadosCurriculo['foto_tresDelete'])) {
                     foreach ($dadosCurriculo['foto_tresDelete'] as $id_anexo) {
@@ -185,32 +179,15 @@ class AdmissaoController extends Controller
                         }
                     }
                 }
-                print_r('antes do dados feedback');
-                print_r($dadosFeedback);
+
                 $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
-                print_r('antes do ParecerRh');
-                print_r($dadosParecerRh);
                 $feedback->ParecerRh()->create($dadosParecerRh);
-
-                print_r('antes do ParecerRota');
-                print_r($dadosParecerRota);
                 $feedback->ParecerRota()->create($dadosParecerRota);
-
-                print_r('antes do ParecerTecnica');
-                print_r($dadosParecerTecnica);
                 $feedback->ParecerTecnica()->create($dadosParecerTecnica);
-
-                print_r('antes do ParecerTeste');
-                print_r($dadosParecerTeste);
                 $feedback->ParecerTeste()->create($dadosParecerTeste);
-
-                print_r('antes do ResultadoIntegrado');
-                print_r($dadosResultadoIntegrado);
                 $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                print_r('antes do Admissao');
-                print_r($dadosAdmissao);
                 $feedback->Admissao()->create($dadosAdmissao);
             } else {
 
@@ -299,7 +276,7 @@ class AdmissaoController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "error ADMISSAO AVULSA STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-//            \Log::debug($dados);
+            \Log::debug($dados);
             \Log::debug($msg);
             return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);

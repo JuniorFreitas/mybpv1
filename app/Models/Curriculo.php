@@ -229,15 +229,18 @@ class Curriculo extends Model
         "viajar" => "boolean",
         "lido" => "boolean",
         "usuario_lido" => "int",
-        "created_at" => "string",
-        "updated_at" => "string",
         "datalido" => "string",
         "filiacao_pai" => "string",
         "filiacao_mae" => "string",
+        'created_at' => 'date:d/m/Y \\à\\s H:m\\h',
+        'updated_at' => 'date:d/m/Y \\à\\s H:m\\h',
     ];
 
     protected $appends = ['idade', 'endereco_completo', 'rg_format'];
 
+    protected function serializeDate(DateTimeInterface $date) {
+        return $date->format('Y-m-d H:i:s');
+    }
 
 //    public function getCpfFormatAttribute()
     public function getCpfFormatAttribute()
