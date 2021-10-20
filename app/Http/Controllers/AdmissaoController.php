@@ -129,6 +129,9 @@ class AdmissaoController extends Controller
             ];
 
             if ($user->count() === 0) {
+                print_r('Dentro do IF');
+                print_r($userObj);
+
                 $usuario = $user->create($userObj);
 
                 $dados['feedback']['banco_conta']['user_id'] = $usuario->id;
@@ -293,7 +296,7 @@ class AdmissaoController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "error ADMISSAO AVULSA STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-            \Log::debug($dados);
+//            \Log::debug($dados);
             \Log::debug($msg);
             return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
