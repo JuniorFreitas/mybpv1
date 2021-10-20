@@ -294,11 +294,11 @@ class Curriculo extends Model
     }
 
     //Acessor ->nascimento
-    public function getCreatedAtAttribute($value)
-    {
-        $data = new DataHora($this->attributes['created_at']);
-        return $data->dataCompleta() . ' ' . $data->hora() . ':' . $data->minuto() . 'h';
-    }
+//    public function getCreatedAtAttribute($value)
+//    {
+//        $data = new DataHora($this->attributes['created_at']);
+//        return $data->dataCompleta() . ' ' . $data->hora() . ':' . $data->minuto() . 'h';
+//    }
 
     //Acessor ->nascimento
     public function getNascimentoAttribute($value)
