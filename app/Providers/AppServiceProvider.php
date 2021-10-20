@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if ($this->app->isProduction() || env('mix_ambiente') == 'prod') {
+        if ($this->app->isProduction() || env('MIX_AMBIENTE') == 'prod') {
             \URL::forceScheme('https');
         }
 
