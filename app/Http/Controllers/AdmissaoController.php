@@ -179,16 +179,32 @@ class AdmissaoController extends Controller
                         }
                     }
                 }
-
+                print_r('antes do dados feedback');
+                print_r($dadosFeedback);
                 $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
+                print_r('antes do ParecerRh');
+                print_r($dadosParecerRh);
                 $feedback->ParecerRh()->create($dadosParecerRh);
+
+                print_r('antes do ParecerRota');
+                print_r($dadosParecerRota);
                 $feedback->ParecerRota()->create($dadosParecerRota);
-                dd($dadosParecerTecnica);
+
+                print_r('antes do ParecerTecnica');
+                print_r($dadosParecerTecnica);
                 $feedback->ParecerTecnica()->create($dadosParecerTecnica);
+
+                print_r('antes do ParecerTeste');
+                print_r($dadosParecerTeste);
                 $feedback->ParecerTeste()->create($dadosParecerTeste);
+
+                print_r('antes do ResultadoIntegrado');
+                print_r($dadosResultadoIntegrado);
                 $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
+                print_r('antes do Admissao');
+                print_r($dadosAdmissao);
                 $feedback->Admissao()->create($dadosAdmissao);
             } else {
 
