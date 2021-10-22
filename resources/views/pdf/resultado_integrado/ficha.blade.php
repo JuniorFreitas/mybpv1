@@ -37,8 +37,8 @@
         |
         E-mail: <span>{{ $curriculo->email }}</span>
         <br/>
-        Cliente:
-        <span>{{ $dados->Cliente->tipo == \App\Models\Cliente::TIPO_PESSOA_JURIDICA ? $dados->Cliente->razao_social : $dados->Cliente->nome}}</span>
+        Empresa:
+        <span>{{ $dados->Empresa->nome }}</span>
         <br> Vaga:<span> {{ $dados->VagaSelecionada->nome }}</span> |
         UF Vaga: <span>{{ $curriculo->uf_vaga }}</span> | Ex Funcionário:<span> {{ $rh->ex_funcionario }}</span>
     </div>

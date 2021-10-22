@@ -251,7 +251,8 @@ class FeedbackCurriculo extends Model
         'empresa_id' => 'int',
     ];
 
-    protected function serializeDate(DateTimeInterface $date) {
+    protected function serializeDate(DateTimeInterface $date)
+    {
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -535,7 +536,12 @@ class FeedbackCurriculo extends Model
 
     public function BancoConta()
     {
-        return $this->hasOne(UsuarioConta::class, 'user_id','curriculo_id');
+        return $this->hasOne(UsuarioConta::class, 'user_id', 'curriculo_id');
+    }
+
+    public function Empresa()
+    {
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
     public function DocSelecao()

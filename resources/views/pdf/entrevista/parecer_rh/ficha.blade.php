@@ -7,6 +7,7 @@
     @php
         //$dados->FeedbackCurriculo->Curriculo = $dados->Curriculo;
         //$dados = $dados;
+        //dd()
     @endphp
     <h5 class="text-center">PARECER RH</h5>
 
@@ -36,8 +37,8 @@
         |
         E-mail: <span>{{ $dados->FeedbackCurriculo->Curriculo->email }}</span>
         <br/>
-        Cliente:
-        <span>{{ $dados->FeedbackCurriculo->Cliente->tipo == \App\Models\Cliente::TIPO_PESSOA_JURIDICA ? $dados->FeedbackCurriculo->Cliente->razao_social : $dados->FeedbackCurriculo->Cliente->nome}}</span>
+        Empresa:
+        <span>{{ $dados->FeedbackCurriculo->Empresa->nome }}</span>
         <br> Vaga:<span> {{ $dados->FeedbackCurriculo->VagaSelecionada->nome }}</span> |
         UF Vaga: <span>{{ $dados->FeedbackCurriculo->Curriculo->uf_vaga }}</span> | Ex
         Funcionário:<span> {{ $dados->ex_funcionario }}</span>
@@ -138,7 +139,7 @@
             <legend>Cursos de Formação</legend>
         </fieldset>
 
-        @forelse($dados->CursosFormacao as $item)
+        @forelse($dados->FeedbackCurriculo->CursosFormacoes as $item)
             Curso: <span>{{ $item->curso }}</span> <br>
             Instituição: <span>{{ $item->instituicao }}</span> <br>
             Data de Emissão: <span>{{ \MasterTag\DataHora::dataFormatada($item->emissao) }}</span> <br>
@@ -188,4 +189,5 @@
         <span>{{ (new \MasterTag\DataHora())->dataCompleta()}} às {{ (new \MasterTag\DataHora())->horaCompleta()}}</span><br>
         Usuário que emitiu a ficha: <span>{{ auth()->user()->nome }}</span>
     </div>
+
 @endsection

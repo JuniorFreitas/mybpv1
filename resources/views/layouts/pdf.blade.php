@@ -85,6 +85,14 @@
         p {
             font-size: 9pt;
         }
+        .footer {
+            font-size: 50px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: right;
+            /*z-index: 1;*/
+        }
     </style>
     @stack('style')
 </head>
