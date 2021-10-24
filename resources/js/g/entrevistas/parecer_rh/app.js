@@ -342,6 +342,7 @@ const app = new Vue({
                     this.tituloJanela = `#${data.feedback.id} Entrevista - ${data.feedback.curriculo.nome}`;
                     this.cadastrando = true;
                     this.preload = false;
+                    this.preloadForm = false;
                 })
                 .catch(error => {
                     this.preload = false;

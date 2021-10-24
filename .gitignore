@@ -22,3 +22,5 @@ clear.sh
 horizon.log
 supervisord.log
 supervisord.pid
+
+/.deploy/mybpin.pem

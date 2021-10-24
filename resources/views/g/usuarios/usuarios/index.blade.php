@@ -84,6 +84,7 @@
                         <option value="">Selecione...</option>
                         <option value="Administrador">Administrador</option>
                         <option value="Funcionario">Funcionário</option>
+                        <option value="Suporte">Suporte</option>
                     </select>
                 </div>
                 <div class="form-group">

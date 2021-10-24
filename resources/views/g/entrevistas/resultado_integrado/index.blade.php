@@ -308,7 +308,7 @@
                 </th>
                 {{-- <th>Cód</th> --}}
                 <th>Nome</th>
-                <th>Empresa</th>
+{{--                <th>Empresa</th>--}}
                 <th v-if="colunasTabela.pcd">PCD</th>
                 <th>Cargo</th>
                 <th>Enc. Doc</th>
@@ -348,9 +348,9 @@
                 <td class="text-center">
                     @{{ entrevista . curriculo . nome }}
                 </td>
-                <td class="text-center" v-if="cliente_id === 0  && colunasTabela.cliente">
-                    @{{ entrevista . cliente . razao_social }}
-                </td>
+{{--                <td class="text-center" v-if="cliente_id === 0  && colunasTabela.cliente">--}}
+{{--                    @{{ entrevista . cliente . razao_social }}--}}
+{{--                </td>--}}
                 <td class="text-center" v-show="colunasTabela.pcd">
                     @{{ entrevista . curriculo . pcd ? 'Sim' : 'Não' }}
                 </td>

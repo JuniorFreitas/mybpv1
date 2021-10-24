@@ -33,7 +33,7 @@
         E-mail: <span>{{ $dados->FeedbackCurriculo->Curriculo->email }}</span>
         <br/>
         Cliente:
-        <span>{{ $dados->FeedbackCurriculo->Cliente->tipo == \App\Models\Clientes::TIPO_PESSOA_JURIDICA ? $dados->FeedbackCurriculo->Cliente->razao_social : $dados->FeedbackCurriculo->Cliente->nome}}</span>
+        <span>{{ $dados->FeedbackCurriculo->Empresa->nome }}</span>
         <br> Vaga:<span> {{ $dados->FeedbackCurriculo->VagaSelecionada->nome }}</span> |
         UF Vaga: <span>{{ $dados->FeedbackCurriculo->Curriculo->uf_vaga }}</span> | Ex
         Funcionário:<span> {{ $dados->FeedbackCurriculo->ParecerRh->ex_funcionario }}</span>

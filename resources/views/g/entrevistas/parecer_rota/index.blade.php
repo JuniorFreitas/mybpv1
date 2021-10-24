@@ -551,7 +551,7 @@
                 </th>
                 <th class="text-center">CÓD</th>
                 <th>Nome</th>
-                <th v-if="cliente_id === 0 && colunasTabela.cliente">Empresa</th>
+{{--                <th v-if="cliente_id === 0 && colunasTabela.cliente">Empresa</th>--}}
                 <th class="text-center">Vaga</th>
                 <th class="text-center" v-show="colunasTabela.pcd">PCD</th>
                 <th class="text-center" v-show="colunasTabela.parecer_rh">Parecer RH Nota</th>
@@ -592,9 +592,9 @@
                     {{--                    <br>--}}
                     {{--                    @{{entrevista.curriculo.cpf}}--}}
                 </td>
-                <td class="text-center" v-if="cliente_id === 0 && colunasTabela.cliente">
-                    @{{entrevista.cliente.razao_social}}
-                </td>
+{{--                <td class="text-center" v-if="cliente_id === 0 && colunasTabela.cliente">--}}
+{{--                    @{{entrevista.cliente.razao_social}}--}}
+{{--                </td>--}}
                 <td class="text-center">
                     @{{entrevista.vaga_selecionada.nome}}
                 </td>
