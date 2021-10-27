@@ -14,6 +14,8 @@ const app = new Vue({
         cadastrando: false,
         atualizado: false,
         visualizar: false,
+        aprovando: false,
+
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
@@ -35,9 +37,7 @@ const app = new Vue({
             id: '',
             centro_custo_id: '',
 
-            cliente_id: '',
-            autocomplete_label_cliente_modal: '',
-            autocomplete_label_cliente_modal_anterior: '',
+            empresa_id: '',
 
             cargo_id: '',
             autocomplete_label_cargo_modal: '',
@@ -51,6 +51,7 @@ const app = new Vue({
             previsao_inicio: '',
             solicitante: '',
             observacao: '',
+            status_aprovacao: '',
 
             outras_informacoes: {
                 posicao: '',
@@ -60,6 +61,14 @@ const app = new Vue({
                 horario: '',
                 gestor: '',
                 ppra: '',
+
+                salario: '',
+                salario_valor: '',
+                salario_valor_format: '',
+                beneficio: '',
+                beneficio_excecao: '',
+                treinamento: '',
+                treinamento_excecao: '',
             }
         },
 
@@ -77,13 +86,9 @@ const app = new Vue({
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
                 autocomplete_label_anterior: '',
                 autocomplete_label: '',
-                caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
-                autocomplete_label_cliente_anterior: '',
-                autocomplete_label_cliente: '',
                 pages: 20,
                 campoBusca: '',
                 campoVaga: '',
-                campoCliente: '',
                 campoFiltro: '',
                 campoStatus: '',
 
@@ -122,25 +127,6 @@ const app = new Vue({
                 this.$refs.componente.buscar();
             }, 600);
         },
-        resetaCampoCliente() {
-            if (this.controle.dados.autocomplete_label_cliente_anterior !== this.controle.dados.autocomplete_label_cliente) {
-                this.controle.dados.autocomplete_label_cliente_anterior = '';
-                this.controle.dados.autocomplete_label_cliente = '';
-                this.controle.dados.campoCliente = '';
-                this.$refs.componente.buscar();
-            }
-        },
-        selecionaCliente(obj) {
-            this.controle.dados.campoCliente = obj.id;
-            this.controle.dados.autocomplete_label_cliente = obj.label;
-            this.controle.dados.autocomplete_label_cliente_anterior = obj.label;
-            this.controle.carregando = true;
-            setTimeout(() => {
-                this.$refs.componente.buscar();
-            }, 600);
-
-        },
-
 
         selecionaVagaModal(obj) {
             this.form.cargo_id = obj.id;
@@ -163,27 +149,6 @@ const app = new Vue({
                 }, 100);
             }
         },
-        selecionaClienteModal(obj) {
-            this.form.cliente_id = obj.id;
-            this.form.autocomplete_label_cliente_modal = obj.label;
-            this.form.autocomplete_label_cliente_modal_anterior = obj.label;
-            this.listaCentroCusto();
-        },
-        resetaCampoClienteModal() {
-            if (this.form.autocomplete_label_cliente_modal_anterior !== this.form.autocomplete_label_cliente_modal) {
-                this.form.autocomplete_label_cliente_modal_anterior = '';
-                this.form.autocomplete_label_cliente_modal = '';
-                this.form.cliente_id = '';
-                this.listaCentroCusto();
-                setTimeout(() => {
-                    if (this.form.cliente_id === '') {
-                        valida_campo_vazio($('#cliente_modal_' + this.hash), 1);
-                        $('#janelaCadastrar #cliente_modal_' + this.hash).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Cliente não pode ficar vazio');
-                    }
-                }, 100);
-            }
-        },
 
         formNovo() {
             this.cadastrado = false;
@@ -197,7 +162,6 @@ const app = new Vue({
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.leitura = false;
-            this.form.cliente_id = this.cliente_id === 0 ? this.form.cliente_id : this.cliente_id;
 
             this.listaAreasEtiquetas();
             this.listaCentroCusto();
@@ -226,7 +190,6 @@ const app = new Vue({
                     let data = response.data;
                     Object.assign(this.form, data);
 
-                    this.form.cliente_id = this.cliente_id === 0 ? this.form.cliente_id : this.cliente_id;
                     this.listaCentroCusto();
 
                     this.tituloJanela = `#${id} Planejamento - Requisição de vagas`;
@@ -245,20 +208,6 @@ const app = new Vue({
                 $('#janelaCadastrar #vaga_modal_' + this.hash).focus().trigger('blur');
                 mostraErro('', 'Campo CARGO não pode ficar vazio');
                 this.resetaCampoVagaModal();
-
-                $('#janelaCadastrar :input:visible').trigger('blur');
-                if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                    mostraErro('', 'Verifique os campos marcados')
-                    return false;
-                }
-
-                return false;
-            }
-
-            if (this.form.cliente_id === '') {
-                valida_campo_vazio($('#cliente_' + this.hash), 1);
-                mostraErro('', 'Campo CLIENTE não pode ficar vazio');
-                this.resetaCampoClienteModal();
                 return false;
             }
 
@@ -285,29 +234,15 @@ const app = new Vue({
 
         alterar() {
 
-            this.form.cliente_id = this.cliente_id === 0 ? this.form.cliente_id : this.cliente_id;
-
             if (this.form.cargo_id === '') {
                 valida_campo_vazio($('#vaga_modal_' + this.hash), 1);
                 $('#janelaCadastrar #vaga_modal_' + this.hash).focus().trigger('blur');
                 mostraErro('', 'Campo CARGO não pode ficar vazio');
                 this.resetaCampoVagaModal();
 
-                $('#janelaCadastrar :input:visible').trigger('blur');
-                if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                    mostraErro('', 'Verifique os campos marcados')
-                    return false;
-                }
-
                 return false;
             }
 
-            if (this.form.cliente_id === '') {
-                valida_campo_vazio($('#cliente_' + this.hash), 1);
-                mostraErro('', 'Campo CLIENTE não pode ficar vazio');
-                this.resetaCampoClienteModal();
-                return false;
-            }
 
             $('#janelaCadastrar :input:visible').trigger('blur');
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
@@ -321,6 +256,30 @@ const app = new Vue({
                 .then(response => {
                     let data = response.data;
                     mostraSucesso('', 'Solicitação alterada com sucesso!');
+                    $('#janelaCadastrar').modal('hide');
+                    this.$refs.componente.buscar();
+                    this.preload = false;
+                })
+                .catch(error => {
+                    this.preload = false;
+                })
+        },
+
+
+        aprovar() {
+
+            $('#janelaCadastrar :input:visible').trigger('blur');
+            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+                mostraErro('', 'Verifique os campos marcados')
+                return false;
+            }
+
+            this.preload = true;
+
+            axios.put(`${URL_ADMIN}/planejamento/requisicao-vaga/${this.form.id}/aprovar`, this.form)
+                .then(response => {
+                    let data = response.data;
+                    mostraSucesso('', 'Registro salvo com sucesso!');
                     $('#janelaCadastrar').modal('hide');
                     this.$refs.componente.buscar();
                     this.preload = false;
@@ -351,10 +310,10 @@ const app = new Vue({
         },
 
         listaCentroCusto() {
-            axios.post(`${URL_PUBLICO}/centro-custos/`, {'cliente_id': this.form.cliente_id})
+            axios.post(`${URL_PUBLICO}/centro-custos/`, {'empresa_id': this.form.empresa_id})
                 .then(res => {
                     this.centro_custos = res.data.centro_custos;
-                    this.form.centro_custo_id = '';
+                    // this.form.centro_custo_id = '';
                 })
                 .catch(error => {
                     this.preload = false;

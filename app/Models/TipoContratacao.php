@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -42,17 +43,22 @@ use Illuminate\Database\Eloquent\Model;
 class TipoContratacao extends Model
 {
     use HasFactory;
-
     protected $fillable = [
         'requisicao_vaga_id',
         'posicao',
         'processo',
+        'nome_indicacao',
         'contrato',
-        'local_trabalho',
         'horario',
         'gestor_id',
         'gestor',
         'ppra',
+        'salario',
+        'salario_valor',
+        'beneficio',
+        'beneficio_excecao',
+        'treinamento',
+        'treinamento_excecao',
     ];
 
     protected $casts = [
@@ -60,22 +66,44 @@ class TipoContratacao extends Model
         'requisicao_vaga_id' => 'int',
         'posicao' => 'string',
         'processo' => 'string',
+        'nome_indicacao' => 'string',
         'contrato' => 'string',
-        'local_trabalho' => 'string',
         'horario' => 'string',
         'gestor_id' => 'int',
         'gestor' => 'string',
-        'ppra' => 'string',
+        'ppra' => 'boolean',
+        'salario' => 'string',
+        'salario_valor' => 'float',
+        'beneficio' => 'string',
+        'beneficio_excecao' => 'string',
+        'treinamento' => 'string',
+        'treinamento_excecao' => 'string',
     ];
+
+    protected $appends = ['salario_valor_format'];
+
+
+    public function getSalarioValorFormatAttribute($value)
+    {
+        if (!is_null($this->attributes['salario_valor'])) {
+            return number_format($this->attributes['salario_valor'], 2, ',', '.');
+        }
+    }
+
+    public function setSalarioValorAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['salario_valor'] = Sistema::DinheiroInsert($value);
+        }
+    }
 
     public function Requisicao()
     {
         return $this->hasOne(RequisicaoVaga::class, 'id', 'requisicao_vaga_id');
     }
 
-    public function GestorUser()
+    public function GestorAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'gestor_id');
     }
-
 }
