@@ -24,6 +24,9 @@
             <a class="nav-item nav-link" id="nav-intermitente-tab" data-toggle="tab" href="#nav-intermitente" role="tab"
                @click="trocaAba('intermitente')"
                aria-controls="nav-intermitente" aria-selected="false">Mudança de Interminte p/ Fixo</a>
+            <a class="nav-item nav-link" id="nav-transferencia-tab" data-toggle="tab" href="#nav-transferencia" role="tab"
+               @click="trocaAba('transferencia')"
+               aria-controls="nav-transferencia" aria-selected="false">Transferência</a>
         </div>
     </nav>
     <div class="tab-content" id="nav-tabContent">
@@ -50,6 +53,10 @@
         <div class="tab-pane fade p-3" id="nav-intermitente" role="tabpanel" aria-labelledby="nav-intermitente-tab"
              v-if="abas.intermitente">
             <solicitacao-intermitente-fixo :cliente_id="cliente_id"></solicitacao-intermitente-fixo>
+        </div>
+        <div class="tab-pane fade p-3" id="nav-transferencia" role="tabpanel" aria-labelledby="nav-transferencia-tab"
+             v-if="abas.transferencia">
+            <solicitacao-transferencia :cliente_id="cliente_id"></solicitacao-transferencia>
         </div>
     </div>
 

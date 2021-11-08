@@ -60,7 +60,7 @@ class PublicoController extends Controller
 
     public function listaCentroCusto(Request $request)
     {
-        $centros = CentroCusto::whereAtivo(true)->whereClienteId($request->cliente_id)->get();
+        $centros = CentroCusto::whereAtivo(true)->get();
         return response()->json(['centro_custos' => $centros], 200);
     }
 

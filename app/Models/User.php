@@ -107,6 +107,8 @@ use MasterTag\DataHora;
  * @property-read \App\Models\UsuarioConta|null $BancoConta
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoPerfil
  * @property-read int|null $foto_perfil_count
+ * @property int|null $gestor
+ * @method static Builder|User whereGestor($value)
  */
 class User extends Authenticatable
 {
@@ -141,6 +143,7 @@ class User extends Authenticatable
         'ultimo_acesso',
         'device_token',
         'empresa_id',
+        'gestor',
     ];
 
     /**
@@ -181,7 +184,8 @@ class User extends Authenticatable
         'termos' => 'boolean',
         'ultimo_acesso' => 'datetime:d/m/Y H:i:s',
         'device_token' => 'string',
-        'empresa_id' => 'int'
+        'empresa_id' => 'int',
+        'gestor' => 'boolean'
     ];
 
     private $listaDeHabilidade = [];
