@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Scopes\ScopeClientesEmpresa;
+use App\Tenant\Traits\TenantTrait;
+use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -49,10 +51,24 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereValor($value)
  * @mixin \Eloquent
  * @property-read \App\Models\User|null $Colaborador
+ * @property string|null $tipo_aviso
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @property int|null $empresa_id
+ * @property int|null $gestor_id
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereTipoAviso($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserAprovacaoId($value)
  */
 class DemissaoPrevista extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
 
     protected $fillable = [
         'cliente_id',
@@ -60,12 +76,18 @@ class DemissaoPrevista extends Model
         'centro_custo_id',
         'aviso',
         'data_demissao',
-        'data_pagamento',
+        'tipo_aviso',
         'valor',
         'user_id',
         'solicitante',
         'status',
         'obs',
+        'user_aprovacao_id',
+        'obs_aprovacao',
+        'data_aprovacao',
+        'status_aprovacao',
+        'gestor_id',
+        'empresa_id',
     ];
 
     protected $casts = [
@@ -75,12 +97,17 @@ class DemissaoPrevista extends Model
         'centro_custo_id' => 'int',
         'aviso' => 'string',
         'data_demissao' => 'date:d/m/Y',
-        'data_pagamento' => 'date:d/m/Y',
         'valor' => 'float',
         'user_id' => 'int',
         'solicitante' => 'string',
         'status' => 'string',
         'obs' => 'string',
+        'user_aprovacao_id' => 'int',
+        'obs_aprovacao' => 'string',
+        'data_aprovacao' => 'date:d/m/Y',
+        'status_aprovacao' => 'string',
+        'gestor_id' => 'int',
+        'empresa_id' => 'int',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
     ];
@@ -142,17 +169,9 @@ class DemissaoPrevista extends Model
         return $this->hasOne(User::class, 'id', 'user_id');
     }
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
+    public function GestorAprovacao()
     {
-        static::creating(function ($model) {
-            $model->user_id = auth()->id();
-        });
-
-        static::updating(function ($model) {
-            $model->user_id = auth()->id();
-        });
-
-        static::addGlobalScope(new ScopeClientesEmpresa);
+        return $this->hasOne(User::class, 'id', 'gestor_id');
     }
+
 }

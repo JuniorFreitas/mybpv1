@@ -79,6 +79,6 @@ class Vaga extends Model
 
     public function Empresa()
     {
-        return $this->hasOne(Cliente::class, 'id', 'cliente_id');
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 }

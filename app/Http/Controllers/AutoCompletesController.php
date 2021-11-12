@@ -138,9 +138,10 @@ class AutoCompletesController extends Controller
 
     }
 
-    public function colaboradores(Request $request, $cliente_id)
+    public function colaboradores(Request $request)
     {
         $busca = $request->query('busca');
+
         if ($busca == '') {
             return response()->json([], 201);
         }
@@ -148,13 +149,13 @@ class AutoCompletesController extends Controller
 
         $busca = $request->query('busca');
 
-        return $feedback = FeedbackCurriculo::whereClienteId($cliente_id)->whereHas('Admissao', function ($q) {
+        return FeedbackCurriculo::whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO']);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
-        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome', 'Cliente:id,nome_fantasia')->take($quantidade)
+        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome} - {$item->Cliente->nome_fantasia}";
+                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome}";
                 return $item;
             });
     }
@@ -188,42 +189,19 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
 
         $busca = $request->query('busca');
-        return $feedback = FeedbackCurriculo::whereClienteId(auth()->user()->cliente_id)
-            ->whereHas('Admissao', function ($q) {
-                $q->whereIn('status', ['ADMITIDO']);
+        return FeedbackCurriculo::whereHas('Admissao', function ($q) {
+                $q->whereIn('status', ['ADMITIDO'])->whereTipoAdmissao('INTERMITENTE');
             })->whereHas('Curriculo', function ($q) use ($busca) {
                 $q->where('nome', 'like', '%' . $busca . '%');
             })->take($quantidade)
-            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome', 'Cliente:id,nome_fantasia', 'Exame', 'Curriculo.Treinamentos.Vencimentos')->take($quantidade)
+            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome} - {$item->Cliente->nome_fantasia}";
+                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome}";
                 return $item;
             });
     }
 
-    public function colaboradorIntermitenteCliente(Request $request,$cliente_id)
-    {
-        $busca = $request->query('busca');
-        if ($busca == '') {
-            return response()->json([], 201);
-        }
-        $quantidade = $request->query('rows');
-
-        $busca = $request->query('busca');
-        return $feedback = FeedbackCurriculo::whereClienteId($cliente_id)
-            ->whereHas('Admissao', function ($q) {
-                $q->whereIn('status', ['ADMITIDO'])->whereIn('tipo_admissao', ['INTERMITENTE']);
-            })->whereHas('Curriculo', function ($q) use ($busca) {
-                $q->where('nome', 'like', '%' . $busca . '%');
-            })->take($quantidade)
-            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome', 'Cliente:id,nome_fantasia', 'Exame')->take($quantidade)
-            ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome} - {$item->Cliente->nome_fantasia}";
-                return $item;
-            });
-    }
-
-    public function cargosEmpresa(Request $request, Cliente $cliente)
+    public function cargosEmpresa(Request $request)
     {
         $busca = $request->query('busca');
         if ($busca == '') {
@@ -233,8 +211,7 @@ class AutoCompletesController extends Controller
 
         $busca = $request->query('busca');
 
-        return $cliente->Cargos()
-            ->where('nome', 'like', '%' . $busca . '%')
+        return Vaga::where('nome', 'like', '%' . $busca . '%')
             ->whereAtivo(true)
             ->take($quantidade)
             ->get()->map(function ($item) {
@@ -277,6 +254,28 @@ class AutoCompletesController extends Controller
         return auth()->user()->Empresa->EmpresaFuncionarios()->select(['id','nome'])->where('nome', 'like', '%' . $busca . '%')
             ->take($quantidade)
             ->get()->map(function ($item) {
+                $item->label = $item->nome;
+                return $item;
+            });
+    }
+
+
+    public function gestoresAtivos(Request $request)
+    {
+        $busca = $request->query('busca');
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+        $quantidade = $request->query('rows');
+
+        $busca = $request->query('busca');
+
+        $user = \App\Models\User::whereAtivo(true)->whereGestor(true);
+
+        return $user->where('nome', 'like', '%' . $busca . '%')
+            ->take($quantidade)
+            ->get()
+            ->map(function ($item) {
                 $item->label = $item->nome;
                 return $item;
             });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovar;
 use App\Models\MudaCargoPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ class MudaCargoPrevistaController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
@@ -40,10 +41,10 @@ class MudaCargoPrevistaController extends Controller
         $dados = $request->input();
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
+        $dados['user_id'] = auth()->user()->id;
 
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
                 'cargo_anterior_id' => 'required',
@@ -75,7 +76,7 @@ class MudaCargoPrevistaController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\MudaCargoPrevista  $mudaCargoPrevista
+     * @param \App\Models\MudaCargoPrevista $mudaCargoPrevista
      * @return \Illuminate\Http\Response
      */
     public function show(MudaCargoPrevista $mudaCargoPrevista)
@@ -86,7 +87,7 @@ class MudaCargoPrevistaController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\MudaCargoPrevista  $mudaCargoPrevista
+     * @param \App\Models\MudaCargoPrevista $mudaCargoPrevista
      * @return MudaCargoPrevista|\Illuminate\Http\Response
      */
     public function edit(MudaCargoPrevista $mudaCargoPrevista)
@@ -94,8 +95,8 @@ class MudaCargoPrevistaController extends Controller
         $mudaCargoPrevista->autocomplete_label_colaborador = $mudaCargoPrevista->Colaborador ? $mudaCargoPrevista->Colaborador->nome : '';
         $mudaCargoPrevista->autocomplete_label_colaborador_anterior = $mudaCargoPrevista->Colaborador ? $mudaCargoPrevista->Colaborador->nome : '';
 
-        $mudaCargoPrevista->autocomplete_label_cliente_modal = $mudaCargoPrevista->Cliente ? $mudaCargoPrevista->Cliente->razao_social . ' | ' . $mudaCargoPrevista->Cliente->cnpj : '';
-        $mudaCargoPrevista->autocomplete_label_cliente_modal_anterior = $mudaCargoPrevista->Cliente ? $mudaCargoPrevista->Cliente->razao_social . ' | ' . $mudaCargoPrevista->Cliente->cnpj : '';
+        $mudaCargoPrevista->autocomplete_label_gestor_modal = $mudaCargoPrevista->GestorAprovacao ? $mudaCargoPrevista->GestorAprovacao->nome : '';
+        $mudaCargoPrevista->autocomplete_label_gestor_modal_anterior = $mudaCargoPrevista->GestorAprovacao ? $mudaCargoPrevista->GestorAprovacao->nome : '';
 
         $mudaCargoPrevista->autocomplete_label_cargoanterior = $mudaCargoPrevista->CargoAnterior ? $mudaCargoPrevista->CargoAnterior->nome : '';
         $mudaCargoPrevista->autocomplete_label_cargoanterior_anterior = $mudaCargoPrevista->CargoAnterior ? $mudaCargoPrevista->CargoAnterior->nome : '';
@@ -109,8 +110,8 @@ class MudaCargoPrevistaController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\MudaCargoPrevista  $mudaCargoPrevista
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\MudaCargoPrevista $mudaCargoPrevista
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function update(Request $request, MudaCargoPrevista $mudaCargoPrevista)
@@ -118,10 +119,10 @@ class MudaCargoPrevistaController extends Controller
         $dados = $request->input();
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
+        $dados['user_id'] = auth()->user()->id;
 
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
                 'cargo_anterior_id' => 'required',
@@ -153,34 +154,72 @@ class MudaCargoPrevistaController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\MudaCargoPrevista  $mudaCargoPrevista
+     * @param \App\Models\MudaCargoPrevista $mudaCargoPrevista
      * @return \Illuminate\Http\Response
      */
     public function destroy(MudaCargoPrevista $mudaCargoPrevista)
     {
         //
     }
+
+
+    public function aprovar(Request $request, MudaCargoPrevista $mudaCargoPrevista)
+    {
+        $this->authorize('aprovar_por_gestor');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $mudaCargoPrevista->update([
+                'user_aprovacao_id' => auth()->id(),
+                'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                'obs_aprovacao' => $dados['obs_aprovacao'],
+                'status_aprovacao' => $dados['status_aprovacao'],
+            ]);
+            DB::commit();
+            JobMudaCargoPrevistaAprovar::dispatch($mudaCargoPrevista);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar Mudança de Cargo:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
+
     public function atualizar(Request $request)
     {
         $resultado = MudaCargoPrevista::with(
-            'Cliente:id,razao_social,area_id',
             'CentroCusto',
             'CargoAnterior',
             'NovoCargo',
             'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo');
+            'Colaborador:id,nome,login,tipo,ativo','GestorAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
         }
 
-        if ($request->filled('campoCliente')) {
-            $resultado->whereClienteId($request->campoCliente);
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Colaborador', function ($q) use ($request) {
+                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('id', $request->campoBusca);
+            });
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
+            $resultado->whereStatusAprovacao($status);
+        }
+
+        if (!auth()->user()->can('gestao_rh')){
+            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
@@ -191,6 +230,7 @@ class MudaCargoPrevistaController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
+                'aprovar_por_gestor' => auth()->user()->can('aprovar_por_gestor'),
             ]
         ]);
     }

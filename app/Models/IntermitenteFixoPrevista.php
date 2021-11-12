@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeClientesEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -59,7 +60,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class IntermitenteFixoPrevista extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
 
     protected $fillable = [
         'cliente_id',
@@ -70,7 +71,13 @@ class IntermitenteFixoPrevista extends Model
         'novo_cargo_id',
         'novo_salario',
         'user_id',
-        'obs',
+        'motivos',
+        'user_aprovacao_id',
+        'data_aprovacao',
+        'obs_aprovacao',
+        'status_aprovacao',
+        'empresa_id',
+        'gestor_id',
     ];
 
     protected $casts = [
@@ -84,9 +91,16 @@ class IntermitenteFixoPrevista extends Model
         'novo_salario' => 'float',
 
         'user_id' => 'int',
-        'obs' => 'string',
+        'motivos' => 'string',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
+
+        'user_aprovacao_id' => 'int',
+        'data_aprovacao' => 'date:d/m/Y',
+        'obs_aprovacao' => 'string',
+        'status_aprovacao' => 'string',
+        'empresa_id' => 'int',
+        'gestor_id'=>'int'
     ];
 
     protected function serializeDate(DateTimeInterface $date)
@@ -147,17 +161,9 @@ class IntermitenteFixoPrevista extends Model
         return $this->hasOne(Vaga::class, 'id', 'novo_cargo_id');
     }
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
+    public function GestorAprovacao()
     {
-        static::creating(function ($model) {
-            $model->user_id = auth()->id();
-        });
-
-        static::updating(function ($model) {
-            $model->user_id = auth()->id();
-        });
-
-        static::addGlobalScope(new ScopeClientesEmpresa);
+        return $this->hasOne(User::class, 'id', 'gestor_id');
     }
+
 }

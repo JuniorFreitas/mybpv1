@@ -4,6 +4,7 @@ import SolicitacaoAdmissao from "../../../components/planejamento/movimentacao/S
 import SolicitacaoValorExtra from "../../../components/planejamento/movimentacao/SolicitacaoValorExtra";
 import SolicitacaoMudaCargo from "../../../components/planejamento/movimentacao/SolicitacaoMudaCargo";
 import SolicitacaoIntermitenteFixo from "../../../components/planejamento/movimentacao/SolicitacaoIntermitenteFixo";
+import SolicitacaoTransferencia from "../../../components/planejamento/movimentacao/SolicitacaoTransferencia";
 
 const app = new Vue({
     el: '#app',
@@ -14,6 +15,7 @@ const app = new Vue({
         'solicitacao-valor-extra': SolicitacaoValorExtra,
         'solicitacao-muda-cargo': SolicitacaoMudaCargo,
         'solicitacao-intermitente-fixo': SolicitacaoIntermitenteFixo,
+        'solicitacao-transferencia': SolicitacaoTransferencia,
     },
     data: {
         preload: false,

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Scopes\ScopeClientesEmpresa;
+use App\Models\User;
+use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -48,10 +50,35 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserId($value)
  * @mixin \Eloquent
  * @property-read \App\Models\User|null $Colaborador
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @property bool $tem_faltas
+ * @property int|null $qnt_faltas
+ * @property int|null $user_rh_id
+ * @property string|null $resposta_rh
+ * @property string|null $obs_rh
+ * @property mixed|null $data_aprovacao_rh
+ * @property int|null $empresa_id
+ * @property-read User|null $GestorAprovacao
+ * @property-read User|null $QuemAprovou
+ * @property-read User|null $RhAprovacao
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObsRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereQntFaltas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereRespostaRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereTemFaltas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserRhId($value)
  */
 class FeriasPrevista extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
 
     protected $fillable = [
         'cliente_id',
@@ -65,6 +92,19 @@ class FeriasPrevista extends Model
         'solicitante',
         'status',
         'obs',
+
+        'user_aprovacao_id',
+        'obs_aprovacao',
+        'data_aprovacao',
+        'status_aprovacao',
+        'gestor_id',
+        'tem_faltas',
+        'qnt_faltas',
+        'user_rh_id',
+        'resposta_rh',
+        'obs_rh',
+        'data_aprovacao_rh',
+        'empresa_id'
     ];
 
     protected $casts = [
@@ -80,11 +120,26 @@ class FeriasPrevista extends Model
         'solicitante' => 'string',
         'status' => 'string',
         'obs' => 'string',
+
+        'user_aprovacao_id' => 'int',
+        'obs_aprovacao' => 'string',
+        'data_aprovacao' => 'date:d/m/Y',
+        'status_aprovacao' => 'string',
+        'gestor_id' => 'int',
+        'tem_faltas' => 'boolean',
+        'qnt_faltas' => 'int',
+        'user_rh_id' => 'int',
+        'resposta_rh' => 'string',
+        'obs_rh' => 'string',
+        'data_aprovacao_rh' => 'date:d/m/Y',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
+
+        'empresa_id' => 'int'
     ];
 
-    protected function serializeDate(DateTimeInterface $date) {
+    protected function serializeDate(DateTimeInterface $date)
+    {
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -116,7 +171,7 @@ class FeriasPrevista extends Model
 
     public function Colaborador()
     {
-        return $this->hasOne(User::class, 'id', 'colaborador_id');
+        return $this->hasOne(Curriculo::class, 'id', 'colaborador_id');
     }
 
     public function CentroCusto()
@@ -129,17 +184,19 @@ class FeriasPrevista extends Model
         return $this->hasOne(User::class, 'id', 'user_id');
     }
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
+    public function QuemAprovou()
     {
-        static::creating(function ($model) {
-            $model->user_id = auth()->id();
-        });
-
-        static::updating(function ($model) {
-            $model->user_id = auth()->id();
-        });
-
-        static::addGlobalScope(new ScopeClientesEmpresa);
+        return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
     }
+
+    public function GestorAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_id');
+    }
+
+    public function RhAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'user_rh_id');
+    }
+
 }
