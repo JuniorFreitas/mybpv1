@@ -2,6 +2,7 @@
 
 namespace App\Scopes;
 
+use App\Models\Curriculo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -17,10 +18,8 @@ class ScopeOrderFeedback implements Scope
      */
     public function apply(Builder $builder, Model $model)
     {
-        $builder->select('feedback_curriculos.*')
-            ->join('curriculos', 'curriculos.id', '=', 'feedback_curriculos.curriculo_id')
-            ->orderBy('curriculos.nome');
-
+        $builder->orderBy(Curriculo::select('nome')
+            ->whereColumn('feedback_curriculos.curriculo_id', 'curriculos.id'));
         return $builder;
     }
 }

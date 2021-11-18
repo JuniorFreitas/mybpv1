@@ -11,5 +11,5 @@ ssh  ubuntu@100.24.12.79 <<-EOF
     git commit -m "fixed"
     git pull origin master
     sh deployDocker.sh
-#    npm run prod
+    npm run prod
 EOF
