@@ -235,7 +235,6 @@ class TreinamentoController extends Controller
         })->with(
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
             'VagaSelecionada:id,nome',
-            'Cliente:id,nome_fantasia,nome',
             'Admissao.AreaEtiqueta',
             'Curriculo.FotoTres:id',
             'Treinamento.Vencimentos',
@@ -386,11 +385,6 @@ class TreinamentoController extends Controller
             $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
                 $query->wherePcd($campoPcd);
             });
-        }
-
-        if ($request->filled('campoCliente')) {
-            $resultado->whereClienteId(106);
-//            $resultado->whereClienteId($request->campoCliente);
         }
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
