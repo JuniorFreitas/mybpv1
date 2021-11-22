@@ -289,20 +289,20 @@
                 </div>
             </div>
 
-            @if(!Request::has('cliente_id'))
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                    <div class="form-group">
-                        <label>Por Cliente</label>
-                        <autocomplete :disabled="controle.carregando"
-                                      :caminho="controle.dados.caminho_cliente_autocomplete"
-                                      :valido="controle.dados.campoCliente !== ''"
-                                      v-model="controle.dados.autocomplete_label_cliente"
-                                      placeholder="Por cliente"
-                                      @onblur="resetaCampoCliente"
-                                     @onselect="selecionaCliente"></autocomplete>
-                    </div>
-                </div>
-            @endif
+{{--            @if(!Request::has('cliente_id'))--}}
+{{--                <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
+{{--                    <div class="form-group">--}}
+{{--                        <label>Por Cliente</label>--}}
+{{--                        <autocomplete :disabled="controle.carregando"--}}
+{{--                                      :caminho="controle.dados.caminho_cliente_autocomplete"--}}
+{{--                                      :valido="controle.dados.campoCliente !== ''"--}}
+{{--                                      v-model="controle.dados.autocomplete_label_cliente"--}}
+{{--                                      placeholder="Por cliente"--}}
+{{--                                      @onblur="resetaCampoCliente"--}}
+{{--                                     @onselect="selecionaCliente"></autocomplete>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            @endif--}}
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
                 <label>Áreas</label>
@@ -535,8 +535,6 @@
                     </th>
                     <th class="text-center">ID</th>
                     <th>Nome</th>
-                    {{--                    <th>CPF</th>--}}
-                    <th class="text-center">Cliente</th>
                     <th class="text-center">Vaga</th>
                     <th class="text-center">Cargo</th>
                     <th class="text-center">Área</th>
@@ -573,14 +571,7 @@
                     </td>
                     <td>
                         @{{resultado.curriculo.nome}} <br>
-                        CPF: @{{resultado.curriculo.cpf}}
-                    </td>
-                    {{--                    <td>--}}
-                    {{--                        @{{resultado.curriculo.cpf}}--}}
-                    {{--                    </td>--}}
-                    <td class="text-center">
-                        @{{resultado.cliente.nome_fantasia ?
-                        resultado.cliente.nome_fantasia : resultado.cliente.nome}}
+{{--                        CPF: @{{resultado.curriculo.cpf}}--}}
                     </td>
                     <td class="text-center">
                         @{{resultado.vaga_selecionada.nome}}

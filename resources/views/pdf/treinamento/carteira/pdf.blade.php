@@ -12,21 +12,21 @@
                         <tr>
                             <td colspan="3"
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
-                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+{{--                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
                                     <img src="https://sgibpse.com.br/logo_bpse_color.png" alt=""
                                          style="height: 0.6cm">
                                     <br>
-                                @else
-                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt=""
-                                         style="height: 0.6cm">
-                                    <br>
-                                @endif
+{{--                                @else--}}
+{{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt=""--}}
+{{--                                         style="height: 0.6cm">--}}
+{{--                                    <br>--}}
+{{--                                @endif--}}
                                 <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="3" style="height: 0.02cm; border-top:none;">
-                                Empresa: {{ $treinamento->FeedbackCurriculo->Cliente->razao_social }}
+                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
                             </td>
                         </tr>
                         <tr>
@@ -273,12 +273,12 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+{{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
                             <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
                             <br>
-                        @else
-                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">
-                        @endif
+{{--                        @else--}}
+{{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
+{{--                        @endif--}}
 
                     </div>
                     <div class="content">
@@ -311,12 +311,12 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+{{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
                             <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
                             <br>
-                        @else
-                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">
-                        @endif
+{{--                        @else--}}
+{{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
+{{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -357,7 +357,7 @@
                                     style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
-                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Cliente->apelido }}</span></span>
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
                                     style="font-size: 6.8pt;">
@@ -386,20 +386,20 @@
                         <tr>
                             <td colspan="3"
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
-                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+{{--                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
                                     <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="" style="height: 0.6cm">
                                     <br>
-                                @else
-                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}"
-                                         style="height: 0.6cm" alt="">
-                                @endif
+{{--                                @else--}}
+{{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}"--}}
+{{--                                         style="height: 0.6cm" alt="">--}}
+{{--                                @endif--}}
 
                                 <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="3" style="height: 0.02cm; border-top:none;">
-                                Empresa: {{ $treinamento->FeedbackCurriculo->Cliente->razao_social }}
+                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
                             </td>
                         </tr>
                         <tr>
@@ -534,24 +534,24 @@
                             </td>
                         </tr>
 
-                        <tr style="height: 151px; word-break: break-word;">
-                            <td
-                                style="text-align: center; vertical-align: top; border-top:none; padding: 2px 5px 0px 5px;">
-                        <span style="font-size: 4.5pt; line-height: 6.90pt; ">
-                            <br>
-                            <strong>POLITICA DE EHS</strong> <br>
-                            {{$treinamento->FeedbackCurriculo->Cliente->politica_ehs}}
-                        </span>
-                            </td>
-                        </tr>
+{{--                        <tr style="height: 151px; word-break: break-word;">--}}
+{{--                            <td--}}
+{{--                                style="text-align: center; vertical-align: top; border-top:none; padding: 2px 5px 0px 5px;">--}}
+{{--                        <span style="font-size: 4.5pt; line-height: 6.90pt; ">--}}
+{{--                            <br>--}}
+{{--                            <strong>POLITICA DE EHS</strong> <br>--}}
+{{--                            {{$treinamento->FeedbackCurriculo->Cliente->politica_ehs}}--}}
+{{--                        </span>--}}
+{{--                            </td>--}}
+{{--                        </tr>--}}
 
 
-                        <tr>
-                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
-                                CONTATO {{ $treinamento->FeedbackCurriculo->Cliente->apelido }}
-                                : {{$treinamento->FeedbackCurriculo->Cliente->tel_principal}}
-                            </td>
-                        </tr>
+{{--                        <tr>--}}
+{{--                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">--}}
+{{--                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }}--}}
+{{--                                : {{$treinamento->FeedbackCurriculo->Cliente->tel_principal}}--}}
+{{--                            </td>--}}
+{{--                        </tr>--}}
 
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center; font-weight: bold;">
@@ -636,12 +636,12 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+{{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
                             <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
                             <br>
-                        @else
-                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">
-                        @endif
+{{--                        @else--}}
+{{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
+{{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -673,12 +673,12 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+{{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
                             <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
                             <br>
-                        @else
-                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">
-                        @endif
+{{--                        @else--}}
+{{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
+{{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -719,13 +719,13 @@
                                     style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
-                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Cliente->apelido }}</span></span>
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome }}</span></span>
                         </h6>
-                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
-                                    style="font-size: 6.8pt;">
-                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}
-                                </span></span>
-                        </h6>
+{{--                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span--}}
+{{--                                    style="font-size: 6.8pt;">--}}
+{{--                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}--}}
+{{--                                </span></span>--}}
+{{--                        </h6>--}}
                         <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span
                                     style="font-size: 6.8pt;">PERMANENTE</span></span>
                         </h6>
