@@ -454,7 +454,7 @@
         </div>
 
         <div class="col-12">
-            <div class="row">
+            <div class="row mt-2">
                 <button type="button" class="btn btn-sm btn-success mr-1" :disabled="controle.carregando"
                         :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
@@ -477,34 +477,34 @@
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
 
-                <form target="_blank"
-                      action="{{ \App\Models\Sistema::UrlServidor }}/carteira-etiqueta/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"
-                      {{--                      action="{{ route('carteira.excel') }}"--}}
-                      method="get">
-                    @csrf
-                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
-                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">
-                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">
-                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
-                    <input type="hidden" name="campoArea" :value="controle.dados.campoArea">
-                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">
-                    <input type="hidden" name="campoCargo" :value="controle.dados.campoCargo">
-                    <input type="hidden" name="campo_treinados" :value="controle.dados.campo_treinados">
-                    <input type="hidden" name="campoNr_trinta_tres" :value="controle.dados.campoNr_trinta_tres">
-                    <input type="hidden" name="campoNr_trinta_cinco" :value="controle.dados.campoNr_trinta_cinco">
-                    <input type="hidden" name="campoNr_ebtv" :value="controle.dados.campoNr_ebtv">
-                    <input type="hidden" name="campoAdmitido" :value="controle.dados.campoAdmitido">
-                    <input type="hidden" name="campoCracha" :value="controle.dados.campoCracha">
-                    <input type="hidden" name="campoFoto" :value="controle.dados.campoFoto">
-                    <input type="hidden" name="campo_dataInicio" :value="controle.dados.campo_dataInicio">
-                    <input type="hidden" name="campo_dataFim" :value="controle.dados.campo_dataFim">
+{{--                <form target="_blank"--}}
+{{--                      action="{{ \App\Models\Sistema::UrlServidor }}/carteira-etiqueta/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
+{{--                                            action="{{ route('carteira.excel') }}"--}}
+{{--                      method="get">--}}
+{{--                    @csrf--}}
+{{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
+{{--                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">--}}
+{{--                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">--}}
+{{--                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">--}}
+{{--                    <input type="hidden" name="campoArea" :value="controle.dados.campoArea">--}}
+{{--                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">--}}
+{{--                    <input type="hidden" name="campoCargo" :value="controle.dados.campoCargo">--}}
+{{--                    <input type="hidden" name="campo_treinados" :value="controle.dados.campo_treinados">--}}
+{{--                    <input type="hidden" name="campoNr_trinta_tres" :value="controle.dados.campoNr_trinta_tres">--}}
+{{--                    <input type="hidden" name="campoNr_trinta_cinco" :value="controle.dados.campoNr_trinta_cinco">--}}
+{{--                    <input type="hidden" name="campoNr_ebtv" :value="controle.dados.campoNr_ebtv">--}}
+{{--                    <input type="hidden" name="campoAdmitido" :value="controle.dados.campoAdmitido">--}}
+{{--                    <input type="hidden" name="campoCracha" :value="controle.dados.campoCracha">--}}
+{{--                    <input type="hidden" name="campoFoto" :value="controle.dados.campoFoto">--}}
+{{--                    <input type="hidden" name="campo_dataInicio" :value="controle.dados.campo_dataInicio">--}}
+{{--                    <input type="hidden" name="campo_dataFim" :value="controle.dados.campo_dataFim">--}}
 
-                    <button type="submit" class="btn btn-sm btn-primary ml-1"
-                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
-                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>
-                </form>
+{{--                    <button type="submit" class="btn btn-sm btn-primary ml-1"--}}
+{{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">--}}
+{{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
+{{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
+{{--                    </button>--}}
+{{--                </form>--}}
 
                 @if (auth()->user()->cliente_id != \App\Models\User::BPSE)
                     {{--                    <button class="btn btn-sm btn-primary ml-1" @click.prevent="abriJanelaEnviarAviso"--}}

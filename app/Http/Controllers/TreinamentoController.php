@@ -420,7 +420,6 @@ class TreinamentoController extends Controller
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
     }
 
-
     public function enviarCarteiraEmail(Request $request)
     {
         $dados = $request->input();
@@ -450,14 +449,14 @@ class TreinamentoController extends Controller
 
     public function carteiraIndividual($curriculo)
     {
-        $treinamento = Treinamento::find(\Crypt::decrypt($curriculo));
-        $treinamento->update([
+        $treinamentos = Treinamento::whereId(\Crypt::decrypt($curriculo))->get();
+        $treinamentos->first()->update([
             'email_aberto' => true,
             'data_email_aberto' => (new DataHora())->dataHoraInsert()
         ]);
 
-
-        return view('pdf.treinamento.carteira.individualEmail', compact('treinamento'));
+        return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
+//        return view('pdf.treinamento.carteira.individualEmail', compact('treinamento'));
     }
 
     //Excel

@@ -317,6 +317,11 @@ class User extends Authenticatable
     }
 
     //--------------------------------
+    public function DadosEmpresa()
+    {
+        return $this->hasOne(Cliente::class, 'id', 'empresa_id');
+    }
+
     public function ConfigEmpresa()
     {
         return $this->hasOne(EmpresaConfig::class, 'empresa_id', 'empresa_id');
