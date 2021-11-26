@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Pivot\TreinamentoVencimento;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
@@ -99,7 +100,9 @@ class Treinamento extends Model
         'enviou_id' => 'int',
         'email_envio' => 'string',
         'email_aberto' => 'boolean',
-        'data_email_aberto' => 'string'
+        'data_email_aberto' => 'date:d/m/Y \\à\\s H:m\\h',
+        'created_at' => 'date:d/m/Y \\à\\s H:m\\h',
+        'updated_at' => 'date:d/m/Y \\à\\s H:m\\h',
     ];
 
     protected $appends = ['token'];
@@ -107,6 +110,10 @@ class Treinamento extends Model
     public function getTokenAttribute()
     {
         return \Crypt::encrypt($this->attributes['id']);
+    }
+
+    protected function serializeDate(DateTimeInterface $date) {
+        return $date->format('Y-m-d H:i:s');
     }
 
 //    public function getUpdatedAtAttribute($value)
