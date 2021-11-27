@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\carteiraEtiquetaExport;
 use App\Models\ExameTreinamento;
 use App\Models\FeedbackCurriculo;
+use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
 use App\Models\Treinamento;
 use App\Models\Vencimento;
@@ -103,20 +104,18 @@ class TreinamentoController extends Controller
                     return $item['fez_treinamento'];
                 });
 
-                dd($listaVencimentos);
                 foreach ($listaVencimentos as $lista) {
                     $dataHora = new DataHora($lista['data_treinamento']);
                     $dataTreinamento = $dataHora->dataInsert();
                     if ($dados['tipo'] == 'Parada') {
                         $dataVencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
                     } else {
-
                         $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                     }
 
                     $treinamento->Vencimentos()->attach($lista['id'], [
                         'data_treinamento' => $dataTreinamento,
-                        'data_vencimento' => (new DataHora($dataVencimento. " 00:00:00"))->dataInsert(),
+                        'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
                         'numero_fat' => $lista['numero_fat']
                     ]);
 
@@ -125,7 +124,7 @@ class TreinamentoController extends Controller
 
             }
 //            dd('aqui');
-//            DB::commit();
+            DB::commit();
 
             return response()->json([], 201);
         } catch (\Exception $e) {

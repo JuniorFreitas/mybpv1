@@ -48,11 +48,15 @@ class TreinamentoVencimento extends Pivot
     }
 
     protected $fillable = [
+        'vencimento_id',
+        'treinamento_id',
         'data_vencimento',
         'data_treinamento',
         'numero_fat'
     ];
     protected $casts = [
+        'vencimento_id' => 'int',
+        'treinamento_id' => 'int',
         'data_vencimento' => 'date:d/m/Y',
         'data_treinamento' => 'date:d/m/Y',
         'numero_fat' => 'string'
@@ -70,17 +74,17 @@ class TreinamentoVencimento extends Pivot
         }
         return null;
     }
-//
-//    //Modificador ->data_vencimento
-//    public function setDataVencimentoAttribute($value)
-//    {
-//        if ($value) {
-//            $data = new DataHora($value);
-//            $this->attributes['data_vencimento'] = $data->dataInsert();
-//        }else{
-//            $this->attributes['data_vencimento'] = null;
-//        }
-//    }
+
+    //Modificador ->data_vencimento
+    public function setDataVencimentoAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($value);
+            $this->attributes['data_vencimento'] = $data->dataInsert();
+        }else{
+            $this->attributes['data_vencimento'] = null;
+        }
+    }
 
     public function getDataTreinamentoAttribute($value)
     {
@@ -89,15 +93,15 @@ class TreinamentoVencimento extends Pivot
             return $data->dataCompleta();
         }
     }
-//
-//    //Modificador ->data_treinamento
-//    public function setDataTreinamentoAttribute($value)
-//    {
-//        if ($value) {
-//            $data = new DataHora($value);
-//            $this->attributes['data_treinamento'] = $data->dataInsert();
-//        }else{
-//            $this->attributes['data_vencimento'] = null;
-//        }
-//    }
+
+    //Modificador ->data_treinamento
+    public function setDataTreinamentoAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($value);
+            $this->attributes['data_treinamento'] = $data->dataInsert();
+        }else{
+            $this->attributes['data_vencimento'] = null;
+        }
+    }
 }
