@@ -105,22 +105,22 @@ class TreinamentoController extends Controller
                             $data_vencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
                         } else {
                             $dataHora = new DataHora($lista['data_treinamento']);
-                            dd($lista['prazo_fixo']);
                             $data_vencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                         }
-
-                        $treinamento->Vencimentos()->attach($lista['id'], [
-                            'data_treinamento' => $lista['data_treinamento'],
-                            'data_vencimento' => $data_vencimento,
-                            'numero_fat' => $lista['numero_fat']
-                        ]);
+//
+//                        $treinamento->Vencimentos()->attach($lista['id'], [
+//                            'data_treinamento' => $lista['data_treinamento'],
+//                            'data_vencimento' => $data_vencimento,
+//                            'numero_fat' => $lista['numero_fat']
+//                        ]);
+//                        dd('aqui');
                     }
                 }
 
 
 
             }
-
+            dd('aqui');
 //            DB::commit();
 
             return response()->json([], 201);
