@@ -75,8 +75,8 @@ class TreinamentoVencimento extends Pivot
     public function setDataVencimentoAttribute($value)
     {
         if ($value) {
-            dd($value);
             $data = new DataHora($value);
+            dd($data->dataInsert());
             $this->attributes['data_vencimento'] = $data->dataInsert();
         }else{
             $this->attributes['data_vencimento'] = null;
