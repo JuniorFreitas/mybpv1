@@ -94,32 +94,32 @@ class TreinamentoController extends Controller
                     }
                 }
 
-            }
-            else {
+            } else {
 
                 $this->authorize('treinamento_insert');
                 $treinamento = Treinamento::create($dados);
 
-                foreach ($dados['listaVencimentos'] as $lista) {
-                    if ($lista['fez_treinamento']) {
-                        if ($dados['tipo'] == 'Parada') {
-                            $dataHora = new DataHora($lista['data_treinamento']);
-                            $data_vencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
-                        } else {
-                            $dataHora = new DataHora($lista['data_treinamento']);
-                            $data_vencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
-                        }
+                $listaVencimentos = collect($dados['listaVencimentos'])->filter(function ($item) {
+                    return $item['fez_treinamento'];
+                });
 
+                foreach ($listaVencimentos as $lista) {
+                    $dataHora = new DataHora($lista['data_treinamento']);
+                    $dataTreinamento = $dataHora->dataInsert();
+                    if ($dados['tipo'] == 'Parada') {
+                        $dataVencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
+                    } else {
 
-                        $treinamento->Vencimentos()->attach($lista['id'], [
-                            'data_treinamento' => '2021-11-26',
-                            'data_vencimento' => '2022-11-26',
-                            'numero_fat' => $lista['numero_fat']
-                        ]);
-//                        dd('aqui');
+                        $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                     }
-                }
 
+                    $treinamento->Vencimentos()->attach($lista['id'], [
+                        'data_treinamento' => $dataTreinamento,
+                        'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
+                        'numero_fat' => $lista['numero_fat']
+                    ]);
+
+                }
 
 
             }
@@ -158,7 +158,7 @@ class TreinamentoController extends Controller
     {
         $treinamento = ResultadoIntegrado::whereFeedbackId($treinamento)->first();
 
-        $treinamento = $treinamento->load('Treinamento', 'Curriculo:id,nome,nascimento,id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor', 'Admissao','Feedback.Exame');
+        $treinamento = $treinamento->load('Treinamento', 'Curriculo:id,nome,nascimento,id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor', 'Admissao', 'Feedback.Exame');
 
         if (!is_null($treinamento->Admissao)) {
             $treinamento->nr_trinta_tres = $treinamento->Admissao->nr_trinta_tres == 'NÃO SE APLICA' ? false : true;
@@ -237,7 +237,7 @@ class TreinamentoController extends Controller
     {
         $this->authorize('treinamento');
 
-        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado',function ($q){
+        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoTreinamento(true);
         })->with(
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
@@ -248,16 +248,16 @@ class TreinamentoController extends Controller
             'Treinamento.QuemCadastrou'
         );
 
-       /* $resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->with(
-            'Feedback.Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
-            'Feedback.VagaSelecionada:id,nome',
-            'Feedback.Cliente:id,nome_fantasia,nome',
-            'Feedback.Cliente:id,nome_fantasia,nome',
-            'Admissao.AreaEtiqueta',
-            'FotoTres',
-            'Treinamento.Vencimentos',
-            'Treinamento.QuemCadastrou'
-        );*/
+        /* $resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->with(
+             'Feedback.Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
+             'Feedback.VagaSelecionada:id,nome',
+             'Feedback.Cliente:id,nome_fantasia,nome',
+             'Feedback.Cliente:id,nome_fantasia,nome',
+             'Admissao.AreaEtiqueta',
+             'FotoTres',
+             'Treinamento.Vencimentos',
+             'Treinamento.QuemCadastrou'
+         );*/
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
