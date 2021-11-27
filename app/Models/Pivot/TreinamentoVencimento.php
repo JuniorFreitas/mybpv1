@@ -48,13 +48,17 @@ class TreinamentoVencimento extends Pivot
     }
 
     protected $fillable = [
+        'vencimento_id',
+        'treinamento_id',
         'data_vencimento',
         'data_treinamento',
         'numero_fat'
     ];
     protected $casts = [
-        'data_vencimento' => 'date:d/m/Y',
-        'data_treinamento' => 'date:d/m/Y',
+        'vencimento_id' => 'int',
+        'treinamento_id' => 'int',
+        'data_vencimento' => 'string',
+        'data_treinamento' => 'string',
         'numero_fat' => 'string'
     ];
 
@@ -68,6 +72,7 @@ class TreinamentoVencimento extends Pivot
             $data = new DataHora($this->attributes['data_vencimento']);
             return $data->dataCompleta();
         }
+        return null;
     }
 
     //Modificador ->data_vencimento
