@@ -103,6 +103,7 @@ class TreinamentoController extends Controller
                     return $item['fez_treinamento'];
                 });
 
+                dd($listaVencimentos);
                 foreach ($listaVencimentos as $lista) {
                     $dataHora = new DataHora($lista['data_treinamento']);
                     $dataTreinamento = $dataHora->dataInsert();
