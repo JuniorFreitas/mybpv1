@@ -70,17 +70,17 @@ class TreinamentoVencimento extends Pivot
         }
         return null;
     }
-
-    //Modificador ->data_vencimento
-    public function setDataVencimentoAttribute($value)
-    {
-        if ($value) {
-            $data = new DataHora($value);
-            $this->attributes['data_vencimento'] = $data->dataInsert();
-        }else{
-            $this->attributes['data_vencimento'] = null;
-        }
-    }
+//
+//    //Modificador ->data_vencimento
+//    public function setDataVencimentoAttribute($value)
+//    {
+//        if ($value) {
+//            $data = new DataHora($value);
+//            $this->attributes['data_vencimento'] = $data->dataInsert();
+//        }else{
+//            $this->attributes['data_vencimento'] = null;
+//        }
+//    }
 
     public function getDataTreinamentoAttribute($value)
     {
@@ -89,15 +89,15 @@ class TreinamentoVencimento extends Pivot
             return $data->dataCompleta();
         }
     }
-
-    //Modificador ->data_treinamento
-    public function setDataTreinamentoAttribute($value)
-    {
-        if ($value) {
-            $data = new DataHora($value);
-            $this->attributes['data_treinamento'] = $data->dataInsert();
-        }else{
-            $this->attributes['data_vencimento'] = null;
-        }
-    }
+//
+//    //Modificador ->data_treinamento
+//    public function setDataTreinamentoAttribute($value)
+//    {
+//        if ($value) {
+//            $data = new DataHora($value);
+//            $this->attributes['data_treinamento'] = $data->dataInsert();
+//        }else{
+//            $this->attributes['data_vencimento'] = null;
+//        }
+//    }
 }
