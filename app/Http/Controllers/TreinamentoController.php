@@ -74,6 +74,8 @@ class TreinamentoController extends Controller
 
                 $treinamento->update($dados);
                 $treinamento->Vencimentos()->detach();
+
+                dd($dados['listaVencimentos']);
                 foreach ($dados['listaVencimentos'] as $lista) {
                     if ($lista['fez_treinamento']) {
                         if ($dados['tipo'] == 'Parada') {
