@@ -68,6 +68,7 @@ class TreinamentoVencimento extends Pivot
             $data = new DataHora($this->attributes['data_vencimento']);
             return $data->dataCompleta();
         }
+        return null;
     }
 
     //Modificador ->data_vencimento

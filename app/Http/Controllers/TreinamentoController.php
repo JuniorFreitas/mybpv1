@@ -107,12 +107,12 @@ class TreinamentoController extends Controller
                             $dataHora = new DataHora($lista['data_treinamento']);
                             $data_vencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                         }
-//
-//                        $treinamento->Vencimentos()->attach($lista['id'], [
-//                            'data_treinamento' => $lista['data_treinamento'],
-//                            'data_vencimento' => $data_vencimento,
-//                            'numero_fat' => $lista['numero_fat']
-//                        ]);
+
+                        $treinamento->Vencimentos()->attach($lista['id'], [
+                            'data_treinamento' => $lista['data_treinamento'],
+                            'data_vencimento' => $data_vencimento,
+                            'numero_fat' => $lista['numero_fat']
+                        ]);
 //                        dd('aqui');
                     }
                 }
@@ -120,14 +120,14 @@ class TreinamentoController extends Controller
 
 
             }
-            dd('aqui');
+//            dd('aqui');
 //            DB::commit();
 
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
 
-//            return $e->getTraceAsString();
+            return $e->getTraceAsString();
             return $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
             \Log::debug($msg);
             return response()->json(['msg' => 'Não foi possivel realizar o cadastro'], 400);
