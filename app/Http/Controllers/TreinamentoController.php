@@ -108,6 +108,7 @@ class TreinamentoController extends Controller
                             $data_vencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                         }
 
+                        dd($lista['data_treinamento'],$data_vencimento);
                         $treinamento->Vencimentos()->attach($lista['id'], [
                             'data_treinamento' => $lista['data_treinamento'],
                             'data_vencimento' => $data_vencimento,
