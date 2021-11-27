@@ -105,6 +105,7 @@ class TreinamentoController extends Controller
                             $data_vencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
                         } else {
                             $dataHora = new DataHora($lista['data_treinamento']);
+                            dd($lista['prazo_fixo']);
                             $data_vencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                         }
 
@@ -116,7 +117,7 @@ class TreinamentoController extends Controller
                     }
                 }
 
-                dd('aqui');
+
 
             }
 
