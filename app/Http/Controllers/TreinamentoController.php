@@ -50,7 +50,6 @@ class TreinamentoController extends Controller
 
         try {
             DB::beginTransaction();
-            dd($dados['listaVencimentos']);
 //            if ($exame['exame_realizado']){
 ////                return
 //                $exame['user_id'] = auth()->id();
@@ -95,10 +94,11 @@ class TreinamentoController extends Controller
                     }
                 }
 
-            } else {
+            }
+            else {
                 $this->authorize('treinamento_insert');
                 $treinamento = Treinamento::create($dados);
-
+                dd($dados['listaVencimentos']);
                 foreach ($dados['listaVencimentos'] as $lista) {
                     if ($lista['fez_treinamento']) {
                         if ($dados['tipo'] == 'Parada') {
@@ -120,7 +120,7 @@ class TreinamentoController extends Controller
 
             }
 
-            DB::commit();
+//            DB::commit();
 
             return response()->json([], 201);
         } catch (\Exception $e) {
