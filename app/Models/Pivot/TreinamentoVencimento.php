@@ -76,7 +76,6 @@ class TreinamentoVencimento extends Pivot
     {
         if ($value) {
             $data = new DataHora($value);
-            dd($data->dataInsert());
             $this->attributes['data_vencimento'] = $data->dataInsert();
         }else{
             $this->attributes['data_vencimento'] = null;
