@@ -63,6 +63,10 @@ class TreinamentoController extends Controller
 //                }
 //            }
 
+            $listaVencimentos = collect($dados['listaVencimentos'])->filter(function ($item) {
+                return $item['fez_treinamento'];
+            });
+
             if (isset($dados['id'])) {
                 $this->authorize('treinamento_update');
                 $treinamento = Treinamento::find($dados['id']);
@@ -76,62 +80,36 @@ class TreinamentoController extends Controller
                 $treinamento->update($dados);
                 $treinamento->Vencimentos()->detach();
 
-
-                foreach ($dados['listaVencimentos'] as $lista) {
-                    if ($lista['fez_treinamento']) {
-                        if ($dados['tipo'] == 'Parada') {
-                            $dataHora = new DataHora($lista['data_treinamento']);
-                            $data_vencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
-                        } else {
-                            $dataHora = new DataHora($lista['data_treinamento']);
-                            $data_vencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
-                        }
-
-                        $treinamento->Vencimentos()->attach($lista['id'], [
-                            'data_treinamento' => $lista['data_treinamento'],
-                            'data_vencimento' => $data_vencimento,
-                            'numero_fat' => $lista['numero_fat']
-                        ]);
-                    }
-                }
-
             } else {
-
                 $this->authorize('treinamento_insert');
                 $treinamento = Treinamento::create($dados);
+            }
 
-                $listaVencimentos = collect($dados['listaVencimentos'])->filter(function ($item) {
-                    return $item['fez_treinamento'];
-                });
+            foreach ($listaVencimentos as $lista) {
+                $dataHora = new DataHora($lista['data_treinamento']);
+                $dataTreinamento = $dataHora->dataInsert();
 
-                foreach ($listaVencimentos as $lista) {
-                    $dataHora = new DataHora($lista['data_treinamento']);
-                    $dataTreinamento = $dataHora->dataInsert();
-                    if ($dados['tipo'] == 'Parada') {
-                        $dataVencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
-                    } else {
-                        $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
-                    }
-
-                    $treinamento->Vencimentos()->attach($lista['id'], [
-                        'data_treinamento' => $dataTreinamento,
-                        'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
-                        'numero_fat' => $lista['numero_fat']
-                    ]);
-
+                if ($dados['tipo'] == 'Parada') {
+                    $dataVencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
+                } else {
+                    $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                 }
 
-
+                $treinamento->Vencimentos()->attach($lista['id'], [
+                    'data_treinamento' => $dataTreinamento,
+                    'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
+                    'numero_fat' => $lista['numero_fat']
+                ]);
             }
-//            dd('aqui');
+
             DB::commit();
 
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
 
-//            return $e->getTrace();
-            return $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
+            $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
+
             \Log::debug($msg);
             return response()->json(['msg' => 'Não foi possivel realizar o cadastro'], 400);
         }
