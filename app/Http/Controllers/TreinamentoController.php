@@ -115,7 +115,7 @@ class TreinamentoController extends Controller
 
                     $treinamento->Vencimentos()->attach($lista['id'], [
                         'data_treinamento' => $dataTreinamento,
-                        'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
+                        'data_vencimento' => (new DataHora($dataVencimento. "00:00:00"))->dataInsert(),
                         'numero_fat' => $lista['numero_fat']
                     ]);
 
