@@ -110,8 +110,8 @@ class TreinamentoController extends Controller
 
 
                         $treinamento->Vencimentos()->attach($lista['id'], [
-                            'data_treinamento' => $lista['data_treinamento'],
-                            'data_vencimento' => $data_vencimento,
+                            'data_treinamento' => '2021-11-26',
+                            'data_vencimento' => '2022-11-26',
                             'numero_fat' => $lista['numero_fat']
                         ]);
 //                        dd('aqui');
