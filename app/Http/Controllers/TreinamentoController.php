@@ -96,8 +96,10 @@ class TreinamentoController extends Controller
 
             }
             else {
+
                 $this->authorize('treinamento_insert');
                 $treinamento = Treinamento::create($dados);
+
                 foreach ($dados['listaVencimentos'] as $lista) {
                     if ($lista['fez_treinamento']) {
                         if ($dados['tipo'] == 'Parada') {
@@ -128,7 +130,7 @@ class TreinamentoController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
 
-            return $e->getTrace();
+//            return $e->getTrace();
             return $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
             \Log::debug($msg);
             return response()->json(['msg' => 'Não foi possivel realizar o cadastro'], 400);
