@@ -57,8 +57,8 @@ class TreinamentoVencimento extends Pivot
     protected $casts = [
         'vencimento_id' => 'int',
         'treinamento_id' => 'int',
-        'data_vencimento' => 'date:d/m/Y',
-        'data_treinamento' => 'date:d/m/Y',
+        'data_vencimento' => 'string',
+        'data_treinamento' => 'string',
         'numero_fat' => 'string'
     ];
 
