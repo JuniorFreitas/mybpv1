@@ -98,7 +98,6 @@ class TreinamentoController extends Controller
             else {
                 $this->authorize('treinamento_insert');
                 $treinamento = Treinamento::create($dados);
-                dd($dados['listaVencimentos']);
                 foreach ($dados['listaVencimentos'] as $lista) {
                     if ($lista['fez_treinamento']) {
                         if ($dados['tipo'] == 'Parada') {
@@ -117,6 +116,7 @@ class TreinamentoController extends Controller
                     }
                 }
 
+                dd('aqui');
 
             }
 
