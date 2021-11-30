@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RequisicaoVaga\JobRequisicaoVagaAprovar;
 use App\Models\Arquivo;
 use App\Models\RequisicaoVaga;
 use DB;
 use Illuminate\Http\Request;
+use MasterTag\DataHora;
 
 class RequisicaoVagaController extends Controller
 {
@@ -33,16 +35,17 @@ class RequisicaoVagaController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
 //        $this->authorize('');
         $dados = $request->input();
         $dados['previsao_inicio'] = $dados['imediata'] ? null : $dados['previsao_inicio'];
+        $dados['outras_informacoes']['salario_valor'] = $dados['outras_informacoes']['salario'] == 'exceção' ? $dados['outras_informacoes']['salario_valor_format'] : null;
+        $dados['user_id'] = auth()->user()->id;
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'cargo_id' => 'required',
                 'area_id' => 'required',
@@ -68,7 +71,8 @@ class RequisicaoVagaController extends Controller
                 DB::rollback();
                 $msg = "erro ao salvar Solicitação:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
     }
@@ -108,15 +112,16 @@ class RequisicaoVagaController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\RequisicaoVaga $requisicaoVaga
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, RequisicaoVaga $requisicaoVaga)
     {
         $dados = $request->input();
         $dados['previsao_inicio'] = $dados['imediata'] ? null : $dados['previsao_inicio'];
+        $dados['outras_informacoes']['salario_valor'] = $dados['outras_informacoes']['salario'] == 'exceção' ? $dados['outras_informacoes']['salario_valor_format'] : null;
+
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'cargo_id' => 'required',
                 'area_id' => 'required',
@@ -158,13 +163,59 @@ class RequisicaoVagaController extends Controller
         //
     }
 
+    public function aprovar(Request $request, RequisicaoVaga $requisicaoVaga)
+    {
+        $this->authorize('aprovar_por_gestor');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $requisicaoVaga->update([
+                'user_aprovacao_id' => auth()->user()->id,
+                'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                'obs_aprovacao' => $dados['obs_aprovacao'],
+                'status_aprovacao' => $dados['status_aprovacao'],
+            ]);
+            DB::commit();
+
+
+            JobRequisicaoVagaAprovar::dispatch($requisicaoVaga);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao alterar Solicitação:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
+
     public function atualizar(Request $request)
     {
         $resultado = RequisicaoVaga::with(
-            'Cliente',
             'CentroCusto',
             'Cargo',
             'Area');
+
+        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
+        if ($filtroPeriodo) {
+            $periodo = explode(' até ', $request->periodo);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
+        }
+
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Cargo', function ($q) use ($request) {
+                $q->where('nome', 'like', '%' . $request->campoBusca . '%');
+            });
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
+            $resultado->whereStatusAprovacao($status);
+        }
+
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 
         return response()->json([

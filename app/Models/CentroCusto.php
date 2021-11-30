@@ -43,10 +43,4 @@ class CentroCusto extends Model
         return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
-//    //Scopo de ClienteID (Empresa)
-//    protected static function booted()
-//    {
-//        static::addGlobalScope(new ScopeClientesEmpresa);
-//    }
-
 }

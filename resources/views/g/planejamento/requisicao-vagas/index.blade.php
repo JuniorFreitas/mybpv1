@@ -16,18 +16,18 @@
                 <fieldset>
                     <legend>Informações</legend>
                     <div class="row">
-                        <div class="col-12 col-md-4" v-if="cliente_id === 0">
-                            <div class="form-group">
-                                <label for="">Selecione um cliente</label>
-                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete" :disabled="visualizar"
-                                              :valido="form.cliente_id !== ''"
-                                              v-model="form.autocomplete_label_cliente_modal"
-                                              :id="`cliente_modal_${hash}`"
-                                              placeholder="Digite o nome cliente"
-                                              @onblur="resetaCampoClienteModal"
-                                             @onselect="selecionaClienteModal"></autocomplete>
-                            </div>
-                        </div>
+{{--                        <div class="col-12 col-md-4" v-if="cliente_id === 0">--}}
+{{--                            <div class="form-group">--}}
+{{--                                <label for="">Selecione um cliente</label>--}}
+{{--                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete" :disabled="visualizar"--}}
+{{--                                              :valido="form.cliente_id !== ''"--}}
+{{--                                              v-model="form.autocomplete_label_cliente_modal"--}}
+{{--                                              :id="`cliente_modal_${hash}`"--}}
+{{--                                              placeholder="Digite o nome cliente"--}}
+{{--                                              @onblur="resetaCampoClienteModal"--}}
+{{--                                             @onselect="selecionaClienteModal"></autocomplete>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
 
 
                         <div class="col-12"></div>
@@ -115,7 +115,8 @@
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
                                             <label>Posição</label>
-                                            <select v-model="form.outras_informacoes.posicao" class="form-control" :disabled="visualizar"
+                                            <select v-model="form.outras_informacoes.posicao" class="form-control"
+                                                    :disabled="visualizar"
                                                     onchange="valida_campo_vazio(this,1)"
                                                     onblur="valida_campo_vazio(this,1)">
                                                 <option value="">Selecione</option>
@@ -131,34 +132,52 @@
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
                                             <label>Processo</label>
-                                            <select v-model="form.outras_informacoes.processo" class="form-control" :disabled="visualizar"
+                                            <select v-model="form.outras_informacoes.processo" class="form-control"
+                                                    :disabled="visualizar"
                                                     onchange="valida_campo_vazio(this,1)"
                                                     onblur="valida_campo_vazio(this,1)">
                                                 <option value="">Selecione</option>
-                                                <option value="ALTA">ALTA</option>
-                                                <option value="MÉDIA">MÉDIA</option>
-                                                <option value="URGENTE">URGENTE</option>
+                                                <option value="Externo">Externo</option>
+                                                <option value="Confidencial">Confidencial</option>
+                                                <option value="Interno">Interno</option>
+                                                <option value="Indicação">Indicação</option>
                                             </select>
                                         </div>
                                     </div>
 
-                                    <div class="col-12 col-md-4">
+                                    <div class="col-12 col-md-4"
+                                         v-if="form.outras_informacoes.processo === 'Indicação'">
                                         <div class="form-group">
-                                            <label>Contrato</label>
+                                            <label>Nome Indicação</label>
                                             <input type="text" class="form-control" :disabled="visualizar"
                                                    onblur="valida_campo_vazio(this,1)"
-                                                   v-model="form.outras_informacoes.contrato">
+                                                   v-model="form.outras_informacoes.nome_indicacao">
                                         </div>
                                     </div>
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Local de Trabalho</label>
-                                            <input type="text" class="form-control"
-                                                   onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
-                                                   v-model="form.outras_informacoes.local_trabalho">
+                                            <label>Tipo</label>
+                                            <select v-model="form.outras_informacoes.contrato" class="form-control"
+                                                    :disabled="visualizar"
+                                                    onchange="valida_campo_vazio(this,1)"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione</option>
+                                                <option value="Admissão">Admissão</option>
+                                                <option value="Readmissão">Readmissão</option>
+                                                <option value="Reintegração">Reintegração</option>
+                                            </select>
                                         </div>
                                     </div>
+
+                                    <!--                                    <div class="col-12 col-md-4">
+                                                                            <div class="form-group">
+                                                                                <label>Local de Trabalho</label>
+                                                                                <input type="text" class="form-control"
+                                                                                       onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
+                                                                                       v-model="form.outras_informacoes.local_trabalho">
+                                                                            </div>
+                                                                        </div>-->
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
@@ -171,7 +190,7 @@
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Gestor</label>
+                                            <label>Gestor da vaga</label>
                                             <input type="text" class="form-control"
                                                    onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
                                                    v-model="form.outras_informacoes.gestor">
@@ -181,11 +200,89 @@
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
                                             <label>Cargo está no PPRA e PCMSO?</label>
-                                            <input type="text" class="form-control"
-                                                   onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
-                                                   v-model="form.outras_informacoes.ppra">
+                                            <select v-model="form.outras_informacoes.ppra" class="form-control"
+                                                    :disabled="visualizar"
+                                                    onchange="valida_campo_vazio(this,1)"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione</option>
+                                                <option :value="true">Sim</option>
+                                                <option :value="false">Não</option>
+                                            </select>
                                         </div>
                                     </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Salário</label>
+                                            <select v-model="form.outras_informacoes.salario" class="form-control"
+                                                    :disabled="visualizar"
+                                                    onchange="valida_campo_vazio(this,1)"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione</option>
+                                                <option value="conforme">Conforme o plano de cargo</option>
+                                                <option value="exceção">Exceção</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4" v-if="form.outras_informacoes.salario === 'exceção'">
+                                        <div class="form-group">
+                                            <label>Salário exceção</label>
+                                            <input type="text" class="form-control"
+                                                   onblur="valida_dinheiro(this)" :disabled="visualizar"
+                                                   v-mascara:dinheiro
+                                                   v-model="form.outras_informacoes.salario_valor_format">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Benefício</label>
+                                            <select v-model="form.outras_informacoes.beneficio" class="form-control"
+                                                    :disabled="visualizar"
+                                                    onchange="valida_campo_vazio(this,1)"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione</option>
+                                                <option value="conforme">Conforme o plano da empresa</option>
+                                                <option value="exceção">Exceção</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4" v-if="form.outras_informacoes.beneficio === 'exceção'">
+                                        <div class="form-group">
+                                            <label>Benefício exceção</label>
+                                            <input type="text" class="form-control"
+                                                   onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
+                                                   v-model="form.outras_informacoes.beneficio_excecao">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group">
+                                            <label>Treinamento</label>
+                                            <select v-model="form.outras_informacoes.treinamento" class="form-control"
+                                                    :disabled="visualizar"
+                                                    onchange="valida_campo_vazio(this,1)"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione</option>
+                                                <option value="conforme">Conforme o padrão</option>
+                                                <option value="exceção">Exceção</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4"
+                                         v-if="form.outras_informacoes.treinamento === 'exceção'">
+                                        <div class="form-group">
+                                            <label>Treinamento exceção</label>
+                                            <input type="text" class="form-control"
+                                                   onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
+                                                   v-model="form.outras_informacoes.treinamento_excecao">
+                                        </div>
+                                    </div>
+
+
                                 </div>
                             </fieldset>
                         </div>
@@ -225,6 +322,45 @@
                     </div>
                 </fieldset>
 
+                <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
+                    Esta solicitação ainda não foi aprovada ou reprovada!
+                </div>
+
+                <fieldset v-if="visualizar || editando">
+                    <legend>Aprovação</legend>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="">Observação</label>
+                                <textarea class="form-control" :disabled="form.data_aprovacao || !aprovando"
+                                          v-model="form.obs_aprovacao"
+                                          cols="5" rows="5"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="">Status</label>
+                                <select :disabled="form.data_aprovacao || !aprovando " v-model="form.status_aprovacao"
+                                        v-if="!editando"
+                                        onblur="valida_campo_vazio(this,1)"
+                                        onchange="valida_campo_vazio(this,1)" class="form-control">
+                                    <option value="">Selecione...</option>
+                                    <option value="aprovado">Aprovar</option>
+                                    <option value="reprovado">Reprovar</option>
+                                </select>
+
+                                <select :disabled="form.data_aprovacao || !aprovando " v-model="form.status_aprovacao"
+                                        v-if="editando"
+                                        class="form-control">
+                                    <option value="">Selecione...</option>
+                                    <option value="aprovado">Aprovar</option>
+                                    <option value="reprovado">Reprovar</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
             </form>
         </template>
         <template slot="rodape">
@@ -240,6 +376,12 @@
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </div>
+            <button type="button" class="btn btn-sm btn-primary"
+                    v-show="aprovando && !atualizado  && !preload && !form.data_aprovacao"
+                    @click.prevent="aprovar">
+                <i class="fa fa-save"></i> Salvar
+            </button>
+
         </template>
     </modal>
 
@@ -260,26 +402,29 @@
                 </div>
             </div>
 
-            {{--            <div class="col-12 col-md-4">--}}
-            {{--                <div class="form-group">--}}
-            {{--                    <label>Buscar</label>--}}
-            {{--                    <input type="text"--}}
-            {{--                           placeholder="Buscar por nome"--}}
-            {{--                           autocomplete="off"--}}
-            {{--                           class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoBusca">--}}
-            {{--                </div>--}}
-            {{--            </div>--}}
 
-            {{--            <div class="col-12 col-md-4">--}}
-            {{--                <div class="form-group">--}}
-            {{--                    <label>Status</label>--}}
-            {{--                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" @change="atualizar()">--}}
-            {{--                        <option value="">Todos os Status</option>--}}
-            {{--                        <option :value="true">Apenas Ativos</option>--}}
-            {{--                        <option :value="false">Apenas Inativos</option>--}}
-            {{--                    </select>--}}
-            {{--                </div>--}}
-            {{--            </div>--}}
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <label>Pesquisar</label>
+                    <input type="text"
+                           placeholder="Buscar por cargo"
+                           autocomplete="off"
+                           class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoBusca">
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
+                            :disabled="controle.carregando" @change="atualizar()">
+                        <option value="">Todos os Status</option>
+                        <option value="aberto">Aberto</option>
+                        <option value="aprovado">Aprovado</option>
+                        <option value="reprovado">Reprovado</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="col-12"></div>
 
@@ -304,6 +449,15 @@
             <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
         </div>
 
+
+        <div class="col-12 mb-2 mt-2 pt-1 pb-1 border-bottom" v-show="!controle.carregando && lista.length > 0">
+        <span class="small text-right">
+                Legenda:
+                <i class="fas fa-circle text-warning"></i> Aguardando
+                <i class="fas fa-circle text-success ml-2"></i> Aprovado
+                <i class="fas fa-circle text-danger ml-2"></i> Reprovado
+            </span>
+        </div>
         <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
             <table class="tabela">
                 <thead>
@@ -312,7 +466,6 @@
                     <th>Cargo</th>
                     <th>Solicitação</th>
                     <th>Solicitante</th>
-                    <th v-if="cliente_id === 0">Cliente</th>
                     <th>Área</th>
                     <th>Centro de Custo</th>
                     <th>Contratação</th>
@@ -322,7 +475,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="item in lista">
+                <tr v-for="item in lista"
+                    :class="!item.status_aprovacao ? 'table-warning' : item.status_aprovacao === 'reprovado' ? 'table-danger' : item.status_aprovacao === 'aprovado' ? 'table-success' : null">
                     <td>
                         @{{item.quantidade}}
                     </td>
@@ -337,10 +491,6 @@
 
                     <td>
                         @{{item.solicitante}}
-                    </td>
-
-                    <td v-if="cliente_id === 0">
-                        @{{item.cliente.razao_social}}
                     </td>
 
                     <td>
@@ -370,6 +520,15 @@
 
 
                     <td class="text-center">
+                        @can('aprovar_por_gestor')
+                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
+                               v-if="!item.data_aprovacao"
+                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
+                               data-toggle="modal"
+                               data-target="#janelaCadastrar">
+                                <i class="fa fa-check"></i>
+                            </a>
+                        @endcan
                         <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
                            @click.prevent="formOpen(item.id); editando = true"
                            data-toggle="modal"

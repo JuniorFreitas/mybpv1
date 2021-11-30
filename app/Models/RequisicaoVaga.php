@@ -52,6 +52,16 @@ use MasterTag\DataHora;
  * @mixin \Eloquent
  * @property-read \App\Models\TipoContratacao|null $OutrasInformacoes
  * @property-read mixed $data_solicitacao
+ * @property int|null $empresa_id
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUserAprovacaoId($value)
  */
 class RequisicaoVaga extends Model
 {
@@ -71,6 +81,11 @@ class RequisicaoVaga extends Model
         'solicitante',
         'user_id',
         'observacao',
+        'empresa_id',
+        'user_aprovacao_id',
+        'data_aprovacao',
+        'obs_aprovacao',
+        'status_aprovacao',
     ];
 
     protected $casts = [
@@ -87,6 +102,11 @@ class RequisicaoVaga extends Model
         'solicitante' => 'string',
         'user_id' => 'int',
         'observacao' => 'string',
+        'empresa_id' => 'int',
+        'user_aprovacao_id' => 'int',
+        'data_aprovacao' => 'date:d/m/Y',
+        'obs_aprovacao' => 'string',
+        'status_aprovacao' => 'string',
     ];
 
     protected $appends = ['data_solicitacao'];
@@ -103,6 +123,16 @@ class RequisicaoVaga extends Model
             $this->attributes['previsao_inicio'] = $data->dataInsert();
         } else {
             $this->attributes['previsao_inicio'] = null;
+        }
+    }
+
+    public function setDataAprovacaoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($value);
+            $this->attributes['data_aprovacao'] = $data->dataHoraInsert();
+        } else {
+            $this->attributes['data_aprovacao'] = null;
         }
     }
 
@@ -133,20 +163,20 @@ class RequisicaoVaga extends Model
 
     public function OutrasInformacoes()
     {
-        return $this->hasOne(TipoContratacao::class,'requisicao_vaga_id','id');
+        return $this->hasOne(TipoContratacao::class, 'requisicao_vaga_id', 'id');
     }
 
     //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::creating(function ($model) {
-            $model->user_id = auth()->id();
-        });
-
-        static::updating(function ($model) {
-            $model->user_id = auth()->id();
-        });
+//    protected static function booted()
+//    {
+//        static::creating(function ($model) {
+//            $model->user_id = auth()->id();
+//        });
+//
+//        static::updating(function ($model) {
+//            $model->user_id = auth()->id();
+//        });
 
 //        static::addGlobalScope(new ScopeClientesEmpresa);
-    }
+//    }
 }
