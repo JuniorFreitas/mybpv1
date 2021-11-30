@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovar;
 use App\Models\DemissaoPrevista;
 use DB;
 use Illuminate\Http\Request;
@@ -39,14 +40,13 @@ class DemissaoPrevistaController extends Controller
     {
         $dados = $request->input();
         $dados['valor'] = $dados['valor_format'];
+        $dados['user_id'] = auth()->user()->id;
 
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
-                'solicitante' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -91,8 +91,8 @@ class DemissaoPrevistaController extends Controller
         $demissaoPrevista->autocomplete_label_colaborador = $demissaoPrevista->Colaborador ? $demissaoPrevista->Colaborador->nome : '';
         $demissaoPrevista->autocomplete_label_colaborador_anterior = $demissaoPrevista->Colaborador ? $demissaoPrevista->Colaborador->nome : '';
 
-        $demissaoPrevista->autocomplete_label_cliente_modal = $demissaoPrevista->Cliente ? $demissaoPrevista->Cliente->razao_social . ' | ' . $demissaoPrevista->Cliente->cnpj : '';
-        $demissaoPrevista->autocomplete_label_cliente_modal_anterior = $demissaoPrevista->Cliente ? $demissaoPrevista->Cliente->razao_social . ' | ' . $demissaoPrevista->Cliente->cnpj : '';
+        $demissaoPrevista->autocomplete_label_gestor_modal = $demissaoPrevista->GestorAprovacao ? $demissaoPrevista->GestorAprovacao->nome : '';
+        $demissaoPrevista->autocomplete_label_gestor_modal_anterior = $demissaoPrevista->GestorAprovacao ? $demissaoPrevista->GestorAprovacao->nome : '';
 
         return $demissaoPrevista;
     }
@@ -111,11 +111,9 @@ class DemissaoPrevistaController extends Controller
 
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
-                'solicitante' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -152,22 +150,35 @@ class DemissaoPrevistaController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = DemissaoPrevista::with(
-            'Cliente:id,razao_social,area_id',
             'CentroCusto',
             'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo');
+            'Colaborador:id,nome,login,tipo,ativo','GestorAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+
+            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
         }
 
-        if ($request->filled('campoCliente')) {
-            $resultado->whereClienteId($request->campoCliente);
+
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Colaborador', function ($q) use ($request) {
+                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('id', $request->campoBusca);
+            });
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
+            $resultado->whereStatusAprovacao($status);
+        }
+
+        if (!auth()->user()->can('gestao_rh')){
+            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
@@ -178,7 +189,36 @@ class DemissaoPrevistaController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
+                'aprovar_por_gestor' => auth()->user()->can('aprovar_por_gestor'),
             ]
         ]);
     }
+
+
+    public function aprovar(Request $request, DemissaoPrevista $demissaoPrevista)
+    {
+        $this->authorize('aprovar_por_gestor');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $demissaoPrevista->update([
+                'user_aprovacao_id' => auth()->id(),
+                'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                'obs_aprovacao' => $dados['obs_aprovacao'],
+                'status_aprovacao' => $dados['status_aprovacao'],
+            ]);
+            DB::commit();
+
+            JobDemissaoPrevistaAprovar::dispatch($demissaoPrevista);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar Solicitação:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
+
 }

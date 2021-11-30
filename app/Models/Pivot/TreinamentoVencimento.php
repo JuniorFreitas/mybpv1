@@ -2,6 +2,7 @@
 
 namespace App\Models\Pivot;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
@@ -46,8 +47,24 @@ class TreinamentoVencimento extends Pivot
         $activity->descricao = "";
     }
 
-    protected $fillable = ['data_vencimento', 'data_treinamento', 'numero_fat'];
-    protected $casts = ['data_vencimento' => 'date:d/m/Y', 'data_treinamento' => 'date:d/m/Y', 'numero_fat'];
+    protected $fillable = [
+        'vencimento_id',
+        'treinamento_id',
+        'data_vencimento',
+        'data_treinamento',
+        'numero_fat'
+    ];
+    protected $casts = [
+        'vencimento_id' => 'int',
+        'treinamento_id' => 'int',
+        'data_vencimento' => 'string',
+        'data_treinamento' => 'string',
+        'numero_fat' => 'string'
+    ];
+
+    protected function serializeDate(DateTimeInterface $date) {
+        return $date->format('Y-m-d H:i:s');
+    }
 
     public function getDataVencimentoAttribute($value)
     {
@@ -55,6 +72,7 @@ class TreinamentoVencimento extends Pivot
             $data = new DataHora($this->attributes['data_vencimento']);
             return $data->dataCompleta();
         }
+        return null;
     }
 
     //Modificador ->data_vencimento
@@ -63,6 +81,8 @@ class TreinamentoVencimento extends Pivot
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_vencimento'] = $data->dataInsert();
+        }else{
+            $this->attributes['data_vencimento'] = null;
         }
     }
 
@@ -80,6 +100,8 @@ class TreinamentoVencimento extends Pivot
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_treinamento'] = $data->dataInsert();
+        }else{
+            $this->attributes['data_vencimento'] = null;
         }
     }
 }

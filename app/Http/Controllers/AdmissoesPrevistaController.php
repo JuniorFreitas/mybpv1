@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovar;
 use App\Models\AdmissoesPrevista;
 use App\Models\DemissaoPrevista;
 use Illuminate\Http\Request;
@@ -34,21 +35,20 @@ class AdmissoesPrevistaController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $dados = $request->input();
         $dados['salario'] = $dados['salario_format'];
+        $dados['user_id'] = auth()->user()->id;
 
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'tipo_contrato' => 'required',
                 'cargo_id' => 'required',
                 'salario_format' => 'required',
-                'solicitante' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -66,7 +66,8 @@ class AdmissoesPrevistaController extends Controller
                 DB::rollback();
                 $msg = "erro ao salvar Solicitação de Admissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
     }
@@ -90,11 +91,8 @@ class AdmissoesPrevistaController extends Controller
      */
     public function edit(AdmissoesPrevista $admissoesPrevista)
     {
-        $admissoesPrevista->autocomplete_label_colaborador = $admissoesPrevista->Colaborador ? $admissoesPrevista->Colaborador->nome : '';
-        $admissoesPrevista->autocomplete_label_colaborador_anterior = $admissoesPrevista->Colaborador ? $admissoesPrevista->Colaborador->nome : '';
-
-        $admissoesPrevista->autocomplete_label_cliente_modal = $admissoesPrevista->Cliente ? $admissoesPrevista->Cliente->razao_social . ' | ' . $admissoesPrevista->Cliente->cnpj : '';
-        $admissoesPrevista->autocomplete_label_cliente_modal_anterior = $admissoesPrevista->Cliente ? $admissoesPrevista->Cliente->razao_social . ' | ' . $admissoesPrevista->Cliente->cnpj : '';
+        $admissoesPrevista->autocomplete_label_gestor_modal = $admissoesPrevista->GestorAprovacao ? $admissoesPrevista->GestorAprovacao->nome : '';
+        $admissoesPrevista->autocomplete_label_gestor_modal_anterior = $admissoesPrevista->GestorAprovacao ? $admissoesPrevista->GestorAprovacao->nome : '';
 
         $admissoesPrevista->autocomplete_label_cargo = $admissoesPrevista->Cargo ? $admissoesPrevista->Cargo->nome : '';
         $admissoesPrevista->autocomplete_label_cargo_anterior = $admissoesPrevista->Cargo ? $admissoesPrevista->Cargo->nome : '';
@@ -116,12 +114,10 @@ class AdmissoesPrevistaController extends Controller
 
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'tipo_contrato' => 'required',
                 'cargo_id' => 'required',
                 'salario_format' => 'required',
-                'solicitante' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -155,14 +151,40 @@ class AdmissoesPrevistaController extends Controller
         //
     }
 
+    public function aprovar(Request $request, AdmissoesPrevista $admissoesPrevista)
+    {
+        $this->authorize('aprovar_por_gestor');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $admissoesPrevista->update([
+                'user_aprovacao_id' => auth()->id(),
+                'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                'obs_aprovacao' => $dados['obs_aprovacao'],
+                'status_aprovacao' => $dados['status_aprovacao'],
+            ]);
+            DB::commit();
+
+            JobAdmissaoPrevistaAprovar::dispatch($admissoesPrevista);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar ADMISSÃO PREVISTA:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
+
+
     public function atualizar(Request $request)
     {
         $resultado = AdmissoesPrevista::with(
-            'Cliente:id,razao_social,area_id',
             'Cargo',
             'CentroCusto',
             'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo');
+            'Colaborador:id,nome,login,tipo,ativo','GestorAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
@@ -170,11 +192,23 @@ class AdmissoesPrevistaController extends Controller
             $periodo = explode(' até ', $request->periodo);
             $dataInicio = new DataHora($periodo[0], ' 00:00:00');
             $dataFim = new DataHora($periodo[1], ' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
         }
 
-        if ($request->filled('campoCliente')) {
-            $resultado->whereClienteId($request->campoCliente);
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Cargo', function ($q) use ($request) {
+                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('id', $request->campoBusca);
+            });
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
+            $resultado->whereStatusAprovacao($status);
+        }
+
+        if (!auth()->user()->can('gestao_rh')){
+            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
@@ -185,6 +219,7 @@ class AdmissoesPrevistaController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
+                'aprovar_por_gestor' => auth()->user()->can('aprovar_por_gestor'),
             ]
         ]);
     }

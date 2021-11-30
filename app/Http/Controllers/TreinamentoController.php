@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\carteiraEtiquetaExport;
 use App\Models\ExameTreinamento;
 use App\Models\FeedbackCurriculo;
+use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
 use App\Models\Treinamento;
 use App\Models\Vencimento;
@@ -62,6 +63,10 @@ class TreinamentoController extends Controller
 //                }
 //            }
 
+            $listaVencimentos = collect($dados['listaVencimentos'])->filter(function ($item) {
+                return $item['fez_treinamento'];
+            });
+
             if (isset($dados['id'])) {
                 $this->authorize('treinamento_update');
                 $treinamento = Treinamento::find($dados['id']);
@@ -74,47 +79,27 @@ class TreinamentoController extends Controller
 
                 $treinamento->update($dados);
                 $treinamento->Vencimentos()->detach();
-                foreach ($dados['listaVencimentos'] as $lista) {
-                    if ($lista['fez_treinamento']) {
-                        if ($dados['tipo'] == 'Parada') {
-                            $dataHora = new DataHora($lista['data_treinamento']);
-                            $data_vencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
-                        } else {
-                            $dataHora = new DataHora($lista['data_treinamento']);
-                            $data_vencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
-                        }
-
-                        $treinamento->Vencimentos()->attach($lista['id'], [
-                            'data_treinamento' => $lista['data_treinamento'],
-                            'data_vencimento' => $data_vencimento,
-                            'numero_fat' => $lista['numero_fat']
-                        ]);
-                    }
-                }
 
             } else {
                 $this->authorize('treinamento_insert');
                 $treinamento = Treinamento::create($dados);
+            }
 
-                foreach ($dados['listaVencimentos'] as $lista) {
-                    if ($lista['fez_treinamento']) {
-                        if ($dados['tipo'] == 'Parada') {
-                            $dataHora = new DataHora($lista['data_treinamento']);
-                            $data_vencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
-                        } else {
-                            $dataHora = new DataHora($lista['data_treinamento']);
-                            $data_vencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
-                        }
+            foreach ($listaVencimentos as $lista) {
+                $dataHora = new DataHora($lista['data_treinamento']);
+                $dataTreinamento = $dataHora->dataInsert();
 
-                        $treinamento->Vencimentos()->attach($lista['id'], [
-                            'data_treinamento' => $lista['data_treinamento'],
-                            'data_vencimento' => $data_vencimento,
-                            'numero_fat' => $lista['numero_fat']
-                        ]);
-                    }
+                if ($dados['tipo'] == 'Parada') {
+                    $dataVencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
+                } else {
+                    $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                 }
 
-
+                $treinamento->Vencimentos()->attach($lista['id'], [
+                    'data_treinamento' => $dataTreinamento,
+                    'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
+                    'numero_fat' => $lista['numero_fat']
+                ]);
             }
 
             DB::commit();
@@ -123,8 +108,8 @@ class TreinamentoController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
 
-//            return $e->getTraceAsString();
-            return $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
+            $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
+
             \Log::debug($msg);
             return response()->json(['msg' => 'Não foi possivel realizar o cadastro'], 400);
         }
@@ -151,7 +136,7 @@ class TreinamentoController extends Controller
     {
         $treinamento = ResultadoIntegrado::whereFeedbackId($treinamento)->first();
 
-        $treinamento = $treinamento->load('Treinamento', 'Curriculo:id,nome,nascimento,id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor', 'Admissao','Feedback.Exame');
+        $treinamento = $treinamento->load('Treinamento', 'Curriculo:id,nome,nascimento,id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor', 'Admissao', 'Feedback.Exame');
 
         if (!is_null($treinamento->Admissao)) {
             $treinamento->nr_trinta_tres = $treinamento->Admissao->nr_trinta_tres == 'NÃO SE APLICA' ? false : true;
@@ -230,28 +215,27 @@ class TreinamentoController extends Controller
     {
         $this->authorize('treinamento');
 
-        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado',function ($q){
+        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoTreinamento(true);
         })->with(
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
             'VagaSelecionada:id,nome',
-            'Cliente:id,nome_fantasia,nome',
             'Admissao.AreaEtiqueta',
             'Curriculo.FotoTres:id',
             'Treinamento.Vencimentos',
             'Treinamento.QuemCadastrou'
         );
 
-       /* $resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->with(
-            'Feedback.Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
-            'Feedback.VagaSelecionada:id,nome',
-            'Feedback.Cliente:id,nome_fantasia,nome',
-            'Feedback.Cliente:id,nome_fantasia,nome',
-            'Admissao.AreaEtiqueta',
-            'FotoTres',
-            'Treinamento.Vencimentos',
-            'Treinamento.QuemCadastrou'
-        );*/
+        /* $resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->with(
+             'Feedback.Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
+             'Feedback.VagaSelecionada:id,nome',
+             'Feedback.Cliente:id,nome_fantasia,nome',
+             'Feedback.Cliente:id,nome_fantasia,nome',
+             'Admissao.AreaEtiqueta',
+             'FotoTres',
+             'Treinamento.Vencimentos',
+             'Treinamento.QuemCadastrou'
+         );*/
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
@@ -388,11 +372,6 @@ class TreinamentoController extends Controller
             });
         }
 
-        if ($request->filled('campoCliente')) {
-            $resultado->whereClienteId(106);
-//            $resultado->whereClienteId($request->campoCliente);
-        }
-
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 
         $itens = collect($resultado->items());
@@ -426,7 +405,6 @@ class TreinamentoController extends Controller
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
     }
 
-
     public function enviarCarteiraEmail(Request $request)
     {
         $dados = $request->input();
@@ -456,14 +434,14 @@ class TreinamentoController extends Controller
 
     public function carteiraIndividual($curriculo)
     {
-        $treinamento = Treinamento::find(\Crypt::decrypt($curriculo));
-        $treinamento->update([
+        $treinamentos = Treinamento::whereId(\Crypt::decrypt($curriculo))->get();
+        $treinamentos->first()->update([
             'email_aberto' => true,
             'data_email_aberto' => (new DataHora())->dataHoraInsert()
         ]);
 
-
-        return view('pdf.treinamento.carteira.individualEmail', compact('treinamento'));
+        return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
+//        return view('pdf.treinamento.carteira.individualEmail', compact('treinamento'));
     }
 
     //Excel

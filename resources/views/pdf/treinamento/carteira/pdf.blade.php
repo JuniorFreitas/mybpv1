@@ -12,21 +12,21 @@
                         <tr>
                             <td colspan="3"
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
-                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                                    <img src="https://sgibpse.com.br/logo_bpse_color.png" alt=""
-                                         style="height: 0.6cm">
-                                    <br>
-                                @else
-                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt=""
-                                         style="height: 0.6cm">
-                                    <br>
-                                @endif
+                                {{--                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
+                                <img src="https://sgibpse.com.br/logo_bpse_color.png" alt=""
+                                     style="height: 0.6cm">
+                                <br>
+                                {{--                                @else--}}
+                                {{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt=""--}}
+                                {{--                                         style="height: 0.6cm">--}}
+                                {{--                                    <br>--}}
+                                {{--                                @endif--}}
                                 <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="3" style="height: 0.02cm; border-top:none;">
-                                Empresa: {{ $treinamento->FeedbackCurriculo->Cliente->razao_social }}
+                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
                             </td>
                         </tr>
                         <tr>
@@ -64,10 +64,10 @@
                                 DATA VENCIMENTO
                             </td>
                         </tr>
-                        @if (count($treinamento->Vencimentos) <= 16)
+                        @if (count($treinamento->Vencimentos) <= 11)
                             @foreach($treinamento->Vencimentos as $vencimento)
                                 <tr>
-                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none;">
+                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; text-transform: uppercase">
                                         {{ $vencimento->label }}
                                     </td>
                                     <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
@@ -78,7 +78,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                            @foreach(range(1, 16 - count($treinamento->Vencimentos)) as $r)
+                            @foreach(range(1, 11 - count($treinamento->Vencimentos)) as $r)
                                 <tr>
                                     <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; color: white">
                                         _
@@ -109,31 +109,19 @@
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
                                 <span style="font-family: 'Sacramento', cursive; color: blue">
-                                    @if ($treinamento->FeedbackCurriculo->cliente_id == 3)
-                                        José Meneses Barros
-                                    @else
-                                        Gilson Pinto
-                                    @endif
+                                    Tiago Silva
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
                                 <span style="font-family: 'Sacramento', cursive; color: blue">
-                                     @if ($treinamento->FeedbackCurriculo->cliente_id == 3)
-                                        Josue Góis
-                                    @else
-                                        Ronan Sombra
-                                    @endif
+                                    José Mesquita
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td align="center"
                                 style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; border-right: none; text-align: center;">
-                                @if ($treinamento->FeedbackCurriculo->cliente_id == 3)
-                                    SESMT
-                                @else
-                                    SSMA
-                                @endif
+                                SESMT
                             </td>
                             <td align="center" style="height: 0.02cm; border-top:none; " colspan="2">
                                 GERENTE OU RH
@@ -149,116 +137,119 @@
                     </table>
                 </div>
 
-                    <div
-                        style="height: 6.40cm; width: 5.10cm; float:left; margin-right: 5px; margin-top: 10px; margin-bottom: 12px;">
-                        <table cellspacing="0" cellpadddding="0" style="width: 100%; height: 5.28cm">
-                            <tbody>
-                            <tr>
-                                <td colspan="3"
-                                    style="color: red; height: .90cm; text-align: center; vertical-align: middle;">
+                <div
+                    style="height: 6.40cm; width: 5.10cm; float:left; margin-right: 5px; margin-top: 10px; margin-bottom: 12px;">
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; height: 5.28cm">
+                        <tbody>
+                        <tr>
+                            <td colspan="3"
+                                style="color: red; height: .90cm; text-align: center; vertical-align: middle;">
                             <span
-                                style="font-size: 6pt;">EMERGÊNCIA LIGUE: 1199 (RAMAL) 0800 727 1199 ou 3301-1199</span>
-                                </td>
-                            </tr>
+                                style="font-size: 6pt;">
+                                EMERGÊNCIA LIGUE
+{{--                                : 1199 (RAMAL) 0800 727 1199 ou 3301-1199--}}
+                            </span>
+                            </td>
+                        </tr>
 
-                            <tr style="height: 151px; word-break: break-word;">
-                                <td
-                                    style="text-align: center; vertical-align: top; border-top:none; padding: 2px 5px 0px 5px;">
+                        <tr style="height: 151px; word-break: break-word;">
+                            <td
+                                style="text-align: center; vertical-align: top; border-top:none; padding: 2px 5px 0px 5px;">
                         <span style="font-size: 4.5pt; line-height: 6.90pt; ">
                             <br>
                             <strong>POLITICA DE EHS</strong> <br>
-                            {{$treinamento->FeedbackCurriculo->Cliente->politica_ehs}}
+                            {!! $treinamento->FeedbackCurriculo->Empresa->DadosEmpresa->politica_ehs !!}
                         </span>
-                                </td>
-                            </tr>
+                            </td>
+                        </tr>
 
-                            <tr>
-                                <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; text-align: center">
-                                    CONTATO {{ $treinamento->FeedbackCurriculo->Cliente->apelido }}
-                                    : {{$treinamento->FeedbackCurriculo->Cliente->tel_principal}}
-                                </td>
-                            </tr>
+                        <tr>
+                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
+                                : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
+                            </td>
+                        </tr>
 
-                            <tr>
-                                <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; text-align: center; font-weight: bold;">
-                                    COR PROIBIDA DO MÊS
-                                </td>
-                            </tr>
+                        <tr>
+                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center; font-weight: bold;">
+                                COR PROIBIDA DO MÊS
+                            </td>
+                        </tr>
 
-                            </tbody>
-                        </table>
-
-
-                        <table cellspacing="0" cellpadding="0" style="width: 100%; ">
-                            <tbody>
-                            <tr>
-                                <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 4pt; text-align: center">
-                                    vermelho
-                                </td>
-                                <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 4pt; text-align: center">
-                                    azul
-                                </td>
-                                <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 4pt; text-align: center">
-                                    amarelo
-                                </td>
-                                <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 4pt; text-align: center">
-                                    verde
-                                </td>
-                                <td style="border-top: none; height: 0.20cm; width: 1.80cm; background: #f5f5c5; font-size: 4pt; text-align: center; vertical-align: center"
-                                    rowspan="4">
-                                    Não utilizar <br> ferramenta que esteja <br> com a cor proíbida do <br>
-                                    mês
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
-                                    JAN
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
-                                    FEV
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
-                                    MAR
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
-                                    ABR
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
-                                    MAI
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
-                                    JUN
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
-                                    JUL
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
-                                    AGO
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
-                                    SET
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
-                                    OUT
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
-                                    NOV
-                                </td>
-                                <td style="height: 0.20cm;font-size: 4pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
-                                    DEZ
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
+                        </tbody>
+                    </table>
 
 
-                    <?php $cont++ ?>
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; ">
+                        <tbody>
+                        <tr>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                vermelho
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                azul
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                amarelo
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                verde
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; width: 1.80cm; background: #f5f5c5; font-size: 3.5pt; text-align: center; vertical-align: center"
+                                rowspan="4">
+                                Não utilizar <br> ferramenta que esteja <br> com a cor proíbida do <br>
+                                mês
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                JAN
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                FEV
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                MAR
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                ABR
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                MAI
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                JUN
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                JUL
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                AGO
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                SET
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                OUT
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                NOV
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                DEZ
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+
+                <?php $cont++ ?>
                 @if ($cont==8)
                     <?php $cont = 0; ?>
                     <div style="page-break-after: always"></div>
@@ -273,12 +264,12 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
-                            <br>
-                        @else
-                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">
-                        @endif
+                        {{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
+                        <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
+                        <br>
+                        {{--                        @else--}}
+                        {{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
+                        {{--                        @endif--}}
 
                     </div>
                     <div class="content">
@@ -311,12 +302,12 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
-                            <br>
-                        @else
-                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">
-                        @endif
+                        {{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
+                        <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
+                        <br>
+                        {{--                        @else--}}
+                        {{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
+                        {{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -357,11 +348,11 @@
                                     style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
-                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Cliente->apelido }}</span></span>
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
                                     style="font-size: 6.8pt;">
-                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}</span></span>
+{{--                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}</span></span>--}}
                         </h6>
                         <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span
                                     style="font-size: 6.8pt;">PERMANENTE</span></span>
@@ -379,27 +370,27 @@
         <div class="a4">
             @foreach($treinamentos as $treinamento)
 
-            <div
+                <div
                     style="height: 6.40cm; width: 5.10cm; float:left; margin-right: 3px; margin-top: 10px; margin-bottom: 12px;">
                     <table cellspacing="0" cellpadding="0" style="width: 100%; height: 0.80cm">
                         <tbody>
                         <tr>
                             <td colspan="3"
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
-                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                                    <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="" style="height: 0.6cm">
-                                    <br>
-                                @else
-                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}"
-                                         style="height: 0.6cm" alt="">
-                                @endif
+                                {{--                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
+                                <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="" style="height: 0.6cm">
+                                <br>
+                                {{--                                @else--}}
+                                {{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}"--}}
+                                {{--                                         style="height: 0.6cm" alt="">--}}
+                                {{--                                @endif--}}
 
                                 <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="3" style="height: 0.02cm; border-top:none;">
-                                Empresa: {{ $treinamento->FeedbackCurriculo->Cliente->razao_social }}
+                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
                             </td>
                         </tr>
                         <tr>
@@ -437,10 +428,10 @@
                                 DATA VENCIMENTO
                             </td>
                         </tr>
-                        @if (count($treinamento->Vencimentos) <= 16)
+                        @if (count($treinamento->Vencimentos) <= 11)
                             @foreach($treinamento->Vencimentos as $vencimento)
                                 <tr>
-                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none;">
+                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; text-transform: uppercase">
                                         {{ $vencimento->label }}
                                     </td>
                                     <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
@@ -451,7 +442,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                            @foreach(range(1, 16 - count($treinamento->Vencimentos)) as $r)
+                            @foreach(range(1, 11 - count($treinamento->Vencimentos)) as $r)
                                 <tr>
                                     <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; color: white">
                                         _
@@ -482,31 +473,19 @@
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
                                 <span style="font-family: 'Sacramento', cursive; color: blue">
-                                    @if ($treinamento->FeedbackCurriculo->cliente_id == 3)
-                                        José Meneses Barros
-                                    @else
-                                        Gilson Pinto
-                                    @endif
+                                    Tiago Silva
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
                                 <span style="font-family: 'Sacramento', cursive; color: blue">
-                                     @if ($treinamento->FeedbackCurriculo->cliente_id == 3)
-                                        Josue Góis
-                                    @else
-                                        Ronan Sombra
-                                    @endif
+                                    José Mesquita
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td align="center"
                                 style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; border-right: none; text-align: center;">
-                                @if ($treinamento->FeedbackCurriculo->cliente_id == 3)
-                                    SESMT
-                                @else
-                                    SSMA
-                                @endif
+                                SESMT
                             </td>
                             <td align="center" style="height: 0.02cm; border-top:none; " colspan="2">
                                 GERENTE OU RH
@@ -530,7 +509,10 @@
                             <td colspan="3"
                                 style="color: red; height: .90cm; text-align: center; vertical-align: middle;">
                             <span
-                                style="font-size: 6pt;">EMERGÊNCIA LIGUE: 1199 (RAMAL) 0800 727 1199 ou 3301-1199</span>
+                                style="font-size: 6pt;">
+                                EMERGÊNCIA LIGUE
+{{--                                : 1199 (RAMAL) 0800 727 1199 ou 3301-1199--}}
+                            </span>
                             </td>
                         </tr>
 
@@ -540,16 +522,15 @@
                         <span style="font-size: 4.5pt; line-height: 6.90pt; ">
                             <br>
                             <strong>POLITICA DE EHS</strong> <br>
-                            {{$treinamento->FeedbackCurriculo->Cliente->politica_ehs}}
+                            {!! $treinamento->FeedbackCurriculo->Empresa->DadosEmpresa->politica_ehs !!}
                         </span>
                             </td>
                         </tr>
 
-
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
-                                CONTATO {{ $treinamento->FeedbackCurriculo->Cliente->apelido }}
-                                : {{$treinamento->FeedbackCurriculo->Cliente->tel_principal}}
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
+                                : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
                             </td>
                         </tr>
 
@@ -636,12 +617,12 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
-                            <br>
-                        @else
-                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">
-                        @endif
+                        {{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
+                        <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
+                        <br>
+                        {{--                        @else--}}
+                        {{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
+                        {{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -673,12 +654,12 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
-                            <br>
-                        @else
-                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">
-                        @endif
+                        {{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
+                        <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
+                        <br>
+                        {{--                        @else--}}
+                        {{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
+                        {{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -719,13 +700,13 @@
                                     style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
-                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Cliente->apelido }}</span></span>
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome }}</span></span>
                         </h6>
-                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
-                                    style="font-size: 6.8pt;">
-                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}
-                                </span></span>
-                        </h6>
+                        {{--                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span--}}
+                        {{--                                    style="font-size: 6.8pt;">--}}
+                        {{--                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}--}}
+                        {{--                                </span></span>--}}
+                        {{--                        </h6>--}}
                         <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span
                                     style="font-size: 6.8pt;">PERMANENTE</span></span>
                         </h6>

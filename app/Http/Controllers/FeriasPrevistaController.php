@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovar;
+use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
+use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
 use App\Models\FeriasPrevista;
 use DB;
 use Illuminate\Http\Request;
@@ -33,20 +36,20 @@ class FeriasPrevistaController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $dados = $request->input();
+        $dados['user_id'] = auth()->id();
 
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
                 'qnt_dias' => 'required',
                 'dias_saldo' => 'required',
-                'solicitante' => 'required',
+                'tem_faltas' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -59,12 +62,14 @@ class FeriasPrevistaController extends Controller
                 DB::beginTransaction();
                 FeriasPrevista::create($dados);
                 DB::commit();
+//                JobFeriasPrevistaStore::dispatch($feriasPrevista);
                 return response()->json('', 201);
             } catch (\Exception $e) {
                 DB::rollback();
                 $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
     }
@@ -91,8 +96,11 @@ class FeriasPrevistaController extends Controller
         $feriasPrevista->autocomplete_label_colaborador = $feriasPrevista->Colaborador ? $feriasPrevista->Colaborador->nome : '';
         $feriasPrevista->autocomplete_label_colaborador_anterior = $feriasPrevista->Colaborador ? $feriasPrevista->Colaborador->nome : '';
 
-        $feriasPrevista->autocomplete_label_cliente_modal = $feriasPrevista->Cliente ? $feriasPrevista->Cliente->razao_social . ' | ' . $feriasPrevista->Cliente->cnpj : '';
-        $feriasPrevista->autocomplete_label_cliente_modal_anterior = $feriasPrevista->Cliente ? $feriasPrevista->Cliente->razao_social . ' | ' . $feriasPrevista->Cliente->cnpj : '';
+        $feriasPrevista->autocomplete_label_gestor_modal = $feriasPrevista->GestorAprovacao ? $feriasPrevista->GestorAprovacao->nome : '';
+        $feriasPrevista->autocomplete_label_gestor_modal_anterior = $feriasPrevista->GestorAprovacao ? $feriasPrevista->GestorAprovacao->nome : '';
+
+        $feriasPrevista->quem_aprovou = $feriasPrevista->QuemAprovou ?? '';
+        $feriasPrevista->rh_aprovacao = $feriasPrevista->RhAprovacao ?? '';
 
         return $feriasPrevista;
     }
@@ -102,20 +110,17 @@ class FeriasPrevistaController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\FeriasPrevista $feriasPrevista
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, FeriasPrevista $feriasPrevista)
     {
         $dados = $request->input();
-
         $dadosValidados = \Validator::make($dados,
             [
-                'cliente_id' => 'required',
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
                 'qnt_dias' => 'required',
                 'dias_saldo' => 'required',
-                'solicitante' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -149,28 +154,73 @@ class FeriasPrevistaController extends Controller
         //
     }
 
+
+    public function aprovar(Request $request, FeriasPrevista $feriasPrevista)
+    {
+        $this->authorize('aprovar_por_gestor');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            if ($dados['status_aprovacao'] === 'reprovado') {
+                $feriasPrevista->update([
+                    'user_aprovacao_id' => auth()->id(),
+                    'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                    'obs_aprovacao' => $dados['obs_aprovacao'],
+                    'status_aprovacao' => $dados['status_aprovacao'],
+                    'resposta_rh' => $dados['status_aprovacao'],
+                ]);
+            } else {
+                $feriasPrevista->update([
+                    'user_aprovacao_id' => auth()->id(),
+                    'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                    'obs_aprovacao' => $dados['obs_aprovacao'],
+                    'status_aprovacao' => $dados['status_aprovacao'],
+                ]);
+            }
+            DB::commit();
+
+            JobFeriasPrevistaAprovar::dispatch($feriasPrevista);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar Solicitação:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
+
+    public function aprovarRH(Request $request, FeriasPrevista $feriasPrevista)
+    {
+        $this->authorize('aprovar_por_rh');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $feriasPrevista->update([
+                'user_rh_id' => auth()->id(),
+                'resposta_rh' => $dados['resposta_rh'],
+                'obs_rh' => $dados['obs_rh'],
+                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
+            ]);
+
+            DB::commit();
+
+            JobFeriasPrevistaAprovarRH::dispatch($feriasPrevista);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar solicitação RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
+
     public function atualizar(Request $request)
     {
-        $resultado = FeriasPrevista::with(
-            'Cliente:id,razao_social,area_id',
-            'CentroCusto',
-            'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo');
-
-        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
-
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
-        }
-
-        if ($request->filled('campoCliente')) {
-            $resultado->whereClienteId($request->campoCliente);
-        }
-
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        $resultado = $this->filtro($request)->paginate($request->pages);
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -178,7 +228,45 @@ class FeriasPrevistaController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
+                'aprovar_por_gestor' => auth()->user()->can('aprovar_por_gestor'),
+                'aprovar_por_rh' => auth()->user()->can('aprovar_por_rh'),
             ]
         ]);
+    }
+
+    public function filtro(Request $request)
+    {
+        $resultado = FeriasPrevista::with(
+            'CentroCusto',
+            'QuemAprovou:id,nome',
+            'UserCadastrou:id,nome',
+            'GestorAprovacao:id,nome',
+            'Colaborador', 'RhAprovacao');
+
+        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
+        if ($filtroPeriodo) {
+            $periodo = explode(' até ', $request->periodo);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
+        }
+
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Colaborador', function ($q) use ($request) {
+                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('id', $request->campoBusca);
+            });
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
+            $resultado->whereRespostaRh($status);
+        }
+
+        if (!auth()->user()->can('gestao_rh')){
+            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
+        }
+
+        return $resultado->orderByDesc('created_at');
     }
 }

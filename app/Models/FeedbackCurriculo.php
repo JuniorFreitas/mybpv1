@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeClientesEmpresa;
+use App\Scopes\ScopeOrderFeedback;
 use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -761,6 +761,7 @@ class FeedbackCurriculo extends Model
             $model->usuario_entrevista_marcado = auth()->id();
         });
 
-//        static::addGlobalScope(new ScopeClientesEmpresa);
+        static::addGlobalScope(new ScopeOrderFeedback());
     }
+
 }

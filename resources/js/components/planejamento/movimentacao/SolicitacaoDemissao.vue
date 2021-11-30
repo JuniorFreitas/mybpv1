@@ -13,40 +13,14 @@
                     <fieldset>
                         <legend>Informações</legend>
                         <div class="row">
-                            <div class="col-12 col-md-4" v-if="cliente_id === 0">
-                                <div class="form-group">
-                                    <label>Selecione um cliente</label>
-                                    <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete"
-                                                  :disabled="visualizar || editando"
-                                                  :valido="form.cliente_id !== ''"
-                                                  v-model="form.autocomplete_label_cliente_modal"
-                                                  :id="`cliente_modal_${hash}`"
-                                                  placeholder="Digite o nome cliente"
-                                                  @onblur="resetaCampoClienteModal"
-                                                  @onselect="selecionaClienteModal"></autocomplete>
-                                </div>
-                            </div>
 
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label>Colaborador </label>
-                                    <autocomplete :caminho="`autocomplete/colaboradores/${form.cliente_id}`"
-                                                  :formsm="false"
-                                                  :valido="form.colaborador_id !== ''"
-                                                  v-model="form.autocomplete_label_colaborador"
-                                                  placeholder="Selecione um(a) colaborador(a)"
-                                                  :disabled="visualizar || form.cliente_id === '' || editando"
-                                                  :id="`colaborador_${hash}`"
-                                                  @onblur="resetaCampoColaborador"
-                                                  @onselect="selecionaColaborador"></autocomplete>
-                                </div>
-                            </div>
+                            <colaborador :model="form" :verifica="visualizar" :hash="hash"></colaborador>
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo</label>
                                     <select v-model="form.centro_custo_id" class="form-control"
-                                            :disabled="visualizar || form.cliente_id === ''"
+                                            :disabled="visualizar"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
                                         <option value="">Selecione</option>
@@ -57,17 +31,25 @@
                                 </div>
                             </div>
 
-
                             <div class="col-12 col-md-4">
                                 <label>Data da demissão</label>
                                 <datepicker label="" class="corrigiDatepicker" v-model="form.data_demissao"
-                                            :disabled="visualizar || form.cliente_id === ''"></datepicker>
+                                            :disabled="visualizar"></datepicker>
                             </div>
 
                             <div class="col-12 col-md-4">
-                                <label>Data do pagamento</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_pagamento"
-                                            :disabled="visualizar || form.cliente_id === ''"></datepicker>
+                                <div class="form-group">
+                                    <label>Tipo de Aviso</label>
+                                    <select v-model="form.tipo_aviso" class="form-control"
+                                            :disabled="visualizar"
+                                            onchange="valida_campo_vazio(this,1)"
+                                            onblur="valida_campo_vazio(this,1)">
+                                        <option value="">Selecione</option>
+                                        <option value="Trabalhado">Trabalhado</option>
+                                        <option value="Indenizado">Indenizado</option>
+                                        <option value="NA">NA</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -75,59 +57,81 @@
                                     <label>Valor</label>
                                     <input type="text" class="form-control" v-mascara:dinheiro
                                            onblur="valida_dinheiro(this,1)"
-                                           :disabled="visualizar || form.cliente_id === ''"
+                                           :disabled="visualizar"
                                            v-model="form.valor_format">
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Solicitante</label>
-                                    <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
-                                           :disabled="visualizar || form.cliente_id === ''  || editando"
-                                           v-model="form.solicitante">
-                                </div>
-                            </div>
-
-                            <!--                            <div class="col-12">-->
-                            <!--                                <div class="form-group">-->
-                            <!--                                    <label>Status</label>-->
-                            <!--                                    <select v-model="form.status" class="form-control"-->
-                            <!--                                            :disabled="visualizar"-->
-                            <!--                                            onchange="valida_campo_vazio(this,1)"-->
-                            <!--                                            onblur="valida_campo_vazio(this,1)">-->
-                            <!--                                        <option value="">Selecione</option>-->
-                            <!--                                        <option value="Cancelado">Cancelado</option>-->
-                            <!--                                        <option value="Concluido">Concluido</option>-->
-                            <!--                                    </select>-->
-                            <!--                                </div>-->
-                            <!--                            </div>-->
+                            <gestoraprovacao :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>
 
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Observação</label>
                                     <textarea class="form-control" v-model="form.obs" cols="5" rows="5"
-                                              :disabled="visualizar || form.cliente_id === ''"></textarea>
+                                              :disabled="visualizar"></textarea>
                                 </div>
                             </div>
                         </div>
-                    </fieldset>
+                        <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
+                            Esta solicitação ainda não foi aprovada ou reprovada!
+                        </div>
+                        <fieldset v-if="visualizar || editando">
+                            <legend>Aprovação</legend>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label>Observação</label>
+                                        <textarea class="form-control" :disabled="form.data_aprovacao || !aprovando"
+                                                  v-model="form.obs_aprovacao"
+                                                  cols="5" rows="5"></textarea>
+                                    </div>
+                                </div>
 
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select :disabled="form.data_aprovacao || !aprovando " v-if="editando"
+                                                v-model="form.status_aprovacao"
+                                                class="form-control">
+                                            <option value="">Selecione...</option>
+                                            <option value="aprovado">Aprovar</option>
+                                            <option value="reprovado">Reprovar</option>
+                                        </select>
+
+                                        <select :disabled="form.data_aprovacao || !aprovando "
+                                                v-if="!editando"
+                                                v-model="form.status_aprovacao"
+                                                onblur="valida_campo_vazio(this,1)"
+                                                onchange="valida_campo_vazio(this,1)" class="form-control">
+                                            <option value="">Selecione...</option>
+                                            <option value="aprovado">Aprovar</option>
+                                            <option value="reprovado">Reprovar</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </fieldset>
                 </form>
             </template>
             <template slot="rodape">
                 <div v-show="!visualizar">
                     <button type="button" class="btn btn-sm btn-primary"
-                            v-show="editando && !atualizado  && !preload && form.cliente_id !== ''"
+                            v-show="editando && !atualizado  && !preload"
                             @click.prevent="alterar">
                         <i class="fa fa-edit"></i> Alterar
                     </button>
                     <button type="button" class="btn btn-sm btn-primary"
-                            v-show="!editando && !cadastrado  && !preload && form.cliente_id !== ''"
+                            v-show="!editando && !cadastrado  && !preload"
                             @click.prevent="cadastrar">
                         <i class="fa fa-save"></i> Salvar
                     </button>
                 </div>
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="aprovando && !atualizado  && !preload && !form.data_aprovacao"
+                        @click.prevent="aprovar">
+                    <i class="fa fa-save"></i> Salvar
+                </button>
             </template>
         </modal>
 
@@ -139,12 +143,37 @@
                         <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
                                :id="`filtroIntervalo_${hash}`"
                                v-model="controle.dados.filtroPeriodo">
-                        <label class="form-check-label cursor-pointer" :for="`filtroIntervalo_${hash}`">Por período</label>
+                        <label class="form-check-label cursor-pointer" :for="`filtroIntervalo_${hash}`">Por
+                            período</label>
                     </div>
                     <div class="form-group">
                         <datepicker range formsm label=""
                                     :disabled="controle.carregando || !controle.dados.filtroPeriodo"
                                     v-model="controle.dados.periodo"></datepicker>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Pesquisar</label>
+                        <input type="text"
+                               placeholder="Buscar por colaborador"
+                               autocomplete="off"
+                               class="form-control form-control-sm" :disabled="controle.carregando"
+                               v-model="controle.dados.campoBusca">
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
+                                :disabled="controle.carregando" @change="atualizar()">
+                            <option value="">Todos os Status</option>
+                            <option value="aberto">Aberto</option>
+                            <option value="aprovado">Aprovado</option>
+                            <option value="reprovado">Reprovado</option>
+                        </select>
                     </div>
                 </div>
 
@@ -166,6 +195,15 @@
             </form>
         </fieldset>
 
+        <div class="mb-2 mt-2 pt-1 pb-1 border-bottom" v-show="!controle.carregando && lista.length > 0">
+        <span class="small text-right">
+                Legenda:
+                <i class="fas fa-circle text-warning"></i> Aguardando
+                <i class="fas fa-circle text-success ml-2"></i> Aprovado
+                <i class="fas fa-circle text-danger ml-2"></i> Reprovado
+            </span>
+        </div>
+
         <preload class="text-center" v-if="controle.carregando"></preload>
 
         <div id="conteudo">
@@ -179,28 +217,23 @@
                     <tr class="bg-default">
                         <th>CÓD</th>
                         <th>Solicitação</th>
-                        <th v-if="cliente_id === 0">Cliente</th>
                         <th>Centro de custo</th>
                         <th>Colaborador</th>
                         <th>Data demissão</th>
-                        <th>Data pagamento</th>
                         <th>Valor</th>
-                        <th>Quem cadastrou</th>
+                        <th>Status</th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in lista">
+                    <tr v-for="item in lista"
+                        :class="!item.status_aprovacao ? 'table-warning' : item.status_aprovacao === 'reprovado' ? 'table-danger' : item.status_aprovacao === 'aprovado' ? 'table-success' : null">
                         <td>
                             {{ item.id }}
                         </td>
 
                         <td>
-                            {{ item.created_at }}
-                        </td>
-
-                        <td v-if="cliente_id === 0">
-                            {{ item.cliente.razao_social }}
+                            {{ item.user_cadastrou.nome }} <br> {{ item.created_at }}
                         </td>
 
                         <td>
@@ -216,43 +249,49 @@
                         </td>
 
                         <td>
-                            {{ item.data_pagamento }}
-                        </td>
-
-                        <td>
                             {{ item.valor_format }}
                         </td>
 
                         <td>
-<!--                            Solicitante: {{ item.solicitante }} <br>-->
-                            {{ item.user_cadastrou.nome }}
+                        <span v-if="item.status_aprovacao !== null">
+                            <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br/>
+                            Por: {{ item.gestor_aprovacao.nome }}
+                        </span>
+
+                        <span v-else>
+                            Aguardando
+                        </span>
                         </td>
 
 
                         <td class="text-center">
+                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
+                               v-if="!item.data_aprovacao && aprovar_por_gestor"
+                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
+                               data-toggle="modal"
+                               :data-target="`#${hash}`">
+                                <i class="fa fa-check"></i>
+                            </a>
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                               @click.prevent="formOpen(item.id); editando = true"
+                               @click.prevent="formOpen(item.id); editando = true;"
+                               v-if="item.data_aprovacao === null"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-edit"></i>
                             </a>
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                               @click.prevent="formOpen(item.id); visualizar = true"
+                               @click.prevent="formOpen(item.id); visualizar = true;"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-search-plus"></i>
                             </a>
                         </td>
-
                     </tr>
                     </tbody>
                 </table>
-
             </div>
-
         </div>
-
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             :url="urlPaginacao" :por-pagina="controle.dados.pages"
@@ -262,17 +301,18 @@
 </template>
 
 <script>
+
+import colaborador from "../../Colaborador";
+import gestoraprovacao from "../../GestorAprovacao";
+
 export default {
-    props: {
-        cliente_id: {
-            type: Number | String,
-            required: true,
-            default: ''
-        }
+    components: {
+        colaborador,
+        gestoraprovacao,
     },
     data() {
         return {
-            tituloJanela: 'Planejamento - Requisição de Vaga',
+            tituloJanela: 'Demissão',
             preload: false,
             editando: false,
             apagado: false,
@@ -280,49 +320,51 @@ export default {
             cadastrando: false,
             atualizado: false,
             visualizar: false,
+            aprovando: false,
+            aprovar_por_gestor: false,
+
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
-            colunasTabela: {
-                cliente: false,
-            },
-
             form: {
-                cliente_id: '',
-                autocomplete_label_cliente_modal: '',
-                autocomplete_label_cliente_modal_anterior: '',
+                empresa_id: '',
 
                 colaborador_id: '',
                 autocomplete_label_colaborador: '',
                 autocomplete_label_colaborador_anterior: '',
 
+                gestor_id: '',
+                autocomplete_label_gestor_modal: '',
+                autocomplete_label_gestor_modal_anterior: '',
+
                 centro_custo_id: '',
                 aviso: '',
                 data_demissao: '',
-                data_pagamento: '',
+                tipo_aviso: '',
                 valor: '',
                 valor_format: '0,00',
                 user_id: '',
                 solicitante: '',
                 status: '',
                 obs: '',
+
+                obs_aprovacao: '',
+                status_aprovacao: '',
             },
 
             formDefault: null,
             lista: [],
             centro_custos: [],
 
-            // colaborador_ativo: `autocomplete/colaboradores/`,
             urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/atualizar`,
             controle: {
                 carregando: false,
                 dados: {
                     pages: 20,
-                    caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
                     campoBusca: '',
+                    campoStatus: '',
                     filtroPeriodo: false,
                     periodo: '',
-                    campoCliente: ''
                 },
             },
         }
@@ -330,106 +372,11 @@ export default {
     mounted() {
         this.atualizar();
         this.formDefault = _.cloneDeep(this.form) //copia
-        this.colunasTabela.cliente = this.cliente_id === 0;
-        this.controle.dados.campoCliente = this.cliente_id !== 0 ? this.cliente_id : this.controle.dados.campoCliente;
     },
     methods: {
-        /***Campos de Filtros ****/
-        selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id;
-            this.controle.dados.autocomplete_label = obj.label;
-            this.controle.dados.autocomplete_label_anterior = obj.label;
-            this.controle.carregando = true;
-            setTimeout(() => {
-                this.$refs.componente.buscar();
-            }, 600);
-        },
-        resetaCampo() {
-            if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
-                this.$refs.componente.buscar();
-            }
-        },
-
-        selecionaCliente(obj) {
-            this.controle.dados.campoCliente = obj.id;
-            this.controle.dados.autocomplete_label_cliente = obj.label;
-            this.controle.dados.autocomplete_label_cliente_anterior = obj.label;
-            this.controle.carregando = true;
-            setTimeout(() => {
-                this.$refs.componente.buscar();
-            }, 600);
-        },
-        resetaCampoCliente() {
-            if (this.controle.dados.autocomplete_label_cliente_anterior !== this.controle.dados.autocomplete_label_cliente) {
-                this.controle.dados.autocomplete_label_cliente_anterior = '';
-                this.controle.dados.autocomplete_label_cliente = '';
-                this.controle.dados.campoCliente = '';
-                this.$refs.componente.buscar();
-            }
-        },
-
-        selecionaClienteModal(obj) {
-            this.form.cliente_id = obj.id;
-            this.form.autocomplete_label_cliente_modal = obj.label;
-            this.form.autocomplete_label_cliente_modal_anterior = obj.label;
-            //reseta Colaborador
-            this.form.autocomplete_label_colaborador_anterior = '';
-            this.form.autocomplete_label_colaborador = '';
-            this.form.colaborador_id = '';
-            setTimeout(() => {
-                this.listaCentroCusto();
-                this.form.centro_custo_id = '';
-            }, 100);
-        },
-        resetaCampoClienteModal() {
-            if (this.form.autocomplete_label_cliente_modal_anterior !== this.form.autocomplete_label_cliente_modal) {
-                this.form.autocomplete_label_cliente_modal_anterior = '';
-                this.form.autocomplete_label_cliente_modal = '';
-                this.form.cliente_id = '';
-                setTimeout(() => {
-                    if (this.form.cliente_id === '') {
-                        valida_campo_vazio($('#cliente_modal_' + this.hash), 1);
-                        $('#janelaCadastrar #cliente_modal_' + this.hash).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Cliente não pode ficar vazio');
-                    }
-                }, 100);
-                //reseta Colaborador
-                this.form.autocomplete_label_colaborador_anterior = '';
-                this.form.autocomplete_label_colaborador = '';
-                this.form.colaborador_id = '';
-                setTimeout(() => {
-                    this.listaCentroCusto();
-                    this.form.centro_custo_id = '';
-                }, 100);
-            }
-        },
-
-        selecionaColaborador(obj) {
-            this.form.colaborador_id = obj.curriculo_id;
-            this.form.autocomplete_label_colaborador = obj.label;
-            this.form.autocomplete_label_colaborador_anterior = obj.label;
-        },
-        resetaCampoColaborador() {
-            if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
-                this.form.autocomplete_label_colaborador_anterior = '';
-                this.form.autocomplete_label_colaborador = '';
-                this.form.colaborador_id = '';
-
-                setTimeout(() => {
-                    if (this.form.colaborador_id === '') {
-                        valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                        $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Colaborador não pode ficar vazio');
-                    }
-                }, 100);
-            }
-        },
 
         listaCentroCusto() {
-            axios.post(`${URL_PUBLICO}/centro-custos/`, {'cliente_id': this.form.cliente_id})
+            axios.post(`${URL_PUBLICO}/centro-custos/`)
                 .then(res => {
                     this.centro_custos = res.data.centro_custos;
                 })
@@ -442,29 +389,30 @@ export default {
             this.cadastrado = false;
             this.atualizado = false;
             this.editando = false;
+            this.aprovando = false;
+            this.visualizar = false;
+
             this.tituloJanela = "Solicitação de Demissão";
 
             formReset();
             setupCampo();
             this.form = _.cloneDeep(this.formDefault) //copia
-            this.form.cliente_id = this.cliente_id === 0 ? this.form.cliente_id : this.cliente_id;
             this.listaCentroCusto();
         },
 
         cadastrar() {
-            if (this.form.cliente_id === '') {
-                valida_campo_vazio($(`#cliente_modal_${this.hash}`), 1);
-                $(`#${this.hash} #cliente_modal_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo CLIENTE não pode ficar vazio');
-                this.resetaCampoClienteModal();
-                return false;
-            }
-
             if (this.form.colaborador_id === '') {
                 valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
                 $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
                 mostraErro('', 'Campo COLABORADOR não pode ficar vazio');
                 this.resetaCampoColaborador();
+                return false;
+            }
+            if (this.form.gestor_id === '') {
+                valida_campo_vazio($(`#gestor_${this.hash}`), 1);
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur');
+                mostraErro('', 'Campo GESTOR não pode ficar vazio');
+                this.resetaCampoGestor();
                 return false;
             }
 
@@ -511,6 +459,11 @@ export default {
                     this.form.centro_custo_id = data.centro_custo_id;
 
                     this.tituloJanela = `#${id} Solicitação de Demissão`;
+
+                    if (this.aprovando) {
+                        this.form.status_aprovacao = data.status_aprovacao === null ? '' : data.status_aprovacao;
+                        this.form.observacao = data.status_aprovacao === null ? '' : data.observacao;
+                    }
                     this.editando = true;
 
                     this.preload = false;
@@ -521,19 +474,18 @@ export default {
         },
 
         alterar() {
-            if (this.form.cliente_id === '') {
-                valida_campo_vazio($(`#cliente_modal_${this.hash}`), 1);
-                $(`#${this.hash} #cliente_modal_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo CLIENTE não pode ficar vazio');
-                this.resetaCampoClienteModal();
-                return false;
-            }
-
             if (this.form.colaborador_id === '') {
                 valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
                 $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
                 mostraErro('', 'Campo COLABORADOR não pode ficar vazio');
                 this.resetaCampoColaborador();
+                return false;
+            }
+            if (this.form.gestor_id === '') {
+                valida_campo_vazio($(`#gestor_${this.hash}`), 1);
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur');
+                mostraErro('', 'Campo GESTOR não pode ficar vazio');
+                this.resetaCampoGestor();
                 return false;
             }
 
@@ -558,8 +510,31 @@ export default {
                 })
         },
 
+        aprovar() {
+
+            $(`#${this.hash} :input:visible`).trigger('blur');
+            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
+                mostraErro('', 'Verifique os campos marcados')
+                return false;
+            }
+
+            this.preload = true;
+            axios.put(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${this.form.id}/aprovar`, this.form)
+                .then(response => {
+                    let data = response.data;
+                    mostraSucesso('', 'Registro salvo com sucesso!');
+                    $(`#${this.hash} `).modal('hide');
+                    this.$refs.componente.buscar();
+                    this.preload = false;
+                })
+                .catch(error => {
+                    this.preload = false;
+                })
+        },
+
         carregou(dados) {
             this.lista = dados.itens;
+            this.aprovar_por_gestor = dados.aprovar_por_gestor;
             this.controle.carregando = false;
         },
         carregando() {
