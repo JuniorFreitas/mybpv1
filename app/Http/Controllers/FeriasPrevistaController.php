@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\planejamento\movimentacao\feriasPrevistaExport;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovar;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
@@ -263,10 +264,23 @@ class FeriasPrevistaController extends Controller
             $resultado->whereRespostaRh($status);
         }
 
-        if (!auth()->user()->can('gestao_rh')){
+        if (!auth()->user()->can('gestao_rh')) {
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
         return $resultado->orderByDesc('created_at');
+    }
+
+    public function export(Request $request)
+    {
+
+        $resultado = FeriasPrevista::with(
+            'CentroCusto',
+            'QuemAprovou:id,nome',
+            'UserCadastrou:id,nome',
+            'GestorAprovacao:id,nome',
+            'Colaborador', 'RhAprovacao')->orderByDesc('created_at')->get();
+
+        return \Excel::download(new feriasPrevistaExport($resultado), 'ferias_prevista.xlsx');
     }
 }

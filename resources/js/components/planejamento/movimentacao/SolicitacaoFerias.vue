@@ -100,7 +100,7 @@
                                 <div v-if="form.data_aprovacao" class="col-12">
                                     <legend>{{ form.status_aprovacao }}
                                         por: {{ form.quem_aprovou.nome }} em
-                                        {{form.data_aprovacao}}
+                                        {{ form.data_aprovacao }}
                                     </legend>
                                 </div>
 
@@ -268,19 +268,19 @@
                     Solicitar
                 </button>
 
-                <!--                <form method="post" :action="`movimentacao/ferias-prevista/exportaExcel`" target="_blank">-->
-                <!--                    <input type="hidden" name="_token" :value="CSRF_token">-->
-                <!--                    <input type="hidden" name="filtroPeriodo" :value="controle.dados.filtroPeriodo">-->
-                <!--                    <input type="hidden" name="periodo" :value="controle.dados.periodo">-->
-                <!--                    <input type="hidden" name="campoBusca" :value="controle.dados.campoBusca">-->
-                <!--                    <input type="hidden" name="campoStatus" :value="controle.dados.campoStatus">-->
-                <!--                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">-->
+                <form method="post" :action="`movimentacao/ferias-prevista/export`" target="_blank">
+                    <input type="hidden" name="_token" :value="CSRF_token">
+                    <input type="hidden" name="filtroPeriodo" :value="controle.dados.filtroPeriodo">
+                    <input type="hidden" name="periodo" :value="controle.dados.periodo">
+                    <input type="hidden" name="campoBusca" :value="controle.dados.campoBusca">
+                    <input type="hidden" name="campoStatus" :value="controle.dados.campoStatus">
+                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">
 
-                <!--                    <button type="submit" class="btn btn-primary mr-1" data-toggle="modal"-->
-                <!--                            :disabled="controle.carregando || !controle.dados.filtroPeriodo">-->
-                <!--                        <i class="fa fa-files-pdf"></i> Gerar Excel-->
-                <!--                    </button>-->
-                <!--                </form>-->
+                    <button type="submit" class="btn btn-sm btn-primary mr-1" data-toggle="modal"
+                            :disabled="controle.carregando || !controle.dados.filtroPeriodo">
+                        <i class="fa fa-files-pdf"></i> Gerar Excel
+                    </button>
+                </form>
             </div>
         </fieldset>
 
@@ -359,11 +359,13 @@
 
                         <td>
                         <span v-if="item.status_aprovacao && item.data_aprovacao_rh === null">
-                            <span class="text-uppercase">{{ item.status_aprovacao}}</span> em {{ item.data_aprovacao }}<br/>
+                            <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br/>
                             Por: {{ item.quem_aprovou.nome }}
                         </span>
                             <span v-else-if="item.status_aprovacao && item.data_aprovacao_rh !== null">
-                            <span class="text-uppercase">{{ item.resposta_rh}}</span> em {{ item.data_aprovacao_rh }}<br/>
+                            <span class="text-uppercase">{{ item.resposta_rh }}</span> em {{
+                                    item.data_aprovacao_rh
+                                }}<br/>
                             Por: {{ item.rh_aprovacao.nome }}
                         </span>
                             <span v-else>

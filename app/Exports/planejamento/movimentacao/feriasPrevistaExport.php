@@ -1,12 +1,12 @@
 <?php
 
 
-namespace App\Exports\admissao\apontamento;
+namespace App\Exports\planejamento\movimentacao;
 
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 
-class AcihExport implements FromView
+class feriasPrevistaExport implements FromView
 {
     private $data;
 
@@ -19,7 +19,8 @@ class AcihExport implements FromView
     {
         $data = $this->data;
 
-        return view('excel.admissao.apontamento.cih', compact('data'));
+        return view('excel.planejamento.movimentacao.feriasPrevista', compact('data'));
     }
+
 
 }
