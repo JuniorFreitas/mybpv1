@@ -12,15 +12,16 @@
                         <tr>
                             <td colspan="3"
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
-                                {{--                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
-                                <img src="https://sgibpse.com.br/logo_bpse_color.png" alt=""
-                                     style="height: 0.6cm">
+                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+                                    <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="" style="height: 0.6cm">
+                                @else
+                                    <img
+                                        src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
+                                        style="height: 0.6cm" alt="">
+                                    {{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Empresa->Cliente->Logo[0]->url }}"--}}
+                                    {{--                                         style="height: 0.6cm" alt="">--}}
+                                @endif
                                 <br>
-                                {{--                                @else--}}
-                                {{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt=""--}}
-                                {{--                                         style="height: 0.6cm">--}}
-                                {{--                                    <br>--}}
-                                {{--                                @endif--}}
                                 <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
                             </td>
                         </tr>
@@ -264,13 +265,13 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        {{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
-                        <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
-                        <br>
-                        {{--                        @else--}}
-                        {{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
-                        {{--                        @endif--}}
-
+                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
+                        @else
+                            <img
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
+                                alt="">
+                        @endif
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -302,12 +303,13 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        {{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
-                        <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
+                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
+                        @else
+                            <img
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg">
+                        @endif
                         <br>
-                        {{--                        @else--}}
-                        {{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
-                        {{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -352,7 +354,7 @@
                         </h6>
                         <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
                                     style="font-size: 6.8pt;">
-{{--                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}</span></span>--}}
+                            {{--                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}</span></span>--}}
                         </h6>
                         <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span
                                     style="font-size: 6.8pt;">PERMANENTE</span></span>
@@ -377,14 +379,16 @@
                         <tr>
                             <td colspan="3"
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
-                                {{--                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
-                                <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="" style="height: 0.6cm">
+                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+                                    <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="" style="height: 0.6cm">
+                                @else
+                                    <img
+                                        src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
+                                        style="height: 0.6cm" alt="">
+                                    {{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Empresa->Cliente->Logo[0]->url }}"--}}
+                                    {{--                                         style="height: 0.6cm" alt="">--}}
+                                @endif
                                 <br>
-                                {{--                                @else--}}
-                                {{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}"--}}
-                                {{--                                         style="height: 0.6cm" alt="">--}}
-                                {{--                                @endif--}}
-
                                 <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
                             </td>
                         </tr>
@@ -617,12 +621,14 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        {{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
-                        <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
+                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
+                        @else
+                            <img
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
+                                alt="">
+                        @endif
                         <br>
-                        {{--                        @else--}}
-                        {{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
-                        {{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
@@ -654,12 +660,14 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        {{--                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)--}}
-                        <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="">
+                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
+                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
+                        @else
+                            <img
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
+                                alt="">
+                        @endif
                         <br>
-                        {{--                        @else--}}
-                        {{--                            <img src="{{ $treinamento->FeedbackCurriculo->Cliente->Logo[0]->url }}" alt="">--}}
-                        {{--                        @endif--}}
                     </div>
                     <div class="content">
                         <div class="boxBlack">
