@@ -71,6 +71,8 @@ const app = new Vue({
             dados: {
                 campoBusca: "",
                 campoStatus: "",
+                campoTags: "",
+                campoAreas: "",
                 pages: 50,
             },
         }
@@ -154,7 +156,7 @@ const app = new Vue({
                 .then(response => {
                     if (response.status === 201) {
                         $('#janelaCadastrar').modal('hide');
-                        mostraSucesso('','Ocorrência cadastrada com sucesso!')
+                        mostraSucesso('', 'Ocorrência cadastrada com sucesso!')
                         this.preloadAjax = false;
                         this.cadastrado = true;
                         this.atualizar();
@@ -199,7 +201,7 @@ const app = new Vue({
 
             axios.put(`${URL_ADMIN}/apontamento/cih/${this.form.id}`, this.form).then(response => {
                 $('#janelaCadastrar').modal('hide');
-                mostraSucesso('','Ocorrência alterada com sucesso!')
+                mostraSucesso('', 'Ocorrência alterada com sucesso!')
                 this.preloadAjax = false;
                 this.atualizado = true;
                 this.atualizar();
@@ -245,7 +247,7 @@ const app = new Vue({
 
             axios.put(`${URL_ADMIN}/apontamento/cih/aprovar/${this.form.id}`, this.form).then(response => {
                 $('#janelaCadastrar').modal('hide');
-                mostraSucesso('','Ocorrência alterada com sucesso!')
+                mostraSucesso('', 'Ocorrência alterada com sucesso!')
                 this.preloadAjax = false;
                 this.atualizado = true;
                 this.atualizar();

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Scopes\ScopeClientesEmpresa;
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -65,7 +66,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Cih extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'cih';
@@ -97,6 +98,7 @@ class Cih extends Model
         'obs_aprovacao',
         'data_aprovacao',
         'status',
+        'empresa_id'
     ];
 
     protected $casts = [
@@ -117,9 +119,11 @@ class Cih extends Model
         'status' => 'string',
         'created_at' => 'datetime:d/m/Y à\s H:i\h',
         'updated_at' => 'datetime:d/m/Y à\s H:i\h',
+        'empresa_id' => 'int',
     ];
 
-    protected function serializeDate(DateTimeInterface $date) {
+    protected function serializeDate(DateTimeInterface $date)
+    {
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -196,9 +200,8 @@ class Cih extends Model
         return $this->belongsToMany(Arquivo::class, 'cih_evidencia', 'cih_id', 'arquivo_id');
     }
 
-    //Scopo de ClienteID (Empresa)
-    protected static function booted()
+    public function Empresa()
     {
-        static::addGlobalScope(new ScopeClientesEmpresa);
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 }
