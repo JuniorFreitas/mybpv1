@@ -6,7 +6,7 @@ namespace App\Exports\admissao\apontamento;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 
-class AcihExport implements FromView
+class cihExport implements FromView
 {
     private $data;
 
