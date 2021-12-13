@@ -154,6 +154,13 @@ class FeriasPrevista extends Model
         }
     }
 
+    //Acessor ->data_inicio
+    public function getDataSaidaAttribute($value)
+    {
+        $data = new DataHora($this->attributes['data_saida']);
+        return $data->dataCompleta();
+    }
+
     public function setDataRetornoAttribute($value)
     {
         if (!is_null($value)) {
@@ -162,6 +169,20 @@ class FeriasPrevista extends Model
         } else {
             $this->attributes['data_retorno'] = null;
         }
+    }
+
+    //Acessor ->data_inicio
+    public function getDataRetornoAttribute($value)
+    {
+        $data = new DataHora($this->attributes['data_retorno']);
+        return $data->dataCompleta();
+    }
+
+    //Acessor ->data_inicio
+    public function getDataAprovacaoAttribute($value)
+    {
+        $data = new DataHora($this->attributes['data_aprovacao']);
+        return $data->dataCompleta();
     }
 
     public function Cliente()
