@@ -41,7 +41,7 @@ class CihController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -67,6 +67,7 @@ class CihController extends Controller
                 DB::beginTransaction();
                 $dados['tag_id'] = $dados['tag_id'] > 0 ? $dados['tag_id'] : null;
                 $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
+                $dados['empresa_id'] =
                 $cih = Cih::create($dados);
 
                 if (isset($dados['anexosDel'])) {
@@ -95,7 +96,7 @@ class CihController extends Controller
                 DB::rollback();
                 $msg = "error STORE CIH:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
@@ -120,7 +121,7 @@ class CihController extends Controller
      */
     public function edit(Cih $cih)
     {
-        $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaSelecionada->nome} - {$cih->Colaborador->Cliente->nome_fantasia}";
+        $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaSelecionada->nome}";
         $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
         $cih->tag_id = is_null($cih->tag_id) ? 0 : $cih->tag_id;
         $cih->area_id = is_null($cih->area_id) ? 0 : $cih->area_id;
@@ -189,8 +190,7 @@ class CihController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = Cih::with('Tag',
-            'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia',
+        $resultado = Cih::with('Tag', 'Area',
             'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome'
@@ -204,6 +204,28 @@ class CihController extends Controller
         $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
 
         $clientes = Cliente::whereAtivo(true)->get();
+
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Colaborador.Curriculo', function ($q) use ($request) {
+                $q->where('nome', 'like', '%' . $request->campoBusca . '%');
+            });
+        }
+
+        if ($request->filled('campoStatus')) {
+            $resultado->whereStatus($request->campoStatus);
+        }
+
+        if ($request->filled('campoTags')) {
+            $resultado->whereHas('Tag', function ($q) use ($request) {
+                $q->whereId($request->campoTags);
+            });
+        }
+
+        if ($request->filled('campoAreas')) {
+            $resultado->whereHas('Area', function ($q) use ($request) {
+                $q->whereId($request->campoAreas);
+            });
+        }
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 
@@ -228,7 +250,6 @@ class CihController extends Controller
     {
 
         $resultado = Cih::whereFeedbackId($feedback)->with('Tag', 'Area',
-            'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia',
             'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome'
@@ -255,8 +276,7 @@ class CihController extends Controller
         $dataFim = (new DataHora($intervalo[1] . ' 23:59:59'))->dataHoraInsert();
 
 
-        $dados = Cih::with('Tag',
-            'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia',
+        $dados = Cih::with('Tag', 'Empresa',
             'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome'
@@ -264,17 +284,11 @@ class CihController extends Controller
             ->where('data_aprovacao', '<=', $dataFim)
             ->whereStatus('aprovado');
 
-        if (auth()->user()->cliente_id == 1) {
-            $dados->whereClienteId($request->cliente_relatorio);
-            $cliente = Clientes::find($request->cliente_relatorio);
-        } else {
-            $dados->whereClienteId(auth()->user()->cliente_id);
-            $cliente = Clientes::find(auth()->user()->cliente_id);
-        }
-
         $dados = $dados->orderBy('data_aprovacao')->get();
 
-        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('dados', 'cliente', 'dataInicio', 'dataFim'));
+        $empresa = User::whereId(auth()->user()->empresa_id)->first();
+
+        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('dados', 'empresa', 'dataInicio', 'dataFim'));
         $pdf->setPaper('A4', 'landscape');
 
         return $pdf->stream("relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf");

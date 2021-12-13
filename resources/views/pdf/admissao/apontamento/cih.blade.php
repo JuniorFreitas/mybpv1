@@ -4,7 +4,7 @@
     @include('layouts.cabecalioEmpresa')
 @endsection
 @section('conteudo')
-    <h5 class="text-center text-uppercase" style="margin-top: 30px">{{$cliente->razao_social}} <br> REGISTRO DE
+    <h5 class="text-center text-uppercase" style="margin-top: 30px">{{$empresa->nome}} <br> REGISTRO DE
         JUSTIFICATIVA DE PONTO - PERÍODO {{(new \MasterTag\DataHora($dataInicio))->dataCompleta()}}
         à {{(new \MasterTag\DataHora($dataFim))->dataCompleta()}} <br>
     </h5>

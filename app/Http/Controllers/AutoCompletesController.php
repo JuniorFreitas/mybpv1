@@ -173,9 +173,9 @@ class AutoCompletesController extends Controller
             $q->whereIn('status', ['ADMITIDO']);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
-        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome', 'Cliente:id,nome_fantasia')->take($quantidade)
+        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome} - {$item->Cliente->nome_fantasia}";
+                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome}";
                 return $item;
             });
     }

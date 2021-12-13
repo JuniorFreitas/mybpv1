@@ -217,10 +217,32 @@
             <div class="col-12 col-md-4">
                 <div class="form-group">
                     <label>Status</label>
-                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" @change="atualizar()">
+                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus">
                         <option value="">Todos os Status</option>
-                        <option :value="true">Apenas Ativos</option>
-                        <option :value="false">Apenas Inativos</option>
+                        <option value="aprovado">Aprovado</option>
+                        <option value="reprovado">Reprovado</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select v-model="controle.dados.campoTags" onblur="valida_campo_vazio(this,1)"
+                            onchange="valida_campo_vazio(this,1)" class="form-control form-control-sm">
+                        <option value="">Selecione...</option>
+                        <option v-for="item in listaTags" :value="item.id">@{{item.label}}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <label>Área</label>
+                    <select v-model="controle.dados.campoAreas" onblur="valida_campo_vazio(this,1)"
+                            onchange="valida_campo_vazio(this,1)" class="form-control form-control-sm">
+                        <option value="">Selecione...</option>
+                        <option v-for="item in listaAreas" :value="item.id">@{{item.label}}</option>
                     </select>
                 </div>
             </div>
@@ -277,7 +299,6 @@
                 <thead>
                 <tr class="bg-default">
                     <th class="text-center">ID</th>
-                    <th v-if="cliente_id == 1">Cliente</th>
                     <th>Colaborador</th>
                     <th class="text-center">Data Ocorrência</th>
                     <th class="text-center">Lançamento</th>
