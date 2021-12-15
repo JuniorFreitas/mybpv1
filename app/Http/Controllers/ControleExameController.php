@@ -200,15 +200,7 @@ class ControleExameController extends Controller
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social,area_id',
             'vagaSelecionada',
-            'TelPrincipal')
-            ->whereHas('ResultadoIntegrado', function ($q) {
-                $q->whereEncaminhadoExame(true);
-            })
-//            ->join('curriculos.id', 'feedback_curriculos.curriculo_id')
-            ->orderBy(Curriculo::select('nome')
-                ->whereColumn('curriculos.id', 'feedback_curriculos.curriculo_id')
-                ->latest()
-                ->take(1));
+            'TelPrincipal');
         $resultado = $resultado->paginate($request->pages);
 
         $empresaExames = EmpresaExame::whereAtivo(true)->get();

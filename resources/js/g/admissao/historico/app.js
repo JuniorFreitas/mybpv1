@@ -47,12 +47,15 @@ const app = new Vue({
         cliente_id: '',
 
         lista: [],
+        cargos: [],
 
         controle: {
             carregando: false,
             dados: {
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
                 pages: 20,
+                campoBusca: '',
+                campoCargo: ''
             },
         },
     },
@@ -62,7 +65,6 @@ const app = new Vue({
     },
     methods: {
         abrirHistorico(obj) {
-            console.log(obj.curriculo)
             this.tituloJanela = `#${obj.id} - Histórico: ${obj.curriculo.nome}`;
             this.abrirDossie = false;
             this.abrirMedidas = false;
@@ -154,6 +156,7 @@ const app = new Vue({
 
         carregou(dados) {
             this.lista = dados.itens;
+            this.cargos = dados.cargos;
             this.controle.carregando = false;
         },
         carregando() {

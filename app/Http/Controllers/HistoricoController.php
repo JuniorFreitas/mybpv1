@@ -9,6 +9,7 @@ use App\Models\AvaliacaoNoventaFeedbackQuantidade;
 use App\Models\FeedbackCurriculo;
 use App\Models\MedidaAdministrativa;
 use App\Models\User;
+use App\Models\Vaga;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -50,9 +51,30 @@ class HistoricoController extends Controller
 //            $q->with('Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
 //        }])->whereIn('status', ['ADMITIDO']);
 
-        $resultado = FeedbackCurriculo::whereHas('Admissao',function($q){
+        $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO']);
-        })->with('Admissao','Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
+        })->with('Admissao', 'Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Curriculo', function ($q) use ($request) {
+                $q->where('nome', 'like', '%' . $request->campoBusca . '%');
+            });
+        }
+        if ($request->filled('campoCargo')) {
+            $resultado->whereHas('Admissao', function ($q) use ($request) {
+                $q->where('cargo', 'like', '%' . $request->campoCargo . '%');
+            });
+        }
+        $cargos = Vaga::whereAtivo(true)->orderBy('nome')->get(['id', 'nome']);
+
+     /*   $idsCargos = DB::table('feedback_curriculos')->distinct('vaga_id')->pluck('vaga_id');
+
+        $cargos = [];
+        foreach ($idsCargos as $id) {
+            $cargos[]=[
+                'id' => $id,
+                'nome' => Vaga::find($id)->nome
+                ];
+        }*/
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 
@@ -60,7 +82,10 @@ class HistoricoController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items()]
+            'dados' => [
+                'itens' => $resultado->items(),
+                'cargos' => $cargos,
+            ]
         ]);
     }
 
