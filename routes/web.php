@@ -74,6 +74,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
     Route::get('dashboard', [\App\Http\Controllers\HomeController::class, 'dashboard'])->name('dashboard');
     Route::put('concordarTermos', [\App\Http\Controllers\HomeController::class, 'concordarTermos'])->name('concordarTermos');
+    Route::post('busca-data-admissao', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaDataAdmissao'])->name('buscaDataAdmissao');
 
     // AutoCompletes
     Route::group(['as' => 'autocompletes.', 'prefix' => 'autocomplete'], function () {

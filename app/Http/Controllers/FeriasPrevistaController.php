@@ -6,6 +6,8 @@ use App\Exports\planejamento\movimentacao\feriasPrevistaExport;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovar;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
+use App\Models\Curriculo;
+use App\Models\FeedbackCurriculo;
 use App\Models\FeriasPrevista;
 use DB;
 use Illuminate\Http\Request;
@@ -51,6 +53,8 @@ class FeriasPrevistaController extends Controller
                 'qnt_dias' => 'required',
                 'dias_saldo' => 'required',
                 'tem_faltas' => 'required',
+                'periodo_aquisitivo' => 'required',
+                'ultima_data' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -90,7 +94,7 @@ class FeriasPrevistaController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\FeriasPrevista $feriasPrevista
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function edit(FeriasPrevista $feriasPrevista)
     {
@@ -103,7 +107,7 @@ class FeriasPrevistaController extends Controller
         $feriasPrevista->quem_aprovou = $feriasPrevista->QuemAprovou ?? '';
         $feriasPrevista->rh_aprovacao = $feriasPrevista->RhAprovacao ?? '';
 
-        return $feriasPrevista;
+        return response()->json($feriasPrevista, 200);
     }
 
     /**
@@ -158,7 +162,7 @@ class FeriasPrevistaController extends Controller
 
     public function aprovar(Request $request, FeriasPrevista $feriasPrevista)
     {
-        $this->authorize('aprovar_por_gestor');
+//        $this->authorize('aprovar_por_gestor');
         $dados = $request->input();
         try {
             DB::beginTransaction();
@@ -242,7 +246,7 @@ class FeriasPrevistaController extends Controller
             'QuemAprovou:id,nome',
             'UserCadastrou:id,nome',
             'GestorAprovacao:id,nome',
-            'Colaborador', 'RhAprovacao');
+            'Colaborador.FeedBack.Admissao', 'RhAprovacao');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
         if ($filtroPeriodo) {
@@ -282,5 +286,13 @@ class FeriasPrevistaController extends Controller
             'Colaborador', 'RhAprovacao')->orderByDesc('created_at')->get();
 
         return \Excel::download(new feriasPrevistaExport($resultado), 'ferias_prevista.xlsx');
+    }
+
+    public function buscaDataAdmissao(Request $request)
+    {
+        $data_admissao = FeedbackCurriculo::whereCurriculoId($request->colaborador_id)
+            ->with('Admissao')->first();
+
+        return response()->json(['data_admissao' => $data_admissao->Admissao->data_admissao]);
     }
 }
