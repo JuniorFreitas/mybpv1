@@ -104,7 +104,9 @@ class FeriasPrevista extends Model
         'resposta_rh',
         'obs_rh',
         'data_aprovacao_rh',
-        'empresa_id'
+        'empresa_id',
+        'periodo_aquisitivo',
+        'utima_data',
     ];
 
     protected $casts = [
@@ -135,7 +137,10 @@ class FeriasPrevista extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
 
-        'empresa_id' => 'int'
+        'empresa_id' => 'int',
+
+        'periodo_aquisitivo' => 'string',
+        'utima_data' => 'date:d/m/Y',
     ];
 
     protected function serializeDate(DateTimeInterface $date)
