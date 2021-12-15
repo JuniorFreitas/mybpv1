@@ -16,6 +16,10 @@
 
                             <colaborador :model="form" :verifica="visualizar" :hash="hash"></colaborador>
 
+                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="form.colaborador_id !== ''">
+                                <legend>Data de Admissão: {{ dataAdmissao }}</legend>
+                            </div>
+
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo</label>
@@ -29,6 +33,29 @@
                                         </option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <div class="form-group">
+                                    <label>Período Aquisitivo</label>
+                                    <select v-model="form.periodo_aquisitivo" class="form-control"
+                                            :disabled="visualizar"
+                                            onchange="valida_campo_vazio(this,1)"
+                                            onblur="valida_campo_vazio(this,1)">
+                                        <option value="">Selecione</option>
+                                        <option value="2018/2019">2018/2019</option>
+                                        <option value="2019/2020">2019/2020</option>
+                                        <option value="2020/2021">2020/2021</option>
+                                        <option value="2021/2022">2021/2022</option>
+                                        <option value="2022/2023">2022/2023</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label>Última Data</label>
+                                <datepicker label="" class="corrigiDatepicker" v-model="form.ultima_data"
+                                            :disabled="visualizar"></datepicker>
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -50,10 +77,8 @@
                                        onchange="valida_campo_vazio(this,1)">
                             </div>
 
-                            <div class="col-12 col-md-4 mt-2">
+                            <div class="col-12 col-md-4 mt-4 mb-4 ">
                                 <legend>Quantidade de dias disponíveis: {{ qntDias }}</legend>
-                                <!--                                <input type="text" class="form-control" v-model="form.qnt_dias"-->
-                                <!--                                       :disabled="visualizar">-->
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -74,7 +99,7 @@
                                             :disabled="visualizar"></datepicker>
                             </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-4 mb-4 mt-4">
                                 <legend>Dias de saldo: {{ qntSaldo }}</legend>
                             </div>
 
@@ -93,11 +118,11 @@
                             Esta solicitação ainda não foi aprovada ou reprovada!
                         </div>
 
-                        <fieldset v-if="visualizar || editando">
+                        <fieldset v-if="visualizar || aprovando">
                             <legend>Aprovação</legend>
                             <div class="row">
 
-                                <div v-if="form.data_aprovacao" class="col-12">
+                                <div v-if="!aprovando && form.quem_aprovou !== null" class="col-12">
                                     <legend>{{ form.status_aprovacao }}
                                         por: {{ form.quem_aprovou.nome }} em
                                         {{ form.data_aprovacao }}
@@ -107,7 +132,7 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label>Observação</label>
-                                        <textarea class="form-control" :disabled="form.data_aprovacao || !aprovando"
+                                        <textarea class="form-control" :disabled="!aprovando"
                                                   v-model="form.obs_aprovacao"
                                                   cols="5" rows="5"></textarea>
                                     </div>
@@ -116,18 +141,9 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Status</label>
-                                        <select :disabled="form.data_aprovacao || !aprovando " v-if="editando"
+                                        <select :disabled="!aprovando"
                                                 v-model="form.status_aprovacao"
                                                 class="form-control">
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
-
-                                        <select :disabled="form.data_aprovacao || !aprovando " v-if="!editando"
-                                                v-model="form.status_aprovacao"
-                                                onblur="valida_campo_vazio(this,1)"
-                                                onchange="valida_campo_vazio(this,1)" class="form-control">
                                             <option value="">Selecione...</option>
                                             <option value="aprovado">Aprovar</option>
                                             <option value="reprovado">Reprovar</option>
@@ -136,50 +152,51 @@
                                 </div>
                             </div>
                         </fieldset>
-                        <fieldset v-if="(visualizar || editando) && aprovaRH">
-                            <legend>Aprovação RH</legend>
-                            <div class="row">
 
-                                <div class="col-12" v-if="form.data_aprovacao_rh">
-                                    <legend>{{ form.resposta_rh }} por:
-                                        {{ form.rh_aprovacao.nome }} em {{
-                                            form.data_aprovacao_rh
-                                        }}
-                                    </legend>
-                                </div>
+<!--                        <fieldset v-if="(visualizar || editando) && aprovaRH">-->
+<!--                            <legend>Aprovação RH</legend>-->
+<!--                            <div class="row">-->
 
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea class="form-control" :disabled="!aprovacao_rh"
-                                                  v-model="form.obs_rh"
-                                                  cols="5" rows="5"></textarea>
-                                    </div>
-                                </div>
+<!--                                <div class="col-12" v-if="form.data_aprovacao_rh">-->
+<!--                                    <legend>{{ form.resposta_rh }} por:-->
+<!--                                        {{ form.rh_aprovacao.nome }} em {{-->
+<!--                                            form.data_aprovacao_rh-->
+<!--                                        }}-->
+<!--                                    </legend>-->
+<!--                                </div>-->
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select :disabled="!aprovacao_rh" v-if="editando"
-                                                v-model="form.resposta_rh"
-                                                class="form-control">
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+<!--                                <div class="col-12">-->
+<!--                                    <div class="form-group">-->
+<!--                                        <label>Observação</label>-->
+<!--                                        <textarea class="form-control" :disabled="!aprovacao_rh"-->
+<!--                                                  v-model="form.obs_rh"-->
+<!--                                                  cols="5" rows="5"></textarea>-->
+<!--                                    </div>-->
+<!--                                </div>-->
 
-                                        <select :disabled="!aprovacao_rh" v-if="!editando"
-                                                v-model="form.resposta_rh"
-                                                onblur="valida_campo_vazio(this,1)"
-                                                onchange="valida_campo_vazio(this,1)" class="form-control">
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
+<!--                                <div class="col-md-6">-->
+<!--                                    <div class="form-group">-->
+<!--                                        <label>Status</label>-->
+<!--                                        <select :disabled="!aprovacao_rh" v-if="editando"-->
+<!--                                                v-model="form.resposta_rh"-->
+<!--                                                class="form-control">-->
+<!--                                            <option value="">Selecione...</option>-->
+<!--                                            <option value="aprovado">Aprovar</option>-->
+<!--                                            <option value="reprovado">Reprovar</option>-->
+<!--                                        </select>-->
+
+<!--                                        <select :disabled="!aprovacao_rh" v-if="!editando"-->
+<!--                                                v-model="form.resposta_rh"-->
+<!--                                                onblur="valida_campo_vazio(this,1)"-->
+<!--                                                onchange="valida_campo_vazio(this,1)" class="form-control">-->
+<!--                                            <option value="">Selecione...</option>-->
+<!--                                            <option value="aprovado">Aprovar</option>-->
+<!--                                            <option value="reprovado">Reprovar</option>-->
+<!--                                        </select>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </fieldset>-->
                     </fieldset>
                 </form>
             </template>
@@ -197,13 +214,8 @@
                     </button>
                 </div>
                 <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovando && !atualizado  && !preload && !form.data_aprovacao"
+                        v-show="aprovando && !preload"
                         @click.prevent="aprovar">
-                    <i class="fa fa-save"></i> Salvar
-                </button>
-                <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovando && !atualizado && !preload && aprovaRH"
-                        @click.prevent="aprovarRH">
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
@@ -294,10 +306,11 @@
             <div class="mb-2 mt-2 pt-1 pb-1 border-bottom" v-show="!controle.carregando && lista.length > 0">
                 <span class="small text-right">
                     Legenda:
-                    <i class="fas fa-circle text-warning"></i> Aguardando
-                    <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH
-                    <i class="fas fa-circle text-info ml-2"></i> Aprovado pelo Gestor
-                    <i class="fas fa-circle text-danger ml-2"></i> Reprovado
+                    <i class="fas fa-circle text-white ml-2"></i> Aguardando
+                    <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo Gestor
+                    <i class="fas fa-circle text-danger ml-2"></i> Reprovado pelo Gestor
+<!--                    <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH-->
+<!--                    <i class="fas fa-circle text-warning ml-2"></i> Reprovado pelo RH-->
                 </span>
             </div>
 
@@ -319,11 +332,9 @@
                     </thead>
                     <tbody>
                     <tr v-for="item in lista"
-                        :class="!item.status_aprovacao ? 'table-warning'
+                        :class="!item.status_aprovacao ? 'table-white'
                         : item.status_aprovacao === 'reprovado' ? 'table-danger'
-                        : item.resposta_rh === 'reprovado' ? 'table-danger'
-                        : item.status_aprovacao === 'aprovado' && !item.resposta_rh ? 'table-info'
-                        : item.status_aprovacao === 'aprovado' && item.resposta_rh === 'aprovado' ? 'table-success'
+                        : item.status_aprovacao === 'aprovado' ? 'table-success'
                         : null">
                         <td>
                             {{ item.id }}
@@ -358,18 +369,18 @@
                         </td>
 
                         <td>
-                        <span v-if="item.status_aprovacao && item.data_aprovacao_rh === null">
-                            <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br/>
-                            Por: {{ item.quem_aprovou.nome }}
-                        </span>
-                            <span v-else-if="item.status_aprovacao && item.data_aprovacao_rh !== null">
-                            <span class="text-uppercase">{{ item.resposta_rh }}</span> em {{
-                                    item.data_aprovacao_rh
-                                }}<br/>
-                            Por: {{ item.rh_aprovacao.nome }}
+                        <span class="text-uppercase" v-if="item.quem_aprovou">
+                            <span v-if="item.status_aprovacao === 'aprovado' && !item.resposta_rh">
+                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
+                                    Por gestor(a): {{ item.quem_aprovou.nome }}
+                            </span>
+                            <span v-if="item.status_aprovacao === 'reprovado'">
+                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
+                                    Por gestor(a): {{ item.quem_aprovou.nome }}
+                            </span>
                         </span>
                             <span v-else>
-                            Aguardando
+                            AGUARDANDO
                         </span>
                         </td>
 
@@ -377,30 +388,30 @@
                         <td class="text-center">
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
-                               v-if="!item.data_aprovacao"
+                               v-if="item.quem_aprovou === null"
                                @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-check"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprova RH"
-                               v-if="item.data_aprovacao && !item.data_aprovacao_rh && aprova_RH && item.status_aprovacao === 'aprovado'"
-                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; aprovacao_rh = true;"
-                               data-toggle="modal"
-                               :data-target="`#${hash}`">
-                                <i class="fa fa-check"></i>
-                            </a>
+                            <!--                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprova RH"-->
+                            <!--                               v-if="item.data_aprovacao && !item.data_aprovacao_rh && aprova_RH && item.status_aprovacao === 'aprovado'"-->
+                            <!--                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; aprovacao_rh = true;"-->
+                            <!--                               data-toggle="modal"-->
+                            <!--                               :data-target="`#${hash}`">-->
+                            <!--                                <i class="fa fa-check"></i>-->
+                            <!--                            </a>-->
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar" v-if="editar"
-                               @click.prevent="formOpen(item.id); editando = true"
-                               data-toggle="modal"
-                               :data-target="`#${hash}`">
-                                <i class="fa fa-edit"></i>
-                            </a>
+                            <!--                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar" v-if="editar"-->
+                            <!--                               @click.prevent="formOpen(item.id); editando = true"-->
+                            <!--                               data-toggle="modal"-->
+                            <!--                               :data-target="`#${hash}`">-->
+                            <!--                                <i class="fa fa-edit"></i>-->
+                            <!--                            </a>-->
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Visualizar"
-                               @click.prevent="formOpen(item.id); visualizar = true"
+                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = false;"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-search-plus"></i>
@@ -477,6 +488,11 @@ export default {
                 resposta_rh: '',
                 data_aprovacao_rh: '',
 
+                data_admissao: "",
+
+                periodo_aquisitivo: '',
+                ultima_data: '',
+
             },
 
             formDefault: null,
@@ -541,6 +557,15 @@ export default {
             this.form.dias_saldo = this.qntDias - this.form.qnt_dias;
 
             return this.form.dias_saldo;
+        },
+
+        dataAdmissao() {
+            if (this.form.colaborador_id !== '') {
+                axios.post(`${URL_ADMIN}/busca-data-admissao`, this.form).then(response => {
+                    this.form.data_admissao = response.data.data_admissao
+                });
+                return this.form.data_admissao;
+            }
         }
 
     },
