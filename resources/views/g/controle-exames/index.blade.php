@@ -2,9 +2,6 @@
 @section('title', 'CONTROLE DE EXAMES')
 @section('content_header', 'CONTROLE DE EXAMES')
 @section('content')
-
-
-
     <modal id="validaSesmt" :titulo="abasesmt.tituloJanela" modal-pai='janelaParecerEntrevista' :size="80"
            :fechar="!abasesmt.preload">
         <template slot="conteudo">

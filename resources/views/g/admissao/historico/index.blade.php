@@ -14,17 +14,10 @@
                     <div style="text-transform: uppercase">
                         <span>Nome: <strong>@{{ form.curriculo.nome }}</strong></span><br>
                         <span>CPF: <strong>@{{ form.curriculo.cpf }}</strong></span><br>
-                        <span>Empresa: <strong>@{{form.cliente.nome_fantasia ?
-                                form.cliente.nome_fantasia :
-                                form.cliente.nome}}</strong>
-                        </span><br>
-                        <span>Vaga: <strong>
-                                @{{ form.vaga_selecionada.nome }}</strong>
-                        </span><br>
                         <span>
-                            Cargo: <strong>@{{ form.cargo }}</strong> | Função: <strong>
-                                @{{ form.funcao }}</strong></span><br>
-                        <span>Data de admissão: <strong>@{{ form.data_admissao }}</strong></span><br>
+                            Cargo: <strong>@{{ form.admissao.cargo }}</strong> | Função: <strong>
+                                @{{ form.admissao.funcao }}</strong></span><br>
+                        <span>Data de admissão: <strong>@{{ form.admissao.data_admissao }}</strong></span><br>
                     </div>
                 </fieldset>
 
@@ -135,19 +128,37 @@
     </modal>
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
-        <div class="row">
+        <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <label>Buscar</label>
+                    <input type="text"
+                           placeholder="Buscar por nome"
+                           autocomplete="off"
+                           class="form-control form-control-sm" :disabled="controle.carregando"
+                           v-model="controle.dados.campoBusca">
+                </div>
+            </div>
+            <div class="col-12 col-sm-6">
+                <div class="form-group">
+                    <label>Por cargo</label>
+                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                            v-model="controle.dados.campoCargo">
+                        <option value="">Todos os Cargos</option>
+                        <option v-for="cargo in cargos" :value="cargo.nome">@{{cargo.nome}}</option>
+                    </select>
+                </div>
+            </div>
             <div class="col-12 col-md-2">
                 <label>Exibir</label>
-                <select class="custom-select" @change="atualizar" :disabled="controle.carregando"
+                <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
                         v-model="controle.dados.pages">
                     <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
-                    <option value="500">500</option>
                 </select>
             </div>
-
-        </div>
+        </form>
         <div class="row mt-2">
             <div class="col-12">
                 <button type="button" class="btn btn-sm btn-success mb-1" :disabled="controle.carregando"
@@ -171,7 +182,6 @@
                 <tr class="bg-default">
                     <th class="text-center">ID</th>
                     <th class="text-center">Nome</th>
-                    <th class="text-center" v-if="cliente_id === 0">Cliente</th>
                     <th class="text-center">Cargo</th>
                     <th class="text-center">Status</th>
                     <th class="text-center">Ação</th>
@@ -184,10 +194,6 @@
                     </td>
                     <td class="text-center">
                         @{{item.curriculo.nome}}
-                    </td>
-                    <td class="text-center" v-if="cliente_id === 0">
-                        @{{item.cliente.cnpj ? item.cliente.razao_social :
-                        item.cliente.nome}}
                     </td>
                     <td class="text-center">
                         @{{item.admissao.cargo}}
