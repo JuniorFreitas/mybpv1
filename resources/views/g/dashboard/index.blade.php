@@ -507,7 +507,7 @@
                 </div>
             </div>
             <div class="col-12 col-lg-2 d-flex">
-                <img src="{{ asset('images/bep.png') }}" class="img-fluid align-self-end" alt="">
+                <img src="{{ auth()->user()->empresa_id == 104 ? asset('imagens/bep.png') : asset('images/pilar_mascote.png') }}" class="img-fluid align-self-end" alt="">
             </div>
         @endif
 
