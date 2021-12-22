@@ -17,7 +17,6 @@ const app = new Vue({
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
         todos_municipios: `autocomplete/todos-municipios`,
 
-        cliente_id: '',
 
         form: {
             preload: false,
@@ -29,14 +28,10 @@ const app = new Vue({
                 id: '',
 
                 vaga_id: '',
-                cliente_id: '',
                 interesse: true,
 
                 autocomplete_label_vaga_modal: '',
                 autocomplete_label_vaga_modal_anterior: '',
-
-                autocomplete_label_cliente_modal: '',
-                autocomplete_label_cliente_modal_anterior: '',
 
                 curriculo: {
                     nome: '',
@@ -82,17 +77,12 @@ const app = new Vue({
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
                 autocomplete_label_anterior: '',
                 autocomplete_label: '',
-                caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
-                autocomplete_label_cliente_anterior: '',
-                autocomplete_label_cliente: '',
                 pages: 20,
-                cliente_custom: '',
                 campoBusca: '',
                 campoVaga: '',
                 campoLido: '',
                 campoFiltro: '',
                 campoPcd: '',
-                campoCliente: '',
                 campoUf: ''
             },
         },
@@ -115,17 +105,12 @@ const app = new Vue({
                     return false;
                 }
             });
-            let resultado = totalItens === totalEncontrado ? true : false;
+            let resultado = totalItens === totalEncontrado;
             this.selecionaTudo = resultado;
             return resultado;
         }
     },
     mounted() {
-        this.cliente_id = $('#cliente_id').val();
-        if (this.cliente_id) { //diferente de BPSE
-            this.controle.dados.campoCliente = parseInt(this.cliente_id);
-            this.controle.dados.cliente_custom = parseInt(this.cliente_id);
-        }
         this.atualizar();
         this.listaVagas();
     },
@@ -189,28 +174,10 @@ const app = new Vue({
                 }, 100);
             }
         },
-        selecionaClienteModal(obj) {
-            this.form.feedback.cliente_id = obj.id;
-            this.form.feedback.autocomplete_label_cliente_modal = obj.label;
-            this.form.feedback.autocomplete_label_cliente_modal_anterior = obj.label;
-        },
-        resetaCampoClienteModal() {
-            if (this.form.feedback.autocomplete_label_cliente_modal_anterior !== this.form.feedback.autocomplete_label_cliente_modal) {
-                this.form.feedback.autocomplete_label_cliente_modal_anterior = '';
-                this.form.feedback.autocomplete_label_cliente_modal = '';
-                this.form.feedback.cliente_id = '';
-                setTimeout(() => {
-                    if (this.form.feedback.cliente_id === '') {
-                        mostraErro('', 'O Campo Cliente não pode ficar vazio');
-                    }
-                }, 100);
-            }
-
-        },
 
         //GERAL
         resetaCampo() {
-            if (this.controle.dados.autocomplete_label_anterior != this.controle.dados.autocomplete_label) {
+            if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
                 this.controle.dados.autocomplete_label_anterior = '';
                 this.controle.dados.autocomplete_label = '';
                 this.controle.dados.campoVaga = '';
@@ -223,19 +190,6 @@ const app = new Vue({
             this.controle.dados.autocomplete_label_anterior = obj.label;
         },
 
-        resetaCampoCliente() {
-            if (this.controle.dados.autocomplete_label_cliente_anterior != this.controle.dados.autocomplete_label_cliente) {
-                this.controle.dados.autocomplete_label_cliente_anterior = '';
-                this.controle.dados.autocomplete_label_cliente = '';
-                this.controle.dados.campoCliente = '';
-            }
-        },
-
-        selecionaCliente(obj) {
-            this.controle.dados.campoCliente = obj.id;
-            this.controle.dados.autocomplete_label_cliente = obj.label;
-            this.controle.dados.autocomplete_label_cliente_anterior = obj.label;
-        },
 
         formAlterar(feedback_id) {
             this.form.editando = true;
@@ -273,13 +227,6 @@ const app = new Vue({
                 return false;
             }
 
-            if (this.form.feedback.cliente_id === '') {
-                valida_campo_vazio($('#cliente_' + this.hash), 1);
-                $('#janelaPortaria #cliente_' + this.hash).focus().trigger('blur');
-                mostraErro('', 'O Campo Cliente não pode ficar vazio');
-                return false;
-            }
-
             $('#janelaPortaria :input:visible').trigger('blur');
             if ($('#janelaPortaria :input:visible.is-invalid').length) {
                 $('#janelaPortaria').animate({
@@ -314,22 +261,6 @@ const app = new Vue({
                 .fail((data) => {
                     this.preload = false;
                 });
-        },
-
-        usuarioAutenticado() {
-            this.controle.carregando = true;
-            axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-                .then(response => {
-                    let data = response.data;
-
-                    this.cliente_id = data.cliente_id;
-
-                    this.colunasTabela.cliente = this.cliente_id === 0;
-                    this.controle.dados.campoCliente = this.cliente_id !== 0 ? this.cliente_id : this.controle.dados.campoCliente;
-                })
-                .catch(error => {
-                    this.preload = false;
-                })
         },
 
         carregou(dados) {
