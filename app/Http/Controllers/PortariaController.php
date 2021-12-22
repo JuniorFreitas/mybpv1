@@ -127,7 +127,7 @@ class PortariaController extends Controller
         }
 
         if ($request->filled('campoUf')) {
-            $resultado->whereHas('Feedback.Curriculo', function ($q) use ($request) {
+            $resultado->whereHas('Curriculo', function ($q) use ($request) {
                 $q->whereUfVaga($request->campoUf);
             });
         }
