@@ -121,7 +121,7 @@ class PortariaController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('Feedback.VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
