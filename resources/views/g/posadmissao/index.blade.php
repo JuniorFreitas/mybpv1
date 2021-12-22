@@ -24,9 +24,9 @@
                         <div style="text-transform: uppercase">
                             <p>Nome: <strong>@{{ form.feedback.curriculo.nome }}</strong><br>
                                 CPF: <strong>@{{ form.feedback.curriculo.cpf }}</strong><br>
-                                Empresa: <strong>@{{form.feedback.cliente.nome_fantasia ?
-                                    form.feedback.cliente.nome_fantasia :
-                                    form.feedback.cliente.nome}}</strong>
+                                Empresa: <strong>@{{form.feedback.empresa.nome_fantasia ?
+                                    form.feedback.empresa.nome_fantasia :
+                                    form.feedback.empresa.nome}}</strong>
                                 <br>
                                 Vaga: <strong>
                                     @{{ form.feedback.vaga_selecionada.nome }}</strong>
@@ -502,20 +502,6 @@
 
             </div>
 
-            @if(!Request::has('cliente_id'))
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                    <div class="form-group">
-                        <label>Por Cliente</label>
-                        <autocomplete :disabled="controle.carregando"
-                                      :caminho="controle.dados.caminho_cliente_autocomplete"
-                                      :valido="controle.dados.campoCliente !== ''"
-                                      v-model="controle.dados.autocomplete_label_cliente"
-                                      placeholder="Por cliente"
-                                      @onblur="resetaCampoCliente"
-                                      @onselect="selecionaCliente"></autocomplete>
-                    </div>
-                </div>
-            @endif
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
 
@@ -610,27 +596,26 @@
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
-                <form target="_blank"
-                      action="{{ \App\Models\Sistema::UrlServidor }}/admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"
-                      {{--                      action="{{ route('admissao.excel') }}"--}}
-                      method="get">
-                    @csrf
-                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
-                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">
-                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">
-                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">
-                    <input type="hidden" name="campoRh" :value="controle.dados.campoRh">
-                    <input type="hidden" name="campoFinalRh" :value="controle.dados.campoFinalRh">
-                    <input type="hidden" name="campoRota" :value="controle.dados.campoRota">
-                    <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">
-                    <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">
-                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
-                    <button type="submit" class="btn btn-sm btn-primary ml-1"
-                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0 ) ">
-                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
-                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>
-                </form>
+{{--                <form target="_blank"--}}
+{{--                      action="{{ \App\Models\Sistema::UrlServidor }}/admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
+{{--                      --}}{{--                      action="{{ route('admissao.excel') }}"--}}
+{{--                      method="get">--}}
+{{--                    @csrf--}}
+{{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
+{{--                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">--}}
+{{--                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">--}}
+{{--                    <input type="hidden" name="campoRh" :value="controle.dados.campoRh">--}}
+{{--                    <input type="hidden" name="campoFinalRh" :value="controle.dados.campoFinalRh">--}}
+{{--                    <input type="hidden" name="campoRota" :value="controle.dados.campoRota">--}}
+{{--                    <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">--}}
+{{--                    <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">--}}
+{{--                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">--}}
+{{--                    <button type="submit" class="btn btn-sm btn-primary ml-1"--}}
+{{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0 ) ">--}}
+{{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
+{{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
+{{--                    </button>--}}
+{{--                </form>--}}
             </div>
         </div>
     </fieldset>
@@ -657,7 +642,6 @@
                     <th class="text-center">ID</th>
                     <th>Nome</th>
                     <th>CPF</th>
-                    <th class="text-center" v-if="cliente_id === 0">Cliente</th>
                     <th class="text-center">Área</th>
                     <th class="text-center">Cargo</th>
                     <th class="text-center">Data da Admissão</th>
@@ -692,10 +676,7 @@
                     <td>
                         @{{item.curriculo.cpf}}
                     </td>
-                    <td class="text-center" v-if="cliente_id === 0">
-                        @{{item.cliente.nome_fantasia ?
-                        item.cliente.nome_fantasia : item.cliente.nome}}
-                    </td>
+
                     <td class="text-center">
                         @{{item.admissao.area_etiqueta ? item.admissao.area_etiqueta.label : null}}
                     </td>

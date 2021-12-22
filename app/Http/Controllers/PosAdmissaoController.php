@@ -67,7 +67,7 @@ class PosAdmissaoController extends Controller
     {
         $admissao = Admissao::whereFeedbackId($id)->first();
 
-        $admissao->load('Feedback.Curriculo', 'Feedback.Cliente', 'Feedback.VagaSelecionada', 'Feedback.MotivoRescisao', 'Feedback.TipoAviso', 'Feedback.ClassificacaoRescisao', 'Feedback.EntrevistaDesligamento');
+        $admissao->load('Feedback.Curriculo', 'Feedback.Empresa', 'Feedback.VagaSelecionada', 'Feedback.MotivoRescisao', 'Feedback.TipoAviso', 'Feedback.ClassificacaoRescisao', 'Feedback.EntrevistaDesligamento');
         $admissao->motivo = !is_null($admissao->Feedback->MotivoRescisao) ? $admissao->Feedback->MotivoRescisao->motivo_id : "";
         $admissao->outromotivo = null;
         if (!is_null($admissao->Feedback->MotivoRescisao) && $admissao->Feedback->MotivoRescisao->motivo_id == 7) {
@@ -258,32 +258,27 @@ class PosAdmissaoController extends Controller
 
         $resultado = FeedbackCurriculo::whereHas('Admissao', function($q){
             $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);
-        })->with('Admissao.AreaEtiqueta','Curriculo', 'Cliente', 'VagaSelecionada', 'EntrevistaDesligamento');;
+        })->with('Admissao.AreaEtiqueta','Curriculo', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');;
 
         /*$resultado = Admissao::with(['Feedback' => function ($q) {
-            $q->with('Curriculo', 'Cliente', 'VagaSelecionada');
+            $q->with('Curriculo', 'Empresa', 'VagaSelecionada');
         }, 'AreaEtiqueta', 'EntrevistaDesligamento'])->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);*/
 
         if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Feedback.Curriculo', function ($query) use ($request) {
+            $resultado->whereHas('Curriculo', function ($query) use ($request) {
                 $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
             });
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('Feedback.VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
 
-        if ($request->filled('campoCliente')) {
-            $resultado->whereHas('Feedback', function ($q) use ($request) {
-                $q->whereClienteId($request->campoCliente);
-            });
-        }
 
         if ($request->filled('campoUf')) {
-            $resultado->whereHas('Feedback.Curriculo', function ($q) use ($request) {
+            $resultado->whereHas('Curriculo', function ($q) use ($request) {
                 $q->whereUfVaga($request->campoUf);
             });
         }

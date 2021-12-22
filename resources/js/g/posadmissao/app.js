@@ -23,7 +23,7 @@ const app = new Vue({
         todos_municipios: `autocomplete/todos-municipios`,
 
         URL_ADMIN,
-        cliente_id: '',
+
         selecionados: [],
         selecionaTudo: false,
 
@@ -110,19 +110,14 @@ const app = new Vue({
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
                 autocomplete_label_anterior: '',
                 autocomplete_label: '',
-                caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
-                autocomplete_label_cliente_anterior: '',
-                autocomplete_label_cliente: '',
                 pages: 20,
 
-                cliente_custom: '',
                 campoBusca: '',
                 campoArea: '',
                 campoVaga: '',
                 campoLido: '',
                 campoFiltro: '',
                 campoPcd: '',
-                campoCliente: '',
                 campoUf: '',
                 campoFeedback: '',
             },
@@ -157,13 +152,6 @@ const app = new Vue({
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
-        // this.entrevista_desligamentoDefault = _.cloneDeep(this.formDefault.entrevista_desligamento) //copia
-        this.cliente_id = $('#cliente_id').val();
-        if (this.cliente_id) { //diferente de BPSE
-            this.controle.dados.campoCliente = parseInt(this.cliente_id);
-            this.controle.dados.cliente_custom = parseInt(this.cliente_id);
-        }
-
 
         this.atualizar();
         this.listaVagas();
@@ -202,18 +190,7 @@ const app = new Vue({
             this.controle.dados.autocomplete_label = obj.label;
             this.controle.dados.autocomplete_label_anterior = obj.label;
         },
-        resetaCampoCliente() {
-            if (this.controle.dados.autocomplete_label_cliente_anterior !== this.controle.dados.autocomplete_label_cliente) {
-                this.controle.dados.autocomplete_label_cliente_anterior = '';
-                this.controle.dados.autocomplete_label_cliente = '';
-                this.controle.dados.campoCliente = '';
-            }
-        },
-        selecionaCliente(obj) {
-            this.controle.dados.campoCliente = obj.id;
-            this.controle.dados.autocomplete_label_cliente = obj.label;
-            this.controle.dados.autocomplete_label_cliente_anterior = obj.label;
-        },
+
         formVisualizar(id) {
             this.form.id = id;
             this.cadastrado = false;
@@ -434,21 +411,6 @@ const app = new Vue({
                 .fail((data) => {
                     this.preload = false;
                 });
-        },
-        usuarioAutenticado() {
-            this.controle.carregando = true;
-            axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-                .then(response => {
-                    let data = response.data;
-
-                    this.cliente_id = data.cliente_id;
-
-                    this.colunasTabela.cliente = this.cliente_id === 0;
-                    this.controle.dados.campoCliente = this.cliente_id !== 0 ? this.cliente_id : this.controle.dados.campoCliente;
-                })
-                .catch(error => {
-                    this.preload = false;
-                })
         },
         janelaConfirmar(id) {
             this.form.id = id;
