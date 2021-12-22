@@ -34,8 +34,8 @@ class PortariaController extends Controller
 
         $resultado->Feedback->autocomplete_label_vaga_modal = $resultado->Feedback->VagaSelecionada->nome;
         $resultado->Feedback->autocomplete_label_vaga_modal_anterior = $resultado->Feedback->VagaSelecionada->nome;
-        $resultado->Feedback->autocomplete_label_cliente_modal = $resultado->Feedback->Cliente->razao_social . ' | ' . $resultado->Feedback->Cliente->cnpj;
-        $resultado->Feedback->autocomplete_label_cliente_modal_anterior = $resultado->Feedback->Cliente->razao_social . ' | ' . $resultado->Feedback->Cliente->cnpj;
+        $resultado->Feedback->autocomplete_label_cliente_modal = $resultado->Feedback->Empresa->razao_social . ' | ' . $resultado->Feedback->Empresa->cnpj;
+        $resultado->Feedback->autocomplete_label_cliente_modal_anterior = $resultado->Feedback->Empresa->razao_social . ' | ' . $resultado->Feedback->Empresa->cnpj;
 
         return $resultado;
 
@@ -89,7 +89,7 @@ class PortariaController extends Controller
             return response()->json([], 201);
         } catch (\Exception $e) {
             \DB::rollBack();
-            $msg = "error PORTARIA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            $msg = "error PORTARIA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             return response()->json(['msg' => $msg], 400);
 //            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
@@ -105,7 +105,6 @@ class PortariaController extends Controller
         })->with(
             'Curriculo.FotoTres:id',
             'VagaSelecionada:id,nome',
-            'Cliente:id,nome_fantasia,nome'
         );
 
         /*$resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->with(
@@ -122,19 +121,13 @@ class PortariaController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('Feedback.VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
 
-        if ($request->filled('campoCliente')) {
-            $resultado->whereHas('Feedback', function ($q) use ($request) {
-                $q->whereClienteId(auth()->user()->cliente_id == User::BPSE ? $request->campoCliente : auth()->user()->cliente_id);
-            });
-        }
-
         if ($request->filled('campoUf')) {
-            $resultado->whereHas('Feedback.Curriculo', function ($q) use ($request) {
+            $resultado->whereHas('Curriculo', function ($q) use ($request) {
                 $q->whereUfVaga($request->campoUf);
             });
         }
@@ -169,34 +162,34 @@ class PortariaController extends Controller
     public function export(Request $request)
     {
         $this->authorize('portaria');
-        $curriculo = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->orderBy('curriculo_id');
-
-        if ($request->selecionados) {
-            $curriculo = $curriculo->whereIn('curriculo_id', $request->selecionados);
-        } else {
-
-            if ($request->filled('campoCliente')) {
-                $curriculo->whereHas('Feedback', function ($q) use ($request) {
-                    $q->whereClienteId(auth()->user()->cliente_id == User::BPSE ? $request->campoCliente : auth()->user()->cliente_id);
-                });
-            }
-
-            if ($request->filled('vaga_id')) {
-                $curriculo->whereHas('Feedback', function ($query) use ($request) {
-                    $query->whereVagaId($request->vaga_id);
-                });
-            }
-
-            if ($request->filled('uf')) {
-                $curriculo->whereHas('Feedback.Curriculo', function ($q) use ($request) {
-                    $q->whereUfVaga($request->uf);
-                });
-            }
-        }
-
-        $curriculo = $curriculo->get();
-
-
-        return Excel::download(new treinamentoExport($curriculo), 'portaria.xlsx');
+//        $curriculo = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->orderBy('curriculo_id');
+//
+//        if ($request->selecionados) {
+//            $curriculo = $curriculo->whereIn('curriculo_id', $request->selecionados);
+//        } else {
+//
+//            if ($request->filled('campoCliente')) {
+//                $curriculo->whereHas('Feedback', function ($q) use ($request) {
+//                    $q->whereClienteId(auth()->user()->cliente_id == User::BPSE ? $request->campoCliente : auth()->user()->cliente_id);
+//                });
+//            }
+//
+//            if ($request->filled('vaga_id')) {
+//                $curriculo->whereHas('Feedback', function ($query) use ($request) {
+//                    $query->whereVagaId($request->vaga_id);
+//                });
+//            }
+//
+//            if ($request->filled('uf')) {
+//                $curriculo->whereHas('Feedback.Curriculo', function ($q) use ($request) {
+//                    $q->whereUfVaga($request->uf);
+//                });
+//            }
+//        }
+//
+//        $curriculo = $curriculo->get();
+//
+//
+//        return Excel::download(new treinamentoExport($curriculo), 'portaria.xlsx');
     }
 }

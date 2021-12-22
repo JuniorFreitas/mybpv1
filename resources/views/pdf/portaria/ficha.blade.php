@@ -214,7 +214,7 @@
                 <div class="b-bottom  b-left float-left linhas">
                     <div class="txt">Empresa:</div>
                     <div class="rsptxt">
-                        {{ $candidato->FeedBack->Cliente->razao_social }}
+                        {{ $candidato->FeedBack->Empresa->razao_social }}
                     </div>
                 </div>
 

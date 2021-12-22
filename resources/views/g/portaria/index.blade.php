@@ -5,7 +5,7 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-    <modal id="janelaPortaria" titulo="Atualizar dados" size="g">
+    <modal id="janelaPortaria" titulo="Atualizar dados" :size="80">
         <template slot="conteudo">
             <div class="alert alert-success text-center" v-show="form.atualizado">
                 <h4><i class="icon fa fa-check"></i> Dados atualizados com sucesso!</h4>
@@ -125,19 +125,6 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-4" v-if="cliente_id === 0">
-                            <div class="form-group">
-                                <label>Empresa</label>
-                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete"
-                                              :valido="form.feedback.cliente_id !== ''"
-                                              v-model="form.feedback.autocomplete_label_cliente_modal"
-                                              :id="`cliente_${hash}`"
-                                              placeholder="Selecione um cliente"
-                                              @onblur="resetaCampoClienteModal"
-                                             @onselect="selecionaClienteModal"></autocomplete>
-                            </div>
-                        </div>
-
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Função</label>
@@ -197,21 +184,6 @@
                                  @onselect="selecionaVaga"></autocomplete>
                 </div>
             </div>
-
-            @if(!Request::has('cliente_id'))
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                    <div class="form-group">
-                        <label>Por Cliente</label>
-                        <autocomplete :disabled="controle.carregando"
-                                      :caminho="controle.dados.caminho_cliente_autocomplete"
-                                      :valido="controle.dados.campoCliente !== ''"
-                                      v-model="controle.dados.autocomplete_label_cliente"
-                                      placeholder="Por cliente"
-                                      @onblur="resetaCampoCliente"
-                                     @onselect="selecionaCliente"></autocomplete>
-                    </div>
-                </div>
-            @endif
 
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>Estado</label>
@@ -294,19 +266,18 @@
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
 
-
-                <form target="_blank"
-                      action="{{ \App\Models\Sistema::UrlServidor }}/portaria/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"
-                      method="get">
-                    @csrf
-                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
-                    <input type="hidden" name="vaga_id" :value="controle.dados.campoVaga">
-                    <input type="hidden" name="cliente_id" :value="controle.dados.campoCliente">
-                    <button type="submit" class="btn btn-sm btn-primary mb-2"
-                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                        <i class="fas fa-file-excel"></i> Exportar Excel
-                    </button>
-                </form>
+{{--                <form target="_blank"--}}
+{{--                      action="{{ route('portaria.excel') }}"--}}
+{{--                      method="post">--}}
+{{--                    @csrf--}}
+{{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
+{{--                    <input type="hidden" name="vaga_id" :value="controle.dados.campoVaga">--}}
+{{--                    <input type="hidden" name="cliente_id" :value="controle.dados.campoCliente">--}}
+{{--                    <button type="submit" class="btn btn-sm btn-primary mb-2"--}}
+{{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">--}}
+{{--                        <i class="fas fa-file-excel"></i> Exportar Excel--}}
+{{--                    </button>--}}
+{{--                </form>--}}
             </div>
         </div>
 
@@ -333,7 +304,6 @@
                     <th>CPF</th>
                     <th>RG/Emitente</th>
                     <th>Filiação</th>
-                    <th class="text-center">Cliente</th>
                     <th class="text-center">Vaga</th>
                     <th class="text-center">Função</th>
                     <th class="text-center">Foto 3x4</th>
@@ -373,10 +343,7 @@
                         resultado.curriculo.filiacao_mae : 'Não Informadao'}}
                     </td>
 
-                    <td class="text-center">
-                        @{{resultado.cliente.nome_fantasia ?
-                        resultado.cliente.nome_fantasia : resultado.cliente.nome}}
-                    </td>
+
                     <td class="text-center">
                         @{{resultado.vaga_selecionada.nome}}
                     </td>

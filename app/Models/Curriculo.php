@@ -195,8 +195,6 @@ class Curriculo extends Model
         "viajar",
         "lido",
         "usuario_lido",
-        "created_at",
-        "updated_at",
         "datalido",
         "filiacao_pai",
         "filiacao_mae",
