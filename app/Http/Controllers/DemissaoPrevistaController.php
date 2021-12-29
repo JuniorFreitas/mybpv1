@@ -6,7 +6,9 @@ use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovar;
 use App\Models\DemissaoPrevista;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use MasterTag\DataHora;
+use PDF;
 
 class DemissaoPrevistaController extends Controller
 {
@@ -152,14 +154,14 @@ class DemissaoPrevistaController extends Controller
         $resultado = DemissaoPrevista::with(
             'CentroCusto',
             'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo','GestorAprovacao:id,nome');
+            'Colaborador:id,nome,login,tipo,ativo', 'GestorAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
 
             $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
         }
@@ -177,7 +179,7 @@ class DemissaoPrevistaController extends Controller
             $resultado->whereStatusAprovacao($status);
         }
 
-        if (!auth()->user()->can('gestao_rh')){
+        if (!auth()->user()->can('gestao_rh')) {
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
@@ -219,6 +221,14 @@ class DemissaoPrevistaController extends Controller
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
+    }
+
+    public function pdf(DemissaoPrevista $demissaoPrevista, Request $request)
+    {
+        $pdf = PDF::loadView('pdf.planejamento.movimentacao.demissao.avisoprevio', compact('demissaoPrevista'));
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->stream("pdf_" . Str::slug($demissaoPrevista->Colaborador->nome) . (new DataHora())->nomeUnico() . ".pdf");
     }
 
 }

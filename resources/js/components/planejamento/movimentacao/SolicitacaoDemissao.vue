@@ -56,7 +56,6 @@
                                 <div class="form-group">
                                     <label>Valor</label>
                                     <input type="text" class="form-control" v-mascara:dinheiro
-                                           onblur="valida_dinheiro(this,1)"
                                            :disabled="visualizar"
                                            v-model="form.valor_format">
                                 </div>
@@ -254,11 +253,11 @@
 
                         <td>
                         <span v-if="item.status_aprovacao !== null">
-                            <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br/>
+                            <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br />
                             Por: {{ item.gestor_aprovacao.nome }}
                         </span>
 
-                        <span v-else>
+                            <span v-else>
                             Aguardando
                         </span>
                         </td>
@@ -272,6 +271,7 @@
                                :data-target="`#${hash}`">
                                 <i class="fa fa-check"></i>
                             </a>
+
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
                                @click.prevent="formOpen(item.id); editando = true;"
                                v-if="item.data_aprovacao === null"
@@ -280,11 +280,18 @@
                                 <i class="fa fa-edit"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
+                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Visualizar"
                                @click.prevent="formOpen(item.id); visualizar = true;"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-search-plus"></i>
+                            </a>
+
+                            <a :href="`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${item.id}/pdf`"
+                               class="btn btn-sm btn-primary mb-1" title="Pdf"
+                               target="_blank"
+                               v-if="item.status_aprovacao === 'aprovado'">
+                                <i class="fa fa-file-pdf"></i>
                             </a>
                         </td>
                     </tr>
@@ -296,7 +303,7 @@
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             :url="urlPaginacao" :por-pagina="controle.dados.pages"
                             :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando"/>
+                            v-on:carregou="carregou" v-on:carregando="carregando" />
     </div>
 </template>
 
@@ -308,11 +315,11 @@ import gestoraprovacao from "../../GestorAprovacao";
 export default {
     components: {
         colaborador,
-        gestoraprovacao,
+        gestoraprovacao
     },
     data() {
         return {
-            tituloJanela: 'Demissão',
+            tituloJanela: "Demissão",
             preload: false,
             editando: false,
             apagado: false,
@@ -322,34 +329,34 @@ export default {
             visualizar: false,
             aprovando: false,
             aprovar_por_gestor: false,
-
+            URL_ADMIN,
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
             form: {
-                empresa_id: '',
+                empresa_id: "",
 
-                colaborador_id: '',
-                autocomplete_label_colaborador: '',
-                autocomplete_label_colaborador_anterior: '',
+                colaborador_id: "",
+                autocomplete_label_colaborador: "",
+                autocomplete_label_colaborador_anterior: "",
 
-                gestor_id: '',
-                autocomplete_label_gestor_modal: '',
-                autocomplete_label_gestor_modal_anterior: '',
+                gestor_id: "",
+                autocomplete_label_gestor_modal: "",
+                autocomplete_label_gestor_modal_anterior: "",
 
-                centro_custo_id: '',
-                aviso: '',
-                data_demissao: '',
-                tipo_aviso: '',
-                valor: '',
-                valor_format: '0,00',
-                user_id: '',
-                solicitante: '',
-                status: '',
-                obs: '',
+                centro_custo_id: "",
+                aviso: "",
+                data_demissao: "",
+                tipo_aviso: "",
+                valor: "",
+                valor_format: "0,00",
+                user_id: "",
+                solicitante: "",
+                status: "",
+                obs: "",
 
-                obs_aprovacao: '',
-                status_aprovacao: '',
+                obs_aprovacao: "",
+                status_aprovacao: ""
             },
 
             formDefault: null,
@@ -361,17 +368,17 @@ export default {
                 carregando: false,
                 dados: {
                     pages: 20,
-                    campoBusca: '',
-                    campoStatus: '',
+                    campoBusca: "",
+                    campoStatus: "",
                     filtroPeriodo: false,
-                    periodo: '',
-                },
-            },
-        }
+                    periodo: ""
+                }
+            }
+        };
     },
     mounted() {
         this.atualizar();
-        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formDefault = _.cloneDeep(this.form); //copia
     },
     methods: {
 
@@ -396,29 +403,29 @@ export default {
 
             formReset();
             setupCampo();
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
             this.listaCentroCusto();
         },
 
         cadastrar() {
-            if (this.form.colaborador_id === '') {
+            if (this.form.colaborador_id === "") {
                 valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio');
+                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger("blur");
+                mostraErro("", "Campo COLABORADOR não pode ficar vazio");
                 this.resetaCampoColaborador();
                 return false;
             }
-            if (this.form.gestor_id === '') {
+            if (this.form.gestor_id === "") {
                 valida_campo_vazio($(`#gestor_${this.hash}`), 1);
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo GESTOR não pode ficar vazio');
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger("blur");
+                mostraErro("", "Campo GESTOR não pode ficar vazio");
                 this.resetaCampoGestor();
                 return false;
             }
 
-            $(`#${this.hash} :input:visible`).trigger('blur');
+            $(`#${this.hash} :input:visible`).trigger("blur");
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+                mostraErro("", "Verifique os campos marcados");
                 return false;
             }
 
@@ -426,15 +433,15 @@ export default {
 
             axios.post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista`, this.form)
                 .then(response => {
-                    $(`#${this.hash} `).modal('hide');
+                    $(`#${this.hash} `).modal("hide");
                     let data = response.data;
-                    mostraSucesso('', 'Solicitação registrada com sucesso!');
+                    mostraSucesso("", "Solicitação registrada com sucesso!");
                     this.$refs.componente.buscar();
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         formOpen(id) {
@@ -461,8 +468,8 @@ export default {
                     this.tituloJanela = `#${id} Solicitação de Demissão`;
 
                     if (this.aprovando) {
-                        this.form.status_aprovacao = data.status_aprovacao === null ? '' : data.status_aprovacao;
-                        this.form.observacao = data.status_aprovacao === null ? '' : data.observacao;
+                        this.form.status_aprovacao = data.status_aprovacao === null ? "" : data.status_aprovacao;
+                        this.form.observacao = data.status_aprovacao === null ? "" : data.observacao;
                     }
                     this.editando = true;
 
@@ -470,28 +477,28 @@ export default {
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         alterar() {
-            if (this.form.colaborador_id === '') {
+            if (this.form.colaborador_id === "") {
                 valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio');
+                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger("blur");
+                mostraErro("", "Campo COLABORADOR não pode ficar vazio");
                 this.resetaCampoColaborador();
                 return false;
             }
-            if (this.form.gestor_id === '') {
+            if (this.form.gestor_id === "") {
                 valida_campo_vazio($(`#gestor_${this.hash}`), 1);
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo GESTOR não pode ficar vazio');
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger("blur");
+                mostraErro("", "Campo GESTOR não pode ficar vazio");
                 this.resetaCampoGestor();
                 return false;
             }
 
-            $(`#${this.hash} :input:visible`).trigger('blur');
+            $(`#${this.hash} :input:visible`).trigger("blur");
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+                mostraErro("", "Verifique os campos marcados");
                 return false;
             }
 
@@ -499,22 +506,22 @@ export default {
 
             axios.put(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${this.form.id}`, this.form)
                 .then(response => {
-                    $(`#${this.hash} `).modal('hide');
+                    $(`#${this.hash} `).modal("hide");
                     let data = response.data;
-                    mostraSucesso('', 'Solicitação alterada com sucesso!');
+                    mostraSucesso("", "Solicitação alterada com sucesso!");
                     this.$refs.componente.buscar();
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         aprovar() {
 
-            $(`#${this.hash} :input:visible`).trigger('blur');
+            $(`#${this.hash} :input:visible`).trigger("blur");
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+                mostraErro("", "Verifique os campos marcados");
                 return false;
             }
 
@@ -522,14 +529,14 @@ export default {
             axios.put(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${this.form.id}/aprovar`, this.form)
                 .then(response => {
                     let data = response.data;
-                    mostraSucesso('', 'Registro salvo com sucesso!');
-                    $(`#${this.hash} `).modal('hide');
+                    mostraSucesso("", "Registro salvo com sucesso!");
+                    $(`#${this.hash} `).modal("hide");
                     this.$refs.componente.buscar();
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         carregou(dados) {
@@ -543,9 +550,9 @@ export default {
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
-        },
+        }
     }
-}
+};
 </script>
 
 <style scoped>

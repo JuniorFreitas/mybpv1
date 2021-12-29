@@ -289,6 +289,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'movimentacao.', 'prefix' => 'movimentacao'], function () {
 
             Route::group(['as' => 'solicitacao_demissao.'], function () {
+                Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
                 Route::post('demissao-prevista/atualizar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovar'])->name('aprovar');
                 Route::resource('demissao-prevista', \App\Http\Controllers\DemissaoPrevistaController::class, ['parameters' => ['demissao-prevista' => 'demissao_prevista']]);
