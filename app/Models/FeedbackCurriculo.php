@@ -196,6 +196,7 @@ class FeedbackCurriculo extends Model
     }
 
     protected $fillable = [
+        'curriculo_id',
         'selecionado',
         'vaga_id',
         'usuario_entrevista_marcado',
@@ -224,6 +225,7 @@ class FeedbackCurriculo extends Model
     ];
     protected $casts = [
         'id' => 'int',
+        'curriculo_id' => 'int',
         'selecionado' => 'string',
         'vaga_id' => 'int',
         'usuario_entrevista_marcado' => 'int',

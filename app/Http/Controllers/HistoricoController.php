@@ -238,11 +238,11 @@ class HistoricoController extends Controller
         } else {
             $medida = $medida->with(
                 'Anexos',
-                'Feedback:id,curriculo_id,cliente_id',
+                'Feedback:id,curriculo_id,empresa_id',
                 'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento',
-                'Feedback.Cliente:id,cnpj,razao_social,nome_fantasia,cep,logradouro,numero,complemento,bairro,municipio,uf,contato',
-                'Feedback.Cliente.Logo:id,nome,layout,imagem,file,thumb',
-                'Feedback.Admissao:curriculo_id,data_admissao'
+                'Feedback.Empresa:id,cnpj,razao_social,nome_fantasia,cep,logradouro,numero,complemento,bairro,municipio,uf,contato',
+                'Feedback.Empresa.Logo:id,nome,layout,disco,imagem,file,thumb',
+                'Feedback.Admissao:id,feedback_id,data_admissao'
             )->first();
 
             $pdf = PDF::loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida'));
