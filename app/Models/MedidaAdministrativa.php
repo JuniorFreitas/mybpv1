@@ -72,6 +72,7 @@ class MedidaAdministrativa extends Model
         'motivo',
         'causa',
         'data_solicitacao',
+        'data_retorno'
     ];
 
     protected $casts = [
@@ -83,6 +84,7 @@ class MedidaAdministrativa extends Model
         'motivo' => 'string',
         'causa' => 'string',
         'data_solicitacao' => 'string',
+        'data_retorno' => 'date:d/m/Y',
         'created_at' => 'date:d/m/Y'
     ];
 
@@ -133,14 +135,32 @@ class MedidaAdministrativa extends Model
         }
     }
 
+    public function getDataRetornoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['data_retorno']);
+            return $data->dataCompleta();
+        }
+        return null;
+    }
+
+    //Modificador ->data_fim
+    public function setDataRetornoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($value);
+            $this->attributes['data_retorno'] = $data->dataInsert();
+        }
+    }
+
     public function Feedback()
     {
-        return $this->hasOne(FeedbackCurriculo::class,'id','feedback_id');
+        return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
     }
 
     public function Usuario()
     {
-        return $this->hasOne(User::class,'id','user_id');
+        return $this->hasOne(User::class, 'id', 'user_id');
     }
 
     public function Anexos()

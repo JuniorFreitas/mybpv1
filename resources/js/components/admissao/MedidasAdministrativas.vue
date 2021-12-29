@@ -63,8 +63,11 @@
                     </div>
 
                     <div class="col-md-2">
-                        <label>Data Solicitação</label>
-                        <date-picker v-model="obj.data_solicitacao" :max="hoje" :disabled="!obj.novo"></date-picker>
+                        <date-picker label="Data Solicitação" v-model="obj.data_solicitacao" :max="hoje" :disabled="!obj.novo"></date-picker>
+                    </div>
+
+                    <div class="col-md-2">
+                        <date-picker label="Data Retorno" v-model="obj.data_retorno" :min="hoje" :disabled="!obj.novo"></date-picker>
                     </div>
 
                     <div class="col-12">
@@ -73,7 +76,6 @@
                             <upload :model="obj.anexos"
                                     :model-delete="obj.anexosDel"
                                     :url="url_anexo"
-                                    :leitura="!obj.novo"
                                     label="Selecionar"
                                     @onProgresso="anexoUploadAndamento=true"
                                     @onFinalizado="anexoUploadAndamento=false"></upload>
@@ -95,7 +97,7 @@
                          obj.tipo === 'Suspensão de 1 dia' ||
                          obj.tipo === 'Suspensão de 2 ou 3 dias' ||
                          obj.tipo === 'Suspensão acima de 3 dias'">
-                        <button class="btn btn-outline-default" @click="gerarPdf(obj)"><i
+                        <button class="btn btn-outline-default" @click="gerarPdf(obj)" v-show="!obj.novo"><i
                             class="fas fa-file-pdf"></i> GERAR PDF
                         </button>
                     </div>
@@ -166,6 +168,7 @@ export default {
             obj.definicao = '';
             obj.motivo = '';
             obj.data_solicitacao = '';
+            obj.data_retorno = '';
             obj.anexos = [];
             obj.anexosDel = [];
 
