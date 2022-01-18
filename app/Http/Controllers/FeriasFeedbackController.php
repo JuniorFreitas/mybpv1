@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AfastamentoFeedback;
 use App\Models\FeriasFeedback;
+use App\Models\FeriasPrevistaDados;
+use App\Models\FeriasPrevistaMov;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -58,16 +60,19 @@ class FeriasFeedbackController extends Controller
      * @param \App\Models\FeriasFeedback $feriasFeedback
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function show($feedback)
+    public function show($curriculo_id)
     {
-        $ferias = FeriasFeedback::with('Usuario')->whereFeedbackId($feedback)->get();
-        $afastamento = AfastamentoFeedback::with('Usuario', 'Feedback')->where('feedback_id', $feedback)->get();
 
+        $ferias = FeriasPrevistaMov::whereColaboradorId($curriculo_id)->with(
+            'Colaborador',
+            'FeriasPrevistaDados',
+            'FeriasPrevistaDados.CentroCusto',
+            'FeriasPrevistaDados.UserCadastrou',
+            'FeriasPrevistaDados.QuemAprovou',
+        );
 
         return response()->json([
-            'feedback' => $feedback,
-            'ferias' => $ferias,
-            'afastamento' => $afastamento,
+            'ferias' => $ferias->get(),
             'hoje' => (new DataHora())->dataCompleta()
         ], 200);
     }

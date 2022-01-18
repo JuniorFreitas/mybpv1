@@ -52,7 +52,7 @@
                         <a class="nav-item nav-link" id="nav-ferias-tab" data-toggle="tab"
                            @click.prevent="abrirFerias = true"
                            href="#nav-ferias"
-                           role="tab" aria-controls="nav-ferias" aria-selected="false">FÉRIAS / AFASTAMENTO</a>
+                           role="tab" aria-controls="nav-ferias" aria-selected="false">FÉRIAS</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-item nav-link" id="nav-beneficio-tab" data-toggle="tab"
@@ -100,7 +100,7 @@
                     </div>
                     <div class="tab-pane fade show" id="nav-ferias" role="tabpanel"
                          aria-labelledby="nav-ferias-tab">
-                        <ferias v-if="abrirFerias" :feedback_id="form.feedback_id"></ferias>
+                        <ferias v-if="abrirFerias" :feedback_id="form.feedback_id" :curriculo_id="form.curriculo_id"></ferias>
                     </div>
                     <div class="tab-pane fade show" id="nav-beneficio" role="tabpanel"
                          aria-labelledby="nav-beneficio-tab">
