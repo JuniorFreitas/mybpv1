@@ -11,16 +11,12 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <div class="input-group">
-                                <span class="input-group-prepend">
-                                    <span class="input-group-text">Setor</span>
-                                </span>
-                                        <select v-model="camposMudarSetor.setor_id"
-                                                onchange="valida_campo_vazio(this,1)"
-                                                onblur="valida_campo_vazio(this,1)" class="custom-select">
-                                            <option v-for="item in setores" :value="item.id">{{ item.nome }}</option>
-                                        </select>
-                                    </div>
+                                    <label>Setor</label>
+                                    <select v-model="camposMudarSetor.setor_id"
+                                            onchange="valida_campo_vazio(this,1)"
+                                            onblur="valida_campo_vazio(this,1)" class="form-control form-control-sm">
+                                        <option v-for="item in setores" :value="item.id">{{ item.nome }}</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -86,22 +82,20 @@
                         <fieldset>
                             <legend>OCORRÊNCIA PARA</legend>
                             <div class="row">
-                                <div class="col-12 col-md-6">
-                                    <div class="form-group">
-                                        <label>Tipo</label>
-                                        <select v-model="form.tipo_ocorrencia" class="form-control"
-                                                onblur="valida_campo_vazio(this,1)">
-                                            <option value="">Selecione</option>
-                                            <option value="cliente">Cliente</option>
-                                            <option value="usuario">Usuário</option>
-                                        </select>
-                                    </div>
-                                </div>
+<!--                                <div class="col-12 col-md-6">-->
+<!--                                    <div class="form-group">-->
+<!--                                        <label>Tipo</label>-->
+<!--                                        <select v-model="form.tipo_ocorrencia" class="form-control form-control-sm"-->
+<!--                                                onblur="valida_campo_vazio(this,1)">-->
+<!--                                            <option value="">Selecione</option>-->
+<!--                                            &lt;!&ndash;                                            <option value="cliente">Cliente</option>&ndash;&gt;-->
+<!--                                            <option value="usuario">Usuário</option>-->
+<!--                                        </select>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                                 <div class="col-12 col-md-6" v-if="form.tipo_ocorrencia === 'cliente'">
                                     <div class="form-group">
-                                        <label>
-                                            Cliente
-                                        </label>
+                                        <label>Cliente</label>
                                         <autocomplete :caminho="caminho_cliente_autocomplete"
                                                       :valido="form.cliente_id !== ''"
                                                       v-model="form.autocomplete_label_cliente_modal"
@@ -110,9 +104,9 @@
                                                       @onselect="selecionaClienteModal"></autocomplete>
                                     </div>
                                 </div>
-                                <div class="col-12 col-md-6" v-if="form.tipo_ocorrencia === 'usuario'">
+                                <div class="col-12 " v-if="form.tipo_ocorrencia === 'usuario'">
                                     <div class="form-group">
-                                        <label>Usuário</label>
+                                        <label>Para:</label>
                                         <autocomplete :caminho="caminho_usuario_autocomplete"
                                                       :valido="form.usuario_id !== ''"
                                                       v-model="form.autocomplete_label_usuario_modal"
@@ -130,58 +124,43 @@
                         <div class="row">
                             <div v-show="!nova_mensagem" class="col-12">
                                 <div class="form-group">
-                                    <div class="input-group">
-                                            <span class="input-group-prepend">
-                                                <span class="input-group-text">Assunto</span>
-                                            </span>
-                                        <input type="text" v-model="form.assunto"
-                                               onblur="valida_campo_vazio(this,3)"
-                                               class="form-control">
-                                    </div>
+                                    <label>Assunto</label>
+                                    <input type="text" v-model="form.assunto"
+                                           onblur="valida_campo_vazio(this,3)"
+                                           class="form-control form-control-sm">
                                 </div>
                             </div>
                             <div v-show="!nova_mensagem" class="col-12 col-sm-4">
                                 <div class="form-group">
-                                    <div class="input-group">
-                                <span class="input-group-prepend">
-                                    <span class="input-group-text">Setor</span>
-                                </span>
-                                        <select v-model="form.setor_id" onchange="valida_campo_vazio(this,1)"
-                                                onblur="valida_campo_vazio(this,1)" class="custom-select">
-                                            <option value="">Selecione</option>
-                                            <option v-for="item in setores" :value="item.id">
-                                                {{ item.nome }}
-                                            </option>
-                                        </select>
-                                    </div>
+                                    <label>Setor</label>
+                                    <select v-model="form.setor_id" onchange="valida_campo_vazio(this,1)"
+                                            onblur="valida_campo_vazio(this,1)" class="form-control form-control-sm">
+                                        <option value="">Selecione</option>
+                                        <option v-for="item in setores" :value="item.id">
+                                            {{ item.nome }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div v-show="!nova_mensagem" class="col-12 col-sm-4">
                                 <div class="form-group">
-                                    <div class="input-group">
-                                <span class="input-group-prepend">
-                                    <span class="input-group-text">Tipo</span>
-                                </span>
-                                        <select v-model="form.tipo" onchange="valida_campo_vazio(this,1)"
-                                                onblur="valida_campo_vazio(this,1)" class="custom-select">
-                                            <option value="">Selecione</option>
-                                            <option value="anotacao">Anotação</option>
-                                            <option value="problema">Problema</option>
-                                        </select>
-                                    </div>
+                                    <label>Tipo</label>
+                                    <select v-model="form.tipo" onchange="valida_campo_vazio(this,1)"
+                                            onblur="valida_campo_vazio(this,1)" class="form-control form-control-sm">
+                                        <option value="">Selecione</option>
+                                        <option value="anotacao">Anotação</option>
+                                        <option value="problema">Problema</option>
+                                    </select>
                                 </div>
                             </div>
                             <div v-show="!nova_mensagem" class="col-12 col-sm-4">
                                 <div class="form-group">
-                                    <div class="input-group">
-                                <span class="input-group-prepend">
-                                    <span class="input-group-text">Tag</span>
-                                </span>
-                                        <select v-model="form.tag_id" class="custom-select">
-                                            <option value="">Selecione</option>
-                                            <option v-for="tag in tags" :value="tag.id">{{ tag.nome }}</option>
-                                        </select>
-                                    </div>
+                                    <label>Tag</label>
+                                    <select v-model="form.tag_id" class="form-control form-control-sm">
+                                        <option value="">Selecione</option>
+                                        <option v-for="tag in tags" :value="tag.id">{{ tag.nome }}</option>
+                                    </select>
+
                                 </div>
                             </div>
 
@@ -268,7 +247,7 @@
                                     <br>
                                     <small class="text-default">
                                         <strong v-if="ocorrencia.tags.length">Tag:</strong>
-                                        {{ ocorrencia.tags.length ? ocorrencia.tags[0].nome + ' | ' : null }}
+                                        {{ ocorrencia.tags.length ? ocorrencia.tags[0].nome + " | " : null }}
                                         <strong>Tipo:</strong>
                                         {{ ocorrencia.tipo }}
                                     </small>
@@ -361,13 +340,9 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <div class="input-group">
-                                <span class="input-group-prepend">
-                                    <span class="input-group-text">Nome</span>
-                                </span>
-                                        <input class="form-control" type="text"
-                                               onblur="valida_campo_vazio(this,1)" v-model="formTag.nome">
-                                    </div>
+                                    <label>Nome</label>
+                                    <input class="form-control form-control-sm" type="text"
+                                           onblur="valida_campo_vazio(this,1)" v-model="formTag.nome">
                                 </div>
                             </div>
                         </div>
@@ -393,13 +368,9 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <div class="input-group">
-                                <span class="input-group-prepend">
-                                    <span class="input-group-text">Nome</span>
-                                </span>
-                                        <input class="form-control" type="text"
-                                               onblur="valida_campo_vazio(this,1)" v-model="formSetor.nome">
-                                    </div>
+                                    <label>Nome</label>
+                                    <input class="form-control form-control-sm" type="text"
+                                           onblur="valida_campo_vazio(this,1)" v-model="formSetor.nome">
                                 </div>
                             </div>
                         </div>
@@ -420,84 +391,60 @@
             <form class="row" @submit.prevent="$refs.componente.buscar()">
                 <div class="col-12 col-md-3">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Buscar</span>
-                        </span>
-                            <input type="text"
-                                   placeholder="Buscar por conteudo"
-                                   autocomplete="off"
-                                   class="form-control" :disabled="controle.carregando"
-                                   v-model="controle.dados.campoBusca">
-                        </div>
+                        <label>Buscar</label>
+                        <input type="text"
+                               placeholder="Buscar por conteudo"
+                               autocomplete="off"
+                               class="form-control form-control-sm" :disabled="controle.carregando"
+                               v-model="controle.dados.campoBusca">
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Setor</span>
-                        </span>
-
-                            <select class="custom-select" @change="atualizar" :disabled="controle.carregando"
-                                    v-model="controle.dados.campoSetor">
-                                <option value="">Todos os setores</option>
-                                <option v-for="item in setores" :value="item.id">{{ item.nome }}</option>
-                            </select>
-                        </div>
+                        <label>Setor</label>
+                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                                v-model="controle.dados.campoSetor">
+                            <option value="">Todos os setores</option>
+                            <option v-for="item in setores" :value="item.id">{{ item.nome }}</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Tag</span>
-                        </span>
-
-                            <select class="custom-select" @change="atualizar" :disabled="controle.carregando"
-                                    v-model="controle.dados.campoTag">
-                                <option value="">Todas as tags</option>
-                                <option v-for="item in tags" :value="item.id">{{ item.nome }}</option>
-                            </select>
-                        </div>
+                        <label>Tag</label>
+                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                                v-model="controle.dados.campoTag">
+                            <option value="">Todas as tags</option>
+                            <option v-for="item in tags" :value="item.id">{{ item.nome }}</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Tipo</span>
-                        </span>
-
-                            <select class="custom-select" @change="atualizar"
-                                    :disabled="controle.carregando || controle.dados.campoStatus !== '' "
-                                    v-model="controle.dados.campoTipo">
-                                <option value="">Todos os tipos</option>
-                                <option value="anotacao">Anotação</option>
-                                <option value="problema">Problema</option>
-                            </select>
-                        </div>
+                        <label>Tipo</label>
+                        <select class="form-control form-control-sm" @change="atualizar"
+                                :disabled="controle.carregando || controle.dados.campoStatus !== '' "
+                                v-model="controle.dados.campoTipo">
+                            <option value="">Todos os tipos</option>
+                            <option value="anotacao">Anotação</option>
+                            <option value="problema">Problema</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3" v-show="controle.dados.campoTipo !== 'anotacao'">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Status</span>
-                        </span>
-
-                            <select class="custom-select" @change="mudaTipo" :disabled="controle.carregando"
-                                    v-model="controle.dados.campoStatus">
-                                <option value="">Todos os status</option>
-                                <option value="novo">Novo</option>
-                                <option value="andamento">Andamento</option>
-                                <option value="finalizado">Finalizado</option>
-                            </select>
-                        </div>
+                        <label>Status</label>
+                        <select class="form-control form-control-sm" @change="mudaTipo" :disabled="controle.carregando"
+                                v-model="controle.dados.campoStatus">
+                            <option value="">Todos os status</option>
+                            <option value="novo">Novo</option>
+                            <option value="andamento">Andamento</option>
+                            <option value="finalizado">Finalizado</option>
+                        </select>
                     </div>
                 </div>
 
@@ -537,7 +484,7 @@
         <!-- Legenda -->
         <div class="col-12 mb-2 mt-2 pt-1 pb-1" style="background: rgba(220,222,210,0.5)"
              v-show="!controle.carregando && lista.length > 0">
-            <span style="margin-left: -17px; font-size: .9rem;">
+            <span style="margin-left: -17px; font-size: .7rem;">
                 <i class="fas fa-circle text-white ml-2"></i> Anotação
                 <i class="fas fa-circle text-danger ml-2"></i> Nova ocorrência
                 <i class="fas fa-circle text-warning ml-2"></i> Ocorrência em andamento
@@ -605,11 +552,11 @@
 </template>
 
 <script>
-import controlePaginacao from '../ControlePaginacao';
-import modal from '../Modal';
-import upload from '../Upload';
-import editor from '@tinymce/tinymce-vue';
-import configTinyMCE from '../configTinyMCE';
+import controlePaginacao from "../ControlePaginacao";
+import modal from "../Modal";
+import upload from "../Upload";
+import editor from "@tinymce/tinymce-vue";
+import configTinyMCE from "../configTinyMCE";
 import autocomplete from "../AutoComplete";
 
 export default {
@@ -653,22 +600,22 @@ export default {
         modal: { // modal Pai
             type: String,
             required: false,
-            default: ''
-        },
+            default: ""
+        }
     },
 
     computed: {
         classObject() {
             return {
                 active: this.isActive && !this.error,
-                'text-danger': this.error && this.error.type === 'fatal'
-            }
+                "text-danger": this.error && this.error.type === "fatal"
+            };
         },
         permissaoTag() {
-            return this.permissoes.indexOf('ocorrencia_tag') > -1;
+            return this.permissoes.indexOf("ocorrencia_tag") > -1;
         },
         permissaoSetor() {
-            return this.permissoes.indexOf('ocorrencia_setor') > -1;
+            return this.permissoes.indexOf("ocorrencia_setor") > -1;
         }
     },
 
@@ -685,10 +632,10 @@ export default {
         return {
             hash: String(Math.random()).substr(2),
             config: configTinyMCE,
-            titulo_janela: '',
-            titulo_janela_form_ocorrencia: '',
-            titulo_janela_form_tag: '',
-            titulo_janela_form_setor: '',
+            titulo_janela: "",
+            titulo_janela_form_ocorrencia: "",
+            titulo_janela_form_tag: "",
+            titulo_janela_form_setor: "",
 
             anexoUploadAndamento: false,
             urlAnexoUpload: `${URL_ADMIN}/ocorrencia/uploadAnexos`,
@@ -710,45 +657,45 @@ export default {
             mensagem: false,
 
             camposFinalizar: {
-                _method: '',
-                status: 'finalizado',
-                ocorrencia_id: '',
+                _method: "",
+                status: "finalizado",
+                ocorrencia_id: ""
             },
             camposFinalizarDefault: null,
 
             camposMudarSetor: {
-                setor_id: '',
-                ocorrencia_id: '',
+                setor_id: "",
+                ocorrencia_id: ""
             },
             camposMudarSetorDefault: null,
 
             form: {
-                _method: '',
-                ocorrencia_id: '',
+                _method: "",
+                ocorrencia_id: "",
 
-                cliente_id: '',
-                autocomplete_label_cliente_modal: '',
-                autocomplete_label_cliente_modal_anterior: '',
+                cliente_id: "",
+                autocomplete_label_cliente_modal: "",
+                autocomplete_label_cliente_modal_anterior: "",
 
-                usuario_id: '',
-                autocomplete_label_usuario_modal: '',
-                autocomplete_label_usuario_modal_anterior: '',
+                usuario_id: "",
+                autocomplete_label_usuario_modal: "",
+                autocomplete_label_usuario_modal_anterior: "",
 
-                tipo_ocorrencia: '',
-                setor_id: '',
-                assunto: '',
-                quem_criou: '',
-                quem_atualizou: '',
-                datahora_finalizou: '',
-                quem_finalizou: '',
-                status: '',
-                tipo: '',
-                resposta: '', //dentro de ocorrencias_respostas
+                tipo_ocorrencia: "usuario",
+                setor_id: "",
+                assunto: "",
+                quem_criou: "",
+                quem_atualizou: "",
+                datahora_finalizou: "",
+                quem_finalizou: "",
+                status: "",
+                tipo: "",
+                resposta: "", //dentro de ocorrencias_respostas
 
-                tag_id: '',
+                tag_id: "",
 
                 anexos: [],
-                anexosDel: [],
+                anexosDel: []
             },
             formDefault: null,
             caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
@@ -756,12 +703,12 @@ export default {
 
 
             formTag: {
-                nome: '',
+                nome: ""
             },
             formTagDefault: null,
 
             formSetor: {
-                nome: '',
+                nome: ""
             },
             formSetorDefault: null,
 
@@ -773,15 +720,15 @@ export default {
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: '',
-                    campoSetor: '',
-                    campoTag: '',
-                    campoTipo: '',
-                    campoStatus: '',
-                    campoFiltro: '',
-                },
-            },
-        }
+                    campoBusca: "",
+                    campoSetor: "",
+                    campoTag: "",
+                    campoTipo: "",
+                    campoStatus: "",
+                    campoFiltro: ""
+                }
+            }
+        };
     },
     methods: {
         listaSetoresTags() {
@@ -805,15 +752,15 @@ export default {
         },
         resetaCampoClienteModal() {
             if (this.form.autocomplete_label_cliente_modal_anterior !== this.form.autocomplete_label_cliente_modal) {
-                this.form.autocomplete_label_cliente_modal_anterior = '';
-                this.form.autocomplete_label_cliente_modal = '';
-                this.form.cliente_id = '';
+                this.form.autocomplete_label_cliente_modal_anterior = "";
+                this.form.autocomplete_label_cliente_modal = "";
+                this.form.cliente_id = "";
 
                 setTimeout(() => {
-                    if (this.form.cliente_id === '') {
-                        valida_campo_vazio($('#cliente_modal_' + this.hash), 1);
-                        $('#janelaCadastrar #cliente_modal_' + this.hash).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Cliente não pode ficar vazio');
+                    if (this.form.cliente_id === "") {
+                        valida_campo_vazio($("#cliente_modal_" + this.hash), 1);
+                        $("#janelaCadastrar #cliente_modal_" + this.hash).focus().trigger("blur");
+                        mostraErro("Erro", "O Campo Cliente não pode ficar vazio");
                     }
                 }, 100);
 
@@ -828,15 +775,15 @@ export default {
         },
         resetaCampoUsuarioModal() {
             if (this.form.autocomplete_label_usuario_modal_anterior !== this.form.autocomplete_label_usuario_modal) {
-                this.form.autocomplete_label_usuario_modal_anterior = '';
-                this.form.autocomplete_label_usuario_modal = '';
-                this.form.usuario_id = '';
+                this.form.autocomplete_label_usuario_modal_anterior = "";
+                this.form.autocomplete_label_usuario_modal = "";
+                this.form.usuario_id = "";
 
                 setTimeout(() => {
-                    if (this.form.usuario_id === '') {
-                        valida_campo_vazio($('#usuario_modal_' + this.hash), 1);
-                        $('#janelaCadastrar #usuario_modal_' + this.hash).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Usuário não pode ficar vazio');
+                    if (this.form.usuario_id === "") {
+                        valida_campo_vazio($("#usuario_modal_" + this.hash), 1);
+                        $("#janelaCadastrar #usuario_modal_" + this.hash).focus().trigger("blur");
+                        mostraErro("Erro", "O Campo Usuário não pode ficar vazio");
                     }
                 }, 100);
 
@@ -845,8 +792,8 @@ export default {
         },
 
         formExibir(id) {
-            $('#myTab li:first a').tab('show');
-            this.titulo_janela = 'Ocorrencia #' + id;
+            $("#myTab li:first a").tab("show");
+            this.titulo_janela = "Ocorrencia #" + id;
             formReset();
             this.exibindo = false;
             this.preload = true;
@@ -854,8 +801,8 @@ export default {
             this.getMsg(id);
         },
         formNovo() {
-            this.form = _.cloneDeep(this.formDefault) //copia
-            this.titulo_janela_form_ocorrencia = 'Nova Ocorrência';
+            this.form = _.cloneDeep(this.formDefault); //copia
+            this.titulo_janela_form_ocorrencia = "Nova Ocorrência";
             this.cadastrado = false;
             this.finalizado = false;
             this.atualizado = false;
@@ -865,9 +812,9 @@ export default {
             setupCampo();
         },
         cadastrar() {
-            $('#janelaFormOcorrencia :input:visible').trigger('blur');
-            if ($('#janelaFormOcorrencia :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
+            $("#janelaFormOcorrencia :input:visible").trigger("blur");
+            if ($("#janelaFormOcorrencia :input:visible.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
                 return false;
             }
             this.preloadTag = true;
@@ -889,24 +836,24 @@ export default {
         },
 
         formNovoTag() {
-            this.formTag = _.cloneDeep(this.formTagDefault) //copia
-            this.titulo_janela_form_tag = 'Nova Tag';
+            this.formTag = _.cloneDeep(this.formTagDefault); //copia
+            this.titulo_janela_form_tag = "Nova Tag";
             this.preloadTag = false;
             this.cadastrado = false;
             this.atualizado = false;
             formReset();
         },
         cadastraTag() {
-            $('#janelaFormTag :input:visible').trigger('blur');
-            if ($('#janelaFormTag :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
+            $("#janelaFormTag :input:visible").trigger("blur");
+            if ($("#janelaFormTag :input:visible.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
                 return false;
             }
             this.preloadTag = true;
             axios.post(`${URL_ADMIN}/ocorrencia/cadastro-tag`, this.formTag)
                 .then((res) => {
-                    $('#janelaFormTag').modal('hide');
-                    mostraSucesso('', 'Tag cadastrada com sucesso');
+                    $("#janelaFormTag").modal("hide");
+                    mostraSucesso("", "Tag cadastrada com sucesso");
                     this.cadastrado = true;
                     this.$refs.componente.buscar();
                     this.preloadTag = false;
@@ -918,24 +865,24 @@ export default {
         },
         formNovoSetor() {
             this.formSetor = _.cloneDeep(this.formSetorDefault);
-            this.titulo_janela_form_setor = 'Novo Setor';
+            this.titulo_janela_form_setor = "Novo Setor";
             this.preloadSetor = false;
             this.cadastrado = false;
             this.atualizado = false;
             formReset();
         },
         cadastraSetor() {
-            $('#janelaFormSetor :input:visible').trigger('blur');
-            if ($('#janelaFormSetor :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
+            $("#janelaFormSetor :input:visible").trigger("blur");
+            if ($("#janelaFormSetor :input:visible.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
                 return false;
             }
             this.preloadSetor = true;
             axios.post(`${URL_ADMIN}/ocorrencia/cadastro-setor`, this.formSetor)
                 .then(res => {
                     if (res.status === 201) {
-                        $('#janelaFormSetor').modal('hide');
-                        mostraSucesso('', 'Setor cadastrado com sucesso');
+                        $("#janelaFormSetor").modal("hide");
+                        mostraSucesso("", "Setor cadastrado com sucesso");
                         this.cadastrado = true;
                         this.$refs.componente.buscar();
                         this.preloadSetor = false;
@@ -951,7 +898,7 @@ export default {
         },
         formNovaMensagem() {
             this.form = _.cloneDeep(this.formDefault);
-            this.titulo_janela_form_ocorrencia = 'Nova Mensagem';
+            this.titulo_janela_form_ocorrencia = "Nova Mensagem";
             this.nova_mensagem = true;
             this.cadastrado = false;
             this.finalizado = false;
@@ -1015,7 +962,7 @@ export default {
                     if (res.status === 201) {
                         this.getMsg(this.ocorrencia.id);
                         // this.atualizar();
-                        $('#janelaMudaSetor').modal('hide');
+                        $("#janelaMudaSetor").modal("hide");
                         this.preload = false;
                         this.mudado = true;
                     } else {
@@ -1047,7 +994,7 @@ export default {
                         this.atualizar();
                         this.preload = false;
                         this.finalizado = true;
-                        $('#janelaMudaSetor').modal('hide');
+                        $("#janelaMudaSetor").modal("hide");
                     } else {
                         this.finalizado = false;
                         this.preload = false;
@@ -1072,14 +1019,14 @@ export default {
             this.$refs.componente.buscar();
         },
         mudaTipo() {
-            if (this.controle.dados.campoStatus !== '') {
-                this.controle.dados.campoTipo = 'problema';
+            if (this.controle.dados.campoStatus !== "") {
+                this.controle.dados.campoTipo = "problema";
             }
             this.atualizar();
-        },
+        }
     }
 
-}
+};
 </script>
 
 <style scoped>

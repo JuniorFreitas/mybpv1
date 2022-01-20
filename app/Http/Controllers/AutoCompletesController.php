@@ -126,12 +126,15 @@ class AutoCompletesController extends Controller
                     return $item;
                 });
         } else {
-            return User::whereAtivo(true)
+            return User::whereEmpresaId(auth()->user()->empresa_id)
+                ->whereNotIn('id', [auth()->user()->empresa_id])
+                ->orWhereIn('id', [1,2,3])
+                ->whereAtivo(true)
                 ->where('nome', 'like', '%' . $busca . '%')
                 ->take($quantidade)
                 ->get()
                 ->map(function ($item) {
-                    $item->label = $item->nome;
+                    $item->label = $item->empresa_id == 104 ? $item->nome.' - MyBP' : $item->nome;
                     return $item;
                 });
         }
@@ -190,10 +193,10 @@ class AutoCompletesController extends Controller
 
         $busca = $request->query('busca');
         return FeedbackCurriculo::whereHas('Admissao', function ($q) {
-                $q->whereIn('status', ['ADMITIDO'])->whereTipoAdmissao('INTERMITENTE');
-            })->whereHas('Curriculo', function ($q) use ($busca) {
-                $q->where('nome', 'like', '%' . $busca . '%');
-            })->take($quantidade)
+            $q->whereIn('status', ['ADMITIDO'])->whereTipoAdmissao('INTERMITENTE');
+        })->whereHas('Curriculo', function ($q) use ($busca) {
+            $q->where('nome', 'like', '%' . $busca . '%');
+        })->take($quantidade)
             ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
                 $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome}";
@@ -244,14 +247,15 @@ class AutoCompletesController extends Controller
     }
 
     //Ponto eletronico (ajustar jornadas)
-    public function funcionarios(Request $request){
+    public function funcionarios(Request $request)
+    {
 
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
         if ($busca == '') {
             return response()->json([], 200);
         }
-        return auth()->user()->Empresa->EmpresaFuncionarios()->select(['id','nome'])->where('nome', 'like', '%' . $busca . '%')
+        return auth()->user()->Empresa->EmpresaFuncionarios()->select(['id', 'nome'])->where('nome', 'like', '%' . $busca . '%')
             ->take($quantidade)
             ->get()->map(function ($item) {
                 $item->label = $item->nome;
