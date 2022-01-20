@@ -29,11 +29,11 @@
                                 </div>
                             </div>
 
-                            <!--                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="ultimaData">-->
-                            <!--                                <legend>Período Aquisitivo: {{ periodos.label }}</legend>-->
-                            <!--                            </div>-->
+                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="ultimaData !== ''">
+                                <legend>Período Aquisitivo: {{ periodo_label }}</legend>
+                            </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-4" v-else>
                                 <div class="form-group">
                                     <label>Período Aquisitivo</label>
                                     <select v-model="form.periodo_aquisitivo_id" class="form-control"
@@ -45,11 +45,11 @@
                                 </div>
                             </div>
 
-                            <!--                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="ultimaData">-->
-                            <!--                                <legend>Última Data: {{ ultimaData }}</legend>-->
-                            <!--                            </div>-->
+                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="ultimaData !== ''">
+                                <legend>Última Data: {{ ultimaData }}</legend>
+                            </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-4 mt-3" v-else>
                                 <datepicker label="Última Data" class="corrigiDatepicker" v-model="form.ultima_data"
                                             :disabled="visualizar"></datepicker>
                             </div>
@@ -78,7 +78,7 @@
                             </div>
 
                             <div class="col-12 col-md-4">
-                                <label>Informe a quantidade de dias:</label>
+                                <label>Dias de férias:</label>
                                 <input type="text" class="form-control" v-model="form.qnt_dias"
                                        :disabled="visualizar">
                             </div>
@@ -121,7 +121,7 @@
                                 <div v-if="!aprovando && form.quem_aprovou !== null" class="col-12">
                                     <legend>{{ form.status_aprovacao }}
                                         por: {{ form.quem_aprovou.nome }} em
-                                        {{ form.ferias_prevista_dados_ultimo.data_aprovacao }}
+                                        {{ form.data_aprovacao }}
                                     </legend>
                                 </div>
 
@@ -251,7 +251,7 @@
             <div class="mb-2 mt-2 pt-1 pb-1 border-bottom" v-show="!controle.carregando && lista.length > 0">
                 <span class="small text-right">
                     Legenda:
-                    <i class="fas fa-circle text-white ml-2"></i> Aguardando
+                    <i class="fas fa-circle text-warning ml-2"></i> Aguardando
                     <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo Gestor
                     <i class="fas fa-circle text-danger ml-2"></i> Reprovado pelo Gestor
                 </span>
@@ -275,21 +275,21 @@
                     </thead>
                     <tbody>
                     <tr v-for="item in lista"
-                        :class="!item.ferias_prevista_dados_ultimo ? 'table-white'
-                        : item.ferias_prevista_dados_ultimo.status_aprovacao === 'reprovado' ? 'table-danger'
-                        : item.ferias_prevista_dados_ultimo.status_aprovacao === 'aprovado' ? 'table-success'
+                        :class="!item.status_aprovacao ? 'table-warning'
+                        : item.status_aprovacao === 'reprovado' ? 'table-danger'
+                        : item.status_aprovacao === 'aprovado' ? 'table-success'
                         : null">
                         <td>
                             {{ item.id }}
                         </td>
 
                         <td>
-                            {{ item.ferias_prevista_dados_ultimo.user_cadastrou.nome }} <br>
-                            {{ item.ferias_prevista_dados_ultimo.created_at }}
+                            {{ item.user_cadastrou.nome }} <br>
+                            {{ item.created_at }}
                         </td>
 
                         <td>
-                            {{ item.ferias_prevista_dados_ultimo.centro_custo.label }}
+                            {{ item.centro_custo.label }}
                         </td>
 
                         <td>
@@ -297,34 +297,34 @@
                         </td>
 
                         <td>
-                            {{ item.ferias_prevista_dados_ultimo.data_saida }}
+                            {{ item.data_saida }}
                         </td>
 
                         <td>
-                            {{ item.ferias_prevista_dados_ultimo.qnt_dias }}
+                            {{ item.qnt_dias }}
                         </td>
 
                         <td>
-                            {{ item.ferias_prevista_dados_ultimo.data_retorno }}
+                            {{ item.data_retorno }}
                         </td>
                         <td>
                             {{ item.dias_saldo }}
                         </td>
 
                         <td>
-                        <span class="text-uppercase" v-if="item.ferias_prevista_dados_ultimo.quem_aprovou">
+                        <span class="text-uppercase" v-if="item.quem_aprovou">
                             <span
-                                v-if="item.ferias_prevista_dados_ultimo.status_aprovacao === 'aprovado' && !item.ferias_prevista_dados_ultimo.resposta_rh">
+                                v-if="item.status_aprovacao === 'aprovado' && !item.resposta_rh">
                                 {{
-                                    item.ferias_prevista_dados_ultimo.status_aprovacao
-                                }} em {{ item.ferias_prevista_dados_ultimo.data_aprovacao }}<br/>
-                                    Por gestor(a): {{ item.ferias_prevista_dados_ultimo.quem_aprovou.nome }}
+                                    item.status_aprovacao
+                                }} em {{ item.data_aprovacao }}<br/>
+                                    Por gestor(a): {{ item.quem_aprovou.nome }}
                             </span>
-                            <span v-if="item.ferias_prevista_dados_ultimo.status_aprovacao === 'reprovado'">
+                            <span v-if="item.status_aprovacao === 'reprovado'">
                                 {{
-                                    item.ferias_prevista_dados_ultimo.status_aprovacao
-                                }} em {{ item.ferias_prevista_dados_ultimo.data_aprovacao }}<br/>
-                                    Por gestor(a): {{ item.ferias_prevista_dados_ultimo.quem_aprovou.nome }}
+                                    item.status_aprovacao
+                                }} em {{ item.data_aprovacao }}<br/>
+                                    Por gestor(a): {{ item.quem_aprovou.nome }}
                             </span>
                         </span>
                             <span v-else>
@@ -336,7 +336,7 @@
                         <td class="text-center">
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
-                               v-if="item.ferias_prevista_dados_ultimo.quem_aprovou === null && aprova === true"
+                               v-if="item.quem_aprovou === null && aprova === true"
                                @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
@@ -396,7 +396,7 @@ export default {
                 data_saida: '',
                 qnt_dias: '',
                 tem_faltas: '',
-                qnt_faltas: '',
+                qnt_faltas: 0,
                 data_retorno: '',
                 dias_saldo: '',
                 user_id: '',
@@ -410,6 +410,7 @@ export default {
                 data_admissao: "",
 
                 periodo_aquisitivo_id: '',
+
                 ultima_data: '',
 
             },
@@ -418,6 +419,7 @@ export default {
             lista: [],
             periodos: [],
             ultimaData: '',
+            periodo_label: '',
             centro_custos: [],
 
             /**
@@ -486,7 +488,13 @@ export default {
                 }).then(response => {
                     this.form.data_admissao = response.data.data_admissao;
                     this.ultimaData = response.data.ultimaData;
-                    this.form.periodo_aquisitivo_id = response.data.periodo.id;
+                    if (response.data.periodo.length > 1){
+                        this.periodos = response.data.periodo;
+                    }else{
+                        this.form.periodo_aquisitivo_id = response.data.periodo.id;
+                        this.periodo_label = response.data.periodo.label;
+                    }
+
                     if (response.data.ultimaData === '') {
                         let dataAtual = new Date();
                         let dia = dataAtual.getDate();
@@ -574,8 +582,6 @@ export default {
         formOpen(id) {
             Object.assign(this.form, this.formDefault);
             this.form.id = id;
-            // this.visualizar = false;
-            // this.aprovando = false;
 
             this.tituloJanela = `#${id}`;
 
@@ -587,22 +593,16 @@ export default {
                 .then(response => {
                     // this.aprovando = true;
                     let data = response.data;
-                    this.form.centro_custo_id = data.ferias_prevista_dados_ultimo.centro_custo_id;
+                    this.form.centro_custo_id = data.centro_custo_id;
                     this.form.colaborador_id = data.colaborador_id;
                     Object.assign(this.form, data);
                     this.listaCentroCusto();
 
                     this.tituloJanela = `#${id} Solicitação de férias`;
 
-                    this.form.qnt_faltas = data.ferias_prevista_dados_ultimo.qnt_faltas;
-                    this.form.data_saida = data.ferias_prevista_dados_ultimo.data_saida
-                    this.form.data_retorno = data.ferias_prevista_dados_ultimo.data_retorno
-                    this.form.qnt_dias = data.ferias_prevista_dados_ultimo.qnt_dias
-                    this.form.tem_faltas = data.ferias_prevista_dados_ultimo.tem_faltas
-                    this.form.qnt_faltas = data.ferias_prevista_dados_ultimo.qnt_faltas
-
-                    this.form.status_aprovacao = data.ferias_prevista_dados_ultimo.status_aprovacao === null ? '' : data.ferias_prevista_dados_ultimo.status_aprovacao;
-                    this.form.obs_aprovacao = data.ferias_prevista_dados_ultimo.status_aprovacao === null ? '' : data.ferias_prevista_dados_ultimo.obs_aprovacao;
+                    this.form.status_aprovacao = data.status_aprovacao === null ? '' : data.status_aprovacao;
+                    this.form.obs_aprovacao = data.status_aprovacao === null ? '' : data.obs_aprovacao;
+                    this.periodo_label = data.periodo_aquistivo.label;
 
                     this.preload = false;
                 })

@@ -27,8 +27,8 @@
             <td>{{$row->dias_saldo}}</td>
             <td>{{$row->UserCadastrou->nome}}</td>
             <td>{{$row->GestorAprovacao->nome}}</td>
-            <td>{{$row->QuemAprovou->nome}}</td>
-            <td>{{$row->data_aprovacao}}</td>
+            <td>{{!$row->QuemAprovou ? '' : $row->QuemAprovou->nome }}</td>
+            <td>{{!$row->status_aprovacao ? '' : $row->data_aprovacao}}</td>
             <td>{{$row->status_aprovacao}}</td>
         </tr>
     @endforeach

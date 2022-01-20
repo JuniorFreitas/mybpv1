@@ -107,6 +107,7 @@ class FeriasPrevista extends Model
         'empresa_id',
         'periodo_aquisitivo',
         'utima_data',
+        'periodo_aquisitivo_id'
     ];
 
     protected $casts = [
@@ -140,14 +141,10 @@ class FeriasPrevista extends Model
         'empresa_id' => 'int',
 
         'periodo_aquisitivo' => 'string',
-        'utima_data' => 'date:d/m/Y',
+        'ultima_data' => 'date:d/m/Y',
+
+        'periodo_aquisitivo_id' => 'int',
     ];
-
-    protected function serializeDate(DateTimeInterface $date)
-    {
-        return $date->format('Y-m-d H:i:s');
-    }
-
 
     public function setDataSaidaAttribute($value)
     {
@@ -225,4 +222,8 @@ class FeriasPrevista extends Model
         return $this->hasOne(User::class, 'id', 'user_rh_id');
     }
 
+    public function PeriodoAquisitivo()
+    {
+        return $this->hasOne(PeriodoAquisitivo::class, 'id', 'periodo_aquisitivo_id');
+    }
 }
