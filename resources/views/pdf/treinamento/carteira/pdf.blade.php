@@ -159,7 +159,8 @@
                         <span style="font-size: 4.5pt; line-height: 6.90pt; ">
                             <br>
                             <strong>POLITICA DE EHS</strong> <br>
-                            {!! $treinamento->FeedbackCurriculo->Empresa->DadosEmpresa->politica_ehs !!}
+
+                            {!! $treinamento->FeedbackCurriculo->Empresa->politica_ehs !!}
                         </span>
                             </td>
                         </tr>
@@ -526,7 +527,7 @@
                         <span style="font-size: 4.5pt; line-height: 6.90pt; ">
                             <br>
                             <strong>POLITICA DE EHS</strong> <br>
-                            {!! $treinamento->FeedbackCurriculo->Empresa->DadosEmpresa->politica_ehs !!}
+                            {!! $treinamento->FeedbackCurriculo->Empresa->politica_ehs !!}
                         </span>
                             </td>
                         </tr>
