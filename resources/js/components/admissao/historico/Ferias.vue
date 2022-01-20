@@ -15,7 +15,7 @@
             <div class="table-responsive" v-else>
                  <span class="small text-right mb-3">
                     Legenda:
-                    <i class="fas fa-circle text-white ml-2"></i> Aguardando
+                    <i class="fas fa-circle text-warning ml-2"></i> Aguardando
                     <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo Gestor
                     <i class="fas fa-circle text-danger ml-2"></i> Reprovado pelo Gestor
                 </span>
@@ -34,7 +34,7 @@
                     </thead>
                     <tbody>
                     <tr v-for="item in listaFeriasDados"
-                        :class="!item ? 'table-white'
+                        :class="!item ? 'table-warning'
                         : item.status_aprovacao === 'reprovado' ? 'table-danger'
                         : item.status_aprovacao === 'aprovado' ? 'table-success'
                         : null">
@@ -64,12 +64,15 @@
                         </td>
 
                         <td class="text-center">
-                            {{ lista.dias_saldo }}
+                            {{ item.dias_saldo }}
                         </td>
 
-                        <td class="text-center">
+                        <td class="text-center" v-if="item.quem_aprovou">
                             {{ item.quem_aprovou.nome }} em
                             {{ item.data_aprovacao }}
+                        </td>
+                        <td class="text-center" v-else>
+                            AGUARDANDO APROVAÇÃO
                         </td>
 
                     </tr>
@@ -127,10 +130,9 @@ export default {
             axios.get(`${URL_ADMIN}/historico/ferias/${this.curriculo_id}`).then(res => {
                 let data = res.data;
                 this.hoje = data.hoje;
-                // Object.assign(this.ferias, data)
                 if (data.ferias.length > 0) {
-                    this.lista = data.ferias[0]
-                    this.listaFeriasDados = data.ferias[0].ferias_prevista_dados;
+                    // this.lista = data.ferias
+                    this.listaFeriasDados = data.ferias
                 }
                 this.formDefault = _.cloneDeep(this.form);
                 this.preload = false;

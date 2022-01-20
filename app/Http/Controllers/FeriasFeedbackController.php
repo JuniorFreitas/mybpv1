@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AfastamentoFeedback;
 use App\Models\FeriasFeedback;
+use App\Models\FeriasPrevista;
 use App\Models\FeriasPrevistaDados;
 use App\Models\FeriasPrevistaMov;
 use DB;
@@ -63,12 +64,12 @@ class FeriasFeedbackController extends Controller
     public function show($curriculo_id)
     {
 
-        $ferias = FeriasPrevistaMov::whereColaboradorId($curriculo_id)->with(
+        $ferias = FeriasPrevista::whereColaboradorId($curriculo_id)->with(
             'Colaborador',
-            'FeriasPrevistaDados',
-            'FeriasPrevistaDados.CentroCusto',
-            'FeriasPrevistaDados.UserCadastrou',
-            'FeriasPrevistaDados.QuemAprovou',
+            'CentroCusto',
+            'UserCadastrou',
+            'QuemAprovou',
+            'PeriodoAquisitivo',
         );
 
         return response()->json([
