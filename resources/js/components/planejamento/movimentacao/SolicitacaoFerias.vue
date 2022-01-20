@@ -3,13 +3,7 @@
         <modal :id="hash" :titulo="tituloJanela" :size="90">
             <template slot="conteudo">
                 <preload v-show="preload" class="text-center"></preload>
-                <div class="alert alert-success alert-dismissible" v-show="cadastrado">
-                    <h4><i class="icon fa fa-check"></i>Solicitação cadastrada com sucesso!</h4>
-                </div>
-                <div class="alert alert-success alert-dismissible" v-show="atualizado">
-                    <h4><i class="icon fa fa-check"></i>Solicitação alterada com sucesso!</h4>
-                </div>
-                <form v-if="!preload && (!cadastrado && !atualizado) " :id="`form_${hash}`" onsubmit="return false;">
+                <form v-if="!preload" :id="`${hash}`" onsubmit="return false;">
                     <fieldset>
                         <legend>Informações</legend>
                         <div class="row">
@@ -35,26 +29,28 @@
                                 </div>
                             </div>
 
+                            <!--                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="ultimaData">-->
+                            <!--                                <legend>Período Aquisitivo: {{ periodos.label }}</legend>-->
+                            <!--                            </div>-->
+
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Período Aquisitivo</label>
-                                    <select v-model="form.periodo_aquisitivo" class="form-control"
-                                            :disabled="visualizar"
-                                            onchange="valida_campo_vazio(this,1)"
-                                            onblur="valida_campo_vazio(this,1)">
+                                    <select v-model="form.periodo_aquisitivo_id" class="form-control"
+                                            :disabled="visualizar">
                                         <option value="">Selecione</option>
-                                        <option value="2018/2019">2018/2019</option>
-                                        <option value="2019/2020">2019/2020</option>
-                                        <option value="2020/2021">2020/2021</option>
-                                        <option value="2021/2022">2021/2022</option>
-                                        <option value="2022/2023">2022/2023</option>
+                                        <option v-for="periodo in periodos" :value="periodo.id">{{ periodo.label }}
+                                        </option>
                                     </select>
                                 </div>
                             </div>
 
+                            <!--                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="ultimaData">-->
+                            <!--                                <legend>Última Data: {{ ultimaData }}</legend>-->
+                            <!--                            </div>-->
+
                             <div class="col-12 col-md-4">
-                                <label>Última Data</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.ultima_data"
+                                <datepicker label="Última Data" class="corrigiDatepicker" v-model="form.ultima_data"
                                             :disabled="visualizar"></datepicker>
                             </div>
 
@@ -77,7 +73,7 @@
                                        onchange="valida_campo_vazio(this,1)">
                             </div>
 
-                            <div class="col-12 col-md-4 mt-4 mb-4 ">
+                            <div class="col-12 col-md-4 mt-4 mb-4" v-if="!aprovando">
                                 <legend>Quantidade de dias disponíveis: {{ qntDias }}</legend>
                             </div>
 
@@ -99,7 +95,7 @@
                                             :disabled="visualizar"></datepicker>
                             </div>
 
-                            <div class="col-12 col-md-4 mb-4 mt-4">
+                            <div class="col-12 col-md-4 mb-4 mt-4" v-if="!aprovando">
                                 <legend>Dias de saldo: {{ qntSaldo }}</legend>
                             </div>
 
@@ -114,7 +110,7 @@
                             </div>
                         </div>
 
-                        <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
+                        <div class="alert alert-warning" v-if="aprovando">
                             Esta solicitação ainda não foi aprovada ou reprovada!
                         </div>
 
@@ -125,7 +121,7 @@
                                 <div v-if="!aprovando && form.quem_aprovou !== null" class="col-12">
                                     <legend>{{ form.status_aprovacao }}
                                         por: {{ form.quem_aprovou.nome }} em
-                                        {{ form.data_aprovacao }}
+                                        {{ form.ferias_prevista_dados_ultimo.data_aprovacao }}
                                     </legend>
                                 </div>
 
@@ -152,70 +148,19 @@
                                 </div>
                             </div>
                         </fieldset>
-
-<!--                        <fieldset v-if="(visualizar || editando) && aprovaRH">-->
-<!--                            <legend>Aprovação RH</legend>-->
-<!--                            <div class="row">-->
-
-<!--                                <div class="col-12" v-if="form.data_aprovacao_rh">-->
-<!--                                    <legend>{{ form.resposta_rh }} por:-->
-<!--                                        {{ form.rh_aprovacao.nome }} em {{-->
-<!--                                            form.data_aprovacao_rh-->
-<!--                                        }}-->
-<!--                                    </legend>-->
-<!--                                </div>-->
-
-<!--                                <div class="col-12">-->
-<!--                                    <div class="form-group">-->
-<!--                                        <label>Observação</label>-->
-<!--                                        <textarea class="form-control" :disabled="!aprovacao_rh"-->
-<!--                                                  v-model="form.obs_rh"-->
-<!--                                                  cols="5" rows="5"></textarea>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-
-<!--                                <div class="col-md-6">-->
-<!--                                    <div class="form-group">-->
-<!--                                        <label>Status</label>-->
-<!--                                        <select :disabled="!aprovacao_rh" v-if="editando"-->
-<!--                                                v-model="form.resposta_rh"-->
-<!--                                                class="form-control">-->
-<!--                                            <option value="">Selecione...</option>-->
-<!--                                            <option value="aprovado">Aprovar</option>-->
-<!--                                            <option value="reprovado">Reprovar</option>-->
-<!--                                        </select>-->
-
-<!--                                        <select :disabled="!aprovacao_rh" v-if="!editando"-->
-<!--                                                v-model="form.resposta_rh"-->
-<!--                                                onblur="valida_campo_vazio(this,1)"-->
-<!--                                                onchange="valida_campo_vazio(this,1)" class="form-control">-->
-<!--                                            <option value="">Selecione...</option>-->
-<!--                                            <option value="aprovado">Aprovar</option>-->
-<!--                                            <option value="reprovado">Reprovar</option>-->
-<!--                                        </select>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </fieldset>-->
                     </fieldset>
                 </form>
             </template>
             <template slot="rodape">
                 <div v-show="!visualizar">
                     <button type="button" class="btn btn-sm btn-primary"
-                            v-show="editando && !atualizado  && !preload"
-                            @click.prevent="alterar">
-                        <i class="fa fa-edit"></i> Alterar
-                    </button>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            v-show="!editando && !cadastrado  && !preload"
+                            v-show="!preload"
                             @click.prevent="cadastrar">
-                        <i class="fa fa-save"></i> Salvar
+                        <i class="fa fa-save"></i> Cadastrar
                     </button>
                 </div>
                 <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovando && !preload"
-                        @click.prevent="aprovar">
+                        v-show="aprovando && !preload" @click.prevent="aprovarGestor">
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
@@ -309,8 +254,6 @@
                     <i class="fas fa-circle text-white ml-2"></i> Aguardando
                     <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo Gestor
                     <i class="fas fa-circle text-danger ml-2"></i> Reprovado pelo Gestor
-<!--                    <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH-->
-<!--                    <i class="fas fa-circle text-warning ml-2"></i> Reprovado pelo RH-->
                 </span>
             </div>
 
@@ -332,21 +275,21 @@
                     </thead>
                     <tbody>
                     <tr v-for="item in lista"
-                        :class="!item.status_aprovacao ? 'table-white'
-                        : item.status_aprovacao === 'reprovado' ? 'table-danger'
-                        : item.status_aprovacao === 'aprovado' ? 'table-success'
+                        :class="!item.ferias_prevista_dados_ultimo ? 'table-white'
+                        : item.ferias_prevista_dados_ultimo.status_aprovacao === 'reprovado' ? 'table-danger'
+                        : item.ferias_prevista_dados_ultimo.status_aprovacao === 'aprovado' ? 'table-success'
                         : null">
                         <td>
                             {{ item.id }}
                         </td>
 
                         <td>
-                            {{ item.user_cadastrou.nome }} <br>
-                            {{ item.created_at }}
+                            {{ item.ferias_prevista_dados_ultimo.user_cadastrou.nome }} <br>
+                            {{ item.ferias_prevista_dados_ultimo.created_at }}
                         </td>
 
                         <td>
-                            {{ item.centro_custo.label }}
+                            {{ item.ferias_prevista_dados_ultimo.centro_custo.label }}
                         </td>
 
                         <td>
@@ -354,29 +297,34 @@
                         </td>
 
                         <td>
-                            {{ item.data_saida }}
+                            {{ item.ferias_prevista_dados_ultimo.data_saida }}
                         </td>
 
                         <td>
-                            {{ item.qnt_dias }}
+                            {{ item.ferias_prevista_dados_ultimo.qnt_dias }}
                         </td>
 
                         <td>
-                            {{ item.data_retorno }}
+                            {{ item.ferias_prevista_dados_ultimo.data_retorno }}
                         </td>
                         <td>
                             {{ item.dias_saldo }}
                         </td>
 
                         <td>
-                        <span class="text-uppercase" v-if="item.quem_aprovou">
-                            <span v-if="item.status_aprovacao === 'aprovado' && !item.resposta_rh">
-                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
-                                    Por gestor(a): {{ item.quem_aprovou.nome }}
+                        <span class="text-uppercase" v-if="item.ferias_prevista_dados_ultimo.quem_aprovou">
+                            <span
+                                v-if="item.ferias_prevista_dados_ultimo.status_aprovacao === 'aprovado' && !item.ferias_prevista_dados_ultimo.resposta_rh">
+                                {{
+                                    item.ferias_prevista_dados_ultimo.status_aprovacao
+                                }} em {{ item.ferias_prevista_dados_ultimo.data_aprovacao }}<br/>
+                                    Por gestor(a): {{ item.ferias_prevista_dados_ultimo.quem_aprovou.nome }}
                             </span>
-                            <span v-if="item.status_aprovacao === 'reprovado'">
-                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
-                                    Por gestor(a): {{ item.quem_aprovou.nome }}
+                            <span v-if="item.ferias_prevista_dados_ultimo.status_aprovacao === 'reprovado'">
+                                {{
+                                    item.ferias_prevista_dados_ultimo.status_aprovacao
+                                }} em {{ item.ferias_prevista_dados_ultimo.data_aprovacao }}<br/>
+                                    Por gestor(a): {{ item.ferias_prevista_dados_ultimo.quem_aprovou.nome }}
                             </span>
                         </span>
                             <span v-else>
@@ -388,27 +336,12 @@
                         <td class="text-center">
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
-                               v-if="item.quem_aprovou === null"
+                               v-if="item.ferias_prevista_dados_ultimo.quem_aprovou === null && aprova === true"
                                @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-check"></i>
                             </a>
-
-                            <!--                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprova RH"-->
-                            <!--                               v-if="item.data_aprovacao && !item.data_aprovacao_rh && aprova_RH && item.status_aprovacao === 'aprovado'"-->
-                            <!--                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; aprovacao_rh = true;"-->
-                            <!--                               data-toggle="modal"-->
-                            <!--                               :data-target="`#${hash}`">-->
-                            <!--                                <i class="fa fa-check"></i>-->
-                            <!--                            </a>-->
-
-                            <!--                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar" v-if="editar"-->
-                            <!--                               @click.prevent="formOpen(item.id); editando = true"-->
-                            <!--                               data-toggle="modal"-->
-                            <!--                               :data-target="`#${hash}`">-->
-                            <!--                                <i class="fa fa-edit"></i>-->
-                            <!--                            </a>-->
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Visualizar"
                                @click.prevent="formOpen(item.id); visualizar = true; aprovando = false;"
@@ -416,17 +349,12 @@
                                :data-target="`#${hash}`">
                                 <i class="fa fa-search-plus"></i>
                             </a>
-
                         </td>
-
                     </tr>
                     </tbody>
                 </table>
-
             </div>
-
         </div>
-
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             :url="urlPaginacao" :por-pagina="controle.dados.pages"
@@ -438,21 +366,16 @@
 <script>
 import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
+import {now} from "lodash/date";
 
 export default {
     data() {
         return {
             tituloJanela: 'Solicitacao de férias',
             preload: false,
-            editando: false,
-            apagado: false,
-            cadastrado: false,
-            cadastrando: false,
-            atualizado: false,
             visualizar: false,
             aprovando: false,
-            aprovacao_rh: false,
-            aprova_RH: false,
+            aprova: false,
 
             CSRF_token,
 
@@ -484,19 +407,17 @@ export default {
                 obs_aprovacao: '',
                 status_aprovacao: '',
 
-                obs_rh: '',
-                resposta_rh: '',
-                data_aprovacao_rh: '',
-
                 data_admissao: "",
 
-                periodo_aquisitivo: '',
+                periodo_aquisitivo_id: '',
                 ultima_data: '',
 
             },
 
             formDefault: null,
             lista: [],
+            periodos: [],
+            ultimaData: '',
             centro_custos: [],
 
             /**
@@ -505,10 +426,6 @@ export default {
              * aprova_RH -> permissão
              *
              * **/
-
-            aprova: false,
-            editar: false,
-            aprovaRH: false,
 
             // colaborador_ativo: `autocomplete/colaboradores/`,
             urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/atualizar`,
@@ -531,6 +448,7 @@ export default {
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.atualizar();
+        this.periodosAquisitivos();
     },
     computed: {
 
@@ -559,45 +477,36 @@ export default {
             return this.form.dias_saldo;
         },
 
+
         dataAdmissao() {
-            if (this.form.colaborador_id !== '') {
-                axios.post(`${URL_ADMIN}/busca-data-admissao`, this.form).then(response => {
-                    this.form.data_admissao = response.data.data_admissao
+            if (this.form.colaborador_id !== "") {
+                axios.post(`${URL_ADMIN}/busca-data-admissao`, {
+                    colaborador_id: this.form.colaborador_id,
+                    visualizar: this.visualizar
+                }).then(response => {
+                    this.form.data_admissao = response.data.data_admissao;
+                    this.ultimaData = response.data.ultimaData;
+                    this.form.periodo_aquisitivo_id = response.data.periodo.id;
+                    if (response.data.ultimaData === '') {
+                        let dataAtual = new Date();
+                        let dia = dataAtual.getDate();
+                        let mes = dataAtual.getMonth();
+                        let ano = dataAtual.getFullYear();
+                        this.form.ultima_data = dia + '/' + (mes + 1) + '/' + ano;
+                    } else {
+                        this.form.ultima_data = response.data.ultimaData;
+                    }
                 });
                 return this.form.data_admissao;
             }
-        }
+        },
 
     },
     methods: {
-        /***Campos de Filtros ****/
-        selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id;
-            this.controle.dados.autocomplete_label = obj.label;
-            this.controle.dados.autocomplete_label_anterior = obj.label;
-            this.controle.carregando = true;
-            setTimeout(() => {
-                this.$refs.componente.buscar();
-            }, 600);
-        },
-        resetaCampo() {
-            if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
-                this.$refs.componente.buscar();
-            }
-        },
 
         listaCentroCusto() {
             axios.post(`${URL_PUBLICO}/centro-custos/`)
                 .then(res => {
-                    if (this.cadastrando) {
-                        this.form.centro_custo_id = '';
-                        this.form.autocomplete_label_colaborador_anterior = '';
-                        this.form.autocomplete_label_colaborador = '';
-                        this.form.colaborador_id = '';
-                    }
                     this.centro_custos = res.data.centro_custos;
                 })
                 .catch(error => {
@@ -605,17 +514,18 @@ export default {
                 });
         },
 
+        periodosAquisitivos() {
+            axios.get(`${URL_ADMIN}/periodos-aquisitivos`).then(response => {
+                this.periodos = response.data.periodos
+            });
+        },
+
         formNovo() {
-            this.cadastrando = true;
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
             this.aprovando = false;
             this.visualizar = false;
             this.tituloJanela = "Solicitação de férias";
 
             formReset();
-            setupCampo();
             this.form = _.cloneDeep(this.formDefault) //copia
             this.form.centro_custo_id = '';
             this.listaCentroCusto();
@@ -648,11 +558,13 @@ export default {
 
             axios.post(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista`, this.form)
                 .then(response => {
-                    $(`#${this.hash} `).modal('hide');
-                    let data = response.data;
-                    mostraSucesso('', 'Solicitação registrada com sucesso!');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+                    if (response.status === 201) {
+                        $(`#${this.hash} `).modal('hide');
+                        let data = response.data;
+                        mostraSucesso('', 'Solicitação registrada com sucesso!');
+                        this.$refs.componente.buscar();
+                        this.preload = false;
+                    }
                 })
                 .catch(error => {
                     this.preload = false;
@@ -662,41 +574,35 @@ export default {
         formOpen(id) {
             Object.assign(this.form, this.formDefault);
             this.form.id = id;
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.cadastrando = false;
-            this.visualizar = false;
-            this.editando = false;
-            this.aprovando = false;
-            this.aprovacao_rh = false;
-            this.aprovaRH = false;
+            // this.visualizar = false;
+            // this.aprovando = false;
 
             this.tituloJanela = `#${id}`;
 
             formReset();
             this.preload = true;
+            this.form.data_admissao = '';
 
             axios.get(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${id}/editar`)
                 .then(response => {
+                    // this.aprovando = true;
                     let data = response.data;
+                    this.form.centro_custo_id = data.ferias_prevista_dados_ultimo.centro_custo_id;
+                    this.form.colaborador_id = data.colaborador_id;
                     Object.assign(this.form, data);
                     this.listaCentroCusto();
-                    this.form.centro_custo_id = data.centro_custo_id;
 
                     this.tituloJanela = `#${id} Solicitação de férias`;
-                    if (this.aprovando) {
-                        this.form.status_aprovacao = data.status_aprovacao === null ? '' : data.status_aprovacao;
-                        this.form.observacao = data.status_aprovacao === null ? '' : data.observacao;
-                    }
-                    if (this.aprovando && this.aprovacao_rh) {
-                        this.form.resposta_rh = data.resposta_rh === null ? '' : data.resposta_rh;
-                        this.form.obs_rh = data.resposta_rh === null ? '' : data.obs_rh;
-                        this.aprovaRH = true;
-                    }
-                    if (this.form.data_aprovacao_rh !== null) {
-                        this.aprovaRH = true;
-                        this.aprovacao_rh = false;
-                    }
+
+                    this.form.qnt_faltas = data.ferias_prevista_dados_ultimo.qnt_faltas;
+                    this.form.data_saida = data.ferias_prevista_dados_ultimo.data_saida
+                    this.form.data_retorno = data.ferias_prevista_dados_ultimo.data_retorno
+                    this.form.qnt_dias = data.ferias_prevista_dados_ultimo.qnt_dias
+                    this.form.tem_faltas = data.ferias_prevista_dados_ultimo.tem_faltas
+                    this.form.qnt_faltas = data.ferias_prevista_dados_ultimo.qnt_faltas
+
+                    this.form.status_aprovacao = data.ferias_prevista_dados_ultimo.status_aprovacao === null ? '' : data.ferias_prevista_dados_ultimo.status_aprovacao;
+                    this.form.obs_aprovacao = data.ferias_prevista_dados_ultimo.status_aprovacao === null ? '' : data.ferias_prevista_dados_ultimo.obs_aprovacao;
 
                     this.preload = false;
                 })
@@ -705,22 +611,7 @@ export default {
                 })
         },
 
-        alterar() {
-
-            if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio');
-                this.resetaCampoColaborador();
-                return false;
-            }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1);
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo GESTOR não pode ficar vazio');
-                this.resetaCampoGestor();
-                return false;
-            }
+        aprovarGestor() {
 
             $(`#${this.hash} :input:visible`).trigger('blur');
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
@@ -730,29 +621,7 @@ export default {
 
             this.preload = true;
 
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}`, this.form)
-                .then(response => {
-                    $(`#${this.hash} `).modal('hide');
-                    let data = response.data;
-                    mostraSucesso('', 'Solicitação alterada com sucesso!');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
-                })
-                .catch(error => {
-                    this.preload = false;
-                })
-        },
-
-        aprovar() {
-
-            $(`#${this.hash} :input:visible`).trigger('blur');
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false;
-            }
-
-            this.preload = true;
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovar`, this.form)
+            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovargestor`, this.form)
                 .then(response => {
                     let data = response.data;
                     mostraSucesso('', 'Registro salvo com sucesso!');
@@ -765,32 +634,11 @@ export default {
                 })
         },
 
-        aprovarRH() {
-
-            $(`#${this.hash} :input:visible`).trigger('blur');
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false;
-            }
-
-            this.preload = true;
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovarRH`, this.form)
-                .then(response => {
-                    let data = response.data;
-                    mostraSucesso('', 'Registro salvo com sucesso!');
-                    $(`#${this.hash} `).modal('hide');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
-                })
-                .catch(error => {
-                    this.preload = false;
-                })
-        },
 
         carregou(dados) {
             this.lista = dados.itens;
+            this.periodos = dados.periodo;
             this.aprova = dados.aprovar_por_gestor;
-            this.aprova_RH = dados.aprovar_por_rh
             this.controle.carregando = false;
         },
         carregando() {

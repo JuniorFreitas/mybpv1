@@ -38,6 +38,7 @@ const app = new Vue({
 
         form: {
             feedback_id: 0,
+            curriculo_id: 0,
             medidas_administrativas: [],
             medidas_administrativasDelete: [],
         },
@@ -77,6 +78,7 @@ const app = new Vue({
             this.abrirMetas = false;
             this.form = _.cloneDeep(obj)
             this.form.feedback_id = obj.id;
+            this.form.curriculo_id = obj.curriculo_id;
 
             setTimeout(() => {
                 this.abrirDossie = true;
