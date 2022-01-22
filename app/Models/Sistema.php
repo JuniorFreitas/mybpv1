@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DB;
 use Illuminate\Support\Facades\Request;
 use MasterTag\DataHora;
 
@@ -550,5 +551,42 @@ class Sistema
     {
         $host = explode('.',\request()->getHost());
         return $host[0] == 'hdev';
+    }
+
+    //Ajuste para inserir a ultima data em ferias previstas
+    public function ajuste(\Illuminate\Http\Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $colaborador = FeriasPrevista::whereNotNull('periodo_aquisitivo')->get();
+
+            foreach ($colaborador as $colaboradorPeriodo) {
+
+                $data_admissao = FeedbackCurriculo::whereCurriculoId($colaboradorPeriodo['colaborador_id'])
+                    ->with('Admissao')->first();
+
+                $dataAdmissao = $data_admissao->Admissao->data_admissao;
+
+                $periodo = PeriodoAquisitivo::where('id', '=', $colaboradorPeriodo->periodo_aquisitivo_id)->first();
+
+                $date = new DataHora($dataAdmissao);
+                $ultimoAnoPeriodoAquisitivo = $periodo['ano_final'] . '-' . $date->mes() . '-' . $date->dia();
+                $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
+                $newDate->addDia(330);
+                $ultimaData = $newDate->dataInsert();
+
+                $c = FeriasPrevista::find($colaboradorPeriodo['id']);
+
+                $c->update(['ultima_data' => $ultimaData]);
+            }
+            DB::commit();
+            return 'ok';
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return $msg;
+        }
     }
 }

@@ -183,6 +183,21 @@
                                     v-model="controle.dados.periodo"></datepicker>
                     </div>
                 </div>
+                <div class="col-12 col-md-3">
+                    <div class="form-check" style="margin-bottom: -11px;">
+                        <input type="checkbox" class="form-check-input" @change="atualizar()"
+                               :disabled="controle.carregando"
+                               id="filtroVencimento"
+                               v-model="controle.dados.filtroVencimento">
+                        <label class="form-check-label cursor-pointer" for="filtroVencimento">Por período de
+                            vencimento</label>
+                    </div>
+                    <div class="form-group">
+                        <datepicker range formsm label="" @onselect="atualizar()"
+                                    :disabled="controle.carregando || !controle.dados.filtroVencimento"
+                                    v-model="controle.dados.vencimento"></datepicker>
+                    </div>
+                </div>
 
                 <div class="col-12 col-md-4">
                     <div class="form-group">
@@ -439,6 +454,8 @@ export default {
                     campoBusca: "",
                     campoStatus: "",
                     pages: 50,
+                    filtroVencimento: false,
+                    vencimento: "",
                 },
             },
         }
@@ -488,9 +505,9 @@ export default {
                 }).then(response => {
                     this.form.data_admissao = response.data.data_admissao;
                     this.ultimaData = response.data.ultimaData;
-                    if (response.data.periodo.length > 1){
+                    if (response.data.periodo.length > 1) {
                         this.periodos = response.data.periodo;
-                    }else{
+                    } else {
                         this.form.periodo_aquisitivo_id = response.data.periodo.id;
                         this.periodo_label = response.data.periodo.label;
                     }
