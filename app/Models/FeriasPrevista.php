@@ -106,7 +106,7 @@ class FeriasPrevista extends Model
         'data_aprovacao_rh',
         'empresa_id',
         'periodo_aquisitivo',
-        'utima_data',
+        'ultima_data',
         'periodo_aquisitivo_id'
     ];
 

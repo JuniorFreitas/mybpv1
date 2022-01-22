@@ -251,6 +251,15 @@ class FeriasPrevistaController extends Controller
             $resultado->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
         }
 
+
+        $filtroVencimento = $request->filtroVencimento == 'true' ? true : false;
+        if ($filtroVencimento) {
+            $periodo = explode(' até ', $request->vencimento);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->where('ultima_data', '>=', $dataInicio->dataInsert())->where('ultima_data', '<=', $dataFim->dataInsert());
+        }
+
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Colaborador', function ($q) use ($request) {
                 $q->where('nome', 'like', '%' . $request->campoBusca . '%')
@@ -296,7 +305,7 @@ class FeriasPrevistaController extends Controller
             ->with('Admissao')->first();
         $dataAdmissao = $data_admissao->Admissao->data_admissao;
 
-        $colaboradorPeriodo = FeriasPrevista::whereColaboradorId($request->colaborador_id)->whereStatusAprovacao('aprovado')->latest('id')->first();
+        $colaboradorPeriodo = FeriasPrevista::whereColaboradorId($request->colaborador_id)->latest('id')->first();
 
         if ($colaboradorPeriodo !== null && !$request->visualizar) {
 
