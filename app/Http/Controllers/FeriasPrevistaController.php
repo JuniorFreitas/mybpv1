@@ -60,7 +60,6 @@ class FeriasPrevistaController extends Controller
                 'qnt_dias' => 'required',
                 'dias_saldo' => 'required',
                 'periodo_aquisitivo_id' => 'required',
-                'ultima_data' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -72,6 +71,24 @@ class FeriasPrevistaController extends Controller
             try {
                 DB::beginTransaction();
 
+                $colaborador = FeriasPrevista::whereColaboradorId($dados['colaborador_id'])->get();
+
+                if (count($colaborador) == 0) {
+
+                    $data_admissao = FeedbackCurriculo::whereCurriculoId($dados['colaborador_id'])
+                        ->with('Admissao')->first();
+
+                    $dataAdmissao = $data_admissao->Admissao->data_admissao;
+
+                    $periodo = PeriodoAquisitivo::where('id', $dados['periodo_aquisitivo_id'])->first();
+
+                    $date = new DataHora($dataAdmissao);
+                    $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
+                    $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
+                    $newDate->addDia(330);
+                    $dados['ultima_data'] = $newDate->dataInsert();
+                }
+
                 FeriasPrevista::create($dados);
 
                 DB::commit();
@@ -81,8 +98,8 @@ class FeriasPrevistaController extends Controller
                 DB::rollback();
                 $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
-//                return response()->json(['msg' => $msg], 400);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
     }
@@ -251,13 +268,20 @@ class FeriasPrevistaController extends Controller
             $resultado->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
         }
 
-
         $filtroVencimento = $request->filtroVencimento == 'true' ? true : false;
         if ($filtroVencimento) {
             $periodo = explode(' até ', $request->vencimento);
             $dataInicio = new DataHora($periodo[0]);
             $dataFim = new DataHora($periodo[1]);
             $resultado->where('ultima_data', '>=', $dataInicio->dataInsert())->where('ultima_data', '<=', $dataFim->dataInsert());
+        }
+
+        $filtroInicioFerias = $request->filtroInicioFerias == 'true' ? true : false;
+        if ($filtroInicioFerias) {
+            $periodo = explode(' até ', $request->inicioFerias);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->where('data_saida', '>=', $dataInicio->dataInsert())->where('data_saida', '<=', $dataFim->dataInsert());
         }
 
         if ($request->filled('campoBusca')) {
@@ -306,18 +330,25 @@ class FeriasPrevistaController extends Controller
         $dataAdmissao = $data_admissao->Admissao->data_admissao;
 
         $colaboradorPeriodo = FeriasPrevista::whereColaboradorId($request->colaborador_id)->latest('id')->first();
+        $dataHoje = new DataHora();
+        $data_saida = $dataHoje->dataCompleta();
+        $data_retorno = $dataHoje->dataCompleta();
 
         if ($colaboradorPeriodo !== null && !$request->visualizar) {
 
             $periodo = PeriodoAquisitivo::where('id', '>', $colaboradorPeriodo->periodo_aquisitivo_id)->first();
 
             $date = new DataHora($dataAdmissao);
-            $ultimoAnoPeriodoAquisitivo = $periodo['ano_final'] . '-' . $date->mes() . '-' . $date->dia();
+            $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
+            $data_saida = $date->dia() . '/' . $date->mes() . '/' . $periodo['ano_inicial'];
+            $data_retorno = $date->dia() . '/' . $date->mes() . '/' . $periodo['ano_inicial'];
             $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
             $ultimaData = $newDate->addDia(330);
 
         } elseif ($colaboradorPeriodo !== null && $request->visualizar) {
             $periodo = $colaboradorPeriodo->PeriodoAquisitivo;
+            $data_saida = $colaboradorPeriodo->data_saida;
+            $data_retorno = $colaboradorPeriodo->data_retorno;
             $ultimaData = $colaboradorPeriodo->ultima_data;
             $newDate = new DataHora($ultimaData);
             $ultimaData = $newDate->dataCompleta();
@@ -330,6 +361,8 @@ class FeriasPrevistaController extends Controller
             'data_admissao' => $data_admissao->Admissao->data_admissao,
             'periodo' => $periodo,
             'ultimaData' => $ultimaData,
+            'data_saida' => $data_saida,
+            'data_retorno' => $data_retorno,
         ]);
     }
 

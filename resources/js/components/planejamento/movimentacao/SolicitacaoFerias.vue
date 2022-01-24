@@ -49,10 +49,10 @@
                                 <legend>Última Data: {{ ultimaData }}</legend>
                             </div>
 
-                            <div class="col-12 col-md-4 mt-3" v-else>
-                                <datepicker label="Última Data" class="corrigiDatepicker" v-model="form.ultima_data"
-                                            :disabled="visualizar"></datepicker>
-                            </div>
+                            <!--                            <div class="col-12 col-md-4 mt-3" v-else>-->
+                            <!--                                <datepicker label="Última Data" class="corrigiDatepicker" v-model="form.ultima_data"-->
+                            <!--                                            :disabled="visualizar"></datepicker>-->
+                            <!--                            </div>-->
 
                             <div class="col-12 col-md-4">
                                 <label>Tem Falta?</label>
@@ -85,7 +85,7 @@
 
                             <div class="col-12 col-md-4">
                                 <label>Data da saída</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_saida"
+                                <datepicker label="" class="corrigiDatepicker"  v-model="form.data_saida"
                                             :disabled="visualizar"></datepicker>
                             </div>
 
@@ -169,13 +169,15 @@
         <fieldset class="mt-0">
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
+
                 <div class="col-12 col-md-3">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="atualizar()"
-                               :disabled="controle.carregando"
+                               :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroInicioFerias"
                                id="filtroIntervalo"
                                v-model="controle.dados.filtroPeriodo">
-                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
+                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período
+                            cadastrado</label>
                     </div>
                     <div class="form-group">
                         <datepicker range formsm label="" @onselect="atualizar()"
@@ -183,10 +185,11 @@
                                     v-model="controle.dados.periodo"></datepicker>
                     </div>
                 </div>
+
                 <div class="col-12 col-md-3">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="atualizar()"
-                               :disabled="controle.carregando"
+                               :disabled="controle.carregando || controle.dados.filtroPeriodo || controle.dados.filtroInicioFerias"
                                id="filtroVencimento"
                                v-model="controle.dados.filtroVencimento">
                         <label class="form-check-label cursor-pointer" for="filtroVencimento">Por período de
@@ -196,6 +199,22 @@
                         <datepicker range formsm label="" @onselect="atualizar()"
                                     :disabled="controle.carregando || !controle.dados.filtroVencimento"
                                     v-model="controle.dados.vencimento"></datepicker>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="form-check" style="margin-bottom: -11px;">
+                        <input type="checkbox" class="form-check-input" @change="atualizar()"
+                               :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroPeriodo"
+                               id="filtroInicioFerias"
+                               v-model="controle.dados.filtroInicioFerias">
+                        <label class="form-check-label cursor-pointer" for="filtroInicioFerias">Por período de início
+                            das férias</label>
+                    </div>
+                    <div class="form-group">
+                        <datepicker range formsm label="" @onselect="atualizar()"
+                                    :disabled="controle.carregando || !controle.dados.filtroInicioFerias"
+                                    v-model="controle.dados.inicioFerias"></datepicker>
                     </div>
                 </div>
 
@@ -284,6 +303,7 @@
                         <th>Qnt dias</th>
                         <th>Data retorno</th>
                         <th>Dias saldo</th>
+                        <th>Última data</th>
                         <th>Status</th>
                         <th></th>
                     </tr>
@@ -324,6 +344,9 @@
                         </td>
                         <td>
                             {{ item.dias_saldo }}
+                        </td>
+                        <td>
+                            {{ item.ultima_data }}
                         </td>
 
                         <td>
@@ -456,6 +479,8 @@ export default {
                     pages: 50,
                     filtroVencimento: false,
                     vencimento: "",
+                    filtroInicioFerias: false,
+                    inicioFerias: "",
                 },
             },
         }
@@ -503,8 +528,10 @@ export default {
                     colaborador_id: this.form.colaborador_id,
                     visualizar: this.visualizar
                 }).then(response => {
+
                     this.form.data_admissao = response.data.data_admissao;
                     this.ultimaData = response.data.ultimaData;
+
                     if (response.data.periodo.length > 1) {
                         this.periodos = response.data.periodo;
                     } else {
@@ -517,9 +544,14 @@ export default {
                         let dia = dataAtual.getDate();
                         let mes = dataAtual.getMonth();
                         let ano = dataAtual.getFullYear();
-                        this.form.ultima_data = dia + '/' + (mes + 1) + '/' + ano;
+                        let dataHoje = dia + '/' + (mes + 1) + '/' + ano;
+                        this.form.ultima_data = dataHoje;
+                        this.form.data_saida = dataHoje;
+                        this.form.data_retorno = dataHoje;
                     } else {
                         this.form.ultima_data = response.data.ultimaData;
+                        this.form.data_saida = response.data.data_saida;
+                        this.form.data_retorno = response.data.data_retorno;
                     }
                 });
                 return this.form.data_admissao;
@@ -608,7 +640,6 @@ export default {
 
             axios.get(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${id}/editar`)
                 .then(response => {
-                    // this.aprovando = true;
                     let data = response.data;
                     this.form.centro_custo_id = data.centro_custo_id;
                     this.form.colaborador_id = data.colaborador_id;
