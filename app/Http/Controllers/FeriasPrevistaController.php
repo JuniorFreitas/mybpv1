@@ -132,6 +132,8 @@ class FeriasPrevistaController extends Controller
 
         $feriasPrevista->quem_aprovou = $feriasPrevista->QuemAprovou ?? '';
 
+        $feriasPrevista->solicitante_nome = $feriasPrevista->UserCadastrou->nome ?? '';
+
         $data_admissao = FeedbackCurriculo::whereCurriculoId($feriasPrevista->colaborador_id)
             ->with('Admissao')->first();
 
@@ -254,10 +256,11 @@ class FeriasPrevistaController extends Controller
     {
 
         $resultado = FeriasPrevista::with(
-            'Colaborador',
+            'Colaborador.FeedBack.Admissao',
             'CentroCusto',
             'UserCadastrou',
             'QuemAprovou',
+            'PeriodoAquisitivo',
         );
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;

@@ -8,7 +8,7 @@
                           v-model="model.autocomplete_label_colaborador"
                           placeholder="Digite o nome do(a) colaborador(a)"
                           :disabled="verifica"
-                          :id="`colaborador_${model.hash}`"
+                          :id="hash"
                           @onblur="resetaCampoColaborador"
                           @onselect="selecionaColaborador"></autocomplete>
         </div>
@@ -41,6 +41,11 @@ export default {
             type: Boolean,
             required: true,
         }
+    },
+    computed: {
+        hash() {
+            return `colaborador_${parseInt((Math.random() * 999999))}`;
+        },
     },
     methods: {
         selecionaColaborador(obj) {

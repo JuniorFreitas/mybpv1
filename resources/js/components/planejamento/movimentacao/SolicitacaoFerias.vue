@@ -49,11 +49,6 @@
                                 <legend>Última Data: {{ ultimaData }}</legend>
                             </div>
 
-                            <!--                            <div class="col-12 col-md-4 mt-3" v-else>-->
-                            <!--                                <datepicker label="Última Data" class="corrigiDatepicker" v-model="form.ultima_data"-->
-                            <!--                                            :disabled="visualizar"></datepicker>-->
-                            <!--                            </div>-->
-
                             <div class="col-12 col-md-4">
                                 <label>Tem Falta?</label>
                                 <select type="text" class="form-control" v-model="form.tem_faltas"
@@ -107,6 +102,9 @@
                                     <textarea class="form-control" v-model="form.obs" cols="5" rows="5"
                                               :disabled="visualizar"></textarea>
                                 </div>
+                            </div>
+                            <div class="col-12 col-md-4 mt-4 mb-4" v-if="visualizar">
+                                <legend>Solicitação feita por: {{ form.solicitante_nome }} {{form.created_at}}</legend>
                             </div>
                         </div>
 
@@ -296,14 +294,14 @@
                     <thead>
                     <tr class="bg-default">
                         <th>CÓD</th>
-                        <th>Solicitação</th>
                         <th>Centro de custo</th>
                         <th>Colaborador</th>
-                        <th>Data saida</th>
+                        <th>Data Admissão</th>
                         <th>Qnt dias</th>
-                        <th>Data retorno</th>
-                        <th>Dias saldo</th>
-                        <th>Última data</th>
+                        <th>Férias</th>
+                        <th>Saldo</th>
+                        <th>Limite</th>
+                        <th>Período</th>
                         <th>Status</th>
                         <th></th>
                     </tr>
@@ -319,11 +317,6 @@
                         </td>
 
                         <td>
-                            {{ item.user_cadastrou.nome }} <br>
-                            {{ item.created_at }}
-                        </td>
-
-                        <td>
                             {{ item.centro_custo.label }}
                         </td>
 
@@ -332,7 +325,7 @@
                         </td>
 
                         <td>
-                            {{ item.data_saida }}
+                            {{item.colaborador.feed_back.admissao.data_admissao}}
                         </td>
 
                         <td>
@@ -340,13 +333,18 @@
                         </td>
 
                         <td>
-                            {{ item.data_retorno }}
+                            {{ item.data_saida }} até {{ item.data_retorno }}
                         </td>
                         <td>
                             {{ item.dias_saldo }}
                         </td>
+
                         <td>
                             {{ item.ultima_data }}
+                        </td>
+
+                        <td>
+                            {{ item.periodo_aquisitivo.label }}
                         </td>
 
                         <td>

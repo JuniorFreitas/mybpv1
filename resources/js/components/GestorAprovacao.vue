@@ -8,7 +8,7 @@
                           v-model="model.autocomplete_label_gestor_modal"
                           placeholder="Digite o nome do(a) gestor(a)"
                           :disabled="verifica"
-                          :id="`gestor_${model.hash}`"
+                          :id="hash"
                           @onblur="resetaCampoGestor"
                           @onselect="selecionaGestor"></autocomplete>
         </div>
@@ -41,6 +41,11 @@ export default {
             type: Boolean,
             required: true,
         }
+    },
+    computed: {
+        hash() {
+            return `colaborador_${parseInt((Math.random() * 999999))}`;
+        },
     },
     methods: {
         selecionaGestor(obj) {
