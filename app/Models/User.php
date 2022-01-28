@@ -253,7 +253,7 @@ class User extends Authenticatable
 
     public function Empresa()
     {
-        return $this->hasOne(Cliente::class, 'id', 'empresa_id');
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
     public function Fornecedor()
