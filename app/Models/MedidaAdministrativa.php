@@ -84,7 +84,7 @@ class MedidaAdministrativa extends Model
         'motivo' => 'string',
         'causa' => 'string',
         'data_solicitacao' => 'string',
-        'data_retorno' => 'date:d/m/Y',
+        'data_retorno' => 'string',
         'created_at' => 'date:d/m/Y'
     ];
 
