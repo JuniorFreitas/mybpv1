@@ -195,6 +195,7 @@ const app = new Vue({
 
             curriculo: {
                 nome: "",
+                email: "",
                 nascimento: "",
                 municipio_id: "",
                 autocomplete_label_municipio_modal: "",
