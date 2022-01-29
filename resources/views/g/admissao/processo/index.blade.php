@@ -691,7 +691,8 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>E-mail</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
+                                <input type="text" class="form-control"
+                                       onblur="validaEmailVazio(this)"
                                        :value="form.curriculo.email">
                             </div>
                         </div>
