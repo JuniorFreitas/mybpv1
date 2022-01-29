@@ -693,7 +693,7 @@
                                 <label>E-mail</label>
                                 <input type="text" class="form-control"
                                        onblur="validaEmailVazio(this)"
-                                       :value="form.curriculo.email">
+                                       v-model="form.curriculo.email">
                             </div>
                         </div>
 
