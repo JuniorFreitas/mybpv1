@@ -406,7 +406,7 @@ class AdmissaoController extends Controller
         $admissaoDados = $dados['admissao'];
 
         $dados['curriculo']['email'] = $dados['curriculo']['email'] == "" ? Sistema::EMAILPADRAO : $dados['curriculo']['email'];
-        Sistema::telegram(print_r($dados),true);
+        Sistema::telegram(print_r($dados,1));
 //        if ($request->filled('admissao.foto_escaneada')) {
 //            $dados['foto_escaneada'] = $dados['foto_escaneada'] == 'true' ? true : false;
 //        }
