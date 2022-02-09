@@ -45,7 +45,6 @@ class VerificaSaidaFeriasJob implements ShouldQueue {
 
         $agora = new DataHora();
         $agora->setSegundo(0);
-        $agora->addMes(1);
         $inicio = $agora->dataHoraInsert();
         $ultimoDiaMes = $agora->ultimoDiaMes();
         $mes = $agora->mes();
