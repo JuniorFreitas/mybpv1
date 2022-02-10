@@ -3,6 +3,9 @@
 namespace App\Console;
 
 use App\Jobs\controle_ponto\VerificaJornadasJob;
+use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaVencimento;
+use App\Jobs\Movimentacao\FeriasPrevista\VerificaSaidaFeriasJob;
+use App\Jobs\Movimentacao\FeriasPrevista\VerificaVencimentoFeriasJob;
 use App\Jobs\Weekly_report\LembreteTarefaJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -33,6 +36,8 @@ class Kernel extends ConsoleKernel
         $schedule->call(new LembreteTarefaJob)->everyMinute();
         //$schedule->call(new VerificaJornadasJob)->everyMinute();
         $schedule->call(new VerificaJornadasJob)->daily();
+        $schedule->call(new VerificaVencimentoFeriasJob)->monthly();
+        $schedule->call(new VerificaSaidaFeriasJob)->monthly();
     }
 
     /**
