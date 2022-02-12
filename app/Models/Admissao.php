@@ -216,7 +216,7 @@ class Admissao extends Model
         'data_entrega_area',
         'biometria',
         'data_biometria',
-        'pis'
+        'pis',
     ];
     protected $casts = [
         'id' => 'int',
@@ -268,7 +268,7 @@ class Admissao extends Model
         'data_entrega_area' => 'string',
         'biometria' => 'boolean',
         'data_biometria' => 'string',
-        'pis' => 'string'
+        'pis' => 'string',
     ];
 
     public function getCipaAttribute($value)
@@ -297,7 +297,7 @@ class Admissao extends Model
         if (!is_null($value)) {
             $data = new DataHora($this->attributes['data_entrega_area']);
             return $data->dataCompleta();
-        }else{
+        } else {
             return null;
         }
     }
@@ -308,7 +308,7 @@ class Admissao extends Model
         if (!is_null($value)) {
             $data = new DataHora($value);
             $this->attributes['data_entrega_area'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['data_entrega_area'] = null;
         }
     }
@@ -513,6 +513,7 @@ class Admissao extends Model
         }
     }
 
+
     //Modificador ->salario
     public function setSalarioAttribute($value)
     {
@@ -591,6 +592,11 @@ class Admissao extends Model
     public function AreaEtiqueta()
     {
         return $this->hasOne(AreaEtiqueta::class, 'id', 'area_etiqueta_id');
+    }
+
+    public function DadosAdmissoes()
+    {
+        return $this->hasOne(DadosAdmissao::class, 'id', 'admissao_id');
     }
 
 

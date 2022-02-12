@@ -171,6 +171,8 @@ class Curriculo extends Model
     protected $fillable = [
         "cpf",
         "rg",
+        'rg_data_emissao',
+        'naturalidade',
         "orgao_expeditor",
         "carteira_trabalho",
         "nome",
@@ -198,12 +200,13 @@ class Curriculo extends Model
         "datalido",
         "filiacao_pai",
         "filiacao_mae",
-
     ];
     protected $casts = [
         "id" => "int",
         "cpf" => "string",
         "rg" => "string",
+        "rg_data_emissao" => "string",
+        "naturalidade" => "string",
         "orgao_expeditor" => "string",
         "carteira_trabalho" => "string",
         "nome" => "string",
@@ -316,19 +319,23 @@ class Curriculo extends Model
         $this->attributes['nascimento'] = $data->dataInsert();
     }
 
-//    //Acessor ->datalido
-//    public function getDatalidoAttribute($value)
-//    {
-//        $data = new DataHora($this->attributes['datalido']);
-//        return $data->dataCompleta() . ' ' . $data->hora() . ':' . $data->minuto() . 'h';
-//    }
+    //Acessor ->rg_data_emissao
+    public function getRgDataEmissaoAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($this->attributes['rg_data_emissao']);
+            return $data->dataCompleta();
+        }
+    }
 
-    /* //Modificador ->datalido
-     public function setDatalidoAttribute($value)
-     {
-         $data = new DataHora($value);
-         $this->attributes['datalido'] = $data->dataInsert();
-     }*/
+    //Modificador ->rg_data_emissao
+    public function setRgDataEmissaoAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($value);
+            $this->attributes['rg_data_emissao'] = $data->dataInsert();
+        }
+    }
 
     public function getEnderecoCompletoAttribute()
     {
