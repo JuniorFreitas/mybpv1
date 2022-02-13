@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Vaga;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class VagaController extends Controller
 {
@@ -42,7 +43,12 @@ class VagaController extends Controller
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|unique:vagas,nome'
+            'nome' => [
+                'required',
+                Rule::unique('vagas')->where(function ($query) use ($request) {
+                    return $query->whereNome($request->nome)->whereEmpresaId(auth()->user()->empresa_id);
+                }),
+            ]
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -102,7 +108,12 @@ class VagaController extends Controller
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|unique:vagas,nome,' . $vaga->id
+            'nome' => [
+                'required',
+                Rule::unique('vagas')->ignore($vaga->id)->where(function ($query) use ($request) {
+                    return $query->whereNome($request->nome)->whereEmpresaId(auth()->user()->empresa_id);
+                }),
+            ]
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
