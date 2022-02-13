@@ -35,7 +35,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class GrupoCloud extends Model
 {
     use HasFactory, LogsActivity;
-//    use TenantTrait;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'grupo_cloud';

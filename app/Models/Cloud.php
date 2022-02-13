@@ -55,6 +55,11 @@ class Cloud extends Model
     protected $fillable = ['nome','empresa_id'];
     protected $casts = ['id' => 'int', 'empresa_id' => 'int', 'nome' => 'string'];
 
+    public function Empresa()
+    {
+        return $this->belongsTo(Cliente::class, 'empresa_id');
+    }
+
     public function Itens()
     {
         return $this->hasMany(ItensCloud::class, 'cloud_id', 'id');

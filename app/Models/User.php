@@ -365,14 +365,23 @@ class User extends Authenticatable
     {
         return $this->hasOne(UsuarioConta::class, 'user_id', 'id');
     }
-//
-//    protected static function booted()
-//    {
-//        static::created(function ($model) {
-//            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
-//        });
-//        static::updated(function ($model) {
-//            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
-//        });
-//    }
+
+    /**
+     * Relacionamento com os clouds para o usuário referente a empresa que ele faz parte.
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function Clouds()
+    {
+        return $this->hasMany(Cloud::class, 'empresa_id', 'empresa_id');
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($model) {
+            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
+        });
+        static::updated(function ($model) {
+            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
+        });
+    }
 }
