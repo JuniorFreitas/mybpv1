@@ -162,6 +162,12 @@ class FeriasPrevista extends Model
         $data = new DataHora($this->attributes['data_saida']);
         return $data->dataCompleta();
     }
+    //Acessor ->data_inicio
+    public function getUltimaDataAttribute($value)
+    {
+        $data = new DataHora($this->attributes['ultima_data']);
+        return $data->dataCompleta();
+    }
 
     public function setDataRetornoAttribute($value)
     {
@@ -225,5 +231,10 @@ class FeriasPrevista extends Model
     public function PeriodoAquisitivo()
     {
         return $this->hasOne(PeriodoAquisitivo::class, 'id', 'periodo_aquisitivo_id');
+    }
+
+    public function Empresa()
+    {
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 }

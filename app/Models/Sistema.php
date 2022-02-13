@@ -549,7 +549,7 @@ class Sistema
 
     public static function verificaHdev()
     {
-        $host = explode('.',\request()->getHost());
+        $host = explode('.', \request()->getHost());
         return $host[0] == 'hdev';
     }
 
@@ -589,4 +589,12 @@ class Sistema
             return $msg;
         }
     }
+
+    public static function listaEmpresas()
+    {
+        return \DB::table('users')->whereAtivo(true)->whereNotIn('empresa_id', [104])
+            ->whereTemp(false)->selectRaw('DISTINCT empresa_id')
+            ->get(['empresa_id'])->pluck('empresa_id')->toArray();
+    }
+
 }
