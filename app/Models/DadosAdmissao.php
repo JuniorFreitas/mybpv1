@@ -50,9 +50,9 @@ class DadosAdmissao extends Model
         }
     }
 
-    public function Admissao()
-    {
-        return $this->hasOne(Admissao::class, 'id','admissao_id');
-    }
+//    public function Admissao()
+//    {
+//        return $this->hasOne(Admissao::class, 'id','admissao_id');
+//    }
 
 }

@@ -621,6 +621,10 @@ class AdmissaoController extends Controller
 
 //        $dados = $feedback;
 
+//        $dadosAdmissao = Admissao::whereFeedbackId($feedback->id)->with('DadosAdmissoes')->get();
+
+//        dd($dadosAdmissao);
+
         $dados = $feedback->load('ResultadoIntegrado');
 
         $pdf = PDF::loadView('pdf.admissao.ficha', compact('dados'));

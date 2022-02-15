@@ -596,7 +596,7 @@ class Admissao extends Model
 
     public function DadosAdmissoes()
     {
-        return $this->hasOne(DadosAdmissao::class, 'id', 'admissao_id');
+        return $this->hasOne(DadosAdmissao::class, 'admissao_id', 'id');
     }
 
 
