@@ -372,6 +372,18 @@ class TreinamentoController extends Controller
             });
         }
 
+        $campoVencimento = $request->campoVencimento == 'true' ? true : false;
+        if ($campoVencimento) {
+            $periodo = explode(' até ', $request->vencimento);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
+                $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
+                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert())->where('data_vencimento', '<=', $dataFim->dataInsert());
+                });
+            });
+        }
+
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 
         $itens = collect($resultado->items());
