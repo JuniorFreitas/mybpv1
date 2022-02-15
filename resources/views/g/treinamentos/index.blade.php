@@ -367,6 +367,24 @@
                 </select>
             </div>
 
+
+            <div class="col-12 col-md-3 col-sm-4 ">
+                <div class="form-check" style="margin-bottom: -11px;">
+                    <input type="checkbox" class="form-check-input" @change="atualizar()"
+                           :disabled="controle.carregando"
+                           id="filtroVencimento"
+                           v-model="controle.dados.campoVencimento">
+                    <label class="form-check-label cursor-pointer" for="filtroVencimento">Por período de
+                        vencimento</label>
+                </div>
+                <div class="form-group">
+                    <datepicker range formsm label="" @onselect="atualizar()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.vencimento"></datepicker>
+                </div>
+            </div>
+
+
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>NR33</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"

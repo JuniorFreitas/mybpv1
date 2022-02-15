@@ -372,6 +372,18 @@ class TreinamentoController extends Controller
             });
         }
 
+        $campoVencimento = $request->campoVencimento == 'true' ? true : false;
+        if ($campoVencimento) {
+            $periodo = explode(' até ', $request->vencimento);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
+                $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
+                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert())->where('data_vencimento', '<=', $dataFim->dataInsert());
+                });
+            });
+        }
+
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 
         $itens = collect($resultado->items());
@@ -398,14 +410,16 @@ class TreinamentoController extends Controller
     }
 
 
-    public function carteiraPdf(Request $request)
+    public
+    function carteiraPdf(Request $request)
     {
         $treinamentos = Treinamento::whereIn('id', $request->selecionados)->orWhereIn('feedback_id', $request->selecionados)->get();
 
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
     }
 
-    public function enviarCarteiraEmail(Request $request)
+    public
+    function enviarCarteiraEmail(Request $request)
     {
         $dados = $request->input();
         try {
@@ -432,7 +446,8 @@ class TreinamentoController extends Controller
         }
     }
 
-    public function carteiraIndividual($curriculo)
+    public
+    function carteiraIndividual($curriculo)
     {
         $treinamentos = Treinamento::whereId(\Crypt::decrypt($curriculo))->get();
         $treinamentos->first()->update([
@@ -445,7 +460,8 @@ class TreinamentoController extends Controller
     }
 
     //Excel
-    public function export(Request $request)
+    public
+    function export(Request $request)
     {
         $resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true);
 
@@ -598,7 +614,8 @@ class TreinamentoController extends Controller
         return Excel::download(new carteiraEtiquetaExport($resultado), 'treinamentos' . (new DataHora())->nomeUnico() . '.xlsx');
     }
 
-    public function treinamentoProximoVencimento(Request $request)
+    public
+    function treinamentoProximoVencimento(Request $request)
     {
         $hoje = new DataHora();
         $trintaDias = new DataHora($hoje->addDia(60));

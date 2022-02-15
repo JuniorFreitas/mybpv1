@@ -102,7 +102,9 @@ const app = new Vue({
                 campoCracha: '',
                 campoFoto: '',
                 campo_dataInicio: '',
-                campo_dataFim: ''
+                campo_dataFim: '',
+                campoVencimento:'',
+                vencimento:'',
             }
         }
     },
