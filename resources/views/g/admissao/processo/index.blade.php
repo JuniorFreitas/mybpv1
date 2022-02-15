@@ -163,6 +163,31 @@
                                                placeholder="Informe o CID" v-model="formAvulsa.curriculo.cid">
                                     </div>
                                 </div>
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label>RG</label>
+                                        <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                                               v-model="formAvulsa.curriculo.rg">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label>RG Data Emissão</label>
+                                        <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                               v-model="formAvulsa.curriculo.rg_data_emissao" v-mascara:data
+                                               onblur="valida_data(this)"
+                                               @blur="validaData">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label>Naturalidade</label>
+                                        <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                                               v-model="formAvulsa.curriculo.naturalidade">
+                                    </div>
+                                </div>
+
                                 <div class="col-12">
                                     <fieldset>
                                         <legend>Endereço</legend>

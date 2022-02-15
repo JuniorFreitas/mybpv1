@@ -6,6 +6,7 @@ use App\Exports\Entrevistas\admissaoExport;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Curriculo;
+use App\Models\DadosAdmissao;
 use App\Models\FeedbackCurriculo;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
@@ -54,7 +55,6 @@ class AdmissaoController extends Controller
         $dadosCurriculo['email'] = trim(strtolower($dadosCurriculo['email']));
         $dadosCurriculo['vaga_pretendida'] = $dados['feedback']['vaga_id'];
         $dadosCurriculo['uf_vaga'] = substr($dadosCurriculo['autocomplete_label_municipio_modal'], -2, 2);
-        $dadosCurriculo['rg'] = null;
 
         $dadosCurriculo['pcd'] = $dadosCurriculo['pcd'] == 'true';
 
@@ -86,6 +86,14 @@ class AdmissaoController extends Controller
 
         $dadosAdmissao = $dados['admissao'];
         $dadosAdmissao['usuario_id'] = auth()->id();
+
+        $somenteDadosAdmissao = $dadosAdmissao['tableDadosAdmissao'];
+        $tableDadosAdmissao['ctps_numero'] = $somenteDadosAdmissao['ctps_numero'];
+        $tableDadosAdmissao['ctps_serie'] = $somenteDadosAdmissao['ctps_serie'];
+        $tableDadosAdmissao['ctps_data_emissao'] = $somenteDadosAdmissao['ctps_data_emissao'];
+        $tableDadosAdmissao['titulo_eleitor_numero'] = $somenteDadosAdmissao['titulo_eleitor_numero'];
+        $tableDadosAdmissao['titulo_eleitor_sessao'] = $somenteDadosAdmissao['titulo_eleitor_sessao'];
+        $tableDadosAdmissao['titulo_eleitor_zona'] = $somenteDadosAdmissao['titulo_eleitor_zona'];
 
         $dadosResultadoIntegrado = $dados['resultado_integrado'];
 
@@ -188,11 +196,15 @@ class AdmissaoController extends Controller
                 $feedback->ParecerTeste()->create($dadosParecerTeste);
                 $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                $feedback->Admissao()->create($dadosAdmissao);
+                $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
+
+                $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
+                DadosAdmissao::create($tableDadosAdmissao);
+
             } else {
 
                 $dadosAdmissao['editado_usuario_id'] = auth()->id();
-                // 1- Busca o Candidato
+                // 1 - Busca o Candidato
                 $user = $user->first();
                 $user->update($userObj);
 
@@ -200,9 +212,12 @@ class AdmissaoController extends Controller
                 UsuarioConta::criarAtualizar($user->id, $dados['curriculo']['banco_conta']);
 
                 $candidato = $user->Curriculo;
-                // 2- Atualiza as informações na tabela curriculo
+                // 2 - Atualiza as informações na tabela curriculo
                 $candidato->update([
                     'nome' => $dadosCurriculo['nome'],
+                    'rg' => $dadosCurriculo['rg'],
+                    'rg_data_emissao' => $dadosCurriculo['rg_data_emissao'],
+                    'naturalidade' => $dadosCurriculo['naturalidade'],
                     'nascimento' => $dadosCurriculo['nascimento'],
                     'pcd' => $dadosCurriculo['pcd'],
                     'cid' => $dadosCurriculo['cid'],
@@ -269,7 +284,9 @@ class AdmissaoController extends Controller
                 $candidato->FeedBack->ParecerTeste ? $candidato->FeedBack->ParecerTeste->update($dadosParecerTeste) : $candidato->FeedBack->ParecerTeste()->create($dadosParecerTeste);
                 $candidato->FeedBack->ResultadoIntegrado ? $candidato->FeedBack->ResultadoIntegrado->update($dadosResultadoIntegrado) : $candidato->FeedBack->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                $candidato->FeedBack->Admissao()->create($dadosAdmissao);
+                $admissaoCreate = $candidato->FeedBack->Admissao()->create($dadosAdmissao);
+                $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
+                DadosAdmissao::create($tableDadosAdmissao);
             }
             DB::commit();
             return response()->json([], 201);
@@ -279,7 +296,7 @@ class AdmissaoController extends Controller
             \Log::debug($dados);
             \Log::debug($msg);
             return response()->json(['msg' => $msg], 400);
-            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+//            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
     }
@@ -603,6 +620,10 @@ class AdmissaoController extends Controller
 //        $dados = ResultadoIntegrado::whereFeedbackId($curriculo_id)->first();
 
 //        $dados = $feedback;
+
+//        $dadosAdmissao = Admissao::whereFeedbackId($feedback->id)->with('DadosAdmissoes')->get();
+
+//        dd($dadosAdmissao);
 
         $dados = $feedback->load('ResultadoIntegrado');
 

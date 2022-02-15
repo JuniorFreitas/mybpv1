@@ -69,6 +69,9 @@ const app = new Vue({
 
             curriculo: {
                 cpf: "",
+                rg: "",
+                rg_data_emissao: "",
+                naturalidade: "",
                 nome: "",
                 nascimento: "",
                 pcd: "",
@@ -103,7 +106,7 @@ const app = new Vue({
                     ramal: "",
                     tipo: "whatsapp"
                 }],
-                telefonesDelete:[]
+                telefonesDelete: []
             },
 
             feedback: {
@@ -332,6 +335,14 @@ const app = new Vue({
                 data_trinta_dois_sessenta: "",
                 numero_cracha: "",
                 pis: "",
+                tableDadosAdmissao: {
+                    ctps_numero: '',
+                    ctps_serie: '',
+                    ctps_data_emissao: '',
+                    titulo_eleitor_numero: '',
+                    titulo_eleitor_sessao: '',
+                    titulo_eleitor_zona: '',
+                },
                 data_aso: "",
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
@@ -566,47 +577,47 @@ const app = new Vue({
         CadastraAvulsa() {
             formReset();
 
-            if (this.formAvulsa.feedback.vaga_id === "") {
-                valida_campo_vazio($("#vaga_" + this.hash), 1);
-                $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
-                mostraErro("", "O campo vaga não pode ficar vazio");
-                return false;
-            }
-
-            if (this.formAvulsa.curriculo.municipio_id === "") {
-                valida_campo_vazio($("#mun_" + this.hash), 1);
-                $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
-                mostraErro("", "O Campo Cidade não pode ficar vazio");
-                return false;
-            }
-
-            if (this.formAvulsa.feedback.cliente_id === "") {
-                valida_campo_vazio($("#cliente_" + this.hash), 1);
-                $("#janelaAdmissaoAvulsa #cliente_" + this.hash).focus().trigger("blur");
-                mostraErro("", "O Campo Cliente não pode ficar vazio");
-                return false;
-            }
-
-            if (this.formAvulsa.curriculo.telefones.length === 0) {
-                this.formAvulsa.curriculo.telefones.push({
-                    detalhe: "",
-                    id: 0,
-                    numero: "",
-                    pais: "55",
-                    principal: true,
-                    ramal: "",
-                    tipo: "whatsapp"
-                });
-                mostraErro("", "Insira pelo menos UM telefone de contato");
-                return false;
-            }
-
-
-            $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
-            if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os erros");
-                return false;
-            }
+            // if (this.formAvulsa.feedback.vaga_id === "") {
+            //     valida_campo_vazio($("#vaga_" + this.hash), 1);
+            //     $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
+            //     mostraErro("", "O campo vaga não pode ficar vazio");
+            //     return false;
+            // }
+            //
+            // if (this.formAvulsa.curriculo.municipio_id === "") {
+            //     valida_campo_vazio($("#mun_" + this.hash), 1);
+            //     $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
+            //     mostraErro("", "O Campo Cidade não pode ficar vazio");
+            //     return false;
+            // }
+            //
+            // if (this.formAvulsa.feedback.cliente_id === "") {
+            //     valida_campo_vazio($("#cliente_" + this.hash), 1);
+            //     $("#janelaAdmissaoAvulsa #cliente_" + this.hash).focus().trigger("blur");
+            //     mostraErro("", "O Campo Cliente não pode ficar vazio");
+            //     return false;
+            // }
+            //
+            // if (this.formAvulsa.curriculo.telefones.length === 0) {
+            //     this.formAvulsa.curriculo.telefones.push({
+            //         detalhe: "",
+            //         id: 0,
+            //         numero: "",
+            //         pais: "55",
+            //         principal: true,
+            //         ramal: "",
+            //         tipo: "whatsapp"
+            //     });
+            //     mostraErro("", "Insira pelo menos UM telefone de contato");
+            //     return false;
+            // }
+            //
+            //
+            // $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
+            // if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
+            //     mostraErro("", "Verifique os erros");
+            //     return false;
+            // }
 
             this.formAvulsa.admissao = this.form.admissao;
             this.formAvulsa.preload = true;
