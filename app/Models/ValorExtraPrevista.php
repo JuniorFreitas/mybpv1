@@ -42,6 +42,19 @@ use MasterTag\DataHora;
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\User|null $Colaborador
  * @property-read \App\Models\User|null $UserCadastrou
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @property int|null $empresa_id
+ * @property int|null $gestor_id
+ * @property-read \App\Models\User|null $GestorAprovacao
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereUserAprovacaoId($value)
  */
 class ValorExtraPrevista extends Model
 {

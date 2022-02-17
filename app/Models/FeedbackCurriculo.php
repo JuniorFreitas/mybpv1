@@ -169,6 +169,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagasAbertasId($value)
  * @property-read \App\Models\UsuarioConta|null $BancoConta
+ * @property-read \App\Models\Cliente|null $Empresa
  */
 class FeedbackCurriculo extends Model
 {

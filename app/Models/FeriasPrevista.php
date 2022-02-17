@@ -75,6 +75,18 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereTemFaltas($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserRhId($value)
+ * @property int|null $gestor_id
+ * @property string|null $periodo_aquisitivo
+ * @property mixed|null $ultima_data
+ * @property string|null $mes
+ * @property int|null $periodo_aquisitivo_id
+ * @property-read User|null $Empresa
+ * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereMes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUltimaData($value)
  */
 class FeriasPrevista extends Model
 {

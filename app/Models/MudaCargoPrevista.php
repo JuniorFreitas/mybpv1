@@ -54,6 +54,19 @@ use MasterTag\DataHora;
  * @property-read mixed $novo_salario_format
  * @property-read mixed $salario_anterior_format
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereColaboradorId($value)
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @property int|null $empresa_id
+ * @property int|null $gestor_id
+ * @property-read \App\Models\User|null $GestorAprovacao
+ * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereUserAprovacaoId($value)
  */
 class MudaCargoPrevista extends Model
 {

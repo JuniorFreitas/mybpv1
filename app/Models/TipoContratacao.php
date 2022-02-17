@@ -39,6 +39,22 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereRequisicaoVagaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property string|null $nome_indicacao
+ * @property string|null $salario
+ * @property float|null $salario_valor
+ * @property string|null $beneficio
+ * @property string|null $beneficio_excecao
+ * @property string|null $treinamento
+ * @property string|null $treinamento_excecao
+ * @property-read User|null $GestorAprovacao
+ * @property-read mixed $salario_valor_format
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereBeneficio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereBeneficioExcecao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereNomeIndicacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereSalario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereSalarioValor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereTreinamento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereTreinamentoExcecao($value)
  */
 class TipoContratacao extends Model
 {

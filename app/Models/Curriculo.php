@@ -147,6 +147,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\UsuarioConta|null $BancoConta
  * @property-read mixed $cpf_format
  * @property-read \App\Models\User|null $User
+ * @property string|null $rg_data_emissao
+ * @property string|null $naturalidade
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNaturalidade($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereRgDataEmissao($value)
  */
 class Curriculo extends Model
 {

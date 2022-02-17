@@ -9,6 +9,52 @@ use App\Models\User;
 use DateTimeInterface;
 use MasterTag\DataHora;
 
+/**
+ * App\Models\TransferenciaPrevista
+ *
+ * @property int $id
+ * @property int|null $colaborador_id
+ * @property int $centro_custo_origem_id
+ * @property int $centro_custo_destino_id
+ * @property mixed $data_transferencia
+ * @property int|null $user_id
+ * @property string|null $solicitante
+ * @property string|null $obs
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @property int|null $empresa_id
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int|null $gestor_id
+ * @property-read \App\Models\CentroCusto|null $CentroCustoDestino
+ * @property-read \App\Models\CentroCusto|null $CentroCustoOrigem
+ * @property-read \App\Models\Curriculo|null $Colaborador
+ * @property-read User|null $GestorAprovacao
+ * @property-read User|null $QuemAprovou
+ * @property-read User|null $UserCadastrou
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista query()
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereCentroCustoDestinoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereCentroCustoOrigemId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereColaboradorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereDataTransferencia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereObs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereSolicitante($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserId($value)
+ * @mixin \Eloquent
+ */
 class TransferenciaPrevista extends Model
 {
 

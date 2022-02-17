@@ -50,6 +50,19 @@ use MasterTag\DataHora;
  * @mixin \Eloquent
  * @property-read \App\Models\Vaga|null $Cargo
  * @property-read \App\Models\User|null $Colaborador
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @property int|null $empresa_id
+ * @property int|null $gestor_id
+ * @property-read \App\Models\User|null $GestorAprovacao
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserAprovacaoId($value)
  */
 class AdmissoesPrevista extends Model
 {

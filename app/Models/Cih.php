@@ -63,6 +63,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
  * @property-read int|null $anexos_count
+ * @property int|null $empresa_id
+ * @property-read \App\Models\User|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|Cih whereEmpresaId($value)
  */
 class Cih extends Model
 {

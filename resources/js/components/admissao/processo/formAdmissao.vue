@@ -250,7 +250,7 @@
                 <label>Número CTPS</label>
                 <input type="text" class="form-control" onblur="valida_campo(this,2)"
                        :disabled="visualizar"
-                       v-model="form.tableDadosAdmissao.ctps_numero">
+                       v-model="form.dados_admissoes.ctps_numero">
             </div>
         </div>
 
@@ -259,7 +259,7 @@
                 <label>Série CTPS</label>
                 <input type="text" class="form-control" onblur="valida_campo(this,2)"
                        :disabled="visualizar"
-                       v-model="form.tableDadosAdmissao.ctps_serie">
+                       v-model="form.dados_admissoes.ctps_serie">
             </div>
         </div>
 
@@ -267,7 +267,7 @@
             <div class="form-group">
                 <label>Data Emissão CTPS</label>
                 <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar"
-                       v-model="form.tableDadosAdmissao.ctps_data_emissao" v-mascara:data
+                       v-model="form.dados_admissoes.ctps_data_emissao" v-mascara:data
                        onblur="valida_data(this)"
                        @blur="validaData">
             </div>
@@ -278,7 +278,7 @@
                 <label>Titulo de Eleitor</label>
                 <input type="text" class="form-control" onblur="valida_campo(this,2)"
                        :disabled="visualizar"
-                       v-model="form.tableDadosAdmissao.titulo_eleitor_numero">
+                       v-model="form.dados_admissoes.titulo_eleitor_numero">
             </div>
         </div>
 
@@ -287,7 +287,7 @@
                 <label>Titulo de Eleitor Sessão</label>
                 <input type="text" class="form-control" onblur="valida_campo(this,2)"
                        :disabled="visualizar"
-                       v-model="form.tableDadosAdmissao.titulo_eleitor_sessao">
+                       v-model="form.dados_admissoes.titulo_eleitor_sessao">
             </div>
         </div>
 
@@ -296,7 +296,7 @@
                 <label>Titulo de Eleitor Zona</label>
                 <input type="text" class="form-control" onblur="valida_campo(this,2)"
                        :disabled="visualizar"
-                       v-model="form.tableDadosAdmissao.titulo_eleitor_zona">
+                       v-model="form.dados_admissoes.titulo_eleitor_zona">
             </div>
         </div>
 
@@ -351,7 +351,7 @@ export default {
                 camisa_protecao: "",
                 camisa_meia: "",
                 pis: "",
-                tableDadosAdmissao: {
+                dados_admissoes: {
                     ctps_numero: '',
                     ctps_serie: '',
                     ctps_data_emissao: '',

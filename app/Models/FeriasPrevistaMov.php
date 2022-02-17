@@ -34,6 +34,10 @@ use DateTimeInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUltimaData($value)
  * @mixin \Eloquent
+ * @property int|null $ultimo_periodo_aquisitivo_id
+ * @property-read \App\Models\FeriasPrevistaDados|null $FeriasPrevistaDadosUltimo
+ * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUltimoPeriodoAquisitivoId($value)
  */
 class FeriasPrevistaMov extends Model
 {

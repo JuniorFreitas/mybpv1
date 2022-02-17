@@ -37,6 +37,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereEmpresaId($value)
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
+ * @property string|null $tipo_prova
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereTipoProva($value)
  */
 class Simulado extends Model
 {

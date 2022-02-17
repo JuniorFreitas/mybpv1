@@ -143,6 +143,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $foto_tres_count
  * @property string|null $pis
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao wherePis($value)
+ * @property-read \App\Models\DadosAdmissao|null $DadosAdmissoes
  */
 class Admissao extends Model
 {
