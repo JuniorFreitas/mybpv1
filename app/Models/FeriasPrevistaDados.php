@@ -68,6 +68,11 @@ use DateTimeInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUserRhId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUltimaData($value)
  * @mixin \Eloquent
+ * @property int|null $periodo_aquisitivo_id
+ * @property int|null $gestor_id
+ * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados wherePeriodoAquisitivoId($value)
  */
 class FeriasPrevistaDados extends Model
 {

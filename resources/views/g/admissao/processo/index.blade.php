@@ -167,7 +167,7 @@
                                     <div class="form-group">
                                         <label>RG</label>
                                         <input type="text" class="form-control" onblur="valida_campo(this,2)"
-                                               v-model="formAvulsa.curriculo.rg">
+                                               v-model="formAvulsa.curriculo.rg" :disabled="visualizar">
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-4">
@@ -175,8 +175,7 @@
                                         <label>RG Data Emissão</label>
                                         <input type="text" class="form-control" placeholder="dd/mm/aaaa"
                                                v-model="formAvulsa.curriculo.rg_data_emissao" v-mascara:data
-                                               onblur="valida_data(this)"
-                                               @blur="validaData">
+                                               onblur="valida_data(this)" :disabled="visualizar">
                                     </div>
                                 </div>
 
@@ -184,7 +183,7 @@
                                     <div class="form-group">
                                         <label>Naturalidade</label>
                                         <input type="text" class="form-control" onblur="valida_campo(this,2)"
-                                               v-model="formAvulsa.curriculo.naturalidade">
+                                               v-model="formAvulsa.curriculo.naturalidade" :disabled="visualizar">
                                     </div>
                                 </div>
 
@@ -559,7 +558,6 @@
         </template>
     </modal>
 
-
     <modal id="janelaCadastrar" :titulo="tituloJanela" :size="95">
         <template slot="conteudo">
             <div class="alert alert-success text-center" v-show="cadastrado">
@@ -605,6 +603,29 @@
                                 <label>CNH</label>
                                 <input type="text" class="form-control" disabled="disabled" readonly="readonly"
                                        :value="form.parecer_rh.cnh ? form.parecer_rh.cnh_tipo : 'Não possui'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>RG</label>
+                                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                                       v-model="form.curriculo.rg" :disabled="visualizar">
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>RG Data Emissão</label>
+                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                       v-model="form.curriculo.rg_data_emissao" v-mascara:data
+                                       onblur="valida_data(this)" :disabled="visualizar">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>Naturalidade</label>
+                                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                                       v-model="form.curriculo.naturalidade" :disabled="visualizar">
                             </div>
                         </div>
 
@@ -831,6 +852,7 @@
                                            :value="form.parecer_tecnica.opera_plat_ponte">
                                 </div>
                             </div>
+
                         </template>
 
                         <div class="col-12">
@@ -852,11 +874,10 @@
                 <fieldset>
                     <legend class="text-uppercase">ADMISSÃO</legend>
 
-                    <form-admissao :form="form.admissao" :visualizar='visualizar'
-                                   :cliente_id='form.cliente_id'></form-admissao>
+                    <form-admissao :form="form.admissao" :visualizar='visualizar'></form-admissao>
 
                     <div class="col-12">
-                        <dados-bancarios :model="form.banco_conta"></dados-bancarios>
+                        <dados-bancarios :model="form.banco_conta" :visualizar='visualizar'></dados-bancarios>
                     </div>
 
                     <div class='col-12'>
