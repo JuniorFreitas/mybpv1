@@ -6,6 +6,30 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 
+/**
+ * App\Models\DadosAdmissao
+ *
+ * @property int $id
+ * @property int|null $admissao_id
+ * @property string|null $ctps_numero
+ * @property string|null $ctps_serie
+ * @property string|null $ctps_data_emissao
+ * @property string|null $titulo_eleitor_numero
+ * @property string|null $titulo_eleitor_sessao
+ * @property string|null $titulo_eleitor_zona
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao query()
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereAdmissaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCtpsDataEmissao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCtpsNumero($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCtpsSerie($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorNumero($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorSessao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorZona($value)
+ * @mixin \Eloquent
+ */
 class DadosAdmissao extends Model
 {
     use HasFactory;

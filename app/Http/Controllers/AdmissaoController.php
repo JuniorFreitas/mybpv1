@@ -87,7 +87,7 @@ class AdmissaoController extends Controller
         $dadosAdmissao = $dados['admissao'];
         $dadosAdmissao['usuario_id'] = auth()->id();
 
-        $somenteDadosAdmissao = $dadosAdmissao['tableDadosAdmissao'];
+        $somenteDadosAdmissao = $dadosAdmissao['dados_admissoes'];
         $tableDadosAdmissao['ctps_numero'] = $somenteDadosAdmissao['ctps_numero'];
         $tableDadosAdmissao['ctps_serie'] = $somenteDadosAdmissao['ctps_serie'];
         $tableDadosAdmissao['ctps_data_emissao'] = $somenteDadosAdmissao['ctps_data_emissao'];
@@ -348,11 +348,10 @@ class AdmissaoController extends Controller
         $feedback = $admissao;
 
         $feedback->load(
-            'Admissao',
+            'Admissao.DadosAdmissoes',
             'Curriculo.Formacao',
             'Curriculo.FotoTres',
             'Curriculo.Telefones',
-            'BancoConta',
             'parecerRh',
             'parecerTecnica',
             'parecerRota',
@@ -362,7 +361,7 @@ class AdmissaoController extends Controller
             'Cliente.Area',
             'Cliente.AreasEtiquetas',
             'TelPrincipal',
-            'BancoConta'
+            'BancoConta',
         );
 
         $feedback->BancoConta->banco = $feedback->BancoConta->banco ?: 'Banco do Brasil';
@@ -446,6 +445,9 @@ class AdmissaoController extends Controller
                 $feedback->Curriculo->update([
                     'nome' => $dados['curriculo']['nome'],
                     'email' => $dados['curriculo']['email'],
+                    'rg' => $dados['curriculo']['rg'],
+                    'rg_data_emissao' => $dados['curriculo']['rg_data_emissao'],
+                    'naturalidade' => $dados['curriculo']['naturalidade'],
                     'filiacao_pai' => $dados['curriculo']['filiacao_pai'],
                     'filiacao_mae' => $dados['curriculo']['filiacao_mae'],
                 ]);
@@ -493,6 +495,8 @@ class AdmissaoController extends Controller
                     }
                 }
 
+                $dadosAdmissoes = $admissaoDados['dados_admissoes'];
+                isset($admissaoDados['dados_admissoes']['id']) ? $feedback->Admissao->DadosAdmissoes->update($dadosAdmissoes) : $feedback->Admissao->DadosAdmissoes()->create($dadosAdmissoes);
 
                 $feedback->Admissao ? $feedback->Admissao->update($admissaoDados) : $feedback->Admissao()->create($admissaoDados);
 
@@ -503,7 +507,7 @@ class AdmissaoController extends Controller
                 DB::rollback();
                 $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }

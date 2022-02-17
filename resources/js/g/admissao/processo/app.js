@@ -201,6 +201,9 @@ const app = new Vue({
                 email: "",
                 nascimento: "",
                 municipio_id: "",
+                rg: "",
+                rg_data_emissao: "",
+                naturalidade: "",
                 autocomplete_label_municipio_modal: "",
                 autocomplete_label_municipio_modal_anterior: "",
                 foto_tres: [],
@@ -335,7 +338,7 @@ const app = new Vue({
                 data_trinta_dois_sessenta: "",
                 numero_cracha: "",
                 pis: "",
-                tableDadosAdmissao: {
+                dados_admissoes: {
                     ctps_numero: '',
                     ctps_serie: '',
                     ctps_data_emissao: '',
@@ -695,6 +698,18 @@ const app = new Vue({
                     this.form.parecer_rh.camisa_meia = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_meia : "";
 
                     this.form.parecer_tecnica.indicado_area = data.parecer_tecnica ? data.parecer_tecnica.indicado_area : "";
+
+                    //Dados Admissão
+                    if (!admissao.dados_admissoes){
+                        this.form.admissao.dados_admissoes = {
+                            'ctps_numero': '',
+                            'ctps_serie': '',
+                            'ctps_data_emissao': '',
+                            'titulo_eleitor_numero': '',
+                            'titulo_eleitor_sessao': '',
+                            'titulo_eleitor_zona': '',
+                        }
+                    }
 
                     this.tituloJanela = `#${data.feedback.id} Entrevista - ${data.feedback.curriculo.nome}`;
                     this.cadastrando = true;

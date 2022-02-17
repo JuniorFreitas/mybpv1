@@ -109,6 +109,7 @@ use MasterTag\DataHora;
  * @property-read int|null $foto_perfil_count
  * @property int|null $gestor
  * @method static Builder|User whereGestor($value)
+ * @property-read \App\Models\Cliente|null $DadosEmpresa
  */
 class User extends Authenticatable
 {
