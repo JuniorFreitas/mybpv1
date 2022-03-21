@@ -195,6 +195,7 @@ class User extends Authenticatable
     public const FUNCIONARIO = "Funcionario";
     public const EMPRESA = "Empresa";
     public const GESTOR = "Gestor";
+    public const CANDIDATO = "Candidato";
 
 
     public static function getUser($fields = null)
@@ -357,14 +358,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(UsuarioConta::class, 'user_id', 'id');
     }
-
-    protected static function booted()
-    {
-        static::created(function ($model) {
-            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
-        });
-        static::updated(function ($model) {
-            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
-        });
-    }
+//
+//    protected static function booted()
+//    {
+//        static::created(function ($model) {
+//            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
+//        });
+//        static::updated(function ($model) {
+//            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
+//        });
+//    }
 }

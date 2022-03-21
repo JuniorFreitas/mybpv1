@@ -26,7 +26,7 @@ class Escolaridade extends Model
     use HasFactory, LogsActivity;
 
     protected static $logFillable = true;
-    protected static $logName = 'escolaridade';
+    protected static $logName = 'escolaridades';
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
 
@@ -47,6 +47,7 @@ class Escolaridade extends Model
 
     protected $fillable = ['tipo'];
     protected $casts = ['id' => 'int', 'tipo' => 'string'];
+    protected $table = 'escolaridades';
 
     public function getTipoAttribute()
     {
