@@ -26,17 +26,17 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4">
-                        <label>Definição</label>
-                        <select class="form-control" v-model="obj.definicao" :disabled="!obj.novo"
-                                onchange="valida_campo_vazio(this,1)"
-                                onblur="valida_campo_vazio(this,1)">
-                            <option value="">Selecione ...</option>
-                            <option v-for="item in definicao" :value="item">
-                                {{ item }}
-                            </option>
-                        </select>
-                    </div>
+<!--                    <div class="col-md-4">-->
+<!--                        <label>Definição</label>-->
+<!--                        <select class="form-control" v-model="obj.definicao" :disabled="!obj.novo"-->
+<!--                                onchange="valida_campo_vazio(this,1)"-->
+<!--                                onblur="valida_campo_vazio(this,1)">-->
+<!--                            <option value="">Selecione ...</option>-->
+<!--                            <option v-for="item in definicao" :value="item">-->
+<!--                                {{ item }}-->
+<!--                            </option>-->
+<!--                        </select>-->
+<!--                    </div>-->
 
                     <div class="col-md-4">
                         <label>Causa</label>
