@@ -11,8 +11,8 @@ const app = new Vue({
         curriculo: null,
 
         formUser: {
-            login: 'carlosclaymerson3@gmail.com',
-            password: '21091978',
+            login: '',
+            password: '',
         }
     },
     mounted() {

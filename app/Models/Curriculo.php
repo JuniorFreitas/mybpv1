@@ -204,6 +204,9 @@ class Curriculo extends Model
         "datalido",
         "filiacao_pai",
         "filiacao_mae",
+        'disponibilidade_sabado',
+        'disponibilidade_domingo',
+        'sexo',
     ];
     protected $casts = [
         "id" => "int",
@@ -240,11 +243,15 @@ class Curriculo extends Model
         "filiacao_mae" => "string",
         'created_at' => 'date:d/m/Y \\à\\s H:m\\h',
         'updated_at' => 'date:d/m/Y \\à\\s H:m\\h',
+        'disponibilidade_sabado' => 'boolean',
+        'disponibilidade_domingo' => 'boolean',
+        'sexo' => 'string',
     ];
 
     protected $appends = ['idade', 'endereco_completo', 'rg_format'];
 
-    protected function serializeDate(DateTimeInterface $date) {
+    protected function serializeDate(DateTimeInterface $date)
+    {
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -535,16 +542,16 @@ class Curriculo extends Model
     }
 
     //Scopo de ClienteID (Empresa)
-    protected static function booted()
-    {
-        static::updating(function ($model) {
-            $model->User->find($model->id)->update([
-                'nome' => $model->nome,
-                'login' => $model->email,
-            ]);
-        });
-
-        static::addGlobalScope(new ScopeEmpresa);
-    }
+//    protected static function booted()
+//    {
+//        static::updating(function ($model) {
+//            $model->User->find($model->id)->update([
+//                'nome' => $model->nome,
+//                'login' => $model->email,
+//            ]);
+//        });
+//
+//        static::addGlobalScope(new ScopeEmpresa);
+//    }
 
 }

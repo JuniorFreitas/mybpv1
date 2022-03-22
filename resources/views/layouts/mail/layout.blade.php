@@ -108,7 +108,7 @@
                 <div style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555">
                     <div style="background: #f3f3f3; padding: 13px; line-height: 37px; border-radius: 9px;">
                         <div style="text-align: center">
-                            <strong style="text-transform: uppercase; color: #072433">BPSE-Business Partners Serviços
+                            <strong style="text-transform: uppercase; color: #072433">Sistema Integrado MYBP - Business Partners Serviços
                                 Empresariais</strong>
                         </div>
                         <img src="https://sgi.bpse.com.br/imagens/icons/location.png"
