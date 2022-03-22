@@ -3,19 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Arquivo;
+use App\Models\Cliente;
+use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
 use App\Models\User;
+use Barryvdh\DomPDF\PDF;
 use DB;
 use Illuminate\Http\Request;
+use MasterTag\DataHora;
 
 class DossieController extends Controller
 {
 
-    public function show(Request $request,  $feedback)
+    public function show(Request $request, $feedback)
     {
         $feedback_id = $feedback;
 
-        $feedback = FeedbackCurriculo::select('id','curriculo_id')->whereId($feedback_id)->with(
+        $feedback = FeedbackCurriculo::select('id', 'curriculo_id')->whereId($feedback_id)->with(
             'DocSelecao',
             'DocChecklist',
             'FichaRegistrada',
@@ -78,7 +82,7 @@ class DossieController extends Controller
         return $feedback;
     }
 
-    public function store(Request $request,  $feedback)
+    public function store(Request $request, $feedback)
     {
 
         $feedback = FeedbackCurriculo::whereId($feedback)->first();
@@ -802,4 +806,20 @@ class DossieController extends Controller
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_DOSSIE, $arquivo);
     }
+
+//    DOWNLOAD MODELOS DE IMPRESSÃO COM OS DADOS DOS FUNCIONÁRIOS
+
+    public function downloadModelo($tipo_modelo, $curriculo_id)
+    {
+        $dados = Curriculo::whereId($curriculo_id)->with('User.DadosEmpresa','FeedBack.Admissao.DadosAdmissoes')->first();
+
+        $cliente = Cliente::whereId($dados->User->empresa_id)->first();
+
+        $pdf = \PDF::loadView('pdf.historico.dossie.'.$tipo_modelo, compact('dados','cliente'));
+        $pdf->setPaper('A4');
+
+        return $pdf->stream($tipo_modelo . (new DataHora())->nomeUnico() . ".pdf");
+    }
+
+
 }

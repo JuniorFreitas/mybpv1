@@ -29,6 +29,9 @@
                         :model-delete="form.doc_checklistDel" :url="urlAnexoUpload"
                         @onprogresso="anexoUploadAndamento=true"
                         @onfinalizado="anexoUploadAndamento=false"></upload>
+                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('docchecklist')">
+                    <span class="fas fa-file-pdf"></span> Baixar Modelo
+                </button>
             </fieldset>
 
             <fieldset>
@@ -57,6 +60,9 @@
                         :model-delete="form.contrato_trabalho_assinadoDel" :url="urlAnexoUpload"
                         @onprogresso="anexoUploadAndamento=true"
                         @onfinalizado="anexoUploadAndamento=false"></upload>
+                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('contratotrabalhoassinado')">
+                    <span class="fas fa-file-pdf"></span> Baixar Modelo
+                </button>
             </fieldset>
 
             <fieldset>
@@ -71,6 +77,9 @@
                         :model-delete="form.termo_confiabilidadeDel" :url="urlAnexoUpload"
                         @onprogresso="anexoUploadAndamento=true"
                         @onfinalizado="anexoUploadAndamento=false"></upload>
+                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('termoconfiabilidade')">
+                    <span class="fas fa-file-pdf"></span> Baixar Modelo
+                </button>
             </fieldset>
 
             <fieldset>
@@ -85,6 +94,9 @@
                         :model-delete="form.vale_transporte_assinadoDel" :url="urlAnexoUpload"
                         @onprogresso="anexoUploadAndamento=true"
                         @onfinalizado="anexoUploadAndamento=false"></upload>
+                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('valetransporte')">
+                    <span class="fas fa-file-pdf"></span> Baixar Modelo
+                </button>
             </fieldset>
 
             <fieldset>
@@ -99,6 +111,9 @@
                         :model-delete="form.acordo_horaDel" :url="urlAnexoUpload"
                         @onprogresso="anexoUploadAndamento=true"
                         @onfinalizado="anexoUploadAndamento=false"></upload>
+                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('acordocompensacaohoras')">
+                    <span class="fas fa-file-pdf"></span> Baixar Modelo
+                </button>
             </fieldset>
 
             <fieldset>
@@ -113,6 +128,9 @@
                         :model-delete="form.salario_familia_assinadoDel" :url="urlAnexoUpload"
                         @onprogresso="anexoUploadAndamento=true"
                         @onfinalizado="anexoUploadAndamento=false"></upload>
+                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('termosalariofamilia')">
+                    <span class="fas fa-file-pdf"></span> Baixar Modelo
+                </button>
             </fieldset>
 
             <fieldset>
@@ -127,6 +145,9 @@
                         :model-delete="form.declaracao_dependentes_impostoDel" :url="urlAnexoUpload"
                         @onprogresso="anexoUploadAndamento=true"
                         @onfinalizado="anexoUploadAndamento=false"></upload>
+                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('declaracaodependentesimposto')">
+                    <span class="fas fa-file-pdf"></span> Baixar Modelo
+                </button>
             </fieldset>
 
             <fieldset>
@@ -434,7 +455,6 @@ export default {
 
             hoje: '',
 
-
             form: {
                 // foto_tres: [], //FOTO 3X4
                 // foto_tresDel: [],
@@ -564,7 +584,11 @@ export default {
                 this.form = data;
                 this.preload = false;
             })
-        }
+        },
+        modelo(tipo_modelo) {
+            let link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.curriculo_id}`;
+            open(link, 'blank');
+        },
     }
 }
 </script>

@@ -526,6 +526,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 //        Route::get('historico/dossie/{feedback_id}/pdf', [\App\Http\Controllers\DossieController::class,'medidasAdministrativasPDF'])->name('pdfDossie');
         Route::post('historico/dossie/{feedback}', [\App\Http\Controllers\DossieController::class, 'store'])->name('dossie.store');
         Route::get('historico/dossie/{feedback}', [\App\Http\Controllers\DossieController::class, 'show'])->name('dossie.show');
+        Route::get('historico/dossie/{tipo_modelo}/{curriculo_id}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('dossie.downloadModelo');
 
         //Rotas Avaliacao Anual
         Route::get('historico/avaliacao-anual/{feedback}', [\App\Http\Controllers\AvaliacaoAnualFeedbackController::class, 'show'])->name('showAvaliacaoAnual');

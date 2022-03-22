@@ -169,6 +169,8 @@ mix.js('resources/js/app.js', 'public/js')
     //Pesquisa Clima
     .js('resources/js/pesquisaclima/app.js', 'public/js/pesquisaclima/')
 
+    .js('resources/js/vagas-abertas/app.js', 'public/js/vagas-abertas/')
+
     //controle de exames
     .js('resources/js/g/controle-exames/app.js', 'public/js/g/controle-exames/')
 
