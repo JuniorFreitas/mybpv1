@@ -98,7 +98,7 @@ class HistoricoController extends Controller
             'medidas_administrativas.*.solicitante' => 'required',
             'medidas_administrativas.*.tipo' => 'required',
             'medidas_administrativas.*.causa' => 'required',
-            'medidas_administrativas.*.definicao' => 'required',
+//            'medidas_administrativas.*.definicao' => 'required',
             'medidas_administrativas.*.motivo' => 'required',
             'medidas_administrativas.*.data_solicitacao' => 'required',
         ]);
