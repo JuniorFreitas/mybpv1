@@ -80,7 +80,7 @@
 
                             <div class="col-12 col-md-4">
                                 <label>Data da saída</label>
-                                <datepicker label="" class="corrigiDatepicker"  v-model="form.data_saida"
+                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_saida"
                                             :disabled="visualizar"></datepicker>
                             </div>
 
@@ -104,7 +104,8 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-4 mt-4 mb-4" v-if="visualizar">
-                                <legend>Solicitação feita por: {{ form.solicitante_nome }} {{form.created_at}}</legend>
+                                <legend>Solicitação feita por: {{ form.solicitante_nome }} {{ form.created_at }}
+                                </legend>
                             </div>
                         </div>
 
@@ -161,6 +162,28 @@
                         v-show="aprovando && !preload" @click.prevent="aprovarGestor">
                     <i class="fa fa-save"></i> Salvar
                 </button>
+            </template>
+        </modal>
+
+        <modal id="janelaAtualizaStatus" titulo="Deseja APROVAR ou REPROVAR todos os colaboradores selecionados?"
+               :centralizada="true" label-fechar="Fechar">
+            <template slot="conteudo">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Observação</label>
+                        <textarea class="form-control"
+                                  v-model="formConfirmacao.obs_aprovacao"
+                                  cols="5" rows="5"></textarea>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="button" class="btn btn-sm btn-success" @click="confirmaAtualizacaoStatus('aprovado')">
+                        APROVAR
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" @click="confirmaAtualizacaoStatus('reprovado')">
+                        REPROVAR
+                    </button>
+                </div>
             </template>
         </modal>
 
@@ -270,6 +293,14 @@
                         <i class="fa fa-files-pdf"></i> Gerar Excel
                     </button>
                 </form>
+
+                <button type="submit" class="btn btn-sm btn-primary mr-1" v-show="selecionados.length > 0"
+                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        :disabled="selecionados.length === 0"
+                        data-toggle="modal"
+                        data-target="#janelaAtualizaStatus">
+                    Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
+                </button>
             </div>
         </fieldset>
 
@@ -293,6 +324,12 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
+                        <th class="text-center">
+                            <input type="checkbox"
+                                   :style="naoAprovados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                                   :disabled="naoAprovados.length === 0" :checked="tudoMarcado"
+                                   @click="selecionaTodos">
+                        </th>
                         <th>CÓD</th>
                         <th>Centro de custo</th>
                         <th>Colaborador</th>
@@ -312,6 +349,21 @@
                         : item.status_aprovacao === 'reprovado' ? 'table-danger'
                         : item.status_aprovacao === 'aprovado' ? 'table-success'
                         : null">
+                        <td class="text-center">
+                            <label :for="item.id">
+                                <input
+                                    type="checkbox"
+                                    v-model="selecionados"
+                                    :value="item.id"
+                                    :id="item.id"
+                                    :style="!item.status_aprovacao ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                    :title="item.status_aprovacao ? null : 'Não possui aprovação'"
+                                    v-if="!item.status_aprovacao"
+                                >
+                                <input type="checkbox" v-else disabled="disabled" title="Status já atualizado">
+
+                            </label>
+                        </td>
                         <td>
                             {{ item.id }}
                         </td>
@@ -325,7 +377,7 @@
                         </td>
 
                         <td>
-                            {{item.colaborador.feed_back.admissao.data_admissao}}
+                            {{ item.colaborador.feed_back.admissao.data_admissao }}
                         </td>
 
                         <td>
@@ -402,7 +454,6 @@
 <script>
 import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
-import {now} from "lodash/date";
 
 export default {
     data() {
@@ -417,6 +468,17 @@ export default {
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
             caminho_gestor: `autocomplete/todos-gestores-ativos`,
+
+            selecionados: [],
+            selecionaTudo: false,
+
+            formConfirmacao: {
+                selecionados: [],
+                obs_aprovacao: '',
+                status_aprovacao: '',
+            },
+            formConfirmacaoDefault: null,
+
 
             form: {
 
@@ -489,11 +551,38 @@ export default {
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
+        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao) //copia
         this.atualizar();
         this.periodosAquisitivos();
     },
     computed: {
+        naoAprovados() {
+            return this.lista.filter(item => {
+                if (item.status_aprovacao === null) {
+                    return item.id
+                }
+            })
+        },
+        tudoMarcado() {
+            let totalAprovado = this.naoAprovados.length
+            let totalEncontrado = 0
 
+            if (totalAprovado === 0) {
+                return false
+            }
+
+            this.naoAprovados.forEach(item => {
+                let id = item.id
+                if (this.selecionados.indexOf(id) >= 0) {
+                    totalEncontrado++
+                } else {
+                    return false
+                }
+            })
+            let resultado = totalAprovado === totalEncontrado
+            this.selecionaTudo = resultado
+            return resultado
+        },
         qntDias() {
             let total = 0;
 
@@ -558,7 +647,44 @@ export default {
 
     },
     methods: {
+        selecionaTodos() {
+            this.selecionaTudo = !this.selecionaTudo
+            if (this.selecionaTudo) {
+                this.naoAprovados.map(item => {
+                    let id = item.id
+                    if (this.selecionados.indexOf(id) === -1) {
+                        this.selecionados.push(id)
+                    }
+                })
+            } else {
+                this.naoAprovados.map(item => {
+                    let id = item.id
+                    let index = this.selecionados.indexOf(id)
+                    if (index >= 0) {
+                        this.selecionados.splice(index, 1)
+                    }
+                })
+            }
+        },
+        confirmaAtualizacaoStatus(confirmacao) {
 
+            this.preloadAtualizacao = true;
+            this.formConfirmacao.status_aprovacao = confirmacao;
+            this.formConfirmacao.selecionados.push(this.selecionados)
+
+            axios.post(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/atualizacao-status`, this.formConfirmacao)
+                .then(res => {
+                    this.preloadAtualizacao = false;
+                    $('#janelaAtualizaStatus').modal('hide');
+                    mostraSucesso('Status das Férias atualizado com sucesso!');
+                    this.selecionados = [];
+                    this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault) //copia
+                    this.$refs.componente.buscar();
+                })
+                .catch(error => {
+                    this.preloadAtualizacao = false;
+                });
+        },
         listaCentroCusto() {
             axios.post(`${URL_PUBLICO}/centro-custos/`)
                 .then(res => {

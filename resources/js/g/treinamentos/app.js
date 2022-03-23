@@ -287,7 +287,6 @@ const app = new Vue({
         },
 
         abriJanelaEnviar(obj) {
-            console.log(obj)
             this.formEnviar = _.cloneDeep(this.formEnviarDefault) //copia
             formReset()
             setupCampo()
