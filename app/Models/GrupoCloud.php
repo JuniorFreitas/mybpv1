@@ -77,6 +77,10 @@ class GrupoCloud extends Model
         return $this->belongsToMany(HabilidadeCloud::class, 'grupo_habilidade_cloud', 'grupo_cloud_id', 'habilidade_cloud_id');
     }
 
+    public function Users(){
+        return $this->belongsToMany(User::class, 'user_grupo_cloud', 'grupo_cloud_id', 'user_id');
+    }
+
     public function Usuarios()
     {
         return $this->hasMany(User::class, 'grupo_cloud_id', 'id');

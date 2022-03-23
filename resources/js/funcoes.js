@@ -14,7 +14,7 @@ function errorResponseHandler(error) {
     // if has response show the error
     if (error.response) {
         if (AMBIENTE === 'dev') {
-            console.log(error.response)
+            // console.log(error.response)
         }
 
         if (error.response.status === 419) {

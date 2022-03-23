@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\GrupoCloud;
 use App\Models\HabilidadeCloud;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CloudConfiguracaoController extends Controller
 {
@@ -45,7 +47,6 @@ class CloudConfiguracaoController extends Controller
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:2|unique:grupo_clouds,nome',
             'descricao' => 'required|min:2',
-            'empresa_id' => 'required',
             'ativo' => 'required|boolean',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -109,12 +110,10 @@ class CloudConfiguracaoController extends Controller
         $this->authorize('cloud_configuracoes_update');
 
         $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:2|unique:grupo_clouds,nome,' . $grupocloud->id,
             'descricao' => 'required|min:3',
-            'empresa_id' => 'required',
             'ativo' => 'required|boolean',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -132,6 +131,15 @@ class CloudConfiguracaoController extends Controller
                     }
                 })->pluck('id');
                 $grupocloud->habilidades()->sync($habilidades);
+
+                foreach ($dados['usuariosDelete'] as $id) {
+                    User::find($id)->update(['grupo_cloud_id' => null]);
+                }
+
+                foreach ($dados['usuarios'] as $linha) {
+                    User::find($linha['id'])->update(['grupo_cloud_id' => $grupocloud->id]);
+                }
+
                 \DB::commit();
                 return response()->json([], 201);
             } catch (\ErrorException $e) {

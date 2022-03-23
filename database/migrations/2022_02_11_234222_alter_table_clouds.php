@@ -15,6 +15,8 @@ class AlterTableClouds extends Migration
     {
         Schema::table('clouds', function (Blueprint $table) {
             $table->unsignedBigInteger('empresa_id')->after('id');
+            $table->boolean('ativo')
+            ;
             $table->foreign('empresa_id')->references('id')->on('clientes')->cascadeOnDelete();
         });
     }

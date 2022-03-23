@@ -50,7 +50,7 @@ Route::group(['prefix' => '3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9t
     Route::get('parecer_rota_transporte/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel');
     Route::get('parecer_entrevista_tecnica/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel');
     Route::get('parecer_teste_pratico/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerTestePraticoController::class, 'export'])->name('parecer_teste_pratico.excel');
-    Route::post('portaria/export', 'PortariaController@export')->name('portaria.excel');
+    Route::post('portaria/export', [\App\Http\Controllers\PortariaController::class, 'export'])->name('portaria.excel');
 
     /* Route::get('resultado_integrado/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'ResultadoIntegradoController@export')->name('resultado_integrado.excel');
      Route::get('admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'AdmissaoController@export')->name('admissao.excel');
@@ -94,6 +94,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('colaboradorIntermitente', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitente'])->name('colaboradorIntermitente');
         Route::get('colaboradores', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradores'])->name('colaboradores');
         Route::get('cargosEmpresa', [\App\Http\Controllers\AutoCompletesController::class, 'cargosEmpresa'])->name('cargosEmpresa');
+        Route::get('buscaUsuariosAtivos', [\App\Http\Controllers\AutoCompletesController::class, 'buscaUsuariosAtivos'])->name('buscaUsuariosAtivos');
 //        Route::get('colaboradorIntermitente/{cliente_id}', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitenteCliente'])->name('colaboradorIntermitenteCliente');
 
         Route::get('funcionarios', [\App\Http\Controllers\AutoCompletesController::class, 'funcionarios'])->name('funcionarios');
@@ -609,6 +610,31 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('cloud/{id}/{titulo}', [\App\Http\Controllers\CloudController::class, 'getSingle'])->name('cloud.single'); // manter essa rota antes do resource
         Route::get('cloud/editar/pasta/{item}', [\App\Http\Controllers\CloudController::class, 'editarPasta'])->name('cloud.editarPasta'); // manter essa rota antes do resource
         Route::resource('cloud', \App\Http\Controllers\CloudController::class)->middleware('can:cloud');
+
+        Route::group(['as' => 'cadastro.', 'prefix' => 'clouds'], function () {
+            Route::get('cadastro', [\App\Http\Controllers\CloudController::class, 'indexCadastro'])->name('indexCadastro')
+//                ->middleware('can:cloud_cadastro')
+            ;
+            Route::post('cadastro/atualizar', [\App\Http\Controllers\CloudController::class, 'listarClouds'])->name('listarClouds')
+//                ->middleware('can:cloud_cadastro')
+            ;
+            Route::post('cadastro', [\App\Http\Controllers\CloudController::class, 'storeCloud'])->name('storeCloud')
+//                ->middleware('can:cloud_cadastro')
+            ;
+            Route::get('cadastro/{cloud}/editar', [\App\Http\Controllers\CloudController::class, 'edit'])->name('edit')
+//                ->middleware('can:cloud_cadastro')
+            ;
+
+            Route::put('cadastro/{cloud}', [\App\Http\Controllers\CloudController::class, 'updateCloud'])->name('updateCloud')
+//                ->middleware('can:cloud_cadastro')
+            ;
+
+            Route::put('cadastro/{cloud}/ativa-desativa', [\App\Http\Controllers\CloudController::class, 'ativaDesativa'])->name('ativaDesativa')
+//                ->middleware('can:cloud_cadastro')
+            ;
+
+
+        });
 
         Route::group(['as' => 'configuracoes.', 'prefix' => 'clouds'], function () {
             Route::post('configuracoes/atualizar', [\App\Http\Controllers\CloudConfiguracaoController::class, 'atualizar'])->name('atualizar')->middleware('can:cloud_configuracoes');

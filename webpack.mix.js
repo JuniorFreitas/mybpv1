@@ -146,6 +146,7 @@ mix.js('resources/js/app.js', 'public/js')
     //Cloud
     .js('resources/js/g/cloud/app.js', 'public/js/g/cloud/')
     .js('resources/js/g/cloud/configuracoes/app.js', 'public/js/g/cloud/configuracoes/')
+    .js('resources/js/g/cloud/cadastro/app.js', 'public/js/g/cloud/cadastro/')
 
     //Relatórios
     .js('resources/js/g/relatorios/controleusuarios/app.js', 'public/js/g/relatorios/controleusuarios/')

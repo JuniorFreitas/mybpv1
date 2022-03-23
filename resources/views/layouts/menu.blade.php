@@ -512,13 +512,23 @@
             <span>CLOUD</span>
         </a>
         <ul class="sub-menu" aria-expanded="false">
-            @foreach(auth()->user()->Clouds as $cloud)
+
+
+            @foreach(auth()->user()->CloudsAtivo as $cloud)
                 <li>
                     <a href="{{route('g.cloud.cloud.single', [$cloud->id, $cloud->nome])}}" key="{{$cloud->nome}}">
                         {{$cloud->nome}}
                     </a>
                 </li>
             @endforeach
+
+{{--            @can('cloud_configuracoes')--}}
+                <li>
+                    <a href="{{ route('g.cloud.cadastro.indexCadastro') }}" key="cloud_cadastro">
+                        Cadastro
+                    </a>
+                </li>
+{{--            @endcan--}}
 
             @can('cloud_configuracoes')
                 <li>

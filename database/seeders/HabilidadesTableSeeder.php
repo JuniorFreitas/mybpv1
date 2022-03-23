@@ -17,226 +17,228 @@ class HabilidadesTableSeeder extends Seeder
     public function run()
     {
         //Habilidades------------------------------
-      $lista[]=['nome'=>'habilidades','descricao'=> 'Acessar rota/menu habilidades'];
-      $lista[]=['nome'=>'habilidades_insert','descricao'=> 'Pode inserir uma nova habilidade'];
-      $lista[]=['nome'=>'habilidades_update','descricao'=> 'Pode alterar uma habilidade'];
-      $lista[]=['nome'=>'habilidades_delete','descricao'=> 'Pode apagar uma habilidade'];
+        $lista[] = ['nome' => 'habilidades', 'descricao' => 'Acessar rota/menu habilidades'];
+        $lista[] = ['nome' => 'habilidades_insert', 'descricao' => 'Pode inserir uma nova habilidade'];
+        $lista[] = ['nome' => 'habilidades_update', 'descricao' => 'Pode alterar uma habilidade'];
+        $lista[] = ['nome' => 'habilidades_delete', 'descricao' => 'Pode apagar uma habilidade'];
 
-      //Papeis------------------------------
-      $lista[]=['nome'=>'papel','descricao'=> 'Acessar rota/menu papeis'];
-      $lista[]=['nome'=>'papel_insert','descricao'=> 'Pode cadastrar um papel'];
-      $lista[]=['nome'=>'papel_update','descricao'=> 'Pode alterar um papel'];
-      $lista[]=['nome'=>'papel_delete','descricao'=> 'Pode apagar um papel'];
+        //Papeis------------------------------
+        $lista[] = ['nome' => 'papel', 'descricao' => 'Acessar rota/menu papeis'];
+        $lista[] = ['nome' => 'papel_insert', 'descricao' => 'Pode cadastrar um papel'];
+        $lista[] = ['nome' => 'papel_update', 'descricao' => 'Pode alterar um papel'];
+        $lista[] = ['nome' => 'papel_delete', 'descricao' => 'Pode apagar um papel'];
 
-      //Usuários------------------------------
-      $lista[]=['nome'=>'usuarios','descricao'=> 'Acessar rota/menu usuários'];
-      $lista[]=['nome'=>'usuarios_insert','descricao'=> 'Pode cadastrar um usuário'];
-      $lista[]=['nome'=>'usuarios_update','descricao'=> 'Pode alterar um usuário'];
-      $lista[]=['nome'=>'usuarios_delete','descricao'=> 'Pode apagar um usuário'];
-      $lista[]=['nome'=>'alterar-senha','descricao'=> 'Pode alterar sua propria senha de acesso ao sistema'];
+        //Usuários------------------------------
+        $lista[] = ['nome' => 'usuarios', 'descricao' => 'Acessar rota/menu usuários'];
+        $lista[] = ['nome' => 'usuarios_insert', 'descricao' => 'Pode cadastrar um usuário'];
+        $lista[] = ['nome' => 'usuarios_update', 'descricao' => 'Pode alterar um usuário'];
+        $lista[] = ['nome' => 'usuarios_delete', 'descricao' => 'Pode apagar um usuário'];
+        $lista[] = ['nome' => 'alterar-senha', 'descricao' => 'Pode alterar sua propria senha de acesso ao sistema'];
 
-      //Clientes------------------------------
-      $lista[]=['nome'=>'clientes','descricao'=> 'Acessar rota/menu clientes'];
-      $lista[]=['nome'=>'clientes_insert','descricao'=> 'Pode cadastrar um cliente'];
-      $lista[]=['nome'=>'clientes_update','descricao'=> 'Pode alterar um cliente'];
-      $lista[]=['nome'=>'clientes_delete','descricao'=> 'Pode apagar um cliente'];
+        //Clientes------------------------------
+        $lista[] = ['nome' => 'clientes', 'descricao' => 'Acessar rota/menu clientes'];
+        $lista[] = ['nome' => 'clientes_insert', 'descricao' => 'Pode cadastrar um cliente'];
+        $lista[] = ['nome' => 'clientes_update', 'descricao' => 'Pode alterar um cliente'];
+        $lista[] = ['nome' => 'clientes_delete', 'descricao' => 'Pode apagar um cliente'];
 
-      //Curriculos------------------------------
-      $lista[] = ['nome' => 'curriculos', 'descricao' => 'Acessar rota/menu curriculos'];
-      $lista[] = ['nome' => 'curriculos_insert', 'descricao' => 'Pode cadastrar um curriculo'];
-      $lista[] = ['nome' => 'curriculos_update', 'descricao' => 'Pode alterar um curriculo'];
-      $lista[] = ['nome' => 'curriculos_delete', 'descricao' => 'Pode apagar um curriculo'];
+        //Curriculos------------------------------
+        $lista[] = ['nome' => 'curriculos', 'descricao' => 'Acessar rota/menu curriculos'];
+        $lista[] = ['nome' => 'curriculos_insert', 'descricao' => 'Pode cadastrar um curriculo'];
+        $lista[] = ['nome' => 'curriculos_update', 'descricao' => 'Pode alterar um curriculo'];
+        $lista[] = ['nome' => 'curriculos_delete', 'descricao' => 'Pode apagar um curriculo'];
 
-      //FeedBack Curriculos------------------------------
-      $lista[] = ['nome' => 'feedback_curriculos', 'descricao' => 'Acessar rota/menu Feedback Curriculos'];
-      $lista[] = ['nome' => 'feedback_curriculos_insert', 'descricao' => 'Pode cadastrar um Feedback Curriculo'];
-      $lista[] = ['nome' => 'feedback_curriculos_update', 'descricao' => 'Pode alterar um Feedback Curriculo'];
-      $lista[] = ['nome' => 'feedback_curriculos_delete', 'descricao' => 'Pode apagar um Feedback Curriculo'];
+        //FeedBack Curriculos------------------------------
+        $lista[] = ['nome' => 'feedback_curriculos', 'descricao' => 'Acessar rota/menu Feedback Curriculos'];
+        $lista[] = ['nome' => 'feedback_curriculos_insert', 'descricao' => 'Pode cadastrar um Feedback Curriculo'];
+        $lista[] = ['nome' => 'feedback_curriculos_update', 'descricao' => 'Pode alterar um Feedback Curriculo'];
+        $lista[] = ['nome' => 'feedback_curriculos_delete', 'descricao' => 'Pode apagar um Feedback Curriculo'];
 
-      //ParecerRH------------------------------
-      $lista[] = ['nome' => 'parecer_rh', 'descricao' => 'Acessar rota/menu Parecer Rh'];
-      $lista[] = ['nome' => 'parecer_rh_insert', 'descricao' => 'Pode cadastrar um Parecer Rh'];
-      $lista[] = ['nome' => 'parecer_rh_update', 'descricao' => 'Pode alterar um Parecer Rh'];
-      $lista[] = ['nome' => 'parecer_rh_delete', 'descricao' => 'Pode apagar um Parecer Rh'];
+        //ParecerRH------------------------------
+        $lista[] = ['nome' => 'parecer_rh', 'descricao' => 'Acessar rota/menu Parecer Rh'];
+        $lista[] = ['nome' => 'parecer_rh_insert', 'descricao' => 'Pode cadastrar um Parecer Rh'];
+        $lista[] = ['nome' => 'parecer_rh_update', 'descricao' => 'Pode alterar um Parecer Rh'];
+        $lista[] = ['nome' => 'parecer_rh_delete', 'descricao' => 'Pode apagar um Parecer Rh'];
 
-      //ParecerRota------------------------------
-      $lista[] = ['nome' => 'parecer_rota', 'descricao' => 'Acessar rota/menu Parecer Rota Transporte'];
-      $lista[] = ['nome' => 'parecer_rota_insert', 'descricao' => 'Pode cadastrar um Parecer Rota Transporte'];
-      $lista[] = ['nome' => 'parecer_rota_update', 'descricao' => 'Pode alterar um Parecer Rota Transporte'];
-      $lista[] = ['nome' => 'parecer_rota_delete', 'descricao' => 'Pode apagar um Parecer Rota Transporte'];
+        //ParecerRota------------------------------
+        $lista[] = ['nome' => 'parecer_rota', 'descricao' => 'Acessar rota/menu Parecer Rota Transporte'];
+        $lista[] = ['nome' => 'parecer_rota_insert', 'descricao' => 'Pode cadastrar um Parecer Rota Transporte'];
+        $lista[] = ['nome' => 'parecer_rota_update', 'descricao' => 'Pode alterar um Parecer Rota Transporte'];
+        $lista[] = ['nome' => 'parecer_rota_delete', 'descricao' => 'Pode apagar um Parecer Rota Transporte'];
 
-      //ParecerTestePratico------------------------------
-      $lista[] = ['nome' => 'parecer_teste_pratico', 'descricao' => 'Acessar rota/menu Parecer Teste Prático'];
-      $lista[] = ['nome' => 'parecer_teste_pratico_insert', 'descricao' => 'Pode cadastrar um Parecer Teste Prático'];
-      $lista[] = ['nome' => 'parecer_teste_pratico_update', 'descricao' => 'Pode alterar um Parecer Teste Prático'];
-      $lista[] = ['nome' => 'parecer_teste_pratico_delete', 'descricao' => 'Pode apagar um Parecer Teste Prático'];
+        //ParecerTestePratico------------------------------
+        $lista[] = ['nome' => 'parecer_teste_pratico', 'descricao' => 'Acessar rota/menu Parecer Teste Prático'];
+        $lista[] = ['nome' => 'parecer_teste_pratico_insert', 'descricao' => 'Pode cadastrar um Parecer Teste Prático'];
+        $lista[] = ['nome' => 'parecer_teste_pratico_update', 'descricao' => 'Pode alterar um Parecer Teste Prático'];
+        $lista[] = ['nome' => 'parecer_teste_pratico_delete', 'descricao' => 'Pode apagar um Parecer Teste Prático'];
 
-      //ParecerEntrevista------------------------------
-      $lista[] = ['nome' => 'parecer_entrevista', 'descricao' => 'Acessar rota/menu Parecer Entrevistas Técnicas'];
-      $lista[] = ['nome' => 'parecer_entrevista_insert', 'descricao' => 'Pode cadastrar um Parecer Entrevista Técnica'];
-      $lista[] = ['nome' => 'parecer_entrevista_update', 'descricao' => 'Pode alterar um Parecer Entrevista Técnica'];
-      $lista[] = ['nome' => 'parecer_entrevista_delete', 'descricao' => 'Pode apagar um Parecer Entrevista Técnica'];
+        //ParecerEntrevista------------------------------
+        $lista[] = ['nome' => 'parecer_entrevista', 'descricao' => 'Acessar rota/menu Parecer Entrevistas Técnicas'];
+        $lista[] = ['nome' => 'parecer_entrevista_insert', 'descricao' => 'Pode cadastrar um Parecer Entrevista Técnica'];
+        $lista[] = ['nome' => 'parecer_entrevista_update', 'descricao' => 'Pode alterar um Parecer Entrevista Técnica'];
+        $lista[] = ['nome' => 'parecer_entrevista_delete', 'descricao' => 'Pode apagar um Parecer Entrevista Técnica'];
 
-      //Resultado Integrado------------------------------
-      $lista[] = ['nome' => 'resultado_integrado', 'descricao' => 'Acessar rota/menu Resultados Integrados'];
-      $lista[] = ['nome' => 'resultado_integrado_insert', 'descricao' => 'Pode cadastrar um Resultado'];
-      $lista[] = ['nome' => 'resultado_integrado_update', 'descricao' => 'Pode alterar um Resultado'];
-      $lista[] = ['nome' => 'resultado_integrado_delete', 'descricao' => 'Pode apagar um Resultado'];
+        //Resultado Integrado------------------------------
+        $lista[] = ['nome' => 'resultado_integrado', 'descricao' => 'Acessar rota/menu Resultados Integrados'];
+        $lista[] = ['nome' => 'resultado_integrado_insert', 'descricao' => 'Pode cadastrar um Resultado'];
+        $lista[] = ['nome' => 'resultado_integrado_update', 'descricao' => 'Pode alterar um Resultado'];
+        $lista[] = ['nome' => 'resultado_integrado_delete', 'descricao' => 'Pode apagar um Resultado'];
 
-      //Admissão------------------------------
-      $lista[] = ['nome' => 'admissao', 'descricao' => 'Acessar rota/menu Admissões'];
-      $lista[] = ['nome' => 'admissao_insert', 'descricao' => 'Pode cadastrar um Admissão'];
-      $lista[] = ['nome' => 'admissao_update', 'descricao' => 'Pode alterar um Admissão'];
-      $lista[] = ['nome' => 'admissao_delete', 'descricao' => 'Pode apagar um Admissão'];
-
-
-
-      //Cloud------------------------------
-      $lista[] = ['nome' => 'cloud', 'descricao' => 'Acessar rota/menu Cloud'];
-      $lista[] = ['nome' => 'cloud_insert', 'descricao' => 'Pode cadastrar um Cloud'];
-      $lista[] = ['nome' => 'cloud_update', 'descricao' => 'Pode alterar um Cloud'];
-      $lista[] = ['nome' => 'cloud_delete', 'descricao' => 'Pode apagar um Cloud'];
-
-      //Cloud------------------------------
-      $lista[] = ['nome' => 'cloud_bpse', 'descricao' => 'Acessar rota/menu Cloud BPSE'];
-      $lista[] = ['nome' => 'cloud_bpse_insert', 'descricao' => 'Pode cadastrar um Cloud BPSE'];
-      $lista[] = ['nome' => 'cloud_bpse_update', 'descricao' => 'Pode alterar um Cloud BPSE'];
-      $lista[] = ['nome' => 'cloud_bpse_delete', 'descricao' => 'Pode apagar um Cloud BPSE'];
-
-      //Cloud------------------------------
-      $lista[] = ['nome' => 'cloud_clientes', 'descricao' => 'Acessar rota/menu Cloud Clientes'];
-      $lista[] = ['nome' => 'cloud_clientes_insert', 'descricao' => 'Pode cadastrar um Cloud Clientes'];
-      $lista[] = ['nome' => 'cloud_clientes_update', 'descricao' => 'Pode alterar um Cloud Clientes'];
-      $lista[] = ['nome' => 'cloud_clientes_delete', 'descricao' => 'Pode apagar um Cloud Clientes'];
-
-      //Cloud------------------------------
-      $lista[] = ['nome' => 'cloud_publica', 'descricao' => 'Acessar rota/menu Cloud Pública'];
-      $lista[] = ['nome' => 'cloud_publica_insert', 'descricao' => 'Pode cadastrar um Cloud Pública'];
-      $lista[] = ['nome' => 'cloud_publica_update', 'descricao' => 'Pode alterar um Cloud Pública'];
-      $lista[] = ['nome' => 'cloud_publica_delete', 'descricao' => 'Pode apagar um Cloud Pública'];
-
-      //Cloud------------------------------
-      $lista[] = ['nome' => 'cloud_configuracoes', 'descricao' => 'Acessar rota/menu Cloud Configurações'];
-      $lista[] = ['nome' => 'cloud_configuracoes_insert', 'descricao' => 'Pode cadastrar um Cloud Configurações'];
-      $lista[] = ['nome' => 'cloud_configuracoes_update', 'descricao' => 'Pode alterar um Cloud Configurações'];
-      $lista[] = ['nome' => 'cloud_configuracoes_delete', 'descricao' => 'Pode apagar um Cloud Configurações'];
-
-      //Galeria------------------------------
-      $lista[] = ['nome' => 'galeria_site', 'descricao' => 'Acessar rota/menu Site - Galeria'];
-      $lista[] = ['nome' => 'galeria_site_insert', 'descricao' => 'Pode cadastrar uma Galeria'];
-      $lista[] = ['nome' => 'galeria_site_update', 'descricao' => 'Pode alterar uma Galeria'];
-      $lista[] = ['nome' => 'galeria_site_delete', 'descricao' => 'Pode apagar uma Galeria'];
-
-      //Cartela Cliente------------------------------
-      $lista[] = ['nome' => 'cartela_cliente_site', 'descricao' => 'Acessar rota/menu Site - Cartela Cliente'];
-      $lista[] = ['nome' => 'cartela_cliente_site_insert', 'descricao' => 'Pode cadastrar uma Cartela Cliente'];
-      $lista[] = ['nome' => 'cartela_cliente_site_update', 'descricao' => 'Pode alterar uma Cartela Cliente'];
-      $lista[] = ['nome' => 'cartela_cliente_site_delete', 'descricao' => 'Pode apagar uma Cartela Cliente'];
-
-      //DEPOIMENTOS------------------------------
-      $lista[] = ['nome' => 'depoimento_site', 'descricao' => 'Acessar rota/menu Site - Depoimento'];
-      $lista[] = ['nome' => 'depoimento_site_insert', 'descricao' => 'Pode cadastrar um Depoimento'];
-      $lista[] = ['nome' => 'depoimento_site_update', 'descricao' => 'Pode alterar um Depoimento'];
-      $lista[] = ['nome' => 'depoimento_site_delete', 'descricao' => 'Pode apagar um Depoimento'];
+        //Admissão------------------------------
+        $lista[] = ['nome' => 'admissao', 'descricao' => 'Acessar rota/menu Admissões'];
+        $lista[] = ['nome' => 'admissao_insert', 'descricao' => 'Pode cadastrar um Admissão'];
+        $lista[] = ['nome' => 'admissao_update', 'descricao' => 'Pode alterar um Admissão'];
+        $lista[] = ['nome' => 'admissao_delete', 'descricao' => 'Pode apagar um Admissão'];
 
 
-      //Vagas------------------------------
-      $lista[] = ['nome' => 'vagas', 'descricao' => 'Acessar rota/menu Vagas'];
-      $lista[] = ['nome' => 'vagas_insert', 'descricao' => 'Pode cadastrar uma vaga'];
-      $lista[] = ['nome' => 'vagas_update', 'descricao' => 'Pode alterar uma vaga'];
+        //Cloud------------------------------
+        $lista[] = ['nome' => 'cloud', 'descricao' => 'Acessar rota/menu Cloud'];
+        $lista[] = ['nome' => 'cloud_insert', 'descricao' => 'Pode cadastrar um Cloud'];
+        $lista[] = ['nome' => 'cloud_update', 'descricao' => 'Pode alterar um Cloud'];
+        $lista[] = ['nome' => 'cloud_delete', 'descricao' => 'Pode apagar um Cloud'];
+
+        //Cloud------------------------------
+        $lista[] = ['nome' => 'cloud_bpse', 'descricao' => 'Acessar rota/menu Cloud BPSE'];
+        $lista[] = ['nome' => 'cloud_bpse_insert', 'descricao' => 'Pode cadastrar um Cloud BPSE'];
+        $lista[] = ['nome' => 'cloud_bpse_update', 'descricao' => 'Pode alterar um Cloud BPSE'];
+        $lista[] = ['nome' => 'cloud_bpse_delete', 'descricao' => 'Pode apagar um Cloud BPSE'];
+
+        //Cloud------------------------------
+        $lista[] = ['nome' => 'cloud_clientes', 'descricao' => 'Acessar rota/menu Cloud Clientes'];
+        $lista[] = ['nome' => 'cloud_clientes_insert', 'descricao' => 'Pode cadastrar um Cloud Clientes'];
+        $lista[] = ['nome' => 'cloud_clientes_update', 'descricao' => 'Pode alterar um Cloud Clientes'];
+        $lista[] = ['nome' => 'cloud_clientes_delete', 'descricao' => 'Pode apagar um Cloud Clientes'];
+
+        //Cloud Cadastro------------------------------
+        $lista[] = ['nome' => 'cloud_cadastro', 'descricao' => 'Acessar rota/menu Cloud Cadastro'];
+        $lista[] = ['nome' => 'cloud_cadastro_insert', 'descricao' => 'Pode cadastrar um Cloud'];
+        $lista[] = ['nome' => 'cloud_cadastro_update', 'descricao' => 'Pode alterar ativar e desativar um Cloud'];
+        $lista[] = ['nome' => 'cloud_cadastro_delete', 'descricao' => 'Pode apagar um Cloud '];
+
+        //Cloud------------------------------
+        $lista[] = ['nome' => 'cloud_publica', 'descricao' => 'Acessar rota/menu Cloud Pública'];
+        $lista[] = ['nome' => 'cloud_publica_insert', 'descricao' => 'Pode cadastrar um Cloud Pública'];
+        $lista[] = ['nome' => 'cloud_publica_update', 'descricao' => 'Pode alterar um Cloud Pública'];
+        $lista[] = ['nome' => 'cloud_publica_delete', 'descricao' => 'Pode apagar um Cloud Pública'];
+
+        //Cloud------------------------------
+        $lista[] = ['nome' => 'cloud_configuracoes', 'descricao' => 'Acessar rota/menu Cloud Configurações'];
+        $lista[] = ['nome' => 'cloud_configuracoes_insert', 'descricao' => 'Pode cadastrar um Cloud Configurações'];
+        $lista[] = ['nome' => 'cloud_configuracoes_update', 'descricao' => 'Pode alterar um Cloud Configurações'];
+        $lista[] = ['nome' => 'cloud_configuracoes_delete', 'descricao' => 'Pode apagar um Cloud Configurações'];
+
+        //Galeria------------------------------
+        $lista[] = ['nome' => 'galeria_site', 'descricao' => 'Acessar rota/menu Site - Galeria'];
+        $lista[] = ['nome' => 'galeria_site_insert', 'descricao' => 'Pode cadastrar uma Galeria'];
+        $lista[] = ['nome' => 'galeria_site_update', 'descricao' => 'Pode alterar uma Galeria'];
+        $lista[] = ['nome' => 'galeria_site_delete', 'descricao' => 'Pode apagar uma Galeria'];
+
+        //Cartela Cliente------------------------------
+        $lista[] = ['nome' => 'cartela_cliente_site', 'descricao' => 'Acessar rota/menu Site - Cartela Cliente'];
+        $lista[] = ['nome' => 'cartela_cliente_site_insert', 'descricao' => 'Pode cadastrar uma Cartela Cliente'];
+        $lista[] = ['nome' => 'cartela_cliente_site_update', 'descricao' => 'Pode alterar uma Cartela Cliente'];
+        $lista[] = ['nome' => 'cartela_cliente_site_delete', 'descricao' => 'Pode apagar uma Cartela Cliente'];
+
+        //DEPOIMENTOS------------------------------
+        $lista[] = ['nome' => 'depoimento_site', 'descricao' => 'Acessar rota/menu Site - Depoimento'];
+        $lista[] = ['nome' => 'depoimento_site_insert', 'descricao' => 'Pode cadastrar um Depoimento'];
+        $lista[] = ['nome' => 'depoimento_site_update', 'descricao' => 'Pode alterar um Depoimento'];
+        $lista[] = ['nome' => 'depoimento_site_delete', 'descricao' => 'Pode apagar um Depoimento'];
 
 
-      //Vagas Abertas------------------------------
-      $lista[] = ['nome' => 'vagas_abertas', 'descricao' => 'Acessar rota/menu Vagas Abertas'];
-      $lista[] = ['nome' => 'vagas_abertas_insert', 'descricao' => 'Pode cadastrar uma vaga aberta'];
-      $lista[] = ['nome' => 'vagas_abertas_update', 'descricao' => 'Pode alterar uma vaga aberta'];
+        //Vagas------------------------------
+        $lista[] = ['nome' => 'vagas', 'descricao' => 'Acessar rota/menu Vagas'];
+        $lista[] = ['nome' => 'vagas_insert', 'descricao' => 'Pode cadastrar uma vaga'];
+        $lista[] = ['nome' => 'vagas_update', 'descricao' => 'Pode alterar uma vaga'];
 
 
-      //TREINAMENTOS------------------------------
-      $lista[] = ['nome' => 'treinamento', 'descricao' => 'Acessar rota/menu Treinamentos'];
-      $lista[] = ['nome' => 'treinamento_insert', 'descricao' => 'Pode cadastrar um treinamento'];
-      $lista[] = ['nome' => 'treinamento_update', 'descricao' => 'Pode alterar um treinamento'];
-      $lista[] = ['nome' => 'treinamento_envio', 'descricao' => 'Pode enviar por email ou imprimir'];
+        //Vagas Abertas------------------------------
+        $lista[] = ['nome' => 'vagas_abertas', 'descricao' => 'Acessar rota/menu Vagas Abertas'];
+        $lista[] = ['nome' => 'vagas_abertas_insert', 'descricao' => 'Pode cadastrar uma vaga aberta'];
+        $lista[] = ['nome' => 'vagas_abertas_update', 'descricao' => 'Pode alterar uma vaga aberta'];
 
 
-      //Fornecedores------------------------------
-      $lista[] = ['nome' => 'fornecedores', 'descricao' => 'Acessar rota/menu Fornecedores'];
-      $lista[] = ['nome' => 'fornecedores_insert', 'descricao' => 'Pode cadastrar um Fornecedor'];
-      $lista[] = ['nome' => 'fornecedores_update', 'descricao' => 'Pode alterar um Fornecedor'];
-      $lista[] = ['nome' => 'fornecedores_delete', 'descricao' => 'Pode apagar um Fornecedor'];
+        //TREINAMENTOS------------------------------
+        $lista[] = ['nome' => 'treinamento', 'descricao' => 'Acessar rota/menu Treinamentos'];
+        $lista[] = ['nome' => 'treinamento_insert', 'descricao' => 'Pode cadastrar um treinamento'];
+        $lista[] = ['nome' => 'treinamento_update', 'descricao' => 'Pode alterar um treinamento'];
+        $lista[] = ['nome' => 'treinamento_envio', 'descricao' => 'Pode enviar por email ou imprimir'];
 
 
-      //Portaria------------------------------
-      $lista[] = ['nome' => 'portaria', 'descricao' => 'Acessar rota/menu Portaria'];
-      $lista[] = ['nome' => 'portaria_insert', 'descricao' => 'Pode cadastrar um Portaria'];
-      $lista[] = ['nome' => 'portaria_update', 'descricao' => 'Pode alterar um Portaria'];
-
-      //PÓSADMISSAO------------------------------
-      $lista[] = ['nome' => 'pos_admissao', 'descricao' => 'Acessar rota/menu Pós-Admissão'];
-      $lista[] = ['nome' => 'pos_admissao_insert', 'descricao' => 'Pode cadastrar um Pós-Admissão'];
-      $lista[] = ['nome' => 'pos_admissao_update', 'descricao' => 'Pode alterar um Pós-Admissão'];
+        //Fornecedores------------------------------
+        $lista[] = ['nome' => 'fornecedores', 'descricao' => 'Acessar rota/menu Fornecedores'];
+        $lista[] = ['nome' => 'fornecedores_insert', 'descricao' => 'Pode cadastrar um Fornecedor'];
+        $lista[] = ['nome' => 'fornecedores_update', 'descricao' => 'Pode alterar um Fornecedor'];
+        $lista[] = ['nome' => 'fornecedores_delete', 'descricao' => 'Pode apagar um Fornecedor'];
 
 
-      //Certificado------------------------------
-      $lista[] = ['nome' => 'certificado', 'descricao' => 'Acessar rota/menu Certificado'];
-      $lista[] = ['nome' => 'certificado_insert', 'descricao' => 'Pode cadastrar um Certificado'];
-      $lista[] = ['nome' => 'certificado_update', 'descricao' => 'Pode alterar um Certificado'];
+        //Portaria------------------------------
+        $lista[] = ['nome' => 'portaria', 'descricao' => 'Acessar rota/menu Portaria'];
+        $lista[] = ['nome' => 'portaria_insert', 'descricao' => 'Pode cadastrar um Portaria'];
+        $lista[] = ['nome' => 'portaria_update', 'descricao' => 'Pode alterar um Portaria'];
+
+        //PÓSADMISSAO------------------------------
+        $lista[] = ['nome' => 'pos_admissao', 'descricao' => 'Acessar rota/menu Pós-Admissão'];
+        $lista[] = ['nome' => 'pos_admissao_insert', 'descricao' => 'Pode cadastrar um Pós-Admissão'];
+        $lista[] = ['nome' => 'pos_admissao_update', 'descricao' => 'Pode alterar um Pós-Admissão'];
 
 
-      //PosAdmissoes_form_rh------------------------------
-      $lista[] = ['nome' => 'posadmissao_form_rh', 'descricao' => 'Acessar formulario pos-admissao rh'];
-      //PosAdmissoes_form_adm------------------------------
-      $lista[] = ['nome' => 'posadmissao_form_adm', 'descricao' => 'Acessar formulario pos-admissao adm'];
-      //PosAdmissoes_form_ssma------------------------------
-      $lista[] = ['nome' => 'posadmissao_form_ssma', 'descricao' => 'Acessar formulario pos-admissao ssma'];
+        //Certificado------------------------------
+        $lista[] = ['nome' => 'certificado', 'descricao' => 'Acessar rota/menu Certificado'];
+        $lista[] = ['nome' => 'certificado_insert', 'descricao' => 'Pode cadastrar um Certificado'];
+        $lista[] = ['nome' => 'certificado_update', 'descricao' => 'Pode alterar um Certificado'];
 
 
-
-      $lista[] = ['nome' => 'posadmissao_avaliar', 'descricao' => 'Acessar formulario avaliar'];
-      $lista[] = ['nome' => 'posadmissao_avaliar_insert', 'descricao' => 'Pode cadastrar avaliação'];
-      $lista[] = ['nome' => 'posadmissao_avaliar_update', 'descricao' => 'Pode alterar avaliação'];
-
-      $lista[] = ['nome' => 'posadmissao_desmobilizar', 'descricao' => 'Acessar formulario desmobilizar'];
-      $lista[] = ['nome' => 'posadmissao_desmobilizar_insert', 'descricao' => 'Pode cadastrar desmobilização'];
-      $lista[] = ['nome' => 'posadmissao_desmobilizar_update', 'descricao' => 'Pode alterar desmobilização'];
-
-      $lista[] = ['nome' => 'posadmissao_entrevista_desligamento', 'descricao' => 'Acessar formulario de entrevista desligamento'];
-      $lista[] = ['nome' => 'posadmissao_entrevista_desligamento_insert', 'descricao' => 'Pode cadastrar entrevista desligamento'];
-      $lista[] = ['nome' => 'posadmissao_entrevista_desligamento_update', 'descricao' => 'Pode alterar entrevista desligamento'];
+        //PosAdmissoes_form_rh------------------------------
+        $lista[] = ['nome' => 'posadmissao_form_rh', 'descricao' => 'Acessar formulario pos-admissao rh'];
+        //PosAdmissoes_form_adm------------------------------
+        $lista[] = ['nome' => 'posadmissao_form_adm', 'descricao' => 'Acessar formulario pos-admissao adm'];
+        //PosAdmissoes_form_ssma------------------------------
+        $lista[] = ['nome' => 'posadmissao_form_ssma', 'descricao' => 'Acessar formulario pos-admissao ssma'];
 
 
+        $lista[] = ['nome' => 'posadmissao_avaliar', 'descricao' => 'Acessar formulario avaliar'];
+        $lista[] = ['nome' => 'posadmissao_avaliar_insert', 'descricao' => 'Pode cadastrar avaliação'];
+        $lista[] = ['nome' => 'posadmissao_avaliar_update', 'descricao' => 'Pode alterar avaliação'];
 
-      // cliente 55 solucoes
-      $lista[] = ['nome' => 'entrevista_rh_cliente', 'descricao' => 'Acessar menu EntrevistaRH cliente'];
-      $lista[] = ['nome' => 'entrevista_rh_cliente_insert', 'descricao' => 'Pode cadastrar EntrevistaRH cliente'];
-      $lista[] = ['nome' => 'entrevista_rh_cliente_update', 'descricao' => 'Pode alterar EntrevistaRH cliente'];
+        $lista[] = ['nome' => 'posadmissao_desmobilizar', 'descricao' => 'Acessar formulario desmobilizar'];
+        $lista[] = ['nome' => 'posadmissao_desmobilizar_insert', 'descricao' => 'Pode cadastrar desmobilização'];
+        $lista[] = ['nome' => 'posadmissao_desmobilizar_update', 'descricao' => 'Pode alterar desmobilização'];
 
-      $lista[] = ['nome' => 'entrevista_gestor_cliente', 'descricao' => 'Acessar menu EntrevistaGestor cliente'];
-      $lista[] = ['nome' => 'entrevista_gestor_cliente_insert', 'descricao' => 'Pode cadastrar EntrevistaGestor cliente'];
-      $lista[] = ['nome' => 'entrevista_gestor_cliente_update', 'descricao' => 'Pode alterar EntrevistaGestor cliente'];
-
-      $lista[] = ['nome' => 'visualiza_cliente_55', 'descricao' => 'Acessar menu 55Solucoes'];
-
-
-
-      $lista[] = ['nome' => 'visualiza_cliente_montisol', 'descricao' => 'Acessar menu MONTISOL'];
-      $lista[] = ['nome' => 'visualiza_cliente_cmpc', 'descricao' => 'Acessar menu CMPC'];
-      $lista[] = ['nome' => 'visualiza_cliente_cimar', 'descricao' => 'Acessar menu CIMAR'];
-      $lista[] = ['nome' => 'visualiza_cliente_brk', 'descricao' => 'Acessar menu BRK'];
+        $lista[] = ['nome' => 'posadmissao_entrevista_desligamento', 'descricao' => 'Acessar formulario de entrevista desligamento'];
+        $lista[] = ['nome' => 'posadmissao_entrevista_desligamento_insert', 'descricao' => 'Pode cadastrar entrevista desligamento'];
+        $lista[] = ['nome' => 'posadmissao_entrevista_desligamento_update', 'descricao' => 'Pode alterar entrevista desligamento'];
 
 
-      $lista[] = ['nome' => 'cih', 'descricao' => 'Acessar menu Apontamento - CIH'];
-      $lista[] = ['nome' => 'cih_lancar', 'descricao' => 'Pode lançar uma ocorrencia CIH'];
-      $lista[] = ['nome' => 'cih_aprovar', 'descricao' => 'Pode aprovar uma ocorrencia CIH'];
+        // cliente 55 solucoes
+        $lista[] = ['nome' => 'entrevista_rh_cliente', 'descricao' => 'Acessar menu EntrevistaRH cliente'];
+        $lista[] = ['nome' => 'entrevista_rh_cliente_insert', 'descricao' => 'Pode cadastrar EntrevistaRH cliente'];
+        $lista[] = ['nome' => 'entrevista_rh_cliente_update', 'descricao' => 'Pode alterar EntrevistaRH cliente'];
+
+        $lista[] = ['nome' => 'entrevista_gestor_cliente', 'descricao' => 'Acessar menu EntrevistaGestor cliente'];
+        $lista[] = ['nome' => 'entrevista_gestor_cliente_insert', 'descricao' => 'Pode cadastrar EntrevistaGestor cliente'];
+        $lista[] = ['nome' => 'entrevista_gestor_cliente_update', 'descricao' => 'Pode alterar EntrevistaGestor cliente'];
+
+        $lista[] = ['nome' => 'visualiza_cliente_55', 'descricao' => 'Acessar menu 55Solucoes'];
 
 
-      $lista[] = ['nome' => 'historico', 'descricao' => 'Acessar menu Historico'];
-      $lista[] = ['nome' => 'medidas_administrativa_componente', 'descricao' => 'Pode ver o Componente Medidas Administrativa'];
+        $lista[] = ['nome' => 'visualiza_cliente_montisol', 'descricao' => 'Acessar menu MONTISOL'];
+        $lista[] = ['nome' => 'visualiza_cliente_cmpc', 'descricao' => 'Acessar menu CMPC'];
+        $lista[] = ['nome' => 'visualiza_cliente_cimar', 'descricao' => 'Acessar menu CIMAR'];
+        $lista[] = ['nome' => 'visualiza_cliente_brk', 'descricao' => 'Acessar menu BRK'];
 
 
-      $lista[] = ['nome' => 'ocorrencia', 'descricao' => 'Acessar menu Ocorrencia'];
-      $lista[] = ['nome' => 'ocorrencia_tag', 'descricao' => 'Acessar Ocorrencia Tag'];
-      $lista[] = ['nome' => 'ocorrencia_setor', 'descricao' => 'Acessar Ocorrencia Setor'];
+        $lista[] = ['nome' => 'cih', 'descricao' => 'Acessar menu Apontamento - CIH'];
+        $lista[] = ['nome' => 'cih_lancar', 'descricao' => 'Pode lançar uma ocorrencia CIH'];
+        $lista[] = ['nome' => 'cih_aprovar', 'descricao' => 'Pode aprovar uma ocorrencia CIH'];
+
+
+        $lista[] = ['nome' => 'historico', 'descricao' => 'Acessar menu Historico'];
+        $lista[] = ['nome' => 'medidas_administrativa_componente', 'descricao' => 'Pode ver o Componente Medidas Administrativa'];
+
+
+        $lista[] = ['nome' => 'ocorrencia', 'descricao' => 'Acessar menu Ocorrencia'];
+        $lista[] = ['nome' => 'ocorrencia_tag', 'descricao' => 'Acessar Ocorrencia Tag'];
+        $lista[] = ['nome' => 'ocorrencia_setor', 'descricao' => 'Acessar Ocorrencia Setor'];
 
 
         $lista[] = ['nome' => 'avaliacao_noventa', 'descricao' => 'Acessar Avaliação'];
@@ -353,11 +355,11 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'config_empresa', 'descricao' => 'Acesso a tela de configurações da empresa'];
 
         //Perimetros
-        $lista[] = ['nome' => 'perimetros', 'descricao' =>'Acessar a rota de perímetros'];
-        $lista[] = ['nome' => 'perimetros_insert', 'descricao' =>'Pode cadastrar perímetros da empresa'];
-        $lista[] = ['nome' => 'perimetros_update', 'descricao' =>'Pode editar perímetros da empresa'];
-        $lista[] = ['nome' => 'perimetros_delete', 'descricao' =>'Pode excluir perímetros da empresa'];
-        $lista[] = ['nome' => 'perimetros_funcionarios', 'descricao' =>'Pode associar perímetros aos funcionários'];
+        $lista[] = ['nome' => 'perimetros', 'descricao' => 'Acessar a rota de perímetros'];
+        $lista[] = ['nome' => 'perimetros_insert', 'descricao' => 'Pode cadastrar perímetros da empresa'];
+        $lista[] = ['nome' => 'perimetros_update', 'descricao' => 'Pode editar perímetros da empresa'];
+        $lista[] = ['nome' => 'perimetros_delete', 'descricao' => 'Pode excluir perímetros da empresa'];
+        $lista[] = ['nome' => 'perimetros_funcionarios', 'descricao' => 'Pode associar perímetros aos funcionários'];
 
         //Ocorrencias jornadas
         $lista[] = ['nome' => 'ocorrencias_jornadas', 'descricao' => 'Acesso a tela de ocorrências de jornadas'];
@@ -370,7 +372,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'escalas_insert', 'descricao' => 'Pode cadastrar uma escala'];
         $lista[] = ['nome' => 'escalas_update', 'descricao' => 'Pode editar uma escala'];
         $lista[] = ['nome' => 'escalas_delete', 'descricao' => 'Pode excluir escala'];
-        $lista[] = ['nome' => 'escalas_funcionarios', 'descricao' =>'Pode associar escala aos funcionários'];
+        $lista[] = ['nome' => 'escalas_funcionarios', 'descricao' => 'Pode associar escala aos funcionários'];
 
         //Ponto
         $lista[] = ['nome' => 'ponto-eletronico', 'descricao' => 'O usuáro terá que bater ponto nas escalas definidas'];

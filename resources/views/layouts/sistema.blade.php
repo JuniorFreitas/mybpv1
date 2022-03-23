@@ -34,7 +34,6 @@
     @stack('css')
 </head>
 <body data-sidebar="dark">
-
 <div id="app" v-cloak>
 
     <div class="layout-wrapper">
