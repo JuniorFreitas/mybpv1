@@ -20,7 +20,7 @@
         <br>
         RG: {{$dados->rg ?? ''}}
         <br>
-        CTPS: {{$dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero ?? ''}}
+        CTPS: {{isset($dados->FeedBack->Admissao->DadosAdmissoes) ? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero : ''}}
         <br>
         <br>
         <br>
@@ -57,8 +57,8 @@
         <br>
     </div>
     <div class="f11" style="line-height: 26pt;text-align: center">
-{{--        <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">--}}
-{{--        {{$dados->User->DadosEmpresa->razao_social}}--}}
+        {{--        <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">--}}
+        {{--        {{$dados->User->DadosEmpresa->razao_social}}--}}
         <br>
         <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">
         {{$dados->nome}}
@@ -95,6 +95,7 @@
         .f11 {
             font-size: 11pt;
         }
+
         .f12 {
             font-size: 12pt;
         }

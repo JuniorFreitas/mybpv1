@@ -16,12 +16,15 @@
     </p><br>
     <p class="f11" style="">
         EMPREGADO: {{$dados->nome}}, {{$dados->FeedBack->Admissao->cargo}}, portador da carteira profissional n.º
-        {{$dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero}}
-        Série {{$dados->FeedBack->Admissao->DadosAdmissoes->ctps_serie}} inscrita no CPF sob nº {{$dados->cpf}},
-        com admissão em {{$dados->FeedBack->Admissao->data_admissao}}
+        {{isset($dados->FeedBack->Admissao->DadosAdmissoes)?$dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero : '__________________________'}}
+        Série {{isset($dados->FeedBack->Admissao->DadosAdmissoes)?$dados->FeedBack->Admissao->DadosAdmissoes->ctps_serie : '___________________________'}}
+        inscrita no CPF sob nº {{$dados->cpf}},
+        com admissão em {{$dados->FeedBack->Admissao->data_admissao}}.
+        <br>
         <br>
         As partes acima identificadas celebram o presente ACORDO DE COMPENSAÇÃO DE HORAS, que se regerá pelas cláusulas
         abaixo:
+        <br>
         <br>
         1. A partir do dia ___/___/______ o empregado cumprirá a seguinte jornada normal de trabalho:
         <br>
@@ -29,16 +32,19 @@
         <br>
         Total de horas trabalhadas na semana: _________________________ horas
         <br>
+        <br>
         2. Fica convencionado conforme faculta a Lei, que haverá sistema de compensação de horas extras, pelo qual as
         horas extras efetivamente realizadas pelos empregados durante o mês, poderão ser compensadas, no prazo de até
         180 (cento e oitenta) dias após o mês da prestação da hora, com reduções de jornadas ou folgas compensatórias.
         Na hipótese das horas não serem compensadas, as mesmas serão pagas como horas extras, ou seja, o valor nominal
         da hora normal acrescido do adicional de 50%, conforme previsão da Convenção Coletiva de Trabalho.
         <br>
+        <br>
         3. Na hipótese de rescisão do contrato de trabalho na vigência deste acordo de compensação de horas, sem que
         tenha havido a compensação integral das horas de trabalho, será feito o acerto de contas nas verbas rescisórias,
         ficando certo que, havendo crédito a favor do empregado, este fará jus ao pagamento das horas devidas com o
         adicional de 50% (cinquenta por cento)
+        <br>
         <br>
         O presente Acordo de Compensação de Horas de Trabalho tem prazo indeterminado e é acessório ao Contrato de
         Trabalho celebrado entre as partes.

@@ -14,8 +14,10 @@
         <b>{{$dados->User->DadosEmpresa->cnpj}}</b>, com atividade
         localizada {{$dados->User->DadosEmpresa->endereco_completo}}, doravante designada simplesmente EMPREGADORA e de
         outro {{$dados->nome}} portador(a)
-        Carteira Profissional n.º {{$dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero}}
-        Série {{$dados->FeedBack->Admissao->DadosAdmissoes->ctps_serie}} a seguir chamado apenas EMPREGADO, é celebrado
+        Carteira Profissional
+        n.º {{isset($dados->FeedBack->Admissao->DadosAdmissoes)?$dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero : '__________________________'}}
+        Série {{isset($dados->FeedBack->Admissao->DadosAdmissoes)?$dados->FeedBack->Admissao->DadosAdmissoes->ctps_serie : '___________________________'}}
+        a seguir chamado apenas EMPREGADO, é celebrado
         o presente
         CONTRATO DE EXPERIÊNCIA, que terá vigência a partir da data de início da prestação de serviços, de acordo com as
         condições a seguir especificadas:

@@ -19,7 +19,7 @@
         <br>
         CPF: {{$dados->cpf ?? ''}}
         <br>
-        CTPS: {{$dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero ?? ''}}
+        CTPS: {{isset($dados->FeedBack->Admissao->DadosAdmissoes) ? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero? ''}}
         <br>
     </p>
     <br>
