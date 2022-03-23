@@ -19,11 +19,11 @@
                     | PCD: <strong>{{ $dados->Curriculo->PCD ? 'Sim' : 'Não' }}</strong>
                     | CNH: <strong>{{ $dados->ParecerRh->cnh ? $dados->ParecerRh->cnh_tipo : 'Não possui' }}</strong>
                     <br>
-                    RG: <strong>{{ $dados->Curriculo->rg ? $dados->Curriculo->rg : 'Não informado' }}</strong>
+                    RG: <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
                     | RG Data Emissão:
-                    <strong>{{ $dados->Curriculo->rg_data_emissao ? $dados->Curriculo->rg_data_emissao : 'Não informado' }}</strong>
+                    <strong>{{ $dados->Curriculo->rg_data_emissao ?? 'Não informado' }}</strong>
                     | Naturalidade:
-                    <strong>{{ $dados->Curriculo->naturalidade ? $dados->Curriculo->naturalidade : 'Não informado' }}</strong>
+                    <strong>{{ $dados->Curriculo->naturalidade ?? 'Não informado' }}</strong>
                     <br>
                     Calça: <strong>{{ $dados->ParecerRh->calca }}</strong> |
                     Bota: <strong>{{ $dados->ParecerRh->bota }}</strong> | C.
@@ -46,7 +46,7 @@
                         |
                     @endif
                     Indicado para qual área:
-                    <strong>{{ $dados->ParecerTecnica->indicado_area ? $dados->ParecerTecnica->indicado_area : 'Não informado' }}</strong>
+                    <strong>{{ $dados->ParecerTecnica->indicado_area ?? 'Não informado' }}</strong>
                     <br>
                     Endereço: <strong>{{ $dados->Curriculo->logradouro }}, {{ $dados->Curriculo->bairro }}
                         , {{ $dados->Curriculo->municipio }}/{{ $dados->Curriculo->uf }}</strong>
@@ -119,18 +119,18 @@
                     Número Crachá: <strong>{{ $dados->Admissao->numero_cracha }}</strong> <br>
                     Data do ASO: <strong>{{ $dados->Admissao->data_aso }}</strong> <br>
                     CTPS:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes->ctps_numero ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
                     | CTPS Série:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes->ctps_serie ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
                     | CTPS Data Emissão:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes->ctps_data_emissao ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
                     <br>
                     Título de Eleitor:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes->titulo_eleitor_numero ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_numero :'Não Informado'}}</strong>
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_numero :'Não Informado'}}</strong>
                     | Título de Eleitor Sessão:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes->titulo_eleitor_sessao ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_sessao :'Não Informado'}}</strong>
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_sessao :'Não Informado'}}</strong>
                     | Título de Eleitor Zona:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes->titulo_eleitor_zona ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_zona :'Não Informado'}}</strong>
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_zona :'Não Informado'}}</strong>
                     <br>
                     Status Carteira de Treinamento e Etiqueta:
                     <strong>{{ $dados->Admissao->status_carteira_treinamento }}</strong> <br>
