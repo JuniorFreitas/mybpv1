@@ -300,6 +300,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::group(['as' => 'solicitacao_ferias.'], function () {
                 Route::put('ferias-prevista/{feriasPrevista}/aprovargestor', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarGestor'])->name('aprovarGestor');
                 Route::post('ferias-prevista/export', [\App\Http\Controllers\FeriasPrevistaController::class, 'export'])->name('ferias-prevista.excel');
+                Route::post('ferias-prevista/atualizacao-status', [\App\Http\Controllers\FeriasPrevistaController::class, 'atualizacaoStatus'])->name('ferias-prevista.atualizacaoStatus');
                 Route::post('ferias-prevista/atualizar', [\App\Http\Controllers\FeriasPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('ferias-prevista/{feriasPrevista}/aprovarRH', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::resource('ferias-prevista', \App\Http\Controllers\FeriasPrevistaController::class, ['parameters' => ['ferias-prevista' => 'ferias_prevista']]);
