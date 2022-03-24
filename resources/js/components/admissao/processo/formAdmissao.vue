@@ -7,7 +7,7 @@
                         onchange="valida_campo_vazio(this,1)"
                         onblur="valida_campo_vazio(this,1)"
                         :disabled="visualizar">
-                    <option value="">Selecione</option>
+                    <option :value="''">Selecione</option>
                     <option :value="item.id"
                             v-for="item in areasetiquetas">
                         {{ item.label }}

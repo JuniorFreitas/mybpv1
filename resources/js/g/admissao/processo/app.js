@@ -580,47 +580,47 @@ const app = new Vue({
         CadastraAvulsa() {
             formReset();
 
-            // if (this.formAvulsa.feedback.vaga_id === "") {
-            //     valida_campo_vazio($("#vaga_" + this.hash), 1);
-            //     $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
-            //     mostraErro("", "O campo vaga não pode ficar vazio");
-            //     return false;
-            // }
-            //
-            // if (this.formAvulsa.curriculo.municipio_id === "") {
-            //     valida_campo_vazio($("#mun_" + this.hash), 1);
-            //     $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
-            //     mostraErro("", "O Campo Cidade não pode ficar vazio");
-            //     return false;
-            // }
-            //
+            if (this.formAvulsa.feedback.vaga_id === "") {
+                valida_campo_vazio($("#vaga_" + this.hash), 1);
+                $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O campo vaga não pode ficar vazio");
+                return false;
+            }
+
+            if (this.formAvulsa.curriculo.municipio_id === "") {
+                valida_campo_vazio($("#mun_" + this.hash), 1);
+                $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O Campo Cidade não pode ficar vazio");
+                return false;
+            }
+
             // if (this.formAvulsa.feedback.cliente_id === "") {
             //     valida_campo_vazio($("#cliente_" + this.hash), 1);
             //     $("#janelaAdmissaoAvulsa #cliente_" + this.hash).focus().trigger("blur");
             //     mostraErro("", "O Campo Cliente não pode ficar vazio");
             //     return false;
             // }
-            //
-            // if (this.formAvulsa.curriculo.telefones.length === 0) {
-            //     this.formAvulsa.curriculo.telefones.push({
-            //         detalhe: "",
-            //         id: 0,
-            //         numero: "",
-            //         pais: "55",
-            //         principal: true,
-            //         ramal: "",
-            //         tipo: "whatsapp"
-            //     });
-            //     mostraErro("", "Insira pelo menos UM telefone de contato");
-            //     return false;
-            // }
-            //
-            //
-            // $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
-            // if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
-            //     mostraErro("", "Verifique os erros");
-            //     return false;
-            // }
+
+            if (this.formAvulsa.curriculo.telefones.length === 0) {
+                this.formAvulsa.curriculo.telefones.push({
+                    detalhe: "",
+                    id: 0,
+                    numero: "",
+                    pais: "55",
+                    principal: true,
+                    ramal: "",
+                    tipo: "whatsapp"
+                });
+                mostraErro("", "Insira pelo menos UM telefone de contato");
+                return false;
+            }
+
+
+            $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
+            if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os erros");
+                return false;
+            }
 
             this.formAvulsa.admissao = this.form.admissao;
             this.formAvulsa.preload = true;
@@ -696,11 +696,12 @@ const app = new Vue({
                     this.form.parecer_rh.bota = data.feedback.parecer_rh ? data.feedback.parecer_rh.bota : "";
                     this.form.parecer_rh.camisa_protecao = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_protecao : "";
                     this.form.parecer_rh.camisa_meia = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_meia : "";
+                    this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id == null ? "" : admissao.area_etiqueta_id;
 
                     this.form.parecer_tecnica.indicado_area = data.parecer_tecnica ? data.parecer_tecnica.indicado_area : "";
 
                     //Dados Admissão
-                    if (!admissao.dados_admissoes){
+                    if (!admissao.dados_admissoes) {
                         this.form.admissao.dados_admissoes = {
                             'ctps_numero': '',
                             'ctps_serie': '',
