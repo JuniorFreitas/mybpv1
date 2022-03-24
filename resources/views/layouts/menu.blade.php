@@ -505,34 +505,31 @@
 @endif
 
 
-@if(\App\Models\Sistema::permitirLinks('cloud','cloud_bpse','cloud_clientes','cloud_publica','cloud_configuracoes'))
+@if(\App\Models\Sistema::permitirLinks('cloud','cloud_configuracoes'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bx-cloud-upload"></i>
             <span>CLOUD</span>
         </a>
         <ul class="sub-menu" aria-expanded="false">
-            @can('cloud_bpse')
+
+
+            @foreach(auth()->user()->CloudsAtivo as $cloud)
                 <li>
-                    <a href="{{route('g.cloud.cloud.single', [1,'bpse'])}}" key="cloud_bpse">
-                        BPSE
+                    <a href="{{route('g.cloud.cloud.single', [$cloud->id, $cloud->nome])}}" key="{{$cloud->nome}}">
+                        {{$cloud->nome}}
                     </a>
                 </li>
-            @endcan
-            @can('cloud_clientes')
+            @endforeach
+
+{{--            @can('cloud_configuracoes')--}}
                 <li>
-                    <a href="{{route('g.cloud.cloud.single',[2,'clientes'])}}" key="cloud_clientes">
-                        Clientes
+                    <a href="{{ route('g.cloud.cadastro.indexCadastro') }}" key="cloud_cadastro">
+                        Cadastro
                     </a>
                 </li>
-            @endcan
-            @can('cloud_publica')
-                <li>
-                    <a href="{{route('g.cloud.cloud.single',[3,'publica'])}}" key="cloud_publica">
-                        Pública
-                    </a>
-                </li>
-            @endcan
+{{--            @endcan--}}
+
             @can('cloud_configuracoes')
                 <li>
                     <a href="{{ route('g.cloud.configuracoes.configuracoes.index') }}" key="cloud_configuracoes">

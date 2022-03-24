@@ -128,13 +128,13 @@ class AutoCompletesController extends Controller
         } else {
             return User::whereEmpresaId(auth()->user()->empresa_id)
                 ->whereNotIn('id', [auth()->user()->empresa_id])
-                ->orWhereIn('id', [1,2,3])
+                ->orWhereIn('id', [1, 2, 3])
                 ->whereAtivo(true)
                 ->where('nome', 'like', '%' . $busca . '%')
                 ->take($quantidade)
                 ->get()
                 ->map(function ($item) {
-                    $item->label = $item->empresa_id == 104 ? $item->nome.' - MyBP' : $item->nome;
+                    $item->label = $item->empresa_id == 104 ? $item->nome . ' - MyBP' : $item->nome;
                     return $item;
                 });
         }
@@ -243,7 +243,28 @@ class AutoCompletesController extends Controller
                 $item->label = $item->nome;
                 return $item;
             });
+    }
 
+    public function buscaUsuariosAtivos(Request $request)
+    {
+        $busca = $request->query('busca');
+        if ($busca == '') {
+            return response()->json([], 200);
+        }
+        $quantidade = $request->query('rows');
+
+        $busca = $request->query('busca');
+        return User::whereAtivo(true)
+            ->where('nome', 'like', '%' . $busca . '%')
+            ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->with('GrupoCloud:id,nome')
+            ->take($quantidade)
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->nome . ' | ' . $item->tipo;
+                return $item;
+            });
     }
 
     //Ponto eletronico (ajustar jornadas)

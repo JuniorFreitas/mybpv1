@@ -67,15 +67,7 @@
                         <option v-for="papel in listaPapeis" :value="papel.id">@{{papel.nome}}</option>
                     </select>
                 </div>
-                <div class="form-group" v-if="grupoempresa || empresa_id === 104">
-                    <label>Grupo cloud</label>
-                    <select class="form-control form-control-sm" v-model="form.grupo_cloud_id"
-                            onchange="valida_campo_vazio(this,1)"
-                            onblur="valida_campo_vazio(this,1)">
-                        <option value="">Selecione...</option>
-                        <option v-for="cloud in listaCloud" :value="cloud.id">@{{cloud.nome}}</option>
-                    </select>
-                </div>
+
                 <div class="form-group">
                     <label>Tipo de Usuário</label>
                     <select class="form-control form-control-sm" v-model="form.tipo"

@@ -34,7 +34,6 @@
     @stack('css')
 </head>
 <body data-sidebar="dark">
-
 <div id="app" v-cloak>
 
     <div class="layout-wrapper">
@@ -86,13 +85,13 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        © 2019 - <?=date('Y')?> BPSE / MasterTag
+                        © 2019 - <?=date('Y')?> MyBP
                     </div>
-                    <div class="col-sm-6">
-                        <div class="text-sm-right d-none d-sm-block">
-                            <a href="">Suporte <i class="fab fa-whatsapp"></i> (98) 999023762</a>
-                        </div>
-                    </div>
+{{--                    <div class="col-sm-6">--}}
+{{--                        <div class="text-sm-right d-none d-sm-block">--}}
+{{--                            <a href="">Suporte <i class="fab fa-whatsapp"></i> (98) 999023762</a>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
                 </div>
             </div>
         </footer>

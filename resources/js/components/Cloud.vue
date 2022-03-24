@@ -372,13 +372,14 @@
             </template>
         </modal>
 
-        <button class="btn btn-sm btn-outline-primary"
+        <button class="btn btn-sm btn-outline-primary" v-if="!forbidden"
                 :disabled="preload"
                 @click.prevent="formNovaPasta"
                 data-toggle="modal"
                 data-target="#janelaCadastrarPasta">
             <i class="fas fa-folder-plus"></i> Nova Pasta
         </button>
+
         <button class="btn btn-sm btn-outline-primary" :disabled="preload" @click="atualizar">
             <i class="fas fa-sync"></i> Atualizar
         </button>
@@ -740,6 +741,7 @@ export default {
             preloadDel: false,
             preloadAprovado: false,
             preloadRevisado: false,
+            forbidden: true,
 
             //folder
             removeMover: false,
@@ -1180,9 +1182,11 @@ export default {
         /*--------ATUALIZAR LISTA DE ITENS--------*/
         atualizar() {
             this.preload = true;
+            this.forbidden = true;
             this.form.pertence = this.itemBusca; // incluindo a pasta
             axios.get(`${URL_ADMIN}/cloud/atualizar/${this.cloud}/${this.itemBusca}`)
                 .then(response => {
+                    this.forbidden = false;
                     let data = response.data;
                     this.lista = data.lista;
                     //Nivel de Pastas
@@ -1209,7 +1213,12 @@ export default {
                         }
                     }, 100)
                 })
-                .catch(error => (this.preload = false));
+                .catch(error => {
+                    if (error.response.status === 403) {
+                        this.forbidden = true;
+                    }
+                    this.preload = false;
+                });
         },
     }
 }

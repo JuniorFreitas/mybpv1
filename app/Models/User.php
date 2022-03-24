@@ -193,11 +193,20 @@ class User extends Authenticatable
 
     private $listaDeHabilidade = [];
     public const BPSE = 1; // Empresa BPSE
+    public const SUPORTE = "Suporte";
     public const ADMINISTRADOR = "Administrador";
     public const FUNCIONARIO = "Funcionario";
     public const EMPRESA = "Empresa";
     public const GESTOR = "Gestor";
     public const CANDIDATO = "Candidato";
+
+
+    public const TIPOS_USUARIOS_GERENCIAIS = [
+        self::SUPORTE,
+        self::ADMINISTRADOR,
+        self::FUNCIONARIO,
+        self::GESTOR
+    ];
 
 
     public static function getUser($fields = null)
@@ -365,14 +374,32 @@ class User extends Authenticatable
     {
         return $this->hasOne(UsuarioConta::class, 'user_id', 'id');
     }
-//
-//    protected static function booted()
-//    {
-//        static::created(function ($model) {
-//            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
-//        });
-//        static::updated(function ($model) {
-//            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
-//        });
-//    }
+
+    /**
+     * Relacionamento com os clouds para o usuário referente a empresa que ele faz parte.
+     */
+    public function Clouds()
+    {
+        return $this->belongsToMany(Cloud::class, 'user_clouds', 'user_id', 'cloud_id');
+    }
+
+    public function CloudsAtivo()
+    {
+        return $this->Clouds()->where('ativo', true);
+    }
+
+    public function GrupoClouds()
+    {
+        return $this->belongsToMany(GrupoCloud::class, 'user_grupo_cloud', 'grupo_cloud_id', 'user_id');
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($model) {
+            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
+        });
+        static::updated(function ($model) {
+            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
+        });
+    }
 }

@@ -35,7 +35,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 class GrupoCloud extends Model
 {
     use HasFactory, LogsActivity;
-//    use TenantTrait;
+    use TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'grupo_cloud';
@@ -75,6 +75,10 @@ class GrupoCloud extends Model
     public function habilidades()
     {
         return $this->belongsToMany(HabilidadeCloud::class, 'grupo_habilidade_cloud', 'grupo_cloud_id', 'habilidade_cloud_id');
+    }
+
+    public function Users(){
+        return $this->belongsToMany(User::class, 'user_grupo_cloud', 'grupo_cloud_id', 'user_id');
     }
 
     public function Usuarios()

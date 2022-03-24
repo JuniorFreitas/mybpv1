@@ -52,8 +52,13 @@ class Cloud extends Model
         $activity->descricao = "";
     }
 
-    protected $fillable = ['nome','empresa_id'];
-    protected $casts = ['id' => 'int', 'empresa_id' => 'int', 'nome' => 'string'];
+    protected $fillable = ['nome','empresa_id','ativo'];
+    protected $casts = ['id' => 'int', 'empresa_id' => 'int', 'nome' => 'string', 'ativo' => 'boolean'];
+
+    public function Empresa()
+    {
+        return $this->belongsTo(Cliente::class, 'empresa_id');
+    }
 
     public function Itens()
     {
@@ -63,6 +68,11 @@ class Cloud extends Model
     public function Raiz()
     {
         return $this->hasMany(ItensCloud::class, 'cloud_id', 'id')->whereNull('pertence');
+    }
+
+    public function Usuarios()
+    {
+        return $this->belongsToMany(User::class, 'user_clouds', 'cloud_id', 'user_id');
     }
 
 }

@@ -47,7 +47,7 @@ class ItensCloudController extends Controller
                 DB::beginTransaction();
                 $dados['quem_criou'] = auth()->id();
                 $item = ItensCloud::create($dados);
-                $permissoes = collect([GrupoCloud::GRUPOADMIN,GrupoCloud::GRUPOADMINFINANCEIRO]);
+                $permissoes = collect([$this->grupoAdmin()]);
                 if ($request->filled('permissoes')) {
                     $dadosPermissao = [];
                     foreach ($dados['permissoes'] as $grupo_cloud) {
@@ -116,7 +116,7 @@ class ItensCloudController extends Controller
                 DB::beginTransaction();
                 $dados['quem_editou'] = auth()->id(); // pego quem editou
 
-                $permissoes = collect([GrupoCloud::GRUPOADMIN,GrupoCloud::GRUPOADMINFINANCEIRO]); // seto a permissao grupo "todos (root)"
+                $permissoes = collect([$this->grupoAdmin()]); // seto a permissao grupo "todos (root)"
 
                 //Verifico se tem algum grupo marcado
                 if ($request->filled('permissoes')) {
@@ -492,5 +492,10 @@ class ItensCloudController extends Controller
         return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
     }
 
-
+    protected function grupoAdmin()
+    {
+        return GrupoCloud::where('nome', 'Administradores')
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->first()->id;
+    }
 }
