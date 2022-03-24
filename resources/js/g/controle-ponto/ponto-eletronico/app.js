@@ -395,7 +395,6 @@ const app = new Vue({
 
         },
         registrarPonto() {
-
             Webcam.snap(data_uri => {
                 this.formPonto.foto = data_uri;
                 this.formPonto.preload = true;
@@ -404,7 +403,8 @@ const app = new Vue({
                         this.formPonto.preload = false;
                         this.formPonto.save = true;
                         this.registros = response.data.registrosHoje;
-                        this.atualizarHistorico();
+                        // this.atualizarHistorico();
+                        window.location.reload();
 
                     }).catch(error => {
                     this.formPonto.preload = false;
