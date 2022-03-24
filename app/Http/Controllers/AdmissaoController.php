@@ -380,7 +380,7 @@ class AdmissaoController extends Controller
         $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?: '';
         $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: '';
         $feedback->Admissao->status_carteira_treinamento = $feedback->Admissao->status_carteira_treinamento ?: '';
-        $feedback->Admissao->area_etiqueta_id = $feedback->Admissao->area_etiqueta_id ?: "";
+        $feedback->Admissao->area_etiqueta_id = $feedback->Admissao->area_etiqueta_id == 0 ? null : $feedback->Admissao->area_etiqueta_id;
         $feedback->Admissao->documento = $feedback->Admissao->documento ?: "";
         $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: "";
         $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: "";
@@ -390,7 +390,7 @@ class AdmissaoController extends Controller
         $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: "";
         $feedback->Admissao->trinta_dois_sessenta = $feedback->Admissao->trinta_dois_sessenta ?: "";
         $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?: "";
-        $feedback->Admissao->status_carteira_treinamento = $feedback->Admissao->status_carteira_treinamento ?: "";
+        $feedback->Admissao->status = $feedback->Admissao->status ?: "";
         $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?: "";
         $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
         $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
