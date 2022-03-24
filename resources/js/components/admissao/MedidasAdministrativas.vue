@@ -97,7 +97,7 @@
                          obj.tipo === 'Suspensão de 1 dia' ||
                          obj.tipo === 'Suspensão de 2 ou 3 dias' ||
                          obj.tipo === 'Suspensão acima de 3 dias'">
-                        <button class="btn btn-outline-default" @click="gerarPdf(obj)" v-show="!obj.novo"><i
+                        <button class="btn btn-outline-primary" @click="gerarPdf(obj)" v-show="!obj.novo"><i
                             class="fas fa-file-pdf"></i> GERAR PDF
                         </button>
                     </div>

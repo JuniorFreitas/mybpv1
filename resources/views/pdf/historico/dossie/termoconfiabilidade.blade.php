@@ -1,7 +1,7 @@
 @extends('layouts.pdf')
 @section('title','TERMO DE SIGILO E CONFIDENCIALIDADE – ANEXO AO CONTRATO DE TRABALHO')
 @section('empresa')
-    @include('layouts.cabecalioEmpresaModelo')
+    @include('layouts.cabecalioEmpresa')
 @endsection
 @section('conteudo')
     <p class="f12"
