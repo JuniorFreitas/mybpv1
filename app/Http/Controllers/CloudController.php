@@ -116,7 +116,7 @@ class CloudController extends Controller
         $resultado = ItensCloud::whereCloudId($cloud)
             ->with(
                 'Pertence:id,pertence',
-                'Arquivo:id,bytes,file,extensao,thumb,imagem',
+                'Arquivo',
                 'Criou:id,nome',
                 'Editou:id,nome'
             );
