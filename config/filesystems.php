@@ -187,10 +187,17 @@ return [
 
         'disco-ponto-eletronico' => array_merge($default,
             [
+//                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-ponto-eletronico') : 'arquivos/disco-ponto-eletronico',
+//                'urlShow' => env('APP_URL') . '/g/storage/anexo',
+//                'urlDownload' => env('APP_URL') . '/g/storage/anexo',
+//                'urlThumb' => env('APP_URL') . '/g/storage/anexo',
+//                'urlDelete' => env('APP_URL') . '/g/storage/anexo',
+//                'visibility' => 'public',
+
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-ponto-eletronico') : 'arquivos/disco-ponto-eletronico',
-                'urlShow' => env('APP_URL') . '/g/storage/anexo',
-                'urlDownload' => env('APP_URL') . '/g/storage/anexo',
-                'urlThumb' => env('APP_URL') . '/g/storage/anexo',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-ponto-eletronico',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-ponto-eletronico',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-ponto-eletronico',
                 'urlDelete' => env('APP_URL') . '/g/storage/anexo',
                 'visibility' => 'public',
             ]
