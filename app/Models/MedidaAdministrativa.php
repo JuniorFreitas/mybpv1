@@ -93,6 +93,7 @@ class MedidaAdministrativa extends Model
     const TIPOS = [
         'Re-orientação',
         'Advertência Verbal',
+        'Advertência Escrita',
         'Suspensão de 1 dia',
         'Suspensão de 2 ou 3 dias',
         'Suspensão acima de 3 dias',

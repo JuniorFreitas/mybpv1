@@ -110,6 +110,8 @@ use MasterTag\DataHora;
  * @property int|null $gestor
  * @method static Builder|User whereGestor($value)
  * @property-read \App\Models\Cliente|null $DadosEmpresa
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ClientesLogo
+ * @property-read int|null $clientes_logo_count
  */
 class User extends Authenticatable
 {
@@ -296,6 +298,11 @@ class User extends Authenticatable
     public function ClientesEmpresa()
     {
         return $this->belongsToMany(User::class, 'empresa_clientes', 'empresa_id', 'cliente_id', 'empresa_id');
+    }
+
+    public function ClientesLogo()
+    {
+        return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id','empresa_id');
     }
 
     public function ClienteFuncionarios()
