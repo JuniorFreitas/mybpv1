@@ -1,7 +1,7 @@
 @extends('layouts.pdf')
 @section('title','ACORDO DE COMPENSAÇÃO DE HORAS DE TRABALHO')
 @section('empresa')
-    @include('layouts.cabecalioEmpresaModelo')
+    @include('layouts.cabecalioEmpresa')
 @endsection
 @section('conteudo')
     <p class="f12"
@@ -58,7 +58,8 @@
         <br>
         <br>
     </div>
-    <div class="f11" style="line-height: 18pt;text-align: center">
+    <div class="page-break"></div>
+    <div class="f11" style="line-height: 18pt;text-align: center; padding-top: 50px">
         <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">
         {{$dados->User->DadosEmpresa->razao_social}}
         <br>
@@ -93,6 +94,10 @@
             bottom: 0px;
             font-size: 8.4pt;
             /*width: 10cm;*/
+        }
+        .page-break {
+            display: block;
+            page-break-before: always;
         }
 
         .f14 {

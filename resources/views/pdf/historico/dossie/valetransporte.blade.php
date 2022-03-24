@@ -1,7 +1,7 @@
 @extends('layouts.pdf')
 @section('title','AUTORIZAÇÃO DE DESCONTOS VALE TRANSPORTE')
 @section('empresa')
-    @include('layouts.cabecalioEmpresaModelo')
+    @include('layouts.cabecalioEmpresa')
 @endsection
 @section('conteudo')
     <p class="f12"

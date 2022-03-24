@@ -1,7 +1,7 @@
 @extends('layouts.pdf')
 @section('title','DECLARAÇÃO DE ENCARGOS PARA IMPOSTO DE RENDA')
 @section('empresa')
-    @include('layouts.cabecalioEmpresaModelo')
+    @include('layouts.cabecalioEmpresa')
 @endsection
 @section('conteudo')
     <p class="f12"
@@ -19,7 +19,7 @@
         <br>
         CPF: {{$dados->cpf ?? ''}}
         <br>
-        CTPS: {{isset($dados->FeedBack->Admissao->DadosAdmissoes) ? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero? ''}}
+        CTPS: {{isset($dados->FeedBack->Admissao->DadosAdmissoes) ? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero : ''}}
         <br>
     </p>
     <br>
