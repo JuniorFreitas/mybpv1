@@ -19,6 +19,7 @@ class JobMudaIntermintenteFixoPrevistaStore implements ShouldQueue
      * @return void
      */
     public $mail;
+    public $tries = 3;
 
     public function __construct($mudaIntermitentePrevista)
     {

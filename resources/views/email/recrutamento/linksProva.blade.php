@@ -4,9 +4,7 @@
 
     <table border="0" cellpadding="0" width="97%" style="width: 97%;">
         <tr>
-            <td>
-                <img src="https://sgibpse.com.br/imagens/bepinhas/branca_2.png" alt="Bepinha">
-            </td>
+
             <td style="text-align: justify">
                 Parabéns, <strong>{{ $dados['nome'] }}</strong>. Você foi aprovado(a) selecionado etapa!
                 <br><br>
@@ -34,7 +32,6 @@
 
                 Esperamos te ver em breve! <br><br>
 
-                Equipe RH BPSE
                 {{--Olá, <strong>{{ $dados['nome'] }}</strong>! Tudo bem?<br><br>
 
                 Gostaríamos de agradecer a sua participação em nosso processo seletivo.<br><br>

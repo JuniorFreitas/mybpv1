@@ -21,6 +21,7 @@ class JobFeriasPrevistaAprovarRH implements ShouldQueue
      * @return void
      */
     public $mail;
+    public $tries = 3;
     public $mailGestor;
 
     public function __construct($feriasPrevista)

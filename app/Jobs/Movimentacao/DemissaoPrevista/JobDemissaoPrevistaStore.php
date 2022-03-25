@@ -19,12 +19,14 @@ class JobDemissaoPrevistaStore implements ShouldQueue
      * @return void
      */
     public $mail;
+    public $tries = 3;
 
     public function __construct($demissaoPrevista)
     {
         $this->mail = [
             'nome_de' => auth()->user()->nome,
             'email_de' => auth()->user()->login,
+            'empresa' => auth()->user()->Empresa->nome_fantasia,
             'nome_para' => $demissaoPrevista->GestorAprovacao->nome,
             'email_para' => $demissaoPrevista->GestorAprovacao->login,
             'demissao_id' => $demissaoPrevista->id,

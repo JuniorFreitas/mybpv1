@@ -19,6 +19,7 @@ class JobRequisicaoVagaAprovar implements ShouldQueue
      * @return void
      */
     public $mail;
+    public $tries = 3;
 
     public function __construct($requisicaoVaga)
     {

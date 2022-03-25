@@ -16,12 +16,12 @@ use MasterTag\DataHora;
 class VerificaJornadasJob implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 3;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-
     public function __construct() {
 
     }

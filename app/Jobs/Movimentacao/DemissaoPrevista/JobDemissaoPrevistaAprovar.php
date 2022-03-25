@@ -21,6 +21,8 @@ class JobDemissaoPrevistaAprovar implements ShouldQueue
      */
     public $mail;
 
+    public $tries = 3;
+
     public function __construct($demissaoPrevista)
     {
         $this->mail = [

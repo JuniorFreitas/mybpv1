@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ModeloRowsExport;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovar;
+use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovarRH;
 use App\Models\IntermitenteFixoPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -190,6 +192,32 @@ class IntermitenteFixoPrevistaController extends Controller
 
     }
 
+    public function aprovarRH(Request $request, IntermitenteFixoPrevista $intermitenteFixoPrevista)
+    {
+        $this->authorize('rh_aprova_movimentacao');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $intermitenteFixoPrevista->update([
+                'user_rh_id' => auth()->id(),
+                'resposta_rh' => $dados['resposta_rh'],
+                'obs_rh' => $dados['obs_rh'],
+                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
+            ]);
+
+            DB::commit();
+
+            JobMudaIntermitenteFixoPrevistaAprovarRH::dispatch($intermitenteFixoPrevista);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar solicitação RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
 
     public function atualizar(Request $request)
     {
@@ -236,5 +264,59 @@ class IntermitenteFixoPrevistaController extends Controller
                 'aprovar_por_gestor' => auth()->user()->can('aprovar_por_gestor'),
             ]
         ]);
+    }
+
+    public function exportaExcel(Request $request)
+    {
+        $resultado = $this->filtro($request)->get();
+
+        $head = [
+            "ID",
+            "QUEM SOLICITOU",
+            "SOLICITAÇÃO",
+            "EMPRESA",
+            "CENTRO DE CUSTO",
+            "COLABORADOR",
+            "CARGO ANTERIOR",
+            "SALÁRIO ANTERIOR",
+            "NOVO CARGO",
+            "SALÁRIO NOVO",
+            "DATA DA MODIFICAÇÃO",
+            "GESTOR APROVAÇÃO",
+            "MOTIVOS",
+
+            "STATUS",
+            "QUEM APROVOU/REPROVOU",
+            "DATA DA APROVAÇÃO/REPROVAÇÃO",
+            'OBSERVAÇÃO APROVAÇÃO/REPROVAÇÃO',
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->id,
+                $row->UserCadastrou->nome,
+                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
+                $row->Cliente ? $row->Cliente->razao_social : $row->Cliente->nome,
+                $row->CentroCusto->label,
+                $row->Colaborador->nome,
+                $row->CargoAnterior->nome,
+                $row->salario_anterior_format,
+                $row->NovoCargo->nome,
+                $row->novo_salario_format,
+                (new DataHora($row->data_modificacao))->dataCompleta(),
+                $row->GestorAprovacao->nome,
+                $row->observacao,
+
+                $row->status_aprovacao ? $row->status_aprovacao : "aberto",
+                $row->QuemAprovou ? $row->QuemAprovou->nome : "aguardando",
+                (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5),
+                $row->obs_aprovacao,
+            ];
+        }
+
+        return \Excel::download(new ModeloRowsExport($head, $rows), 'Mudança Intermitente para Fixo - ' . (new DataHora())->nomeUnico() . '.xlsx');
+
     }
 }

@@ -81,26 +81,6 @@
                     </div>
                 @endforeach
 
-
-                <br>
-                <br>
-
-                BPSE-Business Partners Serviços Empresariais
-
-                <br><br>
-                <strong>Sede BPSE:</strong> Luminy Plaza, Av. dos Holandeses, 17 - Olho D'agua, São Luís - MA, 65066-620<br>
-                <strong>Telefone:</strong> (98) 3011-0203<br>
-                <strong>Site:</strong> www.bpse.com.br<br>
-                <br><br>
-
-                Siga-nos nas Redes Sociais:<br><br>
-                <a href="https://www.linkedin.com/company/bpse/">
-                    <img src="http://site.bpse.com.br/img/likendin.png"
-                         alt="Linkedin" style="height: 30px"></a>
-                <a href="https://instagram.com/sejabpse"><img src="http://site.bpse.com.br/img/insta.png"
-                                                              alt="Instagram" style="height: 30px"></a>
-                {{--                    <a href="https://fb.com/bpse1"><img src="{{asset('img/fb.png')}}" alt="Facebook" style="height: 30px"></a>--}}
-
                 <br><br>
                 <span style="font-size: 11px; color: #696969">E-mail automático. Por favor, não responda.</span>
             </div>

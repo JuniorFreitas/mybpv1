@@ -17,6 +17,7 @@ class UpdateMembrosMail extends Mailable
      *
      * @return void
      */
+    public $tries = 3;
     public $de;
     public $para;
     public $acao;

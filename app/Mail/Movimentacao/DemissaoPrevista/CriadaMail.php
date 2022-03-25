@@ -22,7 +22,7 @@ class CriadaMail extends Mailable
     {
         $this->dados = $dados;
         $this->to($this->dados['email_para'], $this->dados['nome_para']);
-        $this->from('naoresponda@mybp.com.br', 'BPSE-BUSINESS PARTNERS SERVIÇOS EMPRESARIAIS');
+        $this->from('naoresponda@mybp.com.br', 'MyBP');
         $this->subject = "DEMISSÃO PREVISTA - CÓD: ".$this->dados['demissao_id'];
         $this->assunto = $this->subject;
     }
