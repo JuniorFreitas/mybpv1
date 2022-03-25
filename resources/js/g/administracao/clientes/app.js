@@ -44,6 +44,10 @@ const app = new Vue({
             ativo: '',
 
             politica_ehs: '',
+            missao: '',
+            visao: '',
+            valores: '',
+            politica_gq: '',
             apelido: '',
             tel_principal: '',
 
@@ -58,6 +62,9 @@ const app = new Vue({
 
             logo: [],
             logoDel: [],
+
+            mascote: [],
+            mascoteDel: [],
 
             telefones: [{
                 tipo: 'comercial',
@@ -74,6 +81,9 @@ const app = new Vue({
 
         urlLogoUpload: `${URL_ADMIN}/administracao/clientes/uploadLogo`,
         logoUploadAndamento: false,
+
+        urlMascoteUpload: `${URL_ADMIN}/administracao/clientes/uploadMascote`,
+        mascoteUploadAndamento: false,
 
         formDefault: null,
         campoNome: null,
