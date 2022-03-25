@@ -313,8 +313,6 @@ class UserController extends Controller
                 return response()->json(['msg' => 'Olá enviamos um e-mail pra você verifique sua caixa e-mail (ENTRADA e SPAM)'], 200);
             } catch (\Exception $e) {
                 DB::rollBack();
-//                print_r($e->getMessage(), true);
-                return response()->json(['msg' => $e->getTrace()], 400);
                 return response()->json(['msg' => 'Erro ao enviar solicitação de recuperação de senha'], 400);
             }
 
