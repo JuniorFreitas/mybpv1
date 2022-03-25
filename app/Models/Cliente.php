@@ -96,6 +96,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\ParabensEnviado|null $Parabens
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Vaga[] $Cargos
  * @property-read int|null $cargos_count
+ * @property string|null $missao
+ * @property string|null $visao
+ * @property string|null $valores
+ * @property string|null $politica_gq
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Mascote
+ * @property-read int|null $mascote_count
+ * @method static Builder|Cliente whereMissao($value)
+ * @method static Builder|Cliente wherePoliticaGq($value)
+ * @method static Builder|Cliente whereValores($value)
+ * @method static Builder|Cliente whereVisao($value)
  */
 class Cliente extends Model
 {
@@ -144,6 +154,10 @@ class Cliente extends Model
         'apelido',
         'tel_principal',
         'politica_ehs',
+        'missao',
+        'visao',
+        'valores',
+        'politica_gq',
         'ativo',
         'created_at',
         'updated_at',
@@ -175,6 +189,10 @@ class Cliente extends Model
         'apelido' => 'string',
         'tel_principal' => 'string',
         'politica_ehs' => 'string',
+        'missao' => 'string',
+        'visao' => 'string',
+        'valores' => 'string',
+        'politica_gq' => 'string',
         'ativo' => 'boolean',
         'created_at' => 'date:d/m/Y',
         'updated_at' => 'date:d/m/Y',
@@ -336,6 +354,11 @@ class Cliente extends Model
     public function Logo()
     {
         return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id');
+    }
+
+    public function Mascote()
+    {
+        return $this->belongsToMany(Arquivo::class, 'cliente_mascote', 'cliente_id', 'arquivo_id');
     }
 
     public function AreasEtiquetas()

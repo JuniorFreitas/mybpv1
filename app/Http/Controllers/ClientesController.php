@@ -191,6 +191,25 @@ class ClientesController extends Controller
                     }
                 }
 
+                if (isset($linha['mascote'])) {
+                    foreach ($linha['mascote'] as $index => $anexo) {
+                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+                        if ($anexo['chave'] == null) {
+                            Arquivo::whereId($anexo['id'])->update([
+                                'nome' => $anexo['nome'],
+                            ]);
+                        } else {
+                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                            if ($arquivo) {
+                                $arquivo->temporario = false;
+                                $arquivo->chave = '';
+                                $arquivo->save();
+                                $cliente->Mascote()->attach($arquivo->id);
+                            }
+                        }
+                    }
+                }
+
                 DB::commit();
                 return response()->json([], 201);
 
@@ -223,7 +242,7 @@ class ClientesController extends Controller
      */
     public function edit(Cliente $cliente)
     {
-        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo');
+        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote');
         $cliente->areas_etiquetas_del = [];
         $cliente->ServicosCliente->transform(function ($item) {
             $item->anexosDel = [];
@@ -326,6 +345,33 @@ class ClientesController extends Controller
                                 $arquivo->chave = '';
                                 $arquivo->save();
                                 $cliente->Logo()->attach($arquivo->id);
+                            }
+                        }
+                    }
+                }
+
+
+                if (isset($dados['mascoteDel'])) {
+                    foreach ($dados['mascoteDel'] as $id) {
+                        $cliente->Mascote()->find($id)->delete();
+                    }
+                }
+
+
+                if (isset($dados['mascote'])) {
+                    foreach ($dados['mascote'] as $index => $anexo) {
+                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+                        if ($anexo['chave'] == null) {
+                            Arquivo::whereId($anexo['id'])->update([
+                                'nome' => $anexo['nome'],
+                            ]);
+                        } else {
+                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                            if ($arquivo) {
+                                $arquivo->temporario = false;
+                                $arquivo->chave = '';
+                                $arquivo->save();
+                                $cliente->Mascote()->attach($arquivo->id);
                             }
                         }
                     }
@@ -604,6 +650,27 @@ class ClientesController extends Controller
 
     //foto
     public function logoDownload(Request $request, $arquivo)
+    {
+        return Arquivo::anexoDownload(Arquivo::DISCO_CLIENTE, $arquivo);
+    }
+
+    // Mascote-------------------------------------------------
+    public function uploadMascote(Request $request)
+    {
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_CLIENTE);
+    }
+
+    public function mascoteShow(Request $request, $arquivo)
+    {
+        return Arquivo::anexoShow(Arquivo::DISCO_CLIENTE, $arquivo);
+    }
+
+    public function mascoteDelete(Request $request, $arquivo)
+    {
+        return Arquivo::anexoDelete(Arquivo::DISCO_CLIENTE, $arquivo);
+    }
+
+    public function mascoteDownload(Request $request, $arquivo)
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_CLIENTE, $arquivo);
     }

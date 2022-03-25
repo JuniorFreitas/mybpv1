@@ -129,6 +129,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('clientes/logoDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'download'])->name('clientes.logo-download')->middleware('can:clientes');
         Route::delete('clientes/logo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'logoDelete'])->name('clientes.logo-delete')->middleware('can:clientes');
 
+        // Anexos Mascote
+        Route::post('clientes/uploadMascote', [\App\Http\Controllers\ClientesController::class, 'uploadMascote'])->name('clientes.upload-mascote')->middleware('can:clientes');
+        Route::get('clientes/mascote/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteShow'])->name('clientes.mascote-show')->middleware('can:clientes');
+        Route::get('clientes/mascoteDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteDownload'])->name('clientes.mascote-download')->middleware('can:clientes');
+        Route::delete('clientes/mascote/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteDelete'])->name('clientes.mascote-delete')->middleware('can:clientes');
+
 //            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('clientes.excel')->middleware('can:clientes');
         Route::get('clientes/buscar-cnpj', [\App\Http\Controllers\ClientesController::class, 'buscaCNPJ'])->name('clientes.verifica-cnpj')->middleware('can:clientes');
         Route::get('clientes/buscar-cpf', [\App\Http\Controllers\ClientesController::class, 'buscaCPF'])->name('clientes.verifica-cpf')->middleware('can:clientes');

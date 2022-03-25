@@ -194,10 +194,36 @@
                                 <legend class="text-uppercase">Informações para Carteira de Treinamento <span
                                         class="small text-warning">(* Obrigatório quando o cliente gerar carteira de treinamento)</span>
                                 </legend>
+
+
                                 <div class="form-group">
                                     <label for="politica_ehs">Política de EHS </label>
                                     <textarea class="form-control" cols="5" rows="5"
                                               v-model="form.politica_ehs"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="politica_ehs">Missão</label>
+                                    <textarea class="form-control" cols="5" rows="5"
+                                              v-model="form.missao"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="politica_ehs">Visão</label>
+                                    <textarea class="form-control" cols="5" rows="5"
+                                              v-model="form.visao"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="politica_ehs">Valores</label>
+                                    <textarea class="form-control" cols="5" rows="5"
+                                              v-model="form.valores"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="politica_ehs">Política de Gestão da Qualidade</label>
+                                    <textarea class="form-control" cols="5" rows="5"
+                                              v-model="form.politica_gq"></textarea>
                                 </div>
 
                                 <div class="form-group">
@@ -250,6 +276,23 @@
                                                     label="Selecione a Logo"
                                                     @onProgresso="logoUploadAndamento=true"
                                                     @onFinalizado="logoUploadAndamento=false"></upload>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset>
+                                    <legend class="text-uppercase">Upload do Mascote</legend>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <upload :model="form.mascote"
+                                                    :model-delete="form.mascoteDel"
+                                                    :url="urlMascoteUpload"
+                                                    :quantidade="1"
+                                                    :multi="false"
+                                                    :apenas-imagens="true"
+                                                    label="Selecione a Mascote"
+                                                    @onProgresso="mascoteUploadAndamento=true"
+                                                    @onFinalizado="mascoteUploadAndamento=false"></upload>
                                         </div>
                                     </div>
                                 </fieldset>
