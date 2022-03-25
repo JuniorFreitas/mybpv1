@@ -393,6 +393,11 @@ class User extends Authenticatable
         return $this->belongsToMany(GrupoCloud::class, 'user_grupo_cloud', 'grupo_cloud_id', 'user_id');
     }
 
+    public function RecuperacaoSenha()
+    {
+        return $this->hasOne(RecuperacaoSenha::class, 'user_id', 'id');
+    }
+
     protected static function booted()
     {
         static::created(function ($model) {

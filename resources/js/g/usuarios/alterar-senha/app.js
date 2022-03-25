@@ -1,32 +1,35 @@
-import Kanban from "../../../components/Weekly-report";
-
 const app = new Vue({
-    el: '#app',
+    el: "#app",
     data: {
         preloadAjax: false,
+        form: {
+            password: "",
+            password_confirmation: ""
+        }
     },
-    components:{
-        Kanban
-    },
-    methods: {
-        alterar: function () {
 
-            $(':input').trigger('blur');
-            if ($(':input.is-invalid').length) {
-                alert('Verificar os erros');
+    methods: {
+        alterar() {
+            if (this.form.password.length === 0) {
+                mostraErro("", "Informe sua nova senha");
                 return false;
             }
+            if (this.form.password.length > 0) {
+                if (this.form.password.length < 6) {
+                    mostraErro("", "A senha deve ter no mínimo 6 caracteres");
+                    return false;
+                }
+                if (this.form.password !== this.form.password_confirmation) {
+                    mostraErro("", "As senhas não conferem");
+                    return false;
+                }
+            }
 
-            var dados = {};
-            dados.password = $('#password').val();
-            dados.password_confirmation = $('#password_confirmation').val();
-            dados._method = 'PUT';
             this.preloadAjax = true;
 
-            axios.put(`${URL_ADMIN}/alterar-senha`, dados).
-            then((data) => {
+            axios.put(`${URL_ADMIN}/alterar-senha`, this.form).then((data) => {
                 this.preloadAjax = false;
-                mostraSucesso('', 'Senha alterada com sucesso');
+                mostraSucesso("", "Senha alterada com sucesso");
             }).catch((error) => {
                 this.preloadAjax = false;
             });

@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+Route::get('redisclean', function () {
+
+});
 
 Route::redirect('/', 'g/login');
 
@@ -40,6 +43,9 @@ Route::group(['prefix' => 'g'], function () {
     Route::post('password/email', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
     Route::get('password/reset/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('password/reset', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset']);
+
+    Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class,'solicitaRecuperaSenha'])->name('solicitaRecuperaSenha');
+    Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class,'recuperaSenha'])->name('recuperaSenha');
 });
 
 Route::get('carteira/{curriculo}', [\App\Http\Controllers\TreinamentoController::class, 'carteiraIndividual'])->name('treinamento.carteira');
@@ -725,11 +731,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         Route::post('usuarios/atualizar', [\App\Http\Controllers\UserController::class, 'atualizar'])->name('usuarios.atualizar')->middleware('can:usuarios');
         Route::put('usuarios/{usuario}/ativa-desativa', [\App\Http\Controllers\UserController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:usuarios');
-
-        Route::resource('usuarios', \App\Http\Controllers\UserController::class)->middleware('can:usuarios');
         //Alterar senha
         Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('can:alterar-senha');
         Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('can:alterar-senha');
+
+
+
+        Route::resource('usuarios', \App\Http\Controllers\UserController::class)->middleware('can:usuarios');
 
         //busca os grupos da uma empresa
         Route::get('usuario/busca-grupo-empresa/{empresa_id}', [\App\Http\Controllers\UserController::class, 'buscaGrupoEmpresa'])->name('buscaGrupoEmpresa')->middleware('can:usuarios');

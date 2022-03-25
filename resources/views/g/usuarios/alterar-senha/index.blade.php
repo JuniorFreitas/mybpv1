@@ -6,7 +6,7 @@
 @endsection
 @section('content')
 
-{{--    <kanban></kanban>--}}
+    {{--    <kanban></kanban>--}}
 
     <form>
         <div class="row ">
@@ -14,12 +14,14 @@
 
                 <div class="form-group">
                     <label>Senha</label>
-                    <input type="password" class="form-control form-control-sm" id="password" placeholder="Senha"  autocomplete="off" :disabled="preloadAjax" onblur="valida_campo_vazio(this,3)">
+                    <input type="password" class="form-control form-control-sm" v-model="form.password" placeholder="Senha" autocomplete="off"
+                           :disabled="preloadAjax" onblur="valida_campo_vazio(this,3)">
                 </div>
 
-                <div class="form-group" >
+                <div class="form-group">
                     <label>Redigitar senha</label>
-                    <input type="password" class="form-control form-control-sm" id="password_confirmation" placeholder="Redigitar senha"  autocomplete="off" :disabled="preloadAjax" onblur="valida_campo_vazio(this,3)">
+                    <input type="password" class="form-control form-control-sm" v-model="form.password_confirmation" placeholder="Redigitar senha"
+                           autocomplete="off" :disabled="preloadAjax" onblur="valida_campo_vazio(this,3)">
                 </div>
 
                 <div class="form-group">
