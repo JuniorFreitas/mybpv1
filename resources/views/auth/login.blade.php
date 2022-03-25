@@ -65,13 +65,16 @@
             background: #031E2D;
             color: #fff;
         }
+        [v-cloak] {
+            display: none;
+        }
     </style>
 </head>
 <body class="my-login-page"
       style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
     {{--      style="background: url({{assets('imagens/bg-business.jpg')}});"--}}
 >
-<div class="container-fluid">
+<div id="app" v-cloak class="container-fluid">
     <div class="container">
         <div class="row">
             <div class="col-md-12 min-vh-100 d-flex flex-column justify-content-center">
@@ -82,7 +85,8 @@
                                 <img src="{{ asset('images/logo_bpse_color.png') }}" class="img-fluid" alt="logo_bpse">
                             </div>
                             <div class="card-body">
-                                <form method="POST" id="demo-form" action="{{ route('login') }}">
+                                <form method="POST" id="demo-form" v-show="!recuperaSenha"
+                                      action="{{ route('login') }}">
                                     @csrf
                                     <div class="form-group">
                                         <label for="login">Usuário</label>
@@ -106,7 +110,10 @@
                                                 <strong>{{ $errors->first('password') }}</strong>
                                             </span>
                                         @endif
-                                        <a href="{{route('password.request')}}" class="float-right text-default">Esqueceu a Senha?</a>
+                                        <a href="javascript://" @click.prevent="recuperaSenha = !recuperaSenha"
+                                           class="float-right text-default">
+                                            Esqueceu a Senha?
+                                        </a>
                                     </div>
 
 {{--                                    <div class="form-group" style="display: none">--}}
@@ -131,8 +138,33 @@
                                     </div>
 
                                     <div class="form-group m-0">
-                                        <button data-sitekey="{{env('RECAPTCHA_SITE_KEY')}}" data-callback='onSubmit' type="submit" class="btn btn-primary btn-block g-recaptcha">
+                                        <button data-sitekey="{{env('RECAPTCHA_SITE_KEY')}}" data-callback='onSubmit'
+                                                type="submit" class="btn btn-primary btn-block g-recaptcha">
                                             ENTRAR NO SISTEMA
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <form @submit.prevent="solicitaSenha" id="formSenha" v-if="recuperaSenha">
+                                    <div class="form-group">
+                                        <label for="login">E-mail</label>
+                                        <input id="login" type="text"
+                                               onblur="validaEmailVazio(this)"
+                                               class="form-control"
+                                               v-model="form.login">
+                                    </div>
+
+                                    <div class="form-group m-0">
+                                        <button type="submit" @click.prevent="solicitaSenha"
+                                                class="btn btn-primary btn-block">
+                                            RECUPERAR SENHA
+                                        </button>
+                                    </div>
+
+                                    <div class="form-group mt-2">
+                                        <button type="submit" @click.prevent="recuperaSenha=!recuperaSenha"
+                                                class="btn btn-secondary btn-sm btn-block">
+                                            VOLTAR
                                         </button>
                                     </div>
                                 </form>
@@ -163,7 +195,40 @@
     </div>
 
 </div>
+<script src="{{ mix('js/app.js')}}"></script>
+<script src="{{mix('js/funcoes.js')}}"></script>
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            mostraSenha: false,
+            recuperaSenha: false,
 
+            form: {
+                login: '',
+            },
+        },
+        methods: {
+            solicitaSenha() {
+                $('#formSenha :input:visible').trigger('blur');
+                if ($('#formSenha :input:visible.is-invalid').length) {
+                    mostraErro('', 'Verifique o erro')
+                    return false;
+                }
 
+                axios.post(`${URL_ADMIN}/enviaSolicitacaoSenha`, this.form)
+                    .then(response => {
+                        mostraSucesso('', response.data.msg);
+                        this.recuperaSenha = false;
+                        this.form.login = '';
+                    })
+                    .catch(error => {
+                        mostraErro('', error.response.data.msg);
+                    });
+            },
+
+        },
+    });
+</script>
 </body>
 </html>

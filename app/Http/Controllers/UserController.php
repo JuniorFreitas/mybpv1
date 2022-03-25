@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobRecuperaSenha;
 use App\Models\Arquivo;
 use App\Models\GrupoCloud;
 use App\Models\Papel;
+use App\Models\RecuperacaoSenha;
 use App\Models\User;
+use DB;
 use Illuminate\Http\Request;
+use MasterTag\DataHora;
 
 class UserController extends Controller
 {
@@ -279,6 +283,64 @@ class UserController extends Controller
             }
 
             return response()->json([], 201);
+        }
+    }
+
+    public function solicitaRecuperaSenha(Request $request)
+    {
+        $usuario = User::whereLogin(trim(mb_strtolower($request->login)))
+            ->whereAtivo(true)
+            ->first();
+        if ($usuario) {
+            try {
+                DB::beginTransaction();
+                $exp = new DataHora();
+                $exp->addHora(6);
+                $recSenha = $usuario->RecuperacaoSenha()->create([
+                    'token' => \Str::random(8),
+                    'expiracao' => $exp->dataHoraInsert(),
+                    'ip_solicitacao' => $request->ip(),
+                    'solicitacao' => (new DataHora())->dataHoraInsert(),
+                    'recuperado' => false
+                ]);
+                DB::commit();
+                JobRecuperaSenha::dispatch([
+                    'nome' => $usuario->nome,
+                    'email' => $usuario->login,
+                    'token' => $recSenha->token,
+                    'expiracao' => $recSenha->expiracao
+                ]);
+                return response()->json(['msg' => 'Olá enviamos um e-mail pra você verifique sua caixa e-mail (ENTRADA e SPAM)'], 200);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['msg' => 'Erro ao enviar solicitação de recuperação de senha'], 400);
+            }
+
+        } else {
+            return response()->json(['msg' => 'Usuário não encontrado'], 404);
+        }
+    }
+
+    public function recuperaSenha(Request $request, $token)
+    {
+        $recuperacao = RecuperacaoSenha::whereToken($token)->whereRecuperado(false)->where('expiracao', '>=', (new DataHora())->dataHoraInsert())->first();
+
+        if ($recuperacao) {
+            $recuperacao->update([
+                'ip_recuperacao' => $request->ip(),
+                'recuperacao' => (new DataHora())->dataInsert(),
+                'recuperado' => true
+            ]);
+
+            $recuperacao->user()->update([
+                'password' => bcrypt($recuperacao->token)
+            ]);
+
+            \Auth::login($recuperacao->user);
+
+            return redirect()->route('g.usuarios.alterar-senha.index');
+        } else {
+            abort(404);
         }
     }
 
