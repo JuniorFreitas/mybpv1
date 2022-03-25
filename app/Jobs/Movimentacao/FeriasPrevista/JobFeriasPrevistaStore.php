@@ -19,6 +19,7 @@ class JobFeriasPrevistaStore implements ShouldQueue
      * @return void
      */
     public $mail;
+    public $tries = 3;
 
     public function __construct($feriasPrevista)
     {

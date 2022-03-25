@@ -12,7 +12,6 @@
 
                 Feliz Aniversário.<br><br>
 
-                Equipe de R&S - BPSE
                 <br><br>
             </td>
         </tr>

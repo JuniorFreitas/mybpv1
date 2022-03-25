@@ -21,6 +21,8 @@ class JobFeriasPrevistaAprovar implements ShouldQueue
      */
     public $mail;
 
+    public $tries = 3;
+
     public function __construct($feriasPrevista)
     {
         $this->mail = [

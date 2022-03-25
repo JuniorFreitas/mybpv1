@@ -15,6 +15,7 @@ use MasterTag\DataHora;
 class LembreteTarefaJob implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 3;
     /**
      * Create a new job instance.
      *

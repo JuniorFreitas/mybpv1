@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovar;
+use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovarRH;
 use App\Models\AdmissoesPrevista;
 use App\Models\DemissaoPrevista;
 use Illuminate\Http\Request;
@@ -177,6 +178,32 @@ class AdmissoesPrevistaController extends Controller
 
     }
 
+    public function aprovarRH(Request $request, AdmissoesPrevista $admissoesPrevista)
+    {
+        $this->authorize('rh_aprova_movimentacao');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $admissoesPrevista->update([
+                'user_rh_id' => auth()->id(),
+                'resposta_rh' => $dados['resposta_rh'],
+                'obs_rh' => $dados['obs_rh'],
+                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
+            ]);
+
+            DB::commit();
+
+            JobAdmissaoPrevistaAprovarRH::dispatch($admissoesPrevista);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar solicitação RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
 
     public function atualizar(Request $request)
     {

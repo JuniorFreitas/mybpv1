@@ -20,6 +20,8 @@ class JobExame implements ShouldQueue
      */
     public $mail;
 
+    public $tries = 3;
+
     public function __construct($dados)
     {
         $this->mail = [
