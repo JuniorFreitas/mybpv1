@@ -381,22 +381,27 @@ class Cliente extends Model
         return $this->belongsToMany(Vaga::class, 'cliente_cargo', 'cliente_id', 'cargo_id');
     }
 
+    public function VagasAbertas()
+    {
+        return $this->hasMany(VagasAbertas::class, 'empresa_id', 'id');
+    }
+
     protected static function booted()
     {
         static::updating(function ($model) {
-                if ($model->tipo == self::TIPO_PESSOA_JURIDICA) {
-                    $model->Usuario->find($model->id)->update([
-                        'nome' => $model->razao_social,
-                        'login' => $model->email,
-                        'ativo' => $model->ativo
-                    ]);
-                } else {
-                    $model->Usuario->find($model->id)->update([
-                        'nome' => $model->nome,
-                        'login' => $model->email,
-                        'ativo' => $model->ativo
-                    ]);
-                }
+            if ($model->tipo == self::TIPO_PESSOA_JURIDICA) {
+                $model->Usuario->find($model->id)->update([
+                    'nome' => $model->razao_social,
+                    'login' => $model->email,
+                    'ativo' => $model->ativo
+                ]);
+            } else {
+                $model->Usuario->find($model->id)->update([
+                    'nome' => $model->nome,
+                    'login' => $model->email,
+                    'ativo' => $model->ativo
+                ]);
+            }
         });
 
         static::addGlobalScope('scopeCliente', function (Builder $builder) {

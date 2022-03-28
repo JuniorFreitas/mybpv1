@@ -68,6 +68,11 @@ class VagasAbertas extends Model
         'ativo' => 'boolean',
     ];
 
+    public function Empresa()
+    {
+        return $this->hasOne(Cliente::class, 'id', 'empresa_id');
+    }
+
     public function Vaga()
     {
         return $this->hasOne(Vaga::class, 'id', 'vaga_id');
