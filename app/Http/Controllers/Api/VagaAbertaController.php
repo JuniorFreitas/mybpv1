@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\CurriculoAtualizacao;
 use App\Models\Escolaridade;
@@ -29,11 +30,61 @@ class VagaAbertaController extends Controller
         return view('vagasabertas.index', compact('empresa_id', 'vaga_aberta_id'));
     }
 
-    public function atualizar(Request $request)
+    /**
+     * @param $empresa_slug
+     * @param $vaga_aberta_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getVagaAberta($empresa_slug, $vaga_aberta_id): object
     {
-        $vaga = VagasAbertas::whereEmpresaId($request->empresa_id)->whereId($request->vaga_aberta_id)->whereAtivo(true)->with('Vaga', 'Municipio')->first();
+        $vaga = VagasAbertas::whereHas('Empresa', function ($query) use ($empresa_slug) {
+            $query->withoutGlobalScopes()->where('apelido', $empresa_slug);
+        })
+            ->with(['Empresa' => function ($query) {
+                $query->withoutGlobalScopes()->select(['id', 'razao_social', 'cnpj'])->with('Logo');
+            }, 'Municipio'])
+            ->whereId($vaga_aberta_id)
+            ->whereAtivo(true)
+            ->first();
 
-        return response()->json(['dados' => $vaga], 200);
+        if (!$vaga) {
+            return response()->json([
+                'msg' => 'Vaga não encontrada',
+                'success' => false
+            ], 404);
+        }
+        return response()->json([
+            'dados' => $vaga,
+            'success' => true
+        ]);
+    }
+
+    /**
+     * @param $empresa_slug
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getVagasAbertasByEmpresa($empresa_slug): object
+    {
+        $vagas = Cliente::select(['id', 'razao_social', 'cnpj', 'missao', 'visao', 'valores', 'logradouro', 'municipio', 'uf', 'cep'])
+            ->where('apelido', $empresa_slug)
+            ->with(
+                ['VagasAbertas' => function ($query) {
+                    $query->withoutGlobalScopes()
+                        ->with('Municipio')
+                        ->whereAtivo(true);
+                }, 'Logo'])
+            ->withoutGlobalScopes()
+            ->first();
+        if (!$vagas) {
+            return response()->json([
+                'msg' => 'Empresa não encontrada',
+                'success' => false
+            ], 404);
+        }
+        return response()->json([
+            'dados' => $vagas,
+            'success' => true
+        ]);
     }
 
     public function buscaCurriculo(Request $request)
@@ -41,10 +92,13 @@ class VagaAbertaController extends Controller
         //BUSCA POR CPF
         $cpf = Sistema::transformCpfCnpj($request->cpf);
         if (!Sistema::validaCPF($cpf)) {
-            return response()->json(['msg' => 'CPF inválido'], 400);
+            return response()->json([
+                'msg' => 'CPF inválido',
+                'success' => false
+            ], 400);
         }
 
-        $curriculo = Curriculo::whereCpf($cpf);
+        $curriculo = Curriculo::withoutGlobalScopes()->whereCpf($cpf);
         $escolaridades = Escolaridade::get();
 
         if ($curriculo->count() > 0) {
@@ -73,15 +127,26 @@ class VagaAbertaController extends Controller
                     'escolaridades' => $escolaridades
                 ], 200);
             } else {
-                return response()->json('error_nascimento', 200);
+                return response()->json(['msg' => 'CPF encontrado, porém data de nascimento não confere',
+                    'success' => false
+                ], 400);
             }
         } else {
             return response()->json([
                 'possuiCadastro' => false,
-                'escolaridades' => $escolaridades
+                'escolaridades' => $escolaridades,
+                'success' => true
             ], 200);
         }
     }
+
+    public function atualizar(Request $request)
+    {
+        $vaga = VagasAbertas::whereEmpresaId($request->empresa_id)->whereId($request->vaga_aberta_id)->whereAtivo(true)->with('Vaga', 'Municipio')->first();
+
+        return response()->json(['dados' => $vaga], 200);
+    }
+
 
     public function buscaCpf(Request $request)
     {

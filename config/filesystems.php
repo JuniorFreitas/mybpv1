@@ -34,11 +34,17 @@ return [
 
         'disco-cliente' => array_merge($default,
             [
-                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-cliente') : 'arquivos/disco-cliente',
-                'urlShow' => env('APP_URL') . '/g/administracao/clientes/anexo',
-                'urlDownload' => env('APP_URL') . '/g/administracao/clientes/anexo',
-                'urlThumb' => env('APP_URL') . '/g/administracao/clientes/anexo',
+//                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-cliente') : 'arquivos/disco-cliente',
+//                'urlShow' => env('APP_URL') . '/g/administracao/clientes/anexo',
+//                'urlDownload' => env('APP_URL') . '/g/administracao/clientes/anexo',
+//                'urlThumb' => env('APP_URL') . '/g/administracao/clientes/anexo',
                 'urlDelete' => env('APP_URL') . '/g/administracao/clientes/anexo',
+
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-cliente') : 'arquivos/disco-cliente',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-cliente',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-cliente',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-cliente',
+
                 'visibility' => 'public',
             ]
         ),
