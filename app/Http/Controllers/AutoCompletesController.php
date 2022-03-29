@@ -7,6 +7,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Municipio;
 use App\Models\User;
 use App\Models\Vaga;
+use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 
 class AutoCompletesController extends Controller
@@ -20,23 +21,25 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
         if ($busca === '*') {
-            return Vaga::whereAtivo(true)->with(['SimuladoVaga.Simulado' => function ($q) {
+            return VagasAbertas::with(['VagaSelecionada.SimuladoVaga.Simulado' => function ($q) {
                 $q->whereAtivo(true);
-            }])
+            }, 'Municipio'])
                 ->get()
                 ->map(function ($item) {
-                    $item->label = $item->nome;
+                    $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->uf;
                     return $item;
                 });
         } else {
-            return Vaga::whereAtivo(true)->with(['SimuladoVaga.Simulado' => function ($q) {
+            return VagasAbertas::whereHas('VagaSelecionada', function ($query) use ($busca, $quantidade) {
+                $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
+            })->with(['VagaSelecionada.SimuladoVaga.Simulado' => function ($q) {
                 $q->whereAtivo(true);
+            }, 'Municipio', 'VagaSelecionada' => function ($query) use ($busca, $quantidade) {
+                $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
             }])
-                ->where('nome', 'like', '%' . $busca . '%')
-                ->take($quantidade)
                 ->get()
                 ->map(function ($item) {
-                    $item->label = $item->nome;
+                    $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->uf;
                     return $item;
                 });
         }
@@ -156,9 +159,9 @@ class AutoCompletesController extends Controller
             $q->whereIn('status', ['ADMITIDO']);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
-        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome')->take($quantidade)
+        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome}";
+                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - { $item->VagaAberta->Municipio->uf }";
                 return $item;
             });
     }
@@ -176,9 +179,9 @@ class AutoCompletesController extends Controller
             $q->whereIn('status', ['ADMITIDO']);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
-        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome')->take($quantidade)
+        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio','VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome}";
+                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - { $item->VagaAberta->Municipio->uf }";
                 return $item;
             });
     }
@@ -197,9 +200,9 @@ class AutoCompletesController extends Controller
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
         })->take($quantidade)
-            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaSelecionada:id,nome')->take($quantidade)
+            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaSelecionada->nome}";
+                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - { $item->VagaAberta->Municipio->uf }";
                 return $item;
             });
     }

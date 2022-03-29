@@ -15,7 +15,7 @@
                     Nome: <strong>{{ $ferias->Feedback->Curriculo->nome }}</strong>
                     ({{ $ferias->Feedback->Curriculo->idade }} anos)<br>
                     CPF: <strong>{{ $ferias->Feedback->Curriculo->cpf }}</strong><br>
-                    Vaga selecionada: <strong>{{ $ferias->Feedback->VagaSelecionada->nome }}</strong> <br>
+                    Vaga selecionada: <strong>{{ $ferias->Feedback->VagaAberta->VagaSelecionada->nome  . ' - ' . $ferias->Feedback->VagaAberta->Municipio->uf }}</strong> <br>
                     Data admissão: <strong>{{ $ferias->Feedback->Admissao->data_admissao }}</strong>
                     <br>
                     Craidor por: <strong>{{ $ferias->Usuario->nome }}</strong><br>

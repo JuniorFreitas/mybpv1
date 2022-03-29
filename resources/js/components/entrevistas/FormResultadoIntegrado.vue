@@ -8,7 +8,7 @@
                         class='form-control'
                         onchange='valida_campo_vazio(this,1)'
                         onblur='valida_campo_vazio(this,1)'
-                        :disabled='visualizar'
+                        :disabled='visualizar || disabled'
                         v-model='form.documentos_entregue'
                     >
                         <option value=''>Selecione</option>
@@ -23,7 +23,7 @@
                 <datepicker
                     style='margin-top: -19px;'
                     label=''
-                    :disabled='visualizar'
+                    :disabled='visualizar || disabled'
                     onblur='valida_campo_vazio(this,1)'
                     v-model='form.documentos_entregue_data'
                 ></datepicker>
@@ -38,7 +38,7 @@
                         class='form-control'
                         onchange='valida_campo_vazio(this,1)'
                         onblur='valida_campo_vazio(this,1)'
-                        :disabled='visualizar'
+                        :disabled='visualizar || disabled'
                         v-model='form.encaminhado_exame'
                     >
                         <option value=''>Selecione</option>
@@ -53,7 +53,7 @@
                 <datepicker
                     label=''
                     style='margin-top: -19px;'
-                    :disabled='visualizar'
+                    :disabled='visualizar || disabled'
                     onblur='valida_campo_vazio(this,1)'
                     v-model='form.encaminhado_exame_data'
                 ></datepicker>
@@ -68,7 +68,7 @@
                         class='form-control'
                         onchange='valida_campo_vazio(this,1)'
                         onblur='valida_campo_vazio(this,1)'
-                        :disabled='visualizar'
+                        :disabled='visualizar || disabled'
                         v-model='form.encaminhado_treinamento'
                     >
                         <option value=''>Selecione</option>
@@ -83,7 +83,7 @@
                 <datepicker
                     label=''
                     style='margin-top: -19px;'
-                    :disabled='visualizar'
+                    :disabled='visualizar || disabled'
                     onblur='valida_campo_vazio(this,1)'
                     v-model='form.encaminhado_treinamento_data'
                 ></datepicker>
@@ -98,7 +98,7 @@
                         class='form-control'
                         onchange='valida_campo_vazio(this,1)'
                         onblur='valida_campo_vazio(this,1)'
-                        :disabled='visualizar'
+                        :disabled='visualizar || disabled'
                         v-model='form.excessao'
                     >
                         <option value=''>Selecione</option>
@@ -113,7 +113,7 @@
                     <label>Autorizado por</label>
                     <input
                         type='text'
-                        :disabled='visualizar'
+                        :disabled='visualizar || disabled'
                         autocomplete='off'
                         class='form-control'
                         onblur='valida_campo_vazio(this,3)'
@@ -129,7 +129,7 @@
                     <label>Responsável pelo envio</label>
                     <input
                         type='text'
-                        :disabled='visualizar'
+                        :disabled='visualizar || disabled'
                         autocomplete='off'
                         class='form-control'
                         onblur='valida_campo_vazio(this,3)'
@@ -143,7 +143,7 @@
             <div class='col-12'>
                 <div class='form-group'>
                     <label>Observações</label>
-                    <input type='text' :disabled="visualizar || form.obs === 'ADMISSÃO AVULSA'" autocomplete='off'
+                    <input type='text' :disabled="visualizar || disabled || form.obs === 'ADMISSÃO AVULSA'" autocomplete='off'
                            class='form-control' v-model='form.obs' />
                 </div>
             </div>
@@ -172,6 +172,10 @@ export default {
             }
         },
         visualizar: {
+            type: Boolean,
+            default: false
+        },
+        disabled: {
             type: Boolean,
             default: false
         }

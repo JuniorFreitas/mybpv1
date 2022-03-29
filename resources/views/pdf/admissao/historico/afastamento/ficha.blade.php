@@ -15,7 +15,7 @@
                     Nome: <strong>{{ $afastamento->Feedback->Curriculo->nome }}</strong>
                     ({{ $afastamento->Feedback->Curriculo->idade }} anos)<br>
                     CPF: <strong>{{ $afastamento->Feedback->Curriculo->cpf }}</strong><br>
-                    Vaga selecionada: <strong>{{ $afastamento->Feedback->VagaSelecionada->nome }}</strong> <br>
+                    Vaga selecionada: <strong>{{ $afastamento->Feedback->VagaAberta->VagaSelecionada->nome }}</strong> <br>
                     Data admissão: <strong>{{ $afastamento->Feedback->Admissao->data_admissao }}</strong>
                     <br>
                     Craidor por: <strong>{{ $afastamento->Usuario->nome }}</strong><br>

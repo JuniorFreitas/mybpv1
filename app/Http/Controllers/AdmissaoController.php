@@ -13,6 +13,7 @@ use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use App\Models\UsuarioConta;
+use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -51,10 +52,13 @@ class AdmissaoController extends Controller
     {
         $dados = $request->input();
 
+        $vaga = VagasAbertas::find($dados['feedback']['vaga_id']);
+
         $dadosCurriculo = $dados['curriculo'];
         $dadosCurriculo['email'] = trim(strtolower($dadosCurriculo['email']));
-        $dadosCurriculo['vaga_pretendida'] = $dados['feedback']['vaga_id'];
-        $dadosCurriculo['uf_vaga'] = substr($dadosCurriculo['autocomplete_label_municipio_modal'], -2, 2);
+        $dadosCurriculo['vaga_pretendida'] = $vaga->vaga_id;
+        $dadosCurriculo['municipio_id'] = $vaga->municipio_id;
+        $dadosCurriculo['uf_vaga'] = substr($dados['feedback']['autocomplete_label_vaga_modal'], -2, 2);
 
         $dadosCurriculo['pcd'] = $dadosCurriculo['pcd'] == 'true';
 
@@ -63,6 +67,8 @@ class AdmissaoController extends Controller
         $dadosFeedback['usuario_entrevista_marcado'] = auth()->id();
         $dadosFeedback['data_entrevista'] = null;
         $dadosFeedback['selecionado'] = 'sim';
+        $dadosFeedback['vagas_abertas_id'] = $dados['feedback']['vaga_id'];
+        $dadosFeedback['vaga_id'] = $vaga->vaga_id;
 
         $dadosParecerRh = $dados['parecer_rh'];
         $dadosParecerRh['ex_funcionario'] = $dadosParecerRh['ex_funcionario'] == 'true';
@@ -223,6 +229,7 @@ class AdmissaoController extends Controller
                     'cid' => $dadosCurriculo['cid'],
                     'email' => $dadosCurriculo['email'],
                     'logradouro' => $dadosCurriculo['logradouro'],
+                    'end_numero' => $dadosCurriculo['end_numero'],
                     'complemento' => $dadosCurriculo['complemento'],
                     'bairro' => $dadosCurriculo['bairro'],
                     'municipio' => $dadosCurriculo['municipio'],
@@ -362,6 +369,7 @@ class AdmissaoController extends Controller
             'Cliente.AreasEtiquetas',
             'TelPrincipal',
             'BancoConta',
+            'ResultadoIntegrado'
         );
 
         $feedback->BancoConta->banco = $feedback->BancoConta->banco ?: 'Banco do Brasil';
@@ -394,6 +402,7 @@ class AdmissaoController extends Controller
         $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?: "";
         $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
         $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
+        $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?: "";
 
         $feedback->parecerRh->indicado_por = $feedback->parecerRh->indicado_por ?: "";
         $feedback->parecerRh->calca = $feedback->parecerRh->calca ?: "";
@@ -402,6 +411,9 @@ class AdmissaoController extends Controller
         $feedback->parecerRh->camisa_meia = $feedback->parecerRh->camisa_meia ?: "";
 
         $feedback->parecerTecnica->indicado_area = $feedback->parecerTecnica->indicado_area ?: "";
+
+        $feedback->autocomplete_label_vaga_modal = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
+        $feedback->autocomplete_label_vaga_modal_anterior = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
 
         return response()->json(['feedback' => $feedback], 200);
     }
@@ -421,20 +433,12 @@ class AdmissaoController extends Controller
         $feedback = $admissao;
         $admissaoDados = $dados['admissao'];
 
+        $dadosVagaAberta = VagasAbertas::find($dados['vagas_abertas_id']);
+
         $dados['curriculo']['email'] = $dados['curriculo']['email'] == "" ? Sistema::EMAILPADRAO : $dados['curriculo']['email'];
-//        if ($request->filled('admissao.foto_escaneada')) {
-//            $dados['foto_escaneada'] = $dados['foto_escaneada'] == 'true' ? true : false;
-//        }
 
-//        $adm = Admissao::whereCurriculoId($request->curriculo_id);
-
-        $dadosValidados = \Validator::make($dados, [
-//            'nome' => 'required|min:3',
-//            'email' => 'required|email',
-//            'descricao' => 'required|min:3',
-//            'ativo' => 'required|boolean',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        $dadosValidados = \Validator::make($dados,[]);
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Salvar Admissão',
                 'erros' => $dadosValidados->errors()
@@ -442,6 +446,14 @@ class AdmissaoController extends Controller
         } else {
             try {
                 DB::beginTransaction();
+
+                $feedback->update([
+                    'vaga_id' => $dadosVagaAberta->vaga_id,
+                    'vagas_abertas_id' => $dadosVagaAberta->id,
+                ]);
+
+                $dados['curriculo']['uf_vaga'] = substr($dados['autocomplete_label_vaga_modal'], -2, 2);
+
                 $feedback->Curriculo->update([
                     'nome' => $dados['curriculo']['nome'],
                     'email' => $dados['curriculo']['email'],
@@ -450,6 +462,17 @@ class AdmissaoController extends Controller
                     'naturalidade' => $dados['curriculo']['naturalidade'],
                     'filiacao_pai' => $dados['curriculo']['filiacao_pai'],
                     'filiacao_mae' => $dados['curriculo']['filiacao_mae'],
+                    'pcd' => $dados['curriculo']['pcd'],
+                    'cnh' => $dados['curriculo']['cnh'],
+                    'logradouro' => $dados['curriculo']['logradouro'],
+                    'complemento' => $dados['curriculo']['complemento'],
+                    'end_numero' => $dados['curriculo']['end_numero'],
+                    'bairro' => $dados['curriculo']['bairro'],
+                    'municipio' => $dados['curriculo']['municipio'],
+                    'uf' => $dados['curriculo']['uf'],
+                    'cep' => $dados['curriculo']['cep'],
+                    'municipio_id' => $dados['curriculo']['municipio_id'],
+                    'uf_vaga' => $dados['curriculo']['uf_vaga']
                 ]);
 
                 if ($feedback->parecerRh) {
@@ -495,10 +518,41 @@ class AdmissaoController extends Controller
                     }
                 }
 
+                $dados['resultado_integrado']['documentos_entregue_data'] = $dados['resultado_integrado']['documentos_entregue'] ? $dados['resultado_integrado']['documentos_entregue_data'] : null;
+                $dados['resultado_integrado']['encaminhado_exame_data'] = $dados['resultado_integrado']['encaminhado_exame'] ? $dados['resultado_integrado']['encaminhado_exame_data'] : null;
+                $dados['resultado_integrado']['encaminhado_treinamento_data'] = $dados['resultado_integrado']['encaminhado_treinamento'] ? $dados['resultado_integrado']['encaminhado_treinamento_data'] : null;
+
+                $dadosResultadoIntegrado = $dados['resultado_integrado'];
+
+                $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
                 $dadosAdmissoes = $admissaoDados['dados_admissoes'];
                 isset($admissaoDados['dados_admissoes']['id']) ? $feedback->Admissao->DadosAdmissoes->update($dadosAdmissoes) : $feedback->Admissao->DadosAdmissoes()->create($dadosAdmissoes);
 
                 $feedback->Admissao ? $feedback->Admissao->update($admissaoDados) : $feedback->Admissao()->create($admissaoDados);
+
+                if (isset($dadosCurriculo['telefonesDelete'])) {
+                    foreach ($dadosCurriculo['telefonesDelete'] as $index) {
+                        TelefoneCurriculo::find($index)->delete();
+                    }
+                }
+
+                if (isset($dadosCurriculo['telefones'])) {
+                    foreach ($dadosCurriculo['telefones'] as $linha) {
+                        $linha['principal'] = $linha['principal'] == 'true';
+                        if ($linha['id'] == 0) {
+                            $telPrincipal = $feedback->Telefones()->create($linha);
+                            if ($linha['principal']) {
+                                $dadosFeedback['telefone_id'] = $telPrincipal->id;
+                            }
+                        } else {
+                            $feedback->Telefones->find($linha['id'])->update($linha);
+                            if ($linha['principal']) {
+                                $dados['telefone_id'] = $linha['id'];
+                            }
+                        }
+                    }
+                }
 
                 DB::commit();
                 return response()->json([], 201);
@@ -507,8 +561,8 @@ class AdmissaoController extends Controller
                 DB::rollback();
                 $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
-//                return response()->json(['msg' => $msg], 400);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
     }
@@ -593,7 +647,8 @@ class AdmissaoController extends Controller
     public function atualizar(Request $request)
     {
         $pg = $this->filtro($request)->paginate($request->porPag ?: 20);
-        return Sistema::pg($pg);
+        $dados = ['admissao_processo_dados_editar' => auth()->user()->can('admissao_processo_dados_editar')];
+        return Sistema::pg($pg, $dados);
     }
 
     // Anexos-------------------------------------------------
@@ -705,8 +760,8 @@ class AdmissaoController extends Controller
                     $feedback = $curriculo->FeedBack;
 
                     $feedback->vaga_id = $feedback->vaga_id ? $feedback->vaga_id : '';
-                    $feedback->autocomplete_label_vaga_modal = $feedback->vaga_id ? $feedback->VagaSelecionada->nome : '';
-                    $feedback->autocomplete_label_vaga_modal_anterior = $feedback->vaga_id ? $feedback->VagaSelecionada->nome : '';
+                    $feedback->autocomplete_label_vaga_modal = $feedback->vaga_id ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
+                    $feedback->autocomplete_label_vaga_modal_anterior = $feedback->vaga_id ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
                     $feedback->autocomplete_label_cliente_modal = $feedback->vaga_id ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
                     $feedback->autocomplete_label_cliente_modal_anterior = $feedback->vaga_id ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
                 } else {

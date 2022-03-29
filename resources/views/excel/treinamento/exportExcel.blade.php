@@ -40,7 +40,7 @@
             <td>{{$row->FeedbackCurriculo->TelPrincipal ? $row->FeedbackCurriculo->TelPrincipal->numero : 'não informado'}}</td>
             <td>{{$row->Curriculo->email}}</td>
             <td>{{$row->FeedbackCurriculo->Cliente->cnpj ? $row->FeedbackCurriculo->Cliente->nome_fantasia : $row->FeedbackCurriculo->Cliente->nome}}</td>
-            <td>{{$row->FeedbackCurriculo->VagaSelecionada->nome}}</td>
+            <td>{{$row->FeedbackCurriculo->VagaAberta->VagaSelecionada->nome . ' - ' . $row->FeedbackCurriculo->VagaAberta->Municipio->uf}}</td>
             <td>{{$row->Admissao ? $row->Admissao->cargo : null}}</td>
             <td>{{$row->Admissao ? $row->Admissao->funcao : null}}</td>
             <td>{{$row->Admissao ? $row->Admissao->data_admissao : null}}</td>

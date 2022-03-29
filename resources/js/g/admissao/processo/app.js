@@ -28,7 +28,7 @@ const app = new Vue({
         cadastrando: false,
         atualizado: false,
         visualizar: false,
-        disabled: true,
+        // disabled: true,
         disabledInput: false,
         btnBuscar: false,
 
@@ -84,6 +84,7 @@ const app = new Vue({
                 uf: "",
                 cep: "",
                 municipio_id: "",
+                cnh: "",
 
                 filiacao_pai: "",
                 filiacao_mae: "",
@@ -172,7 +173,61 @@ const app = new Vue({
                 responsavel_envio: ""
             },
 
-            admissao: null
+            admissao: {
+                area_etiqueta_id: "",
+                contrato: "",
+                funcao: "",
+                cargo: "",
+                salario: "0,00",
+                status: "",
+                documento: "",
+                documento_portaria: "",
+                tipo_admissao: "",
+                tipo_treinamento: "",
+                treinamento: "",
+                data_treinamento: "",
+                carteira_treinamento: "",
+                nr_trinta_tres: "",
+                data_nr_trinta_tres: "",
+                nr_trinta_cinco: "",
+                data_nr_trinta_cinco: "",
+                trinta_dois_sessenta: "",
+                data_trinta_dois_sessenta: "",
+                numero_cracha: "",
+                pis: "",
+                prazo_experiencia: '',
+                data_encerramento: '',
+                dados_admissoes: {
+                    ctps_numero: '',
+                    ctps_serie: '',
+                    ctps_data_emissao: '',
+                    titulo_eleitor_numero: '',
+                    titulo_eleitor_sessao: '',
+                    titulo_eleitor_zona: '',
+                },
+                data_aso: "",
+                foto_escaneada: "",
+                status_carteira_treinamento: "",
+                data_admissao: "",
+
+                data_entrega_area: "",
+                biometria: "",
+                data_biometria: "",
+
+                indicado_por: "",
+                indicado_area: "",
+
+                filiacao_pai: "",
+                filiacao_mae: "",
+                nome: "",
+                calca: "",
+                bota: "",
+                camisa_protecao: "",
+                camisa_meia: "",
+
+                foto_tres: [],
+                foto_tresDel: []
+            },
         },
 
         formAvulsaDefault: null,
@@ -202,12 +257,24 @@ const app = new Vue({
                 nascimento: "",
                 municipio_id: "",
                 rg: "",
+                pcd: "",
                 rg_data_emissao: "",
                 naturalidade: "",
                 autocomplete_label_municipio_modal: "",
                 autocomplete_label_municipio_modal_anterior: "",
                 foto_tres: [],
                 foto_tres_delete: [],
+
+                telefones: [{
+                    detalhe: "",
+                    id: 0,
+                    numero: "",
+                    pais: "55",
+                    principal: true,
+                    ramal: "",
+                    tipo: "whatsapp"
+                }],
+                telefonesDelete: []
             },
 
             certificados_nr: [],
@@ -338,6 +405,8 @@ const app = new Vue({
                 data_trinta_dois_sessenta: "",
                 numero_cracha: "",
                 pis: "",
+                prazo_experiencia: '',
+                data_encerramento: '',
                 dados_admissoes: {
                     ctps_numero: '',
                     ctps_serie: '',
@@ -368,7 +437,19 @@ const app = new Vue({
 
                 foto_tres: [],
                 foto_tresDel: []
-            }
+            },
+
+            resultado_integrado: {
+                documentos_entregue: "",
+                documentos_entregue_data: "",
+                encaminhado_exame: "",
+                encaminhado_exame_data: "",
+                encaminhado_treinamento: "",
+                encaminhado_treinamento_data: "",
+                excessao: "",
+                autorizado_por: "",
+                responsavel_envio: ""
+            },
         },
 
         formDefault: null,
@@ -542,6 +623,24 @@ const app = new Vue({
                 }, 100);
             }
         },
+
+        selecionaVagaModalEditar(obj) {
+            this.form.vagas_abertas_id = obj.id;
+            this.form.autocomplete_label_vaga_modal = obj.label;
+            this.form.autocomplete_label_vaga_modal_anterior = obj.label;
+        },
+        resetaCampoVagaModalEditar() {
+            if (this.form.autocomplete_label_vaga_modal_anterior !== this.form.autocomplete_label_vaga_modal) {
+                this.form.autocomplete_label_vaga_modal_anterior = "";
+                this.form.autocomplete_label_vaga_modal = "";
+                this.form.vagas_abertas_id = "";
+                setTimeout(() => {
+                    if (this.form.vagas_abertas_id === "") {
+                        mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
+                    }
+                }, 100);
+            }
+        },
         selecionaClienteModal(obj) {
             setTimeout(() => {
                 this.formAvulsa.feedback.cliente_id = 0;
@@ -587,12 +686,12 @@ const app = new Vue({
                 return false;
             }
 
-            if (this.formAvulsa.curriculo.municipio_id === "") {
-                valida_campo_vazio($("#mun_" + this.hash), 1);
-                $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
-                mostraErro("", "O Campo Cidade não pode ficar vazio");
-                return false;
-            }
+            // if (this.formAvulsa.curriculo.municipio_id === "") {
+            //     valida_campo_vazio($("#mun_" + this.hash), 1);
+            //     $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
+            //     mostraErro("", "O Campo Cidade não pode ficar vazio");
+            //     return false;
+            // }
 
             // if (this.formAvulsa.feedback.cliente_id === "") {
             //     valida_campo_vazio($("#cliente_" + this.hash), 1);
@@ -673,8 +772,6 @@ const app = new Vue({
             this.cadastrado = false;
             this.atualizado = false;
             this.cadastrando = false;
-            this.visualizar = false;
-            this.editando = false;
 
             this.preload = true;
             this.preloadForm = true;
@@ -697,10 +794,10 @@ const app = new Vue({
                     this.form.parecer_rh.camisa_protecao = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_protecao : "";
                     this.form.parecer_rh.camisa_meia = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_meia : "";
                     this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id == null ? "" : admissao.area_etiqueta_id;
+                    this.form.curriculo.pcd = data.feedback.curriculo.pcd ?? 'false';
 
                     this.form.parecer_tecnica.indicado_area = data.parecer_tecnica ? data.parecer_tecnica.indicado_area : "";
 
-                    //Dados Admissão
                     if (!admissao.dados_admissoes) {
                         this.form.admissao.dados_admissoes = {
                             'ctps_numero': '',
@@ -778,6 +875,7 @@ const app = new Vue({
         },
         carregou(dados) {
             this.lista = dados.itens;
+            this.editando = dados.admissao_processo_dados_editar;
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;
         },

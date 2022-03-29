@@ -144,6 +144,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $pis
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao wherePis($value)
  * @property-read \App\Models\DadosAdmissao|null $DadosAdmissoes
+ * @property mixed $prazo_encerramento
+ * @property mixed $prazo_experiencia
  */
 class Admissao extends Model
 {
@@ -218,6 +220,8 @@ class Admissao extends Model
         'biometria',
         'data_biometria',
         'pis',
+        'prazo_experiencia',
+        'data_encerramento'
     ];
     protected $casts = [
         'id' => 'int',
@@ -270,6 +274,8 @@ class Admissao extends Model
         'biometria' => 'boolean',
         'data_biometria' => 'string',
         'pis' => 'string',
+        'prazo_experiencia' => 'string',
+        'data_encerramento' => 'string',
     ];
 
     public function getCipaAttribute($value)
@@ -292,7 +298,6 @@ class Admissao extends Model
         return is_null($value) ? "" : (boolean)$value;
     }
 
-    //Acessor ->data_nr_trinta_tres
     public function getDataEntregaAreaAttribute($value)
     {
         if (!is_null($value)) {
@@ -303,7 +308,6 @@ class Admissao extends Model
         }
     }
 
-    //Modificador ->data_nr_trinta_tres
     public function setDataEntregaAreaAttribute($value)
     {
         if (!is_null($value)) {
@@ -311,6 +315,26 @@ class Admissao extends Model
             $this->attributes['data_entrega_area'] = $data->dataInsert();
         } else {
             $this->attributes['data_entrega_area'] = null;
+        }
+    }
+
+    public function getDataEncerramentoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['data_encerramento']);
+            return $data->dataCompleta();
+        } else {
+            return null;
+        }
+    }
+
+    public function setDataEncerramentoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($value);
+            $this->attributes['data_encerramento'] = $data->dataInsert();
+        } else {
+            $this->attributes['data_encerramento'] = null;
         }
     }
 

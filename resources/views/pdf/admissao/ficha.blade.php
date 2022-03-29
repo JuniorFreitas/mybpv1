@@ -29,7 +29,7 @@
                     Bota: <strong>{{ $dados->ParecerRh->bota }}</strong> | C.
                     Meia: <strong>{{ $dados->ParecerRh->camisa_meia }}</strong> | C.
                     Proteção: <strong>{{ $dados->ParecerRh->camisa_protecao }}</strong>
-                    <br> Vaga: <strong>{{ $dados->VagaSelecionada->nome }}</strong>
+                    <br> Vaga: <strong>{{ $dados->VagaAberta->VagaSelecionada->nome  . ' - ' . $dados->VagaAberta->Municipio->uf}}</strong>
                     <br>
                     Contato:
                     <strong>{{ $dados->TelPrincipal ? $dados->TelPrincipal->numero: 'Não informado' }}</strong>

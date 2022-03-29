@@ -1,7 +1,38 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 Route::get('redisclean', function () {
+
+});
+
+Route::get('vagas-aberta-organiza', function () {
+    $feedbacks = DB::table('feedback_curriculos')->select('curriculo_id', 'vaga_id',
+        'cargo.*', 'curriculo.uf_vaga', 'curriculo.municipio_id', 'feedback_curriculos.id')
+        ->join('vagas as cargo', 'cargo.id', '=', 'feedback_curriculos.vaga_id')
+        ->join('curriculos as curriculo', 'curriculo.id', '=', 'feedback_curriculos.curriculo_id')
+        ->whereNotNull('curriculo.municipio_id')
+        ->get();
+    foreach ($feedbacks as $feedback) {
+        $vagas_abertas = null;
+        $condicao = DB::table('vagas_abertas')->where('vaga_id', $feedback->vaga_id)->where('municipio_id', $feedback->municipio_id)
+            ->where('empresa_id', $feedback->empresa_id)->first();
+        if ($condicao == null) {
+            $vagas_abertas = [
+                'vaga_id' => $feedback->vaga_id,
+                'titulo' => $feedback->nome,
+                'municipio_id' => $feedback->municipio_id,
+                'ativo' => $feedback->ativo,
+                'empresa_id' => $feedback->empresa_id
+            ];
+            DB::table('vagas_abertas')->insert($vagas_abertas);
+        }
+    }
+    return 'rodar esse script => UPDATE
+    feedback_curriculos
+ INNER JOIN vagas as v on feedback_curriculos.vaga_id = v.id
+ INNER JOIN vagas_abertas as va on feedback_curriculos.vaga_id = va.vaga_id
+ SET feedback_curriculos.vagas_abertas_id = va.id';
 
 });
 
@@ -44,8 +75,8 @@ Route::group(['prefix' => 'g'], function () {
     Route::get('password/reset/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('password/reset', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset']);
 
-    Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class,'solicitaRecuperaSenha'])->name('solicitaRecuperaSenha');
-    Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class,'recuperaSenha'])->name('recuperaSenha');
+    Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class, 'solicitaRecuperaSenha'])->name('solicitaRecuperaSenha');
+    Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])->name('recuperaSenha');
 });
 
 Route::get('carteira/{curriculo}', [\App\Http\Controllers\TreinamentoController::class, 'carteiraIndividual'])->name('treinamento.carteira');
@@ -500,6 +531,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::delete('admissao/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoDelete'])->name('admissao.anexo-delete');
 
         Route::post('admissao/atualizar', [\App\Http\Controllers\AdmissaoController::class, 'atualizar'])->name('admissao.atualizar')->middleware('can:admissao'); // manter essa rota antes do resource
+        Route::get('admissao/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao'); // manter essa rota antes do resource
 
 
         Route::resource('admissao', \App\Http\Controllers\AdmissaoController::class)->middleware('can:admissao');
@@ -624,25 +656,19 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::resource('cloud', \App\Http\Controllers\CloudController::class)->middleware('can:cloud');
 
         Route::group(['as' => 'cadastro.', 'prefix' => 'clouds'], function () {
-            Route::get('cadastro', [\App\Http\Controllers\CloudController::class, 'indexCadastro'])->name('indexCadastro')
-//                ->middleware('can:cloud_cadastro')
+            Route::get('cadastro', [\App\Http\Controllers\CloudController::class, 'indexCadastro'])->name('indexCadastro')//                ->middleware('can:cloud_cadastro')
             ;
-            Route::post('cadastro/atualizar', [\App\Http\Controllers\CloudController::class, 'listarClouds'])->name('listarClouds')
-//                ->middleware('can:cloud_cadastro')
+            Route::post('cadastro/atualizar', [\App\Http\Controllers\CloudController::class, 'listarClouds'])->name('listarClouds')//                ->middleware('can:cloud_cadastro')
             ;
-            Route::post('cadastro', [\App\Http\Controllers\CloudController::class, 'storeCloud'])->name('storeCloud')
-//                ->middleware('can:cloud_cadastro')
+            Route::post('cadastro', [\App\Http\Controllers\CloudController::class, 'storeCloud'])->name('storeCloud')//                ->middleware('can:cloud_cadastro')
             ;
-            Route::get('cadastro/{cloud}/editar', [\App\Http\Controllers\CloudController::class, 'edit'])->name('edit')
-//                ->middleware('can:cloud_cadastro')
+            Route::get('cadastro/{cloud}/editar', [\App\Http\Controllers\CloudController::class, 'edit'])->name('edit')//                ->middleware('can:cloud_cadastro')
             ;
 
-            Route::put('cadastro/{cloud}', [\App\Http\Controllers\CloudController::class, 'updateCloud'])->name('updateCloud')
-//                ->middleware('can:cloud_cadastro')
+            Route::put('cadastro/{cloud}', [\App\Http\Controllers\CloudController::class, 'updateCloud'])->name('updateCloud')//                ->middleware('can:cloud_cadastro')
             ;
 
-            Route::put('cadastro/{cloud}/ativa-desativa', [\App\Http\Controllers\CloudController::class, 'ativaDesativa'])->name('ativaDesativa')
-//                ->middleware('can:cloud_cadastro')
+            Route::put('cadastro/{cloud}/ativa-desativa', [\App\Http\Controllers\CloudController::class, 'ativaDesativa'])->name('ativaDesativa')//                ->middleware('can:cloud_cadastro')
             ;
 
 
@@ -740,7 +766,6 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         //Alterar senha
         Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('can:alterar-senha');
         Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('can:alterar-senha');
-
 
 
         Route::resource('usuarios', \App\Http\Controllers\UserController::class)->middleware('can:usuarios');
