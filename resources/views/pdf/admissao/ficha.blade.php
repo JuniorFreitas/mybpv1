@@ -81,7 +81,7 @@
 
                 @if (count($dados->Curriculo->FotoTres)>0)
                     <img
-                        src="{{\App\Models\Sistema::convertBase('app/g/arquivos/disco-fotocurriculo/'.$dados->Curriculo->FotoTres[0]->file)}}"
+                        src="{{ $dados->Curriculo->FotoTres[0]->url }}"
                         style="height: 4cm; ">
                 @else
                     <img

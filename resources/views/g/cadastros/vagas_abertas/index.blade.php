@@ -222,7 +222,7 @@
                     </td>
 
                     <td>
-                        <span v-html="vaga.descricao.substring(0,300)"></span>
+                        <span v-html="vaga.descricao.substring(0,300)" v-if="vaga.descricao"></span>
                     </td>
 
                     <td>
