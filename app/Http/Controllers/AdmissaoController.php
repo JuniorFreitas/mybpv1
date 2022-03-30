@@ -412,8 +412,8 @@ class AdmissaoController extends Controller
 
         $feedback->parecerTecnica->indicado_area = $feedback->parecerTecnica->indicado_area ?: "";
 
-        $feedback->autocomplete_label_vaga_modal = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
-        $feedback->autocomplete_label_vaga_modal_anterior = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
+        $feedback->autocomplete_label_vaga_modal = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
+        $feedback->autocomplete_label_vaga_modal_anterior = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
 
         return response()->json(['feedback' => $feedback], 200);
     }
@@ -437,7 +437,7 @@ class AdmissaoController extends Controller
 
         $dados['curriculo']['email'] = $dados['curriculo']['email'] == "" ? Sistema::EMAILPADRAO : $dados['curriculo']['email'];
 
-        $dadosValidados = \Validator::make($dados,[]);
+        $dadosValidados = \Validator::make($dados, []);
         if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Salvar Admissão',
@@ -451,8 +451,6 @@ class AdmissaoController extends Controller
                     'vaga_id' => $dadosVagaAberta->vaga_id,
                     'vagas_abertas_id' => $dadosVagaAberta->id,
                 ]);
-
-                $dados['curriculo']['uf_vaga'] = substr($dados['autocomplete_label_vaga_modal'], -2, 2);
 
                 $feedback->Curriculo->update([
                     'nome' => $dados['curriculo']['nome'],
@@ -472,7 +470,6 @@ class AdmissaoController extends Controller
                     'uf' => $dados['curriculo']['uf'],
                     'cep' => $dados['curriculo']['cep'],
                     'municipio_id' => $dados['curriculo']['municipio_id'],
-                    'uf_vaga' => $dados['curriculo']['uf_vaga']
                 ]);
 
                 if ($feedback->parecerRh) {
@@ -590,7 +587,8 @@ class AdmissaoController extends Controller
                 'ResultadoIntegrado',
                 'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
                 'Curriculo.FotoTres:id',
-                'vagaSelecionada',
+                'VagaAberta.VagaSelecionada',
+                'VagaAberta.Municipio',
                 'Cliente:id,razao_social,cnpj,nome,cpf,area_id',
                 'Cliente.Area',
             );
@@ -624,14 +622,14 @@ class AdmissaoController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
 
         if ($request->filled('campoUf')) {
-            $resultado->whereHas('Curriculo', function ($q) use ($request) {
-                $q->whereUfVaga($request->campoUf);
+            $resultado->whereHas('VagaAberta.Municipio', function ($q) use ($request) {
+                $q->whereUf($request->campoUf);
             });
         }
 

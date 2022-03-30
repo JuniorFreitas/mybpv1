@@ -26,7 +26,7 @@ class AutoCompletesController extends Controller
             }, 'Municipio'])
                 ->get()
                 ->map(function ($item) {
-                    $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->uf;
+                    $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
                     return $item;
                 });
         } else {
@@ -39,7 +39,7 @@ class AutoCompletesController extends Controller
             }])
                 ->get()
                 ->map(function ($item) {
-                    $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->uf;
+                    $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
                     return $item;
                 });
         }

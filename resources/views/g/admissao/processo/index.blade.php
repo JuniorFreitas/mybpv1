@@ -255,13 +255,13 @@
                             <legend>Informações</legend>
                             <div class="row">
 
-                                <div class="col-12 col-sm-6 col-md-4">
+                                <div class="col-12 col-sm-12 col-md-12">
                                     <div class="form-group">
                                         <label>Cargo</label>
                                         <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                                       :valido="formAvulsa.feedback.vaga_id !== ''"
                                                       v-model="formAvulsa.feedback.autocomplete_label_vaga_modal"
-                                                      placeholder="Selecione uma vaga"
+                                                      placeholder="Digite um cargo"
                                                       :formsm="false"
                                                       :id="`vaga_${hash}`"
                                                       @onblur="resetaCampoVagaModal"
@@ -729,13 +729,13 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-4">
+                        <div class="col-12 col-sm-12 col-md-12">
                             <div class="form-group">
                                 <label>Cargo</label>
                                 <autocomplete :caminho="controle.dados.caminho_autocomplete"
-                                              :valido="form.vaga_id !== ''"
+                                              :valido="form.vagas_abertas_id !== ''"
                                               v-model="form.autocomplete_label_vaga_modal"
-                                              placeholder="Selecione uma vaga"
+                                              placeholder="Digite um cargo"
                                               :disabled="!editando"
                                               :readonly="!editando"
                                               :formsm="false"
@@ -964,7 +964,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                 <div class="form-group">
                     <label>Nome</label>
                     <input type="text"
@@ -995,7 +995,7 @@
                                   :valido="controle.dados.campoVaga !== ''"
                                   v-model="controle.dados.autocomplete_label"
                                   :disabled="controle.carregando"
-                                  placeholder="Por vaga"
+                                  placeholder="Por cargo"
                                   @onblur="resetaCampo"
                                   @onselect="selecionaVaga"></autocomplete>
                 </div>
@@ -1177,7 +1177,7 @@
                         item.cliente.nome_fantasia : item.cliente.nome}}
                     </td>
                     <td>
-                        @{{item.vaga_selecionada.nome}}
+                        @{{item.vaga_aberta.vaga_selecionada.nome}} -  @{{item.vaga_aberta.municipio.nome}} -  @{{item.vaga_aberta.municipio.uf}}
                     </td>
                     <td v-show="colunasTabela.pcd">
                         @{{item.curriculo.pcd ? 'Sim' : 'Não'}}
