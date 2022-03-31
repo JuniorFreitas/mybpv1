@@ -22,7 +22,7 @@ const app = new Vue({
     data: {
         tituloJanela: "Admissão",
         preload: false,
-        editando: true,
+        editando: false,
         apagado: false,
         cadastrado: false,
         cadastrando: false,
@@ -875,7 +875,7 @@ const app = new Vue({
         },
         carregou(dados) {
             this.lista = dados.itens;
-            // this.editando = true;
+            this.editando = dados.admissao_processo_dados_editar;
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;
         },

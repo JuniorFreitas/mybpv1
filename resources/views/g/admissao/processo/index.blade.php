@@ -775,7 +775,7 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Disponibilidade para turnos 6X2</label>
-                                <input type="text" class="form-control" :disabled="admissao_processo_dados_editar"
+                                <input type="text" class="form-control" :disabled="!editando"
                                        :value="form.parecer_rh.turnos_seis_por_dois ? 'Sim': 'Não'">
                             </div>
                         </div>
