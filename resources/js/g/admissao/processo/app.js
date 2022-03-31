@@ -480,7 +480,7 @@ const app = new Vue({
                 campoFiltro: "",
                 campoPcd: "",
                 campoCliente: "",
-                campoUf: "MA"
+                campoUf: ""
             }
         }
     },
