@@ -19,7 +19,7 @@
 
                 <div class="form-group">
                     <label for="">Informe o cargo</label>
-                    <autocomplete :caminho="vagas_ativas"
+                    <autocomplete :caminho="cargos_ativos"
                                   :valido="form.vaga_id !== ''"
                                   v-model="form.autocomplete_label_vaga_modal"
                                   placeholder="Selecione um cargo"
@@ -30,8 +30,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="descricao">Descrição</label>
-                    <input class="form-control" v-model="form.titulo" onblur="valida_campo_vazio(this,1)" placeholder="Informe o título da vaga"
+                    <label for="descricao">Titulo</label>
+                    <input class="form-control" v-model="form.titulo" onblur="valida_campo_vazio(this,1)"
+                           placeholder="Informe o título da vaga"
                     >
                 </div>
 
@@ -149,31 +150,25 @@
         <form class="row" @submit.prevent="$refs.componente.buscar()">
             <div class="col-12 col-md-4">
                 <div class="form-group">
-                    <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Buscar</span>
-                        </span>
-                        <input type="text"
-                               placeholder="Buscar por nome"
-                               autocomplete="off"
-                               class="form-control" :disabled="controle.carregando" v-model="controle.dados.campoBusca">
-                    </div>
+                    <label>Buscar</label>
+                    <input type="text"
+                           placeholder="Buscar por nome"
+                           autocomplete="off"
+                           class="form-control form-control-sm" :disabled="controle.carregando"
+                           v-model="controle.dados.campoBusca">
                 </div>
             </div>
 
             <div class="col-12 col-md-4">
                 <div class="form-group">
-                    <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Status</span>
-                        </span>
-                        <select class="custom-select" v-model="controle.dados.campoStatus" @change="atualizar()">
-                            <option value="">Todos os Status</option>
-                            <option :value="true">Apenas Ativos</option>
-                            <option :value="false">Apenas Inativos</option>
-                        </select>
+                    <label>Status</label>
+                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
+                            @change="atualizar()">
+                        <option value="">Todos os Status</option>
+                        <option :value="true">Apenas Ativos</option>
+                        <option :value="false">Apenas Inativos</option>
+                    </select>
 
-                    </div>
                 </div>
             </div>
 
@@ -205,6 +200,7 @@
                 <tr class="bg-default">
                     <th class="text-center">ID</th>
                     <th>Vaga</th>
+                    <th>Título</th>
                     <th>Descrição</th>
                     <th>Local</th>
                     <th>Ativo</th>
@@ -219,6 +215,9 @@
 
                     <td>
                         @{{vaga.vaga.nome}}
+                    </td>
+                    <td>
+                        @{{vaga.titulo}}
                     </td>
 
                     <td>

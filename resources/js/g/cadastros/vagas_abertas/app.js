@@ -16,7 +16,7 @@ const app = new Vue({
 
         pages: 10,
 
-        vagas_ativas: `autocomplete/todas-vagas-ativas`,
+        cargos_ativos: `autocomplete/cargos_ativos`,
         todos_municipios: `autocomplete/todos-municipios`,
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
