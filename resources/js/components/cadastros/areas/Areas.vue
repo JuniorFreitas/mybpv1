@@ -9,16 +9,24 @@
                     <div class="row">
                         <div class="col-12">
                             <label>Nome</label>
-                            <input class="form-control" type="text"
+                            <input class="form-control form-control-sm" type="text"
                                    onblur="valida_campo_vazio(this,1)" v-model="form.label">
                         </div>
 
-                        <div class="col-12">
-                            <div class="switchToggle">
-                                <input type="checkbox" v-model="form.ativo" id="switch">
-                                <label for="switch">Ativo</label>
+                        <div class="col-12 mt-2">
+                            <label>Supervisor</label>
+                            <input class="form-control form-control-sm" type="text"
+                                   onblur="valida_telefone(this)" v-mascara:telefone v-model="form.numero_supervisor">
+                        </div>
+
+                        <div class="col-12 mt-2">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
+                                <label class="custom-control-label"
+                                       for="ativo">{{ form.ativo ? "Ativo" : "Inativo" }}</label>
                             </div>
                         </div>
+
                     </div>
                 </fieldset>
             </template>
@@ -41,16 +49,12 @@
             <form class="row" @submit.prevent="$refs.componente.buscar()">
                 <div class="col-12 col-md-3">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Buscar</span>
-                        </span>
-                            <input type="text"
-                                   placeholder="Buscar por conteudo"
-                                   autocomplete="off"
-                                   class="form-control" :disabled="controle.carregando"
-                                   v-model="controle.dados.campoBusca">
-                        </div>
+                        <label>Buscar</label>
+                        <input type="text"
+                               placeholder="Buscar por conteudo"
+                               autocomplete="off"
+                               class="form-control form-control-sm" :disabled="controle.carregando"
+                               v-model="controle.dados.campoBusca">
                     </div>
                 </div>
 
@@ -63,6 +67,7 @@
                     </button>
 
                     <button type="button" class="btn btn-sm btn-secondary"
+                            :disabled="controle.carregando"
                             @click="formNovo"
                             data-toggle="modal"
                             data-target="#janelaForm">
@@ -93,8 +98,8 @@
                     </thead>
                     <tbody>
                     <tr v-for="area in lista">
-                        <td class="text-center">{{area.id}}</td>
-                        <td class="text-center">{{area.label}}</td>
+                        <td class="text-center">{{ area.id }}</td>
+                        <td class="text-center">{{ area.label }}</td>
                         <td class="text-center">
                             <bt-ativo :rota="`cadastro/areas/${area.id}/ativa-desativa`"
                                       :model="area"></bt-ativo>
@@ -122,15 +127,15 @@
 </template>
 
 <script>
-import controlePaginacao from '../../ControlePaginacao';
-import modal from '../../Modal';
-import editor from '@tinymce/tinymce-vue';
+import controlePaginacao from "../../ControlePaginacao";
+import modal from "../../Modal";
+import editor from "@tinymce/tinymce-vue";
 
 export default {
     components: {
         modal,
         controlePaginacao,
-        editor,
+        editor
     },
     props: {
         qntPag: {
@@ -153,8 +158,8 @@ export default {
         modal: { // modal Pai
             type: String,
             required: false,
-            default: ''
-        },
+            default: ""
+        }
     },
 
     mounted() {
@@ -164,7 +169,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela_form: 'Áreas',
+            titulo_janela_form: "Áreas",
 
             preload: false,
             editando: false,
@@ -174,8 +179,9 @@ export default {
             // cliente_id: '',
 
             form: {
-                label: '',
-                ativo: true,
+                label: "",
+                numero_supervisor: "",
+                ativo: true
             },
             formDefault: null,
 
@@ -186,31 +192,31 @@ export default {
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: '',
-                },
-            },
-        }
+                    campoBusca: ""
+                }
+            }
+        };
     },
     methods: {
         formNovo() {
-            this.titulo_janela_form = 'Cadastro Áreas';
+            this.titulo_janela_form = "Cadastro Áreas";
             this.preload = false;
             this.cadastrado = false;
             this.atualizado = false;
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
             formReset();
         },
         cadastra() {
-            $('#janelaForm :input:visible').trigger('blur');
-            if ($('#janelaForm :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
+            $("#janelaForm :input:visible").trigger("blur");
+            if ($("#janelaForm :input:visible.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
                 return false;
             }
             this.preload = true;
             axios.post(`${URL_ADMIN}/cadastro/areas`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide');
-                    mostraSucesso('', 'Área cadastrada com sucesso');
+                    $("#janelaForm").modal("hide");
+                    mostraSucesso("", "Área cadastrada com sucesso");
                     this.cadastrado = true;
                     this.$refs.componente.buscar();
                     this.preload = false;
@@ -220,6 +226,7 @@ export default {
                     this.preload = false;
                 });
         },
+
         alterar(area) {
 
             this.cadastrado = true;
@@ -227,30 +234,32 @@ export default {
             this.titulo_janela_form = "Alterando Área";
             formReset();
 
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
+
+            this.preload = true;
 
             axios.get(`${URL_ADMIN}/cadastro/areas/${area}/editar`)
                 .then(response => {
                     Object.assign(this.form, response.data);
-                    // this.form.nome = data.nome
                     this.editando = true;
                     setupCampo();
+                    this.preload = false;
                 }).catch(
                 error => (this.preloadAjax = false)
             );
 
         },
         alterarForm() {
-            $('#janelaForm :input:visible').trigger('blur');
-            if ($('#janelaForm :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
+            $("#janelaForm :input:visible").trigger("blur");
+            if ($("#janelaForm :input:visible.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
                 return false;
             }
             this.preload = true;
             axios.put(`${URL_ADMIN}/cadastro/areas/${this.form.id}`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide');
-                    mostraSucesso('', 'Área Alterada com sucesso');
+                    $("#janelaForm").modal("hide");
+                    mostraSucesso("", "Área Alterada com sucesso");
                     this.cadastrado = true;
                     this.$refs.componente.buscar();
                     this.preload = false;
@@ -270,10 +279,10 @@ export default {
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
-        },
+        }
     }
 
-}
+};
 </script>
 
 <style scoped>

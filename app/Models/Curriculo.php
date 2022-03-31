@@ -543,16 +543,16 @@ class Curriculo extends Model
     }
 
     //Scopo de ClienteID (Empresa)
-//    protected static function booted()
-//    {
-//        static::updating(function ($model) {
-//            $model->User->find($model->id)->update([
-//                'nome' => $model->nome,
-//                'login' => $model->email,
-//            ]);
-//        });
-//
-//        static::addGlobalScope(new ScopeEmpresa);
-//    }
+    protected static function booted()
+    {
+        static::updating(function ($model) {
+            $model->User->find($model->id)->update([
+                'nome' => $model->nome,
+                'login' => $model->email,
+            ]);
+        });
+
+        static::addGlobalScope(new ScopeEmpresa);
+    }
 
 }

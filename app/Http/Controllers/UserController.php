@@ -54,7 +54,6 @@ class UserController extends Controller
             'password' => 'required|confirmed|min:3',
             'grupo_id' => 'required|numeric',
             'tipo' => 'required',
-            'grupo_cloud_id' => 'required|numeric',
             'ativo' => 'required|boolean',
             'empresa_id' => 'required'
         ]);
@@ -116,7 +115,6 @@ class UserController extends Controller
             'nome' => 'required|min:3',
             'login' => 'unique:users,login,' . $usuario->id,
             'grupo_id' => 'required|numeric',
-            'grupo_cloud_id' => 'required|numeric',
             'ativo' => 'required|boolean',
             'tipo' => 'required',
         ]);
