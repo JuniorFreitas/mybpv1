@@ -30,7 +30,7 @@
         <span>{{ $dados->TelPrincipal ? $dados->TelPrincipal->Formatado() : 'não informado' }}</span>
         |
         E-mail: <span>{{ $curriculo->email }}</span>
-        <br> Vaga:<span> {{ $dados->VagaSelecionada->nome }}</span> |UF Vaga: <span>{{ $curriculo->uf_vaga }}</span>
+        <br> Vaga:<span> {{ $dados->VagaAberta->VagaSelecionada->nome }}</span> | UF Vaga: <span>{{ $dados->VagaAberta->Municipio->uf }}</span>
         <br>
         Ex funcionário: <span>{{ $rh->ex_funcionario ? 'Sim' : 'Não' }}</span>
     </div>

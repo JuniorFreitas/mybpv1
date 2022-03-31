@@ -170,6 +170,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagasAbertasId($value)
  * @property-read \App\Models\UsuarioConta|null $BancoConta
  * @property-read \App\Models\Cliente|null $Empresa
+ * @property-read \App\Models\VagasAbertas|null $VagaAberta
  */
 class FeedbackCurriculo extends Model
 {
@@ -409,6 +410,11 @@ class FeedbackCurriculo extends Model
     public function VagaSelecionada()
     {
         return $this->hasOne(Vaga::class, 'id', 'vaga_id');
+    }
+
+    public function VagaAberta()
+    {
+        return $this->hasOne(VagasAbertas::class, 'id', 'vagas_abertas_id');
     }
 
     public function Cliente()

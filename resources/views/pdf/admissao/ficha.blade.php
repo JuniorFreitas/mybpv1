@@ -29,7 +29,7 @@
                     Bota: <strong>{{ $dados->ParecerRh->bota }}</strong> | C.
                     Meia: <strong>{{ $dados->ParecerRh->camisa_meia }}</strong> | C.
                     Proteção: <strong>{{ $dados->ParecerRh->camisa_protecao }}</strong>
-                    <br> Vaga: <strong>{{ $dados->VagaSelecionada->nome }}</strong>
+                    <br> Vaga: <strong>{{ $dados->VagaAberta->VagaSelecionada->nome  . ' - ' . $dados->VagaAberta->Municipio->uf}}</strong>
                     <br>
                     Contato:
                     <strong>{{ $dados->TelPrincipal ? $dados->TelPrincipal->numero: 'Não informado' }}</strong>
@@ -81,7 +81,7 @@
 
                 @if (count($dados->Curriculo->FotoTres)>0)
                     <img
-                        src="{{\App\Models\Sistema::convertBase('app/g/arquivos/disco-fotocurriculo/'.$dados->Curriculo->FotoTres[0]->file)}}"
+                        src="{{ $dados->Curriculo->FotoTres[0]->url }}"
                         style="height: 4cm; ">
                 @else
                     <img

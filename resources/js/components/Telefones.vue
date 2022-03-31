@@ -18,7 +18,7 @@
 
                         </button>
 
-                        <select class="form-control mb-2 mr-sm-2" v-model="tel.tipo">
+                        <select class="form-control mb-2 mr-sm-2" :disabled="disabled" v-model="tel.tipo">
                             <option value="whatsapp">WhatsApp</option>
                             <option value="celular">Celular</option>
                             <option value="residencial">Residencial</option>
@@ -29,14 +29,14 @@
                             <div class="input-group-prepend">
                                 <div class="input-group-text">País +</div>
                             </div>
-                            <input type="text" class="form-control pais" v-model="tel.pais">
+                            <input type="text" class="form-control pais" :disabled="disabled" v-model="tel.pais">
                         </div>
 
                         <div class="input-group mb-2 mr-sm-2">
                             <div class="input-group-prepend">
                                 <div class="input-group-text"><i class="fas fa-phone"></i></div>
                             </div>
-                            <input type="text" class="form-control telefone" v-mascara:telefone
+                            <input type="text" class="form-control telefone" :disabled="disabled" v-mascara:telefone
                                    onblur="valida_telefone_vazio(this)" v-model="tel.numero">
                         </div>
 
@@ -44,18 +44,18 @@
                             <div class="input-group-prepend">
                                 <div class="input-group-text">Ramal</div>
                             </div>
-                            <input type="text" class="form-control ramal" v-model="tel.ramal">
+                            <input type="text" class="form-control ramal" :disabled="disabled" v-model="tel.ramal">
                         </div>
 
                         <div class="input-group mb-2 mr-sm-2" v-if="detalhe">
                             <div class="input-group-prepend">
                                 <div class="input-group-text">Obs</div>
                             </div>
-                            <input type="text" class="form-control" v-model="tel.detalhe">
+                            <input type="text" class="form-control" :disabled="disabled" v-model="tel.detalhe">
                         </div>
 
                         <div class="custom-control custom-switch">
-                            <input type="checkbox" @click="marcaPrincipal(tel)" :value="tel.principal" v-model="tel.principal"
+                            <input type="checkbox" @click="marcaPrincipal(tel)" :disabled="disabled" :value="tel.principal" v-model="tel.principal"
                                    class="custom-control-input" :id="index">
                             <label class="custom-control-label"
                                    :for="index">Principal</label>
@@ -117,6 +117,11 @@ export default {
             type: Boolean,
             required: false,
             default: () => false
+        },
+        disabled: {
+            type: Boolean,
+            required: false,
+            default: false
         }
 
     },

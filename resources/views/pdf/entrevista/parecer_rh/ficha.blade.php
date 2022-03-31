@@ -39,8 +39,8 @@
         <br/>
         Empresa:
         <span>{{ $dados->FeedbackCurriculo->Empresa->nome }}</span>
-        <br> Vaga:<span> {{ $dados->FeedbackCurriculo->VagaSelecionada->nome }}</span> |
-        UF Vaga: <span>{{ $dados->FeedbackCurriculo->Curriculo->uf_vaga }}</span> | Ex
+        <br> Vaga:<span> {{ $dados->FeedbackCurriculo->VagaAberta->VagaSelecionada->nome }}</span> |
+        UF Vaga: <span>{{ $dados->FeedbackCurriculo->VagaAberta->Municipio->uf }}</span> | Ex
         Funcionário:<span> {{ $dados->ex_funcionario }}</span>
     </div>
 

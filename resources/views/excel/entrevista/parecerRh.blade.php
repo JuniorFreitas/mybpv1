@@ -80,7 +80,7 @@
             <td>{{$row->TelPrincipal ? $row->TelPrincipal->numero : 'não informado'}}</td>
             <td>{{$row->Curriculo->email}}</td>
             <td>{{$row->Cliente->cnpj ? $row->Cliente->nome_fantasia : $row->Cliente->nome}}</td>
-            <td>{{$row->VagaSelecionada->nome}}</td>
+            <td>{{$row->VagaAberta->VagaSelecionada->nome . ' - ' . $row->VagaAberta->Municipio->uf  }}</td>
             <td>{{$row->Curriculo->Formacao->tipo}} {{$row->Curriculo->FormacaoCurso ? '('. $row->Curriculo->FormacaoCurso. ')' : '' }} </td>
             <td>{{$row->parecerRh ? $row->parecerRh->ex_funcionario : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->cnh_tipo : ''}}</td>

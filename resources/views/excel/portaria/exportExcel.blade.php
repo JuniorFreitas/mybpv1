@@ -44,7 +44,7 @@
             <td>{{$row->parecerRh ? $row->parecerRh->camisa_meia : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->camisa_protecao : ''}}</td>
             <td>{{$row->FeedbackCurriculo->Cliente->cnpj ? $row->FeedbackCurriculo->Cliente->nome_fantasia : $row->FeedbackCurriculo->Cliente->nome}}</td>
-            <td>{{$row->FeedbackCurriculo->VagaSelecionada->nome}}</td>
+            <td>{{$row->FeedbackCurriculo->VagaAberta->VagaSelecionada->nome . ' - ' . $row->FeedbackCurriculo->VagaAberta->Municipio->uf}}</td>
             <td>{{$row->parecerRh->ex_funcionario ? 'Sim' : 'Não'}}</td>
             <td>{{$row->FeedbackCurriculo->TelPrincipal ? $row->FeedbackCurriculo->TelPrincipal->numero : 'não informado'}}</td>
             <td>{{$row->Curriculo->email}}</td>

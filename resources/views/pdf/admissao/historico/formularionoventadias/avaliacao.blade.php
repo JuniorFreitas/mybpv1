@@ -14,7 +14,7 @@
 
                     Nome: <strong>{{ $avaliacao->Feedback->Curriculo->nome }}</strong> ({{ $avaliacao->Feedback->Curriculo->idade }} anos)<br>
                     CPF: <strong>{{ $avaliacao->Feedback->Curriculo->cpf }}</strong><br>
-                    Vaga selecionada: <strong>{{ $avaliacao->Feedback->VagaSelecionada->nome }}</strong> <br>
+                    Vaga selecionada: <strong>{{ $avaliacao->Feedback->VagaAberta->VagaSelecionada->nome  . ' - ' . $avaliacao->Feedback->VagaAberta->Municipio->uf }}</strong> <br>
                     Data admissão: <strong>{{ $avaliacao->Feedback->Admissao->data_admissao }}</strong>
                     <br>
                     Avaliado por: <strong>{{ $avaliacaoPerguntas[0]->Usuario->nome }}</strong>

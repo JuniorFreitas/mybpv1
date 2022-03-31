@@ -190,7 +190,7 @@ class IntermitenteController extends Controller
     {
         $intermitente = Intermitente::whereId($id)->first();
 
-        $intermitente->autocomplete_label_colaborador = "{$intermitente->Colaborador->Curriculo->nome} - {$intermitente->Colaborador->VagaSelecionada->nome} - {$intermitente->Colaborador->Cliente->nome_fantasia}";
+        $intermitente->autocomplete_label_colaborador = "{$intermitente->Colaborador->Curriculo->nome} - {$intermitente->Colaborador->VagaAberta->VagaSelecionada->nome} - {$intermitente->Colaborador->VagaAberta->Municipio->uf} - {$intermitente->Colaborador->Cliente->nome_fantasia}";
         $intermitente->autocomplete_label_colaborador_anterior = $intermitente->autocomplete_label_colaborador;
         $intermitente->tipo_id = is_null($intermitente->tipo_id) ? 0 : $intermitente->tipo_id;
         $intermitente->area_id = is_null($intermitente->area_id) ? 0 : $intermitente->area_id;

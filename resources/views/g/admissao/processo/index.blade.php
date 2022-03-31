@@ -163,6 +163,13 @@
                                                placeholder="Informe o CID" v-model="formAvulsa.curriculo.cid">
                                     </div>
                                 </div>
+                                <div class="col-12 col-sm-6 col-lg-2">
+                                    <div class="form-group">
+                                        <label>CNH</label>
+                                        <input type="text" class="form-control" onblur="valida_campo(this,1)"
+                                               v-model="formAvulsa.curriculo.cnh" :disabled="visualizar">
+                                    </div>
+                                </div>
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
                                         <label>RG</label>
@@ -248,13 +255,13 @@
                             <legend>Informações</legend>
                             <div class="row">
 
-                                <div class="col-12 col-sm-6 col-md-4">
+                                <div class="col-12 col-sm-12 col-md-12">
                                     <div class="form-group">
-                                        <label>Vaga</label>
+                                        <label>Cargo</label>
                                         <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                                       :valido="formAvulsa.feedback.vaga_id !== ''"
                                                       v-model="formAvulsa.feedback.autocomplete_label_vaga_modal"
-                                                      placeholder="Selecione uma vaga"
+                                                      placeholder="Digite um cargo"
                                                       :formsm="false"
                                                       :id="`vaga_${hash}`"
                                                       @onblur="resetaCampoVagaModal"
@@ -262,19 +269,19 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label for="Cidade">Cidade</label>
-                                        <autocomplete :caminho="todos_municipios"
-                                                      :valido="formAvulsa.curriculo.municipio_id !== ''"
-                                                      v-model="formAvulsa.curriculo.autocomplete_label_municipio_modal"
-                                                      placeholder="Selecione um municipio"
-                                                      :formsm="false"
-                                                      :id="`mun_${hash}`"
-                                                      @onblur="resetaCampoMunicipioModal"
-                                                      @onselect="selecionaMunicipioModal"></autocomplete>
-                                    </div>
-                                </div>
+{{--                                <div class="col-12 col-sm-6 col-md-4">--}}
+{{--                                    <div class="form-group">--}}
+{{--                                        <label for="Cidade">Cidade</label>--}}
+{{--                                        <autocomplete :caminho="todos_municipios"--}}
+{{--                                                      :valido="formAvulsa.curriculo.municipio_id !== ''"--}}
+{{--                                                      v-model="formAvulsa.curriculo.autocomplete_label_municipio_modal"--}}
+{{--                                                      placeholder="Selecione um municipio"--}}
+{{--                                                      :formsm="false"--}}
+{{--                                                      :id="`mun_${hash}`"--}}
+{{--                                                      @onblur="resetaCampoMunicipioModal"--}}
+{{--                                                      @onselect="selecionaMunicipioModal"></autocomplete>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
 
                                 <div class="col-12 col-sm-6 col-md-3">
                                     <div class="form-group">
@@ -582,26 +589,37 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-lg-2">
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>Idade</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
-                                       :value="form.curriculo.idade">
+                                <label>Nascimento</label>
+                                <input type="text" class="form-control"
+                                       :disabled="!editando"
+                                       v-model="form.curriculo.nascimento"
+                                       placeholder="Ex: 10/10/2010"
+                                       v-mascara:data
+                                       autocomplete="mybp" onblur="valida_data_vazio(this)">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-lg-2">
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>PCD</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
-                                       :value="form.curriculo.pcd ? 'Sim' : 'Não'">
+                                <label>Cota PCD (Lei nº 8.213/91)</label>
+                                <select class="form-control" onchange="valida_campo_vazio(this,1)"
+                                        onblur="valida_campo_vazio(this,1)"
+                                        :disabled="!editando"
+                                        v-model="form.curriculo.pcd">
+                                    <option value="">Selecione</option>
+                                    <option :value='true'>Sim</option>
+                                    <option :value='false'>Não</option>
+                                </select>
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-6 col-lg-2">
                             <div class="form-group">
                                 <label>CNH</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
+                                <input type="text" class="form-control"
+                                       :disabled="!editando"
                                        :value="form.parecer_rh.cnh ? form.parecer_rh.cnh_tipo : 'Não possui'">
                             </div>
                         </div>
@@ -649,8 +667,8 @@
                             <div class="form-group">
                                 <label>Bota</label>
                                 <select
-                                        class="form-control" :disabled="visualizar"
-                                        v-model="form.parecer_rh.bota"
+                                    class="form-control" :disabled="visualizar"
+                                    v-model="form.parecer_rh.bota"
                                 >
                                     <option value="">Selecione</option>
                                     @foreach(range(33,50) as $i)
@@ -664,7 +682,8 @@
                             <div class="form-group">
                                 <label>Camisa proteção</label>
 
-                                <select :disabled="visualizar" class="form-control" v-model="form.parecer_rh.camisa_protecao">
+                                <select :disabled="visualizar" class="form-control"
+                                        v-model="form.parecer_rh.camisa_protecao">
                                     <option value="">Selecione</option>
                                     @foreach(range(2,6) as $i)
                                         <option value="{{$i}}">{{$i}}</option>
@@ -710,18 +729,26 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-12 col-md-12">
                             <div class="form-group">
-                                <label>Vaga</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
-                                       :value="form.vaga_selecionada.nome">
+                                <label>Cargo</label>
+                                <autocomplete :caminho="controle.dados.caminho_autocomplete"
+                                              :valido="form.vagas_abertas_id !== ''"
+                                              v-model="form.autocomplete_label_vaga_modal"
+                                              placeholder="Digite um cargo"
+                                              :disabled="!editando"
+                                              :readonly="!editando"
+                                              :formsm="false"
+                                              :id="`vaga_${hash}`"
+                                              @onblur="resetaCampoVagaModalEditar"
+                                              @onselect="selecionaVagaModalEditar"></autocomplete>
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Ex funcionário</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
+                                <input type="text" class="form-control" :disabled="!editando"
                                        :value="form.parecer_rh.ex_funcionario ? 'Sim' : 'Não'">
                             </div>
                         </div>
@@ -729,7 +756,8 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Contato</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
+                                <input type="text" class="form-control"
+                                       :disabled="!editando"
                                        :value="form.tel_principal ? form.tel_principal.numero: 'não informado'">
                             </div>
                         </div>
@@ -738,6 +766,7 @@
                             <div class="form-group">
                                 <label>E-mail</label>
                                 <input type="text" class="form-control"
+                                       :disabled="visualizar"
                                        onblur="validaEmailVazio(this)"
                                        v-model="form.curriculo.email">
                             </div>
@@ -746,7 +775,7 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Disponibilidade para turnos 6X2</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
+                                <input type="text" class="form-control" :disabled="!editando"
                                        :value="form.parecer_rh.turnos_seis_por_dois ? 'Sim': 'Não'">
                             </div>
                         </div>
@@ -767,20 +796,31 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Endereço</label>
-                                <input type="text" class="form-control" disabled="disabled" readonly="readonly"
-                                       :value="form.curriculo.logradouro+', '+form.curriculo.bairro+', '+form.curriculo.municipio+'-'+form.curriculo.uf">
-                            </div>
+                        <div class="col-12">
+                            <fieldset>
+                                <legend>Endereço</legend>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <endereco :obrigatorio="false" :disabled="visualizar" :model="form.curriculo"></endereco>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+
+
+                        <div class="col-12">
+                            <fieldset>
+                                <legend>RESULTADO INTEGRADO</legend>
+                                <form-resultado-integrado
+                                    :form="form.resultado_integrado" :disabled="!editando" :visualizar="visualizar"></form-resultado-integrado>
+                            </fieldset>
                         </div>
 
                         <template v-if="form.parecer_rota">
                             <div class="col-12 col-sm-6">
                                 <div class="form-group">
                                     <label>Bairro Rota</label>
-                                    <input type="text" class="form-control" disabled="disabled"
-                                           readonly="readonly"
+                                    <input type="text" class="form-control" :disabled="!editando"
                                            :value="form.parecer_rota.bairro_rota">
                                 </div>
                             </div>
@@ -788,8 +828,7 @@
                             <div class="col-12 col-sm-6">
                                 <div class="form-group">
                                     <label>Ponto Referência Rota</label>
-                                    <input type="text" class="form-control" disabled="disabled"
-                                           readonly="readonly"
+                                    <input type="text" class="form-control" :disabled="!editando"
                                            :value="form.parecer_rota.ponto_referencia_rota">
                                 </div>
                             </div>
@@ -797,8 +836,7 @@
                             <div class="col-12 col-sm-6">
                                 <div class="form-group">
                                     <label>Ponto Referência Bairro</label>
-                                    <input type="text" class="form-control" disabled="disabled"
-                                           readonly="readonly"
+                                    <input type="text" class="form-control" :disabled="!editando"
                                            :value="form.parecer_rota.ponto_referencia_residencia">
                                 </div>
                             </div>
@@ -809,8 +847,7 @@
                             <div class="col-12 col-sm-6">
                                 <div class="form-group">
                                     <label>Teste aplicado</label>
-                                    <input type="text" class="form-control" disabled="disabled"
-                                           readonly="readonly"
+                                    <input type="text" class="form-control" :disabled="!editando"
                                            :value="form.parecer_teste.qual_teste">
                                 </div>
                             </div>
@@ -818,8 +855,7 @@
                             <div class="col-12 col-sm-6">
                                 <div class="form-group">
                                     <label>Resultado Teste Prático</label>
-                                    <input type="text" class="form-control" disabled="disabled"
-                                           readonly="readonly"
+                                    <input type="text" class="form-control" :disabled="!editando"
                                            :value="form.parecer_teste.parecer_final_teste">
                                 </div>
                             </div>
@@ -829,8 +865,7 @@
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <div class="form-group">
                                     <label>Rigger</label>
-                                    <input type="text" class="form-control" disabled="disabled"
-                                           readonly="readonly"
+                                    <input type="text" class="form-control" :disabled="!editando"
                                            :value="form.parecer_tecnica.experiencia_cargas_rigger">
                                 </div>
                             </div>
@@ -838,8 +873,7 @@
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <div class="form-group">
                                     <label>Plataforma Movél</label>
-                                    <input type="text" class="form-control" disabled="disabled"
-                                           readonly="readonly"
+                                    <input type="text" class="form-control" :disabled="!editando"
                                            :value="form.parecer_tecnica.opera_plat_movel">
                                 </div>
                             </div>
@@ -847,8 +881,7 @@
                             <div class="col-12 col-sm-6">
                                 <div class="form-group">
                                     <label>Ponte Rolante</label>
-                                    <input type="text" class="form-control" disabled="disabled"
-                                           readonly="readonly"
+                                    <input type="text" class="form-control" :disabled="!editando"
                                            :value="form.parecer_tecnica.opera_plat_ponte">
                                 </div>
                             </div>
@@ -863,6 +896,7 @@
                                         <telefone :model="form.curriculo.telefones" :pais="false"
                                                   :model-delete="form.curriculo.telefonesDelete"
                                                   :qnt_min="1"
+                                                  :disabled="!editando"
                                                   :ramal="false"></telefone>
                                     </div>
                                 </div>
@@ -871,10 +905,12 @@
                     </div>
                 </fieldset>
 
+
                 <fieldset>
                     <legend class="text-uppercase">ADMISSÃO</legend>
 
-                    <form-admissao :form="form.admissao" :visualizar='visualizar'></form-admissao>
+                    <form-admissao :form="form.admissao"
+                                   :visualizar="visualizar"></form-admissao>
 
                     <div class="col-12">
                         <dados-bancarios :model="form.banco_conta" :visualizar='visualizar'></dados-bancarios>
@@ -928,7 +964,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                 <div class="form-group">
                     <label>Nome</label>
                     <input type="text"
@@ -952,14 +988,14 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-6">
                 <div class="form-group">
                     <label>Cargo</label>
                     <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                   :valido="controle.dados.campoVaga !== ''"
                                   v-model="controle.dados.autocomplete_label"
                                   :disabled="controle.carregando"
-                                  placeholder="Por vaga"
+                                  placeholder="Por cargo"
                                   @onblur="resetaCampo"
                                   @onselect="selecionaVaga"></autocomplete>
                 </div>
@@ -1141,7 +1177,7 @@
                         item.cliente.nome_fantasia : item.cliente.nome}}
                     </td>
                     <td>
-                        @{{item.vaga_selecionada.nome}}
+                        @{{item.vaga_aberta.vaga_selecionada.nome}} -  @{{item.vaga_aberta.municipio.nome}} -  @{{item.vaga_aberta.municipio.uf}}
                     </td>
                     <td v-show="colunasTabela.pcd">
                         @{{item.curriculo.pcd ? 'Sim' : 'Não'}}
@@ -1192,7 +1228,7 @@
 
                     <td>
                         <button class="btn btn-sm btn-primary mb-2" content="Admitir" v-tippy
-                                @click.prevent="formEntrevistar(item.id)"
+                                @click.prevent="formEntrevistar(item.id); visualizar = false"
                                 data-toggle="modal"
                                 data-target="#janelaCadastrar">
                             <i class="fa fa-check"></i>

@@ -121,7 +121,7 @@ class CihController extends Controller
      */
     public function edit(Cih $cih)
     {
-        $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaSelecionada->nome}";
+        $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaAberta->VagaSelecionada->nome} - {$cih->Colaborador->VagaAberta->Municipio->uf}";
         $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
         $cih->tag_id = is_null($cih->tag_id) ? 0 : $cih->tag_id;
         $cih->area_id = is_null($cih->area_id) ? 0 : $cih->area_id;

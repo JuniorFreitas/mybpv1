@@ -183,6 +183,7 @@ class Curriculo extends Model
         "cnh",
         "nascimento",
         "logradouro",
+        "end_numero",
         "complemento",
         "bairro",
         "municipio",

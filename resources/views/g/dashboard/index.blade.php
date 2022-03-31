@@ -334,6 +334,7 @@
         <div id="sandbox-container"></div>
         <div class="col-12 col-lg-10">
             <div class="row">
+
                 @if(auth()->user()->DadosEmpresa->missao)
                     <div class="col-xl-5 col-lg-6 mt-3">
                         <div class="card card-stats mb-4 mb-xl-0 text-white"

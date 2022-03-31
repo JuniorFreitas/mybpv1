@@ -81,4 +81,10 @@ class Vaga extends Model
     {
         return $this->hasOne(User::class, 'id', 'empresa_id');
     }
+
+    public function VagaAberta()
+    {
+        return $this->hasOne(VagasAbertas::class, 'vaga_id', 'id');
+    }
+
 }

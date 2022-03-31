@@ -127,14 +127,14 @@ class EntrevistaGestorController extends Controller
             'Cliente:id,razao_social,cnpj,nome,cpf,area_id',
             'Cliente.Area'
         )->load(['Simulados' => function ($query) {
-                $query->with('SimuladoVaga.Simulado');
-            }]);
+            $query->with('SimuladoVaga.Simulado');
+        }]);
 
         $feedback->Curriculo->autocomplete_label_municipio_modal = $feedback->Curriculo->Cidade ? $feedback->Curriculo->Cidade->nome . ' - ' . $feedback->Curriculo->Cidade->uf : '';
         $feedback->Curriculo->autocomplete_label_municipio_modal_anterior = $feedback->Curriculo->Cidade ? $feedback->Curriculo->Cidade->nome . ' - ' . $feedback->Curriculo->Cidade->uf : '';
 
-        $feedback->autocomplete_label_vaga_modal = $feedback->vagaSelecionada ? $feedback->vagaSelecionada->nome : '';
-        $feedback->autocomplete_label_vaga_modal_anterior = $feedback->vagaSelecionada ? $feedback->vagaSelecionada->nome : '';
+        $feedback->autocomplete_label_vaga_modal = $feedback->VagaAberta->vagaSelecionada ? $feedback->VagaAberta->vagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
+        $feedback->autocomplete_label_vaga_modal_anterior = $feedback->VagaAberta->vagaSelecionada ? $feedback->VagaAberta->vagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
 
         $feedback->autocomplete_label_cliente_modal = $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
         $feedback->autocomplete_label_cliente_modal_anterior = $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
@@ -259,79 +259,79 @@ class EntrevistaGestorController extends Controller
         //Se for id 35 ou campo cliente preenchido e que seja igual a 35
 //        if (auth()->user()->Cliente->area_id > 1 || auth()->user()->cliente_id == 1) {
 
-            $resultado->whereStatus('classificado')
-                ->whereIn('selecionado', ['sim', 'standby'])
-                ->whereInteresse(true);
+        $resultado->whereStatus('classificado')
+            ->whereIn('selecionado', ['sim', 'standby'])
+            ->whereInteresse(true);
 
 
-            if ($request->filled('campoRh')) {
-                if ($request->campoRh == '0') {
-                    $resultado->whereHas('parecerRH.entrevistaRh', function ($q) {
-                        $q->where('nota', 0);
-                    });
-                }
-                if ($request->campoRh == '1-5') {
-                    $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                        $q->where('nota', '>=', 1)->where('nota', '<=', 5);
-                    });
-                }
-                if ($request->campoRh == '5-7') {
-                    $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                        $q->where('nota', '>=', 5)->where('nota', '<=', 7);
-                    });
-                }
-                if ($request->campoRh == '8-10') {
-                    $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                        $q->where('nota', '>=', 8)->where('nota', '<=', 10);
-                    });
-                }
+        if ($request->filled('campoRh')) {
+            if ($request->campoRh == '0') {
+                $resultado->whereHas('parecerRH.entrevistaRh', function ($q) {
+                    $q->where('nota', 0);
+                });
+            }
+            if ($request->campoRh == '1-5') {
+                $resultado->whereHas('parecerRH.individualRh', function ($q) {
+                    $q->where('nota', '>=', 1)->where('nota', '<=', 5);
+                });
+            }
+            if ($request->campoRh == '5-7') {
+                $resultado->whereHas('parecerRH.individualRh', function ($q) {
+                    $q->where('nota', '>=', 5)->where('nota', '<=', 7);
+                });
+            }
+            if ($request->campoRh == '8-10') {
+                $resultado->whereHas('parecerRH.individualRh', function ($q) {
+                    $q->where('nota', '>=', 8)->where('nota', '<=', 10);
+                });
+            }
+        }
+
+        if ($request->filled('parecer_individual')) {
+            if ($request->parecer_individual == 'entrevistado') {
+                $resultado->has('parecerRH.individualRh');
+            }
+            if ($request->parecer_individual == 'nao_entrevistado') {
+                $resultado->whereDoesntHave('parecerRH.individualRh');
             }
 
-            if ($request->filled('parecer_individual')) {
-                if ($request->parecer_individual == 'entrevistado') {
-                    $resultado->has('parecerRH.individualRh');
-                }
-                if ($request->parecer_individual == 'nao_entrevistado') {
-                    $resultado->whereDoesntHave('parecerRH.individualRh');
-                }
-
-                if ($request->parecer_individual != 'entrevistado' && $request->parecer_individual != 'nao_entrevistado') {
-                    $resultado->whereHas('parecerRH.individualRh', function ($q) use ($request) {
-                        $q->whereParecer($request->parecer_individual);
-                    });
-                }
+            if ($request->parecer_individual != 'entrevistado' && $request->parecer_individual != 'nao_entrevistado') {
+                $resultado->whereHas('parecerRH.individualRh', function ($q) use ($request) {
+                    $q->whereParecer($request->parecer_individual);
+                });
             }
+        }
 //        } else {
-            // Se não for 35 (55 solucoes)
+        // Se não for 35 (55 solucoes)
 
-            $resultado->with(
-                'parecerTecnica:feedback_id,nota',
-                'parecerRota:feedback_id,tem_rota',
-                'parecerTeste:feedback_id,nota_teste');
+        $resultado->with(
+            'parecerTecnica:feedback_id,nota',
+            'parecerRota:feedback_id,tem_rota',
+            'parecerTeste:feedback_id,nota_teste');
 
 
-            if ($request->filled('campoPcd')) {
-                $campoPcd = $request->campoPcd == 'true' ? true : false;
-                $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
-                    $query->wherePcd($campoPcd);
-                });
-            }
+        if ($request->filled('campoPcd')) {
+            $campoPcd = $request->campoPcd == 'true' ? true : false;
+            $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
+                $query->wherePcd($campoPcd);
+            });
+        }
 
-            if ($request->filled('campoRh')) {
-                if ($request->campoRh == 'realizado') {
-                    $resultado->has('parecerRh');
-                } else {
-                    $resultado->whereHas('parecerRH', function ($q) use ($request) {
-                        $q->whereNota($request->campoRh);
-                    });
-                }
-            }
-
-            if ($request->filled('campoFinalRh')) {
+        if ($request->filled('campoRh')) {
+            if ($request->campoRh == 'realizado') {
+                $resultado->has('parecerRh');
+            } else {
                 $resultado->whereHas('parecerRH', function ($q) use ($request) {
-                    $q->whereParecerFinalUm($request->campoFinalRh);
+                    $q->whereNota($request->campoRh);
                 });
             }
+        }
+
+        if ($request->filled('campoFinalRh')) {
+            $resultado->whereHas('parecerRH', function ($q) use ($request) {
+                $q->whereParecerFinalUm($request->campoFinalRh);
+            });
+        }
 //        }
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);

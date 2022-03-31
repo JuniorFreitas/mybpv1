@@ -32,8 +32,8 @@ class PortariaController extends Controller
         $resultado->Feedback->Curriculo->autocomplete_label_municipio_modal = $resultado->Feedback->Curriculo->Cidade ? $resultado->Feedback->Curriculo->Cidade->nome . ' - ' . $resultado->Feedback->Curriculo->Cidade->uf : '';
         $resultado->Feedback->Curriculo->autocomplete_label_municipio_modal_anterior = $resultado->Feedback->Curriculo->Cidade ? $resultado->Feedback->Curriculo->Cidade->nome . ' - ' . $resultado->Feedback->Curriculo->Cidade->uf : '';
 
-        $resultado->Feedback->autocomplete_label_vaga_modal = $resultado->Feedback->VagaSelecionada->nome;
-        $resultado->Feedback->autocomplete_label_vaga_modal_anterior = $resultado->Feedback->VagaSelecionada->nome;
+        $resultado->Feedback->autocomplete_label_vaga_modal = $resultado->Feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf  ;
+        $resultado->Feedback->autocomplete_label_vaga_modal_anterior = $resultado->Feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf  ;
         $resultado->Feedback->autocomplete_label_cliente_modal = $resultado->Feedback->Empresa->razao_social . ' | ' . $resultado->Feedback->Empresa->cnpj;
         $resultado->Feedback->autocomplete_label_cliente_modal_anterior = $resultado->Feedback->Empresa->razao_social . ' | ' . $resultado->Feedback->Empresa->cnpj;
 

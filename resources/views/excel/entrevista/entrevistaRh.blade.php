@@ -78,7 +78,7 @@
                 - {{$row->Curriculo->uf}}</td>
             <td>{{$row->TelPrincipal ? $row->TelPrincipal->numero : 'não informado'}}</td>
             <td>{{$row->Curriculo->email}}</td>
-            <td>{{$row->VagaSelecionada->nome}}</td>
+            <td>{{$row->VagaAberta->VagaSelecionada->nome . ' - ' . $row->VagaAberta->Municipio->uf  }}</td>
             <td>{{$row->Curriculo->Formacao->tipo}} {{$row->Curriculo->FormacaoCurso ? '('. $row->Curriculo->FormacaoCurso. ')' : '' }} </td>
             <td>{{$row->parecerRh ? $row->parecerRh->nota_digitacao : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->dinamicadegrupo : ''}}</td>
