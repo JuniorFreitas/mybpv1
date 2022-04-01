@@ -46,7 +46,12 @@ class IntermitenteController extends Controller
         $this->authorize('intermitente');
         $dados = $request->input();
         $dados['user_lancamento_id'] = auth()->id();
-        $dados['data_lancamento'] = (new DataHora($dados['data_lancamento'] . ' ' . date('H:m:s')))->dataHoraInsert();
+//        $dados['data_lancamento'] = (new DataHora($dados['data_lancamento'] . ' ' . date('H:m:s')))->dataHoraInsert();
+
+        $dados['range_convocacao'] = explode(' até ', $dados['data_lancamento']);
+        $dados['data_lancamento'] = (new DataHora($dados['range_convocacao'][0] . ' ' . date('H:m:s')))->dataHoraInsert(); // data concocação
+        $dados['encerramento_previsto'] = (new DataHora($dados['range_convocacao'][1]))->dataInsert();; // data fim convocacao
+
 
         $dadosValidados = \Validator::make($dados, [
             'tipo_id' => 'required',
@@ -190,12 +195,12 @@ class IntermitenteController extends Controller
     {
         $intermitente = Intermitente::whereId($id)->first();
 
-        $intermitente->autocomplete_label_colaborador = "{$intermitente->Colaborador->Curriculo->nome} - {$intermitente->Colaborador->VagaAberta->VagaSelecionada->nome} - {$intermitente->Colaborador->VagaAberta->Municipio->uf} - {$intermitente->Colaborador->Cliente->nome_fantasia}";
+        $intermitente->autocomplete_label_colaborador = "{$intermitente->Colaborador->Curriculo->nome} - {$intermitente->Colaborador->VagaAberta->VagaSelecionada->nome} - {$intermitente->Colaborador->VagaAberta->Municipio->uf}";
         $intermitente->autocomplete_label_colaborador_anterior = $intermitente->autocomplete_label_colaborador;
         $intermitente->tipo_id = is_null($intermitente->tipo_id) ? 0 : $intermitente->tipo_id;
         $intermitente->area_id = is_null($intermitente->area_id) ? 0 : $intermitente->area_id;
         $intermitente->status_aprovacao = $intermitente->status;
-        $intermitente->treinamentos = $intermitente->Colaborador->Curriculo->Treinamentos->Vencimentos;
+        $intermitente->treinamentos = $intermitente->Colaborador->Treinamentos ? $intermitente->Colaborador->Treinamentos->Vencimentos : [];
 
         return $intermitente->load('Anexos', 'Tipo', 'Area','Prorrogacao');
     }

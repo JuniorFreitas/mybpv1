@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
@@ -66,7 +67,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Intermitente extends Model
 {
-    use LogsActivity;
+    use LogsActivity, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'intermitente';
@@ -91,6 +92,7 @@ class Intermitente extends Model
         'user_lancamento_id',
         'obs_lancamento',
         'data_lancamento',
+        'encerramento_previsto',
         'acao',
         'user_aprovacao_id',
         'obs_aprovacao',
@@ -98,6 +100,7 @@ class Intermitente extends Model
         'status',
         'devolve_epi',
         'devolve_cracha',
+        'empresa_id',
     ];
 
     protected $casts = [
@@ -116,6 +119,7 @@ class Intermitente extends Model
         'status' => 'string',
         'devolve_epi' => 'boolean',
         'devolve_cracha' => 'boolean',
+        'empresa_id' => 'int',
     ];
 
     public function getDataLancamentoAttribute($value)
