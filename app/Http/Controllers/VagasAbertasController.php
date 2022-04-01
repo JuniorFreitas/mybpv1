@@ -36,7 +36,7 @@ class VagasAbertasController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -57,6 +57,7 @@ class VagasAbertasController extends Controller
         } else {
             try {
                 DB::beginTransaction();
+
                 $vagas_aberta = VagasAbertas::create($dados);
 
                 if (isset($dados['simulados'])) {

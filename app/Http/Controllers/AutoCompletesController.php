@@ -45,6 +45,31 @@ class AutoCompletesController extends Controller
         }
     }
 
+    public function cargosAtivos(Request $request)
+    {
+        $busca = $request->query('busca');
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+        $quantidade = $request->query('rows');
+        $busca = $request->query('busca');
+        if ($busca === '*') {
+            return Vaga::whereAtivo(true)
+                ->get()
+                ->map(function ($item) {
+                    $item->label = $item->nome;
+                    return $item;
+                });
+        } else {
+            return Vaga::whereAtivo(true)->where('nome', 'like', '%' . $busca . '%')->take($quantidade)
+                ->get()
+                ->map(function ($item) {
+                    $item->label = $item->nome;
+                    return $item;
+                });
+        }
+    }
+
     public function clientesAtivos(Request $request)
     {
         $busca = $request->query('busca');
@@ -179,7 +204,7 @@ class AutoCompletesController extends Controller
             $q->whereIn('status', ['ADMITIDO']);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
-        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio','VagaSelecionada:id,nome')->take($quantidade)
+        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
                 $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - {$item->VagaAberta->Municipio->nome} - {$item->VagaAberta->Municipio->uf}";
                 return $item;

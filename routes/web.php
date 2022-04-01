@@ -118,6 +118,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::group(['as' => 'autocompletes.', 'prefix' => 'autocomplete'], function () {
         //Auto completes
         Route::get('todas-vagas-ativas', [\App\Http\Controllers\AutoCompletesController::class, 'vagasAtivas'])->name('vagas-ativas');
+        Route::get('cargos_ativos', [\App\Http\Controllers\AutoCompletesController::class, 'cargosAtivos'])->name('cargos-ativos');
         Route::get('todos-clientes-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'clientesAtivos'])->name('clientes-ativos');
         Route::get('todos-usuarios-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'usuariosAtivos'])->name('usuarios-ativos');
 
