@@ -258,11 +258,12 @@ class VagaAbertaController extends Controller
                 DB::beginTransaction();
 
                 $user = User::whereHas('Curriculo', function ($q) use ($dados) {
-                    $q->whereCpf($dados['cpf']);
+                    $q->withoutGlobalScopes()->whereCpf($dados['cpf_padrao']);
                 });
+
                 //Cadastra
                 if ($user->count() === 0) {
-                    $cpf = Sistema::transformCpfCnpj($request->cpf);
+                    $cpf = Sistema::transformCpfCnpj($request->cpf_padrao);
                     if (!Sistema::validaCPF($cpf)) {
                         return response()->json(['msg' => 'CPF inválido'], 400);
                     }
@@ -272,7 +273,7 @@ class VagaAbertaController extends Controller
                     $userObj = [
                         'nome' => $dados['nome'],
                         'login' => $dados['email'],
-                        'password' => Sistema::SenhaCpf($dados['cpf']),
+                        'password' => Sistema::SenhaCpf($dados['cpf_padrao']),
                         'tipo' => 'Candidato',
                         'ativo' => true,
                         'temp' => false,
@@ -282,7 +283,8 @@ class VagaAbertaController extends Controller
 
                     $usuario = $user->create($userObj);
                     $usuario->Curriculo()->create($dados);
-                    $curriculo = Curriculo::find($usuario->id);
+
+                    $curriculo = Curriculo::withoutGlobalScopes()->find($usuario->id);
 
                     if (!isset($dados['telefones'])) {
                         return response()->json([
@@ -325,15 +327,23 @@ class VagaAbertaController extends Controller
 
                     $dadosEmpresa = User::find($dados['empresa_id']);
 
+                    $emailSend = [
+                        'nome' => $dados['nome'],
+                        'email' => $dados['email'],
+                        'empresa' => $dadosEmpresa->nome,
+                        'cpf' => $dados['cpf_padrao']
+                    ];
+
                     Mail::send('email.recrutamento.cadastro', $dados, function ($m) use ($dados, $dadosEmpresa) {
                         $m->from('naoresponda@mybp.com.br', 'Vagas MyBP | ' . $dadosEmpresa['nome']);
                         $m->subject('Confirmação de Cadastro');
                         $m->to($dados['email']);
                     });
 
+
                 } else {
 
-                    $curriculo = Curriculo::find($dados['id']);
+                    $curriculo = Curriculo::withoutGlobalScopes()->find($dados['id']);
                     $atualizacao = ['curriculo_id' => $dados['id']];
                     CurriculoAtualizacao::create($atualizacao);
 
@@ -409,7 +419,8 @@ class VagaAbertaController extends Controller
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 DB::rollback();
-                $msg = "erro no cadastro de curriculo {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
+                return $e->getTrace();
+//                $msg = "erro no cadastro de curriculo {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
                 \Log::debug($msg);
 //                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);

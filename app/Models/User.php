@@ -411,11 +411,11 @@ class User extends Authenticatable
 
     protected static function booted()
     {
-        static::created(function ($model) {
-            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
-        });
-        static::updated(function ($model) {
-            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
-        });
+//        static::created(function ($model) {
+//            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
+//        });
+//        static::updated(function ($model) {
+//            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
+//        });
     }
 }
