@@ -292,7 +292,8 @@ class PosAdmissaoController extends Controller
         $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
         $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
         $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
-        $formulario = Formulario::find(1)->load('Setores.Alternativas');
+        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissao')->first();
+        $formulario->load('Setores.Alternativas');
 
         $ids_form = array();
         foreach ($formulario->Setores as $f) {
