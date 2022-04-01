@@ -57,10 +57,10 @@
                             </thead>
                             <tbody>
                             <tr v-for="(obj, index) in listaProrrogacao">
-                                <td class="text-center">{{index + 1}}ª Prorrogação</td>
-                                <td class="text-center">{{obj.data_inicio}}</td>
-                                <td class="text-center">{{obj.data_fim}}</td>
-                                <td class="text-center">{{obj.solicitante}}</td>
+                                <td class="text-center">{{ index + 1 }}ª Prorrogação</td>
+                                <td class="text-center">{{ obj.data_inicio }}</td>
+                                <td class="text-center">{{ obj.data_fim }}</td>
+                                <td class="text-center">{{ obj.solicitante }}</td>
                             </tr>
                             </tbody>
                         </table>
@@ -80,7 +80,7 @@
                         <div class="row">
                             <div class="col-12">
                                 <date-picker formsm label="Data Início" v-model="obj.data_inicio"
-                                            :disabled="!obj.novo"></date-picker>
+                                             :disabled="!obj.novo"></date-picker>
                             </div>
 
                             <div class="col-12">
@@ -158,7 +158,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <date-picker :disabled="encerrado" label="Data da Ocorrência"
+                                <date-picker :disabled="encerrado" :range="true" label="Data da Ocorrência"
                                              v-model="form.data_lancamento"></date-picker>
                             </div>
                         </div>
@@ -172,7 +172,7 @@
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)" class="form-control">
                                     <option value="">Selecione...</option>
-                                    <option v-for="item in listaTipos" :value="item.id">{{item.label}}</option>
+                                    <option v-for="item in listaTipos" :value="item.id">{{ item.label }}</option>
                                 </select>
                             </div>
                         </div>
@@ -186,7 +186,7 @@
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)" class="form-control">
                                     <option value="">Selecione...</option>
-                                    <option v-for="item in listaAreas" :value="item.id">{{item.label}}</option>
+                                    <option v-for="item in listaAreas" :value="item.id">{{ item.label }}</option>
                                 </select>
                             </div>
                         </div>
@@ -257,11 +257,11 @@
                                         </thead>
                                         <tbody>
                                         <tr v-for="t in form.treinamentos">
-                                            <td class="text-center">{{t.label}}</td>
-                                            <td class="text-center">{{t.pivot.data_treinamento}}</td>
-                                            <td class="text-center">{{t.pivot.data_vencimento}}</td>
-                                            <td class="text-center">{{t.prazo_fixo}}</td>
-                                            <td class="text-center">{{t.prazo_parada}}</td>
+                                            <td class="text-center">{{ t.label }}</td>
+                                            <td class="text-center">{{ t.pivot.data_treinamento }}</td>
+                                            <td class="text-center">{{ t.pivot.data_vencimento }}</td>
+                                            <td class="text-center">{{ t.prazo_fixo }}</td>
+                                            <td class="text-center">{{ t.prazo_parada }}</td>
                                         </tr>
                                         </tbody>
                                     </table>
@@ -272,28 +272,28 @@
                         <div class="col-12">
                             <fieldset>
                                 <legend>Exames</legend>
-<!--                                <div class="table-responsive">-->
-<!--                                    <table class="tabela">-->
-<!--                                        <thead>-->
-<!--                                        <tr class="bg-default">-->
-<!--                                            <th class="text-center">Tipo</th>-->
-<!--                                            <th class="text-center">Data do Treinamento</th>-->
-<!--                                            <th class="text-center">Data do Vencimento</th>-->
-<!--                                            <th class="text-center">Prazo Fixo</th>-->
-<!--                                            <th class="text-center">Prazo Parada</th>-->
-<!--                                        </tr>-->
-<!--                                        </thead>-->
-<!--                                        <tbody>-->
-<!--                                        <tr v-for="t in form.treinamentos">-->
-<!--                                            <td class="text-center">{{t.label}}</td>-->
-<!--                                            <td class="text-center">{{t.pivot.data_treinamento}}</td>-->
-<!--                                            <td class="text-center">{{t.pivot.data_vencimento}}</td>-->
-<!--                                            <td class="text-center">{{t.prazo_fixo}}</td>-->
-<!--                                            <td class="text-center">{{t.prazo_parada}}</td>-->
-<!--                                        </tr>-->
-<!--                                        </tbody>-->
-<!--                                    </table>-->
-<!--                                </div>-->
+                                <!--                                <div class="table-responsive">-->
+                                <!--                                    <table class="tabela">-->
+                                <!--                                        <thead>-->
+                                <!--                                        <tr class="bg-default">-->
+                                <!--                                            <th class="text-center">Tipo</th>-->
+                                <!--                                            <th class="text-center">Data do Treinamento</th>-->
+                                <!--                                            <th class="text-center">Data do Vencimento</th>-->
+                                <!--                                            <th class="text-center">Prazo Fixo</th>-->
+                                <!--                                            <th class="text-center">Prazo Parada</th>-->
+                                <!--                                        </tr>-->
+                                <!--                                        </thead>-->
+                                <!--                                        <tbody>-->
+                                <!--                                        <tr v-for="t in form.treinamentos">-->
+                                <!--                                            <td class="text-center">{{t.label}}</td>-->
+                                <!--                                            <td class="text-center">{{t.pivot.data_treinamento}}</td>-->
+                                <!--                                            <td class="text-center">{{t.pivot.data_vencimento}}</td>-->
+                                <!--                                            <td class="text-center">{{t.prazo_fixo}}</td>-->
+                                <!--                                            <td class="text-center">{{t.prazo_parada}}</td>-->
+                                <!--                                        </tr>-->
+                                <!--                                        </tbody>-->
+                                <!--                                    </table>-->
+                                <!--                                </div>-->
                             </fieldset>
                         </div>
 
@@ -315,10 +315,10 @@
                                 </thead>
                                 <tbody>
                                 <tr v-for="(obj, index) in form.prorrogacao">
-                                    <td class="text-center">{{index + 1}}ª Prorrogação</td>
-                                    <td class="text-center">{{obj.data_inicio}}</td>
-                                    <td class="text-center">{{obj.data_fim}}</td>
-                                    <td class="text-center">{{obj.solicitante}}</td>
+                                    <td class="text-center">{{ index + 1 }}ª Prorrogação</td>
+                                    <td class="text-center">{{ obj.data_inicio }}</td>
+                                    <td class="text-center">{{ obj.data_fim }}</td>
+                                    <td class="text-center">{{ obj.solicitante }}</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -373,32 +373,23 @@
             <form class="row" @submit.prevent="$refs.componente.buscar()">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Buscar</span>
-                        </span>
-                            <input type="text"
-                                   placeholder="Buscar por nome"
-                                   autocomplete="off"
-                                   class="form-control" :disabled="controle.carregando"
-                                   v-model="controle.dados.campoBusca">
-                        </div>
+                        <label>Buscar</label>
+                        <input type="text"
+                               placeholder="Buscar por nome"
+                               autocomplete="off"
+                               class="form-control form-control-sm" :disabled="controle.carregando"
+                               v-model="controle.dados.campoBusca">
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Status</span>
-                        </span>
-                            <select class="custom-select" v-model="controle.dados.campoStatus" @change="atualizar()">
-                                <option value="">Todos os Status</option>
-                                <option :value="true">Apenas Ativos</option>
-                                <option :value="false">Apenas Inativos</option>
-                            </select>
-
-                        </div>
+                        <label>Status</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" @change="atualizar()">
+                            <option value="">Todos os Status</option>
+                            <option :value="true">Apenas Ativos</option>
+                            <option :value="false">Apenas Inativos</option>
+                        </select>
                     </div>
                 </div>
 
@@ -460,30 +451,30 @@
                                         item.status === 'aberto' ? 'table-warning' : item.status === 'encerrado' ? 'table-success' : null
                         ">
                         <td class="text-center">
-                            {{item.id}}
+                            {{ item.id }}
                         </td>
 
                         <td v-if="cliente_id === 1">
-                            {{item.cliente.nome_fantasia}}
+                            {{ item.cliente.nome_fantasia }}
                         </td>
 
                         <td>
-                            {{item.colaborador.curriculo.nome}}
+                            {{ item.colaborador.curriculo.nome }}
                         </td>
 
                         <td class="text-center">
-                            Lançado por {{item.responsavel_lancamento.nome}} <br>
-                            em {{item.data_lancamento}}
+                            Lançado por {{ item.responsavel_lancamento.nome }} <br>
+                            em {{ item.data_lancamento }}
                         </td>
                         <td class="text-center">
                                 <span v-if="item.status === 'encerrado'">
-                                    Encerrado por {{item.responsavel_aprovacao.nome}} <br>
-                                    em {{item.data_aprovacao}}
+                                    Encerrado por {{ item.responsavel_aprovacao.nome }} <br>
+                                    em {{ item.data_aprovacao }}
                                 </span>
                         </td>
 
                         <td class="text-center">
-                            {{item.status}}
+                            {{ item.status }}
                         </td>
 
                         <td class="text-center">
@@ -523,370 +514,372 @@
 </template>
 
 <script>
-    import DatePicker from "../../DatePicker";
-    import autocomplete from "../../AutoComplete";
-    import Upload from "../../Upload";
+import DatePicker from "../../DatePicker";
+import autocomplete from "../../AutoComplete";
+import Upload from "../../Upload";
 
-    export default {
-        components: {
-            autocomplete,
-            DatePicker,
-            Upload
+export default {
+    components: {
+        autocomplete,
+        DatePicker,
+        Upload
+    },
+    props: {
+        qntPag: {
+            type: Number,
+            required: false,
+            default: 20
         },
-        props: {
-            qntPag: {
-                type: Number,
-                required: false,
-                default: 20
+    },
+    data() {
+        return {
+            tituloJanela: 'Cadastrando INTERMITENTE',
+            titulo_janela_form_tipo: '',
+            titulo_janela_form_prorrogacao: '',
+            preloadAjax: false,
+            editando: false,
+            leitura: false,
+            apagado: false,
+            aprovando: false,
+            encerrado: false,
+            preloadTipo: false,
+            preloadProrrogacao: false,
+
+            urlPaginacao: `${URL_ADMIN}/apontamento/intermitente/atualizar`,
+
+            colaborador_ativo: `autocomplete/colaboradorIntermitente`,
+            todos_municipios: `autocomplete/todos-municipios`,
+
+            hash: `mastertag_${parseInt((Math.random() * 999999))}`,
+            cliente_id: 0,
+
+            datarelatorio: '',
+            tipoRelatorio: 'pdf',
+            cliente_relatorio: '',
+
+            hoje: '',
+
+            form: {
+                tipo_id: '',
+                feedback_id: '',
+                autocomplete_label_colaborador: '',
+                autocomplete_label_colaborador_anterior: '',
+                cliente_id: '',
+                area_id: '',
+                acao: '',
+                user_lancamento_id: '',
+                obs_lancamento: '',
+                data_lancamento: '',
+                user_aprovacao_id: '',
+                obs_aprovacao: '',
+                data_aprovacao: '',
+                status: '',
+                status_aprovacao: '',
+                anexos: [],
+                anexosDel: [],
+                devolve_epi: '',
+                devolve_cracha: '',
+                treinamentos: [],
+                exames: [],
             },
+
+            formProrrogacao: {
+                intermitente_id: '',
+                prorrogacao: [],
+                prorrogacaoDelete: []
+            },
+            formProrrogacaoDefault: null,
+
+            formTipo: {
+                label: '',
+            },
+            formTipoDefault: null,
+
+            url_anexo: `${URL_ADMIN}/storage/uploadAnexos`,
+            anexoUploadAndamento: false,
+
+            formDefault: null,
+
+            campoNome: null,
+
+            cadastrado: false,
+            atualizado: false,
+
+            lista: [],
+            listaTipos: [],
+            listaAreas: [],
+            listaClientes: [],
+            listaProrrogacao: [],
+
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: "",
+                    campoStatus: "",
+                    pages: 50,
+                },
+            }
+        }
+    },
+    mounted() {
+        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formProrrogacaoDefault = _.cloneDeep(this.formProrrogacao) //copia
+        this.formTipoDefault = _.cloneDeep(this.formTipo) //copia
+        this.atualizar();
+    },
+    methods: {
+        selecionaColaborador(obj) {
+            this.form.feedback_id = obj.id;
+            this.form.cliente_id = obj.cliente_id;
+            this.form.treinamentos = obj.curriculo.treinamentos.vencimentos;
+            this.form.exames = obj.exames;
+            this.form.autocomplete_label_colaborador = obj.label;
+            this.form.autocomplete_label_colaborador_anterior = obj.label;
         },
-        data() {
-            return {
-                tituloJanela: 'Cadastrando INTERMITENTE',
-                titulo_janela_form_tipo: '',
-                titulo_janela_form_prorrogacao: '',
-                preloadAjax: false,
-                editando: false,
-                leitura: false,
-                apagado: false,
-                aprovando: false,
-                encerrado: false,
-                preloadTipo: false,
-                preloadProrrogacao: false,
+        resetaCampoColaborador() {
+            if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
+                this.form.autocomplete_label_colaborador_anterior = '';
+                this.form.autocomplete_label_colaborador = '';
+                this.form.feedback_id = '';
+                this.form.cliente_id = '';
 
-                urlPaginacao: `${URL_ADMIN}/apontamento/intermitente/atualizar`,
-
-                colaborador_ativo: `autocomplete/colaboradorIntermitente`,
-                todos_municipios: `autocomplete/todos-municipios`,
-
-                hash: `mastertag_${parseInt((Math.random() * 999999))}`,
-                cliente_id: 0,
-
-                datarelatorio: '',
-                tipoRelatorio: 'pdf',
-                cliente_relatorio: '',
-
-                hoje: '',
-
-                form: {
-                    tipo_id: '',
-                    feedback_id: '',
-                    autocomplete_label_colaborador: '',
-                    autocomplete_label_colaborador_anterior: '',
-                    cliente_id: '',
-                    area_id: '',
-                    acao: '',
-                    user_lancamento_id: '',
-                    obs_lancamento: '',
-                    data_lancamento: '',
-                    user_aprovacao_id: '',
-                    obs_aprovacao: '',
-                    data_aprovacao: '',
-                    status: '',
-                    status_aprovacao: '',
-                    anexos: [],
-                    anexosDel: [],
-                    devolve_epi: '',
-                    devolve_cracha: '',
-                    treinamentos: [],
-                    exames: [],
-                },
-
-                formProrrogacao: {
-                    intermitente_id: '',
-                    prorrogacao: [],
-                    prorrogacaoDelete: []
-                },
-                formProrrogacaoDefault: null,
-
-                formTipo: {
-                    label: '',
-                },
-                formTipoDefault: null,
-
-                url_anexo: `${URL_ADMIN}/storage/uploadAnexos`,
-                anexoUploadAndamento: false,
-
-                formDefault: null,
-
-                campoNome: null,
-
-                cadastrado: false,
-                atualizado: false,
-
-                lista: [],
-                listaTipos: [],
-                listaAreas: [],
-                listaClientes: [],
-                listaProrrogacao: [],
-
-                controle: {
-                    carregando: false,
-                    dados: {
-                        campoBusca: "",
-                        campoStatus: "",
-                        pages: 50,
-                    },
-                }
+                setTimeout(() => {
+                    if (this.form.feedback_id === '') {
+                        valida_campo_vazio($('#colaborador_' + this.hash), 1);
+                        // $('#janelaCadastrar #' + this.hash).focus().trigger('blur');
+                        $('#janelaCadastrar #colaborador_' + this.hash).focus().trigger('blur');
+                        mostraErro('Erro', 'O Campo Vaga não pode ficar vazio');
+                    }
+                }, 100);
             }
         },
-        mounted() {
-            this.formDefault = _.cloneDeep(this.form) //copia
-            this.formProrrogacaoDefault = _.cloneDeep(this.formProrrogacao) //copia
-            this.formTipoDefault = _.cloneDeep(this.formTipo) //copia
-            this.atualizar();
+        addLIProrrogacao() {
+            const obj = {};
+            obj.novo = true;
+            obj.data_inicio = '';
+            obj.data_fim = '';
+            obj.solicitante = '';
+
+            this.formProrrogacao.prorrogacao.push(obj);
         },
-        methods: {
-            selecionaColaborador(obj) {
-                this.form.feedback_id = obj.id;
-                this.form.cliente_id = obj.cliente_id;
-                this.form.treinamentos = obj.curriculo.treinamentos.vencimentos;
-                this.form.exames = obj.exames;
-                this.form.autocomplete_label_colaborador = obj.label;
-                this.form.autocomplete_label_colaborador_anterior = obj.label;
-            },
-            resetaCampoColaborador() {
-                if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
-                    this.form.autocomplete_label_colaborador_anterior = '';
-                    this.form.autocomplete_label_colaborador = '';
-                    this.form.feedback_id = '';
-                    this.form.cliente_id = '';
+        removerLIProrrogacao(index) {
+            if (this.editando) {
+                this.formProrrogacao.prorrogacaoDelete.push(this.formProrrogacao.prorrogacao[index].id);
+            }
+            this.formProrrogacao.prorrogacao.splice(index, 1);
+        },
+        formAdicionarProrrogacao() {
+            this.cadastrado = false;
+            this.atualizado = false;
+            this.editando = false;
+            this.aprovando = false;
 
-                    setTimeout(() => {
-                        if (this.form.feedback_id === '') {
-                            valida_campo_vazio($('#colaborador_' + this.hash), 1);
-                            // $('#janelaCadastrar #' + this.hash).focus().trigger('blur');
-                            $('#janelaCadastrar #colaborador_' + this.hash).focus().trigger('blur');
-                            mostraErro('Erro', 'O Campo Vaga não pode ficar vazio');
-                        }
-                    }, 100);
-                }
-            },
-            addLIProrrogacao() {
-                const obj = {};
-                obj.novo = true;
-                obj.data_inicio = '';
-                obj.data_fim = '';
-                obj.solicitante = '';
+            this.titulo_janela_form_prorrogacao = "Cadastrando PRORROGAÇÃO";
 
-                this.formProrrogacao.prorrogacao.push(obj);
-            },
-            removerLIProrrogacao(index) {
-                if (this.editando) {
-                    this.formProrrogacao.prorrogacaoDelete.push(this.formProrrogacao.prorrogacao[index].id);
-                }
-                this.formProrrogacao.prorrogacao.splice(index, 1);
-            },
-            formAdicionarProrrogacao() {
-                this.cadastrado = false;
-                this.atualizado = false;
-                this.editando = false;
-                this.aprovando = false;
+            formReset();
+            setupCampo();
 
-                this.titulo_janela_form_prorrogacao = "Cadastrando PRORROGAÇÃO";
+            this.formProrrogacao = _.cloneDeep(this.formProrrogacaoDefault) //copia
+            this.form.status = 'aberto';
 
-                formReset();
-                setupCampo();
+        },
+        formNovoProrrogacao(id) {
+            this.titulo_janela_form_prorrogacao = `Cadastrando PRORROGAÇÃO`;
+            formReset();
 
-                this.formProrrogacao = _.cloneDeep(this.formProrrogacaoDefault) //copia
-                this.form.status = 'aberto';
+            this.formProrrogacao = _.cloneDeep(this.formProrrogacaoDefault) //copia
 
-            },
-            formNovoProrrogacao(id) {
-                this.titulo_janela_form_prorrogacao = `Cadastrando PRORROGAÇÃO`;
-                formReset();
+            axios.get(`${URL_ADMIN}/apontamento/intermitente/prorrogacao/${id}/editar`)
+                .then(response => {
 
-                this.formProrrogacao = _.cloneDeep(this.formProrrogacaoDefault) //copia
+                    this.listaProrrogacao = response.data
+                    this.formProrrogacao.intermitente_id = id;
+                    setupCampo();
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
 
-                axios.get(`${URL_ADMIN}/apontamento/intermitente/prorrogacao/${id}/editar`)
-                    .then(response => {
+        },
+        cadastrarProrrogacao() {
+            formReset();
+            $('#janelaFormProrrogacao :input:enabled').trigger('blur');
+            if ($('#janelaFormProrrogacao :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros');
+                return false;
+            }
 
-                        this.listaProrrogacao = response.data
-                        this.formProrrogacao.intermitente_id = id;
-                        setupCampo();
-                    }).catch(
-                    error => (this.preloadAjax = false)
-                );
+            this.preloadAjax = true;
+            this.form.status = "aberto";
 
-            },
-            cadastrarProrrogacao() {
-                formReset();
-                $('#janelaFormProrrogacao :input:enabled').trigger('blur');
-                if ($('#janelaFormProrrogacao :input:enabled.is-invalid').length) {
-                    mostraErro('', 'Verificar os erros');
-                    return false;
-                }
-
-                this.preloadAjax = true;
-                this.form.status = "aberto";
-
-                axios.post(`${URL_ADMIN}/apontamento/intermitente/prorrogacao`, this.formProrrogacao)
-                    .then(response => {
-                        if (response.status === 201) {
-                            this.preloadAjax = false;
-                            this.cadastrado = true;
-                            $('#janelaFormProrrogacao').modal('hide');
-                            mostraSucesso('', 'Prorrogação cadastrado com sucesso');
-                            this.atualizar();
-                        }
-                    }).catch(error => (this.preloadAjax = false));
-            },
-            formNovo() {
-                this.cadastrado = false;
-                this.atualizado = false;
-                this.editando = false;
-                this.encerrado = false;
-                this.aprovando = false;
-
-                this.tituloJanela = "Cadastrando INTERMITENTE";
-
-                formReset();
-                setupCampo();
-
-                this.form = _.cloneDeep(this.formDefault) //copia
-                this.form.status = 'aberto';
-
-            },
-            cadastrar() {
-                formReset();
-                $('#janelaCadastrar :input:enabled').trigger('blur');
-                if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                    mostraErro('', 'Verificar os erros');
-                    return false;
-                }
-
-                if (this.form.feedback_id === '') {
-                    valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                    $(`#janelaCadastrar #colaborador_${this.hash}`).focus().trigger('blur');
-                    mostraErro('Erro', 'O campo vaga não pode ficar vazio');
-                    return false;
-                }
-
-                this.preloadAjax = true;
-                this.form.status = "aberto";
-
-                axios.post(`${URL_ADMIN}/apontamento/intermitente`, this.form)
-                    .then(response => {
-                        if (response.status === 201) {
-                            this.preloadAjax = false;
-                            this.cadastrado = true;
-                            $('#janelaCadastrar').modal('hide');
-                            mostraSucesso('', 'Intermitente cadastrado com sucesso');
-                            this.atualizar();
-                        }
-                    }).catch(error => (this.preloadAjax = false));
-            },
-            visualizar(id) {
-                this.cadastrado = false;
-                this.atualizado = false;
-                this.editando = false;
-                this.encerrado = true;
-                this.tituloJanela = `Visualizando INTERMITENTE #${id}`;
-                formReset();
-
-                this.form = _.cloneDeep(this.formDefault) //copia
-                this.leitura = true;
-
-                axios.get(`${URL_ADMIN}/apontamento/intermitente/${id}/editar`)
-                    .then(response => {
-                        Object.assign(this.form, response.data);
-                        this.editando = false;
-                        this.encerrado = true;
+            axios.post(`${URL_ADMIN}/apontamento/intermitente/prorrogacao`, this.formProrrogacao)
+                .then(response => {
+                    if (response.status === 201) {
                         this.preloadAjax = false;
-                        setupCampo();
-                    }).catch(
-                    error => (this.preloadAjax = false)
-                );
-            },
-            encerrarConvocacao(id) {
-                this.cadastrado = false;
-                this.atualizado = false;
-                this.editando = true;
-                this.encerrado = true;
-                this.tituloJanela = `Visualizando INTERMITENTE #${id}`;
-                formReset();
-
-                this.form = _.cloneDeep(this.formDefault) //copia
-                this.leitura = true;
-
-                axios.get(`${URL_ADMIN}/apontamento/intermitente/${id}/editar`)
-                    .then(response => {
-                        Object.assign(this.form, response.data);
-                        this.editando = true;
-                        this.encerrado = true;
-                        this.preloadAjax = false;
-                        setupCampo();
-                    }).catch(
-                    error => (this.preloadAjax = false)
-                );
-            },
-            confirmaEncerraConvocacao() {
-                formReset();
-                $('#janelaCadastrar :input:enabled').trigger('blur');
-                if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                    mostraErro('', 'Verificar os erros');
-                    return false;
-                }
-
-                this.form._method = 'PUT';
-                this.preloadAjax = true;
-
-                axios.put(`${URL_ADMIN}/apontamento/intermitente/encerrar-convocacao/${this.form.id}`, this.form).then(response => {
-                    this.preloadAjax = false;
-                    this.atualizado = true;
-                    $('#janelaCadastrar').modal('hide');
-                    mostraSucesso('', 'Intermitente alterado com sucesso');
-                    this.atualizar();
-                }).catch(error => (this.preloadAjax = false));
-
-            },
-            formNovoTipo() {
-                this.formTipo = _.cloneDeep(this.formTipoDefault) //copia
-                this.titulo_janela_form_tipo = 'Novo Tipo';
-                this.preloadTipo = false;
-                this.cadastrado = false;
-                this.atualizado = false;
-                formReset();
-            },
-            cadastraTipo() {
-                $('#janelaFormTipo :input:visible').trigger('blur');
-                if ($('#janelaFormTipo :input:visible.is-invalid').length) {
-                    mostraErro('', 'Verificar os erros');
-                    return false;
-                }
-                this.preloadTipo = true;
-                axios.post(`${URL_ADMIN}/apontamento/intermitente/storeTipo`, this.formTipo)
-                    .then((res) => {
-                        $('#janelaFormTipo').modal('hide');
-                        mostraSucesso('', 'Tipo cadastrado com sucesso');
                         this.cadastrado = true;
-                        this.$refs.componente.buscar();
-                        this.preloadTipo = false;
-                    })
-                    .catch(error => {
-                        this.cadastrado = false;
-                        this.preloadTipo = false;
-                    });
-            },
-            carregou(dados) {
-                this.lista = dados.itens;
-                this.listaTipos = dados.tipos;
-                this.listaAreas = dados.areas;
-                this.cliente_id = dados.cliente_id;
-                this.datarelatorio = dados.intervalo;
-                this.hoje = dados.hoje;
-                this.listaClientes = dados.listaClientes;
-                this.controle.carregando = false;
-            },
-            carregando() {
-                this.controle.carregando = true;
-            },
-            atualizar() {
-                this.$refs.componente.atual = 1;
-                this.$refs.componente.buscar();
-            },
-        }
+                        $('#janelaFormProrrogacao').modal('hide');
+                        mostraSucesso('', 'Prorrogação cadastrado com sucesso');
+                        this.atualizar();
+                    }
+                }).catch(error => (this.preloadAjax = false));
+        },
+        formNovo() {
+            this.cadastrado = false;
+            this.atualizado = false;
+            this.editando = false;
+            this.encerrado = false;
+            this.aprovando = false;
+
+            this.tituloJanela = "Cadastrando INTERMITENTE";
+
+            formReset();
+            setupCampo();
+
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form.status = 'aberto';
+
+        },
+        cadastrar() {
+            formReset();
+            $('#janelaCadastrar :input:enabled').trigger('blur');
+            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros');
+                return false;
+            }
+
+            if (this.form.feedback_id === '') {
+                valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
+                $(`#janelaCadastrar #colaborador_${this.hash}`).focus().trigger('blur');
+                mostraErro('Erro', 'O campo vaga não pode ficar vazio');
+                return false;
+            }
+
+            this.preloadAjax = true;
+            this.form.status = "aberto";
+
+            axios.post(`${URL_ADMIN}/apontamento/intermitente`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.preloadAjax = false;
+                        this.cadastrado = true;
+                        $('#janelaCadastrar').modal('hide');
+                        mostraSucesso('', 'Intermitente cadastrado com sucesso');
+                        this.atualizar();
+                    }
+                }).catch(error => (this.preloadAjax = false));
+        },
+        visualizar(id) {
+            this.cadastrado = false;
+            this.atualizado = false;
+            this.editando = false;
+            this.encerrado = true;
+            this.tituloJanela = `Visualizando INTERMITENTE #${id}`;
+            formReset();
+
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.leitura = true;
+
+            axios.get(`${URL_ADMIN}/apontamento/intermitente/${id}/editar`)
+                .then(response => {
+                    Object.assign(this.form, response.data);
+                    this.editando = false;
+                    this.encerrado = true;
+                    this.preloadAjax = false;
+                    setupCampo();
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
+        },
+        encerrarConvocacao(id) {
+            this.cadastrado = false;
+            this.atualizado = false;
+            this.editando = true;
+            this.encerrado = true;
+            this.tituloJanela = `Visualizando INTERMITENTE #${id}`;
+            formReset();
+
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.leitura = true;
+
+            axios.get(`${URL_ADMIN}/apontamento/intermitente/${id}/editar`)
+                .then(response => {
+                    Object.assign(this.form, response.data);
+                    this.form.devolve_cracha = '';
+                    this.form.devolve_epi = '';
+                    this.editando = true;
+                    this.encerrado = true;
+                    this.preloadAjax = false;
+                    setupCampo();
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
+        },
+        confirmaEncerraConvocacao() {
+            formReset();
+            $('#janelaCadastrar :input:enabled').trigger('blur');
+            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros');
+                return false;
+            }
+
+            this.form._method = 'PUT';
+            this.preloadAjax = true;
+
+            axios.put(`${URL_ADMIN}/apontamento/intermitente/encerrar-convocacao/${this.form.id}`, this.form).then(response => {
+                this.preloadAjax = false;
+                this.atualizado = true;
+                $('#janelaCadastrar').modal('hide');
+                mostraSucesso('', 'Intermitente alterado com sucesso');
+                this.atualizar();
+            }).catch(error => (this.preloadAjax = false));
+
+        },
+        formNovoTipo() {
+            this.formTipo = _.cloneDeep(this.formTipoDefault) //copia
+            this.titulo_janela_form_tipo = 'Novo Tipo';
+            this.preloadTipo = false;
+            this.cadastrado = false;
+            this.atualizado = false;
+            formReset();
+        },
+        cadastraTipo() {
+            $('#janelaFormTipo :input:visible').trigger('blur');
+            if ($('#janelaFormTipo :input:visible.is-invalid').length) {
+                mostraErro('', 'Verificar os erros');
+                return false;
+            }
+            this.preloadTipo = true;
+            axios.post(`${URL_ADMIN}/apontamento/intermitente/storeTipo`, this.formTipo)
+                .then((res) => {
+                    $('#janelaFormTipo').modal('hide');
+                    mostraSucesso('', 'Tipo cadastrado com sucesso');
+                    this.cadastrado = true;
+                    this.$refs.componente.buscar();
+                    this.preloadTipo = false;
+                })
+                .catch(error => {
+                    this.cadastrado = false;
+                    this.preloadTipo = false;
+                });
+        },
+        carregou(dados) {
+            this.lista = dados.itens;
+            this.listaTipos = dados.tipos;
+            this.listaAreas = dados.areas;
+            this.cliente_id = dados.cliente_id;
+            this.datarelatorio = dados.intervalo;
+            this.hoje = dados.hoje;
+            this.listaClientes = dados.listaClientes;
+            this.controle.carregando = false;
+        },
+        carregando() {
+            this.controle.carregando = true;
+        },
+        atualizar() {
+            this.$refs.componente.atual = 1;
+            this.$refs.componente.buscar();
+        },
     }
+}
 </script>
 
 <style scoped>
