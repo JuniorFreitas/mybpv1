@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaDias;
 use App\Models\AvaliacaoNoventaFeedback;
@@ -34,6 +35,8 @@ class HistoricoController extends Controller
         });
         $tabelaNoventa = AvaliacaoNoventaFeedbackQuantidade::with('Feedback')->whereFeedbackId($feedback_id)->get();
 
+        $avNoventaVencimento = Admissao::whereFeedbackId($feedback_id)->with('Feedback.AvaliacaoNoventaVencimento')->first();
+
         return response()->json([
             'feedback' => $feedback,
             'causas' => MedidaAdministrativa::CAUSAS,
@@ -41,6 +44,7 @@ class HistoricoController extends Controller
             'tipos' => MedidaAdministrativa::TIPOS,
             'perguntas' => $perguntas,
             'tabelaNoventa' => $tabelaNoventa,
+            'avNoventaVencimento' => $avNoventaVencimento,
             'hoje' => (new DataHora())->dataCompleta()
         ], 200);
     }
