@@ -395,7 +395,7 @@ class VagaAbertaController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage(). "trace ".$e->getTraceAsString()." - Linha: " . $e->getLine()." Empresa ID: ".$dados['empresa_id'];
-            \Log::debug($e->getTraceAsString());
+            \Log::debug($e->getMessage());
             \Log::info("-------DADOS-------");
             \Log::alert($dados);
             \Log::info("-------FIM DE DADOS-------");

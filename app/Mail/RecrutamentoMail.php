@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Mail\Movimentacao\AdmissaoPrevista;
+namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class CadastroMail extends Mailable
+class RecrutamentoMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -21,12 +21,12 @@ class CadastroMail extends Mailable
     public function __construct(array $dados)
     {
         $this->dados = $dados;
-        $this->to($this->dados['email'], $this->dados['nome_para']);
-        $this->from('naoresponda@mybp.com.br', $this->dados['nome']);
-        $this->subject = "Confirmação de Cadastro";
+        $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
+        $this->to($this->dados['email'], $this->dados['nome']);
+        $this->from('naoresponda@mybp.com.br', $empresa->razao_social);
+        $this->subject = "Cadastro realizado";
         $this->assunto = $this->subject;
     }
-
 
     /**
      * Build the message.
