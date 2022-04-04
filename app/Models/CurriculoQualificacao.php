@@ -51,21 +51,18 @@ class CurriculoQualificacao extends Model
     }
 
     protected $table = 'curriculo_qualificacoes';
-
-    public function usesTimestamps(): bool
-    {
-        return false;
-    }
+    public $timestamps = false;
     protected $fillable = [
         'nome',
-        'curriculo',
+        'curriculo_id',
         'instituicao',
         'mes_conclusao',
         'ano_conclusao',
     ];
     protected $casts = [
+        'id' => 'int',
         'nome' => 'string',
-        'curriculo' => 'int',
+        'curriculo_id' => 'int',
         'instituicao' => 'string',
         'mes_conclusao' => 'string',
         'ano_conclusao' => 'int',

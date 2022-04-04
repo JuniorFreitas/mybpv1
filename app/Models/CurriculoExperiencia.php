@@ -64,7 +64,7 @@ class CurriculoExperiencia extends Model
 
     protected $table = 'curriculo_experiencias';
     protected $fillable = [
-        'curriculo',
+        'curriculo_id',
         'empresa',
         'cargo',
         'principais_atv',
@@ -75,7 +75,7 @@ class CurriculoExperiencia extends Model
     ];
     protected $casts = [
         'id' => 'int',
-        'curriculo' => 'int',
+        'curriculo_id' => 'int',
         'empresa' => 'string',
         'cargo' => 'string',
         'principais_atv' => 'string',

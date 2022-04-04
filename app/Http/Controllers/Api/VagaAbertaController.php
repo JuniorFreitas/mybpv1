@@ -3,8 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\JobRecrutamento;
+use App\Jobs\Recrutamento\JobRecrutamentoCadastro;
+use App\Mail\Recrutamento\CadastroMail;
+use App\Mail\RecrutamentoMail;
+use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\CurriculoAtualizacao;
+use App\Models\CurriculoExperiencia;
+use App\Models\CurriculoQualificacao;
 use App\Models\Escolaridade;
 use App\Models\Municipio;
 use App\Models\Sistema;
@@ -29,11 +36,61 @@ class VagaAbertaController extends Controller
         return view('vagasabertas.index', compact('empresa_id', 'vaga_aberta_id'));
     }
 
-    public function atualizar(Request $request)
+    /**
+     * @param $empresa_slug
+     * @param $vaga_aberta_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getVagaAberta($empresa_slug, $vaga_aberta_id): object
     {
-        $vaga = VagasAbertas::whereEmpresaId($request->empresa_id)->whereId($request->vaga_aberta_id)->whereAtivo(true)->with('Vaga', 'Municipio')->first();
+        $vaga = VagasAbertas::whereHas('Empresa', function ($query) use ($empresa_slug) {
+            $query->withoutGlobalScopes()->where('apelido', $empresa_slug);
+        })
+            ->with(['Empresa' => function ($query) {
+                $query->withoutGlobalScopes()->select(['id', 'razao_social', 'cnpj'])->with('Logo');
+            }, 'Municipio'])
+            ->whereId($vaga_aberta_id)
+            ->whereAtivo(true)
+            ->first();
 
-        return response()->json(['dados' => $vaga], 200);
+        if (!$vaga) {
+            return response()->json([
+                'msg' => 'Vaga não encontrada',
+                'success' => false
+            ], 404);
+        }
+        return response()->json([
+            'dados' => $vaga,
+            'success' => true
+        ]);
+    }
+
+    /**
+     * @param $empresa_slug
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getVagasAbertasByEmpresa($empresa_slug): object
+    {
+        $vagas = Cliente::select(['id', 'razao_social', 'cnpj', 'missao', 'visao', 'valores', 'logradouro', 'municipio', 'uf', 'cep'])
+            ->where('apelido', $empresa_slug)
+            ->with(
+                ['VagasAbertas' => function ($query) {
+                    $query->withoutGlobalScopes()
+                        ->with('Municipio')
+                        ->whereAtivo(true);
+                }, 'Logo'])
+            ->withoutGlobalScopes()
+            ->first();
+        if (!$vagas) {
+            return response()->json([
+                'msg' => 'Empresa não encontrada',
+                'success' => false
+            ], 404);
+        }
+        return response()->json([
+            'dados' => $vagas,
+            'success' => true
+        ]);
     }
 
     public function buscaCurriculo(Request $request)
@@ -41,10 +98,13 @@ class VagaAbertaController extends Controller
         //BUSCA POR CPF
         $cpf = Sistema::transformCpfCnpj($request->cpf);
         if (!Sistema::validaCPF($cpf)) {
-            return response()->json(['msg' => 'CPF inválido'], 400);
+            return response()->json([
+                'msg' => 'CPF inválido',
+                'success' => false
+            ], 400);
         }
 
-        $curriculo = Curriculo::whereCpf($cpf);
+        $curriculo = Curriculo::withoutGlobalScopes()->whereCpf($cpf);
         $escolaridades = Escolaridade::get();
 
         if ($curriculo->count() > 0) {
@@ -73,15 +133,26 @@ class VagaAbertaController extends Controller
                     'escolaridades' => $escolaridades
                 ], 200);
             } else {
-                return response()->json('error_nascimento', 200);
+                return response()->json(['msg' => 'CPF encontrado, porém data de nascimento não confere',
+                    'success' => false
+                ], 400);
             }
         } else {
             return response()->json([
                 'possuiCadastro' => false,
-                'escolaridades' => $escolaridades
+                'escolaridades' => $escolaridades,
+                'success' => true
             ], 200);
         }
     }
+
+    public function atualizar(Request $request)
+    {
+        $vaga = VagasAbertas::whereEmpresaId($request->empresa_id)->whereId($request->vaga_aberta_id)->whereAtivo(true)->with('Vaga', 'Municipio')->first();
+
+        return response()->json(['dados' => $vaga], 200);
+    }
+
 
     public function buscaCpf(Request $request)
     {
@@ -125,7 +196,7 @@ class VagaAbertaController extends Controller
 
         $dados['uf_vaga'] = mb_strtoupper($vaga_aberta->Municipio->uf);
         $dados['municipio_id'] = $vaga_aberta->municipio_id;
-        $dados['vaga_pretendida'] = $dados['vaga_aberta_id'];
+        $dados['vaga_pretendida'] = $vaga_aberta->id;
 
         $arrayValidacao = [
             'nome' => 'required|min:3',
@@ -163,7 +234,6 @@ class VagaAbertaController extends Controller
             $dados['temqualificacao'] = 'false';
         }
 
-
         $arrayExperiencia = [];
         if ($dados['temexperiencia'] == 'true' && isset($dados['experiencias'])) {
             $arrayExperiencia = [
@@ -171,8 +241,6 @@ class VagaAbertaController extends Controller
                 'experiencias.*.cargo' => 'required',
                 'experiencias.*.principais_atv' => 'required',
                 'experiencias.*.data_inicio' => 'required',
-//                'experiencias.*.referencia_nome' => 'required',
-//                'experiencias.*.referencia_telefone' => 'required|min:14',
             ];
         } else {
             $dados['temexperiencia'] = 'false';
@@ -188,167 +256,150 @@ class VagaAbertaController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
 
-        } else {
-            try {
-                DB::beginTransaction();
+        }
 
-                $user = User::whereHas('Curriculo', function ($q) use ($dados) {
-                    $q->whereCpf($dados['cpf']);
-                });
-                //Cadastra
-                if ($user->count() === 0) {
-                    $cpf = Sistema::transformCpfCnpj($request->cpf);
-                    if (!Sistema::validaCPF($cpf)) {
-                        return response()->json(['msg' => 'CPF inválido'], 400);
+        try {
+            DB::beginTransaction();
+
+            $user = User::whereHas('Curriculo', function ($q) use ($dados) {
+                $q->withoutGlobalScopes()->whereCpf($dados['cpf_padrao']);
+            });
+
+            if ($user->count() == 0) {
+                $cpf = Sistema::transformCpfCnpj($request->cpf_padrao);
+                if (!Sistema::validaCPF($cpf)) {
+                    return response()->json(['msg' => 'CPF inválido'], 400);
+                }
+
+                $dados['cpf'] = $cpf;
+
+                $userObj = [
+                    'nome' => $dados['nome'],
+                    'login' => $dados['email'],
+                    'password' => Sistema::SenhaCpf($dados['cpf_padrao']),
+                    'tipo' => 'Candidato',
+                    'ativo' => true,
+                    'temp' => false,
+                    'termos' => false,
+                    'empresa_id' => $dados['empresa_id']
+                ];
+
+                $usuario = $user->create($userObj);
+                $userCurriculo = $usuario->Curriculo()->create($dados);
+
+                if (!isset($dados['telefones'])) {
+                    return response()->json([
+                        'msg' => 'É Necessário Informar pelo menos Um número de telefone',
+                        'erros' => $dadosValidados->errors()
+                    ], 400);
+                } else {
+                    if (isset($dados['telefonesDelete'])) {
+                        foreach ($dados['telefonesDelete'] as $index) {
+                            TelefoneCurriculo::find($index)->delete();
+                        }
                     }
+                    foreach ($dados['telefones'] as $linha) {
+                        if (!isset($linha['id'])) {
+                            $linha['curriculo_id'] = $usuario->id;
+                            TelefoneCurriculo::create($linha);
+                        } else {
+                            TelefoneCurriculo::find($linha['id'])->update($linha);
+                        }
+                    }
+                }
+                if ($dados['temqualificacao'] == 'true') {
+                    foreach ($dados['qualificacoes'] as $linha) {
+                        $linha['curriculo_id'] = $usuario->id;
+                        CurriculoQualificacao::create($linha);
+                    }
+                }
 
-                    $dados['cpf'] = $cpf;
+                if ($dados['temexperiencia'] == 'true') {
+                    foreach ($dados['experiencias'] as $linha) {
+                        $linha['curriculo'] = $usuario->id;
+                        $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
+                        CurriculoExperiencia::create($linha);
+                    }
+                }
+            }else{
+                $curriculo = Curriculo::withoutGlobalScopes()->whereCpf($dados['cpf_padrao'])->first();
+                $atualizacao = ['curriculo_id' => $curriculo->id];
+                CurriculoAtualizacao::create($atualizacao);
 
-                    $userObj = [
-                        'nome' => $dados['nome'],
-                        'login' => $dados['email'],
-                        'password' => Sistema::SenhaCpf($dados['cpf']),
-                        'tipo' => 'Candidato',
-                        'ativo' => true,
-                        'temp' => false,
-                        'termos' => false,
-                        'empresa_id' => $dados['empresa_id']
-                    ];
+                if (!isset($dados['telefones'])) {
+                    return response()->json([
+                        'msg' => 'É Necessário Informar pelo menos Um número de telefone',
+                        'erros' => $dadosValidados->errors()
+                    ], 400);
+                }
+                if (isset($dados['telefonesDelete'])) {
+                    foreach ($dados['telefonesDelete'] as $index) {
+                        TelefoneCurriculo::find($index)->delete();
+                    }
+                }
 
-                    $usuario = $user->create($userObj);
-                    $usuario->Curriculo()->create($dados);
-                    $curriculo = Curriculo::find($usuario->id);
-
-                    if (!isset($dados['telefones'])) {
-                        return response()->json([
-                            'msg' => 'É Necessário Informar pelo menos Um número de telefone',
-                            'erros' => $dadosValidados->errors()
-                        ], 400);
+                foreach ($dados['telefones'] as $linha) {
+                    if ($linha['id'] == 0) {
+                        $curriculo->Telefones()->create($linha);
                     } else {
-                        if (isset($dados['telefonesDelete'])) {
-                            foreach ($dados['telefonesDelete'] as $index) {
-                                TelefoneCurriculo::find($index)->delete();
-                            }
-                        }
+                        $curriculo->Telefones->find($linha['id'])->update($linha);
+                    }
+                }
 
-                        foreach ($dados['telefones'] as $linha) {
-                            if (!isset($linha['id'])) {
-                                $curriculo->Telefones()->create($linha);
-                            } else {
-                                $curriculo->Telefones->find($linha['id'])->update($linha);
-                            }
+                if ($dados['temqualificacao'] == 'true') {
+                    if (isset($dados['qualificacoesDelete'])) {
+                        foreach ($dados['qualificacoesDelete'] as $index) {
+                            $curriculo->Qualificacoes()->find($index)->delete();
                         }
                     }
-
-                    if ($dados['temqualificacao'] == 'true') {
-
-                        foreach ($dados['qualificacoes'] as $linha) {
-                            $linha['curriculo'] = $curriculo->id;
+                    foreach ($dados['qualificacoes'] as $linha) {
+                        if (isset($linha['id'])) {
+                            $curriculo->Qualificacoes()->find($linha['id'])->update($linha);
+                        } else {
                             $curriculo->Qualificacoes()->create($linha);
                         }
                     }
+                }
 
-                    if ($dados['temexperiencia'] == 'true') {
-                        foreach ($dados['experiencias'] as $linha) {
-                            $linha['curriculo'] = $curriculo->id;
+                if ($dados['temexperiencia'] == 'true') {
+                    if (isset($dados['experienciasDelete'])) {
+                        foreach ($dados['experienciasDelete'] as $index) {
+                            $curriculo->Experiencias()->find($index)->delete();
+                        }
+                    }
+                    foreach ($dados['experiencias'] as $linha) {
+                        if (isset($linha['id'])) {
+                            $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
+                            $curriculo->Experiencias()->find($linha['id'])->update($linha);
+                        } else {
                             $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
                             $curriculo->Experiencias()->create($linha);
                         }
                     }
-
-                    DB::commit();
-
-                    $dadosEmpresa = User::find($dados['empresa_id']);
-
-                    Mail::send('email.recrutamento.cadastro', $dados, function ($m) use ($dados, $dadosEmpresa) {
-                        $m->from('naoresponda@mybp.com.br', 'Vagas MyBP | ' . $dadosEmpresa['nome']);
-                        $m->subject('Confirmação de Cadastro');
-                        $m->to($dados['email']);
-                    });
-
-                } else {
-
-                    $curriculo = Curriculo::find($dados['id']);
-                    $atualizacao = ['curriculo_id' => $dados['id']];
-                    CurriculoAtualizacao::create($atualizacao);
-
-                    if (!isset($dados['telefones'])) {
-                        return response()->json([
-                            'msg' => 'É Necessário Informar pelo menos Um número de telefone',
-                            'erros' => $dadosValidados->errors()
-                        ], 400);
-                    } else {
-
-                        if (isset($dados['telefonesDelete'])) {
-                            foreach ($dados['telefonesDelete'] as $index) {
-                                TelefoneCurriculo::find($index)->delete();
-                            }
-                        }
-
-                        foreach ($dados['telefones'] as $linha) {
-                            if (!isset($linha['id'])) {
-                                $curriculo->Telefones()->create($linha);
-                            } else {
-                                $curriculo->Telefones->find($linha['id'])->update($linha);
-                            }
-                        }
-                    }
-
-                    if ($dados['temqualificacao'] == 'true') {
-                        if (isset($dados['qualificacoesDelete'])) {
-                            foreach ($dados['qualificacoesDelete'] as $index) {
-                                $curriculo->Qualificacoes()->find($index)->delete();
-                            }
-                        }
-
-                        foreach ($dados['qualificacoes'] as $linha) {
-                            if (isset($linha['id'])) {
-                                $curriculo->Qualificacoes()->find($linha['id'])->update($linha);
-                            } else {
-                                $curriculo->Qualificacoes()->create($linha);
-                            }
-                        }
-
-                    }
-
-                    if ($dados['temexperiencia'] == 'true') {
-                        if (isset($dados['experienciasDelete'])) {
-                            foreach ($dados['experienciasDelete'] as $index) {
-                                $curriculo->Experiencias()->find($index)->delete();
-                            }
-                        }
-
-                        foreach ($dados['experiencias'] as $linha) {
-                            if (isset($linha['id'])) {
-                                $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
-                                $curriculo->Experiencias()->find($linha['id'])->update($linha);
-                            } else {
-                                $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
-                                $curriculo->Experiencias()->create($linha);
-                            }
-                        }
-                    }
-
-                    unset($dados['cpf']); //remove o cpf
-                    $curriculo->update($dados);
-                    DB::commit();
-
-                    $dadosEmpresa = User::find($dados['empresa_id']);
-
-                    Mail::send('email.recrutamento.cadastro', $dados, function ($m) use ($dados, $dadosEmpresa) {
-                        $m->from('naoresponda@mybp.com.br', 'Vagas MyBP | ' . $dadosEmpresa['nome']);
-                        $m->subject('Confirmação de Cadastro');
-                        $m->to($dados['email']);
-                    });
                 }
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro no cadastro de curriculo {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
-                \Log::debug($msg);
-//                return response()->json(['msg' => $msg], 400);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                unset($dados['cpf']); //remove o cpf
+                $curriculo->update($dados);
             }
+
+            DB::commit();
+            $dadosEmail = [
+                'nome' => $dados['nome'],
+                'email' => $dados['email'],
+                'empresa_id' => $dados['empresa_id'],
+                'vaga_aberta_id' => $dados['vaga_aberta_id'],
+            ];
+
+            JobRecrutamento::dispatch($dadosEmail);
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage(). "trace ".$e->getTraceAsString()." - Linha: " . $e->getLine()." Empresa ID: ".$dados['empresa_id'];
+            \Log::debug($msg);
+            \Log::info("-------DADOS-------");
+            \Log::alert($dados);
+            \Log::info("-------FIM DE DADOS-------");
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

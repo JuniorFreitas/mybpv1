@@ -148,6 +148,7 @@ export default {
         add() {
             let op = {};
             op.id = 0;
+            op.nova = true;
             op.tipo = 'residencial';
             op.pais = '55';
             op.numero = '';
