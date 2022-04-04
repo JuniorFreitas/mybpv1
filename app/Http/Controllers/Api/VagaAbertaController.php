@@ -316,7 +316,7 @@ class VagaAbertaController extends Controller
 
                 if ($dados['temexperiencia'] == 'true') {
                     foreach ($dados['experiencias'] as $linha) {
-                        $linha['curriculo'] = $usuario->id;
+                        $linha['curriculo_id'] = $usuario->id;
                         $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
                         CurriculoExperiencia::create($linha);
                     }
