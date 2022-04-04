@@ -553,6 +553,11 @@ class FeedbackCurriculo extends Model
         return $this->hasOne(Cliente::class, 'id', 'empresa_id');
     }
 
+    public function AvaliacaoNoventaVencimento()
+    {
+        return $this->hasOne(AvaliacaoNoventaVencimento::class, 'feedback_id', 'id');
+    }
+
     public function DocSelecao()
     {
         return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')

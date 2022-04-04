@@ -86,6 +86,19 @@
                         <option :value="false">Não</option>
                     </select>
                 </div>
+                <fieldset v-if="form.tipo === 'Administrador' || form.tipo === 'Suporte'">
+                    <legend>Tipos de emails que esse usuário pode receber:</legend>
+                    <div class="custom-control custom-switch"
+                         v-for="(tipo, key) in listaTipoEmail">
+                        <input type="checkbox" class="custom-control-input mb-1"
+                               v-model="form.user_recebe_email[tipo.id]" :value="tipo.id"
+                               :id="`tipo_${tipo.id}`">
+                        <label class="custom-control-label" style="cursor: pointer"
+                               :for="`tipo_${tipo.id}`">
+                            @{{ tipo.nome }}
+                        </label>
+                    </div>
+                </fieldset>
             </form>
         </template>
         <template slot="rodape">

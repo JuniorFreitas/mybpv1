@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Exports\Entrevistas\admissaoExport;
+use App\Mail\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoMail;
 use App\Models\Admissao;
 use App\Models\Arquivo;
+use App\Models\AvaliacaoNoventaVencimento;
+use App\Models\AvaliacaoVencimento;
 use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
 use App\Models\FeedbackCurriculo;
@@ -91,6 +94,7 @@ class AdmissaoController extends Controller
         $dadosParecerTeste['entrevistador'] = auth()->id();
 
         $dadosAdmissao = $dados['admissao'];
+
         $dadosAdmissao['usuario_id'] = auth()->id();
 
         $somenteDadosAdmissao = $dadosAdmissao['dados_admissoes'];
@@ -194,6 +198,55 @@ class AdmissaoController extends Controller
                     }
                 }
 
+                $datas = [];
+                if ($dadosAdmissao['tipo_admissao'] == 'FIXO') {
+                    $data = new DataHora($dadosAdmissao['data_admissao']);
+                    if ($dadosAdmissao['prazo_experiencia'] == '30+30') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(20);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(20);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($dadosAdmissao['prazo_experiencia'] == '45+45') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(35);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(35);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($dadosAdmissao['prazo_experiencia'] == '30+60') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(20);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(50);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($dadosAdmissao['prazo_experiencia'] == '60+30') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(50);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(20);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+                    }
+                    $dadosAdmissao['data_encerramento'] = null;
+                } elseif ($dadosAdmissao['tipo_admissao'] == 'TEMPORARIO' || $dadosAdmissao['tipo_admissao'] == 'DETERMINADO') {
+                    $data = new DataHora($dadosAdmissao['data_encerramento']);
+
+                    $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
+                    $datas['prazo_cinco_inicial'] = $data->subtrairDia(5);
+                    $datas['prazo_dia_inicial'] = $dadosAdmissao['data_encerramento'];
+                    $datas['prazo_dez_final'] = null;
+                    $datas['prazo_cinco_final'] = null;
+                    $datas['prazo_dia_final'] = null;
+                    $dadosAdmissao['prazo_experiencia'] = null;
+                }
+
+
                 $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
                 $feedback->ParecerRh()->create($dadosParecerRh);
@@ -201,6 +254,11 @@ class AdmissaoController extends Controller
                 $feedback->ParecerTecnica()->create($dadosParecerTecnica);
                 $feedback->ParecerTeste()->create($dadosParecerTeste);
                 $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback['id'])->first();
+
+                $datas['feedback_id'] = $feedback['id'];
+                $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
 
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
 
@@ -283,6 +341,55 @@ class AdmissaoController extends Controller
                     }
                 }
 
+                $datas = [];
+                if ($dadosAdmissao['tipo_admissao'] == 'FIXO') {
+                    $data = new DataHora($dadosAdmissao['data_admissao']);
+                    if ($dadosAdmissao['prazo_experiencia'] == '30+30') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(20);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(20);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($dadosAdmissao['prazo_experiencia'] == '45+45') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(35);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(35);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($dadosAdmissao['prazo_experiencia'] == '30+60') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(20);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(50);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($dadosAdmissao['prazo_experiencia'] == '60+30') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(50);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(20);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+                    }
+                    $dadosAdmissao['data_encerramento'] = null;
+                } elseif ($dadosAdmissao['tipo_admissao'] == 'TEMPORARIO' || $dadosAdmissao['tipo_admissao'] == 'DETERMINADO') {
+                    $data = new DataHora($dadosAdmissao['data_encerramento']);
+
+                    $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
+                    $datas['prazo_cinco_inicial'] = $data->subtrairDia(5);
+                    $datas['prazo_dia_inicial'] = $dadosAdmissao['data_encerramento'];
+                    $datas['prazo_dez_final'] = null;
+                    $datas['prazo_cinco_final'] = null;
+                    $datas['prazo_dia_final'] = null;
+                    $dadosAdmissao['prazo_experiencia'] = null;
+                }
+
+
                 // 4- Atualiza ou cria o FeedbackCurriculo
                 $candidato->FeedBack ? $candidato->FeedBack->update($dadosFeedback) : $candidato->FeedBack()->create($dadosFeedback);
                 $candidato->FeedBack->ParecerRh ? $candidato->FeedBack->ParecerRh->update($dadosParecerRh) : $candidato->FeedBack->ParecerRh()->create($dadosParecerRh);
@@ -290,6 +397,13 @@ class AdmissaoController extends Controller
                 $candidato->FeedBack->ParecerTecnica ? $candidato->FeedBack->ParecerTecnica->update($dadosParecerTecnica) : $candidato->FeedBack->ParecerTecnica()->create($dadosParecerTecnica);
                 $candidato->FeedBack->ParecerTeste ? $candidato->FeedBack->ParecerTeste->update($dadosParecerTeste) : $candidato->FeedBack->ParecerTeste()->create($dadosParecerTeste);
                 $candidato->FeedBack->ResultadoIntegrado ? $candidato->FeedBack->ResultadoIntegrado->update($dadosResultadoIntegrado) : $candidato->FeedBack->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                $feedback_id = $candidato->FeedBack ? $candidato->FeedBack->id : '';
+                $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
+
+                $datas['feedback_id'] = $feedback_id;
+                $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+
 
                 $admissaoCreate = $candidato->FeedBack->Admissao()->create($dadosAdmissao);
                 $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
@@ -526,6 +640,60 @@ class AdmissaoController extends Controller
                 $dadosAdmissoes = $admissaoDados['dados_admissoes'];
                 isset($admissaoDados['dados_admissoes']['id']) ? $feedback->Admissao->DadosAdmissoes->update($dadosAdmissoes) : $feedback->Admissao->DadosAdmissoes()->create($dadosAdmissoes);
 
+                $datas = [];
+                if ($admissaoDados['tipo_admissao'] == 'FIXO') {
+                    $data = new DataHora($admissaoDados['data_admissao']);
+                    if ($admissaoDados['prazo_experiencia'] == '30+30') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(20);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(20);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($admissaoDados['prazo_experiencia'] == '45+45') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(35);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(35);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($admissaoDados['prazo_experiencia'] == '30+60') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(20);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(50);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+
+                    } elseif ($admissaoDados['prazo_experiencia'] == '60+30') {
+                        $datas['prazo_dez_inicial'] = $data->addDia(50);
+                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                        $datas['prazo_dia_inicial'] = $data->addDia(5);
+                        $datas['prazo_dez_final'] = $data->addDia(20);
+                        $datas['prazo_cinco_final'] = $data->addDia(5);
+                        $datas['prazo_dia_final'] = $data->addDia(5);
+                    }
+                    $admissaoDados['data_encerramento'] = null;
+
+                } elseif ($admissaoDados['tipo_admissao'] == 'TEMPORARIO' || $admissaoDados['tipo_admissao'] == 'DETERMINADO') {
+                    $data = new DataHora($admissaoDados['data_encerramento']);
+
+                    $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
+                    $datas['prazo_cinco_inicial'] = $data->subtrairDia(5);
+                    $datas['prazo_dia_inicial'] = $admissaoDados['data_encerramento'];
+                    $datas['prazo_dez_final'] = null;
+                    $datas['prazo_cinco_final'] = null;
+                    $datas['prazo_dia_final'] = null;
+                    $admissaoDados['prazo_experiencia'] = null;
+                }
+
+                $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($admissaoDados['feedback_id'])->first();
+
+                $datas['feedback_id'] = $admissaoDados['feedback_id'];
+                $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+
                 $feedback->Admissao ? $feedback->Admissao->update($admissaoDados) : $feedback->Admissao()->create($admissaoDados);
 
                 if (isset($dadosCurriculo['telefonesDelete'])) {
@@ -649,7 +817,7 @@ class AdmissaoController extends Controller
         return Sistema::pg($pg, $dados);
     }
 
-    // Anexos-------------------------------------------------
+// Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {
         return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_FOTOCURRICULO);
@@ -665,13 +833,13 @@ class AdmissaoController extends Controller
         return Arquivo::anexoDelete(Arquivo::DISCO_FOTOCURRICULO, $arquivo);
     }
 
-    //anexo ou foto
+//anexo ou foto
     public function download(Request $request, $arquivo)
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_FOTOCURRICULO, $arquivo);
     }
 
-    //PDF
+//PDF
     public function getFichaPdf(FeedbackCurriculo $feedback)
     {
 //        $dados = ResultadoIntegrado::whereFeedbackId($curriculo_id)->first();
@@ -689,7 +857,7 @@ class AdmissaoController extends Controller
         return $pdf->stream("ficha_admissao_" . ($dados->Curriculo->nome) . ".pdf");
     }
 
-    //Excel
+//Excel
     public function export(Request $request)
     {
         $admissao = Admissao::has('ResultadoIntegrado');
