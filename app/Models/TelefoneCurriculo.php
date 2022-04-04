@@ -55,7 +55,14 @@ class TelefoneCurriculo extends Model
     }
 
     protected $table = 'curriculo_telefone';
-    protected $fillable = ['tipo', 'pais', 'numero', 'ramal', 'detalhe', 'curriculo_id', 'principal'];
+    protected $fillable = [
+        'tipo',
+        'pais',
+        'numero',
+        'ramal',
+        'detalhe',
+        'curriculo_id',
+        'principal'];
     protected $casts = [
         'id' => 'int',
         'tipo' => 'string',

@@ -1,30 +1,30 @@
 <template>
     <div>
         <div class="row">
-            <div class="col-12 col-sm-4 col-md-6 col-lg-4">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
               <div class="form-group">
-                <label>CEP</label>
-                <div class="input-group">
-                  <input type="text" :disabled="preload" v-show="obrigatorio" v-mascara:cep class="form-control"
-                         placeholder="Informe o cep"
-                         v-model="model.cep"
-                         onblur="valida_cep_vazio(this)">
+                  <label>CEP</label>
+                  <div class="input-group">
+                      <input type="text" :disabled="preload" v-show="obrigatorio" v-mascara:cep class="form-control"
+                             placeholder="Informe o cep"
+                             v-model="model.cep"
+                             onblur="valida_cep_vazio(this)">
 
-                  <input type="text" :disabled="preload" v-show="!obrigatorio" v-mascara:cep class="form-control"
-                         placeholder="Informe o cep"
-                         v-model="model.cep">
-                  <div class="input-group-append">
-                    <button class="btn btn-secondary" type="button" @click.prevent="onClick"><i
-                        class="fa fa-search"></i></button>
+                      <input type="text" :disabled="preload" v-show="!obrigatorio" v-mascara:cep class="form-control"
+                             placeholder="Informe o cep"
+                             v-model="model.cep">
+                      <div class="input-group-append">
+                          <button class="btn btn-secondary" type="button" @click.prevent="onClick"><i
+                              class="fa fa-search"></i></button>
+                      </div>
                   </div>
-                </div>
-                </div>
+              </div>
             </div>
 
         </div>
 
         <div class="row">
-          <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-5">
+          <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-5">
             <div class="form-group">
                 <label>Endereço</label>
               <input type="text" :disabled="preload" v-show="obrigatorio" class="form-control"
@@ -46,7 +46,7 @@
             </div>
           </div>
 
-          <div class="col-12 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+          <div class="col-12 col-sm-10 col-md-4 col-lg-4 col-xl-4">
             <div class="form-group">
               <label>Complemento</label>
               <input type="text" :disabled="preload" class="form-control"
@@ -54,7 +54,7 @@
             </div>
           </div>
 
-          <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-5">
+          <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-5">
             <div class="form-group">
               <label>Bairro</label>
               <input type="text" :disabled="preload" v-show="obrigatorio" class="form-control"
@@ -71,7 +71,7 @@
         </div>
 
         <div class="row">
-          <div class="col-12 col-sm-3 col-md-6 col-lg-5">
+          <div class="col-12 col-sm-10 col-md-6 col-lg-5">
             <div class="form-group">
               <label>Município</label>
               <input type="text" :disabled="preload" v-show="obrigatorio" class="form-control"
