@@ -151,7 +151,7 @@
                         <div class="form-group">
                             <label>Tipo de formulário:</label>
                             <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.tipo_form">
+                                    class="form-control" v-model="form.tipo_form" v-if="formulario.setores.length > 0">
                                 <option value="">Selecione</option>
                                 @if(\App\Models\Sistema::permitirLinks('posadmissao_form_rh'))
                                     <option :value="1">RECURSOS HUMANOS</option>
@@ -162,6 +162,10 @@
                                 @if(\App\Models\Sistema::permitirLinks('posadmissao_form_ssma'))
                                     <option :value="3">SEGURANÇA DO TRABALHO / SSMA</option>
                                 @endif
+                            </select>
+                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
+                                    class="form-control" v-model="form.tipo_form" v-else>
+                                <option value="">Nenhum formulário encontrado, entre em contato com o desenvolvedor do sistema.</option>
                             </select>
                         </div>
 
@@ -596,26 +600,26 @@
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
-{{--                <form target="_blank"--}}
-{{--                      action="{{ \App\Models\Sistema::UrlServidor }}/admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
-{{--                      --}}{{--                      action="{{ route('admissao.excel') }}"--}}
-{{--                      method="get">--}}
-{{--                    @csrf--}}
-{{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
-{{--                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">--}}
-{{--                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">--}}
-{{--                    <input type="hidden" name="campoRh" :value="controle.dados.campoRh">--}}
-{{--                    <input type="hidden" name="campoFinalRh" :value="controle.dados.campoFinalRh">--}}
-{{--                    <input type="hidden" name="campoRota" :value="controle.dados.campoRota">--}}
-{{--                    <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">--}}
-{{--                    <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">--}}
-{{--                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">--}}
-{{--                    <button type="submit" class="btn btn-sm btn-primary ml-1"--}}
-{{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0 ) ">--}}
-{{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
-{{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
-{{--                    </button>--}}
-{{--                </form>--}}
+                {{--                <form target="_blank"--}}
+                {{--                      action="{{ \App\Models\Sistema::UrlServidor }}/admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
+                {{--                      --}}{{--                      action="{{ route('admissao.excel') }}"--}}
+                {{--                      method="get">--}}
+                {{--                    @csrf--}}
+                {{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
+                {{--                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">--}}
+                {{--                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">--}}
+                {{--                    <input type="hidden" name="campoRh" :value="controle.dados.campoRh">--}}
+                {{--                    <input type="hidden" name="campoFinalRh" :value="controle.dados.campoFinalRh">--}}
+                {{--                    <input type="hidden" name="campoRota" :value="controle.dados.campoRota">--}}
+                {{--                    <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">--}}
+                {{--                    <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">--}}
+                {{--                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">--}}
+                {{--                    <button type="submit" class="btn btn-sm btn-primary ml-1"--}}
+                {{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0 ) ">--}}
+                {{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
+                {{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
+                {{--                    </button>--}}
+                {{--                </form>--}}
             </div>
         </div>
     </fieldset>
