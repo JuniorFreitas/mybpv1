@@ -258,6 +258,7 @@ class RecrutamentoController extends Controller
 //                            $dados['user_envia_mail_provas'] = auth()->id();
 //                        }
                     }
+                    $dados['vagas_abertas_id'] = $dados['vaga_id'];
                     $curriculo->FeedBack()->create($dados);
                     DB::commit();
                 }

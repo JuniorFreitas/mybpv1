@@ -20,7 +20,7 @@ class CurriculosSelecionadosController extends Controller
         $feedback->load(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email',
             'Curriculo.Formacao',
-            'VagaSelecionada',
+            'VagaAberta.VagaSelecionada',
             'TelPrincipal',
             'Cliente',
             'Simulados.SimuladoVaga.Simulado',
@@ -56,7 +56,7 @@ class CurriculosSelecionadosController extends Controller
                 'Cliente:id,razao_social,cnpj',
                 'Simulados.SimuladoVaga.Simulado',
                 'Curriculo.Formacao',
-                'VagaSelecionada',
+                'VagaAberta.VagaSelecionada',
                 'EtapaStatus'
             );
 

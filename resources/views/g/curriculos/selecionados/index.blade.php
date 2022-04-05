@@ -16,7 +16,7 @@
                         Idade: @{{form.curriculo.idade}} anos<br>
                         Contato: @{{form.tel_principal ? form.tel_principal.numero: 'não informado'}} | E-mail:
                         @{{ form.curriculo.email }} <br/>
-                        Vaga: @{{form.vaga_selecionada ? form.vaga_selecionada.nome : null}}
+                        Vaga: @{{form.vaga_aberta.vaga_selecionada ? form.vaga_aberta.vaga_selecionada.nome : null}}
                         | PCD: @{{form.curriculo.pcd ? 'Sim' : 'Não'}}
                         <br>
                         Endereco: @{{form.curriculo.endereco_completo}} <br>
@@ -378,7 +378,7 @@
                         @{{feedback.cliente.razao_social}}
                     </td>
                     <td class="text-center">
-                        @{{feedback.vaga_selecionada.nome}}
+                        @{{feedback.vaga_aberta.vaga_selecionada.nome}}
                     </td>
                     <td class="text-center">
                         @{{feedback.simulados.length > 0 ? "SIM" : "-"}}
