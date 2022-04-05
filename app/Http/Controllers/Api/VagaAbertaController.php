@@ -293,17 +293,11 @@ class VagaAbertaController extends Controller
                         'erros' => $dadosValidados->errors()
                     ], 400);
                 } else {
-                    if (isset($dados['telefonesDelete'])) {
-                        foreach ($dados['telefonesDelete'] as $index) {
-                            TelefoneCurriculo::find($index)->delete();
-                        }
-                    }
                     foreach ($dados['telefones'] as $linha) {
+                        $linha['principal'] = $linha['principal'] == 'true' ? true : false;
                         if (!isset($linha['id'])) {
-                            $linha['curriculo_id'] = $usuario->id;
-                            TelefoneCurriculo::create($linha);
-                        } else {
-                            TelefoneCurriculo::find($linha['id'])->update($linha);
+                                $linha['curriculo_id'] = $usuario->id;
+                                TelefoneCurriculo::create($linha);
                         }
                     }
                 }
@@ -401,6 +395,8 @@ class VagaAbertaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
+            return response()->json($e->getTrace(),400);
             $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . "trace " . $e->getTraceAsString() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'];
             \Log::debug($e->getMessage());
             \Log::info("-------DADOS-------");
