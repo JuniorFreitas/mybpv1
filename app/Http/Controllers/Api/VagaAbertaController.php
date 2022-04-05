@@ -321,7 +321,7 @@ class VagaAbertaController extends Controller
                         CurriculoExperiencia::create($linha);
                     }
                 }
-            }else{
+            } else {
                 $curriculo = Curriculo::withoutGlobalScopes()->whereCpf($dados['cpf_padrao'])->first();
                 $atualizacao = ['curriculo_id' => $curriculo->id];
                 CurriculoAtualizacao::create($atualizacao);
@@ -338,11 +338,18 @@ class VagaAbertaController extends Controller
                     }
                 }
 
-                foreach ($dados['telefones'] as $linha) {
+                foreach($dados['telefones'] as $linha) {
+                    $linha['principal'] = $linha['principal'] == 'true' ? true : false;
                     if ($linha['id'] == 0) {
-                        $curriculo->Telefones()->create($linha);
+                        $telPrincipal = $curriculo->Telefones()->create($linha)->id;
+                        if ($linha['principal']) {
+                            $dados['telefone_id'] = $telPrincipal;
+                        }
                     } else {
                         $curriculo->Telefones->find($linha['id'])->update($linha);
+                        if ($linha['principal']) {
+                            $dados['telefone_id'] = $linha['id'];
+                        }
                     }
                 }
 
@@ -394,7 +401,7 @@ class VagaAbertaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage(). "trace ".$e->getTraceAsString()." - Linha: " . $e->getLine()." Empresa ID: ".$dados['empresa_id'];
+            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . "trace " . $e->getTraceAsString() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'];
             \Log::debug($e->getMessage());
             \Log::info("-------DADOS-------");
             \Log::alert($dados);
