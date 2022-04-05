@@ -93,7 +93,7 @@
         @endif
 
         <h3>Vaga Pretendida</h3>
-        <p><strong>{{ $recrutamento->Vaga->nome }}</strong> |
+        <p><strong>{{ $recrutamento->VagaAberta->Vaga->nome }}</strong> |
             @if($recrutamento->municipio_id)
                 {{ $recrutamento->Cidade->nome }} - {{ $recrutamento->Cidade->uf }}
             @else

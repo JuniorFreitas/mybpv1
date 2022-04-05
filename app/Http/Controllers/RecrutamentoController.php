@@ -75,7 +75,7 @@ class RecrutamentoController extends Controller
     {
 
 //        $value = cache()->rememberForever("curriculo_{$recrutamento->id}", function () use($recrutamento) {
-        return $recrutamento->load('Atualizacao', 'Qualificacoes', 'Experiencias', 'Vaga', 'Formacao', 'Telefones', 'Usuario')->load(['FeedBack' => function ($query) {
+        return $recrutamento->load('Atualizacao', 'Qualificacoes', 'Experiencias', 'VagaAberta.VagaSelecionada', 'Formacao', 'Telefones', 'Usuario')->load(['FeedBack' => function ($query) {
             $query->with('VagaSelecionada.SimuladoVaga', 'Cliente', 'QuemMarcou', 'TelPrincipal');
         }]);
 //        });
@@ -381,7 +381,7 @@ class RecrutamentoController extends Controller
             'municipio_id',
             'lido',
             'created_at',
-        )->with('Vaga','FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
+        )->with('VagaAberta.VagaSelecionada','FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
 
 
 //        $this->authorize('clientes');
@@ -425,7 +425,7 @@ class RecrutamentoController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('Vaga', function ($query) use ($request) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }

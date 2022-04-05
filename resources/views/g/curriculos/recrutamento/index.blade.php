@@ -178,7 +178,7 @@
                         <div class="col-12 col-md-4" v-if="editando">
                             <div class="form-group">
                                 <label>Vaga Pretendida</label>
-                                <input type="text" disabled="disabled" class="form-control" :value="form.vaga.nome">
+                                <input type="text" disabled="disabled" class="form-control" :value="form.vaga_aberta.vaga_selecionada.nome">
                             </div>
 
                         </div>
@@ -606,7 +606,7 @@
                         @{{curriculo.uf_vaga ? curriculo.uf_vaga : 'Não informado'}}
                     </td>
                     <td data-label="Vaga">
-                        @{{curriculo.vaga.nome}}
+                        @{{curriculo.vaga_aberta.vaga_selecionada.nome}}
                     </td>
                     <td data-label="PCD">
                         @{{curriculo.pcd ? "SIM" : "NÃO"}}

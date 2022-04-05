@@ -387,6 +387,11 @@ class Curriculo extends Model
         return $this->hasOne(Vaga::class, 'id', 'vaga_pretendida');
     }
 
+    public function VagaAberta()
+    {
+        return $this->hasOne(VagasAbertas::class, 'id', 'vaga_pretendida');
+    }
+
     public function Formacao()
     {
         return $this->hasOne(Escolaridade::class, 'id', 'formacao');
