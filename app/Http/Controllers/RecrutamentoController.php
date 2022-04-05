@@ -76,7 +76,7 @@ class RecrutamentoController extends Controller
 
 //        $value = cache()->rememberForever("curriculo_{$recrutamento->id}", function () use($recrutamento) {
         return $recrutamento->load('Atualizacao', 'Qualificacoes', 'Experiencias', 'VagaAberta.VagaSelecionada', 'Formacao', 'Telefones', 'Usuario')->load(['FeedBack' => function ($query) {
-            $query->with('VagaSelecionada.SimuladoVaga', 'Cliente', 'QuemMarcou', 'TelPrincipal');
+            $query->with('VagaAberta.VagaSelecionada.SimuladoVaga','VagaAberta.Municipio', 'Cliente', 'QuemMarcou', 'TelPrincipal');
         }]);
 //        });
 //

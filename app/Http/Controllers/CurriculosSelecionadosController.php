@@ -21,6 +21,7 @@ class CurriculosSelecionadosController extends Controller
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email',
             'Curriculo.Formacao',
             'VagaAberta.VagaSelecionada',
+            'VagaAberta.Municipio',
             'TelPrincipal',
             'Cliente',
             'Simulados.SimuladoVaga.Simulado',
@@ -57,6 +58,7 @@ class CurriculosSelecionadosController extends Controller
                 'Simulados.SimuladoVaga.Simulado',
                 'Curriculo.Formacao',
                 'VagaAberta.VagaSelecionada',
+                'VagaAberta.Municipio',
                 'EtapaStatus'
             );
 

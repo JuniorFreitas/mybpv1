@@ -16,7 +16,8 @@
                         Idade: @{{form.curriculo.idade}} anos<br>
                         Contato: @{{form.tel_principal ? form.tel_principal.numero: 'não informado'}} | E-mail:
                         @{{ form.curriculo.email }} <br/>
-                        Vaga: @{{form.vaga_aberta.vaga_selecionada ? form.vaga_aberta.vaga_selecionada.nome : null}}
+                        Vaga: @{{form.vaga_aberta.vaga_selecionada ? form.vaga_aberta.vaga_selecionada.nome +' - '+
+                        form.vaga_aberta.municipio.nome +' - '+ form.vaga_aberta.municipio.uf : null}}
                         | PCD: @{{form.curriculo.pcd ? 'Sim' : 'Não'}}
                         <br>
                         Endereco: @{{form.curriculo.endereco_completo}} <br>
@@ -177,7 +178,7 @@
                                   :disabled="controle.carregando"
                                   placeholder="Por vaga"
                                   @onblur="resetaCampo"
-                                 @onselect="selecionaVaga"></autocomplete>
+                                  @onselect="selecionaVaga"></autocomplete>
                 </div>
             </div>
 
@@ -190,7 +191,7 @@
                                   v-model="controle.dados.autocomplete_label_cliente"
                                   placeholder="Por cliente"
                                   @onblur="resetaCampoCliente"
-                                 @onselect="selecionaCliente"></autocomplete>
+                                  @onselect="selecionaCliente"></autocomplete>
                 </div>
             </div>
 
@@ -372,13 +373,14 @@
                     </td>
                     <td>
                         @{{feedback.curriculo.nome}} <br>
-{{--                        @{{feedback.curriculo.cpf}}--}}
+                        {{--                        @{{feedback.curriculo.cpf}}--}}
                     </td>
                     <td v-if="cliente_id === 1">
                         @{{feedback.cliente.razao_social}}
                     </td>
                     <td class="text-center">
-                        @{{feedback.vaga_aberta.vaga_selecionada.nome}}
+                        @{{feedback.vaga_aberta.vaga_selecionada.nome +' - '+ feedback.vaga_aberta.municipio.nome +' - '+
+                        feedback.vaga_aberta.municipio.uf }}
                     </td>
                     <td class="text-center">
                         @{{feedback.simulados.length > 0 ? "SIM" : "-"}}
