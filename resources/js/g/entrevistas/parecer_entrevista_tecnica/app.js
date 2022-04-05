@@ -170,7 +170,6 @@ const app = new Vue({
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.usuarioAutenticado();
-        this.listaVagas();
         setTimeout(() => {
             this.atualizar();
         },200)
@@ -309,18 +308,6 @@ const app = new Vue({
                 .catch(error => {
                     this.preload = false;
                 })
-        },
-
-        listaVagas() {
-            this.preload = true;
-            axios.get(`${URL_PUBLICO}/lista-vagas`)
-                .then(res => {
-                    this.preload = false;
-                    this.vagas = res.data.vagas;
-                })
-                .catch(error => {
-                    this.preload = false;
-                });
         },
 
         janelaConfirmar(id) {

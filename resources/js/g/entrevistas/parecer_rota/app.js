@@ -142,7 +142,6 @@ const app = new Vue({
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.usuarioAutenticado();
-        this.listaVagas();
         setTimeout(() => {
             this.atualizar();
         },200)
@@ -283,18 +282,6 @@ const app = new Vue({
                 })
         },
 
-        listaVagas() {
-            this.preload = true;
-            axios.get(`${URL_PUBLICO}/lista-vagas`)
-                .then(res => {
-                    this.preload = false;
-                    this.vagas = res.data.vagas;
-                })
-                .catch(error => {
-                    this.preload = false;
-                });
-        },
-
         janelaConfirmar(id) {
             this.form.id = id;
             this.apagado = false;
@@ -314,12 +301,8 @@ const app = new Vue({
                     this.preload = false;
                 })
         },
-
         carregou(dados) {
             this.lista = dados.itens;
-            // this.cliente_id = dados.usuario_cliente_id;
-            // this.colunasTabela.cliente = this.cliente_id === 1;
-            // this.controle.dados.campoCliente = this.cliente_id !== 1 ? this.cliente_id : this.controle.dados.campoCliente;
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;
 

@@ -78,7 +78,9 @@ class CurriculosSelecionadosController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereVagaId($request->campoVaga);
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
+                $query->whereId($request->campoVaga);
+            });
         }
 
         if ($request->filled('campoCPF')) {

@@ -93,7 +93,7 @@ class ParecerTestePraticoController extends Controller
             'Curriculo',
             'Curriculo.Formacao',
             'TelPrincipal',
-            'vagaSelecionada'
+            'VagaAberta.vagaSelecionada'
         );
         return response()->json($feedback, 200);
     }
@@ -150,7 +150,7 @@ class ParecerTestePraticoController extends Controller
         $resultado = FeedbackCurriculo::with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social',
-            'vagaSelecionada',
+            'VagaAberta.vagaSelecionada',
             'parecerRh:feedback_id,nota',
             'parecerTecnica:feedback_id,nota',
             'parecerRota:feedback_id,tem_rota',
@@ -182,7 +182,7 @@ class ParecerTestePraticoController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
@@ -230,7 +230,7 @@ class ParecerTestePraticoController extends Controller
             }
 
             if ($request->filled('campoVaga')) {
-                $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+                $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                     $query->whereId($request->campoVaga);
                 });
             }

@@ -11,7 +11,7 @@
                     Contato:
                     <strong>{{ form.tel_principal ? form.tel_principal.numero : 'não informado' }}</strong>
                     <br>
-                    Vaga: <strong>{{ form.vaga_selecionada.nome }}</strong> - PCD:<strong>
+                    Vaga: <strong>{{ form.vaga_aberta_municipio }}</strong> - PCD:<strong>
                     {{ form.curriculo.pcd ? 'Sim' : 'Não' }}</strong><br>
                     Endereço: <strong>{{ form.curriculo.endereco_completo }}</strong><br>
                     Escolaridade: <strong>{{ form.curriculo.formacao.tipo }}</strong>

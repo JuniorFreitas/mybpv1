@@ -56,7 +56,7 @@ class ParecerEntrevistaTecnicaController extends Controller
                 'msg' => 'Erro ao alterar a entrevista',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        }else{
+        } else {
             try {
                 DB::beginTransaction();
                 ParecerEntrevistaTecnica::create($dados);
@@ -96,7 +96,7 @@ class ParecerEntrevistaTecnicaController extends Controller
             'Curriculo',
             'Curriculo.Formacao',
             'TelPrincipal',
-            'vagaSelecionada'
+            'VagaAberta.vagaSelecionada'
         );
         return response()->json($feedback, 200);
     }
@@ -124,7 +124,7 @@ class ParecerEntrevistaTecnicaController extends Controller
                 'msg' => 'Erro ao alterar a entrevista',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        }else{
+        } else {
             try {
                 DB::beginTransaction();
                 $entrevistaTecnica->update($dados);
@@ -152,17 +152,15 @@ class ParecerEntrevistaTecnicaController extends Controller
 
     public function atualizar(Request $request)
     {
-//        $this->authorize('clientes');
         $resultado = FeedbackCurriculo::with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social',
-            'vagaSelecionada',
+            'VagaAberta.VagaSelecionada',
             'parecerRh:feedback_id,nota',
             'parecerTecnica:id,feedback_id,nota',
             'parecerRota:feedback_id,tem_rota',
             'parecerTeste:feedback_id,nota_teste'
-        )
-            ->has('parecerRh')
+        )->has('parecerRh')
             ->whereIn('selecionado', ['sim', 'standby'])->whereInteresse(true);
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
@@ -183,12 +181,8 @@ class ParecerEntrevistaTecnicaController extends Controller
             });
         }
 
-        if ($request->filled('campoCliente')) {
-            $resultado->whereClienteId($request->campoCliente);
-        }
-
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
@@ -218,7 +212,9 @@ class ParecerEntrevistaTecnicaController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items(), 'usuario_cliente_id' => auth()->user()->cliente_id]
+            'dados' => [
+                'itens' => $resultado->items()
+            ]
         ]);
     }
 
@@ -236,7 +232,7 @@ class ParecerEntrevistaTecnicaController extends Controller
             }
 
             if ($request->filled('campoVaga')) {
-                $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+                $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                     $query->whereId($request->campoVaga);
                 });
             }

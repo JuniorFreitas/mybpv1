@@ -97,7 +97,7 @@
         <legend>Filtro</legend>
         <form @submit.prevent="$refs.componente.buscar()">
             <div class="row">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-4">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
                                id="filtroIntervalo"
@@ -111,7 +111,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                     <div class="form-group">
                         <label>Nome</label>
                         <input type="text"
@@ -122,7 +122,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                     <div class="form-group">
                         <label>CPF</label>
                         <input type="text"
@@ -136,14 +136,14 @@
                 </div>
 
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                <div class="col-12 col-sm-12 col-md-12 col-lg-12">
                     <div class="form-group">
-                        <label>Vaga</label>
+                        <label>Cargo</label>
                         <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                       :valido="controle.dados.campoVaga !== ''"
                                       v-model="controle.dados.autocomplete_label"
                                       :disabled="controle.carregando"
-                                      placeholder="Por vaga"
+                                      placeholder="Por cargo"
                                       @onblur="resetaCampo"
                                      @onselect="selecionaVaga"></autocomplete>
                     </div>
@@ -380,7 +380,7 @@
                     @{{entrevista.curriculo.pcd ? 'Sim' : 'Não'}}
                 </td>
                 <td class="text-center">
-                    @{{entrevista.vaga_selecionada.nome}}
+                    @{{entrevista.vaga_aberta_municipio}}
                 </td>
 
                 <td class="text-center">

@@ -166,7 +166,7 @@ class ParecerRhController extends Controller
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Curriculo.Formacao',
             'TelPrincipal',
-            'vagaSelecionada',
+            'VagaAberta.VagaSelecionada',
             'Cliente:id,razao_social,cnpj,nome,cpf,area_id',
             'Cliente.Area'
         )
@@ -314,7 +314,7 @@ class ParecerRhController extends Controller
                 'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
                 'Cliente:id,razao_social,area_id',
                 'Cliente.Area',
-                'vagaSelecionada',
+                'VagaAberta.VagaSelecionada',
                 'parecerRh:id,feedback_id,nota,created_at',
                 'parecerRh.individualRh:feedback_id,nota,parecer',
                 'parecerRota'
@@ -349,7 +349,7 @@ class ParecerRhController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }

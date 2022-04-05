@@ -17,7 +17,7 @@ class ParecerRotaController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function index()
     {
@@ -152,11 +152,10 @@ class ParecerRotaController extends Controller
 
     public function atualizar(Request $request)
     {
-//        $this->authorize('clientes');
         $resultado = FeedbackCurriculo::with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social',
-            'vagaSelecionada',
+            'VagaAberta.VagaSelecionada',
             'parecerRh',
             'parecerTecnica',
             'parecerRota',
@@ -187,7 +186,7 @@ class ParecerRotaController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
@@ -217,7 +216,9 @@ class ParecerRotaController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items(), 'usuario_cliente_id' => auth()->user()->cliente_id]
+            'dados' => [
+                'itens' => $resultado->items(),
+            ]
         ]);
     }
 

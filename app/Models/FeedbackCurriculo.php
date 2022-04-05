@@ -171,6 +171,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\UsuarioConta|null $BancoConta
  * @property-read \App\Models\Cliente|null $Empresa
  * @property-read \App\Models\VagasAbertas|null $VagaAberta
+ * @property-read mixed $vaga_aberta_municipio
  */
 class FeedbackCurriculo extends Model
 {
@@ -254,6 +255,8 @@ class FeedbackCurriculo extends Model
         'vagas_abertas_id' => 'int',
         'empresa_id' => 'int',
     ];
+
+    protected $appends = ['vaga_aberta_municipio'];
 
     protected function serializeDate(DateTimeInterface $date)
     {
@@ -398,6 +401,11 @@ class FeedbackCurriculo extends Model
         } else {
             $this->attributes['data_envia_whatsapp'] = null;
         }
+    }
+
+    public function getVagaAbertaMunicipioAttribute()
+    {
+        return $this->VagaAberta->Vaga->nome . ' - ' . $this->VagaAberta->Municipio->nome . ' - ' . $this->VagaAberta->Municipio->uf;
     }
 
     //-----------------------Models

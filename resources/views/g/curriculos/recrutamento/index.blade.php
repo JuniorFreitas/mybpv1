@@ -250,11 +250,11 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
                             <div class="form-group">
-                                <label>Selecione uma vaga</label>
+                                <label>Selecione uma cargo</label>
                                 <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete"
                                               :valido="form_feedback.vaga_id !== ''"
                                               v-model="form_feedback.autocomplete_label_vaga_modal"
-                                              placeholder="Digite o nome da vaga"
+                                              placeholder="Digite o nome da cargo"
                                               :id="`vaga_modal_${hash}`"
                                               @onblur="resetaCampoVagaModal"
                                              @onselect="selecionaVagaModal"></autocomplete>
@@ -442,7 +442,7 @@
     <fieldset>
         <legend>Filtrar por</legend>
         <form class="row" @submit.prevent="$refs.componente.buscar()">
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-4">
                 <div class="form-check" style="margin-bottom: -11px;">
                     <input type="checkbox" class="form-check-input" :disabled="controle.carregando" id="filtroIntervalo"
                            v-model="controle.dados.filtroPeriodo">
@@ -453,7 +453,7 @@
                                 v-model="controle.dados.periodo"></datepicker>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                 <div class="form-group">
                     <label>Nome</label>
                     <input type="text"
@@ -463,7 +463,7 @@
                            v-model="controle.dados.campoBusca">
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                 <div class="form-group">
                     <label>CPF</label>
                     <input type="text"
@@ -475,16 +475,16 @@
                            v-model="controle.dados.campoCPF">
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-12">
                 <div class="form-group">
-                    <label>Vaga</label>
+                    <label>Cargo</label>
                     <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                   :valido="controle.dados.campoVaga !== ''"
                                   v-model="controle.dados.autocomplete_label"
                                   :disabled="controle.carregando"
-                                  placeholder="Por vaga"
+                                  placeholder="Por cargo"
                                   @onblur="resetaCampo"
-                                 @onselect="selecionaVaga"></autocomplete>
+                                  @onselect="selecionaVaga"></autocomplete>
                 </div>
             </div>
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">

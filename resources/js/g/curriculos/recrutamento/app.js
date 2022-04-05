@@ -119,12 +119,17 @@ const app = new Vue({
                 this.controle.dados.campoVaga = obj.id;
                 this.controle.dados.autocomplete_label = obj.label;
                 this.controle.dados.autocomplete_label_anterior = obj.label;
+                this.controle.carregando = true;
+                setTimeout(() => {
+                    this.$refs.componente.buscar();
+                }, 600);
             },
             resetaCampo() {
                 if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
                     this.controle.dados.autocomplete_label_anterior = '';
                     this.controle.dados.autocomplete_label = '';
                     this.controle.dados.campoVaga = '';
+                    this.$refs.componente.buscar();
                 }
             },
             selecionaVagaModal(obj) {

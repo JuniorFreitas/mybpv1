@@ -77,7 +77,6 @@ const app = new Vue({
                 carregando: false,
                 dados: {
                     caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                    caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
                     autocomplete_label_anterior: '',
                     autocomplete_label: '',
                     pages: 20,
@@ -104,7 +103,6 @@ const app = new Vue({
             this.formClassificarDefault = _.cloneDeep(this.formClassificar) //copia
             this.formDesclassificarDefault = _.cloneDeep(this.formDesclassificar) //copia
             this.atualizar();
-            this.listaVagas();
         },
         methods: {
             filtraProva() {
@@ -140,12 +138,17 @@ const app = new Vue({
                 this.controle.dados.campoVaga = obj.id;
                 this.controle.dados.autocomplete_label = obj.label;
                 this.controle.dados.autocomplete_label_anterior = obj.label;
+                this.controle.carregando = true;
+                setTimeout(() => {
+                    this.$refs.componente.buscar();
+                }, 600);
             },
             resetaCampo() {
                 if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
                     this.controle.dados.autocomplete_label_anterior = '';
                     this.controle.dados.autocomplete_label = '';
                     this.controle.dados.campoVaga = '';
+                    this.$refs.componente.buscar();
                 }
             },
 

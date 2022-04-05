@@ -383,7 +383,7 @@
         <legend>Filtro</legend>
         <form @submit.prevent="$refs.componente.buscar()">
             <div class="row">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-4">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
                                id="filtroIntervalo"
@@ -397,7 +397,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                     <div class="form-group">
                         <label>Nome</label>
                         <input type="text"
@@ -408,7 +408,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                     <div class="form-group">
                         <label>CPF</label>
                         <input type="text"
@@ -421,14 +421,14 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                <div class="col-12 col-sm-12 col-md-12 col-lg-12">
                     <div class="form-group">
-                        <label>Vaga</label>
+                        <label>Cargo</label>
                         <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                       :valido="controle.dados.campoVaga !== ''"
                                       v-model="controle.dados.autocomplete_label"
                                       :disabled="controle.carregando"
-                                      placeholder="Por vaga"
+                                      placeholder="Por cargo"
                                       @onblur="resetaCampo"
                                      @onselect="selecionaVaga"></autocomplete>
                     </div>
@@ -511,7 +511,6 @@
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
                 <form target="_blank"
-                      {{--                      action="{{\App\Models\Sistema::UrlServidor}}/parecer_rota_transporte/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
                       action="{{route('parecer_rota_transporte.excel')}}"
                       method="get">
                     @csrf
@@ -521,11 +520,6 @@
                     <input type="hidden" name="campoUf" :value="controle.dados.campoUf">
                     <input type="hidden" name="campoRota" :value="controle.dados.campoRota">
                     <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
-{{--                    <button type="submit" class="btn btn-sm btn-primary mb-1"--}}
-{{--                            :disabled="(selecionados.length === 0  && controle.dados.campoCliente === '' ||  lista.length===0 ) || controle.carregando">--}}
-{{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
-{{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
-{{--                    </button>--}}
                 </form>
             </div>
         </div>
@@ -551,7 +545,6 @@
                 </th>
                 <th class="text-center">CÓD</th>
                 <th>Nome</th>
-{{--                <th v-if="cliente_id === 0 && colunasTabela.cliente">Empresa</th>--}}
                 <th class="text-center">Vaga</th>
                 <th class="text-center" v-show="colunasTabela.pcd">PCD</th>
                 <th class="text-center" v-show="colunasTabela.parecer_rh">Parecer RH Nota</th>
@@ -589,14 +582,9 @@
                 </td>
                 <td>
                     @{{entrevista.curriculo.nome}}
-                    {{--                    <br>--}}
-                    {{--                    @{{entrevista.curriculo.cpf}}--}}
                 </td>
-{{--                <td class="text-center" v-if="cliente_id === 0 && colunasTabela.cliente">--}}
-{{--                    @{{entrevista.cliente.razao_social}}--}}
-{{--                </td>--}}
                 <td class="text-center">
-                    @{{entrevista.vaga_selecionada.nome}}
+                    @{{entrevista.vaga_aberta_municipio}}
                 </td>
                 <td class="text-center" v-show="colunasTabela.pcd">
                     @{{entrevista.curriculo.pcd ? 'Sim' : 'Não'}}
@@ -608,7 +596,6 @@
                 <td class="text-center">
                     @{{ entrevista.parecer_rota ? entrevista.parecer_rota.rota_atende != null ?
                     entrevista.parecer_rota.rota_atende === true ? 'Sim': 'Não' : 'Não Informado' : 'aguardando' }}
-                    {{--                        @{{entrevista.parecer_rota ? entrevista.parecer_rota.TemRotaFormat : 'aguardando'}}--}}
                 </td>
 
                 <td class="text-center" v-show="colunasTabela.tecnica_nota">
@@ -660,15 +647,14 @@
                 </td>
             </tr>
         </table>
+        <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
+                            url="{{route('g.entrevista.parecer_rota_transporte.atualizar')}}"
+                            :por-pagina="controle.dados.porPagina"
+                            :dados="controle.dados"
+                            v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
     </div>
 
-    <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                        url="{{route('g.entrevista.parecer_rota_transporte.parecer_rota_transporte.atualizar')}}"
-                        :por-pagina="controle.dados.porPagina"
-                        :dados="controle.dados"
-                        v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
-
-@endsection
+@stop
 @push('js')
     <script src="{{mix('js/g/entrevistas/parecer_rota/app.js')}}"></script>
 @endpush

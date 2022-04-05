@@ -100,7 +100,7 @@ class ResultadoIntegradoController extends Controller
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Curriculo.Formacao',
             'TelPrincipal',
-            'vagaSelecionada',
+            'VagaAberta.vagaSelecionada',
             'Cliente:id,razao_social,cnpj,nome,cpf,area_id',
             'Cliente.Area',
             'ResultadoIntegrado'
@@ -181,7 +181,7 @@ class ResultadoIntegradoController extends Controller
         $resultado = FeedbackCurriculo::with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social,area_id',
-            'vagaSelecionada',
+            'VagaAberta.vagaSelecionada',
             'parecerRh:id,feedback_id,nota,created_at',
             'TelPrincipal',
             'ResultadoIntegrado')
@@ -220,7 +220,7 @@ class ResultadoIntegradoController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
