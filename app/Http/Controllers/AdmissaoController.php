@@ -122,6 +122,11 @@ class AdmissaoController extends Controller
 
         $dadosCurriculo['email'] = $dadosCurriculo['email'] == "" ? Sistema::EMAILPADRAO : $dadosCurriculo['email'];
 
+        $tipo_admissao = [
+            'TEMPORARIO',
+            'DETERMINADO'
+        ];
+
         if (count($dadosCurriculo['telefones']) == 0) {
             return response()->json(['msg' => 'Por favor insira um telefone'], 400);
         }
@@ -201,40 +206,43 @@ class AdmissaoController extends Controller
                 $datas = [];
                 if ($dadosAdmissao['tipo_admissao'] == 'FIXO') {
                     $data = new DataHora($dadosAdmissao['data_admissao']);
-                    if ($dadosAdmissao['prazo_experiencia'] == '30+30') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(20);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(20);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($dadosAdmissao['prazo_experiencia'] == '45+45') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(35);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(35);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($dadosAdmissao['prazo_experiencia'] == '30+60') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(20);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(50);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($dadosAdmissao['prazo_experiencia'] == '60+30') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(50);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(20);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
+                    switch ($dadosAdmissao['prazo_experiencia']) {
+                        case '30+30':
+                            $datas['prazo_dez_inicial'] = $data->addDia(20);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(20);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '45+45':
+                            $datas['prazo_dez_inicial'] = $data->addDia(35);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(35);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '30+60':
+                            $datas['prazo_dez_inicial'] = $data->addDia(20);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(50);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '60+30':
+                            $datas['prazo_dez_inicial'] = $data->addDia(50);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(20);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
                     }
                     $dadosAdmissao['data_encerramento'] = null;
-                } elseif ($dadosAdmissao['tipo_admissao'] == 'TEMPORARIO' || $dadosAdmissao['tipo_admissao'] == 'DETERMINADO') {
+                }
+                if (in_array($dadosAdmissao['tipo_admissao'], $tipo_admissao)) {
                     $data = new DataHora($dadosAdmissao['data_encerramento']);
 
                     $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
@@ -342,42 +350,46 @@ class AdmissaoController extends Controller
                 }
 
                 $datas = [];
-                if ($dadosAdmissao['tipo_admissao'] == 'FIXO') {
+
+                if ($dadosAdmissao['tipo_admissao'] === 'FIXO') {
                     $data = new DataHora($dadosAdmissao['data_admissao']);
-                    if ($dadosAdmissao['prazo_experiencia'] == '30+30') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(20);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(20);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($dadosAdmissao['prazo_experiencia'] == '45+45') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(35);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(35);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($dadosAdmissao['prazo_experiencia'] == '30+60') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(20);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(50);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($dadosAdmissao['prazo_experiencia'] == '60+30') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(50);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(20);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
+                    switch ($dadosAdmissao['prazo_experiencia']) {
+                        case '30+30':
+                            $datas['prazo_dez_inicial'] = $data->addDia(20);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(20);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '45+45':
+                            $datas['prazo_dez_inicial'] = $data->addDia(35);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(35);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '30+60':
+                            $datas['prazo_dez_inicial'] = $data->addDia(20);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(50);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '60+30':
+                            $datas['prazo_dez_inicial'] = $data->addDia(50);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(20);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
                     }
                     $dadosAdmissao['data_encerramento'] = null;
-                } elseif ($dadosAdmissao['tipo_admissao'] == 'TEMPORARIO' || $dadosAdmissao['tipo_admissao'] == 'DETERMINADO') {
+                }
+                if (in_array($dadosAdmissao['tipo_admissao'], $tipo_admissao)) {
                     $data = new DataHora($dadosAdmissao['data_encerramento']);
 
                     $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
@@ -641,43 +653,50 @@ class AdmissaoController extends Controller
                 isset($admissaoDados['dados_admissoes']['id']) ? $feedback->Admissao->DadosAdmissoes->update($dadosAdmissoes) : $feedback->Admissao->DadosAdmissoes()->create($dadosAdmissoes);
 
                 $datas = [];
+                $tipo_admissao = [
+                    'TEMPORARIO',
+                    'DETERMINADO'
+                ];
                 if ($admissaoDados['tipo_admissao'] == 'FIXO') {
                     $data = new DataHora($admissaoDados['data_admissao']);
-                    if ($admissaoDados['prazo_experiencia'] == '30+30') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(20);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(20);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($admissaoDados['prazo_experiencia'] == '45+45') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(35);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(35);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($admissaoDados['prazo_experiencia'] == '30+60') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(20);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(50);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
-
-                    } elseif ($admissaoDados['prazo_experiencia'] == '60+30') {
-                        $datas['prazo_dez_inicial'] = $data->addDia(50);
-                        $datas['prazo_cinco_inicial'] = $data->addDia(5);
-                        $datas['prazo_dia_inicial'] = $data->addDia(5);
-                        $datas['prazo_dez_final'] = $data->addDia(20);
-                        $datas['prazo_cinco_final'] = $data->addDia(5);
-                        $datas['prazo_dia_final'] = $data->addDia(5);
+                    switch ($admissaoDados['prazo_experiencia']) {
+                        case '30+30':
+                            $datas['prazo_dez_inicial'] = $data->addDia(20);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(20);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '45+45':
+                            $datas['prazo_dez_inicial'] = $data->addDia(35);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(35);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '30+60':
+                            $datas['prazo_dez_inicial'] = $data->addDia(20);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(50);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
+                        case '60+30':
+                            $datas['prazo_dez_inicial'] = $data->addDia(50);
+                            $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                            $datas['prazo_dia_inicial'] = $data->addDia(5);
+                            $datas['prazo_dez_final'] = $data->addDia(20);
+                            $datas['prazo_cinco_final'] = $data->addDia(5);
+                            $datas['prazo_dia_final'] = $data->addDia(5);
+                            break;
                     }
                     $admissaoDados['data_encerramento'] = null;
 
-                } elseif ($admissaoDados['tipo_admissao'] == 'TEMPORARIO' || $admissaoDados['tipo_admissao'] == 'DETERMINADO') {
+                }
+                if (in_array($admissaoDados['tipo_admissao'], $tipo_admissao)) {
                     $data = new DataHora($admissaoDados['data_encerramento']);
 
                     $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
