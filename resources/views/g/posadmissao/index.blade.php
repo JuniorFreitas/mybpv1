@@ -83,39 +83,10 @@
                         </div>
 
                         <fieldset>
-                            <legend>CLASSIFICAÇÃO</legend>
+                            <legend>OBSERVAÇÃO</legend>
 
                             <div class="form-group">
-                                <label>Tipo de Afastamento</label>
-                                <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                        class="form-control" v-model="form.classificacao">
-                                    <option value="">Selecione</option>
-                                    <option v-for="item in listaClassificacoes" :value="item.id">@{{ item.descricao }}
-                                    </option>
-                                </select>
-
-                                <p class="alert mt-2 mb-2"
-                                   :class=" _.find(listaClassificacoes, {'id' :form.classificacao}).classe === 'A' ? 'alert-danger': 'alert-secondary'"
-                                   v-if="form.classificacao">
-                                    Classe @{{ _.find(listaClassificacoes, {'id' :form.classificacao}).classe }}: @{{
-                                    _.find(listaClassificacoes, {'id' :form.classificacao}).periodo }}
-                                </p>
-
-                                <div class="form-group">
-                                    <label>Feedback</label>
-                                    <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                            class="form-control" v-model="form.avaliacao">
-                                        <option value="">Selecione</option>
-                                        <option value="DESTAQUE">DESTAQUE</option>
-                                        <option value="RETORNA">RETORNA</option>
-                                        <option value="NÃO RETORNA">NÃO RETORNA</option>
-                                    </select>
-                                </div>
-
-                            </div>
-
-                            <div class="form-group">
-                                <label>Quem classificou</label>
+                                <label>Quem Solicitou</label>
                                 <input type="text" class="form-control" v-model="form.quem_classificou"
                                        onblur="valida_campo_vazio(this,3)">
                             </div>
@@ -127,7 +98,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Observações</label>
+                                <label>Comentaário</label>
                                 <textarea class="form-control" v-model="form.observacoes" cols="3" rows="3"></textarea>
                             </div>
 
