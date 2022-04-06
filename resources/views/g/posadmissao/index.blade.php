@@ -552,16 +552,15 @@
                 </select>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
 
-                <label>Avaliação</label>
+                <label>Entrevista Desligamento</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
                         v-model="controle.dados.campoFeedback">
                     <option value="">Sem filtro</option>
                     {{--                            <option value="não">Não avaliado</option>--}}
-                    <option value="DESTAQUE">Destaque</option>
-                    <option value="RETORNA">Retorna</option>
-                    <option value="NÃO RETORNA">Não retorna</option>
+                    <option value="RETORNA">Sim</option>
+                    <option value="NÃO RETORNA">Não</option>
                 </select>
             </div>
 
@@ -572,7 +571,6 @@
                     <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
-                    <option value="500">500</option>
                 </select>
             </div>
         </form>
@@ -638,7 +636,7 @@
                     <th class="text-center">Área</th>
                     <th class="text-center">Cargo</th>
                     <th class="text-center">Data da Admissão</th>
-                    <th class="text-center">Avaliação</th>
+                    <th class="text-center">Data da demissão</th>
                     <th class="text-center">Ação</th>
                 </tr>
                 </thead>
@@ -678,7 +676,7 @@
                     </td>
 
                     <td class="text-center">
-                        @{{item.admissao.data_admissao}}
+                        @{{item.admissao.created_at}}
                     </td>
                     <td class="text-center">
                         @{{item.admissao.avaliacao}}
