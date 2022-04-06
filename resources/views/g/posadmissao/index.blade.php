@@ -177,6 +177,7 @@
                                                   class="form-control" cols="3"
                                                   rows="3"></textarea>
                                     </div>
+
                                 </div>
 
                                 <div v-if="setorIndex === 1">
