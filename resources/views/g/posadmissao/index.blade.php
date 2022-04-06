@@ -9,7 +9,7 @@
     <modal id="janelaAvaliar" :titulo="tituloJanela" :fechar="!preload" :size="75">
         <template slot="conteudo">
             <div class="alert alert-success text-center" v-show="atualizado">
-                <h4><i class="icon fa fa-check"></i> <span v-show="avaliacao">Avaliação</span> <span
+                <h4><i class="icon fa fa-check"></i> <span v-show="avaliacao">Demissão</span> <span
                         v-show="desmobilizacao">Desmobilização</span> Concluida!</h4>
             </div>
 
@@ -98,7 +98,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Comentaário</label>
+                                <label>Comentário</label>
                                 <textarea class="form-control" v-model="form.observacoes" cols="3" rows="3"></textarea>
                             </div>
 
@@ -440,7 +440,7 @@
 
         <template slot="rodape">
             <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado" v-if="avaliacao" @click="avaliar">
-                Avaliar
+                Demitir
             </button>
             <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado" v-if="desmobilizacao"
                     @click="desmobilizar">Desmobilizar

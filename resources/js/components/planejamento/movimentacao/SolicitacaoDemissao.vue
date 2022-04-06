@@ -52,15 +52,6 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Valor</label>
-                                    <input type="text" class="form-control" v-mascara:dinheiro
-                                           :disabled="visualizar"
-                                           v-model="form.valor_format">
-                                </div>
-                            </div>
-
                             <gestoraprovacao :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>
 
                             <div class="col-12">
@@ -219,7 +210,6 @@
                         <th>Centro de custo</th>
                         <th>Colaborador</th>
                         <th>Data demissão</th>
-                        <th>Valor</th>
                         <th>Status</th>
                         <th></th>
                     </tr>
@@ -248,18 +238,11 @@
                         </td>
 
                         <td>
-                            {{ item.valor_format }}
-                        </td>
-
-                        <td>
                         <span v-if="item.status_aprovacao !== null">
                             <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br />
                             Por: {{ item.gestor_aprovacao.nome }}
                         </span>
-
-                            <span v-else>
-                            Aguardando
-                        </span>
+                            <span v-else>Aguardando</span>
                         </td>
 
 
