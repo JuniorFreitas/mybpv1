@@ -98,6 +98,23 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="">Há pendências?</label>
+                                <select class="form-control" v-model="form.pendencia"
+                                        onblur="valida_campo_vazio(this,1)">
+                                    <option value="">Selecione</option>
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" v-if="form.pendencia">
+                                <label for="">Quais pendências?</label>
+                                <textarea v-model="form.pendencias_quais" onblur="valida_campo_vazio(this,1)"
+                                          class="form-control" cols="3"
+                                          rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
                                 <label>Comentário</label>
                                 <textarea class="form-control" v-model="form.observacoes" cols="3" rows="3"></textarea>
                             </div>
