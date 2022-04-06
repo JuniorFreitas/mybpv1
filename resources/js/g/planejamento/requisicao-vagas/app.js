@@ -83,7 +83,7 @@ const app = new Vue({
         controle: {
             carregando: false,
             dados: {
-                caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
+                caminho_autocomplete: `autocomplete/cargos_ativos`,
                 autocomplete_label_anterior: '',
                 autocomplete_label: '',
                 pages: 20,
@@ -102,7 +102,6 @@ const app = new Vue({
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.usuarioAutenticado();
-        this.listaVagas();
         setTimeout(() => {
             this.atualizar();
         }, 200)
@@ -152,8 +151,10 @@ const app = new Vue({
 
         formNovo() {
             this.cadastrado = false;
+            this.cadastrando = true;
             this.atualizado = false;
             this.editando = false;
+            this.visualizar = false;
 
             this.tituloJanela = "Solicitando Vaga";
 
@@ -193,7 +194,6 @@ const app = new Vue({
                     this.listaCentroCusto();
 
                     this.tituloJanela = `#${id} Planejamento - Requisição de vagas`;
-                    this.cadastrando = true;
                     this.preload = false;
                 })
                 .catch(error => {
@@ -287,16 +287,6 @@ const app = new Vue({
                 .catch(error => {
                     this.preload = false;
                 })
-        },
-
-        listaVagas() {
-            axios.get(`${URL_PUBLICO}/lista-vagas`)
-                .then(res => {
-                    this.vagas = res.data.vagas;
-                })
-                .catch(error => {
-                    this.preload = false;
-                });
         },
 
         listaAreasEtiquetas() {

@@ -16,18 +16,18 @@
                 <fieldset>
                     <legend>Informações</legend>
                     <div class="row">
-{{--                        <div class="col-12 col-md-4" v-if="cliente_id === 0">--}}
-{{--                            <div class="form-group">--}}
-{{--                                <label for="">Selecione um cliente</label>--}}
-{{--                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete" :disabled="visualizar"--}}
-{{--                                              :valido="form.cliente_id !== ''"--}}
-{{--                                              v-model="form.autocomplete_label_cliente_modal"--}}
-{{--                                              :id="`cliente_modal_${hash}`"--}}
-{{--                                              placeholder="Digite o nome cliente"--}}
-{{--                                              @onblur="resetaCampoClienteModal"--}}
-{{--                                             @onselect="selecionaClienteModal"></autocomplete>--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
+                        {{--                        <div class="col-12 col-md-4" v-if="cliente_id === 0">--}}
+                        {{--                            <div class="form-group">--}}
+                        {{--                                <label for="">Selecione um cliente</label>--}}
+                        {{--                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete" :disabled="visualizar"--}}
+                        {{--                                              :valido="form.cliente_id !== ''"--}}
+                        {{--                                              v-model="form.autocomplete_label_cliente_modal"--}}
+                        {{--                                              :id="`cliente_modal_${hash}`"--}}
+                        {{--                                              placeholder="Digite o nome cliente"--}}
+                        {{--                                              @onblur="resetaCampoClienteModal"--}}
+                        {{--                                             @onselect="selecionaClienteModal"></autocomplete>--}}
+                        {{--                            </div>--}}
+                        {{--                        </div>--}}
 
 
                         <div class="col-12"></div>
@@ -35,13 +35,14 @@
                         <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label>Selecione um cargo</label>
-                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete" :disabled="visualizar"
+                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete"
+                                              :disabled="visualizar"
                                               :valido="form.cargo_id !== ''"
                                               v-model="form.autocomplete_label_cargo_modal"
                                               placeholder="Digite o nome do cargo"
                                               :id="`vaga_modal_${hash}`"
                                               @onblur="resetaCampoVagaModal"
-                                             @onselect="selecionaVagaModal"></autocomplete>
+                                              @onselect="selecionaVagaModal"></autocomplete>
                             </div>
                         </div>
 
@@ -291,7 +292,8 @@
                             <div class="form-group">
                                 <label>Previsão de Ínicio</label>
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" v-model="form.imediata" class="custom-control-input" :disabled="visualizar"
+                                    <input type="checkbox" v-model="form.imediata" class="custom-control-input"
+                                           :disabled="visualizar"
                                            id="imediata">
                                     <label class="custom-control-label"
                                            for="imediata">Imediata</label>
@@ -301,14 +303,16 @@
 
                         <div class="col-12"></div>
                         <div class="col-12 col-md-4" v-if="!form.imediata">
-                            <datepicker label="Previsão" v-model="form.previsao_inicio" :disabled="visualizar"></datepicker>
+                            <datepicker label="Previsão" v-model="form.previsao_inicio"
+                                        :disabled="visualizar"></datepicker>
                         </div>
 
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label>Solicitante</label>
-                                <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
+                                <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
+                                       :disabled="visualizar"
                                        v-model="form.solicitante">
                             </div>
                         </div>
@@ -316,7 +320,8 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <label>Observação</label>
-                                <textarea class="form-control" v-model="form.observacao" cols="5" rows="5" :disabled="visualizar"></textarea>
+                                <textarea class="form-control" v-model="form.observacao" cols="5" rows="5"
+                                          :disabled="visualizar"></textarea>
                             </div>
                         </div>
                     </div>
@@ -326,7 +331,7 @@
                     Esta solicitação ainda não foi aprovada ou reprovada!
                 </div>
 
-                <fieldset v-if="visualizar || editando">
+                <fieldset v-if="aprovando">
                     <legend>Aprovação</legend>
                     <div class="row">
                         <div class="col-12">
@@ -364,24 +369,23 @@
             </form>
         </template>
         <template slot="rodape">
-            <div v-show="!visualizar">
+            <div>
                 <button type="button" class="btn btn-sm btn-primary"
-                        v-show="editando && !atualizado  && !preload"
+                        v-show="editando && !preload && !cadastrando && !aprovando"
                         @click.prevent="alterar">
                     <i class="fa fa-edit"></i> Alterar
                 </button>
                 <button type="button" class="btn btn-sm btn-primary"
-                        v-show="!editando && !cadastrado  && !preload"
+                        v-show="!editando && !preload && cadastrando && !aprovando"
                         @click.prevent="cadastrar">
-                    <i class="fa fa-save"></i> Salvar
+                    <i class="fa fa-save"></i> Cadastrar
+                </button>
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="aprovando && !editando && !form.data_aprovacao && !cadastrando"
+                        @click.prevent="aprovar">
+                    <i class="fa fa-save"></i> Aprovar
                 </button>
             </div>
-            <button type="button" class="btn btn-sm btn-primary"
-                    v-show="aprovando && !atualizado  && !preload && !form.data_aprovacao"
-                    @click.prevent="aprovar">
-                <i class="fa fa-save"></i> Salvar
-            </button>
-
         </template>
     </modal>
 
@@ -409,7 +413,8 @@
                     <input type="text"
                            placeholder="Buscar por cargo"
                            autocomplete="off"
-                           class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoBusca">
+                           class="form-control form-control-sm" :disabled="controle.carregando"
+                           v-model="controle.dados.campoBusca">
                 </div>
             </div>
 
@@ -523,21 +528,22 @@
                         @can('aprovar_por_gestor')
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
                                v-if="!item.data_aprovacao"
-                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
+                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; editando = false"
                                data-toggle="modal"
                                data-target="#janelaCadastrar">
                                 <i class="fa fa-check"></i>
                             </a>
                         @endcan
                         <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                           @click.prevent="formOpen(item.id); editando = true"
+                           v-if="item.status_aprovacao !== 'aprovado'"
+                           @click.prevent="formOpen(item.id); editando = true; aprovando = false"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">
                             <i class="fa fa-edit"></i>
                         </a>
 
                         <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                           @click.prevent="formOpen(item.id); visualizar = true"
+                           @click.prevent="formOpen(item.id); visualizar = true; editando = false; aprovando = false; cadastrando = false"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">
                             <i class="fa fa-search-plus"></i>
