@@ -676,10 +676,10 @@
                     </td>
 
                     <td class="text-center">
-                        @{{item.admissao.created_at}}
+                        @{{item.admissao.data_admissao}}
                     </td>
                     <td class="text-center">
-                        @{{item.admissao.avaliacao}}
+                        @{{item.admissao.data_demissao}}
                     </td>
 
                     <td class="text-center">
@@ -695,7 +695,7 @@
                                    @click.prevent="formAvaliar(item.id)"
                                    data-toggle="modal"
                                    data-target="#janelaAvaliar">
-                                    Avaliar
+                                    Demitir
                                 </a>
                                 <a class="dropdown-item" href="javascript://" title="Desmobilizar"
                                    @click.prevent="formDesmobilizar(item.id)"
