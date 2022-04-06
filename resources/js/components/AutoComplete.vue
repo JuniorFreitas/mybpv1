@@ -1,9 +1,9 @@
 <!--<autocomplete  :items="[ 'Apple', 'Banana', 'Orange', 'Mango', 'Pear', 'Peach', 'Grape', 'Tangerine', 'Pineapple']"></autocomplete>-->
 <!--<autocomplete id="descricao" is-async caminho="feriados/search" autocomplete="off" onblur="valida_campo_vazio(this,3)"></autocomplete>-->
+<!--            :autocomplete="`mastertag_${parseInt((Math.random() * 999999))}`"-->
 <template>
     <div class="autocomplete">
         <input
-            :autocomplete="`mastertag_${parseInt((Math.random() * 999999))}`"
             v-bind:value="value"
             v-on:input="$emit('input', $event.target.value)"
             :class="[
@@ -21,6 +21,7 @@
             @keydown.up="onArrowUp"
             @keydown.prevent.enter="onEnter"
             @blur="onBlur"
+            autocomplete="off"
         />
         <ul
             id="autocomplete-results"
