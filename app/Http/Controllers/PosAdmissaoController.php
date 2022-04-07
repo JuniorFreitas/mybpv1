@@ -43,7 +43,56 @@ class PosAdmissaoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $dados = $request->input();
+
+        $dadosValidados = \Validator::make($dados, [
+            'cipa' => 'required',
+            'municipio_id' => 'required'
+        ]);
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao cadastrar Vaga',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+
+        }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function demitir(Request $request)
+    {
+        $dados = $request->input();
+        $dadosDemissao = $dados['demissao'];
+
+        $dadosValidados = \Validator::make($dadosDemissao, [
+            'cipa' => 'required',
+            'motivo_rescisao_id' => 'required',
+            'tipo_aviso_id' => 'required',
+            'solicitado_por' => 'required',
+        ]);
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao demitir',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+        try {
+            DB::beginTransaction();
+            $feedback = FeedbackCurriculo::find($dados['feedback_id']);
+            $feedback->Demissao()->create($dadosDemissao);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'msg' => 'Erro ao demitir',
+                'erros' => $e->getTraceAsString()
+            ], 400);
+        }
     }
 
     /**
@@ -67,7 +116,7 @@ class PosAdmissaoController extends Controller
     {
         $admissao = Admissao::whereFeedbackId($id)->first();
 
-        $admissao->load('Feedback.Curriculo', 'Feedback.Empresa', 'Feedback.VagaSelecionada', 'Feedback.MotivoRescisao', 'Feedback.TipoAviso', 'Feedback.ClassificacaoRescisao', 'Feedback.EntrevistaDesligamento');
+        $admissao->load('Feedback.Curriculo', 'Demissao', 'Feedback.Empresa', 'Feedback.VagaSelecionada', 'Feedback.MotivoRescisao', 'Feedback.TipoAviso', 'Feedback.ClassificacaoRescisao', 'Feedback.EntrevistaDesligamento');
         $admissao->motivo = !is_null($admissao->Feedback->MotivoRescisao) ? $admissao->Feedback->MotivoRescisao->motivo_id : "";
         $admissao->outromotivo = null;
         if (!is_null($admissao->Feedback->MotivoRescisao) && $admissao->Feedback->MotivoRescisao->motivo_id == 7) {
@@ -256,9 +305,9 @@ class PosAdmissaoController extends Controller
     public function atualizar(Request $request)
     {
 
-        $resultado = FeedbackCurriculo::whereHas('Admissao', function($q){
+        $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);
-        })->with('Admissao.AreaEtiqueta','Curriculo', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');;
+        })->with('Admissao.AreaEtiqueta', 'Curriculo', 'Demissao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');;
 
         /*$resultado = Admissao::with(['Feedback' => function ($q) {
             $q->with('Curriculo', 'Empresa', 'VagaSelecionada');
@@ -322,6 +371,7 @@ class PosAdmissaoController extends Controller
     {
         $this->authorize('posadmissao_avaliar_insert');
         $dados = $request->input();
+
         $dados['entrevista_desligamento']['feedback_id'] = $dados['feedback_id'];
         $dados['entrevista_desligamento']['user_entrevista'] = auth()->id();
         $dados['entrevista_desligamento']['data_entrevista'] = (new DataHora())->dataHoraInsert();
