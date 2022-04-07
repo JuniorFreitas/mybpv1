@@ -751,6 +751,59 @@ class AdmissaoController extends Controller
         }
     }
 
+    public function cadastraMassa(Request $request)
+    {
+        $this->authorize('admissao_update');
+        $dados = $request->input();
+
+//        dd($dados);
+
+        $dadosValidados = \Validator::make($dados, []);
+        if ($dadosValidados->fails()) {
+            return response()->json([
+                'msg' => 'Erro ao Salvar em Massa',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        } else {
+            try {
+                DB::beginTransaction();
+
+
+                foreach ($dados['selecionados'] as $feedback_id) {
+                    $feedback = FeedbackCurriculo::find($feedback_id);
+
+
+                    $feedback->update(['selecionado' => $dados['selecionado']]);
+//                    dd($feedback);
+
+                    $dados = [
+                        "tipo_admissao" => $dados['tipo_admissao'],
+                        "prazo_experiencia" => $dados['prazo_experiencia'],
+                        "data_encerramento" => $dados['data_encerramento'],
+                        "documento_portaria" => $dados['documento_portaria'],
+                        "data_aso" => $dados['data_aso'],
+                        "status_carteira_treinamento" => $dados['status_carteira_treinamento'],
+                        "status" => $dados['status'],
+                        "data_admissao" => $dados['data_admissao'],
+                        "data_entrega_area" => $dados['data_entrega_area'],
+                        "biometria" => $dados['biometria'],
+                    ];
+
+                    $feedback->Admissao ? $feedback->Admissao->update($dados) : $feedback->Admissao()->create($dados);
+                }
+                DB::commit();
+                return response()->json([], 201);
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                \Log::debug($msg);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            }
+        }
+    }
+
     /**
      * Remove the specified resource from storage.
      *

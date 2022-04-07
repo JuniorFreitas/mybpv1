@@ -947,6 +947,155 @@
         </template>
     </modal>
 
+    <modal id="janelaAdmissaoMassa" titulo="Admissão em massa" :size="95" >
+        <template slot="conteudo">
+            <preload v-if="form_massa.preload"></preload>
+            <div v-if="!form_massa.preload">
+
+                <fieldset>
+                    <legend class="text-uppercase">INFORMAÇÕES</legend>
+                    <div class="row">
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Tipo de admissão</label>
+                                <select class="form-control" onchange="valida_campo(this,1)"
+                                        onblur="valida_campo(this,1)"
+                                        v-model="form_massa.tipo_admissao">
+                                    <option value="">Selecione</option>
+                                    <option value="TEMPORARIO">TEMPORARIO</option>
+                                    <option value="INTERMITENTE">INTERMITENTE</option>
+                                    <option value="DETERMINADO">DETERMINADO</option>
+                                    <option value="FIXO">FIXO</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6" v-if="form_massa.tipo_admissao === 'FIXO'">
+                            <div class="form-group">
+                                <label>Prazo de experiência</label>
+                                <select class="form-control" onchange="valida_campo_vazio(this,1)"
+                                        onblur="valida_campo_vazio(this,1)"
+                                        v-model="form_massa.prazo_experiencia">
+                                    <option :value="''">Selecione</option>
+                                    <option value="Nenhum">Nenhum</option>
+                                    <option value="30+30">30+30</option>
+                                    <option value="45+45">45+45</option>
+                                    <option value="30+60">30+60</option>
+                                    <option value="60+30">60+30</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6" v-if="form_massa.tipo_admissao === 'TEMPORARIO' || form_massa.tipo_admissao === 'DETERMINADO'">
+                            <div class="form-group">
+                                <datepicker label="Data de encerramento" v-model="form_massa.data_encerramento"></datepicker>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Documento Portaria</label>
+                                <select class="form-control" onchange="valida_campo(this,1)"
+                                        onblur="valida_campo(this,1)"
+                                        v-model="form_massa.documento_portaria">
+                                    <option value="">Selecione</option>
+                                    <option value="PENDENTE">PENDENTE</option>
+                                    <option value="CONCLUIDO">CONCLUIDO</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Data do ASO</label>
+                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                       v-model="form_massa.data_aso" v-mascara:data
+                                       onblur="valida_data(this)">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Status Carteira de Treinamento e Etiqueta</label>
+                                <select class="form-control" onchange="valida_campo(this,1)"
+                                        onblur="valida_campo(this,1)"
+                                        v-model="form_massa.status_carteira_treinamento">
+                                    <option value="">Selecione</option>
+                                    <option value="PENDENTE">PENDENTE</option>
+                                    <option value="AGUARDANDO TREINAMENTO">AGUARDANDO TREINAMENTO</option>
+                                    <option value="ENTREGUE">ENTREGUE</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select class="form-control" onchange="valida_campo_vazio(this,1)"
+
+                                        onblur="valida_campo_vazio(this,1)"
+                                        v-model="form_massa.status">
+                                    <option value="">Selecione</option>
+                                    <option value="AGUARDANDO QUALIFICAÇÃO">AGUARDANDO QUALIFICAÇÃO</option>
+                                    <option value="PRONTO PARA ADMISSAO">PRONTO PARA ADMISSAO</option>
+                                    <option value="ADMITIDO">ADMITIDO</option>
+                                    <option value="STAND BY">STAND BY</option>
+                                    <option value="PENDENTE ASO">PENDENTE ASO</option>
+                                    <option value="PENDENTE DOCUMENTO">PENDENTE DOCUMENTO</option>
+                                    <option value="PENDENTE TREINAMENTO">PENDENTE TREINAMENTO</option>
+                                    <option value="CANCELADO">CANCELADO</option>
+                                    <option value="ENCAMINHADO EXAME">ENCAMINHADO EXAME</option>
+                                    <option value="DESISTÊNCIA">DESISTÊNCIA</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Data da Admissão</label>
+                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                       v-model="form_massa.data_admissao" v-mascara:data
+                                       onblur="valida_data(this)">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Data da Entrega na área</label>
+                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                       v-model="form_massa.data_entrega_area" v-mascara:data
+                                       onblur="valida_data(this)">
+                            </div>
+                        </div>
+
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Biometria</label>
+                                <select class="form-control"
+                                        v-model="form_massa.biometria">
+                                    <option value="">Selecione</option>
+                                    <option :value="true">SIM</option>
+                                    <option :value="false">NÃO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </template>
+        <template slot="rodape">
+            <div>
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="!form_massa.preload"
+                        @click.prevent="CadastraMassa">
+                    <i class="fa fa-save"></i> Salvar
+                </button>
+            </div>
+        </template>
+    </modal>
+
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <form class="row" @submit.prevent="$refs.componente.buscar()">
@@ -1087,6 +1236,15 @@
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
+
+                <button class="btn btn-sm btn-primary mb-2 mr-1"
+                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        v-if="selecionados.length > 0"
+                        data-toggle="modal"
+                        data-target="#janelaAdmissaoMassa"
+                        @click="formCadastraMassa">
+                    <i class="fa fa-plus"></i> ADMITIR TODOS OS SELECIONADOS
+                </button>
                 <form target="_blank"
                       action="{{ \App\Models\Sistema::UrlServidor }}/admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"
                       method="get">
@@ -1123,14 +1281,14 @@
                 <thead>
                 <tr class="bg-default">
                     <th class="text-center">
+
                         <input type="checkbox"
                                :checked="tudoMarcado"
                                :disabled="comAdm.length === 0"
-                               style="cursor: pointer"
+                               :style="comAdm.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                                @click="selecionaTodos">
                     </th>
                     <th>Nome</th>
-                    <th v-if="cliente_id === 0  && colunasTabela.cliente">Cliente</th>
                     <th>Cargo</th>
                     <th v-if="colunasTabela.pcd">PCD</th>
                     <th>Enc. Doc</th>
@@ -1172,10 +1330,6 @@
                         @{{item.curriculo.nome}}
                     </td>
 
-                    <td v-if="cliente_id === 0  && colunasTabela.cliente">
-                        @{{item.cliente.nome_fantasia ?
-                        item.cliente.nome_fantasia : item.cliente.nome}}
-                    </td>
                     <td>
                         @{{item.vaga_aberta.vaga_selecionada.nome}} -  @{{item.vaga_aberta.municipio.nome}} -  @{{item.vaga_aberta.municipio.uf}}
                     </td>
