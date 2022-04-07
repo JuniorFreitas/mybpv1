@@ -85,30 +85,6 @@ const app = new Vue({
             }, 200)
             $('#nav-dossie-tab').tab('show');
 
-            // setTimeout(() => {
-            //     this.abrirMedidas = true;
-            // }, 200)
-            // setTimeout(() => {
-            //     this.abrirFormularioNoventa = true;
-            // }, 200)
-            // setTimeout(() => {
-            //     this.abrirAvaliacaoAnual = true;
-            // }, 200)
-            // setTimeout(() => {
-            //     this.abrirFerias = true;
-            // }, 200)
-            // setTimeout(() => {
-            //     this.abrirBeneficio = true;
-            // }, 200)
-            // setTimeout(() => {
-            //     this.abrirCih = true;
-            // }, 200)
-            // setTimeout(() => {
-            //     this.abrirPromocao = true;
-            // }, 200)
-            // setTimeout(() => {
-            //     this.abrirMetas = true;
-            // }, 200)
         },
 
         //GERAL

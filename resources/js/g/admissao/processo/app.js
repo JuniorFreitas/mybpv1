@@ -765,6 +765,7 @@ const app = new Vue({
                     if (response.status === 201) {
                         this.form_massa.preload = false;
                         this.form_massa.cadastrado = true;
+                        $('#janelaAdmissaoMassa').modal('hide');
                         this.atualizar();
                     }
                 }).catch(error => (this.form_massa.preload = false));
