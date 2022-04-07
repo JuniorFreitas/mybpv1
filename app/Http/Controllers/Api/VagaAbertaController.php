@@ -425,7 +425,7 @@ class VagaAbertaController extends Controller
             \Log::alert($dados);
             \Log::info("-------FIM DE DADOS-------");
 
-            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            return response()->json(['msg' => 'Atualize a pagina e tente novamente!'], 400);
         }
     }
 
