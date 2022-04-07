@@ -43,6 +43,40 @@
 
         <div v-if="!preload" :id="`form_${hash}`">
 
+            <div class="table-responsive" v-if="avNoventaVencimento">
+                <label><strong>Vencimentos da Avaliação 90 dias </strong></label>
+                <table class="table table-bordered table-hover table-condensed">
+                    <thead>
+                    <tr class="bg-default">
+                        <td class="text-center">Tipo</td>
+                        <td class="text-center">Prazo</td>
+                        <td class="text-center" v-if="avNoventaVencimento.tipo_admissao === 'FIXO'">1º Vencimento</td>
+                        <td class="text-center" v-if="avNoventaVencimento.tipo_admissao === 'FIXO'">2º Vencimento</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-if="avNoventaVencimento.tipo_admissao === 'FIXO'">
+                        <td class="text-center">{{ avNoventaVencimento.tipo_admissao }}</td>
+                        <td class="text-center">
+                            {{ avNoventaVencimento.prazo_experiencia }}
+                        </td>
+                        <td class="text-center">
+                            {{ avNoventaVencimento.feedback.avaliacao_noventa_vencimento.prazo_dia_inicial }}
+                        </td>
+                        <td class="text-center">
+                            {{ avNoventaVencimento.feedback.avaliacao_noventa_vencimento.prazo_dia_final }}
+                        </td>
+                    </tr>
+                    <tr v-if="avNoventaVencimento.tipo_admissao === 'TEMPORARIO' || avNoventaVencimento.tipo_admissao === 'DETERMINADO'">
+                        <td class="text-center">{{ avNoventaVencimento.tipo_admissao }}</td>
+                        <td class="text-center">
+                            {{ avNoventaVencimento.data_encerramento }}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <button class="btn btn-primary mb-3"
                     data-toggle="modal"
                     data-target="#janelaFormulario"
@@ -72,13 +106,6 @@
                     </tbody>
                 </table>
             </div>
-
-
-            <!--            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"-->
-            <!--                                :url="urlPaginacao" :por-pagina="qntPag"-->
-            <!--                                :dados="controle.dados"-->
-            <!--                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>-->
-
         </div>
     </div>
 </template>
@@ -112,6 +139,8 @@ export default {
             perguntas: [],
 
             tabelaNoventa: [],
+
+            avNoventaVencimento: [],
 
             form: {
                 gestor_imediato: '',
@@ -169,11 +198,15 @@ export default {
                 let data = res.data;
                 this.perguntas = data.perguntas;
                 this.tabelaNoventa = data.tabelaNoventa;
+                this.avNoventaVencimento = data.avNoventaVencimento;
                 this.form.perguntas = _.cloneDeep(this.perguntas);
                 this.form.gestor_imediato = '';
                 this.form.observacao = '';
                 this.form.feedback_id = this.feedback_id;
-                this.preload = false;
+                setTimeout(() => {
+                    this.preload = false;
+                }, 1500);
+
             })
         }
     }

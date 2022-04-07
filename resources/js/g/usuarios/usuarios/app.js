@@ -9,6 +9,7 @@ const app = new Vue({
         urlAjax: '',
         apagado: false,
         grupoempresa: false,
+        user_recebe_emailDefault: null,
 
         form: {
             alterarSenha: false,
@@ -22,11 +23,13 @@ const app = new Vue({
             grupo_cloud_id: '',
             empresa_id: '',
             ativo: true,
+            user_recebe_email:[]
         },
         empresa_id: '',
         formDefault: null,
         listaPapeis: [],
         listaCloud: [],
+        listaTipoEmail: [],
         lista: [],
         dados: {},
         controle: {
@@ -87,6 +90,7 @@ const app = new Vue({
                     Object.assign(this.form, response.data.usuario)
                     this.listaPapeis = response.data.papeis
                     this.listaCloud = response.data.cloud;
+                    this.form.user_recebe_email = response.data.formulario_vazio;
                     this.form.password = '';
                     this.editando = true;
                     this.preloadAjax = false;
@@ -139,6 +143,9 @@ const app = new Vue({
         carregou(dados) {
             this.lista = dados.resultado;
             this.empresa_id = dados.empresa;
+            this.listaTipoEmail = dados.tipo_email;
+            this.user_recebe_emailDefault = dados.formulario_vazio;
+            this.form.user_recebe_email = _.cloneDeep(this.user_recebe_emailDefault)
             this.controle.carregando = false;
         },
         carregando() {

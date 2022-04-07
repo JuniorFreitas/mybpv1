@@ -315,6 +315,11 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'empresa_clientes', 'empresa_id', 'cliente_id', 'empresa_id');
     }
 
+    public function UserRecebeEmail()
+    {
+        return $this->belongsToMany(TipoRecebeEmail::class, 'user_recebe_email', 'user_id', 'tipo_email_id')->withPivot(['ativo']);;
+    }
+
     public function ClientesLogo()
     {
         return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id','empresa_id');
