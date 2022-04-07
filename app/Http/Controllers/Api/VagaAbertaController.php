@@ -417,11 +417,10 @@ class VagaAbertaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage(). " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'];
+            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage(). " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id']." CPF:".$dados['cpf_padrao'];
             \Log::debug($msg);
             \Log::debug($e->getTraceAsString());
             \Log::info("-------DADOS-------");
-            Sistema::telegram(print_r($dados,1));
             \Log::alert($dados);
             \Log::info("-------FIM DE DADOS-------");
 
