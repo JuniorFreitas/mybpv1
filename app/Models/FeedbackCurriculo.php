@@ -763,6 +763,9 @@ class FeedbackCurriculo extends Model
             ->whereTipo('ArquivamentoDossie');
     }
 
+    public function Demissao(){
+        return $this->hasOne(Demissao::class, 'feedback_id', 'id');
+    }
 
     /**/
     //scopeManual

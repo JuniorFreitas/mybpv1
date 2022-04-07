@@ -1,15 +1,16 @@
 import datepicker from "../../components/DatePicker";
 
 const app = new Vue({
-    el: '#app',
+    el: "#app",
     components: {
         datepicker
     },
     data: {
-        tituloJanela: 'Carregando ...',
-        tituloJanelaEntrevista: 'Carregando ...',
+        tituloJanela: "Carregando ...",
+        tituloJanelaEntrevista: "Carregando ...",
         preload: false,
         editando: false,
+        demitido: false,
         apagado: false,
         cadastrado: false,
         cadastrando: false,
@@ -28,6 +29,16 @@ const app = new Vue({
         selecionaTudo: false,
 
         form: {
+
+            demissao: {
+                cipa: false,
+                data_desmobilizacao: "",
+                motivo_rescisao_id: "",
+                tipo_aviso_id: "",
+                solicitado_por: "",
+                comentario: ""
+            },
+
             tipo_form: "",
             data_desmobilizacao: "",
             avaliacao: "",
@@ -60,28 +71,28 @@ const app = new Vue({
             preenchido_por_ssma: "",
 
             entrevista_desligamento: {
-                curriculo_id: '',
-                superior_imediato: '',
-                motivo: '',
-                trabalharia_novamente: '',
-                contr_melhoria: '',
-                relacao_interpessoal: '',
-                recursos_fisicos: '',
-                valores_normas: '',
-                planejamento: '',
-                sob_superior_imediato: '',
-                direcao_empresa: '',
-                oportunidades: '',
-                salario_beneficio: '',
-                atividade: '',
-                comentarios: '',
-                parecer_entrevistador: '',
-                pode_voltar: '',
-                porque_pode_voltar: '',
-                quem_entrevistou: '',
-                data_entrevista: '',
-                preenchido_por: '',
-            },
+                curriculo_id: "",
+                superior_imediato: "",
+                motivo: "",
+                trabalharia_novamente: "",
+                contr_melhoria: "",
+                relacao_interpessoal: "",
+                recursos_fisicos: "",
+                valores_normas: "",
+                planejamento: "",
+                sob_superior_imediato: "",
+                direcao_empresa: "",
+                oportunidades: "",
+                salario_beneficio: "",
+                atividade: "",
+                comentarios: "",
+                parecer_entrevistador: "",
+                pode_voltar: "",
+                porque_pode_voltar: "",
+                quem_entrevistou: "",
+                data_entrevista: "",
+                preenchido_por: ""
+            }
 
         },
 
@@ -108,20 +119,20 @@ const app = new Vue({
             carregando: false,
             dados: {
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                autocomplete_label_anterior: '',
-                autocomplete_label: '',
+                autocomplete_label_anterior: "",
+                autocomplete_label: "",
                 pages: 20,
 
-                campoBusca: '',
-                campoArea: '',
-                campoVaga: '',
-                campoLido: '',
-                campoFiltro: '',
-                campoPcd: '',
-                campoUf: '',
-                campoFeedback: '',
-            },
-        },
+                campoBusca: "",
+                campoArea: "",
+                campoVaga: "",
+                campoLido: "",
+                campoFiltro: "",
+                campoPcd: "",
+                campoUf: "",
+                campoFeedback: ""
+            }
+        }
     },
     computed: {
         comAvaliacao() {
@@ -151,7 +162,7 @@ const app = new Vue({
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formDefault = _.cloneDeep(this.form); //copia
 
         this.atualizar();
         this.listaVagas();
@@ -164,7 +175,7 @@ const app = new Vue({
                 this.comAvaliacao.map(item => {
                     let id = item.curriculo_id;
                     if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id)
+                        this.selecionados.push(id);
                     }
                 });
             } else {
@@ -172,7 +183,7 @@ const app = new Vue({
                     let id = item.curriculo_id;
                     let index = this.selecionados.indexOf(id);
                     if (index >= 0) {
-                        this.selecionados.splice(index, 1)
+                        this.selecionados.splice(index, 1);
                     }
                 });
             }
@@ -180,9 +191,9 @@ const app = new Vue({
         //GERAL
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
+                this.controle.dados.autocomplete_label_anterior = "";
+                this.controle.dados.autocomplete_label = "";
+                this.controle.dados.campoVaga = "";
             }
         },
         selecionaVaga(obj) {
@@ -206,17 +217,17 @@ const app = new Vue({
                 .then(response => {
                     let data = response.data;
                     Object.assign(this.form, data);
-                    Object.assign(this.form, data['parecer_teste']);
+                    Object.assign(this.form, data["parecer_teste"]);
                     this.tituloJanela = `Parecer Teste Prático - ${data.curriculo.nome}`;
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
 
         },
         formAvaliar(curriculo_id) {
-            this.tituloJanela = `Avaliando ${curriculo_id}`;
+            this.tituloJanela = `Demissão ${curriculo_id}`;
             this.cadastrando = true;
             this.atualizado = false;
             this.preload = true;
@@ -225,39 +236,37 @@ const app = new Vue({
             this.desmobilizacao = false;
             this.entrevista = false;
 
-            this.form = _.cloneDeep(this.formDefault)
+            this.form = _.cloneDeep(this.formDefault);
+            this.demitido = false;
 
             axios.get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
                 .then(response => {
                     let data = response.data;
-                    this.tituloJanela = `Avaliando: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
+                    this.demitido = !!data.demissao;
+                    this.tituloJanela = `Demissão: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
                     Object.assign(this.form, data);
-                    this.form.avaliacao = data.avaliacao ? data.avaliacao : '';
-                    if (data.alternativas) {
-
-                    } else {
-                        this.form.alternativas = _.cloneDeep(this.alternativasDefault);
-                    }
-
+                    this.form.demissao = data.demissao ? data.demissao : _.cloneDeep(this.formDefault.demissao);
                     this.preload = false;
                     // this.form.alternativas = !data.alternativas ? data.alternativas : Object.assign(this.form.alternativas, this.alternativasDefault);
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
-        avaliar() {
-            $('#janelaAvaliar :input:visible').trigger('blur');
-            if ($('#janelaAvaliar :input:visible.is-invalid').length) {
-                mostraErro('', 'Verifique os erros')
+        demitir() {
+            if (!this.form.demissao.cipa) {
+                mostraErro("", "Você deve checar estabilidade: CIPA, Acidente Trabalho e Sindicato, Gestante, Aposentadoria (Itens CLT ou CCT)");
                 return false;
             }
 
-            this.form._method = 'PUT';
+            $("#janelaAvaliar :input:visible").trigger("blur");
+            if ($("#janelaAvaliar :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os erros");
+                return false;
+            }
             this.preload = true;
 
-
-            axios.post(`${URL_ADMIN}/posadmissao/${this.form.id}`, this.form)
+            axios.post(`${URL_ADMIN}/posadmissao/demitir`, this.form)
                 .then(response => {
                     let data = response.data;
                     this.cadastrando = false;
@@ -267,7 +276,7 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
 
         },
         formDesmobilizar(curriculo_id) {
@@ -281,15 +290,15 @@ const app = new Vue({
             this.desmobilizacao = true;
             this.entrevista = false;
 
-            this.form = _.cloneDeep(this.formDefault)
-            this.form.alternativas = _.cloneDeep(this.alternativasDefault)
+            this.form = _.cloneDeep(this.formDefault);
+            this.form.alternativas = _.cloneDeep(this.alternativasDefault);
 
             axios.get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
                 .then(response => {
                     let data = response.data;
                     this.tituloJanela = `Desmobilizando: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
                     Object.assign(this.form, data);
-                    this.form.avaliacao = data.avaliacao ? data.avaliacao : '';
+                    this.form.avaliacao = data.avaliacao ? data.avaliacao : "";
                     if (data.alternativas) {
 
                     } else {
@@ -301,15 +310,15 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
         desmobilizar() {
-            $('#janelaAvaliar :input:visible').trigger('blur');
-            if ($('#janelaAvaliar :input:visible.is-invalid').length) {
-                mostraErro('', 'Verifique os erros')
+            $("#janelaAvaliar :input:visible").trigger("blur");
+            if ($("#janelaAvaliar :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os erros");
                 return false;
             }
-            this.form._method = 'PUT';
+            this.form._method = "PUT";
             this.preload = true;
             axios.put(`${URL_ADMIN}/posadmissao/desmobilizar`, this.form)
                 .then(response => {
@@ -321,7 +330,7 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
 
         },
         formEntrevistar(curriculo_id) {
@@ -344,7 +353,7 @@ const app = new Vue({
                     this.tituloJanela = `Entrevista de desligamento: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
                     Object.assign(this.form, data);
                     if (!this.form.entrevista_desligamento) {
-                        this.form.entrevista_desligamento = _.cloneDeep(this.formDefault.entrevista_desligamento)
+                        this.form.entrevista_desligamento = _.cloneDeep(this.formDefault.entrevista_desligamento);
                         // Object.assign(this.form.entrevista_desligamento, this.formDefault.entrevista_desligamento);
                     }
                     // this.form.entrevista_desligamento = !this.form.entrevista_desligamento ? Object.assign(this.form.entrevista_desligamento, this.formDefault.entrevista_desligamento) : Object.assign(this.form, data);
@@ -352,12 +361,12 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
         entrevistar() {
-            $('#janelaAvaliar :input:visible').trigger('blur');
-            if ($('#janelaAvaliar :input:visible.is-invalid').length) {
-                mostraErro('', 'Verifique os erros')
+            $("#janelaAvaliar :input:visible").trigger("blur");
+            if ($("#janelaAvaliar :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os erros");
                 return false;
             }
             // this.form._method = 'PUT';
@@ -373,7 +382,7 @@ const app = new Vue({
                 })
                     .catch(error => {
                         this.preload = false;
-                    })
+                    });
             } else {
                 // this.form.entrevista_desligamento._method = 'PUT';
                 axios.put(`${URL_ADMIN}/posadmissao/entrevistar/${this.form.entrevista_desligamento.id}`, this.form.entrevista_desligamento)
@@ -386,7 +395,7 @@ const app = new Vue({
                     })
                     .catch(error => {
                         this.preload = false;
-                    })
+                    });
             }
         },
         listaVagas() {
@@ -426,7 +435,7 @@ const app = new Vue({
             this.formulario = dados.formulario;
             this.alternativasDefault = dados.form_limpo;
             this.selecionaTudo = this.tudoMarcado;
-            this.form.alternativas = _.cloneDeep(this.alternativasDefault)
+            this.form.alternativas = _.cloneDeep(this.alternativasDefault);
             this.controle.carregando = false;
         },
         carregando() {
@@ -435,6 +444,6 @@ const app = new Vue({
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
-        },
+        }
     }
 });
