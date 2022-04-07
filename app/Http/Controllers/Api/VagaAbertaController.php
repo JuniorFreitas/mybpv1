@@ -295,7 +295,7 @@ class VagaAbertaController extends Controller
                 } else {
                     foreach ($dados['telefones'] as $linha) {
                         if ($linha['id'] == 0) {
-                            unset($linha['id']);
+                            $linha['id'] = null;
                             $linha['principal'] = $linha['principal'] == 'true' ? true : false;
                             $linha['curriculo_id'] = $usuario->id;
                             TelefoneCurriculo::create($linha);
