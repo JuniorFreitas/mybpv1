@@ -7,6 +7,7 @@ use App\Models\Arquivo;
 use App\Models\GrupoCloud;
 use App\Models\Papel;
 use App\Models\RecuperacaoSenha;
+use App\Models\TipoRecebeEmail;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -39,7 +40,7 @@ class UserController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -69,7 +70,15 @@ class UserController extends Controller
             $dados['cadastrou'] = auth()->id();
 
 
-            User::create($dados);
+            $usuario = User::create($dados);
+
+            if (isset($dados['user_recebe_email'])) {
+                unset($dados['user_recebe_email'][0]);
+                foreach ($dados['user_recebe_email'] as $index => $email) {
+                    $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
+                }
+            }
+
             return response()->json([], 201);
         }
     }
@@ -84,12 +93,20 @@ class UserController extends Controller
     public function edit(User $usuario)
     {
         $this->authorize('usuarios_update');
-        $usuario->load('papel:id,nome', 'Empresa');
+        $usuario->load('papel:id,nome', 'Empresa', 'UserRecebeEmail');
+
+        $ids_form = array();
+        foreach ($usuario->UserRecebeEmail as $f) {
+            $ids_form[$f->pivot->tipo_email_id] = $f->pivot->ativo;
+        }
+
+        $formulario_vazio = collect($ids_form);
 
         $papeis = Papel::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
         $cloud = GrupoCloud::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
 
-        return response()->json(['usuario' => $usuario, 'papeis' => $papeis,'cloud' => $cloud], 200);
+
+        return response()->json(['usuario' => $usuario, 'papeis' => $papeis, 'cloud' => $cloud, 'formulario_vazio' => $formulario_vazio], 200);
     }
 
 
@@ -113,7 +130,7 @@ class UserController extends Controller
         // Validacao para ajax sem dar erro de HTTP (402)
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
-            'login' => 'unique:users,login,' . $usuario->id,
+//            'login' => 'unique:users,login,' . $usuario->id,
             'grupo_id' => 'required|numeric',
             'ativo' => 'required|boolean',
             'tipo' => 'required',
@@ -126,6 +143,18 @@ class UserController extends Controller
         } else {
             if ($dados['alterarSenha']) {
                 $dados['password'] = bcrypt($dados['password']);
+            }
+            if (isset($dados['user_recebe_email'])) {
+                if (count($usuario->UserRecebeEmail) == 0) {
+                    unset($dados['user_recebe_email'][0]);
+                    foreach ($dados['user_recebe_email'] as $index => $email) {
+                        $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
+                    }
+                } else {
+                    foreach ($dados['user_recebe_email'] as $index => $email) {
+                        $usuario->UserRecebeEmail()->updateExistingPivot($index, ['ativo' => $email]);
+                    }
+                }
             }
             $usuario->update($dados);
             return response()->json([], 201);
@@ -214,6 +243,14 @@ class UserController extends Controller
         }
 
         $empresa = auth()->user()->empresa_id;
+        $tipo_email = TipoRecebeEmail::all();
+
+        $ids_form = array();
+        foreach ($tipo_email as $f) {
+                $ids_form[$f->id] = false;
+        }
+
+        $formulario_vazio = collect($ids_form);
 
         $resultado = $resultado->orderBy('nome')->paginate($porPagina);
         return response()->json([
@@ -222,7 +259,9 @@ class UserController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'resultado' => $resultado->items(),
-                'empresa' => $empresa
+                'empresa' => $empresa,
+                'tipo_email' => $tipo_email,
+                'formulario_vazio' => $formulario_vazio,
             ],
         ]);
 
