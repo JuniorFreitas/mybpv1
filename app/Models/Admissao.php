@@ -624,6 +624,9 @@ class Admissao extends Model
         return $this->hasOne(DadosAdmissao::class, 'admissao_id', 'id');
     }
 
+    public function Demissao(){
+        return $this->hasOne(Demissao::class, 'feedback_id', 'feedback_id');
+    }
 
 //    public function ChecklistDemissao()
 //    {
