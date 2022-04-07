@@ -294,10 +294,12 @@ class VagaAbertaController extends Controller
                     ], 400);
                 } else {
                     foreach ($dados['telefones'] as $linha) {
-                        $linha['principal'] = $linha['principal'] == 'true' ? true : false;
-                        if (!isset($linha['id'])) {
-                            $linha['curriculo_id'] = $usuario->id;
-                            TelefoneCurriculo::create($linha);
+                        if (isset($linha['principal'])) {
+                            $linha['principal'] = $linha['principal'] == 'true' ? true : false;
+                            if (!isset($linha['id'])) {
+                                $linha['curriculo_id'] = $usuario->id;
+                                TelefoneCurriculo::create($linha);
+                            }
                         }
                     }
                 }
@@ -417,7 +419,7 @@ class VagaAbertaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage(). " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id']." CPF:".$dados['cpf_padrao'];
+            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'] . " CPF:" . $dados['cpf_padrao'];
             \Log::debug($msg);
             \Log::debug($e->getTraceAsString());
             \Log::info("-------DADOS-------");
