@@ -296,8 +296,8 @@ class VagaAbertaController extends Controller
                     foreach ($dados['telefones'] as $linha) {
                         $linha['principal'] = $linha['principal'] == 'true' ? true : false;
                         if (!isset($linha['id'])) {
-                                $linha['curriculo_id'] = $usuario->id;
-                                TelefoneCurriculo::create($linha);
+                            $linha['curriculo_id'] = $usuario->id;
+                            TelefoneCurriculo::create($linha);
                         }
                     }
                 }
@@ -328,11 +328,13 @@ class VagaAbertaController extends Controller
                 }
                 if (isset($dados['telefonesDelete'])) {
                     foreach ($dados['telefonesDelete'] as $index) {
-                        TelefoneCurriculo::find($index)->delete();
+                        if ($index > 0) {
+                            TelefoneCurriculo::find($index)->delete();
+                        }
                     }
                 }
 
-                foreach($dados['telefones'] as $linha) {
+                foreach ($dados['telefones'] as $linha) {
                     $linha['principal'] = $linha['principal'] == 'true' ? true : false;
                     if ($linha['id'] == 0) {
                         $telPrincipal = $curriculo->Telefones()->create($linha)->id;
@@ -350,7 +352,9 @@ class VagaAbertaController extends Controller
                 if ($dados['temqualificacao'] == 'true') {
                     if (isset($dados['qualificacoesDelete'])) {
                         foreach ($dados['qualificacoesDelete'] as $index) {
-                            $curriculo->Qualificacoes()->find($index)->delete();
+                            if ($index > 0) {
+                                $curriculo->Qualificacoes()->find($index)->delete();
+                            }
                         }
                     }
                     foreach ($dados['qualificacoes'] as $linha) {
@@ -360,12 +364,22 @@ class VagaAbertaController extends Controller
                             $curriculo->Qualificacoes()->create($linha);
                         }
                     }
+                } else {
+                    if (isset($dados['qualificacoesDelete'])) {
+                        foreach ($dados['qualificacoesDelete'] as $index) {
+                            if ($index > 0) {
+                                $curriculo->Qualificacoes()->find($index)->delete();
+                            }
+                        }
+                    }
                 }
 
                 if ($dados['temexperiencia'] == 'true') {
                     if (isset($dados['experienciasDelete'])) {
                         foreach ($dados['experienciasDelete'] as $index) {
-                            $curriculo->Experiencias()->find($index)->delete();
+                            if ($index > 0) {
+                                $curriculo->Experiencias()->find($index)->delete();
+                            }
                         }
                     }
                     foreach ($dados['experiencias'] as $linha) {
@@ -377,8 +391,16 @@ class VagaAbertaController extends Controller
                             $curriculo->Experiencias()->create($linha);
                         }
                     }
+                } else {
+                    if (isset($dados['experienciasDelete'])) {
+                        foreach ($dados['experienciasDelete'] as $index) {
+                            if ($index > 0) {
+                                $curriculo->Experiencias()->find($index)->delete();
+                            }
+                        }
+                    }
                 }
-                unset($dados['cpf']); //remove o cpf
+                unset($dados['cpf']);
                 $curriculo->update($dados);
             }
 
@@ -396,7 +418,7 @@ class VagaAbertaController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
 
-            return response()->json($e->getTrace(),400);
+            return response()->json($e->getTrace(), 400);
             $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . "trace " . $e->getTraceAsString() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'];
             \Log::debug($e->getMessage());
             \Log::info("-------DADOS-------");
