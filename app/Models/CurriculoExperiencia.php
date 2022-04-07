@@ -79,8 +79,8 @@ class CurriculoExperiencia extends Model
         'empresa' => 'string',
         'cargo' => 'string',
         'principais_atv' => 'string',
-        'data_inicio' => 'date:d/m/Y',
-        'data_fim' => 'date:d/m/Y',
+        'data_inicio' => 'string',
+        'data_fim' => 'string',
         'referencia_nome' => 'string',
         'referencia_telefone' => 'string',
     ];
