@@ -241,6 +241,12 @@ class AdmissaoController extends Controller
                             break;
                     }
                     $dadosAdmissao['data_encerramento'] = null;
+
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+
+                    $datas['feedback_id'] = $dadosAdmissao['feedback_id'];
+                    $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+
                 }
                 if (in_array($dadosAdmissao['tipo_admissao'], $tipo_admissao)) {
                     $data = new DataHora($dadosAdmissao['data_encerramento']);
@@ -252,8 +258,16 @@ class AdmissaoController extends Controller
                     $datas['prazo_cinco_final'] = null;
                     $datas['prazo_dia_final'] = null;
                     $dadosAdmissao['prazo_experiencia'] = null;
-                }
 
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+
+                    $datas['feedback_id'] = $dadosAdmissao['feedback_id'];
+                    $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+                }
+                if ($dados['tipo_admissao'] == 'INTERMITENTE') {
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+                    isset($avaliacao) ? $avaliacao->delete() : null;
+                }
 
                 $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
@@ -388,6 +402,12 @@ class AdmissaoController extends Controller
                             break;
                     }
                     $dadosAdmissao['data_encerramento'] = null;
+
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+
+                    $datas['feedback_id'] = $dadosAdmissao['feedback_id'];
+                    $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+
                 }
                 if (in_array($dadosAdmissao['tipo_admissao'], $tipo_admissao)) {
                     $data = new DataHora($dadosAdmissao['data_encerramento']);
@@ -399,6 +419,15 @@ class AdmissaoController extends Controller
                     $datas['prazo_cinco_final'] = null;
                     $datas['prazo_dia_final'] = null;
                     $dadosAdmissao['prazo_experiencia'] = null;
+
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+
+                    $datas['feedback_id'] = $dadosAdmissao['feedback_id'];
+                    $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+                }
+                if ($dados['tipo_admissao'] == 'INTERMITENTE') {
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+                    isset($avaliacao) ? $avaliacao->delete() : null;
                 }
 
 
@@ -695,6 +724,11 @@ class AdmissaoController extends Controller
                     }
                     $admissaoDados['data_encerramento'] = null;
 
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($admissaoDados['feedback_id'])->first();
+
+                    $datas['feedback_id'] = $admissaoDados['feedback_id'];
+                    $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+
                 }
                 if (in_array($admissaoDados['tipo_admissao'], $tipo_admissao)) {
                     $data = new DataHora($admissaoDados['data_encerramento']);
@@ -706,12 +740,17 @@ class AdmissaoController extends Controller
                     $datas['prazo_cinco_final'] = null;
                     $datas['prazo_dia_final'] = null;
                     $admissaoDados['prazo_experiencia'] = null;
+
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($admissaoDados['feedback_id'])->first();
+
+                    $datas['feedback_id'] = $admissaoDados['feedback_id'];
+                    $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+                }
+                if ($dados['tipo_admissao'] == 'INTERMITENTE') {
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($admissaoDados['feedback_id'])->first();
+                    isset($avaliacao) ? $avaliacao->delete() : null;
                 }
 
-                $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($admissaoDados['feedback_id'])->first();
-
-                $datas['feedback_id'] = $admissaoDados['feedback_id'];
-                $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
 
                 $feedback->Admissao ? $feedback->Admissao->update($admissaoDados) : $feedback->Admissao()->create($admissaoDados);
 
@@ -738,6 +777,123 @@ class AdmissaoController extends Controller
                     }
                 }
 
+                DB::commit();
+                return response()->json([], 201);
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                \Log::debug($msg);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            }
+        }
+    }
+
+    public function cadastraMassa(Request $request)
+    {
+        $this->authorize('admissao_update');
+        $dados = $request->input();
+
+        $dadosValidados = \Validator::make($dados, []);
+        if ($dadosValidados->fails()) {
+            return response()->json([
+                'msg' => 'Erro ao Salvar em Massa',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        } else {
+            try {
+                DB::beginTransaction();
+
+                $tipo_admissao = [
+                    'TEMPORARIO',
+                    'DETERMINADO'
+                ];
+
+                foreach ($dados['selecionados'] as $feedback_id) {
+                    $feedback = FeedbackCurriculo::find($feedback_id);
+                    $info = ['selecionado' => 'sim'];
+
+                    $feedback->update($info);
+
+                    $dados = [
+                        "tipo_admissao" => $dados['tipo_admissao'],
+                        "prazo_experiencia" => $dados['prazo_experiencia'],
+                        "data_encerramento" => $dados['data_encerramento'],
+                        "documento_portaria" => $dados['documento_portaria'],
+                        "data_aso" => $dados['data_aso'],
+                        "status_carteira_treinamento" => $dados['status_carteira_treinamento'],
+                        "status" => $dados['status'],
+                        "data_admissao" => $dados['data_admissao'],
+                        "data_entrega_area" => $dados['data_entrega_area'],
+                        "biometria" => $dados['biometria'],
+                    ];
+
+                    $feedback->Admissao ? $feedback->Admissao->update($dados) : $feedback->Admissao()->create($dados);
+
+                    $datas = [];
+                    if ($dados['tipo_admissao'] == 'FIXO') {
+                        $data = new DataHora($dados['data_admissao']);
+                        switch ($dados['prazo_experiencia']) {
+                            case '30+30':
+                                $datas['prazo_dez_inicial'] = $data->addDia(20);
+                                $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                                $datas['prazo_dia_inicial'] = $data->addDia(5);
+                                $datas['prazo_dez_final'] = $data->addDia(20);
+                                $datas['prazo_cinco_final'] = $data->addDia(5);
+                                $datas['prazo_dia_final'] = $data->addDia(5);
+                                break;
+                            case '45+45':
+                                $datas['prazo_dez_inicial'] = $data->addDia(35);
+                                $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                                $datas['prazo_dia_inicial'] = $data->addDia(5);
+                                $datas['prazo_dez_final'] = $data->addDia(35);
+                                $datas['prazo_cinco_final'] = $data->addDia(5);
+                                $datas['prazo_dia_final'] = $data->addDia(5);
+                                break;
+                            case '30+60':
+                                $datas['prazo_dez_inicial'] = $data->addDia(20);
+                                $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                                $datas['prazo_dia_inicial'] = $data->addDia(5);
+                                $datas['prazo_dez_final'] = $data->addDia(50);
+                                $datas['prazo_cinco_final'] = $data->addDia(5);
+                                $datas['prazo_dia_final'] = $data->addDia(5);
+                                break;
+                            case '60+30':
+                                $datas['prazo_dez_inicial'] = $data->addDia(50);
+                                $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                                $datas['prazo_dia_inicial'] = $data->addDia(5);
+                                $datas['prazo_dez_final'] = $data->addDia(20);
+                                $datas['prazo_cinco_final'] = $data->addDia(5);
+                                $datas['prazo_dia_final'] = $data->addDia(5);
+                                break;
+                        }
+                        $dados['data_encerramento'] = null;
+                        $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
+
+                        $datas['feedback_id'] = $feedback_id;
+                        $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+                    }
+                    if (in_array($dados['tipo_admissao'], $tipo_admissao)) {
+                        $data = new DataHora($dados['data_encerramento']);
+
+                        $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
+                        $datas['prazo_cinco_inicial'] = $data->subtrairDia(5);
+                        $datas['prazo_dia_inicial'] = $dados['data_encerramento'];
+                        $datas['prazo_dez_final'] = null;
+                        $datas['prazo_cinco_final'] = null;
+                        $datas['prazo_dia_final'] = null;
+                        $dadosAdmissao['prazo_experiencia'] = null;
+                        $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
+
+                        $datas['feedback_id'] = $feedback_id;
+                        $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+                    }
+                    if ($dados['tipo_admissao'] == 'INTERMITENTE') {
+                        $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
+                        isset($avaliacao) ? $avaliacao->delete() : null;
+                    }
+                }
                 DB::commit();
                 return response()->json([], 201);
 

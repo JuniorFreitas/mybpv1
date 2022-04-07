@@ -263,6 +263,7 @@ class RecrutamentoController extends Controller
                     DB::commit();
                 }
             } else {
+                $dados['vagas_abertas_id'] = $dados['vaga_id'];
                 $curriculo->FeedBack->update($dados);
                 if ($dados['selecionado'] == 'nao') {
                     if ($dados['envia_mail_desclassificacao']) {

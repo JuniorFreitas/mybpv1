@@ -454,6 +454,23 @@ const app = new Vue({
 
         formDefault: null,
 
+        form_massa: {
+            selecionados: null,
+            preload: false,
+            selecionado: "sim",
+            tipo_admissao: "",
+            prazo_experiencia: "",
+            data_encerramento: "",
+            documento_portaria: "",
+            data_aso: "",
+            status_carteira_treinamento: "",
+            status: "",
+            data_admissao: "",
+            data_entrega_area: "",
+            biometria: "",
+        },
+        form_massaDefault: null,
+
         formResultadoIntegrado: {
             curriculo_id: null
         },
@@ -515,6 +532,7 @@ const app = new Vue({
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
         this.formAvulsaDefault = _.cloneDeep(this.formAvulsa); //copia
+        this.form_massaDefault = _.cloneDeep(this.form_massa); //copia
         this.formResultadoIntegradoDefault = _.cloneDeep(this.formResultadoIntegrado); //copia
         this.cliente_id = $("#cliente_id").val();
         if (this.cliente_id) { //diferente de BPSE
@@ -686,20 +704,6 @@ const app = new Vue({
                 return false;
             }
 
-            // if (this.formAvulsa.curriculo.municipio_id === "") {
-            //     valida_campo_vazio($("#mun_" + this.hash), 1);
-            //     $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
-            //     mostraErro("", "O Campo Cidade não pode ficar vazio");
-            //     return false;
-            // }
-
-            // if (this.formAvulsa.feedback.cliente_id === "") {
-            //     valida_campo_vazio($("#cliente_" + this.hash), 1);
-            //     $("#janelaAdmissaoAvulsa #cliente_" + this.hash).focus().trigger("blur");
-            //     mostraErro("", "O Campo Cliente não pode ficar vazio");
-            //     return false;
-            // }
-
             if (this.formAvulsa.curriculo.telefones.length === 0) {
                 this.formAvulsa.curriculo.telefones.push({
                     detalhe: "",
@@ -733,6 +737,38 @@ const app = new Vue({
                         this.atualizar();
                     }
                 }).catch(error => (this.formAvulsa.preload = false));
+        },
+
+
+        formCadastraMassa() {
+            this.form_massa = _.cloneDeep(this.form_massaDefault); //copia
+
+            formReset();
+            setupCampo();
+        },
+
+        CadastraMassa() {
+            formReset();
+
+            $("#janelaAdmissaoMassa :input:visible").trigger("blur");
+            if ($("#janelaAdmissaoMassa :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os erros");
+                return false;
+            }
+
+            this.form_massa.preload = true;
+            this.form_massa.selecionados = this.selecionados;
+
+
+            axios.post(`${URL_ADMIN}/admissao/cadastra-massa`, this.form_massa)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.form_massa.preload = false;
+                        this.form_massa.cadastrado = true;
+                        $('#janelaAdmissaoMassa').modal('hide');
+                        this.atualizar();
+                    }
+                }).catch(error => (this.form_massa.preload = false));
         },
 
         //GERAL
