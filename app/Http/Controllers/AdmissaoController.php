@@ -203,6 +203,19 @@ class AdmissaoController extends Controller
                     }
                 }
 
+                $feedback = $candidato->FeedBack()->create($dadosFeedback);
+
+                $feedback->ParecerRh()->create($dadosParecerRh);
+                $feedback->ParecerRota()->create($dadosParecerRota);
+                $feedback->ParecerTecnica()->create($dadosParecerTecnica);
+                $feedback->ParecerTeste()->create($dadosParecerTeste);
+                $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
+
+                $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
+                DadosAdmissao::create($tableDadosAdmissao);
+
                 $datas = [];
                 if ($dadosAdmissao['tipo_admissao'] == 'FIXO') {
                     $data = new DataHora($dadosAdmissao['data_admissao']);
@@ -241,10 +254,9 @@ class AdmissaoController extends Controller
                             break;
                     }
                     $dadosAdmissao['data_encerramento'] = null;
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback['id'])->first();
 
-                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
-
-                    $datas['feedback_id'] = $dadosAdmissao['feedback_id'];
+                    $datas['feedback_id'] = $feedback['id'];
                     $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
 
                 }
@@ -259,33 +271,17 @@ class AdmissaoController extends Controller
                     $datas['prazo_dia_final'] = null;
                     $dadosAdmissao['prazo_experiencia'] = null;
 
-                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback['id'])->first();
 
-                    $datas['feedback_id'] = $dadosAdmissao['feedback_id'];
+                    $datas['feedback_id'] = $feedback['id'];
                     $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
                 }
-                if ($dados['tipo_admissao'] == 'INTERMITENTE') {
-                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+                if ($dadosAdmissao['tipo_admissao'] == 'INTERMITENTE') {
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback['id'])->first();
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
 
-                $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
-                $feedback->ParecerRh()->create($dadosParecerRh);
-                $feedback->ParecerRota()->create($dadosParecerRota);
-                $feedback->ParecerTecnica()->create($dadosParecerTecnica);
-                $feedback->ParecerTeste()->create($dadosParecerTeste);
-                $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
-
-                $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback['id'])->first();
-
-                $datas['feedback_id'] = $feedback['id'];
-                $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
-
-                $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
-
-                $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
-                DadosAdmissao::create($tableDadosAdmissao);
 
             } else {
 
@@ -363,6 +359,23 @@ class AdmissaoController extends Controller
                     }
                 }
 
+
+
+
+                // 4- Atualiza ou cria o FeedbackCurriculo
+                $candidato->FeedBack ? $candidato->FeedBack->update($dadosFeedback) : $candidato->FeedBack()->create($dadosFeedback);
+                $candidato->FeedBack->ParecerRh ? $candidato->FeedBack->ParecerRh->update($dadosParecerRh) : $candidato->FeedBack->ParecerRh()->create($dadosParecerRh);
+                $candidato->FeedBack->ParecerRota ? $candidato->FeedBack->ParecerRota->update($dadosParecerRota) : $candidato->FeedBack->ParecerRota()->create($dadosParecerRota);
+                $candidato->FeedBack->ParecerTecnica ? $candidato->FeedBack->ParecerTecnica->update($dadosParecerTecnica) : $candidato->FeedBack->ParecerTecnica()->create($dadosParecerTecnica);
+                $candidato->FeedBack->ParecerTeste ? $candidato->FeedBack->ParecerTeste->update($dadosParecerTeste) : $candidato->FeedBack->ParecerTeste()->create($dadosParecerTeste);
+                $candidato->FeedBack->ResultadoIntegrado ? $candidato->FeedBack->ResultadoIntegrado->update($dadosResultadoIntegrado) : $candidato->FeedBack->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                $feedback_id = $candidato->FeedBack ? $candidato->FeedBack->id : '';
+
+                $admissaoCreate = $candidato->FeedBack->Admissao()->create($dadosAdmissao);
+                $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
+                DadosAdmissao::create($tableDadosAdmissao);
+
                 $datas = [];
 
                 if ($dadosAdmissao['tipo_admissao'] === 'FIXO') {
@@ -403,9 +416,9 @@ class AdmissaoController extends Controller
                     }
                     $dadosAdmissao['data_encerramento'] = null;
 
-                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
 
-                    $datas['feedback_id'] = $dadosAdmissao['feedback_id'];
+                    $datas['feedback_id'] = $feedback_id;
                     $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
 
                 }
@@ -420,35 +433,16 @@ class AdmissaoController extends Controller
                     $datas['prazo_dia_final'] = null;
                     $dadosAdmissao['prazo_experiencia'] = null;
 
-                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
 
-                    $datas['feedback_id'] = $dadosAdmissao['feedback_id'];
+                    $datas['feedback_id'] = $feedback_id;
                     $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
                 }
-                if ($dados['tipo_admissao'] == 'INTERMITENTE') {
-                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($dadosAdmissao['feedback_id'])->first();
+                if ($dadosAdmissao['tipo_admissao'] == 'INTERMITENTE') {
+                    $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
 
-
-                // 4- Atualiza ou cria o FeedbackCurriculo
-                $candidato->FeedBack ? $candidato->FeedBack->update($dadosFeedback) : $candidato->FeedBack()->create($dadosFeedback);
-                $candidato->FeedBack->ParecerRh ? $candidato->FeedBack->ParecerRh->update($dadosParecerRh) : $candidato->FeedBack->ParecerRh()->create($dadosParecerRh);
-                $candidato->FeedBack->ParecerRota ? $candidato->FeedBack->ParecerRota->update($dadosParecerRota) : $candidato->FeedBack->ParecerRota()->create($dadosParecerRota);
-                $candidato->FeedBack->ParecerTecnica ? $candidato->FeedBack->ParecerTecnica->update($dadosParecerTecnica) : $candidato->FeedBack->ParecerTecnica()->create($dadosParecerTecnica);
-                $candidato->FeedBack->ParecerTeste ? $candidato->FeedBack->ParecerTeste->update($dadosParecerTeste) : $candidato->FeedBack->ParecerTeste()->create($dadosParecerTeste);
-                $candidato->FeedBack->ResultadoIntegrado ? $candidato->FeedBack->ResultadoIntegrado->update($dadosResultadoIntegrado) : $candidato->FeedBack->ResultadoIntegrado()->create($dadosResultadoIntegrado);
-
-                $feedback_id = $candidato->FeedBack ? $candidato->FeedBack->id : '';
-                $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
-
-                $datas['feedback_id'] = $feedback_id;
-                $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
-
-
-                $admissaoCreate = $candidato->FeedBack->Admissao()->create($dadosAdmissao);
-                $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
-                DadosAdmissao::create($tableDadosAdmissao);
             }
             DB::commit();
             return response()->json([], 201);
@@ -746,7 +740,7 @@ class AdmissaoController extends Controller
                     $datas['feedback_id'] = $admissaoDados['feedback_id'];
                     $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
                 }
-                if ($dados['tipo_admissao'] == 'INTERMITENTE') {
+                if ($admissaoDados['tipo_admissao'] == 'INTERMITENTE') {
                     $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($admissaoDados['feedback_id'])->first();
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
