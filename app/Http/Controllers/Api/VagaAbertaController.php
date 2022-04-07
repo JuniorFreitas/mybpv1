@@ -421,7 +421,8 @@ class VagaAbertaController extends Controller
             \Log::debug($msg);
             \Log::debug($e->getTraceAsString());
             \Log::info("-------DADOS-------");
-            \Log::alert(print_r($dados),1);
+            Sistema::telegram(print_r($dados,1));
+            \Log::alert($dados);
             \Log::info("-------FIM DE DADOS-------");
 
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
