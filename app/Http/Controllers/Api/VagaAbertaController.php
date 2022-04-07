@@ -417,13 +417,13 @@ class VagaAbertaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-
-            return response()->json($e->getTrace(), 400);
-            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . "trace " . $e->getTraceAsString() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'];
-            \Log::debug($e->getMessage());
+            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage(). " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'];
+            \Log::debug($msg);
+            \Log::debug($e->getTraceAsString());
             \Log::info("-------DADOS-------");
-            \Log::alert($dados);
+            \Log::alert(print_r($dados),1);
             \Log::info("-------FIM DE DADOS-------");
+
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
