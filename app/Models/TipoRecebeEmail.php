@@ -18,4 +18,6 @@ class TipoRecebeEmail extends Model
     ];
 
     protected $table = 'tipo_recebe_email';
+
+    public $timestamps = false;
 }
