@@ -294,7 +294,7 @@ class VagaAbertaController extends Controller
                     ], 400);
                 } else {
                     foreach ($dados['telefones'] as $linha) {
-                        if ($linha['id'] == 0) {
+                        if (isset($linha['id']) && $linha['id'] == 0) {
                             $linha['id'] = null;
                             $linha['principal'] = $linha['principal'] == 'true' ? true : false;
                             $linha['curriculo_id'] = $usuario->id;
@@ -424,6 +424,10 @@ class VagaAbertaController extends Controller
             \Log::info("-------DADOS-------");
             \Log::alert($dados);
             \Log::info("-------FIM DE DADOS-------");
+
+            if($e->getLine() == 297){
+                return response()->json(['msg' => 'Remova os telefones adicione novamente, caso o erro persistir atualize a página!'], 400);
+            }
 
             return response()->json(['msg' => 'Houve um erro,  por favor tente novamente!'], 400);
         }
