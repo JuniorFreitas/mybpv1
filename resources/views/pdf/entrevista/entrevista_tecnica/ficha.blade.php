@@ -32,7 +32,7 @@
         |
         E-mail: <span>{{ $dados->FeedbackCurriculo->Curriculo->email }}</span>
         <br/>
-        Cliente:
+        Empresa:
         <span>{{ $dados->FeedbackCurriculo->Empresa->nome }}</span>
         <br> Vaga:<span> {{ $dados->FeedbackCurriculo->VagaAberta->VagaSelecionada->nome }}</span> |
         UF Vaga: <span>{{   $dados->FeedbackCurriculo->VagaAberta->Municipio->uf }}</span> | Ex

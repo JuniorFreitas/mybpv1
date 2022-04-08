@@ -40,7 +40,7 @@
         Empresa:
         <span>{{ $dados->Empresa->nome }}</span>
         <br> Vaga:<span> {{ $dados->VagaAberta->VagaSelecionada->nome }}</span> |
-        UF Vaga: <span>{{ $dados->FeedbackCurriculo->VagaAberta->Municipio->uf }}</span> | Ex Funcionário:<span> {{ $rh->ex_funcionario }}</span>
+        UF Vaga: <span>{{ $dados->VagaAberta->Municipio->uf }}</span> | Ex Funcionário:<span> {{ $rh->ex_funcionario }}</span>
     </div>
 
     <h5 class="titulo">PARECER RH</h5>
