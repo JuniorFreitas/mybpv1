@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
@@ -34,7 +33,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereUpdatedAt($value)
  * @mixin \Eloquent
  * @property-read \App\Models\FeedbackCurriculo $Feedback
- * @property-read \App\User $Usuario
  */
 class AvaliacaoAnualFeedbackQuantidade extends Model
 {

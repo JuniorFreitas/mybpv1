@@ -1239,11 +1239,11 @@
 
                 <button class="btn btn-sm btn-primary mb-2 mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        v-if="selecionados.length > 0"
+                        :disabled="selecionados.length === 0"
                         data-toggle="modal"
                         data-target="#janelaAdmissaoMassa"
                         @click="formCadastraMassa">
-                    <i class="fa fa-plus"></i> ADMITIR TODOS OS SELECIONADOS
+                    <i class="fa fa-plus"></i> ATUALIZAR SELECIONADOS
                 </button>
                 <form target="_blank"
                       action="{{ \App\Models\Sistema::UrlServidor }}/admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"

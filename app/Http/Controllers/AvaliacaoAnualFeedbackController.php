@@ -41,7 +41,7 @@ class AvaliacaoAnualFeedbackController extends Controller
                 $qntAvaliacao += 1;
 
                 $info = [
-                    'gestor_id' => auth()->user()->id(),
+                    'gestor_id' => auth()->user()->id,
                     'gestor_imediato' => $dados['gestor_imediato'],
                     'observacao' => $dados['observacao'],
                     'feedback_id' => $dados['feedback_id'],
