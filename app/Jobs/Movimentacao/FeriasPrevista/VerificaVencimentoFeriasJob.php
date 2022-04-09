@@ -60,16 +60,30 @@ class VerificaVencimentoFeriasJob implements ShouldQueue
 
         foreach ($listaDeEmprasaID as $empresa_id) {
 
+            //criar tabela de configuração de clientes, onde vou saber quantos dias vão receber email para vencimento de férias e outros possíveis tipos.
+
             $tarefaParaLembrar = FeriasPrevista::withoutGlobalScopes()->whereEmpresaId($empresa_id)
                 ->whereBetween('ultima_data', [$inicio, $fim])
                 ->with('Colaborador')->get();
 
-            //PILLAR EXCLUSIVO
-            $usuario = User::find(39766);
-            Mail::send(new VencimentoMail([
-                'usuario' => $usuario,
-                'vencimento' => $tarefaParaLembrar
-            ]));
+            $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                ->whereIn('tipo', ['Administrador', 'Suporte'])
+                ->whereHas('UserRecebeEmail', function ($q) {
+                    $q->where('nome', 'Vencimento Férias');
+                    $q->where('ativo', true);
+                })
+                ->with(['UserRecebeEmail' => function ($q) {
+                    $q->where('nome', 'Vencimento Férias');
+                    $q->where('ativo', true);
+                }])
+                ->get(['id', 'nome', 'login']);
+
+            foreach ($usuarios as $usuario) {
+                Mail::send(new VencimentoMail([
+                    'usuario' => $usuario,
+                    'vencimento' => $tarefaParaLembrar
+                ]));
+            }
         }
     }
 }
