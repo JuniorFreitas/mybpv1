@@ -3,6 +3,8 @@
 namespace App\Jobs\Movimentacao\FeriasPrevista;
 
 use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
+use App\Models\Cliente;
+use App\Models\ClienteConfig;
 use App\Models\FeriasPrevista;
 use App\Models\Sistema;
 use App\Models\User;
@@ -44,27 +46,28 @@ class VerificaVencimentoFeriasJob implements ShouldQueue
      */
     public function handle()
     {
-
-        $agora = new DataHora();
-        $agora->setSegundo(0);
-        $agora->addMes(2);
-        $inicio = $agora->dataHoraInsert();
-        $ultimoDiaMes = $agora->ultimoDiaMes();
-        $mes = $agora->mes();
-        $ano = $agora->ano();
-        $dataHora = $ano . '-' . $mes . '-' . $ultimoDiaMes . ' 23:59:59';
-        $fim = new DataHora($dataHora);
-        $fim = $fim->dataHoraInsert();
-
         $listaDeEmprasaID = Sistema::listaEmpresas();
 
         foreach ($listaDeEmprasaID as $empresa_id) {
 
-            //criar tabela de configuração de clientes, onde vou saber quantos dias vão receber email para vencimento de férias e outros possíveis tipos.
+            $cliente = ClienteConfig::whereClienteId($empresa_id)->with('Cliente:id,apelido')->first();
+
+            $agora = new DataHora();
+            $agora->setSegundo(0);
+            $agora->addMes($cliente->verifica_mes_vencimento);
+            $inicio = $agora->dataHoraInsert();
+            $ultimoDiaMes = $agora->ultimoDiaMes();
+            $mes = $agora->mes();
+            $ano = $agora->ano();
+            $dataHora = $ano . '-' . $mes . '-' . $ultimoDiaMes . ' 23:59:59';
+            $fim = new DataHora($dataHora);
+            $fim = $fim->dataHoraInsert();
 
             $tarefaParaLembrar = FeriasPrevista::withoutGlobalScopes()->whereEmpresaId($empresa_id)
                 ->whereBetween('ultima_data', [$inicio, $fim])
-                ->with('Colaborador')->get();
+                ->with(['Colaborador' => function ($q) {
+                    $q->withoutGlobalScopes();
+                }])->get();
 
             $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
                 ->whereIn('tipo', ['Administrador', 'Suporte'])
@@ -81,7 +84,8 @@ class VerificaVencimentoFeriasJob implements ShouldQueue
             foreach ($usuarios as $usuario) {
                 Mail::send(new VencimentoMail([
                     'usuario' => $usuario,
-                    'vencimento' => $tarefaParaLembrar
+                    'vencimento' => $tarefaParaLembrar,
+                    'cliente' => $cliente
                 ]));
             }
         }

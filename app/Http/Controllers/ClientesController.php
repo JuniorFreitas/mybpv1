@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ClientesExport;
+use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
 use App\Models\Area;
 use App\Models\Arquivo;
 use App\Models\Cliente;
+use App\Models\ClienteConfig;
+use App\Models\FeriasPrevista;
 use App\Models\Servico;
 use App\Models\Sistema;
 use App\Models\User;
@@ -238,11 +241,11 @@ class ClientesController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\Cliente $cliente
-     * @return \Illuminate\Http\Response
+     * @return Cliente
      */
     public function edit(Cliente $cliente)
     {
-        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote');
+        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote', 'ClienteConfig');
         $cliente->areas_etiquetas_del = [];
         $cliente->ServicosCliente->transform(function ($item) {
             $item->anexosDel = [];
@@ -505,6 +508,16 @@ class ClientesController extends Controller
                     }
                 }
 
+                if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
+                    $config = ClienteConfig::find($dados['cliente_config']['id']);
+                    $config->update(['verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento']]);
+                } else {
+                    $dados = [
+                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                        'cliente_id' => $cliente->id
+                    ];
+                    ClienteConfig::create($dados);
+                }
 
                 DB::commit();
                 return response()->json([], 201);
@@ -535,39 +548,42 @@ class ClientesController extends Controller
 
     public function atualizar(Request $request)
     {
+
+
+
 //        $resultado = User::with('Area:id,label', 'Telefones:id,cliente_id,numero');
-        $resultado = Cliente::with('Area:id,label', 'Telefones:id,cliente_id,numero');
-
-        if ($request->filled('campoBusca')) {
-            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
-
-            $resultado->where('razao_social', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('nome_fantasia', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('cnpj', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('nome', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('id', $request->campoBusca);
-        }
-
-        if ($request->filled('campoTipo')) {
-            $resultado->whereTipoCliente($request->campoTipo);
-        }
-
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == 'true' ? true : false;
-            $resultado->whereAtivo($status);
-        }
-
-        $servicos = Servico::whereAtivo(true)->orderBy('titulo')->get();
-        $areas = Area::whereAtivo(true)->get();
-        $resultado = $resultado->orderByDesc('ativo')->orderBy('razao_social')->orderBy('nome')->orderBy('tipo_cliente')->paginate(50);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items(), 'servicos' => $servicos, 'areas' => $areas]
-        ]);
+//        $resultado = Cliente::with('Area:id,label', 'Telefones:id,cliente_id,numero');
+//
+//        if ($request->filled('campoBusca')) {
+//            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
+//
+//            $resultado->where('razao_social', 'like', '%' . $request->campoBusca . '%')
+//                ->orWhere('nome_fantasia', 'like', '%' . $request->campoBusca . '%')
+//                ->orWhere('cnpj', 'like', '%' . $request->campoBusca . '%')
+//                ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
+//                ->orWhere('nome', 'like', '%' . $request->campoBusca . '%')
+//                ->orWhere('id', $request->campoBusca);
+//        }
+//
+//        if ($request->filled('campoTipo')) {
+//            $resultado->whereTipoCliente($request->campoTipo);
+//        }
+//
+//        if ($request->filled('campoStatus')) {
+//            $status = $request->campoStatus == 'true' ? true : false;
+//            $resultado->whereAtivo($status);
+//        }
+//
+//        $servicos = Servico::whereAtivo(true)->orderBy('titulo')->get();
+//        $areas = Area::whereAtivo(true)->get();
+//        $resultado = $resultado->orderByDesc('ativo')->orderBy('razao_social')->orderBy('nome')->orderBy('tipo_cliente')->paginate(50);
+//
+//        return response()->json([
+//            'atual' => $resultado->currentPage(),
+//            'ultima' => $resultado->lastPage(),
+//            'total' => $resultado->total(),
+//            'dados' => ['itens' => $resultado->items(), 'servicos' => $servicos, 'areas' => $areas]
+//        ]);
     }
 
     public function ativaDesativa(Cliente $cliente)

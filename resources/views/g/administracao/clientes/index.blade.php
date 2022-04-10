@@ -49,6 +49,10 @@
                             <a class="nav-item nav-link" id="nav-proposta-tab" data-toggle="tab" href="#nav-proposta"
                                role="tab" aria-controls="nav-proposta" aria-selected="false">PROPOSTAS</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-item nav-link" id="nav-config-tab" data-toggle="tab" href="#nav-config"
+                               role="tab" aria-controls="nav-config" aria-selected="false">CONFIGURAÇÕES</a>
+                        </li>
 
                     </ul>
 
@@ -160,7 +164,7 @@
                                     <div class="col-12 col-sm-6 col-lg-3 col-xl-3">
                                         <div class="form-group">
                                             <label>Data de aniversário</label>
-                                            <input type="text" class="form-control"  v-model="form.aniversario"
+                                            <input type="text" class="form-control" v-model="form.aniversario"
                                                    v-mascara:aniversario
                                                    onblur="valida_campo(this,5)">
                                         </div>
@@ -585,9 +589,31 @@
                                 </div>
                             </fieldset>
                         </div>
+
+                        <div class="tab-pane fade" id="nav-config"
+                             role="tabpanel" aria-labelledby="nav-config-tab">
+                            <fieldset>
+                                <legend class="text-uppercase">
+                                    <span>Configurações Gerais</span>
+                                </legend>
+                                <div class="row">
+                                    <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Vencimento de Férias</label>
+                                            <select v-model="form.cliente_config.verifica_mes_vencimento" class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option value="1">30 dias</option>
+                                                <option value="2">60 dias</option>
+                                                <option value="3">90 dias</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
                     </div>
                 </div>
-
             </form>
         </template>
         <template slot="rodape">
@@ -622,14 +648,16 @@
                     <input type="text"
                            placeholder="Buscar por nome"
                            autocomplete="off"
-                           class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoBusca">
+                           class="form-control form-control-sm" :disabled="controle.carregando"
+                           v-model="controle.dados.campoBusca">
                 </div>
             </div>
 
             <div class="col-12 col-md-4">
                 <div class="form-group">
                     <label>Tipo</label>
-                    <select class="form-control form-control-sm" v-model="controle.dados.campoTipo" @change="$refs.componente.buscar()">
+                    <select class="form-control form-control-sm" v-model="controle.dados.campoTipo"
+                            @change="$refs.componente.buscar()">
                         <option value="">Todos os Tipos</option>
                         <option
                             value="Prospect">Prospect
@@ -644,7 +672,8 @@
             <div class="col-12 col-md-4">
                 <div class="form-group">
                     <label>Status</label>
-                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" @change="$refs.componente.buscar()">
+                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
+                            @change="$refs.componente.buscar()">
                         <option value="">Todos os Status</option>
                         <option :value="true">Apenas Ativos</option>
                         <option :value="false">Apenas Inativos</option>
