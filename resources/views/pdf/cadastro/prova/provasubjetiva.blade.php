@@ -29,7 +29,7 @@
     <br>
     <br>
 @endforeach
-
+@include('layouts.rodapePdf')
 @endsection
 
 @push('style')

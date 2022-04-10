@@ -130,5 +130,5 @@
             <br>{{ $dados->como_conheceu_outro }}
         @endif
     </h5>
-
+    @include('layouts.rodapePdf')
 @endsection

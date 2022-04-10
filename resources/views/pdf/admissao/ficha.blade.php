@@ -141,9 +141,6 @@
         </tr>
     </table>
     <br>
-    <p style="font-size: 9pt; color: #666666">Data da Emissão da ficha: {{ (new \MasterTag\DataHora())->dataCompleta()}}
-        às {{ (new \MasterTag\DataHora())->horaCompleta()}}</p>
-    <p style="font-size: 9pt; color: #666666">Usuario que emitou a
-        ficha: {{ \Illuminate\Support\Facades\Auth::user()->nome }}</p>
+    @include('layouts.rodapePdf')
 
 @endsection

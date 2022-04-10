@@ -388,10 +388,6 @@
         Responsável pelo envio: <span>{{$dados->responsavel_envio}}</span> <br>
         Obs.: <span>{{$dados->obs}}</span>
 
-        <br>
-        <br>
-        Data da Emissão da ficha:
-        <span>{{ (new \MasterTag\DataHora())->dataCompleta()}} às {{ (new \MasterTag\DataHora())->horaCompleta()}}</span><br>
-        Usuário que emitiu a ficha: <span>{{ auth()->user()->nome }}</span>
     </div>
+    @include('layouts.rodapePdf')
 @endsection

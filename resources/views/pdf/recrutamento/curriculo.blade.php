@@ -100,6 +100,7 @@
                 UF:<strong>{{ $recrutamento->uf_vaga }}</strong>
             @endif
         </p>
+        @include('layouts.rodapePdf')
 </div>
 </body>
 </html>
