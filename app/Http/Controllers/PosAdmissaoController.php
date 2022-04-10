@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Admissao;
 use App\Models\ClassificacaoRescisao;
+use App\Models\Demissao;
 use App\Models\EntrevistaDesligamento;
 use App\Models\FeedbackCurriculo;
 use App\Models\Formulario;
@@ -12,6 +13,7 @@ use App\Models\TipoAviso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
+use PDF;
 
 class PosAdmissaoController extends Controller
 {
@@ -62,7 +64,7 @@ class PosAdmissaoController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function demitir(Request $request)
     {
@@ -93,6 +95,16 @@ class PosAdmissaoController extends Controller
                 'erros' => $e->getTraceAsString()
             ], 400);
         }
+    }
+
+    public function demissaoPdf($id)
+    {
+
+        $dados = Demissao::whereId($id)->with('motivoRescisao', 'tipoAviso')->first();
+
+        $pdf = PDF::loadView('pdf.admissao.posadmissao.'.$dados->motivoRescisao->nome_pdf, compact('dados'));
+        $pdf->setPaper('A4', 'portrait');
+        return $pdf->stream($dados->motivoRescisao->nome_pdf . (new DataHora())->nomeUnico() . ".pdf");
     }
 
     /**

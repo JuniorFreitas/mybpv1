@@ -427,6 +427,10 @@ const app = new Vue({
 
             this.preload = false;
         },
+        gerarPdf(item) {
+            let link = `${URL_ADMIN}/posadmissao/demitir/pdf/${item}`;
+            open(link, 'blank');
+        },
         carregou(dados) {
             this.lista = dados.items;
             this.listaMotivos = dados.motivos_rescisoes;
