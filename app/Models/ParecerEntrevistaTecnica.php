@@ -144,7 +144,6 @@ class ParecerEntrevistaTecnica extends Model
     protected $fillable = [
         'feedback_id',
         'formulario_id',
-        "curriculo_id",
         "tempo_funcao",
         "trabalhou_alumar",
         "indicado",
@@ -194,7 +193,6 @@ class ParecerEntrevistaTecnica extends Model
         'id' => 'int',
         'feedback_id' => 'int',
         'formulario_id' => 'int',
-        'curriculo_id' => 'int',
         'tempo_funcao' => 'string',
         'trabalhou_alumar' => 'boolean',
         'indicado' => 'boolean',

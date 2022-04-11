@@ -45,7 +45,7 @@ class ParecerRotaController extends Controller
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados, [
             'tem_rota' => 'required',
-            'pega_onibus' => 'required',
+//            'pega_onibus' => 'required',
             'vale_transporte' => 'required',
             'rota_atende' => 'required',
             'rota_tipo' => 'required',

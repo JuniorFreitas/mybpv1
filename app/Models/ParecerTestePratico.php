@@ -76,7 +76,6 @@ class ParecerTestePratico extends Model
     protected $fillable = [
         'feedback_id',
         'formulario_id',
-        'curriculo_id',
         'fez_teste',
         'data_horario_realizacao',
         'responsavel_pelo_teste',
@@ -92,7 +91,6 @@ class ParecerTestePratico extends Model
         'id' => 'int',
         'feedback_id' => 'int',
         'formulario_id' => 'int',
-        'curriculo_id' => 'int',
         'fez_teste' => 'boolean',
         'data_horario_realizacao' => 'string',
         'responsavel_pelo_teste' => 'string',

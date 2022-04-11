@@ -250,7 +250,7 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
                             <div class="form-group">
-                                <label>Selecione uma cargo</label>
+                                <label>Selecione uma vaga</label>
                                 <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete"
                                               :valido="form_feedback.vaga_id !== ''"
                                               v-model="form_feedback.autocomplete_label_vaga_modal"

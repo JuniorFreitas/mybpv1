@@ -64,6 +64,7 @@ class ParecerEntrevistaTecnicaController extends Controller
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 DB::rollback();
+//                return $e->getMessage();
                 $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
@@ -134,6 +135,7 @@ class ParecerEntrevistaTecnicaController extends Controller
                 DB::rollback();
                 $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
+
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }

@@ -20,29 +20,19 @@ class AutoCompletesController extends Controller
         }
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
-        if ($busca === '*') {
-            return VagasAbertas::with(['VagaSelecionada.SimuladoVaga.Simulado' => function ($q) {
-                $q->whereAtivo(true);
-            }, 'Municipio'])
-                ->get()
-                ->map(function ($item) {
-                    $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
-                    return $item;
-                });
-        } else {
-            return VagasAbertas::whereHas('VagaSelecionada', function ($query) use ($busca, $quantidade) {
-                $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
-            })->with(['VagaSelecionada.SimuladoVaga.Simulado' => function ($q) {
-                $q->whereAtivo(true);
-            }, 'Municipio', 'VagaSelecionada' => function ($query) use ($busca, $quantidade) {
-                $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
-            }])
-                ->get()
-                ->map(function ($item) {
-                    $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
-                    return $item;
-                });
-        }
+        return VagasAbertas::whereHas('VagaSelecionada', function ($query) use ($busca, $quantidade) {
+            $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
+        })
+//                ->with(['VagaSelecionada.SimuladoVaga.Simulado' => function ($q) {
+//                $q->whereAtivo(true);
+//            }, 'Municipio', 'VagaSelecionada' => function ($query) use ($busca, $quantidade) {
+//                $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
+//            }])
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
+                return $item;
+            });
     }
 
     public function cargosAtivos(Request $request)

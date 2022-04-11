@@ -22,7 +22,7 @@ class ProximaEtapaMail extends Mailable
     {
         $this->dados = $dados;
         $this->to($this->dados['email'], $this->dados['nome']);
-        $this->from('naoresponda@mybp.com.br', 'BPSE-BUSINESS PARTNERS SERVIÇOS EMPRESARIAIS');
+        $this->from('naoresponda@mybp.com.br', $this->dados['empresa']);
         $this->subject = "Parabéns! Você passou para a próxima etapa.";
         $this->assunto = $this->subject;
     }

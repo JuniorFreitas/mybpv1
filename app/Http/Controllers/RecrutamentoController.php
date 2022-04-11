@@ -6,11 +6,13 @@ use App\Exports\CurriculoExport;
 use App\Mail\DesclassificacaoMail;
 use App\Mail\ProvaMail;
 use App\Mail\ProximaEtapaMail;
+use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\NotificacaoWhats;
 use App\Models\SimuladoVaga;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
+use App\Models\VagasAbertas;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -76,7 +78,7 @@ class RecrutamentoController extends Controller
 
 //        $value = cache()->rememberForever("curriculo_{$recrutamento->id}", function () use($recrutamento) {
         return $recrutamento->load('Atualizacao', 'Qualificacoes', 'Experiencias', 'VagaAberta.VagaSelecionada', 'Formacao', 'Telefones', 'Usuario')->load(['FeedBack' => function ($query) {
-            $query->with('VagaAberta.VagaSelecionada.SimuladoVaga','VagaAberta.Municipio', 'Cliente', 'QuemMarcou', 'TelPrincipal');
+            $query->with('VagaAberta.VagaSelecionada.SimuladoVaga', 'VagaAberta.Municipio', 'Cliente', 'QuemMarcou', 'TelPrincipal');
         }]);
 //        });
 //
@@ -196,9 +198,16 @@ class RecrutamentoController extends Controller
                         if ($dados['envia_mail_proxima_etapa']) {
                             $dados['data_envia_mail_proxima_etapa'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_proxima_etapa'] = auth()->id();
+                            $vaga_aberta = VagasAbertas::find($dados['vaga_id']);
+                            $empresa = Cliente::find($dados['empresa_id']);
                             \Mail::send(new ProximaEtapaMail([
                                 'nome' => $infCurriculo['nome'],
-                                'email' => $infCurriculo['email']
+                                'email' => $infCurriculo['email'],
+                                'empresa' => $empresa->razao_social,
+                                'logo' => "https://mybp-prod.s3.amazonaws.com/public/email_".$empresa->apelido.".jpg",
+                                'vaga_selecionada' => $vaga_aberta->nome . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
+                                'local_entrevista' => $dados['local_entrevista'],
+                                'data_entrevista' => $dados['data_entrevista'],
                             ]));
                         }
                     }
@@ -258,7 +267,11 @@ class RecrutamentoController extends Controller
 //                            $dados['user_envia_mail_provas'] = auth()->id();
 //                        }
                     }
+
+
                     $dados['vagas_abertas_id'] = $dados['vaga_id'];
+                    $dados['vaga_id'] = VagasAbertas::find($dados['vagas_abertas_id'])->vaga_id;
+
                     $curriculo->FeedBack()->create($dados);
                     DB::commit();
                 }
@@ -275,13 +288,21 @@ class RecrutamentoController extends Controller
                         ]));
                     }
                 } else {
+
                     if ($dados['selecionado'] == 'sim') {
                         if ($dados['envia_mail_proxima_etapa']) {
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_provas'] = auth()->id();
+                            $vaga_aberta = VagasAbertas::find($dados['vaga_id']);
+                            $empresa = Cliente::find($dados['empresa_id']);
                             \Mail::send(new ProximaEtapaMail([
                                 'nome' => $infCurriculo['nome'],
-                                'email' => $infCurriculo['email']
+                                'email' => $infCurriculo['email'],
+                                'empresa' => $empresa->razao_social,
+                                'logo' => "https://mybp-prod.s3.amazonaws.com/public/email_".$empresa->apelido.".jpg",
+                                'vaga_selecionada' => $vaga_aberta->nome . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
+                                'local_entrevista' => $dados['local_entrevista'],
+                                'data_entrevista' => $dados['data_entrevista'],
                             ]));
                         }
                     }
@@ -383,7 +404,7 @@ class RecrutamentoController extends Controller
             'municipio_id',
             'lido',
             'created_at',
-        )->with('VagaAberta.VagaSelecionada','FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
+        )->with('VagaAberta.VagaSelecionada', 'FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
 
 
 //        $this->authorize('clientes');
