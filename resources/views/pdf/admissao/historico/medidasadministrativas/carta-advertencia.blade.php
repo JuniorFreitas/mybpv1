@@ -46,20 +46,7 @@
         {{$medida->Feedback->Curriculo->nome}}
     </div>
 
-    <div class="footer">
-        <p class="obs">
-            Esse documento foi gerado automaticamente pelo usuário {{ auth()->user()->nome }}: <br>
-            Sistema Integrado MYBP em {{ (new \MasterTag\DataHora())->dataCompleta() }}
-            às {{ (new \MasterTag\DataHora())->horaCompleta() }}.
-        </p>
-        <div style="width: 10cm;">
-            <hr style="width: 10cm; border:none; border-top: 1px solid #999">
-            {{$medida->Feedback->Empresa->razao_social}}
-            <br>
-            CNPJ: {{$medida->Feedback->Empresa->cnpj}} <br>
-            {{$medida->Feedback->Empresa->endereco_completo}}
-        </div>
-    </div>
+    @include('layouts.rodapePdf')
 @endsection
 
 @push('style')

@@ -58,14 +58,7 @@
 
     </table>
 
-    <br>
-    <br>
-    <h5>
-        Data de Emissão:
-        <span>{{ (new \MasterTag\DataHora())->dataCompleta()}} às {{ (new \MasterTag\DataHora())->horaCompleta()}}</span>
-        <br/>
-        Emitido por: <span>{{ \Illuminate\Support\Facades\Auth::user()->nome }}</span>
-    </h5>
+    @include('layouts.rodapePdf')
 @endsection
 
 @push('style')

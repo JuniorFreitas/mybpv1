@@ -464,11 +464,5 @@
         @endif
     </div>
 
-    <br>
-    <h5>
-        Data da Emissão da ficha:
-        <span>{{ (new \MasterTag\DataHora())->dataCompleta()}} às {{ (new \MasterTag\DataHora())->horaCompleta()}}</span>
-        |
-        Usuário que emitou a ficha: <span>{{ \Illuminate\Support\Facades\Auth::user()->nome }}</span>
-    </h5>
+    @include('layouts.rodapePdf')
 @endsection

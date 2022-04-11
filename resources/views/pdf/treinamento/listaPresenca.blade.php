@@ -43,7 +43,5 @@
         @endforeach
         </tbody>
     </table>
-    {{--    --}}
-    {{--        <h5 style="text-transform: uppercase; margin-top: 6pt">{{$pessoa->nome}}</h5>--}}
-    {{--    --}}
+    @include('layouts.rodapePdf')
 @endsection

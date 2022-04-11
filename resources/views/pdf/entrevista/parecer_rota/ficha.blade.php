@@ -86,13 +86,5 @@
         Data da Entrevista: <span>{{ $dados->data_entrevista }}h</span>
     </div>
 
-
-    <div class="h5">
-
-        <br>
-        <br>
-        Data da Emissão da ficha:
-        <span>{{ (new \MasterTag\DataHora())->dataCompleta()}} às {{ (new \MasterTag\DataHora())->horaCompleta()}}</span><br>
-        Usuário que emitiu a ficha: <span>{{ auth()->user()->nome }}</span>
-    </div>
+    @include('layouts.rodapePdf')
 @endsection

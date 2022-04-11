@@ -36,4 +36,5 @@
         </tbody>
     </table>
     <h3>Valor Total: R$ {{$pedidos[0]->pedido->valor_total}}</h3>
+    @include('layouts.rodapePdf')
 @endsection

@@ -351,7 +351,7 @@
             Assinatura do Empregado</span>
     </p>
 
-
+    @include('layouts.rodapePdf')
 @endsection
 @push('style')
     {{--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"--}}
