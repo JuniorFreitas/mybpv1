@@ -269,19 +269,19 @@
                                     </div>
                                 </div>
 
-{{--                                <div class="col-12 col-sm-6 col-md-4">--}}
-{{--                                    <div class="form-group">--}}
-{{--                                        <label for="Cidade">Cidade</label>--}}
-{{--                                        <autocomplete :caminho="todos_municipios"--}}
-{{--                                                      :valido="formAvulsa.curriculo.municipio_id !== ''"--}}
-{{--                                                      v-model="formAvulsa.curriculo.autocomplete_label_municipio_modal"--}}
-{{--                                                      placeholder="Selecione um municipio"--}}
-{{--                                                      :formsm="false"--}}
-{{--                                                      :id="`mun_${hash}`"--}}
-{{--                                                      @onblur="resetaCampoMunicipioModal"--}}
-{{--                                                      @onselect="selecionaMunicipioModal"></autocomplete>--}}
-{{--                                    </div>--}}
-{{--                                </div>--}}
+                                {{--                                <div class="col-12 col-sm-6 col-md-4">--}}
+                                {{--                                    <div class="form-group">--}}
+                                {{--                                        <label for="Cidade">Cidade</label>--}}
+                                {{--                                        <autocomplete :caminho="todos_municipios"--}}
+                                {{--                                                      :valido="formAvulsa.curriculo.municipio_id !== ''"--}}
+                                {{--                                                      v-model="formAvulsa.curriculo.autocomplete_label_municipio_modal"--}}
+                                {{--                                                      placeholder="Selecione um municipio"--}}
+                                {{--                                                      :formsm="false"--}}
+                                {{--                                                      :id="`mun_${hash}`"--}}
+                                {{--                                                      @onblur="resetaCampoMunicipioModal"--}}
+                                {{--                                                      @onselect="selecionaMunicipioModal"></autocomplete>--}}
+                                {{--                                    </div>--}}
+                                {{--                                </div>--}}
 
                                 <div class="col-12 col-sm-6 col-md-3">
                                     <div class="form-group">
@@ -801,7 +801,8 @@
                                 <legend>Endereço</legend>
                                 <div class="row">
                                     <div class="col-12">
-                                        <endereco :obrigatorio="false" :disabled="visualizar" :model="form.curriculo"></endereco>
+                                        <endereco :obrigatorio="false" :disabled="visualizar"
+                                                  :model="form.curriculo"></endereco>
                                     </div>
                                 </div>
                             </fieldset>
@@ -812,7 +813,8 @@
                             <fieldset>
                                 <legend>RESULTADO INTEGRADO</legend>
                                 <form-resultado-integrado
-                                    :form="form.resultado_integrado" :disabled="!editando" :visualizar="visualizar"></form-resultado-integrado>
+                                    :form="form.resultado_integrado" :disabled="!editando"
+                                    :visualizar="visualizar"></form-resultado-integrado>
                             </fieldset>
                         </div>
 
@@ -947,7 +949,7 @@
         </template>
     </modal>
 
-    <modal id="janelaAdmissaoMassa" titulo="Admissão em massa" :size="95" >
+    <modal id="janelaAdmissaoMassa" titulo="Admissão em massa" :size="95">
         <template slot="conteudo">
             <preload v-if="form_massa.preload"></preload>
             <div v-if="!form_massa.preload">
@@ -987,9 +989,11 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6" v-if="form_massa.tipo_admissao === 'TEMPORARIO' || form_massa.tipo_admissao === 'DETERMINADO'">
+                        <div class="col-12 col-sm-6"
+                             v-if="form_massa.tipo_admissao === 'TEMPORARIO' || form_massa.tipo_admissao === 'DETERMINADO'">
                             <div class="form-group">
-                                <datepicker label="Data de encerramento" v-model="form_massa.data_encerramento"></datepicker>
+                                <datepicker label="Data de encerramento"
+                                            v-model="form_massa.data_encerramento"></datepicker>
                             </div>
                         </div>
 
@@ -1150,18 +1154,6 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3" v-if="cliente_id === 0">
-                <div class="form-group">
-                    <label>Cliente</label>
-                    <autocomplete :disabled="controle.carregando"
-                                  :caminho="controle.dados.caminho_cliente_autocomplete"
-                                  :valido="controle.dados.campoCliente !== ''"
-                                  v-model="controle.dados.autocomplete_label_cliente"
-                                  placeholder="Por cliente"
-                                  @onblur="resetaCampoCliente"
-                                  @onselect="selecionaCliente"></autocomplete>
-                </div>
-            </div>
 
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <div class="form-group">
@@ -1234,8 +1226,16 @@
                 <button class="btn btn-sm btn-danger mb-2 mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
-                    <i class="fa fa-times"></i> Limpar seleção
+                    <i class="fa fa-times"></i> LIMPAR SELEÇÃO
                 </button>
+
+                <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
+                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                </button>
+
 
                 <button class="btn btn-sm btn-primary mb-2 mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
@@ -1243,28 +1243,10 @@
                         data-toggle="modal"
                         data-target="#janelaAdmissaoMassa"
                         @click="formCadastraMassa">
-                    <i class="fa fa-plus"></i> ATUALIZAR SELECIONADOS
+                    <i class="fa fa-plus"></i> ATUALIZAR SELECIONADOS <span class="badge badge-light"
+                                                                            v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
                 </button>
-                <form target="_blank"
-                      action="{{ \App\Models\Sistema::UrlServidor }}/admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"
-                      method="get">
-                    @csrf
-                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
-                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">
-                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">
-                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">
-                    <input type="hidden" name="campoRh" :value="controle.dados.campoRh">
-                    <input type="hidden" name="campoFinalRh" :value="controle.dados.campoFinalRh">
-                    <input type="hidden" name="campoRota" :value="controle.dados.campoRota">
-                    <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">
-                    <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">
-                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
-                    <!--                    <button type="submit" class="btn btn-sm btn-primary mb-1"
-                                                :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                                            <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
-                                                                                                   v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                                        </button>-->
-                </form>
+
             </div>
         </div>
 
@@ -1331,7 +1313,8 @@
                     </td>
 
                     <td>
-                        @{{item.vaga_aberta.vaga_selecionada.nome}} -  @{{item.vaga_aberta.municipio.nome}} -  @{{item.vaga_aberta.municipio.uf}}
+                        @{{item.vaga_aberta.vaga_selecionada.nome}} - @{{item.vaga_aberta.municipio.nome}} -
+                        @{{item.vaga_aberta.municipio.uf}}
                     </td>
                     <td v-show="colunasTabela.pcd">
                         @{{item.curriculo.pcd ? 'Sim' : 'Não'}}

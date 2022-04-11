@@ -177,6 +177,7 @@ class Arquivo extends Model
     public const DISCO_PONTO_ELETRONICO = 'disco-ponto-eletronico';
     public const DISCO_PERFIL_USUARIO = 'disco-perfil-usuario';
     public const DISCO_WEEKLY_REPORT = 'disco-weekly-report';
+    public const DISCO_EXCEL = 'disco-excel';
 
     /**
      * @return string

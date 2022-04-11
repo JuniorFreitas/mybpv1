@@ -7,14 +7,9 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class ModeloRowsExport implements FromArray, WithHeadings
 {
-    private $headdings;
-    private $rows;
+    protected $headdings;
+    protected $rows;
 
-    /**
-     * RequisicaoVagaExport constructor.
-     * @param $headdings
-     * @param $rows
-     */
     public function __construct($headdings, $rows)
     {
         $this->headdings = $headdings;
@@ -26,9 +21,7 @@ class ModeloRowsExport implements FromArray, WithHeadings
         return $this->headdings;
     }
 
-    /**
-     * @return \Illuminate\Support\Collection
-     */
+
     public function array(): array
     {
         return $this->rows;

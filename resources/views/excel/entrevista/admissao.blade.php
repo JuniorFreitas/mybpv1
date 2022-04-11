@@ -98,9 +98,7 @@
             <td>{{$row->parecerRh ? $row->parecerRh->turnos_seis_por_dois ? 'Sim' : 'Não' : 'NÃO INFORMADO'}}</td>
             <td>{{ $row->FeedbackCurriculo->ParecerRh->indicado_por ? $row->FeedbackCurriculo->ParecerRh->indicado_por : null }}</td>
             <td>{{ $row->FeedbackCurriculo->ParecerTecnica ? $row->FeedbackCurriculo->ParecerTecnica->indicado_area : null}}</td>
-            <td>
-                {{$row->Curriculo->endereco_completo}}
-            </td>
+            <td>{{$row->Curriculo->endereco_completo}}</td>
             <td>{{$row->parecerRota ? $row->parecerRota->tem_rota ? 'Sim' : 'Não' : 'NÃO INFORMADO'}}</td>
             <td>{{$row->parecerRota ? $row->parecerRota->qual : 'NÃO INFORMADO'}}</td>
             <td>{{$row->parecerRota ? $row->parecerRota->bairro_rota : 'NÃO INFORMADO'}}</td>
