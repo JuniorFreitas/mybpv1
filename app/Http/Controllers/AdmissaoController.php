@@ -921,7 +921,7 @@ class AdmissaoController extends Controller
             ->with(
                 'Admissao',
                 'ResultadoIntegrado',
-                'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
+                'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga,filiacao_pai,filiacao_mae',
                 'Curriculo.FotoTres:id',
                 'VagaAberta.VagaSelecionada',
                 'VagaAberta.Municipio',
