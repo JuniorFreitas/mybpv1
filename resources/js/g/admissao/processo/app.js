@@ -22,6 +22,7 @@ const app = new Vue({
     data: {
         tituloJanela: "Admissão",
         preload: false,
+        preloadExportacao: false,
         editando: false,
         apagado: false,
         cadastrado: false,
@@ -129,7 +130,7 @@ const app = new Vue({
                     pix: false,
                     tipochavepix: "",
                     chavepix: ""
-                },
+                }
             },
 
             parecer_rh: {
@@ -195,15 +196,15 @@ const app = new Vue({
                 data_trinta_dois_sessenta: "",
                 numero_cracha: "",
                 pis: "",
-                prazo_experiencia: '',
-                data_encerramento: '',
+                prazo_experiencia: "",
+                data_encerramento: "",
                 dados_admissoes: {
-                    ctps_numero: '',
-                    ctps_serie: '',
-                    ctps_data_emissao: '',
-                    titulo_eleitor_numero: '',
-                    titulo_eleitor_sessao: '',
-                    titulo_eleitor_zona: '',
+                    ctps_numero: "",
+                    ctps_serie: "",
+                    ctps_data_emissao: "",
+                    titulo_eleitor_numero: "",
+                    titulo_eleitor_sessao: "",
+                    titulo_eleitor_zona: ""
                 },
                 data_aso: "",
                 foto_escaneada: "",
@@ -227,7 +228,7 @@ const app = new Vue({
 
                 foto_tres: [],
                 foto_tresDel: []
-            },
+            }
         },
 
         formAvulsaDefault: null,
@@ -405,15 +406,15 @@ const app = new Vue({
                 data_trinta_dois_sessenta: "",
                 numero_cracha: "",
                 pis: "",
-                prazo_experiencia: '',
-                data_encerramento: '',
+                prazo_experiencia: "",
+                data_encerramento: "",
                 dados_admissoes: {
-                    ctps_numero: '',
-                    ctps_serie: '',
-                    ctps_data_emissao: '',
-                    titulo_eleitor_numero: '',
-                    titulo_eleitor_sessao: '',
-                    titulo_eleitor_zona: '',
+                    ctps_numero: "",
+                    ctps_serie: "",
+                    ctps_data_emissao: "",
+                    titulo_eleitor_numero: "",
+                    titulo_eleitor_sessao: "",
+                    titulo_eleitor_zona: ""
                 },
                 data_aso: "",
                 foto_escaneada: "",
@@ -449,7 +450,7 @@ const app = new Vue({
                 excessao: "",
                 autorizado_por: "",
                 responsavel_envio: ""
-            },
+            }
         },
 
         formDefault: null,
@@ -467,7 +468,7 @@ const app = new Vue({
             status: "",
             data_admissao: "",
             data_entrega_area: "",
-            biometria: "",
+            biometria: ""
         },
         form_massaDefault: null,
 
@@ -543,6 +544,27 @@ const app = new Vue({
         this.listaVagas();
     },
     methods: {
+        exportaExcel() {
+            this.preloadExportacao = true;
+            axios.post(`${URL_ADMIN}/admissao/export`, {
+                selecionados: this.selecionados,
+                campoVaga: this.controle.dados.campoVaga,
+                campoCliente: this.controle.dados.campoCliente,
+                campoUf: this.controle.dados.campoUf,
+                campoRh: this.controle.dados.campoRh,
+                campoFinalRh: this.controle.dados.campoFinalRh,
+                campoRota: this.controle.dados.campoRota,
+                campoTecnica: this.controle.dados.campoTecnica,
+                campoTeste: this.controle.dados.campoTeste,
+                campoPcd: this.controle.dados.campoPcd
+            }).then(({ data }) => {
+                mostraSucesso(data.msg);
+                this.preloadExportacao = false;
+            }).catch(erro => {
+                mostraErro(erro);
+                this.preloadExportacao = false;
+            });
+        },
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
@@ -765,7 +787,7 @@ const app = new Vue({
                     if (response.status === 201) {
                         this.form_massa.preload = false;
                         this.form_massa.cadastrado = true;
-                        $('#janelaAdmissaoMassa').modal('hide');
+                        $("#janelaAdmissaoMassa").modal("hide");
                         this.atualizar();
                     }
                 }).catch(error => (this.form_massa.preload = false));
@@ -830,19 +852,19 @@ const app = new Vue({
                     this.form.parecer_rh.camisa_protecao = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_protecao : "";
                     this.form.parecer_rh.camisa_meia = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_meia : "";
                     this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id == null ? "" : admissao.area_etiqueta_id;
-                    this.form.curriculo.pcd = data.feedback.curriculo.pcd ?? 'false';
+                    this.form.curriculo.pcd = data.feedback.curriculo.pcd ?? "false";
 
                     this.form.parecer_tecnica.indicado_area = data.parecer_tecnica ? data.parecer_tecnica.indicado_area : "";
 
                     if (!admissao.dados_admissoes) {
                         this.form.admissao.dados_admissoes = {
-                            'ctps_numero': '',
-                            'ctps_serie': '',
-                            'ctps_data_emissao': '',
-                            'titulo_eleitor_numero': '',
-                            'titulo_eleitor_sessao': '',
-                            'titulo_eleitor_zona': '',
-                        }
+                            "ctps_numero": "",
+                            "ctps_serie": "",
+                            "ctps_data_emissao": "",
+                            "titulo_eleitor_numero": "",
+                            "titulo_eleitor_sessao": "",
+                            "titulo_eleitor_zona": ""
+                        };
                     }
 
                     this.tituloJanela = `#${data.feedback.id} Entrevista - ${data.feedback.curriculo.nome}`;

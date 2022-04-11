@@ -31,6 +31,11 @@ return [
                 'urlDelete' => env('APP_URL') . '/publico/cloud/anexo',
             ]
         ),
+         'disco-exportacao' => array_merge($default,
+            [
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-exportacao') : 'arquivos/disco-exportacao',
+            ]
+        ),
 
         'disco-cliente' => array_merge($default,
             [

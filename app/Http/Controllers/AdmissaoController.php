@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exports\Entrevistas\admissaoExport;
+use App\Exports\ModeloRowsExport;
+use App\Jobs\JobExportaExcel;
 use App\Mail\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoMail;
 use App\Models\Admissao;
 use App\Models\Arquivo;
@@ -282,7 +284,6 @@ class AdmissaoController extends Controller
                 }
 
 
-
             } else {
 
                 $dadosAdmissao['editado_usuario_id'] = auth()->id();
@@ -358,8 +359,6 @@ class AdmissaoController extends Controller
                         }
                     }
                 }
-
-
 
 
                 // 4- Atualiza ou cria o FeedbackCurriculo
@@ -920,14 +919,14 @@ class AdmissaoController extends Controller
     {
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado')
             ->with(
-                'Admissao:id,feedback_id,status,numero_cracha',
+                'Admissao',
                 'ResultadoIntegrado',
                 'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
                 'Curriculo.FotoTres:id',
                 'VagaAberta.VagaSelecionada',
                 'VagaAberta.Municipio',
-                'Cliente:id,razao_social,cnpj,nome,cpf,area_id',
-                'Cliente.Area',
+                'Empresa:id,razao_social,cnpj,nome,cpf,area_id',
+                'Empresa.Area',
             );
 
         $filtroPeriodo = $request->filtroPeriodo == 'true';
@@ -1011,14 +1010,6 @@ class AdmissaoController extends Controller
 //PDF
     public function getFichaPdf(FeedbackCurriculo $feedback)
     {
-//        $dados = ResultadoIntegrado::whereFeedbackId($curriculo_id)->first();
-
-//        $dados = $feedback;
-
-//        $dadosAdmissao = Admissao::whereFeedbackId($feedback->id)->with('DadosAdmissoes')->get();
-
-//        dd($dadosAdmissao);
-
         $dados = $feedback->load('ResultadoIntegrado');
 
         $pdf = PDF::loadView('pdf.admissao.ficha', compact('dados'));
@@ -1029,7 +1020,162 @@ class AdmissaoController extends Controller
 //Excel
     public function export(Request $request)
     {
-        $admissao = Admissao::has('ResultadoIntegrado');
+        if ($request->selecionados) {
+            $resultado = $this->filtro($request)->whereIn('id', $request->selecionados)->get();
+        } else {
+            $resultado = $this->filtro($request)->get();
+        }
+
+        $head = [
+            "Nome",
+            "CPF",
+            "Pai",
+            "Mãe",
+            "PCD",
+            "Destro/Canhoto",
+            "CNH",
+            "Nascimento",
+            "Idade",
+            "Calça",
+            "Bota",
+            "Camisa Meia",
+            "Camisa Proteção",
+            "Empresa",
+            "Vaga",
+            "Ex Funcionário",
+            "Contato",
+            "E-mail",
+            "Disponibilidade para turnos 6X2",
+            "Indicado por quem",
+            "Indicado para qual área",
+            "Endereço",
+            "Tem Rota que atende",
+            "Qual",
+            "Bairro Rota",
+            "Ponto de referência Rota",
+            "Informado sobre ponto de referência",
+            "Qual",
+            "Bairro Residência",
+            "Ponto de referência Residência",
+            "Teste aplicado",
+            "Resultado Teste Prático",
+            "Rigger",
+            "Plataforma Movél",
+            "Ponte Rolante",
+            "Encaminhado para Documentos",
+            "Data Encaminhado para Documentos",
+            "Encaminhado para Exame",
+            "Data Encaminhado para Exame",
+            "Encaminhado para treinamento",
+            "Data Encaminhado para Treinamento",
+            "Contrato",
+            "Função",
+            "Cargo",
+            "Salário R$",
+            "Documento",
+            "Documento Portaria",
+            "Tipo de admissão",
+            "Treinamento",
+            "Tipo de Treinamento",
+            "Data Treinamento",
+            "NR 33",
+            "Data NR 33",
+            "NR 35",
+            "Data NR 35",
+            "3260",
+            "Data 3260",
+            "Número Crachá",
+            "Data do ASO",
+            "Status Carteira de Treinamento e Etiqueta",
+            "Status",
+            "Data da Admissão",
+            "Foto",
+            "Quem Admitiu",
+            "Quem Alterou",
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = array(
+                $row->Curriculo->nome,
+                $row->Curriculo->cpf,
+                $row->Curriculo->filiacao_pai,
+                $row->Curriculo->filiacao_mae,
+                $row->Curriculo->pcd ? 'Sim' : 'Não',
+                $row->parecerRh ? $row->parecerRh->destro ?: '' : '',
+                $row->parecerRh ? $row->parecerRh->cnh_tipo ?: '' : '',
+                $row->Curriculo->nascimento,
+                $row->Curriculo->idade,
+                $row->parecerRh ? $row->parecerRh->calca : '',
+                $row->parecerRh ? $row->parecerRh->bota : '',
+                $row->parecerRh ? $row->parecerRh->camisa_meia : '',
+                $row->parecerRh ? $row->parecerRh->camisa_protecao : '',
+                $row->Empresa->cnpj ? $row->Empresa->nome_fantasia : $row->Empresa->nome,
+                $row->VagaAberta->VagaSelecionada->nome . ' - ' . $row->VagaAberta->Municipio->uf,
+                $row->parecerRh->ex_funcionario ? 'Sim' : 'Não',
+                $row->TelPrincipal ? $row->TelPrincipal->numero : 'não informado',
+                $row->Curriculo->email,
+                $row->parecerRh ? $row->parecerRh->turnos_seis_por_dois ? 'Sim' : 'Não' : 'NÃO INFORMADO',
+                $row->parecerRh ? $row->parecerRh->indicado_por ?: "" : "",
+                $row->parecerTecnica ? $row->parecerTecnica->indicado_area ?: "" : "",
+                $row->Curriculo->endereco_completo,
+                $row->parecerRota ? $row->parecerRota->tem_rota ? 'Sim' : 'Não' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->qual ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->bairro_rota ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->ponto_referencia_rota ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->pega_onibus ? 'Sim' : 'Não' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->pega_onibus_qual_ponto ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->bairro_residencia ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->ponto_referencia_residencia ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
+                $row->parecerTeste ? $row->parecerTeste->qual_teste ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
+                $row->parecerTeste ? $row->parecerTeste->nota_teste == 0 ? 'Não se Aplica' : $row->parecerTeste->nota_teste : 'Aguardando',
+                $row->parecerTecnica ? $row->parecerTecnica->experiencia_cargas_rigger ? 'Sim' : 'Não' : 'NÃO INFORMADO',
+                $row->parecerTecnica ? $row->parecerTecnica->opera_plat_movel ? 'Sim' : 'Não' : 'NÃO INFORMADO',
+                $row->parecerTecnica ? $row->parecerTecnica->opera_plat_ponte ? 'Sim' : 'Não' : 'NÃO INFORMADO',
+                $row->ResultadoIntegrado->documentos_entregue ? 'Sim' : 'Não',
+                $row->ResultadoIntegrado->documentos_entregue ? (new \MasterTag\DataHora($row->ResultadoIntegrado->documentos_entregue_data))->dataCompleta() : '',
+                $row->ResultadoIntegrado->encaminhado_exame ? 'Sim' : 'Não',
+                $row->ResultadoIntegrado->encaminhado_exame ? (new \MasterTag\DataHora($row->ResultadoIntegrado->encaminhado_exame_data))->dataCompleta() : '',
+                $row->ResultadoIntegrado->encaminhado_treinamento ? 'Sim' : 'Não',
+                $row->ResultadoIntegrado->encaminhado_treinamento ? (new \MasterTag\DataHora($row->ResultadoIntegrado->encaminhado_treinamento_data))->dataCompleta() : '',
+                $row->Admissao ? $row->Admissao->contrato ?: "" : "",
+                $row->Admissao ? $row->Admissao->funcao ?: "" : "",
+                $row->Admissao ? $row->Admissao->cargo ?: "" : "",
+                $row->Admissao ? $row->Admissao->salario ?: "" : "",
+                $row->Admissao ? $row->Admissao->documento ?: "" : "",
+                $row->Admissao ? $row->Admissao->documento_portaria ?: "" : "",
+                $row->Admissao ? $row->Admissao->tipo_admissao ?: "" : "",
+                $row->Admissao ? $row->Admissao->treinamento ?: "" : "",
+                $row->Admissao ? $row->Admissao->tipo_treinamento ?: "" : "",
+                $row->Admissao ? $row->Admissao->data_treinamento ?: "" : "",
+                $row->Admissao ? $row->Admissao->nr_trinta_tres ?: "" : "",
+                $row->Admissao ? $row->Admissao->data_nr_trinta_tres ?: "" : "",
+                $row->Admissao ? $row->Admissao->nr_trinta_cinco ?: "" : "",
+                $row->Admissao ? $row->Admissao->data_nr_trinta_cinco ?: "" : "",
+                $row->Admissao ? $row->Admissao->trinta_dois_sessenta ?: "" : "",
+                $row->Admissao ? $row->Admissao->data_trinta_dois_sessenta ?: "" : "",
+                $row->Admissao ? $row->Admissao->numero_cracha ?: "" : "",
+                $row->Admissao ? $row->Admissao->data_aso ?: "" : "",
+                $row->Admissao ? $row->Admissao->status_carteira_treinamento ?: "" : "",
+                $row->Admissao ? $row->Admissao->status ?: "" : "",
+                $row->Admissao ? $row->Admissao->data_admissao ?: "" : "",
+                $row->Curriculo ? $row->Curriculo->FotoTres ? $row->Curriculo->FotoTres->count() > 0 ? 'Sim' : 'Não' : 'Não' : 'Não',
+                $row->Admissao ? $row->Admissao->usuario_id ? $row->Admissao->QuemAdmitiu->nome : "" : "",
+                $row->Admissao ? $row->Admissao->editado_usuario_id ? $row->Admissao->QuemAlterou->nome : "" : "",
+            );
+        }
+
+
+        $nameArquivo = "admissao_processo_" . rand(1000,9999) . "_" . date('YmdHis') . ".xlsx";
+//         \Excel::store(new ModeloRowsExport($head, $rows), $nameArquivo,'disco-excel');
+        JobExportaExcel::dispatch(auth()->id(), "admissao_processo", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+//        (new ModeloRowsExport($head, $rows))->queue('invoices.xlsx')->onQueue('exports');
+
+
+//        return \Excel::queue(new ModeloRowsExport($head, $rows), 'Demissão Previstas - ' . (new DataHora())->nomeUnico() . '.xlsx', \Storage::disk('local'));
+        /*$admissao = Admissao::has('ResultadoIntegrado');
 
         if ($request->selecionados) {
             $admissao = $admissao->whereIn('curriculo_id', $request->selecionados);
@@ -1061,7 +1207,9 @@ class AdmissaoController extends Controller
         }
 
         $admissao = $admissao->get();
-        return Excel::download(new admissaoExport($admissao), 'admissao.xlsx');
+        return Excel::download(new admissaoExport($admissao), 'admissao.xlsx');*/
+
+
     }
 
     public function buscaCPF(Request $request)

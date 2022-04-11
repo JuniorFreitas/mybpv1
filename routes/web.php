@@ -6,36 +6,6 @@ Route::get('redisclean', function () {
 
 });
 
-Route::get('vagas-aberta-organiza', function () {
-    $feedbacks = DB::table('feedback_curriculos')->select('curriculo_id', 'vaga_id',
-        'cargo.*', 'curriculo.uf_vaga', 'curriculo.municipio_id', 'feedback_curriculos.id')
-        ->join('vagas as cargo', 'cargo.id', '=', 'feedback_curriculos.vaga_id')
-        ->join('curriculos as curriculo', 'curriculo.id', '=', 'feedback_curriculos.curriculo_id')
-        ->whereNotNull('curriculo.municipio_id')
-        ->get();
-    foreach ($feedbacks as $feedback) {
-        $vagas_abertas = null;
-        $condicao = DB::table('vagas_abertas')->where('vaga_id', $feedback->vaga_id)->where('municipio_id', $feedback->municipio_id)
-            ->where('empresa_id', $feedback->empresa_id)->first();
-        if ($condicao == null) {
-            $vagas_abertas = [
-                'vaga_id' => $feedback->vaga_id,
-                'titulo' => $feedback->nome,
-                'municipio_id' => $feedback->municipio_id,
-                'ativo' => $feedback->ativo,
-                'empresa_id' => $feedback->empresa_id
-            ];
-            DB::table('vagas_abertas')->insert($vagas_abertas);
-        }
-    }
-    return 'rodar esse script => UPDATE
-    feedback_curriculos
- INNER JOIN vagas as v on feedback_curriculos.vaga_id = v.id
- INNER JOIN vagas_abertas as va on feedback_curriculos.vaga_id = va.vaga_id
- SET feedback_curriculos.vagas_abertas_id = va.id';
-
-});
-
 Route::redirect('/', 'g/login');
 
 Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
@@ -110,6 +80,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     });
 
     Route::get('dashboard', [\App\Http\Controllers\HomeController::class, 'dashboard'])->name('dashboard');
+    Route::post('downloads',[\App\Http\Controllers\HomeController::class, 'downloads'])->name('downloads');
+    Route::get('downloads/exportacao/{arquivo}',[\App\Http\Controllers\HomeController::class, 'downloadArquivo'])->name('downloadArquivo');
     Route::put('concordarTermos', [\App\Http\Controllers\HomeController::class, 'concordarTermos'])->name('concordarTermos');
     Route::post('busca-data-admissao', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaDataAdmissao'])->name('buscaDataAdmissao');
     Route::get('periodos-aquisitivos', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaPeriodosAquisitivos'])->name('buscaPeriodosAquisitivos');
@@ -523,6 +495,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::get('/', [\App\Http\Controllers\PreAdmissaoController::class, 'index'])->name('index');
         });
 
+        Route::post('admissao/export', [\App\Http\Controllers\AdmissaoController::class, 'export'])->name('admissao.excel');
         Route::post('admissao/cadastra-massa', [\App\Http\Controllers\AdmissaoController::class, 'cadastraMassa'])->name('admissao.cadastraMassa');
         Route::post('admissao/busca-cpf', [\App\Http\Controllers\AdmissaoController::class, 'buscaCPF'])->name('admissao.buscaCPF');
         Route::get('admissao/{feedback}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');

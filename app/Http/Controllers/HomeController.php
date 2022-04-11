@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Exportacao;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
@@ -36,14 +38,32 @@ class HomeController extends Controller
     public function concordarTermos()
     {
         auth()->user()->update(['termos' => true]);
-        return response()->json([],201);
+        return response()->json([], 201);
     }
 
     public function saveToken(Request $request)
     {
-        auth()->user()->update(['device_token'=>$request->token]);
+        auth()->user()->update(['device_token' => $request->token]);
 
         return response()->json(['token saved successfully.']);
+    }
+
+    public function downloads()
+    {
+        $downloads = auth()->user()->Exportacoes()->get();
+        return response()->json($downloads);
+    }
+
+    public function downloadArquivo($arquivo)
+    {
+        $dono = Exportacao::whereArquivo($arquivo)->whereUserId(auth()->user()->id)->first();
+        if ($dono) {
+            $disco = 'disco-exportacao';
+            if (Storage::disk($disco)->exists($arquivo)) {
+                return \Storage::disk($disco)->response($arquivo);
+            }
+        }
+        abort(404);
     }
 
     public function sendNotification(Request $request)

@@ -41,6 +41,32 @@
             </template>
         </modal>
 
+        <modal id="download" titulo="Meus Downloads" size="g">
+            <template slot="conteudo">
+                <preload v-show="preloadDownload"></preload>
+                <template v-if="!preloadDownload">
+                    <div class="table-responsive">
+                        <table class="tabela">
+                            <thead>
+                            <tr class="bg-default">
+                                <th class="text-center">Local</th>
+                                <th class="text-center">Data</th>
+                                <th class="text-center"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="download in downloads">
+                                <td>{{ download.local }}</td>
+                                <td>{{ download.created_at }}</td>
+                                <td><a :href="`${URL_ADMIN}/downloads/exportacao/${download.arquivo}`" class="btn btn-primary" target="_blank"><i class="fa fa-download"></i> Download</a></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </template>
+        </modal>
+
         <!--Janela ddo chat -->
         <modal id="janelaChat" titulo="Chat" size="g">
             <template slot="conteudo">
@@ -72,10 +98,10 @@
                 <div class="navbar-brand-box">
                     <a :href="URL_SITE" class="logo logo-light">
                         <span class="logo-sm">
-                            <img :src="`${URL_SITE}/images/icone.svg`" alt="SGIBPSE logo icone" height="40">
+                            <img :src="`${URL_SITE}/images/icone.svg`" alt="Mybp logo icone" height="40">
                         </span>
                         <span class="logo-lg">
-                            <img :src="`${URL_SITE}/images/logo_horizontal.svg`" alt="SGIBPSE logo horizontal"
+                            <img :src="`${URL_SITE}/images/logo_horizontal.svg`" alt="Mybp logo horizontal"
                                  height="65" style="margin-left: -32px; margin-top: 5px;">
                         </span>
                     </a>
@@ -142,12 +168,20 @@
                                                     </div>
                                                 </div>-->
 
+                <div class="dropdown ml-1">
+                    <button type="button" class="btn header-item noti-icon waves-effect" content="Downloads" v-tippy
+                            data-toggle="modal"
+                            data-target="#download"
+                            @click.prevent="meusDownloads()">
+                        <i class="bx bx-download text-white"></i>
+                    </button>
+                </div>
+
                 <!-- Componente notificações -->
                 <notificacoes :usuario="usuario"></notificacoes>
 
-
                 <!-- CHAT -->
-                <div class="dropdown d-none d-lg-inline-block ml-1" v-if="usuario.empresa_id">
+                <div class="dropdown ml-1" v-if="usuario.empresa_id">
                     <button type="button" class="btn header-item noti-icon waves-effect" data-toggle="modal"
                             data-target="#janelaChat">
                         <i class="far fa-comments text-white"></i> <span class="badge badge-pill badge-danger"
@@ -158,7 +192,7 @@
                 </div>
 
                 <!-- Tela cheia -->
-                <div class="dropdown d-none d-lg-inline-block ml-1">
+                <div class="dropdown ml-1">
                     <button type="button" class="btn header-item noti-icon waves-effect" @click.prevent="fullscreen">
                         <i class="bx bx-fullscreen text-white"></i>
                     </button>
@@ -214,14 +248,14 @@
 
 import chat from "../Chat";
 import notificacoes from "../layout/Notificacoes";
-import upload from '../Upload';
+import upload from "../Upload";
 
 
 export default {
     components: {
         chat,
         notificacoes,
-        upload,
+        upload
 
     },
     props: {
@@ -238,18 +272,20 @@ export default {
             urlAnexoUpload: `${URL_ADMIN}/perfil/anexo/uploadAnexos`,
 
             form: {
-                id: '',
-                nome: '',
-                login: '',
+                id: "",
+                nome: "",
+                login: "",
                 foto_perfil: [],
-                foto_perfilDel: [],
+                foto_perfilDel: []
             },
             formDefault: null,
             quantidadeMensagensNovas: 0,
+            preloadDownload: true,
+            downloads: [],
             full: false,
             URL_SITE,
             URL_ADMIN
-        }
+        };
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form);
@@ -260,16 +296,16 @@ export default {
             this.quantidadeMensagensNovas = arryMensagensNovas.length;
         },
         verticalMenu() {
-            $('body').toggleClass('sidebar-enable');
+            $("body").toggleClass("sidebar-enable");
             if ($(window).width() >= 992) {
-                $('body').toggleClass('vertical-collpsed');
+                $("body").toggleClass("vertical-collpsed");
             } else {
-                $('body').removeClass('vertical-collpsed');
+                $("body").removeClass("vertical-collpsed");
             }
         },
         fullscreen() {
             this.full = !this.full;
-            $('body').toggleClass('fullscreen-enable');
+            $("body").toggleClass("fullscreen-enable");
             if (!document.fullscreenElement && /* alternative standard method */ !document.mozFullScreenElement && !document.webkitFullscreenElement) {  // current working methods
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen();
@@ -288,14 +324,14 @@ export default {
                 }
             }
 
-            document.addEventListener('fullscreenchange', exitHandler);
+            document.addEventListener("fullscreenchange", exitHandler);
             document.addEventListener("webkitfullscreenchange", exitHandler);
             document.addEventListener("mozfullscreenchange", exitHandler);
 
             function exitHandler() {
                 if (!document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
 
-                    $('body').removeClass('fullscreen-enable');
+                    $("body").removeClass("fullscreen-enable");
                 }
             }
         },
@@ -306,7 +342,7 @@ export default {
         alterarPerfil(id) {
             this.preload = true;
             formReset();
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
 
             axios.get(`${URL_ADMIN}/perfil/${id}`)
                 .then(response => {
@@ -317,29 +353,40 @@ export default {
                 }).catch(error => (this.preload = false));
 
         },
+        meusDownloads() {
+            this.preloadDownload = true;
+            axios.post(`${URL_ADMIN}/downloads`).then(response => {
+               this.downloads = response.data;
+               this.preloadDownload = false;
+            });
+            // axios.post(`${URL_ADMIN}/downloads`.then(response => {
+            //     this.preloadDownload = false;
+            //     this.downloads = response.data;
+            // }).catch(error => (this.preloadDownload = false)));
+        },
         alterarFormPerfil() {
             formReset();
-            $('#janelaPerfil :input:enabled').trigger('blur');
+            $("#janelaPerfil :input:enabled").trigger("blur");
 
-            if ($('#janelaPerfil :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
+            if ($("#janelaPerfil :input:enabled.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
                 return false;
             }
 
             this.preload = true;
 
             axios.put(`${URL_ADMIN}/perfil/${this.form.id}`, this.form).then(response => {
-                $('#janelaPerfil').modal('hide');
-                mostraSucesso('', 'Perfil Atualizado com sucesso!');
+                $("#janelaPerfil").modal("hide");
+                mostraSucesso("", "Perfil Atualizado com sucesso!");
                 this.preload = false;
-                setTimeout(function () {
+                setTimeout(function() {
                     document.location.reload(true);
                 }, 1000);
             }).catch(error => (this.preload = false));
 
-        },
+        }
     }
-}
+};
 </script>
 
 <style scoped>

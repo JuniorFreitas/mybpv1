@@ -415,6 +415,11 @@ class User extends Authenticatable
         return $this->hasOne(RecuperacaoSenha::class, 'user_id', 'id');
     }
 
+    public function Exportacoes()
+    {
+        return $this->hasMany(Exportacao::class, 'user_id', 'id')->whereRemovido(false)->orderBy('created_at', 'desc');
+    }
+
     protected static function booted()
     {
 //        static::created(function ($model) {
