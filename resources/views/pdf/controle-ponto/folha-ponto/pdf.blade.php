@@ -151,5 +151,5 @@
 
 
 
-
+    @include('layouts.rodapePdf')
 @endsection

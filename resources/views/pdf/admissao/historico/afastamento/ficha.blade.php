@@ -36,10 +36,6 @@
         </tr>
     </table>
 
-    <br>
-    <br>
-    <p style="font-size: 9pt; color: #666666">Data da Emissão: {{ (new \MasterTag\DataHora())->dataCompleta()}}
-        às {{ (new \MasterTag\DataHora())->horaCompleta()}}</p>
-    <p style="font-size: 9pt; color: #666666">Emitido por: {{ \Illuminate\Support\Facades\Auth::user()->nome }}</p>
+    @include('layouts.rodapePdf')
 
 @endsection

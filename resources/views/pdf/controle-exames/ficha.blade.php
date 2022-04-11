@@ -51,4 +51,5 @@
         <hr style='border: none; height: 1px; background:#747373; width: 9cm; margin: 0 auto'>
         Assinatura autorizada
     </h5>
+    @include('layouts.rodapePdf')
 @endsection
