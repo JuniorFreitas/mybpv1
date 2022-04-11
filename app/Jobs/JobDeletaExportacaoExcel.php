@@ -30,10 +30,10 @@ class JobDeletaExportacaoExcel implements ShouldQueue
     }
 
     //Comentar esse metodo se for usar com Job
-//    public function __invoke()
-//    {
-//        $this->handle();
-//    }
+    public function __invoke()
+    {
+        $this->handle();
+    }
 
     /**
      * Execute the job.
