@@ -57,7 +57,7 @@
                             <tbody>
                             <tr v-for="download in downloads">
                                 <td>{{ download.local }}</td>
-                                <td>{{ download.created_at }}</td>
+                                <td>{{ download.data_hora_criacao }}</td>
                                 <td><a :href="`${URL_ADMIN}/downloads/exportacao/${download.arquivo}`" class="btn btn-primary" target="_blank"><i class="fa fa-download"></i> Download</a></td>
                             </tr>
                             </tbody>
