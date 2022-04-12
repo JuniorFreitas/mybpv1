@@ -21,6 +21,7 @@ const app = new Vue({
 
         resposta_id: 0,
         formulario_id: 2,
+        tipo: 'Exames',
 
         dados: {
             nome: '',
@@ -122,7 +123,7 @@ const app = new Vue({
     },
     methods: {
         async carregaFormulario() {
-            await axios.get(`${URL_ADMIN}/formulario/${this.formulario_id}`)
+            await axios.get(`${URL_ADMIN}/formulario/buscaFormulario/${this.tipo}`)
                 .then(response => {
                     this.form.formulario = response.data
                 }).catch(error => {

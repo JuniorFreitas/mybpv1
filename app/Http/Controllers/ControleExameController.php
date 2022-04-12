@@ -196,7 +196,9 @@ class ControleExameController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = FeedbackCurriculo::select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id'])->with(
+        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q){
+            $q->whereEncaminhadoExame(true);
+        })->select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id'])->with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social,area_id',
             'vagaSelecionada',
