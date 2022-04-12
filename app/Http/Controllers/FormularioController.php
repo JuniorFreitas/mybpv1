@@ -13,6 +13,11 @@ class FormularioController extends Controller
         return $formulario->load('Setores.Alternativas.Opcoes');
     }
 
+    public function buscaFormulario($tipo)
+    {
+        return Formulario::whereTitulo($tipo)->first()->load('Setores.Alternativas.Opcoes');
+    }
+
     public function carregaResposta(Request $request)
     {
         if ($request->filled('user_id') && $request->filled('formulario')) {

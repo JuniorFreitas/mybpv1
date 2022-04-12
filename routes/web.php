@@ -75,6 +75,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::group(['as' => 'fomulario.', 'prefix' => 'formulario'], function () {
         Route::get('/carregaResposta', [\App\Http\Controllers\FormularioController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('/{formulario}', [\App\Http\Controllers\FormularioController::class, 'carrega'])->name('carrega');
+        Route::get('buscaFormulario/{tipo}', [\App\Http\Controllers\FormularioController::class, 'buscaFormulario'])->name('buscaFormulario');
 //        Route::get('carregaResposta/{resposta}', [\App\Http\Controllers\FormularioController::class, 'carregaResposta'])->name('carregaResposta');
 
     });
