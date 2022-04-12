@@ -841,6 +841,24 @@ const app = new Vue({
                 .then(response => {
                     let data = response.data;
                     let admissao = data.feedback.admissao;
+
+                    if (!data.feedback.parecer_tecnica) {
+                        data.feedback.parecer_tecnica = {
+                            'indicado_area': "",
+                        };
+                    }
+
+                    if (!data.feedback.banco_conta) {
+                        data.feedback.banco_conta = {
+                            'banco': "Banco do Brasil",
+                            'agencia': "",
+                            'conta': "",
+                            'pix': false,
+                            'tipochavepix': "",
+                            'chavepix': ""
+                        };
+                    }
+
                     Object.assign(this.form, data.feedback);
 
                     //Se não tiver parecer_rh
@@ -854,7 +872,6 @@ const app = new Vue({
                     this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id == null ? "" : admissao.area_etiqueta_id;
                     this.form.curriculo.pcd = data.feedback.curriculo.pcd ?? "false";
 
-                    this.form.parecer_tecnica.indicado_area = data.parecer_tecnica ? data.parecer_tecnica.indicado_area : "";
 
                     if (!admissao.dados_admissoes) {
                         this.form.admissao.dados_admissoes = {

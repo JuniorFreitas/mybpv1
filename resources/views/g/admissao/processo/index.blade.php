@@ -868,7 +868,7 @@
                                 <div class="form-group">
                                     <label>Rigger</label>
                                     <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.parecer_tecnica.experiencia_cargas_rigger">
+                                           :value="form.indicado_areaexperiencia_cargas_rigger">
                                 </div>
                             </div>
 
