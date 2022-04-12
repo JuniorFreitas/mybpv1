@@ -159,7 +159,7 @@
                                 autocomplete='off'
                                 class='form-control'
                                 onblur='valida_campo_vazio(this,1)'
-                                v-model='form.parecer_rh.cnh_tipo'
+                                v-model='form.parecer_rh.rota_bairro'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             />
 
@@ -168,7 +168,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                v-model='form.parecer_rh.cnh_tipo'
+                                v-model='form.parecer_rh.rota_bairro'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
                             />
                         </div>
