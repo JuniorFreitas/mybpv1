@@ -199,7 +199,7 @@ class RecrutamentoController extends Controller
                             $dados['data_envia_mail_proxima_etapa'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_proxima_etapa'] = auth()->id();
                             $vaga_aberta = VagasAbertas::find($dados['vaga_id']);
-                            $empresa = Cliente::find($dados['empresa_id']);
+                            $empresa = Cliente::find(auth()->user()->empresa_id);
                             \Mail::send(new ProximaEtapaMail([
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
@@ -294,7 +294,7 @@ class RecrutamentoController extends Controller
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_provas'] = auth()->id();
                             $vaga_aberta = VagasAbertas::find($dados['vaga_id']);
-                            $empresa = Cliente::find($dados['empresa_id']);
+                            $empresa = Cliente::find(auth()->user()->empresa_id);
                             \Mail::send(new ProximaEtapaMail([
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
