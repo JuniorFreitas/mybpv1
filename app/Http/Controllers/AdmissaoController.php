@@ -676,6 +676,7 @@ class AdmissaoController extends Controller
                 $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
                 $dadosAdmissao = $admissaoDados['dados_admissoes'];
+                \Log::alert($dadosAdmissao);
                 unset($admissaoDados['dados_admissoes']);
 
                 if ($feedback->Admissao) {
