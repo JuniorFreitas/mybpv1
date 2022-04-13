@@ -127,6 +127,7 @@ export default {
     },
     mounted() {
 
+
         axios.get(`${URL_ADMIN}/notificacoes/${this.usuario.id}`)
             .then(res => {
                 res.data.forEach((not) => {
@@ -139,12 +140,17 @@ export default {
             });
         //real time
         if (this.usuario.empresa_id) {
+            console.log(this.usuario);
             Echo.join(`notificacoes.${this.usuario.id}`)
                 .listen('.membro_tarefa_add', (e) => {
                     this.lista.push(e);
                     this.mostrarToast();
                 })
                 .listen('.membro_tarefa_remove', (e) => {
+                    this.lista.push(e);
+                    this.mostrarToast();
+                })
+                .listen('.exportacao_excel', (e) => {
                     this.lista.push(e);
                     this.mostrarToast();
                 })

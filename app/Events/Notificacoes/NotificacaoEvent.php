@@ -16,9 +16,9 @@ class NotificacaoEvent implements ShouldBroadcastNow
 
     const MEMBRO_TAREFA_ADD = 'membro_tarefa_add';
     const MEMBRO_TAREFA_REMOVE = 'membro_tarefa_remove';
+    const EXPORTACAO_EXCEL = 'exportacao_excel';
 
     const TIPO_PADRAO = 'padrao';
-    const TIPO_EXPORTACAO = 'exportacao';
 
     public $dados;
     public $evento;
@@ -89,10 +89,11 @@ class NotificacaoEvent implements ShouldBroadcastNow
                 return $notificacao->toArray();
                 break;
 
-            case self::TIPO_EXPORTACAO:
+            case self::EXPORTACAO_EXCEL:
                 $saida = [
                     'icone' => 'fa fa-download',
-                    'titulo' => "Seu excel foi gerado, verifique no icone de download",
+                    'titulo' => "Seu excel {$this->dados['local']} está pronto",
+                    'descricao' => "Verifique na área de downloads",
                 ];
                 $notificacao = Notificacao::create([
                     'tipo' => $this->tipo,

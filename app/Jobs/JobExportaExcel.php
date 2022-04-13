@@ -55,7 +55,8 @@ class JobExportaExcel implements ShouldQueue
         \Excel::store(new ModeloRowsExport($this->headdings, $this->rows), $this->nome_arquivo, 'disco-exportacao');
 
         Event::dispatch(new NotificacaoEvent([
-            'user_id' => $this->usuario
-        ], NotificacaoEvent::TIPO_EXPORTACAO, NotificacaoEvent::TIPO_PADRAO));
+            'user_id' => $this->usuario,
+            'local' => $this->local,
+        ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
     }
 }
