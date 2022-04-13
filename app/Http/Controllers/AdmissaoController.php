@@ -520,45 +520,50 @@ class AdmissaoController extends Controller
             'ResultadoIntegrado'
         );
 
-        $feedback->BancoConta->banco = $feedback->BancoConta->banco ?: 'Banco do Brasil';
-        $feedback->BancoConta->agencia = $feedback->BancoConta->agencia ?: '';
-        $feedback->BancoConta->conta = $feedback->BancoConta->conta ?: '';
-        $feedback->BancoConta->pix = $feedback->BancoConta->pix ?: false;
-        $feedback->BancoConta->tipochavepix = $feedback->BancoConta->tipochavepix ?: '';
-        $feedback->BancoConta->chavepix = $feedback->BancoConta->chavepix ?: '';
+        if (!is_null($feedback->BancoConta)) {
+            $feedback->BancoConta->banco = $feedback->BancoConta ? $feedback->BancoConta->banco : 'Banco do Brasil';
+            $feedback->BancoConta->agencia = $feedback->BancoConta ? $feedback->BancoConta->agencia : '';
+            $feedback->BancoConta->conta = $feedback->BancoConta ? $feedback->BancoConta->conta : '';
+            $feedback->BancoConta->pix = $feedback->BancoConta ? $feedback->BancoConta->pix : false;
+            $feedback->BancoConta->tipochavepix = $feedback->BancoConta ? $feedback->BancoConta->tipochavepix : '';
+            $feedback->BancoConta->chavepix = $feedback->BancoConta ? $feedback->BancoConta->chavepix : '';
+        }
 
         $feedback->Curriculo->foto_tres_delete = [];
 
-        $feedback->Admissao->documento = $feedback->Admissao->documento ?: '';
-        $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: '';
-        $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: '';
-        $feedback->Admissao->treinamento = $feedback->Admissao->treinamento ?: '';
-        $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?: '';
-        $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: '';
-        $feedback->Admissao->status_carteira_treinamento = $feedback->Admissao->status_carteira_treinamento ?: '';
-        $feedback->Admissao->area_etiqueta_id = $feedback->Admissao->area_etiqueta_id == 0 ? null : $feedback->Admissao->area_etiqueta_id;
-        $feedback->Admissao->documento = $feedback->Admissao->documento ?: "";
-        $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: "";
-        $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: "";
-        $feedback->Admissao->tipo_treinamento = $feedback->Admissao->tipo_treinamento ?: "";
-        $feedback->Admissao->treinamento = $feedback->Admissao->treinamento ?: "";
-        $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?: "";
-        $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: "";
-        $feedback->Admissao->trinta_dois_sessenta = $feedback->Admissao->trinta_dois_sessenta ?: "";
-        $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?: "";
-        $feedback->Admissao->status = $feedback->Admissao->status ?: "";
-        $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?: "";
-        $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
-        $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
-        $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?: "";
-
+        if (!is_null($feedback->Admissao)) {
+            $feedback->Admissao->documento = $feedback->Admissao->documento ?: '';
+            $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: '';
+            $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: '';
+            $feedback->Admissao->treinamento = $feedback->Admissao->treinamento ?: '';
+            $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?: '';
+            $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: '';
+            $feedback->Admissao->status_carteira_treinamento = $feedback->Admissao->status_carteira_treinamento ?: '';
+            $feedback->Admissao->area_etiqueta_id = $feedback->Admissao->area_etiqueta_id == 0 ? null : $feedback->Admissao->area_etiqueta_id;
+            $feedback->Admissao->documento = $feedback->Admissao->documento ?: "";
+            $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: "";
+            $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: "";
+            $feedback->Admissao->tipo_treinamento = $feedback->Admissao->tipo_treinamento ?: "";
+            $feedback->Admissao->treinamento = $feedback->Admissao->treinamento ?: "";
+            $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?: "";
+            $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: "";
+            $feedback->Admissao->trinta_dois_sessenta = $feedback->Admissao->trinta_dois_sessenta ?: "";
+            $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?: "";
+            $feedback->Admissao->status = $feedback->Admissao->status ?: "";
+            $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?: "";
+            $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
+            $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
+            $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?: "";
+        }
         $feedback->parecerRh->indicado_por = $feedback->parecerRh->indicado_por ?: "";
         $feedback->parecerRh->calca = $feedback->parecerRh->calca ?: "";
         $feedback->parecerRh->bota = $feedback->parecerRh->bota ?: "";
         $feedback->parecerRh->camisa_protecao = $feedback->parecerRh->camisa_protecao ?: "";
         $feedback->parecerRh->camisa_meia = $feedback->parecerRh->camisa_meia ?: "";
 
-        $feedback->parecerTecnica->indicado_area = $feedback->parecerTecnica->indicado_area ?: "";
+        if (!is_null($feedback->parecerTecnica)) {
+            $feedback->parecerTecnica->indicado_area = $feedback->parecerTecnica->indicado_area ?: "";
+        }
 
         $feedback->autocomplete_label_vaga_modal = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
         $feedback->autocomplete_label_vaga_modal_anterior = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
@@ -633,7 +638,6 @@ class AdmissaoController extends Controller
                 } else {
                     $feedback->parecerRh()->create(['indicado_por' => $dados['parecer_rh']['indicado_por']]);
                 }
-
                 if ($feedback->parecerTecnica) {
                     $feedback->parecerTecnica->update(['indicado_area' => $dados['parecer_tecnica']['indicado_area']]);
                 } else {
@@ -671,8 +675,18 @@ class AdmissaoController extends Controller
 
                 $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                $dadosAdmissoes = $admissaoDados['dados_admissoes'];
-                isset($admissaoDados['dados_admissoes']['id']) ? $feedback->Admissao->DadosAdmissoes->update($dadosAdmissoes) : $feedback->Admissao->DadosAdmissoes()->create($dadosAdmissoes);
+                $dadosAdmissao = $admissaoDados['dados_admissoes'];
+                unset($admissaoDados['dados_admissoes']);
+
+                if ($feedback->Admissao) {
+                    $feedback->Admissao->update($admissaoDados);
+                    $dadosAdmissaoUp = DadosAdmissao::find($dadosAdmissao['id']);
+                    $dadosAdmissaoUp->update($dadosAdmissao);
+                }else{
+                    $admissao_id = $feedback->Admissao()->create($admissaoDados);
+                    $dadosAdmissao['admissao_id'] = $admissao_id['id'];
+                    DadosAdmissao::create($dadosAdmissao);
+                }
 
                 $datas = [];
                 $tipo_admissao = [
@@ -743,9 +757,6 @@ class AdmissaoController extends Controller
                     $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($admissaoDados['feedback_id'])->first();
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
-
-
-                $feedback->Admissao ? $feedback->Admissao->update($admissaoDados) : $feedback->Admissao()->create($admissaoDados);
 
                 if (isset($dadosCurriculo['telefonesDelete'])) {
                     foreach ($dadosCurriculo['telefonesDelete'] as $index) {
@@ -1167,7 +1178,7 @@ class AdmissaoController extends Controller
         }
 
 
-        $nameArquivo = "admissao_processo_" . rand(1000,9999) . "_" . date('YmdHis') . ".xlsx";
+        $nameArquivo = "admissao_processo_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
 //         \Excel::store(new ModeloRowsExport($head, $rows), $nameArquivo,'disco-excel');
         JobExportaExcel::dispatch(auth()->id(), "admissao_processo", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
