@@ -7,6 +7,7 @@ use App\Models\HabilidadeCloud;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class CloudConfiguracaoController extends Controller
 {
@@ -44,8 +45,12 @@ class CloudConfiguracaoController extends Controller
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
+        $regra = Rule::unique('grupo_clouds')->where(function ($query) use ($dados) {
+            return $query->whereNome($dados['nome'])->whereEmpresaId(auth()->user()->empresa_id);
+        });
+
         $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|min:2|unique:grupo_clouds,nome',
+            'nome' => [$regra],
             'descricao' => 'required|min:2',
             'ativo' => 'required|boolean',
         ]);
@@ -111,8 +116,12 @@ class CloudConfiguracaoController extends Controller
 
         $dados = $request->input();
 
+        $regra = Rule::unique('grupo_clouds')->where(function ($query) use ($dados) {
+            return $query->whereNome($dados['nome'])->whereEmpresaId(auth()->user()->empresa_id);
+        })->ignore($grupocloud->id);
+
         $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|min:2|unique:grupo_clouds,nome,' . $grupocloud->id,
+            'nome' => ['required|min:2|', $regra],
             'descricao' => 'required|min:3',
             'ativo' => 'required|boolean',
         ]);

@@ -25,6 +25,7 @@ class ItensCloudController extends Controller
         $this->authorize('cloud_insert');
         $dados = $request->input();
 
+
         $regra = Rule::unique('itens_cloud')->where(function ($query) use ($dados) {
             return $query->whereCloudId($dados['cloud_id'])
                 ->whereLabel($dados['label'])
