@@ -121,7 +121,7 @@ class CloudConfiguracaoController extends Controller
         })->ignore($grupocloud->id);
 
         $dadosValidados = \Validator::make($dados, [
-            'nome' => ['required|min:2|', $regra],
+            'nome' => ['required', $regra],
             'descricao' => 'required|min:3',
             'ativo' => 'required|boolean',
         ]);
