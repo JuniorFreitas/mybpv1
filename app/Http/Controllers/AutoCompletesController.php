@@ -313,7 +313,7 @@ class AutoCompletesController extends Controller
 
         $busca = $request->query('busca');
 
-        $user = \App\Models\User::whereAtivo(true)->whereGestor(true);
+        $user = \App\Models\User::whereAtivo(true)->whereGestor(true)->whereEmpresaId(auth()->user()->empresa_id);
 
         return $user->where('nome', 'like', '%' . $busca . '%')
             ->take($quantidade)
