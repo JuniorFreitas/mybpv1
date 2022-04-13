@@ -768,6 +768,7 @@ class AdmissaoController extends Controller
                     foreach ($dadosCurriculo['telefones'] as $linha) {
                         $linha['principal'] = $linha['principal'] == 'true';
                         if ($linha['id'] == 0) {
+                            unset($linha['id']);
                             $telPrincipal = $feedback->Telefones()->create($linha);
                             if ($linha['principal']) {
                                 $dadosFeedback['telefone_id'] = $telPrincipal->id;
@@ -788,6 +789,11 @@ class AdmissaoController extends Controller
                 DB::rollback();
                 $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
+                \Log::debug($e->getTraceAsString());
+                \Log::info("-------DADOS-------");
+                \Log::alert($dados);
+                \Log::info("-------FIM DE DADOS-------");
+
                 return response()->json(['msg' => $msg], 400);
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
@@ -905,6 +911,10 @@ class AdmissaoController extends Controller
                 DB::rollback();
                 $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
+                \Log::debug($e->getTraceAsString());
+                \Log::info("-------DADOS-------");
+                \Log::alert($dados);
+                \Log::info("-------FIM DE DADOS-------");
                 return response()->json(['msg' => $msg], 400);
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
