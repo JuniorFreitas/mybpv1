@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\Notificacoes\NotificacaoEvent;
 use App\Exports\ModeloRowsExport;
 use App\Models\Exportacao;
 use Illuminate\Bus\Queueable;
@@ -10,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Event;
 
 class JobExportaExcel implements ShouldQueue
 {
@@ -51,5 +53,9 @@ class JobExportaExcel implements ShouldQueue
         ]);
 
         \Excel::store(new ModeloRowsExport($this->headdings, $this->rows), $this->nome_arquivo, 'disco-exportacao');
+
+        Event::dispatch(new NotificacaoEvent([
+            'user_id' => $this->usuario
+        ], NotificacaoEvent::TIPO_EXPORTACAO, NotificacaoEvent::TIPO_PADRAO));
     }
 }

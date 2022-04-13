@@ -14,21 +14,23 @@ class NotificacaoEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    const MEMBRO_TAREFA_ADD='membro_tarefa_add';
-    const MEMBRO_TAREFA_REMOVE='membro_tarefa_remove';
+    const MEMBRO_TAREFA_ADD = 'membro_tarefa_add';
+    const MEMBRO_TAREFA_REMOVE = 'membro_tarefa_remove';
 
-    const TIPO_PADRAO='padrao';
+    const TIPO_PADRAO = 'padrao';
+    const TIPO_EXPORTACAO = 'exportacao';
 
     public $dados;
     public $evento;
     public $tipo;
     public $afterCommit = true; // só dispara se for comitado
+
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($dados,$evento,$tipo='tipo')
+    public function __construct($dados, $evento, $tipo = 'tipo')
     {
         $this->dados = $dados;
         $this->evento = $evento;
@@ -47,12 +49,14 @@ class NotificacaoEvent implements ShouldBroadcastNow
 
     }
 
-    public function broadcastAs(){
+    public function broadcastAs()
+    {
         return $this->evento;
     }
 
-    public function broadcastWith(){
-        switch ($this->evento){
+    public function broadcastWith()
+    {
+        switch ($this->evento) {
             case self::MEMBRO_TAREFA_ADD:
                 $tarefa = $this->dados['tarefa'];
 
@@ -63,9 +67,9 @@ class NotificacaoEvent implements ShouldBroadcastNow
                 ];
                 $notificacao = Notificacao::create([
                     'tipo' => $this->tipo,
-                    'payload'=> $payload,
+                    'payload' => $payload,
                     'user_id' => $this->dados['user_id'],
-                    'visto'=>false
+                    'visto' => false
                 ]);
                 return $notificacao->toArray();
                 break;
@@ -78,9 +82,23 @@ class NotificacaoEvent implements ShouldBroadcastNow
                 ];
                 $notificacao = Notificacao::create([
                     'tipo' => $this->tipo,
-                    'payload'=> $saida,
+                    'payload' => $saida,
                     'user_id' => $this->dados['user_id'],
-                    'visto'=>false
+                    'visto' => false
+                ]);
+                return $notificacao->toArray();
+                break;
+
+            case self::TIPO_EXPORTACAO:
+                $saida = [
+                    'icone' => 'fa fa-download',
+                    'titulo' => "Seu excel foi gerado, verifique no icone de download",
+                ];
+                $notificacao = Notificacao::create([
+                    'tipo' => $this->tipo,
+                    'payload' => $saida,
+                    'user_id' => $this->dados['user_id'],
+                    'visto' => false
                 ]);
                 return $notificacao->toArray();
                 break;
