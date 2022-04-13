@@ -680,8 +680,13 @@ class AdmissaoController extends Controller
 
                 if ($feedback->Admissao) {
                     $feedback->Admissao->update($admissaoDados);
-                    $dadosAdmissaoUp = DadosAdmissao::find($dadosAdmissao['id']);
-                    $dadosAdmissaoUp->update($dadosAdmissao);
+                    if (!isset($dadosAdmissao['id'])) {
+                        $dadosAdmissao['admissao_id'] = $feedback->Admissao->id;
+                        DadosAdmissao::create($dadosAdmissao);
+                    }else{
+                        $dadosAdmissaoUp = DadosAdmissao::find($dadosAdmissao['id']);
+                        $dadosAdmissaoUp->update($dadosAdmissao);
+                    }
                 }else{
                     $admissao_id = $feedback->Admissao()->create($admissaoDados);
                     $dadosAdmissao['admissao_id'] = $admissao_id['id'];
