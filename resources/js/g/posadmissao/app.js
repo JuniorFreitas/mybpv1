@@ -172,7 +172,6 @@ const app = new Vue({
     },
     methods: {
         extensao(item) {
-            console.log(item);
             if (item === 'demissao_com_justa_causa') {
                 this.extensaoDocumento = '.doc'
             } else {
