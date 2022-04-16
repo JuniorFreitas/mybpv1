@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisao whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisao whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisao whereId($value)
+ * @property string|null $nome_pdf
+ * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisao whereNomePdf($value)
  */
 class MotivoRescisao extends Model
 {
@@ -26,11 +28,13 @@ class MotivoRescisao extends Model
     protected $table = 'motivo_rescisao';
     protected $fillable = [
         'descricao',
+        'nome_pdf',
         'ativo',
     ];
     protected $casts = [
         'id' => 'int',
         'descricao' => 'string',
+        'nome_pdf' => 'string',
         'ativo' => 'boolean',
     ];
     public $timestamps = false;

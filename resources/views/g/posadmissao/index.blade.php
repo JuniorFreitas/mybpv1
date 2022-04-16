@@ -44,7 +44,8 @@
                         <div class="form-group">
                             <label class="text-danger">OBS: ANTES DE FAZER O AVISO DEVE SER CONFIRMADO:</label>
                             <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" :disabled="demitido" v-model="form.demissao.cipa" id="cipa">
+                                <input type="checkbox" class="custom-control-input" :disabled="demitido"
+                                       v-model="form.demissao.cipa" id="cipa">
                                 <label class="custom-control-label" style="cursor: pointer" for="cipa">
                                     Checar Estabilidade: CIPA, Acidente Trabalho e Sindicato, Gestante, Aposentadoria
                                     (Itens CLT ou CCT)
@@ -53,28 +54,31 @@
                         </div>
 
                         <div class="form-group">
-                            <datepicker label="Data desmobilização" :disabled="demitido" v-model="form.demissao.data_desmobilizacao"></datepicker>
+                            <datepicker label="Data desmobilização" :disabled="demitido"
+                                        v-model="form.demissao.data_desmobilizacao"></datepicker>
                         </div>
 
                         <div class="form-group">
                             <label>Motivo da rescisão contratual?</label>
-                            <select onchange="valida_campo_vazio(this,1)" :disabled="demitido" onblur="valida_campo_vazio(this,1)"
+                            <select onchange="valida_campo_vazio(this,1)" :disabled="demitido"
+                                    onblur="valida_campo_vazio(this,1)"
                                     class="form-control" v-model="form.demissao.motivo_rescisao_id">
                                 <option value="">Selecione</option>
                                 <option v-for="item in listaMotivos" :value="item.id">@{{ item.descricao }}</option>
                             </select>
                         </div>
 
-{{--                        <div class="form-group" v-if="form.motivo === 7">--}}
-{{--                            <label>Motivo</label>--}}
-{{--                            <input type="text" class="form-control" v-model="form.outromotivo"--}}
-{{--                                   onblur="valida_campo_vazio(this,3)">--}}
-{{--                        </div>--}}
+                        {{--                        <div class="form-group" v-if="form.motivo === 7">--}}
+                        {{--                            <label>Motivo</label>--}}
+                        {{--                            <input type="text" class="form-control" v-model="form.outromotivo"--}}
+                        {{--                                   onblur="valida_campo_vazio(this,3)">--}}
+                        {{--                        </div>--}}
 
 
                         <div class="form-group">
                             <label>Tipo de Aviso:</label>
-                            <select onchange="valida_campo_vazio(this,1)" :disabled="demitido" onblur="valida_campo_vazio(this,1)"
+                            <select onchange="valida_campo_vazio(this,1)" :disabled="demitido"
+                                    onblur="valida_campo_vazio(this,1)"
                                     class="form-control" v-model="form.demissao.tipo_aviso_id">
                                 <option value="">Selecione</option>
                                 <option v-for="item in listaAvisos" :value="item.id">@{{ item.descricao }}</option>
@@ -86,14 +90,16 @@
 
                             <div class="form-group">
                                 <label>Solicitado por</label>
-                                <input type="text" class="form-control" :disabled="demitido" v-model="form.demissao.solicitado_por"
+                                <input type="text" class="form-control" :disabled="demitido"
+                                       v-model="form.demissao.solicitado_por"
                                        onblur="valida_campo_vazio(this,3)">
                             </div>
 
 
                             <div class="form-group">
                                 <label>Comentário</label>
-                                <textarea class="form-control" :disabled="demitido" v-model="form.demissao.observacoes" cols="3" rows="3"></textarea>
+                                <textarea class="form-control" :disabled="demitido" v-model="form.demissao.observacoes"
+                                          cols="3" rows="3"></textarea>
                             </div>
 
                         </fieldset>
@@ -130,7 +136,9 @@
                             </select>
                             <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
                                     class="form-control" v-model="form.tipo_form" v-else>
-                                <option value="">Nenhum formulário encontrado, entre em contato com o desenvolvedor do sistema.</option>
+                                <option value="">Nenhum formulário encontrado, entre em contato com o desenvolvedor do
+                                    sistema.
+                                </option>
                             </select>
                         </div>
 
@@ -451,7 +459,8 @@
         </template>
 
         <template slot="rodape">
-            <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado && !demitido" v-if="avaliacao" @click="demitir">
+            <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado && !demitido" v-if="avaliacao"
+                    @click="demitir">
                 Demitir
             </button>
             <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado" v-if="desmobilizacao"
@@ -632,6 +641,7 @@
                     <th class="text-center">Data da Admissão</th>
                     <th class="text-center">Data da demissão</th>
                     <th class="text-center">Ação</th>
+                    <th class="text-center">Documento Demissão</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -673,7 +683,7 @@
                         @{{item.admissao.data_admissao}}
                     </td>
                     <td class="text-center">
-                         @{{item.demissao?.data_desmobilizacao}}
+                        @{{item.demissao?.data_desmobilizacao}}
                     </td>
 
                     <td class="text-center">
@@ -707,9 +717,21 @@
                                 @endif
                             </div>
                         </div>
-
-
                     </td>
+
+                    <td class="text-center" v-if="item.demissao">
+                        <a target="_blank" v-if="item.demissao.motivo_rescisao && ['demissao_com_justa_causa','pedido_colaborador_imediato', 'pedido_colaborador_trabalhado'].includes(item.demissao.motivo_rescisao.nome_pdf)"
+                           :href="`https://mybp-prod.s3.amazonaws.com/public/${item.demissao.motivo_rescisao.nome_pdf + extensaoDocumento}`"
+                           class="btn btn-sm btn-primary" title="Download Documento Demissão"
+                           @click="extensao(item.demissao.motivo_rescisao.nome_pdf)" download>
+                            <i class="fa fa-file-download"></i>
+                        </a>
+                        <button type="button" v-else class="btn btn-sm btn-primary" title="Gerar Documento Demissão"
+                                @click="gerarPdf(item.demissao.id)">
+                            <i class="fa fa-file-pdf"></i>
+                        </button>
+                    </td>
+                    <td v-else></td>
                 </tr>
                 </tbody>
             </table>
