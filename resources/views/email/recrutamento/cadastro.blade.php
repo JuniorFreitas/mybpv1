@@ -130,9 +130,9 @@
         $vagaAberta = \App\Models\VagasAbertas::withoutGlobalScopes()->find($dados['vaga_aberta_id']);
     @endphp
     <table border="0" cellpadding="0" width="607" style="margin-top: 15px">
-        <tr style="background-color: #cccbcb; padding-top: 15px; padding-bottom: 15px;">
+        <tr>
             <td align="middle" style="padding: 21px">
-                <img src="{{$empresa->Logo[0]->url}}" alt="" style="height: 100px"> <br>
+                <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$empresa->apelido}}.jpg" alt="" style="width: 100%"> <br>
             </td>
         </tr>
     </table>
@@ -164,10 +164,16 @@
                     </div>
                     <br><br>
 
+                    <span style="font-size: 11px; color: #696969">Enviado pelo sistema MyBP.</span><br>
                     <span style="font-size: 11px; color: #696969">E-mail automático. Por favor, não responda.</span>
                 </div>
-
-
+            </td>
+        </tr>
+    </table>
+    <table border="0" cellpadding="0" width="607" style="margin-top: 15px">
+        <tr style="background-color: #072433; padding-top: 15px; padding-bottom: 15px;">
+            <td align="middle" style="padding: 21px">
+                <img src="https://mybp-prod.s3.amazonaws.com/logo_mybp.png" alt="" style="height: 75px"> <br>
             </td>
         </tr>
     </table>
