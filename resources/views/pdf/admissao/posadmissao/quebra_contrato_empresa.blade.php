@@ -11,8 +11,9 @@
     </p>
     <br>
     <p class="f12" style="">
-        A(o)<br>
         Prezado(a) funcionário(a): {{$dados->Feedback->Curriculo->nome}}
+        <br>
+        <br>
     </p>
     <p class="f12">
         A Empresa {{$dados->Feedback->Empresa->razao_social}} inscrita no CNPJ/MF sob n.º
@@ -22,7 +23,8 @@
         fica rescindido o contrato de trabalho de <strong>{{$dados->Feedback->Curriculo->nome}}</strong> com a empresa,
         iniciado em
         {{$dados->Feedback->Admissao->data_admissao}}, com término previsto para o
-        dia {{ (new \MasterTag\DataHora($dados->data_desmobilizacao))->addDia(15) }}.
+        dia {{ $dados->termino_previsto ? $dados->termino_previsto : '_______/_______/______________' }}. Por isso, vimos avisá-lo, nos
+        termos e para efeito do disposto no artigo 479, conforme CLT (Consolidação das Leis Trabalhistas).
         <br><br>
     </p>
     <br><br>
@@ -32,7 +34,7 @@
     <div class="f12" style="line-height: 26pt;text-align: center">
         <br><br>
         <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">
-        {{$dados->Feedback->Curriculo->nome}}
+        {{$dados->Feedback->Empresa->razao_social}}
     </div>
 
 

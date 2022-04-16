@@ -717,16 +717,21 @@
                                 @endif
                             </div>
                         </div>
-
-
                     </td>
 
-                    <td class="text-center">
-                        <button type="button" v-if="item.demissao" class="btn btn-sm btn-primary" title="Gerar Documento Demissão"
+                    <td class="text-center" v-if="item.demissao">
+                        <a target="_blank" v-if="item.demissao.motivo_rescisao && ['demissao_com_justa_causa','pedido_colaborador_imediato', 'pedido_colaborador_trabalhado'].includes(item.demissao.motivo_rescisao.nome_pdf)"
+                           :href="`https://mybp-prod.s3.amazonaws.com/public/${item.demissao.motivo_rescisao.nome_pdf + extensaoDocumento}`"
+                           class="btn btn-sm btn-primary" title="Download Documento Demissão"
+                           @click="extensao(item.demissao.motivo_rescisao.nome_pdf)" download>
+                            <i class="fa fa-file-download"></i>
+                        </a>
+                        <button type="button" v-else class="btn btn-sm btn-primary" title="Gerar Documento Demissão"
                                 @click="gerarPdf(item.demissao.id)">
                             <i class="fa fa-file-pdf"></i>
                         </button>
                     </td>
+                    <td v-else></td>
                 </tr>
                 </tbody>
             </table>

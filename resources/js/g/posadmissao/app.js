@@ -19,6 +19,7 @@ const app = new Vue({
         avaliacao: false,
         desmobilizacao: false,
         entrevista: false,
+        extensaoDocumento: null,
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
         todos_municipios: `autocomplete/todos-municipios`,
@@ -159,7 +160,8 @@ const app = new Vue({
             let resultado = totalItens === totalEncontrado;
             this.selecionaTudo = resultado;
             return resultado;
-        }
+        },
+
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
@@ -169,6 +171,14 @@ const app = new Vue({
         this.listaAreasGeral();
     },
     methods: {
+        extensao(item) {
+            console.log(item);
+            if (item === 'demissao_com_justa_causa') {
+                this.extensaoDocumento = '.doc'
+            } else {
+                this.extensaoDocumento = '.pdf'
+            }
+        },
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
@@ -431,6 +441,16 @@ const app = new Vue({
             let link = `${URL_ADMIN}/posadmissao/demitir/pdf/${item}`;
             open(link, 'blank');
         },
+        download(item) {
+            var extensao = '';
+            if (item === 'demissao_com_justa_causa') {
+                extensao = '.doc';
+            } else {
+                extensao = '.png';
+            }
+            open(`https://mybp-prod.s3.amazonaws.com/public/${item}${extensao}`, 'blank');
+        },
+
         carregou(dados) {
             this.lista = dados.items;
             this.listaMotivos = dados.motivos_rescisoes;
@@ -441,10 +461,12 @@ const app = new Vue({
             this.selecionaTudo = this.tudoMarcado;
             this.form.alternativas = _.cloneDeep(this.alternativasDefault);
             this.controle.carregando = false;
-        },
+        }
+        ,
         carregando() {
             this.controle.carregando = true;
-        },
+        }
+        ,
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();

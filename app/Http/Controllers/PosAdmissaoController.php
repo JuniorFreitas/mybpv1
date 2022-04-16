@@ -3,15 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admissao;
+use App\Models\Arquivo;
+use App\Models\AvaliacaoNoventaVencimento;
 use App\Models\ClassificacaoRescisao;
+use App\Models\DadosAdmissao;
 use App\Models\Demissao;
 use App\Models\EntrevistaDesligamento;
 use App\Models\FeedbackCurriculo;
 use App\Models\Formulario;
 use App\Models\MotivoRescisao;
 use App\Models\TipoAviso;
+use Aws\S3\S3Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use MasterTag\DataHora;
 use PDF;
 
@@ -102,7 +107,29 @@ class PosAdmissaoController extends Controller
 
         $dados = Demissao::whereId($id)->with('motivoRescisao', 'tipoAviso')->first();
 
-        $pdf = PDF::loadView('pdf.admissao.posadmissao.'.$dados->motivoRescisao->nome_pdf, compact('dados'));
+        if ($dados->Feedback->AvaliacaoNoventaVencimento !== null) {
+            $datasVencimento = AvaliacaoNoventaVencimento::find($dados->Feedback->AvaliacaoNoventaVencimento->id);
+            if ($datasVencimento !== null) {
+                $data = new DataHora();
+                $dataInicial = $data->diferencaDias($dados->data_desmobilizacao, $datasVencimento->prazo_dia_inicial);
+                $dataFinal = $data->diferencaDias($dados->data_desmobilizacao, $datasVencimento->prazo_dia_final);
+
+                if ($dataInicial > 0) {
+                    $dados['termino_previsto'] = $datasVencimento->prazo_dia_inicial;
+                }
+                if ($dataFinal > 0 && $dataInicial < 0) {
+                    $dados['termino_previsto'] = $datasVencimento->prazo_dia_final;
+                }
+                if ($dataFinal < 0 && $dataInicial < 0) {
+                    $dados['termino_previsto'] = '';
+                }
+            }else{
+                $dados['termino_previsto'] = '';
+            }
+        }
+
+
+        $pdf = PDF::loadView('pdf.admissao.posadmissao.' . $dados->motivoRescisao->nome_pdf, compact('dados'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream($dados->motivoRescisao->nome_pdf . (new DataHora())->nomeUnico() . ".pdf");
     }
@@ -160,7 +187,7 @@ class PosAdmissaoController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Admissao $admissao
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, Admissao $admissao)
     {
@@ -220,7 +247,7 @@ class PosAdmissaoController extends Controller
             DB::rollback();
             $msg = "error POS ADMISSÃO - AVALIAR : {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
-            return response()->json(['msg' => $msg], 400);
+//            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
@@ -316,14 +343,9 @@ class PosAdmissaoController extends Controller
 
     public function atualizar(Request $request)
     {
-
         $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);
-        })->with('Admissao.AreaEtiqueta', 'Curriculo', 'Demissao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');;
-
-        /*$resultado = Admissao::with(['Feedback' => function ($q) {
-            $q->with('Curriculo', 'Empresa', 'VagaSelecionada');
-        }, 'AreaEtiqueta', 'EntrevistaDesligamento'])->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);*/
+        })->with('Admissao.AreaEtiqueta', 'Curriculo', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
@@ -355,6 +377,8 @@ class PosAdmissaoController extends Controller
         $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
         $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissao')->first();
         $formulario->load('Setores.Alternativas');
+
+
 
         $ids_form = array();
         foreach ($formulario->Setores as $f) {
