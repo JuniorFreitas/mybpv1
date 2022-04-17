@@ -75,8 +75,7 @@
             <td>{{$row->parecerRh ? $row->parecerRh->destro : ''}}</td>
             <td>{{$row->Curriculo->nascimento}}</td>
             <td>{{$row->Curriculo->idade}}</td>
-            <td>{{$row->Curriculo->logradouro}}, {{$row->Curriculo->bairro}}, {{$row->Curriculo->municipio}}
-                - {{$row->Curriculo->uf}}</td>
+            <td>{{$row->Curriculo->logradouro}}, {{$row->Curriculo->bairro}}, {{$row->Curriculo->municipio}}- {{$row->Curriculo->uf}}</td>
             <td>{{$row->TelPrincipal ? $row->TelPrincipal->numero : 'não informado'}}</td>
             <td>{{$row->Curriculo->email}}</td>
             <td>{{$row->Cliente->cnpj ? $row->Cliente->nome_fantasia : $row->Cliente->nome}}</td>
@@ -117,8 +116,6 @@
             <td>{{$row->parecerRh ? $row->parecerRh->afastamento_inss ? 'Sim' : 'Não' : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->afastamento_inss_qual : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->situacao_saude : ''}}</td>
-            {{--        <td>Certificado NR 10</td>--}}
-            {{--        <td>Curso de Formação</td>--}}
             <td>{{$row->parecerRh ? $row->parecerRh->comportamento_seguro : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->energia_para_trabalho : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->postura : ''}}</td>
@@ -128,7 +125,6 @@
             <td>{{$row->parecerRh ? $row->parecerRh->parecer_final_um : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->nota : ''}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->quem_entrevistou : ''}}</td>
-
             <td>{{$row->data_entrevista}}</td>
             <td>{{$row->local_entrevista}}</td>
             <td>{{$row->parecerRota ? $row->parecerRota->tem_rota ? 'Sim' : 'Não' : 'aguardando'}}</td>

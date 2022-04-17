@@ -43,8 +43,10 @@ class JobDeletaExportacaoExcel implements ShouldQueue
     public function handle()
     {
         $hoje = new DataHora();
+        $hoje->subtrairDia(1);
+
         $exportacoes = Exportacao::whereRemovido(false)
-            ->where('created_at', '>=', $hoje->dataInsert() . ' 23:59:59')
+            ->where('created_at', '<=', $hoje->dataInsert() . ' 23:59:59')
             ->get();
 
         foreach ($exportacoes as $exportacao) {

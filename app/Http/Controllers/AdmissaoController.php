@@ -1192,49 +1192,9 @@ class AdmissaoController extends Controller
             );
         }
 
-
         $nameArquivo = "admissao_processo_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-//         \Excel::store(new ModeloRowsExport($head, $rows), $nameArquivo,'disco-excel');
-        JobExportaExcel::dispatch(auth()->id(), "admissao_processo", $head, $rows, $nameArquivo);
+        JobExportaExcel::dispatch(auth()->id(), "Admissão - Processo", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-//        (new ModeloRowsExport($head, $rows))->queue('invoices.xlsx')->onQueue('exports');
-
-
-//        return \Excel::queue(new ModeloRowsExport($head, $rows), 'Demissão Previstas - ' . (new DataHora())->nomeUnico() . '.xlsx', \Storage::disk('local'));
-        /*$admissao = Admissao::has('ResultadoIntegrado');
-
-        if ($request->selecionados) {
-            $admissao = $admissao->whereIn('curriculo_id', $request->selecionados);
-        } else {
-            if ($request->filled('campoVaga')) {
-                $admissao->whereHas('Feedback.VagaSelecionada', function ($query) use ($request) {
-                    $query->whereId($request->campoVaga);
-                });
-            }
-
-            if ($request->filled('campoCliente')) {
-                $admissao->whereHas('Feedback', function ($q) use ($request) {
-                    $q->whereClienteId(auth()->user()->cliente_id == User::BPSE ? $request->campoCliente : auth()->user()->cliente_id);
-                });
-            }
-
-            if ($request->filled('campoUf')) {
-                $admissao->whereHas('Curriculo', function ($q) use ($request) {
-                    $q->whereUfVaga($request->campoUf);
-                });
-            }
-
-            if ($request->filled('campoPcd')) {
-                $campoPcd = $request->campoPcd == 'true' ? true : false;
-                $admissao->whereHas('Curriculo', function ($query) use ($campoPcd) {
-                    $query->wherePcd($campoPcd);
-                });
-            }
-        }
-
-        $admissao = $admissao->get();
-        return Excel::download(new admissaoExport($admissao), 'admissao.xlsx');*/
-
 
     }
 

@@ -12,8 +12,9 @@ const app = new Vue({
         FormRh
     },
     data: {
-        tituloJanela: 'Parecer Entrevista RH',
+        tituloJanela: 'Parecer RH',
         preload: false,
+        preloadExportacao: false,
         editando: false,
         apagado: false,
         cadastrado: false,
@@ -260,6 +261,40 @@ const app = new Vue({
         }, 200)
     },
     methods: {
+        exportaExcel() {
+            this.preloadExportacao = true;
+
+            axios.post(`${URL_ADMIN}/entrevistas/parecer_rh/export`, {
+                selecionados: this.selecionados,
+                campoBusca: this.controle.dados.campoBusca,
+                campoVaga: this.controle.dados.campoVaga,
+                campoCliente: this.controle.dados.campoCliente,
+                campoFiltro: this.controle.dados.campoFiltro,
+                campoUf: this.controle.dados.campoUf,
+                campoRh: this.controle.dados.campoRh,
+                campoFinalRh: this.controle.dados.campoFinalRh,
+                campoRota: this.controle.dados.campoRota,
+                campoTecnica: this.controle.dados.campoTecnica,
+                campoTeste: this.controle.dados.campoTeste,
+                campoPcd: this.controle.dados.campoPcd,
+                campoCPF: this.controle.dados.campoCPF,
+                // campoStatus:this.controle.dados.campoStatus ,
+                entrevista_rh: this.controle.dados.entrevista_rh,
+                entrevista_rh_nota: this.controle.dados.entrevista_rh_nota,
+
+                cliente_custom: this.controle.dados.cliente_custom,
+                parecer_individual: this.controle.dados.parecer_individual,
+                filtroPeriodo: this.controle.dados.filtroPeriodo,
+                periodo: this.controle.dados.periodo
+
+            }).then(({ data }) => {
+                mostraSucesso(data.msg);
+                this.preloadExportacao = false;
+            }).catch(erro => {
+                mostraErro(erro);
+                this.preloadExportacao = false;
+            });
+        },
         /***Campos de Filtros ****/
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
