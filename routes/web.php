@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
-use MasterTag\DataHora;
 
 
 Route::redirect('/', 'g/login');
