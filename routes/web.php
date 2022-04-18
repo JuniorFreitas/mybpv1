@@ -2,9 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('redisclean', function () {
-
-});
 
 Route::redirect('/', 'g/login');
 
