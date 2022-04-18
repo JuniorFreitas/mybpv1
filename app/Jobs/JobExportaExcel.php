@@ -18,6 +18,8 @@ class JobExportaExcel implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+//    public $delay;
+    public $queue;
     public $headdings = [];
     public $rows = [];
     public $nome_arquivo;
@@ -29,13 +31,14 @@ class JobExportaExcel implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($usuario,$local,$headdings, $rows, $nome_arquivo)
+    public function __construct($usuario, $local, $headdings, $rows, $nome_arquivo)
     {
         $this->headdings = $headdings;
         $this->rows = $rows;
         $this->nome_arquivo = $nome_arquivo;
         $this->local = $local;
         $this->usuario = $usuario;
+        $this->delay = now()->addSeconds(rand(5, 10));
     }
 
     /**

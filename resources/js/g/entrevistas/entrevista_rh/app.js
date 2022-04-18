@@ -1,10 +1,10 @@
-import endereco from "../../../components/Endereco"
-import datepicker from "../../../components/DatePicker"
+import endereco from "../../../components/Endereco";
+import datepicker from "../../../components/DatePicker";
 import DadosPessoais from "../../../components/entrevistas/DadosPessoaisTexto";
 import FormRh from "../../../components/entrevistas/FormParecerRh";
 
 const app = new Vue({
-    el: '#app',
+    el: "#app",
     components: {
         endereco,
         datepicker,
@@ -12,7 +12,7 @@ const app = new Vue({
         FormRh
     },
     data: {
-        tituloJanela: 'Parecer Entrevista RH',
+        tituloJanela: "Parecer Entrevista RH",
         preload: false,
         editando: false,
         apagado: false,
@@ -25,7 +25,7 @@ const app = new Vue({
 
         todos_municipios: `autocomplete/todos-municipios`,
 
-        cliente_id: '',
+        cliente_id: "",
         cliente_area_id: 0,
         provas: 0,
 
@@ -39,7 +39,7 @@ const app = new Vue({
             entrevista_tecnica: true,
             teste_pratico: true,
             parecer_individual: true,
-            nota_individual: true,
+            nota_individual: true
         },
 
         URL_ADMIN,
@@ -47,23 +47,23 @@ const app = new Vue({
         selecionaTudo: false,
 
         form: {
-            id: '',
+            id: "",
 
-            vaga_id: '',
-            autocomplete_label_vaga_modal: '',
-            autocomplete_label_vaga_modal_anterior: '',
+            vaga_id: "",
+            autocomplete_label_vaga_modal: "",
+            autocomplete_label_vaga_modal_anterior: "",
 
-            cliente_id: '',
-            autocomplete_label_cliente_modal: '',
-            autocomplete_label_cliente_modal_anterior: '',
+            cliente_id: "",
+            autocomplete_label_cliente_modal: "",
+            autocomplete_label_cliente_modal_anterior: "",
 
 
             curriculo: {
-                nome: '',
-                nascimento: '',
-                municipio_id: '',
-                autocomplete_label_municipio_modal: '',
-                autocomplete_label_municipio_modal_anterior: '',
+                nome: "",
+                nascimento: "",
+                municipio_id: "",
+                autocomplete_label_municipio_modal: "",
+                autocomplete_label_municipio_modal_anterior: ""
             },
 
             certificados_nr: [],
@@ -72,69 +72,69 @@ const app = new Vue({
             cursos_formacoesDelete: [],
 
             parecer_rh: {
-                feedback_id: '',
-                formulario_id: '',
+                feedback_id: "",
+                formulario_id: "",
                 tipo_entrevista: "Fixo",
-                curriculo_id: '',
-                destro: '',
-                ex_funcionario: '',
-                cnh: '',
-                cnh_tipo: '',
-                mora_com_quem: '',
-                rota_bairro: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
-                casado: '',
-                tempodeconvivencia: '',
-                filhos: '',
-                qnt_filhos: '',
-                conjuge_trabalha: '',
-                trabalho_conjuge: '',
-                religioso: '',
-                religiao_praticante: '',
-                fuma: '',
-                frequencia_fuma: '',
-                bebe: '',
-                frequencia_bebe: '',
-                nr_dez: '',
-                indicacao: '',
-                indicado_por: '',
-                alumar_experiencia: '',
-                alumar_experiencia_area: '',
-                outra_industria_experiencia: '',
-                outra_industria_nome: '',
-                grau_instrucao: '',
-                horaextra: '',
-                turnos_seis_por_dois: '',
-                noturno: '',
-                acidente_trabalho: '',
-                acidente_trabalho_qual: '',
-                afastamento_inss: '',
-                afastamento_inss_qual: '',
-                situacao_saude: '',
-                comportamento_seguro: '',
-                energia_para_trabalho: '',
-                postura: '',
-                historico_profissional: '',
-                historico_educacional: '',
-                objetivos_expectativas: '',
-                auto_imagem: '',
-                competencias: '',
-                comportamento_etico: '',
-                comprometimento: '',
-                comunicacao: '',
-                cultura_qualidade: '',
-                foco_cliente: '',
-                iniciativa: '',
-                orientacao_resultados: '',
-                trabalho_equipe: '',
-                parecer_final: '',
-                parecer_final_um: '',
-                nota: '',
-                comentarios: '',
-                entrevistador: '',
+                curriculo_id: "",
+                destro: "",
+                ex_funcionario: "",
+                cnh: "",
+                cnh_tipo: "",
+                mora_com_quem: "",
+                rota_bairro: "",
+                calca: "",
+                bota: "",
+                camisa_protecao: "",
+                camisa_meia: "",
+                casado: "",
+                tempodeconvivencia: "",
+                filhos: "",
+                qnt_filhos: "",
+                conjuge_trabalha: "",
+                trabalho_conjuge: "",
+                religioso: "",
+                religiao_praticante: "",
+                fuma: "",
+                frequencia_fuma: "",
+                bebe: "",
+                frequencia_bebe: "",
+                nr_dez: "",
+                indicacao: "",
+                indicado_por: "",
+                alumar_experiencia: "",
+                alumar_experiencia_area: "",
+                outra_industria_experiencia: "",
+                outra_industria_nome: "",
+                grau_instrucao: "",
+                horaextra: "",
+                turnos_seis_por_dois: "",
+                noturno: "",
+                acidente_trabalho: "",
+                acidente_trabalho_qual: "",
+                afastamento_inss: "",
+                afastamento_inss_qual: "",
+                situacao_saude: "",
+                comportamento_seguro: "",
+                energia_para_trabalho: "",
+                postura: "",
+                historico_profissional: "",
+                historico_educacional: "",
+                objetivos_expectativas: "",
+                auto_imagem: "",
+                competencias: "",
+                comportamento_etico: "",
+                comprometimento: "",
+                comunicacao: "",
+                cultura_qualidade: "",
+                foco_cliente: "",
+                iniciativa: "",
+                orientacao_resultados: "",
+                trabalho_equipe: "",
+                parecer_final: "",
+                parecer_final_um: "",
+                nota: "",
+                comentarios: "",
+                entrevistador: "",
                 quem_entrevistou: "",
 
                 nota_digitacao: "",
@@ -149,28 +149,28 @@ const app = new Vue({
 
 
                 individual_rh: {
-                    parecer: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: '',
-                    avaliacao_psicologica: ''
+                    parecer: "",
+                    nota: "",
+                    entrevistado_por: "",
+                    comentario: "",
+                    avaliacao_psicologica: ""
                 },
 
                 gestor_rh: {
-                    parecer: '',
-                    indicado_para: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: ''
+                    parecer: "",
+                    indicado_para: "",
+                    nota: "",
+                    entrevistado_por: "",
+                    comentario: ""
                 },
 
                 entrevista_rh: {
-                    parecer: '',
-                    indicado_para: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: ''
-                },
+                    parecer: "",
+                    indicado_para: "",
+                    nota: "",
+                    entrevistado_por: "",
+                    comentario: ""
+                }
             },
 
             simulados: []
@@ -188,34 +188,34 @@ const app = new Vue({
             carregando: false,
             dados: {
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                autocomplete_label_anterior: '',
-                autocomplete_label: '',
+                autocomplete_label_anterior: "",
+                autocomplete_label: "",
                 caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
-                autocomplete_label_cliente_anterior: '',
-                autocomplete_label_cliente: '',
+                autocomplete_label_cliente_anterior: "",
+                autocomplete_label_cliente: "",
                 pages: 20,
-                campoBusca: '',
-                campoVaga: '',
-                campoCliente: '',
-                campoFiltro: '',
-                campoUf: '',
-                campoRh: '',
-                campoFinalRh: '',
-                campoRota: '',
-                campoTecnica: '',
-                campoTeste: '',
-                campoPcd: '',
-                campoCPF: '',
+                campoBusca: "",
+                campoVaga: "",
+                campoCliente: "",
+                campoFiltro: "",
+                campoUf: "",
+                campoRh: "",
+                campoFinalRh: "",
+                campoRota: "",
+                campoTecnica: "",
+                campoTeste: "",
+                campoPcd: "",
+                campoCPF: "",
                 // campoStatus: '',
-                entrevista_rh: '',
-                entrevista_rh_nota: '',
+                entrevista_rh: "",
+                entrevista_rh_nota: "",
 
-                cliente_custom: '',
-                parecer_individual: '',
+                cliente_custom: "",
+                parecer_individual: "",
                 filtroPeriodo: false,
-                periodo: '',
-            },
-        },
+                periodo: ""
+            }
+        }
     },
     computed: {
         // cliente_comercio() {
@@ -254,20 +254,54 @@ const app = new Vue({
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formDefault = _.cloneDeep(this.form); //copia
         this.usuarioAutenticado();
         this.listaVagas();
         setTimeout(() => {
             this.atualizar();
-        },200)
+        }, 200);
     },
     methods: {
+        exportaExcel() {
+            this.preloadExportacao = true;
+
+            axios.post(`${URL_ADMIN}/entrevistas/parecer_rh/export`, {
+                selecionados: this.selecionados,
+                campoBusca: this.controle.dados.campoBusca,
+                campoVaga: this.controle.dados.campoVaga,
+                campoCliente: this.controle.dados.campoCliente,
+                campoFiltro: this.controle.dados.campoFiltro,
+                campoUf: this.controle.dados.campoUf,
+                campoRh: this.controle.dados.campoRh,
+                campoFinalRh: this.controle.dados.campoFinalRh,
+                campoRota: this.controle.dados.campoRota,
+                campoTecnica: this.controle.dados.campoTecnica,
+                campoTeste: this.controle.dados.campoTeste,
+                campoPcd: this.controle.dados.campoPcd,
+                campoCPF: this.controle.dados.campoCPF,
+                // campoStatus:this.controle.dados.campoStatus ,
+                entrevista_rh: this.controle.dados.entrevista_rh,
+                entrevista_rh_nota: this.controle.dados.entrevista_rh_nota,
+
+                cliente_custom: this.controle.dados.cliente_custom,
+                parecer_individual: this.controle.dados.parecer_individual,
+                filtroPeriodo: this.controle.dados.filtroPeriodo,
+                periodo: this.controle.dados.periodo
+
+            }).then(({ data }) => {
+                mostraSucesso(data.msg);
+                this.preloadExportacao = false;
+            }).catch(erro => {
+                mostraErro(erro);
+                this.preloadExportacao = false;
+            });
+        },
         /***Campos de Filtros ****/
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
+                this.controle.dados.autocomplete_label_anterior = "";
+                this.controle.dados.autocomplete_label = "";
+                this.controle.dados.campoVaga = "";
                 this.$refs.componente.buscar();
             }
         },
@@ -282,9 +316,9 @@ const app = new Vue({
         },
         resetaCampoCliente() {
             if (this.controle.dados.autocomplete_label_cliente_anterior !== this.controle.dados.autocomplete_label_cliente) {
-                this.controle.dados.autocomplete_label_cliente_anterior = '';
-                this.controle.dados.autocomplete_label_cliente = '';
-                this.controle.dados.campoCliente = '';
+                this.controle.dados.autocomplete_label_cliente_anterior = "";
+                this.controle.dados.autocomplete_label_cliente = "";
+                this.controle.dados.campoCliente = "";
                 this.$refs.componente.buscar();
             }
         },
@@ -303,7 +337,7 @@ const app = new Vue({
                 this.comEntrevista.map(item => {
                     let id = item.id;
                     if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id)
+                        this.selecionados.push(id);
                     }
                 });
             } else {
@@ -311,7 +345,7 @@ const app = new Vue({
                     let id = item.id;
                     let index = this.selecionados.indexOf(id);
                     if (index >= 0) {
-                        this.selecionados.splice(index, 1)
+                        this.selecionados.splice(index, 1);
                     }
                 });
             }
@@ -328,7 +362,7 @@ const app = new Vue({
             this.editando = false;
 
             this.preload = true;
-            this.preloadForm= true;
+            this.preloadForm = true;
 
             this.tituloJanela = `#${id}`;
 
@@ -349,40 +383,40 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         cadastrar() {
 
-            if (this.form.curriculo.municipio_id === '') {
-                valida_campo_vazio($('#mun_' + this.hash), 1);
-                mostraErro('', 'Campo MUNICÍPIO não pode ficar vazio');
+            if (this.form.curriculo.municipio_id === "") {
+                valida_campo_vazio($("#mun_" + this.hash), 1);
+                mostraErro("", "Campo MUNICÍPIO não pode ficar vazio");
                 this.resetaCampoMunicipioModal();
                 return false;
             }
 
-            if (this.form.vaga_id === '') {
-                valida_campo_vazio($('#vaga_' + this.hash), 1);
-                mostraErro('', 'Campo VAGA não pode ficar vazio');
+            if (this.form.vaga_id === "") {
+                valida_campo_vazio($("#vaga_" + this.hash), 1);
+                mostraErro("", "Campo VAGA não pode ficar vazio");
                 this.resetaCampoVagaModal();
                 return false;
             }
 
-            if (this.form.cliente_id === '') {
-                valida_campo_vazio($('#cliente_' + this.hash), 1);
-                mostraErro('', 'Campo EMPRESA não pode ficar vazio');
+            if (this.form.cliente_id === "") {
+                valida_campo_vazio($("#cliente_" + this.hash), 1);
+                mostraErro("", "Campo EMPRESA não pode ficar vazio");
                 this.resetaCampoClienteModal();
                 return false;
             }
 
-            $('#janelaParecerEntrevista :input:visible').trigger('blur');
-            if ($('#janelaParecerEntrevista :input:visible.is-invalid').length) {
-                mostraErro('', 'Verifique os campos marcados')
+            $("#janelaParecerEntrevista :input:visible").trigger("blur");
+            if ($("#janelaParecerEntrevista :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os campos marcados");
                 return false;
             }
-            if (this.nr_dez === 'sim') {
+            if (this.nr_dez === "sim") {
                 if (this.nr.length === 0) {
-                    mostraErro('', 'Por favor insira o Certificado NR 10');
+                    mostraErro("", "Por favor insira o Certificado NR 10");
                     return false;
                 }
             }
@@ -392,46 +426,46 @@ const app = new Vue({
             axios.post(`${URL_ADMIN}/entrevistas/entrevista-rh/`, this.form)
                 .then(response => {
                     let data = response.data;
-                    mostraSucesso('', 'Entrevista salva com sucesso!');
-                    $('#janelaParecerEntrevista').modal('hide');
+                    mostraSucesso("", "Entrevista salva com sucesso!");
+                    $("#janelaParecerEntrevista").modal("hide");
                     this.$refs.componente.buscar();
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         alterar() {
-            if (this.form.curriculo.municipio_id === '') {
-                valida_campo_vazio($('#mun_' + this.hash), 1);
-                mostraErro('', 'Campo MUNICÍPIO não pode ficar vazio');
+            if (this.form.curriculo.municipio_id === "") {
+                valida_campo_vazio($("#mun_" + this.hash), 1);
+                mostraErro("", "Campo MUNICÍPIO não pode ficar vazio");
                 this.resetaCampoMunicipioModal();
                 return false;
             }
 
-            if (this.form.vaga_id === '') {
-                valida_campo_vazio($('#vaga_' + this.hash), 1);
-                mostraErro('', 'Campo VAGA não pode ficar vazio');
+            if (this.form.vaga_id === "") {
+                valida_campo_vazio($("#vaga_" + this.hash), 1);
+                mostraErro("", "Campo VAGA não pode ficar vazio");
                 this.resetaCampoVagaModal();
                 return false;
             }
 
-            if (this.form.cliente_id === '') {
-                valida_campo_vazio($('#cliente_' + this.hash), 1);
-                mostraErro('', 'Campo EMPRESA não pode ficar vazio');
+            if (this.form.cliente_id === "") {
+                valida_campo_vazio($("#cliente_" + this.hash), 1);
+                mostraErro("", "Campo EMPRESA não pode ficar vazio");
                 this.resetaCampoClienteModal();
                 return false;
             }
 
-            $('#janelaParecerEntrevista :input:visible').trigger('blur');
-            if ($('#janelaParecerEntrevista :input:visible.is-invalid').length) {
-                mostraErro('', 'Verifique os campos marcados')
+            $("#janelaParecerEntrevista :input:visible").trigger("blur");
+            if ($("#janelaParecerEntrevista :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os campos marcados");
                 return false;
             }
-            if (this.nr_dez === 'sim') {
+            if (this.nr_dez === "sim") {
                 if (this.nr.length === 0) {
-                    mostraErro('', 'Por favor insira o Certificado NR 10');
+                    mostraErro("", "Por favor insira o Certificado NR 10");
                     return false;
                 }
             }
@@ -441,14 +475,14 @@ const app = new Vue({
             axios.put(`${URL_ADMIN}/entrevistas/entrevista-rh/${this.form.parecer_rh.entrevista_rh.id}`, this.form.parecer_rh.entrevista_rh)
                 .then(response => {
                     let data = response.data;
-                    mostraSucesso('', 'Entrevista salva com sucesso!');
-                    $('#janelaParecerEntrevista').modal('hide');
+                    mostraSucesso("", "Entrevista salva com sucesso!");
+                    $("#janelaParecerEntrevista").modal("hide");
                     this.$refs.componente.buscar();
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         listaVagas() {
@@ -470,7 +504,7 @@ const app = new Vue({
             this.preload = false;
         },
 
-        usuarioAutenticado(){
+        usuarioAutenticado() {
             this.controle.carregando = true;
             axios.get(`${URL_ADMIN}/usuario/autenticado/`)
                 .then(response => {
@@ -501,7 +535,7 @@ const app = new Vue({
                             this.colunasTabela.nota_individual = true;
                         }
 
-                    }else{
+                    } else {
                         this.colunasTabela.cliente = true;
                         this.colunasTabela.pcd = false;
                         this.colunasTabela.rh_nota = true;
@@ -517,7 +551,7 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
         carregou(dados) {
             this.lista = dados.itens;
@@ -531,7 +565,7 @@ const app = new Vue({
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
-        },
+        }
 
     }
-})
+});

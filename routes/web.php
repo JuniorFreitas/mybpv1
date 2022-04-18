@@ -384,7 +384,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::group(['as' => 'entrevista.', 'prefix' => 'entrevistas'], function () {
         //Parecer de RH
         Route::group(['as' => 'parecer_rh.'], function () {
-            Route::get('parecer_rh/export', [\App\Http\Controllers\ParecerRhController::class, 'export'])->name('excel')->middleware('can:parecer_rh');
+            Route::post('parecer_rh/export', [\App\Http\Controllers\ParecerRhController::class, 'export'])->name('excel')->middleware('can:parecer_rh');
             Route::post('parecer_rh/atualizar', [\App\Http\Controllers\ParecerRhController::class, 'atualizar'])->name('atualizar')->middleware('can:parecer_rh');
             Route::post('parecer_rh/ficha_pdf', [\App\Http\Controllers\ParecerRhController::class, 'getFichaPdf'])->name('getFichaPdf')->middleware('can:parecer_rh');
             Route::resource('parecer_rh', \App\Http\Controllers\ParecerRhController::class)->middleware('can:parecer_rh');
