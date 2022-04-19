@@ -91,13 +91,18 @@
 <body style="margin: 0; padding: 0;">
 <div style="margin: 0 auto; padding: 20px">
     @php
-        $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
+        if (isset($dados['empresa_id']) || !empty($dados['empresa_id'])){
+            $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
+    }else{
+        $empresa = \App\Models\Cliente::withoutGlobalScopes()->find(auth()->user()->empresa_id);
+    }
     @endphp
     <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
         <tr>
             <td align="middle" style="padding: 21px">
                 @if($empresa)
-                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$empresa->apelido}}.jpg" style="width: 100%" alt=""> <br>
+                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$empresa->apelido}}.jpg"
+                         style="width: 100%" alt=""> <br>
                 @else
                     <img src="https://site.bpse.com.br/img/logo.png" alt=""> <br>
                 @endif
