@@ -167,6 +167,30 @@
         </template>
     </modal>
 
+    <modal id="janelaEnviarEmail" :titulo="tituloJanela" size="g">
+        <template slot="conteudo">
+            <preload class=" mt-2 text-center" v-if="preload"></preload>
+            <div v-if="!preload">
+                <fieldset>
+                    <legend>Envio de Email</legend>
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="text" class="form-control"
+                                   v-model="formEmail.email"
+                                   autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </template>
+        <template slot="rodape">
+            <button class="btn btn-primary btn-sm" v-if="!preload" @click="enviarEmail">
+                <i class="fa fa-share"></i> Enviar
+            </button>
+        </template>
+    </modal>
+
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <form class="row" @submit.prevent="$refs.componente.buscar()">
@@ -175,7 +199,8 @@
                 <input type="text"
                        placeholder="Buscar por nome ou cpf"
                        autocomplete="mastertag"
-                       class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoBusca">
+                       class="form-control form-control-sm" :disabled="controle.carregando"
+                       v-model="controle.dados.campoBusca">
             </div>
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
@@ -185,7 +210,7 @@
                               v-model="controle.dados.autocomplete_label"
                               placeholder="Por vaga"
                               @onblur="resetaCampo"
-                             @onselect="selecionaVaga"></autocomplete>
+                              @onselect="selecionaVaga"></autocomplete>
             </div>
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3" v-if="cliente_id === 1">
@@ -196,7 +221,7 @@
                               v-model="controle.dados.autocomplete_label_cliente"
                               placeholder="Por cliente"
                               @onblur="resetaCampoCliente"
-                             @onselect="selecionaCliente"></autocomplete>
+                              @onselect="selecionaCliente"></autocomplete>
             </div>
 
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
@@ -293,13 +318,6 @@
             <table class="tabela">
                 <thead>
                 <tr class="bg-default">
-                    {{--                    <th class="text-center">--}}
-                    {{--                        <input type="checkbox"--}}
-                    {{--                               :checked="tudoMarcado"--}}
-                    {{--                               :disabled="comAdm.length === 0"--}}
-                    {{--                               style="cursor: pointer"--}}
-                    {{--                               @click="selecionaTodos">--}}
-                    {{--                    </th>--}}
                     <th class="text-center">CÓD</th>
                     <th>Nome</th>
                     <th>CPF</th>
@@ -310,21 +328,6 @@
                 </thead>
                 <tbody>
                 <tr v-for="resultado in lista">
-                    {{--                    <td class="text-center">--}}
-                    {{--                        <label :for="resultado.curriculo_id">--}}
-                    {{--                            <input--}}
-                    {{--                                type="checkbox"--}}
-                    {{--                                v-model="selecionados"--}}
-                    {{--                                :value="resultado.feedback_curriculo.curriculo_id"--}}
-                    {{--                                :id="resultado.feedback_curriculo.curriculo_id"--}}
-                    {{--                                :style="resultado.admissao ? 'cursor:pointer' : 'cursor: not-allowed'"--}}
-                    {{--                                :title="resultado.admissao ? null : 'Não possui cadastro em Admissão'"--}}
-                    {{--                                v-if="resultado.admissao"--}}
-                    {{--                            >--}}
-                    {{--                            <input type="checkbox" v-else disabled="disabled"--}}
-                    {{--                                   title="Sem Anexos">--}}
-                    {{--                        </label>--}}
-                    {{--                    </td>--}}
                     <td class="text-center">
                         @{{resultado.id}}
                     </td>
@@ -347,12 +350,11 @@
                                 @click.prevent="formVisualizar(resultado.id)"
                                 data-toggle="modal"
                                 data-target="#janelaVisualizar"><i class="fa fa-search-plus"></i></button>
+                        <button class="btn btn-sm btn-primary" title="Reenviar Email"
+                                @click.prevent="formEnviarEmail(resultado.id)"
+                                data-toggle="modal"
+                                data-target="#janelaEnviarEmail"><i class="fa fa-share-square"></i></button>
 
-                        {{--                        <button class="btn btn-sm btn-primary"><i class="fa fa-envelope"></i></button>--}}
-
-                        {{--                        <button class="btn btn-sm btn-primary"><i class="fab fa-whatsapp"></i></button>--}}
-
-                        {{--                        <button class="btn btn-sm btn-primary"><i class="fa fa-print"></i></button>--}}
                     </td>
 
                 </tr>

@@ -133,10 +133,10 @@ return [
         'disco-documentospreadmissao' => array_merge($default,
             [
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-documentospreadmissao') : 'arquivos/disco-documentospreadmissao',
-                'urlShow' => env('APP_URL') . '/g/documentos/anexo',
-                'urlDownload' => env('APP_URL') . '/g/documentos/anexo',
-                'urlThumb' => env('APP_URL') . '/g/documentos/anexo',
-                'urlDelete' => env('APP_URL') . '/g/documentos/anexo',
+                'urlShow' => env('APP_URL') . '/documentos/anexo',
+                'urlDownload' => env('APP_URL') . '/documentos/anexoDownload',
+                'urlThumb' => env('APP_URL') . '/documentos/anexo',
+                'urlDelete' => env('APP_URL') . '/documentos/anexo',
                 'visibility' => 'public',
             ]
         ),

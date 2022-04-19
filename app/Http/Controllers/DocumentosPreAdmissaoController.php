@@ -6,6 +6,7 @@ use App\Models\Arquivo;
 use App\Models\Curriculo;
 use App\Models\DocumentosPreAdmissao;
 use App\Models\Sistema;
+use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -30,12 +31,15 @@ class DocumentosPreAdmissaoController extends Controller
         if (!Sistema::validaCPF($cpf)) {
             return response()->json(['msg' => 'CPF inválido'], 400);
         }
-        $candidato = Curriculo::whereCpf($cpf)
+        $candidato = Curriculo::withoutGlobalScopes()->whereCpf($cpf)
             ->whereNascimento((new DataHora($dataNascimento))->dataInsert())
-            ->whereHas('ResultadoIntegrado', function ($q) {
-                $q->whereDocumentosEntregue(true);
+            ->whereHas('Feedback', function ($q) {
+                $q->withoutGlobalScopes();
+                $q->whereHas('ResultadoIntegrado', function ($qu) {
+                    $qu->whereDocumentosEntregue(true);
+                });
             })
-            ->with('Admissao', 'Telefones',
+            ->with('Telefones',
                 'FotoTres',
                 'AnexosCpfRg',
                 'ComprovanteEnd',
@@ -93,15 +97,9 @@ class DocumentosPreAdmissaoController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\DocumentosPreAdmissao $documentosPreAdmissao
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(DocumentosPreAdmissao $documentosPreAdmissao)
+    public function edit($documentosPreAdmissao)
     {
-        //
+
     }
 
     /**
@@ -128,7 +126,7 @@ class DocumentosPreAdmissaoController extends Controller
             try {
                 DB::beginTransaction();
 
-                $curriculo = Curriculo::find($dados['id']);
+                $curriculo = Curriculo::withoutGlobalScopes()->find($dados['id']);
 
                 $curriculo->update([
                     'nome' => $dados['nome'],
@@ -470,9 +468,10 @@ class DocumentosPreAdmissaoController extends Controller
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 DB::rollback();
-                $msg = "error UPDATE MEDIDAS ADMINISTRATIVAS:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                $msg = "error UPDATE DOCUMENTOS PRÉ ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user();
                 \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
     }
@@ -504,7 +503,6 @@ class DocumentosPreAdmissaoController extends Controller
         return Arquivo::anexoDelete(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);
     }
 
-    //anexo ou foto
     public function download(Request $request, $arquivo)
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);

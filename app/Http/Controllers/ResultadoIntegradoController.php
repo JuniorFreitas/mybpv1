@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Entrevista\EnvioDocumentosMail;
+use App\Models\Cliente;
 use App\Models\FeedbackCurriculo;
 use App\Models\ResultadoIntegrado;
 use App\Models\SimuladoVaga;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Log;
 use MasterTag\DataHora;
 use PDF;
 
@@ -36,7 +39,7 @@ class ResultadoIntegradoController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -59,13 +62,18 @@ class ResultadoIntegradoController extends Controller
         } else {
             try {
                 \DB::beginTransaction();
-                ResultadoIntegrado::create($dados);
+//                ResultadoIntegrado::create($dados);
                 \DB::commit();
+                $feedback = FeedbackCurriculo::whereId($dados['feedback_id'])->with('Curriculo')->first();
+                \Mail::send(new EnvioDocumentosMail([$feedback]));
+
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
-                \Log::debug("erro STORE RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                $msg = "erro STORE RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+                \Log::debug($msg);
+                return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
 
         }
@@ -111,8 +119,8 @@ class ResultadoIntegradoController extends Controller
         $feedback->Curriculo->autocomplete_label_municipio_modal = $feedback->Curriculo->Cidade ? $feedback->Curriculo->Cidade->nome . ' - ' . $feedback->Curriculo->Cidade->uf : '';
         $feedback->Curriculo->autocomplete_label_municipio_modal_anterior = $feedback->Curriculo->Cidade ? $feedback->Curriculo->Cidade->nome . ' - ' . $feedback->Curriculo->Cidade->uf : '';
 
-        $feedback->autocomplete_label_vaga_modal = $feedback->VagaAberta->vagaSelecionada ? $feedback->VagaAberta->vagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf  : '';
-        $feedback->autocomplete_label_vaga_modal_anterior = $feedback->VagaAberta->vagaSelecionada ? $feedback->VagaAberta->vagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf  : '';
+        $feedback->autocomplete_label_vaga_modal = $feedback->VagaAberta->vagaSelecionada ? $feedback->VagaAberta->vagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
+        $feedback->autocomplete_label_vaga_modal_anterior = $feedback->VagaAberta->vagaSelecionada ? $feedback->VagaAberta->vagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
 
         $feedback->autocomplete_label_cliente_modal = $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
         $feedback->autocomplete_label_cliente_modal_anterior = $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
@@ -158,7 +166,7 @@ class ResultadoIntegradoController extends Controller
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
-                \Log::debug("erro update RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome);
+                Log::debug("erro update RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
 
