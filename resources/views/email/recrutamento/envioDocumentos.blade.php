@@ -37,7 +37,7 @@
                 descrição.<br><br>
 
                 <div class="botao">
-                    <a href="{{env('MIX_URL_SITE')}}/documentos">Clique Aqui.</a><br><br>
+                    <a href="{{env('APP_URL')}}/documentos">Clique Aqui.</a><br><br>
                 </div>
 
                 Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões
