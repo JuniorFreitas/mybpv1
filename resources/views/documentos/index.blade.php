@@ -63,7 +63,7 @@
         }
     </style>
 </head>
-<body>
+<body class="my-login-page">
 <div id="app" v-cloak>
 
     <div class="container-fluid"
@@ -76,7 +76,8 @@
                         <div class="col-lg-6 col-md-8 mx-auto">
                             <div class="card rounded shadow shadow-sm">
                                 <div class="card-header">
-                                    <img src="{{ asset('logo_bpse_color.png') }}" class="img-fluid" alt="logo_bpse">
+                                    <img src="{{ asset('images/logo_bpse_color.png') }}" class="img-fluid"
+                                         alt="logo_bpse">
                                 </div>
                                 <div class="card-body">
                                     <form @submit.prevent="autenticar" class="form" role="form" id="formAutenticar">
@@ -91,14 +92,15 @@
                                                    v-model="formUser.nascimento" v-mascara:data
                                                    onblur="valida_data_vazio(this)">
                                         </div>
-
-                                        <button type="submit" class="btn btn-primary btn-lg btn-block float-right">
-                                            ENTRAR
-                                        </button>
+                                        <div class="form-group m-0">
+                                            <button type="submit" class="btn btn-primary btn-block">
+                                                ENTRAR
+                                            </button>
+                                        </div>
                                     </form>
 
 
-                                    <div class="footer py-3 d-flex justify-content-center">
+                                    <div class="py-3 d-flex justify-content-center">
                                         <img src="https://site.bpse.com.br/img/logo_procem.png" alt=""
                                              class=" " style="height: 130px">
                                         <img src="https://site.bpse.com.br/img/selo_gptw.png" alt="" class=" "
@@ -109,7 +111,8 @@
                                         <a href="https://instagram.com/sejabpse" target="_blank" class="instagram"><i
                                                 class="fab fa-instagram"></i></a>
                                         <a href="https://www.linkedin.com/company/bpse/" target="_blank"
-                                           class="linkedin"><i class="fab fa-linkedin"></i></a>
+                                           class="linkedin"><i
+                                                class="fab fa-linkedin"></i></a>
                                         <a href="https://fb.com/bpse1" target="_blank" class="facebook"><i
                                                 class="fab fa-facebook"></i></a>
                                     </div>
