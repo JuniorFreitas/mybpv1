@@ -90,15 +90,19 @@
 </head>
 <body style="margin: 0; padding: 0;">
 <div style="margin: 0 auto; padding: 20px">
+    @php
+        if (isset($dados['empresa_id']) || !empty($dados['empresa_id'])){
+            $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
+    }else{
+        $empresa = \App\Models\Cliente::withoutGlobalScopes()->find(auth()->user()->empresa_id);
+    }
+    @endphp
     <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
         <tr>
             <td align="middle" style="padding: 21px">
-{{--                @if($dados['cliente']['Cliente'])--}}
-{{--                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$dados['cliente']['Cliente']['apelido']}}.jpg" style="width: 100%" alt=""> <br>--}}
-{{--                @elseif($dados['cliente'])--}}
-{{--                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$dados['cliente']['apelido']}}.jpg" style="width: 100%" alt=""> <br>--}}
-                @if(auth()->user()->Empresa->Cliente->apelido)
-                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{auth()->user()->Empresa->Cliente->apelido}}.jpg" style="width: 100%" alt=""> <br>
+                @if($empresa)
+                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$empresa->apelido}}.jpg"
+                         style="width: 100%" alt=""> <br>
                 @else
                     <img src="https://site.bpse.com.br/img/logo.png" alt=""> <br>
                 @endif
@@ -118,12 +122,12 @@
                         style="background: #f3f3f3; padding: 13px; line-height: 37px; border-radius: 9px; text-align: center">
                         <div style="text-align: center">
                             <strong style="text-transform: uppercase; color: #072433">
-                                {{auth()->user()->Empresa->Cliente->razao_social}}
+                                {{$empresa->razao_social}}
                                 <br>
                             </strong>
                         </div>
                         <img src="https://sgi.bpse.com.br/imagens/icons/location.png"
-                             alt="Endereço" height="22px"> {{auth()->user()->Empresa->Cliente->endereco_completo}}<br>
+                             alt="Endereço" height="22px"> {{$empresa->endereco_completo}}<br>
 
                     </div>
                     <br><br>

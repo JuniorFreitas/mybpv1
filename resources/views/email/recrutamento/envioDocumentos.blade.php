@@ -1,5 +1,5 @@
 @extends('layouts.mail.layout')
-@section('titulo', 'Você foi aprovado!')
+@section('titulo', 'Envio de Documentos')
 @push('css')
     <style>
         .botao a {
@@ -24,11 +24,15 @@
 @endpush
 @section('conteudo')
 
+    @php
+        $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
+    @endphp
+
     <table border="0" cellpadding="0" width="97%" style="width: 97%;">
         <tr>
             <td style="text-align: justify">
 
-                Prezado(a) sr(a) <strong>{{$dados['Curriculo']['nome']}}</strong>, Tudo bem?<br><br>
+                Prezado(a) sr(a) <strong>{{$dados['nome']}}</strong>, Tudo bem?<br><br>
 
                 Parabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos
                 para a etapa de documentos para admissão.<br><br>
@@ -46,7 +50,7 @@
 
                 Atenciosamente,<br><br>
 
-                Equipe {{auth()->user()->Empresa->Cliente->razao_social}}<br><br>
+                Equipe {{$empresa->razao_social}}<br><br>
 
             </td>
         </tr>

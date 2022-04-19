@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Cliente;
 use App\Models\FeedbackCurriculo;
@@ -62,18 +63,21 @@ class ResultadoIntegradoController extends Controller
         } else {
             try {
                 \DB::beginTransaction();
-//                ResultadoIntegrado::create($dados);
+                ResultadoIntegrado::create($dados);
                 \DB::commit();
                 $feedback = FeedbackCurriculo::whereId($dados['feedback_id'])->with('Curriculo')->first();
-                \Mail::send(new EnvioDocumentosMail([$feedback]));
-
+                JobEnvioDocumento::dispatch([
+                    'nome' => $feedback->Curriculo->nome,
+                    'email' => $feedback->Curriculo->email,
+                    'empresa_id' => $feedback->empresa_id,
+                ]);
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
                 $msg = "erro STORE RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+//                return response()->json(['msg' => $msg], 400);
+                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
 
         }

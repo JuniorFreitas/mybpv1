@@ -20,10 +20,10 @@ class EnvioDocumentosMail extends Mailable
 
     public function __construct(array $dados)
     {
-        $this->dados = $dados[0];
-        $this->to($this->dados['Curriculo']['email'], $this->dados['Curriculo']['nome']);
-        $this->from('naoresponda@mybp.com.br', 'BPSE-BUSINESS PARTNERS SERVIÇOS EMPRESARIAIS');
-        $this->subject = "Você foi aprovado!";
+        $this->dados = $dados;
+        $this->to($this->dados['email'], $this->dados['nome']);
+        $this->from('naoresponda@mybp.com.br', 'MyBP - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO');
+        $this->subject = "Envio de Documentos";
         $this->assunto = $this->subject;
     }
 

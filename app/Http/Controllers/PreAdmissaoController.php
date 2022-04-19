@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
@@ -80,7 +81,11 @@ class PreAdmissaoController extends Controller
             $curriculo->update(['email' => $dados['email']]);
             $curriculo->Pessoa->update(['login' => $dados['email']]);
             DB::commit();
-            \Mail::send(new EnvioDocumentosMail([$feedback]));
+            JobEnvioDocumento::dispatch([
+                'nome' => $curriculo->nome,
+                'email' => $feedback['email'],
+                'empresa_id' => $feedback->empresa_id
+            ]);
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollBack();
