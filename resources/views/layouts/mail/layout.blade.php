@@ -91,7 +91,7 @@
 <body style="margin: 0; padding: 0;">
 <div style="margin: 0 auto; padding: 20px">
     @php
-        if (isset($dados['empresa_id']) || !empty($dados['empresa_id'])){
+        if (isset($dados['empresa_id']) && !empty($dados['empresa_id'])){
             $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
     }else{
         $empresa = \App\Models\Cliente::withoutGlobalScopes()->find(auth()->user()->empresa_id);
@@ -100,7 +100,7 @@
     <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
         <tr>
             <td align="middle" style="padding: 21px">
-                @if($empresa)
+                @if(isset($empresa) && !empty($empresa))
                     <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$empresa->apelido}}.jpg"
                          style="width: 100%" alt=""> <br>
                 @else
@@ -117,24 +117,26 @@
                     @yield('conteudo')
                 </div>
 
-                <div style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555">
-                    <div
-                        style="background: #f3f3f3; padding: 13px; line-height: 37px; border-radius: 9px; text-align: center">
-                        <div style="text-align: center">
-                            <strong style="text-transform: uppercase; color: #072433">
-                                {{$empresa->razao_social}}
-                                <br>
-                            </strong>
+                @if(isset($empresa) && !empty($empresa))
+                    <div style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555">
+                        <div
+                            style="background: #f3f3f3; padding: 13px; line-height: 37px; border-radius: 9px; text-align: center">
+                            <div style="text-align: center">
+                                <strong style="text-transform: uppercase; color: #072433">
+                                    {{$empresa->razao_social}}
+                                    <br>
+                                </strong>
+                            </div>
+                            <img src="https://sgi.bpse.com.br/imagens/icons/location.png"
+                                 alt="Endereço" height="22px"> {{$empresa->endereco_completo}}<br>
+
                         </div>
-                        <img src="https://sgi.bpse.com.br/imagens/icons/location.png"
-                             alt="Endereço" height="22px"> {{$empresa->endereco_completo}}<br>
+                        <br><br>
 
+                        <span style="font-size: 11px; color: #696969">Enviado pelo sistema MyBP.</span><br>
+                        <span style="font-size: 11px; color: #696969">E-mail automático. Por favor, não responda.</span>
                     </div>
-                    <br><br>
-
-                    <span style="font-size: 11px; color: #696969">Enviado pelo sistema MyBP.</span><br>
-                    <span style="font-size: 11px; color: #696969">E-mail automático. Por favor, não responda.</span>
-                </div>
+                @endif
             </td>
         </tr>
     </table>

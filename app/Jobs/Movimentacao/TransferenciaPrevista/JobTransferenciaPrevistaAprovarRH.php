@@ -32,7 +32,8 @@ class JobTransferenciaPrevistaAprovarRH implements ShouldQueue
             'email_para' => $transferenciaPrevista->UserCadastrou->login,
             'status_aprovacao' => $transferenciaPrevista->resposta_rh,
             'ferias_id' => $transferenciaPrevista->id,
-            'colaborador' => $transferenciaPrevista->Colaborador->nome
+            'colaborador' => $transferenciaPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
         $this->mailGestor = [
@@ -41,7 +42,8 @@ class JobTransferenciaPrevistaAprovarRH implements ShouldQueue
             'email_para' => $transferenciaPrevista->QuemAprovou->login,
             'status_aprovacao' => $transferenciaPrevista->resposta_rh,
             'ferias_id' => $transferenciaPrevista->id,
-            'colaborador' => $transferenciaPrevista->Colaborador->nome
+            'colaborador' => $transferenciaPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }

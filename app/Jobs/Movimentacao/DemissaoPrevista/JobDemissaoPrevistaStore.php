@@ -30,7 +30,8 @@ class JobDemissaoPrevistaStore implements ShouldQueue
             'nome_para' => $demissaoPrevista->GestorAprovacao->nome,
             'email_para' => $demissaoPrevista->GestorAprovacao->login,
             'demissao_id' => $demissaoPrevista->id,
-            'colaborador' => $demissaoPrevista->Colaborador->nome
+            'colaborador' => $demissaoPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }

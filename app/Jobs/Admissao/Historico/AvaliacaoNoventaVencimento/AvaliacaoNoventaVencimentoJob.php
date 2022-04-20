@@ -101,7 +101,8 @@ class AvaliacaoNoventaVencimentoJob implements ShouldQueue
                 if (!empty($vencimentos)){
                     \Mail::send(new AvaliacaoNoventaVencimentoMail([
                         'usuario' => $usuario,
-                        'vencimentos' => $vencimentos
+                        'vencimentos' => $vencimentos,
+                        'empresa_id' => $empresa_id,
                     ]));
                 }
             }

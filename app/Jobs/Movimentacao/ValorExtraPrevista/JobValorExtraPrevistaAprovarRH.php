@@ -33,7 +33,8 @@ class JobValorExtraPrevistaAprovarRH implements ShouldQueue
             'email_para' => $valorExtraPrevista->UserCadastrou->login,
             'status_aprovacao' => $valorExtraPrevista->resposta_rh,
             'ferias_id' => $valorExtraPrevista->id,
-            'colaborador' => $valorExtraPrevista->Colaborador->nome
+            'colaborador' => $valorExtraPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
         $this->mailGestor = [
@@ -42,7 +43,8 @@ class JobValorExtraPrevistaAprovarRH implements ShouldQueue
             'email_para' => $valorExtraPrevista->QuemAprovou->login,
             'status_aprovacao' => $valorExtraPrevista->resposta_rh,
             'ferias_id' => $valorExtraPrevista->id,
-            'colaborador' => $valorExtraPrevista->Colaborador->nome
+            'colaborador' => $valorExtraPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }
