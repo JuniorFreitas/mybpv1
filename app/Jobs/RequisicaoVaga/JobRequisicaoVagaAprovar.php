@@ -29,7 +29,8 @@ class JobRequisicaoVagaAprovar implements ShouldQueue
             'email_para' => $requisicaoVaga->User->login,
             'status_aprovacao' => $requisicaoVaga->status_aprovacao,
             'requisicao_id' => $requisicaoVaga->id,
-            'cargo' => $requisicaoVaga->Cargo->nome
+            'cargo' => $requisicaoVaga->Cargo->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }

@@ -32,7 +32,8 @@ class JobDemissaoPrevistaAprovarRH implements ShouldQueue
             'email_para' => $demissaoPrevista->UserCadastrou->login,
             'status_aprovacao' => $demissaoPrevista->status_aprovacao,
             'demissao_id' => $demissaoPrevista->id,
-            'colaborador' => $demissaoPrevista->Colaborador->nome
+            'colaborador' => $demissaoPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
         $this->mailGestor = [
@@ -41,7 +42,8 @@ class JobDemissaoPrevistaAprovarRH implements ShouldQueue
             'email_para' => $demissaoPrevista->QuemAprovou->login,
             'status_aprovacao' => $demissaoPrevista->resposta_rh,
             'ferias_id' => $demissaoPrevista->id,
-            'colaborador' => $demissaoPrevista->Colaborador->nome
+            'colaborador' => $demissaoPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
 

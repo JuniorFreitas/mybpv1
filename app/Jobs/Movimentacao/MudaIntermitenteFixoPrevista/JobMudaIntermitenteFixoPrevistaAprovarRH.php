@@ -30,7 +30,8 @@ class JobMudaIntermitenteFixoPrevistaAprovarRH implements ShouldQueue
             'email_para' => $mudaIntermitentePrevista->UserCadastrou->login,
             'status_aprovacao' => $mudaIntermitentePrevista->resposta_rh,
             'ferias_id' => $mudaIntermitentePrevista->id,
-            'colaborador' => $mudaIntermitentePrevista->Colaborador->nome
+            'colaborador' => $mudaIntermitentePrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
         $this->mailGestor = [
@@ -39,7 +40,8 @@ class JobMudaIntermitenteFixoPrevistaAprovarRH implements ShouldQueue
             'email_para' => $mudaIntermitentePrevista->QuemAprovou->login,
             'status_aprovacao' => $mudaIntermitentePrevista->resposta_rh,
             'ferias_id' => $mudaIntermitentePrevista->id,
-            'colaborador' => $mudaIntermitentePrevista->Colaborador->nome
+            'colaborador' => $mudaIntermitentePrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }

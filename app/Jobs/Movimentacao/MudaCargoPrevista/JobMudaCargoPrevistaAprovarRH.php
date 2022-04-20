@@ -32,7 +32,8 @@ class JobMudaCargoPrevistaAprovarRH implements ShouldQueue
             'email_para' => $mudaCargoPrevista->UserCadastrou->login,
             'status_aprovacao' => $mudaCargoPrevista->resposta_rh,
             'ferias_id' => $mudaCargoPrevista->id,
-            'colaborador' => $mudaCargoPrevista->Colaborador->nome
+            'colaborador' => $mudaCargoPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
         $this->mailGestor = [
@@ -41,7 +42,8 @@ class JobMudaCargoPrevistaAprovarRH implements ShouldQueue
             'email_para' => $mudaCargoPrevista->QuemAprovou->login,
             'status_aprovacao' => $mudaCargoPrevista->resposta_rh,
             'ferias_id' => $mudaCargoPrevista->id,
-            'colaborador' => $mudaCargoPrevista->Colaborador->nome
+            'colaborador' => $mudaCargoPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }

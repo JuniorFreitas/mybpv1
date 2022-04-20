@@ -31,7 +31,8 @@ class JobRequisicaoVagaStore implements ShouldQueue
             'email_para' => $userPara->login,
             'requisicao_id' => $requisicao->id,
             'prioridade' => $requisicao->prioridade,
-            'cargo' => $requisicao->OutrasInformacoes->Cargo->nome
+            'cargo' => $requisicao->OutrasInformacoes->Cargo->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }

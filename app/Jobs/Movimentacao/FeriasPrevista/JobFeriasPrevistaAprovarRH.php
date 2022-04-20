@@ -32,7 +32,8 @@ class JobFeriasPrevistaAprovarRH implements ShouldQueue
             'email_para' => $feriasPrevista->UserCadastrou->login,
             'status_aprovacao' => $feriasPrevista->resposta_rh,
             'ferias_id' => $feriasPrevista->id,
-            'colaborador' => $feriasPrevista->Colaborador->nome
+            'colaborador' => $feriasPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
         $this->mailGestor = [
@@ -41,7 +42,8 @@ class JobFeriasPrevistaAprovarRH implements ShouldQueue
             'email_para' => $feriasPrevista->QuemAprovou->login,
             'status_aprovacao' => $feriasPrevista->resposta_rh,
             'ferias_id' => $feriasPrevista->id,
-            'colaborador' => $feriasPrevista->Colaborador->nome
+            'colaborador' => $feriasPrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }

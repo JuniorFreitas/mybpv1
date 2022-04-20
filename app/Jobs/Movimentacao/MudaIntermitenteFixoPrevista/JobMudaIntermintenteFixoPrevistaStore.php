@@ -31,7 +31,8 @@ class JobMudaIntermintenteFixoPrevistaStore implements ShouldQueue
             'id' => $mudaIntermitentePrevista->id,
             'cargo_anterior' => $mudaIntermitentePrevista->CargoAnterior->nome,
             'cargo_novo' => $mudaIntermitentePrevista->NovoCargo->nome,
-            'colaborador' => $mudaIntermitentePrevista->Colaborador->nome
+            'colaborador' => $mudaIntermitentePrevista->Colaborador->nome,
+            'empresa_id' => auth()->user()->empresa_id
         ];
 
     }
