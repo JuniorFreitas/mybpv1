@@ -140,7 +140,6 @@ export default {
             });
         //real time
         if (this.usuario.empresa_id) {
-            console.log(this.usuario);
             Echo.join(`notificacoes.${this.usuario.id}`)
                 .listen('.membro_tarefa_add', (e) => {
                     this.lista.push(e);

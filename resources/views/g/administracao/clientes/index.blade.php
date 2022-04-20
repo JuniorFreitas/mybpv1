@@ -606,6 +606,18 @@
                                                 <option value="1">30 dias</option>
                                                 <option value="2">60 dias</option>
                                                 <option value="3">90 dias</option>
+                                                <option value="4">120 dias</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Envia notificação no whatsapp</label>
+                                            <select v-model="form.cliente_config.envia_whatsapp" class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option :value="true">Sim</option>
+                                                <option :value="false">Não</option>
                                             </select>
                                         </div>
                                     </div>

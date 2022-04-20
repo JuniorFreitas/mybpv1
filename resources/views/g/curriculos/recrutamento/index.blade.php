@@ -178,7 +178,8 @@
                         <div class="col-12 col-md-4" v-if="editando">
                             <div class="form-group">
                                 <label>Vaga Pretendida</label>
-                                <input type="text" disabled="disabled" class="form-control" :value="form.vaga_aberta.vaga_selecionada.nome">
+                                <input type="text" disabled="disabled" class="form-control"
+                                       :value="form.vaga_aberta.vaga_selecionada.nome">
                             </div>
 
                         </div>
@@ -257,7 +258,7 @@
                                               placeholder="Digite o nome da cargo"
                                               :id="`vaga_modal_${hash}`"
                                               @onblur="resetaCampoVagaModal"
-                                             @onselect="selecionaVagaModal"></autocomplete>
+                                              @onselect="selecionaVagaModal"></autocomplete>
                             </div>
                         </div>
 
@@ -317,20 +318,22 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-4"
-                             v-if="form_feedback.contato_realizado">
-                            <div class="form-group">
-                                <label>Enviar Notificação via whatsApp</label>
-                                <select class="form-control"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.envia_whatsapp">
-                                    <option value="">Selecione</option>
-                                    <option :value="true">SIM</option>
-                                    <option :value="false">NÃO</option>
-                                </select>
+                        <template v-if="permite_envio_whatsapp">
+                            <div class="col-12 col-md-4"
+                                 v-if="form_feedback.contato_realizado">
+                                <div class="form-group">
+                                    <label>Enviar Notificação via whatsApp</label>
+                                    <select class="form-control"
+                                            onblur="valida_campo_vazio(this,1)"
+                                            onchange="valida_campo_vazio(this,1)"
+                                            v-model="form_feedback.envia_whatsapp">
+                                        <option value="">Selecione</option>
+                                        <option :value="true">SIM</option>
+                                        <option :value="false">NÃO</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                        </template>
 
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
@@ -349,9 +352,9 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
                             <div class="form-group">
-                                <label for="">Entrevista</label>
+                                {{--                                <label for="">Entrevista</label>--}}
                                 <datepicker :hora="true"
-                                            label=""
+                                            label="Entrevista"
                                             min="{{(new \MasterTag\DataHora())->dataCompleta()}}"
                                             posicao="up" v-model="form_feedback.data_entrevista"></datepicker>
 
@@ -378,7 +381,7 @@
                                               :id="`cliente_modal_${hash}`"
                                               placeholder="Digite o nome da empresa"
                                               @onblur="resetaCampoClienteModal"
-                                             @onselect="selecionaClienteModal"></autocomplete>
+                                              @onselect="selecionaClienteModal"></autocomplete>
                             </div>
                         </div>
                         <div class="col-12 col-md-12">
@@ -562,10 +565,10 @@
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-{{--                <button :disabled="controle.carregando" href="{{\App\Models\Sistema::UrlServidor}}/recrutamentos/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
-{{--                   class="btn btn-sm btn-primary"><i--}}
-{{--                        class="fas fa-file-excel"></i>--}}
-{{--                    Exportar Excel</button>--}}
+                {{--                <button :disabled="controle.carregando" href="{{\App\Models\Sistema::UrlServidor}}/recrutamentos/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
+                {{--                   class="btn btn-sm btn-primary"><i--}}
+                {{--                        class="fas fa-file-excel"></i>--}}
+                {{--                    Exportar Excel</button>--}}
             </div>
         </form>
     </fieldset>

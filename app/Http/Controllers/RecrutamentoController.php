@@ -7,6 +7,7 @@ use App\Mail\DesclassificacaoMail;
 use App\Mail\ProvaMail;
 use App\Mail\ProximaEtapaMail;
 use App\Models\Cliente;
+use App\Models\ClienteConfig;
 use App\Models\Curriculo;
 use App\Models\NotificacaoWhats;
 use App\Models\SimuladoVaga;
@@ -71,7 +72,7 @@ class RecrutamentoController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Curriculo
      */
     public function edit(Curriculo $recrutamento)
     {
@@ -171,7 +172,11 @@ class RecrutamentoController extends Controller
             $dados['data_envia_whatsapp'] = null;
             $dados['user_envia_whatsapp'] = null;
 
-            if ($dados['contato_realizado']) {
+            $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+            $permite_envio_whatsapp = !empty($permite_envio_whatsapp) ? $permite_envio_whatsapp->envia_whatsapp : false;
+
+            if ($dados['contato_realizado'] && $permite_envio_whatsapp) {
+
                 $dados['envia_whatsapp'] = $dados['envia_whatsapp'] == 'true' ? true : false;
                 $dados['data_envia_whatsapp'] = $dados['envia_whatsapp'] ? (new DataHora())->dataHoraInsert() : null;
                 $dados['user_envia_whatsapp'] = $dados['envia_whatsapp'] ? auth()->id() : null;
@@ -204,7 +209,7 @@ class RecrutamentoController extends Controller
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
                                 'empresa' => $empresa->razao_social,
-                                'logo' => "https://mybp-prod.s3.amazonaws.com/public/email_".$empresa->apelido.".jpg",
+                                'logo' => "https://mybp-prod.s3.amazonaws.com/public/email_" . $empresa->apelido . ".jpg",
                                 'vaga_selecionada' => $vaga_aberta->nome . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
                                 'local_entrevista' => $dados['local_entrevista'],
                                 'data_entrevista' => $dados['data_entrevista'],
@@ -216,7 +221,7 @@ class RecrutamentoController extends Controller
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_provas'] = auth()->id();
                             $provas = SimuladoVaga::whereVagaId($dados['vaga_id'])->whereOnline(true)->get();
-                            if ($dados['contato_realizado'] && $dados['envia_whatsapp']) {
+                            if ($dados['contato_realizado'] && $dados['envia_whatsapp'] && $permite_envio_whatsapp) {
                                 $qntProvas = count($provas);
                                 $mensagem = "";
                                 if ($qntProvas > 1) {
@@ -299,7 +304,7 @@ class RecrutamentoController extends Controller
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
                                 'empresa' => $empresa->razao_social,
-                                'logo' => "https://mybp-prod.s3.amazonaws.com/public/email_".$empresa->apelido.".jpg",
+                                'logo' => "https://mybp-prod.s3.amazonaws.com/public/email_" . $empresa->apelido . ".jpg",
                                 'vaga_selecionada' => $vaga_aberta->nome . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
                                 'local_entrevista' => $dados['local_entrevista'],
                                 'data_entrevista' => $dados['data_entrevista'],
@@ -311,7 +316,7 @@ class RecrutamentoController extends Controller
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_provas'] = auth()->id();
                             $provas = SimuladoVaga::whereVagaId($dados['vaga_id'])->whereOnline(true)->get();
-                            if ($dados['contato_realizado'] && $dados['envia_whatsapp']) {
+                            if ($dados['contato_realizado'] && $dados['envia_whatsapp'] && $permite_envio_whatsapp) {
                                 $qntProvas = count($provas);
                                 $mensagem = "";
                                 if ($qntProvas > 1) {
@@ -469,11 +474,18 @@ class RecrutamentoController extends Controller
 
         $resultado = $resultado->orderBy('created_at', 'desc')->paginate($request->pages);
 
+        $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+
+        $permite_envio_whatsapp = !empty($permite_envio_whatsapp) ? $permite_envio_whatsapp->envia_whatsapp : false ;
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $resultado->items()
+            'dados' => [
+                'items' => $resultado->items(),
+                'permite_envio_whatsapp' => $permite_envio_whatsapp,
+            ]
         ]);
     }
 

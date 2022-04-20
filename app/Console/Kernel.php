@@ -38,7 +38,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(new LembreteTarefaJob)->everyMinute();
         //$schedule->call(new VerificaJornadasJob)->everyMinute();
         $schedule->call(new VerificaJornadasJob)->daily();
-        $schedule->call(new VerificaVencimentoFeriasJob)->everyMinute();
+        $schedule->call(new VerificaVencimentoFeriasJob)->monthly();
         $schedule->call(new VerificaSaidaFeriasJob)->monthly();
         $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily();
         $schedule->call(new JobDeletaExportacaoExcel)->daily();

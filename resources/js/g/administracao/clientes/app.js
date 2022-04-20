@@ -78,6 +78,7 @@ const app = new Vue({
             cliente_config: {
                 id: '',
                 verifica_mes_vencimento: '',
+                envia_whatsapp: '',
             }
         },
 
@@ -219,6 +220,7 @@ const app = new Vue({
                     if (!response.data.cliente_config) {
                         this.form.cliente_config = {
                             'verifica_mes_vencimento': '',
+                            'envia_whatsapp': '',
                         }
                     }
                     this.form.como_conheceu = !this.form.como_conheceu ? '' : this.form.como_conheceu;

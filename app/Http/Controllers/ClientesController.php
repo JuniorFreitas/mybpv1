@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ClientesExport;
+use App\Mail\Movimentacao\FeriasPrevista\SaidaMail;
 use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
 use App\Models\Area;
 use App\Models\Arquivo;
@@ -47,7 +48,7 @@ class ClientesController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -211,6 +212,17 @@ class ClientesController extends Controller
                             }
                         }
                     }
+                }
+
+                if (isset($dados['cliente_config'])) {
+                    $dados['cliente_config']['envia_whatsapp'] = $dados['cliente_config']['envia_whatsapp'] == 'true' ? true : false;
+                    $dados = [
+                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                        'cliente_id' => $cliente->id
+                    ];
+                    ClienteConfig::create($dados);
+
                 }
 
                 DB::commit();
@@ -510,10 +522,14 @@ class ClientesController extends Controller
 
                 if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
                     $config = ClienteConfig::find($dados['cliente_config']['id']);
-                    $config->update(['verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento']]);
+                    $config->update([
+                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                    ]);
                 } else {
                     $dados = [
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                         'cliente_id' => $cliente->id
                     ];
                     ClienteConfig::create($dados);
@@ -548,42 +564,39 @@ class ClientesController extends Controller
 
     public function atualizar(Request $request)
     {
+        //        $resultado = User::with('Area:id,label', 'Telefones:id,cliente_id,numero');
+        $resultado = Cliente::with('Area:id,label', 'Telefones:id,cliente_id,numero');
 
+        if ($request->filled('campoBusca')) {
+            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
 
+            $resultado->where('razao_social', 'like', '%' . $request->campoBusca . '%')
+                ->orWhere('nome_fantasia', 'like', '%' . $request->campoBusca . '%')
+                ->orWhere('cnpj', 'like', '%' . $request->campoBusca . '%')
+                ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
+                ->orWhere('nome', 'like', '%' . $request->campoBusca . '%')
+                ->orWhere('id', $request->campoBusca);
+        }
 
-//        $resultado = User::with('Area:id,label', 'Telefones:id,cliente_id,numero');
-//        $resultado = Cliente::with('Area:id,label', 'Telefones:id,cliente_id,numero');
-//
-//        if ($request->filled('campoBusca')) {
-//            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
-//
-//            $resultado->where('razao_social', 'like', '%' . $request->campoBusca . '%')
-//                ->orWhere('nome_fantasia', 'like', '%' . $request->campoBusca . '%')
-//                ->orWhere('cnpj', 'like', '%' . $request->campoBusca . '%')
-//                ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
-//                ->orWhere('nome', 'like', '%' . $request->campoBusca . '%')
-//                ->orWhere('id', $request->campoBusca);
-//        }
-//
-//        if ($request->filled('campoTipo')) {
-//            $resultado->whereTipoCliente($request->campoTipo);
-//        }
-//
-//        if ($request->filled('campoStatus')) {
-//            $status = $request->campoStatus == 'true' ? true : false;
-//            $resultado->whereAtivo($status);
-//        }
-//
-//        $servicos = Servico::whereAtivo(true)->orderBy('titulo')->get();
-//        $areas = Area::whereAtivo(true)->get();
-//        $resultado = $resultado->orderByDesc('ativo')->orderBy('razao_social')->orderBy('nome')->orderBy('tipo_cliente')->paginate(50);
-//
-//        return response()->json([
-//            'atual' => $resultado->currentPage(),
-//            'ultima' => $resultado->lastPage(),
-//            'total' => $resultado->total(),
-//            'dados' => ['itens' => $resultado->items(), 'servicos' => $servicos, 'areas' => $areas]
-//        ]);
+        if ($request->filled('campoTipo')) {
+            $resultado->whereTipoCliente($request->campoTipo);
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == 'true' ? true : false;
+            $resultado->whereAtivo($status);
+        }
+
+        $servicos = Servico::whereAtivo(true)->orderBy('titulo')->get();
+        $areas = Area::whereAtivo(true)->get();
+        $resultado = $resultado->orderByDesc('ativo')->orderBy('razao_social')->orderBy('nome')->orderBy('tipo_cliente')->paginate(50);
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => ['itens' => $resultado->items(), 'servicos' => $servicos, 'areas' => $areas]
+        ]);
     }
 
     public function ativaDesativa(Cliente $cliente)

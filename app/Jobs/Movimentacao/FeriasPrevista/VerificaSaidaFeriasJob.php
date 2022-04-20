@@ -17,7 +17,8 @@ use Illuminate\Queue\SerializesModels;
 use Mail;
 use MasterTag\DataHora;
 
-class VerificaSaidaFeriasJob implements ShouldQueue {
+class VerificaSaidaFeriasJob implements ShouldQueue
+{
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
@@ -28,7 +29,8 @@ class VerificaSaidaFeriasJob implements ShouldQueue {
      * @return void
      */
 
-    public function __construct() {
+    public function __construct()
+    {
 
     }
 
@@ -43,17 +45,17 @@ class VerificaSaidaFeriasJob implements ShouldQueue {
      *
      * @return void
      */
-    public function handle() {
+    public function handle()
+    {
 
         $agora = new DataHora();
-        $agora->setSegundo(0);
-        $inicio = $agora->dataHoraInsert();
+        $inicio = $agora->dataInsert();
         $ultimoDiaMes = $agora->ultimoDiaMes();
         $mes = $agora->mes();
         $ano = $agora->ano();
-        $dataHora = $ano . '-' . $mes . '-' . $ultimoDiaMes . ' 23:59:59';
+        $dataHora = $ano . '-' . $mes . '-' . $ultimoDiaMes;
         $fim = new DataHora($dataHora);
-        $fim = $fim->dataHoraInsert();
+        $fim = $fim->dataInsert();
 
         $listaDeEmprasaID = Sistema::listaEmpresas();
 
@@ -61,14 +63,31 @@ class VerificaSaidaFeriasJob implements ShouldQueue {
 
             $tarefaParaLembrar = FeriasPrevista::withoutGlobalScopes()->whereEmpresaId($empresa_id)
                 ->whereBetween('data_saida', [$inicio, $fim])
-                ->with('Colaborador')->get();
+                ->with(['Colaborador' => function ($q) {
+                    $q->withoutGlobalScopes();
+                }])->get();
 
-            //PILLAR EXCLUSIVO
-            $usuario = User::find(39766);
-            Mail::send(new SaidaMail([
-                'usuario' => $usuario,
-                'vencimento' => $tarefaParaLembrar
-            ]));
+            $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                ->whereIn('tipo', ['Administrador', 'Suporte'])
+                ->whereHas('UserRecebeEmail', function ($q) {
+                    $q->where('nome', 'Vencimento Férias');
+                    $q->where('ativo', true);
+                })
+                ->with(['UserRecebeEmail' => function ($q) {
+                    $q->where('nome', 'Vencimento Férias');
+                    $q->where('ativo', true);
+                }])
+                ->get(['id', 'nome', 'login']);
+
+            foreach ($usuarios as $usuario) {
+                if (!empty($tarefaParaLembrar)) {
+                    Mail::send(new SaidaMail([
+                        'usuario' => $usuario,
+                        'vencimento' => $tarefaParaLembrar,
+                        'empresa_id' => $empresa_id
+                    ]));
+                }
+            }
         }
     }
 }

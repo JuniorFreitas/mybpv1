@@ -20,17 +20,21 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVerificaMesVencimento($value)
  * @mixin \Eloquent
+ * @property bool|null $envia_whatsapp
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereEnviaWhatsapp($value)
  */
 class ClienteConfig extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'envia_whatsapp',
         'verifica_mes_vencimento',
         'cliente_id',
     ];
 
     protected $casts = [
+        'envia_whatsapp' => 'boolean',
         'verifica_mes_vencimento' => 'int',
         'cliente_id' => 'int',
     ];
