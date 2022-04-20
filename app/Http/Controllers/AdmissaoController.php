@@ -126,6 +126,7 @@ class AdmissaoController extends Controller
 
         $tipo_admissao = [
             'TEMPORARIO',
+            'INTERMITENTE',
             'DETERMINADO'
         ];
 
@@ -585,6 +586,7 @@ class AdmissaoController extends Controller
 
         $feedback = $admissao;
         $admissaoDados = $dados['admissao'];
+        $admissaoDados['feedback_id'] = $feedback->id;
 
         $dadosVagaAberta = VagasAbertas::find($dados['vagas_abertas_id']);
 
@@ -743,6 +745,7 @@ class AdmissaoController extends Controller
 
                 }
                 if (in_array($admissaoDados['tipo_admissao'], $tipo_admissao)) {
+
                     $data = new DataHora($admissaoDados['data_encerramento']);
 
                     $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
@@ -799,7 +802,7 @@ class AdmissaoController extends Controller
                 \Log::alert($dados);
                 \Log::info("-------FIM DE DADOS-------");
 
-                return response()->json(['msg' => $msg], 400);
+                return response()->json(['msg' => $e->getTrace()], 400);
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
