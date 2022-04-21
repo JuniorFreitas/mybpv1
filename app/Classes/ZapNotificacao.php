@@ -2,6 +2,9 @@
 
 namespace App\Classes;
 
+use App\Models\NotificacaoWhats;
+use App\Models\NotificacaoWhatsapp;
+
 class ZapNotificacao
 {
     private $token = 'api-fc3501695a44cf7ca6c4';
@@ -16,11 +19,17 @@ class ZapNotificacao
             ->setSecret($this->secret);
     }
 
-
-    public function enviar($numero, $mensagem)
+    public function enviar(array $dados)
     {
-        $send = $this->Zap->sendMessage($numero, $mensagem)->getResult();
+        $send = $this->Zap->sendMessage($dados['telefone'], $dados['mensagem'])->getResult();
         if ($send['result'] == 'success') {
+            $notificacao = new NotificacaoWhatsapp();
+            $notificacao->enviado_id = $dados['enviado_id'];
+            $notificacao->user_id = auth()->id();
+            $notificacao->messageid = intval($send['messageid']);
+            $notificacao->telefone = $dados['telefone'];
+            $notificacao->mensagem = $dados['mensagem'];
+            $notificacao->save();
             return $send;
         } else {
             return $send;

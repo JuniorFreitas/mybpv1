@@ -106,6 +106,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder|Cliente wherePoliticaGq($value)
  * @method static Builder|Cliente whereValores($value)
  * @method static Builder|Cliente whereVisao($value)
+ * @property-read \App\Models\ClienteConfig|null $ClienteConfig
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
+ * @property-read int|null $vagas_abertas_count
  */
 class Cliente extends Model
 {
@@ -384,6 +387,11 @@ class Cliente extends Model
     public function VagasAbertas()
     {
         return $this->hasMany(VagasAbertas::class, 'empresa_id', 'id');
+    }
+
+    public function ClienteConfig()
+    {
+        return $this->hasOne(ClienteConfig::class, 'cliente_id', 'id');
     }
 
     protected static function booted()

@@ -14,6 +14,7 @@ const app = new Vue({
             preloadAjax: false,
             editando: false,
             apagado: false,
+            permite_envio_whatsapp: null,
 
             empresa: 0,
 
@@ -206,7 +207,7 @@ const app = new Vue({
                             Object.assign(this.form_feedback, data.feed_back);
                             this.feedback = true;
                             if (data.feed_back.vaga_aberta.vaga_selecionada) {
-                                this.form_feedback.autocomplete_label_vaga_modal = data.feed_back.vaga_aberta.vaga_selecionada.nome + ' - ' + data.feed_back.vaga_aberta.municipio.nome  + ' - ' + data.feed_back.vaga_aberta.municipio.uf ;
+                                this.form_feedback.autocomplete_label_vaga_modal = data.feed_back.vaga_aberta.vaga_selecionada.nome + ' - ' + data.feed_back.vaga_aberta.municipio.nome + ' - ' + data.feed_back.vaga_aberta.municipio.uf;
                                 this.form_feedback.tem_provas = data.feed_back.vaga_aberta.vaga_selecionada.simulado_vaga.length > 0;
                             }
                             if (data.feed_back.cliente) {
@@ -323,7 +324,8 @@ const app = new Vue({
                 this.preloadAjax = false;
             },
             carregou(dados) {
-                this.lista = dados;
+                this.lista = dados.items;
+                this.permite_envio_whatsapp = dados.permite_envio_whatsapp;
                 this.controle.carregando = false;
 
             },

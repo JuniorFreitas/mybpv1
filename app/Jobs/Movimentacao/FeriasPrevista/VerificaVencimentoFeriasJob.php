@@ -3,6 +3,8 @@
 namespace App\Jobs\Movimentacao\FeriasPrevista;
 
 use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
+use App\Models\Cliente;
+use App\Models\ClienteConfig;
 use App\Models\FeriasPrevista;
 use App\Models\Sistema;
 use App\Models\User;
@@ -45,31 +47,50 @@ class VerificaVencimentoFeriasJob implements ShouldQueue
     public function handle()
     {
 
-        $agora = new DataHora();
-        $agora->setSegundo(0);
-        $agora->addMes(2);
-        $inicio = $agora->dataHoraInsert();
-        $ultimoDiaMes = $agora->ultimoDiaMes();
-        $mes = $agora->mes();
-        $ano = $agora->ano();
-        $dataHora = $ano . '-' . $mes . '-' . $ultimoDiaMes . ' 23:59:59';
-        $fim = new DataHora($dataHora);
-        $fim = $fim->dataHoraInsert();
-
         $listaDeEmprasaID = Sistema::listaEmpresas();
 
         foreach ($listaDeEmprasaID as $empresa_id) {
 
-            $tarefaParaLembrar = FeriasPrevista::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                ->whereBetween('ultima_data', [$inicio, $fim])
-                ->with('Colaborador')->get();
+            $cliente = ClienteConfig::whereClienteId($empresa_id)->first();
 
-            //PILLAR EXCLUSIVO
-            $usuario = User::find(39766);
-            Mail::send(new VencimentoMail([
-                'usuario' => $usuario,
-                'vencimento' => $tarefaParaLembrar
-            ]));
+            if (!empty($cliente)) {
+
+                $agora = new DataHora();
+                $agora->addMes($cliente->verifica_mes_vencimento);
+                $inicio = $agora->dataInsert();
+                $ultimoDiaMes = $agora->ultimoDiaMes();
+                $mes = $agora->mes();
+                $ano = $agora->ano();
+                $dataHora = $ano . '-' . $mes . '-' . $ultimoDiaMes;
+                $fim = new DataHora($dataHora);
+                $fim = $fim->dataInsert();
+
+                $tarefaParaLembrar = FeriasPrevista::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                    ->whereBetween('ultima_data', [$inicio, $fim])
+                    ->with(['Colaborador' => function ($q) {
+                        $q->withoutGlobalScopes();
+                    }])->get();
+
+                $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                    ->whereIn('tipo', ['Administrador', 'Suporte'])
+                    ->whereHas('UserRecebeEmail', function ($q) {
+                        $q->where('nome', 'Vencimento Férias');
+                        $q->where('ativo', true);
+                    })
+                    ->with(['UserRecebeEmail' => function ($q) {
+                        $q->where('nome', 'Vencimento Férias');
+                        $q->where('ativo', true);
+                    }])
+                    ->get(['id', 'nome', 'login']);
+
+                foreach ($usuarios as $usuario) {
+                    Mail::send(new VencimentoMail([
+                        'usuario' => $usuario,
+                        'vencimento' => $tarefaParaLembrar,
+                        'empresa_id' => $empresa_id
+                    ]));
+                }
+            }
         }
     }
 }

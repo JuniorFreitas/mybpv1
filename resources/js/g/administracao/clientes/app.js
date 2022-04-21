@@ -74,6 +74,12 @@ const app = new Vue({
                 detalhe: '',
             }],
             telefonesDelete: [],
+
+            cliente_config: {
+                id: '',
+                verifica_mes_vencimento: '',
+                envia_whatsapp: '',
+            }
         },
 
         urlAnexoUpload: `${URL_ADMIN}/administracao/clientes/uploadAnexos`,
@@ -211,7 +217,14 @@ const app = new Vue({
                     Object.assign(this.form, response.data);
                     this.editando = true;
                     this.preloadAjax = false;
+                    if (!response.data.cliente_config) {
+                        this.form.cliente_config = {
+                            'verifica_mes_vencimento': '',
+                            'envia_whatsapp': '',
+                        }
+                    }
                     this.form.como_conheceu = !this.form.como_conheceu ? '' : this.form.como_conheceu;
+
                     setupCampo();
                 }).catch(
                 error => (this.preloadAjax = false)

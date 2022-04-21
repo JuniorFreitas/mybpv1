@@ -25,9 +25,8 @@ class VencimentoMail extends Mailable
 
         $this->dados = $dados;
         $this->subject = 'Lembrete de vencimento de férias';
-
         $this->to($this->dados['usuario']->login, $this->dados['usuario']->nome);
-        $this->from(env('MAIL_FROM_ADDRESS'), env('APP_NAME'));
+        $this->from('naoresponda@mybp.com.br', 'MyBP - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO');
     }
 
     /**

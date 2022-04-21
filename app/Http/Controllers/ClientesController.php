@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ClientesExport;
+use App\Mail\Movimentacao\FeriasPrevista\SaidaMail;
+use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
 use App\Models\Area;
 use App\Models\Arquivo;
 use App\Models\Cliente;
+use App\Models\ClienteConfig;
+use App\Models\FeriasPrevista;
 use App\Models\Servico;
 use App\Models\Sistema;
 use App\Models\User;
@@ -44,7 +48,7 @@ class ClientesController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -210,6 +214,17 @@ class ClientesController extends Controller
                     }
                 }
 
+                if (isset($dados['cliente_config'])) {
+                    $dados['cliente_config']['envia_whatsapp'] = $dados['cliente_config']['envia_whatsapp'] == 'true' ? true : false;
+                    $dados = [
+                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                        'cliente_id' => $cliente->id
+                    ];
+                    ClienteConfig::create($dados);
+
+                }
+
                 DB::commit();
                 return response()->json([], 201);
 
@@ -238,11 +253,11 @@ class ClientesController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\Cliente $cliente
-     * @return \Illuminate\Http\Response
+     * @return Cliente
      */
     public function edit(Cliente $cliente)
     {
-        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote');
+        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote', 'ClienteConfig');
         $cliente->areas_etiquetas_del = [];
         $cliente->ServicosCliente->transform(function ($item) {
             $item->anexosDel = [];
@@ -505,6 +520,20 @@ class ClientesController extends Controller
                     }
                 }
 
+                if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
+                    $config = ClienteConfig::find($dados['cliente_config']['id']);
+                    $config->update([
+                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                    ]);
+                } else {
+                    $dados = [
+                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                        'cliente_id' => $cliente->id
+                    ];
+                    ClienteConfig::create($dados);
+                }
 
                 DB::commit();
                 return response()->json([], 201);
@@ -535,7 +564,7 @@ class ClientesController extends Controller
 
     public function atualizar(Request $request)
     {
-//        $resultado = User::with('Area:id,label', 'Telefones:id,cliente_id,numero');
+        //        $resultado = User::with('Area:id,label', 'Telefones:id,cliente_id,numero');
         $resultado = Cliente::with('Area:id,label', 'Telefones:id,cliente_id,numero');
 
         if ($request->filled('campoBusca')) {
