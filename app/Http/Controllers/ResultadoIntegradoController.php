@@ -79,7 +79,7 @@ class ResultadoIntegradoController extends Controller
                                 "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
 
                             $whatsNotificacao = (new ZapNotificacao())->enviar([
-                                'enviado_id' => $feedback->id,
+                                'enviado_id' => $feedback->curriculo_id,
                                 'telefone' => $feedback->TelPrincipal->sonumero,
                                 'mensagem' => $mensagem
                             ]);
