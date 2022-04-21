@@ -226,17 +226,6 @@ class TreinamentoController extends Controller
             'Treinamento.QuemCadastrou'
         );
 
-        /* $resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->with(
-             'Feedback.Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
-             'Feedback.VagaSelecionada:id,nome',
-             'Feedback.Cliente:id,nome_fantasia,nome',
-             'Feedback.Cliente:id,nome_fantasia,nome',
-             'Admissao.AreaEtiqueta',
-             'FotoTres',
-             'Treinamento.Vencimentos',
-             'Treinamento.QuemCadastrou'
-         );*/
-
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
                 $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
@@ -279,15 +268,14 @@ class TreinamentoController extends Controller
         }
 
         if ($request->filled('campoNr_trinta_tres')) {
-
-            if ($request->campoNr_trinta_tres == 'true') {
-                $resultado->whereHas('Treinamento.Vencimentos', function ($query) use ($request) {
-                    $query->whereId(7);
+            if ($request->campoNr_trinta_tres) {
+                $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
+                   $query->where('label','NR33');
                 });
             }
-            if ($request->campoNr_trinta_tres == 'false') {
-                $resultado->doesntHave('Treinamento')->whereHas('Admissao', function ($query) use ($request) {
-                    $query->where('nr_trinta_tres', '!=', 'NÃO SE APLICA');
+            if (!$request->campoNr_trinta_tres) {
+                $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
+                    $query->where('label','NR33');
                 });
             }
             if ($request->campoNr_trinta_tres == 'NÃO SE APLICA') {
@@ -298,34 +286,33 @@ class TreinamentoController extends Controller
         }
 
         if ($request->filled('campoNr_trinta_cinco')) {
-
-            if ($request->campoNr_trinta_cinco == 'true') {
-                $resultado->whereHas('Treinamento.Vencimentos', function ($query) use ($request) {
-                    $query->whereId(6);
+            if ($request->campoNr_trinta_cinco) {
+                $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
+                    $query->where('label','NR35');
                 });
             }
-            if ($request->campoNr_trinta_cinco == 'false') {
-                $resultado->doesntHave('Treinamento')->whereHas('Admissao', function ($query) use ($request) {
-                    $query->where('nr_trinta_cinco', '!=', 'NÃO SE APLICA');
+            if (!$request->campoNr_trinta_cinco) {
+                $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
+                    $query->where('label','NR35');
                 });
             }
             if ($request->campoNr_trinta_cinco == 'NÃO SE APLICA') {
                 $resultado->whereHas('Admissao', function ($query) use ($request) {
-                    $query->where('nr_trinta_cinco', $request->campoNr_trinta_cinco);
+                    $query->where('nr_trinta_tres', $request->campoNr_trinta_tres);
                 });
             }
         }
 
         if ($request->filled('campoNr_ebtv')) {
 
-            if ($request->campoNr_ebtv == 'true') {
-                $resultado->whereHas('Treinamento.Vencimentos', function ($query) use ($request) {
-                    $query->whereId(1);
+            if ($request->campoNr_ebtv) {
+                $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
+                    $query->where('label','EBTV');
                 });
             }
-            if ($request->campoNr_ebtv == 'false') {
-                $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) use ($request) {
-                    $query->where('id', '<>', 1);
+            if (!$request->campoNr_ebtv) {
+                $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
+                    $query->where('label','EBTV');
                 });
             }
 
@@ -390,9 +377,9 @@ class TreinamentoController extends Controller
 
         $itens->transform(function ($item) {
             if ($item->Treinamento) {
-                $item->nr_33 = $item->Treinamento->Vencimentos->where('id', 7)->count() > 0 ? $item->Treinamento->Vencimentos->where('id', 7)->first()->pivot : null;
-                $item->nr_35 = $item->Treinamento->Vencimentos->where('id', 6)->count() > 0 ? $item->Treinamento->Vencimentos->where('id', 6)->first()->pivot : null;
-                $item->ebtv = $item->Treinamento->Vencimentos->where('id', 1)->count() > 0 ? $item->Treinamento->Vencimentos->where('id', 1)->first()->pivot : null;
+                $item->nr_33 = $item->Treinamento->Vencimentos->where('label', 'NR33')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'NR33')->first()->pivot : null;
+                $item->nr_35 = $item->Treinamento->Vencimentos->where('label', 'NR35')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'NR35')->first()->pivot : null;
+                $item->ebtv = $item->Treinamento->Vencimentos->where('label', 'EBTV')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'EBTV')->first()->pivot : null;
             } else {
                 $item->nr_33 = null;
                 $item->nr_35 = null;
