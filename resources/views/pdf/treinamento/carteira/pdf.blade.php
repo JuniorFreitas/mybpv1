@@ -164,8 +164,7 @@
 
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
-                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
-                                : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }} : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
                             </td>
                         </tr>
 
@@ -263,12 +262,11 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
-                        @else
+                        @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
-                                alt="">
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
                         @endif
                     </div>
                     <div class="content">
@@ -301,11 +299,11 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
-                        @else
+                        @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg">
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
                         @endif
                         <br>
                     </div>
