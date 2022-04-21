@@ -101,11 +101,12 @@
                     <div class="row">
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>Vaga</label>
+                                <label>Cargo</label>
                                 <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete"
                                               :valido="form.feedback.vaga_id !== ''"
                                               v-model="form.feedback.autocomplete_label_vaga_modal"
                                               placeholder="Selecione uma vaga"
+                                              :disabled="true"
                                               :id="`vaga_${hash}`"
                                               @onblur="resetaCampoVagaModal"
                                              @onselect="selecionaVagaModal"></autocomplete>
@@ -119,6 +120,7 @@
                                               :valido="form.feedback.curriculo.municipio_id !== ''"
                                               v-model="form.feedback.curriculo.autocomplete_label_municipio_modal"
                                               placeholder="Selecione um municipio"
+                                              :disabled="true"
                                               :id="`mun_${hash}`"
                                               @onblur="resetaCampoMunicipioModal"
                                              @onselect="selecionaMunicipioModal"></autocomplete>
@@ -314,12 +316,12 @@
                 <tbody>
                 <tr v-for="resultado in lista">
                     <td class="text-center">
-                        <label :for="resultado.curriculo_id">
+                        <label :for="resultado.id">
                             <input
                                 type="checkbox"
                                 v-model="selecionados"
-                                :value="resultado.curriculo_id"
-                                :id="resultado.curriculo_id"
+                                :value="resultado.id"
+                                :id="resultado.id"
                                 style="cursor: pointer"
                             >
                         </label>

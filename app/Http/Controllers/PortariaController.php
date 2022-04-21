@@ -20,10 +20,7 @@ class PortariaController extends Controller
 
     public function edit($resultado)
     {
-        $feedback = $resultado;
-
         $resultado = ResultadoIntegrado::whereFeedbackId($resultado)->first();
-
         $resultado->load('Feedback.Curriculo.FotoTres','Feedback.Admissao');
 
         $resultado->funcao = $resultado->Admissao ? $resultado->Admissao->funcao : '';
@@ -32,10 +29,8 @@ class PortariaController extends Controller
         $resultado->Feedback->Curriculo->autocomplete_label_municipio_modal = $resultado->Feedback->Curriculo->Cidade ? $resultado->Feedback->Curriculo->Cidade->nome . ' - ' . $resultado->Feedback->Curriculo->Cidade->uf : '';
         $resultado->Feedback->Curriculo->autocomplete_label_municipio_modal_anterior = $resultado->Feedback->Curriculo->Cidade ? $resultado->Feedback->Curriculo->Cidade->nome . ' - ' . $resultado->Feedback->Curriculo->Cidade->uf : '';
 
-        $resultado->Feedback->autocomplete_label_vaga_modal = $resultado->Feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf  ;
-        $resultado->Feedback->autocomplete_label_vaga_modal_anterior = $resultado->Feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf  ;
-        $resultado->Feedback->autocomplete_label_cliente_modal = $resultado->Feedback->Empresa->razao_social . ' | ' . $resultado->Feedback->Empresa->cnpj;
-        $resultado->Feedback->autocomplete_label_cliente_modal_anterior = $resultado->Feedback->Empresa->razao_social . ' | ' . $resultado->Feedback->Empresa->cnpj;
+        $resultado->Feedback->autocomplete_label_vaga_modal = $resultado->Feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $resultado->Feedback->VagaAberta->Municipio->uf;
+        $resultado->Feedback->autocomplete_label_vaga_modal_anterior = $resultado->Feedback->autocomplete_label_vaga_modal;
 
         return $resultado;
 
@@ -105,14 +100,8 @@ class PortariaController extends Controller
         })->with(
             'Curriculo.FotoTres:id',
             'VagaSelecionada:id,nome',
+            'Admissao:id,feedback_id,funcao',
         );
-
-        /*$resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->with(
-            'Admissao',
-            'Feedback.Curriculo.FotoTres',
-            'Feedback.VagaSelecionada:id,nome',
-            'Feedback.Cliente:id,nome_fantasia,nome'
-        );*/
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
@@ -121,7 +110,7 @@ class PortariaController extends Controller
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
@@ -154,8 +143,8 @@ class PortariaController extends Controller
     public function pdf(Request $request)
     {
         $this->authorize('portaria');
-        $curriculos = Curriculo::whereIn('id', $request->selecionados)->get();
-        return view('pdf.portaria.ficha', compact('curriculos'));
+        $feedbacks = FeedbackCurriculo::whereIn('id', $request->selecionados)->get();
+        return view('pdf.portaria.ficha', compact('feedbacks'));
     }
 
     //Excel

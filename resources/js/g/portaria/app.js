@@ -4,14 +4,14 @@ import telefone from "../../components/Telefones";
 
 
 const app = new Vue({
-    el: '#app',
+    el: "#app",
     components: {
         endereco,
         upload,
-        telefone,
+        telefone
     },
     data: {
-        tituloJanela: 'Curriculo',
+        tituloJanela: "Curriculo",
 
         anexoUploadAndamento: false,
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
@@ -25,42 +25,42 @@ const app = new Vue({
 
 
             feedback: {
-                id: '',
+                id: "",
 
-                vaga_id: '',
+                vaga_id: "",
                 interesse: true,
 
-                autocomplete_label_vaga_modal: '',
-                autocomplete_label_vaga_modal_anterior: '',
+                autocomplete_label_vaga_modal: "",
+                autocomplete_label_vaga_modal_anterior: "",
 
                 curriculo: {
-                    nome: '',
-                    rg: '',
-                    orgao_expeditor: '',
-                    nascimento: '',
-                    email: '',
-                    logradouro: '',
-                    complemento: '',
-                    bairro: '',
-                    municipio: '',
-                    uf: '',
-                    cep: '',
-                    municipio_id: '',
+                    nome: "",
+                    rg: "",
+                    orgao_expeditor: "",
+                    nascimento: "",
+                    email: "",
+                    logradouro: "",
+                    complemento: "",
+                    bairro: "",
+                    municipio: "",
+                    uf: "",
+                    cep: "",
+                    municipio_id: "",
 
-                    filiacao_pai: '',
-                    filiacao_mae: '',
+                    filiacao_pai: "",
+                    filiacao_mae: "",
 
-                    autocomplete_label_municipio_modal: '',
-                    autocomplete_label_municipio_modal_anterior: '',
+                    autocomplete_label_municipio_modal: "",
+                    autocomplete_label_municipio_modal_anterior: "",
 
                     foto_tres: [],
                     foto_tresDel: []
                 },
 
-                admissao:{
-                    funcao: '',
+                admissao: {
+                    funcao: ""
                 }
-            },
+            }
 
         },
 
@@ -75,17 +75,17 @@ const app = new Vue({
             carregando: false,
             dados: {
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                autocomplete_label_anterior: '',
-                autocomplete_label: '',
+                autocomplete_label_anterior: "",
+                autocomplete_label: "",
                 pages: 20,
-                campoBusca: '',
-                campoVaga: '',
-                campoLido: '',
-                campoFiltro: '',
-                campoPcd: '',
-                campoUf: ''
-            },
-        },
+                campoBusca: "",
+                campoVaga: "",
+                campoLido: "",
+                campoFiltro: "",
+                campoPcd: "",
+                campoUf: ""
+            }
+        }
     },
     computed: {
         tudoMarcado() {
@@ -97,7 +97,7 @@ const app = new Vue({
             }
 
             this.lista.forEach(item => {
-                let id = item.curriculo_id;
+                let id = item.id;
                 if (this.selecionados.indexOf(id) >= 0) {
                     totalEncontrado++;
                     //faz nada
@@ -119,17 +119,17 @@ const app = new Vue({
             this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
                 this.lista.map(item => {
-                    let id = item.curriculo_id;
+                    let id = item.id;
                     if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id)
+                        this.selecionados.push(id);
                     }
                 });
             } else {
                 this.lista.map(item => {
-                    let id = item.curriculo_id;
+                    let id = item.id;
                     let index = this.selecionados.indexOf(id);
                     if (index >= 0) {
-                        this.selecionados.splice(index, 1)
+                        this.selecionados.splice(index, 1);
                     }
                 });
             }
@@ -143,15 +143,15 @@ const app = new Vue({
 
         resetaCampoMunicipioModal() {
             if (this.form.feedback.curriculo.autocomplete_label_municipio_modal_anterior !== this.form.feedback.curriculo.autocomplete_label_municipio_modal) {
-                this.form.feedback.curriculo.autocomplete_label_municipio_modal_anterior = '';
-                this.form.feedback.curriculo.autocomplete_label_municipio_modal = '';
-                this.form.feedback.curriculo.municipio_id = '';
+                this.form.feedback.curriculo.autocomplete_label_municipio_modal_anterior = "";
+                this.form.feedback.curriculo.autocomplete_label_municipio_modal = "";
+                this.form.feedback.curriculo.municipio_id = "";
 
                 setTimeout(() => {
-                    if (this.form.feedback.curriculo.municipio_id === '') {
-                        valida_campo_vazio($('#mun_' + this.hash), 1);
-                        $('#janelaAdmissaoAvulsa #mun_' + this.hash).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Município não pode ficar vazio');
+                    if (this.form.feedback.curriculo.municipio_id === "") {
+                        valida_campo_vazio($("#mun_" + this.hash), 1);
+                        $("#janelaAdmissaoAvulsa #mun_" + this.hash).focus().trigger("blur");
+                        mostraErro("Erro", "O Campo Município não pode ficar vazio");
                     }
                 }, 100);
             }
@@ -164,12 +164,12 @@ const app = new Vue({
         },
         resetaCampoVagaModal() {
             if (this.form.feedback.autocomplete_label_vaga_modal_anterior !== this.form.feedback.autocomplete_label_vaga_modal) {
-                this.form.feedback.autocomplete_label_vaga_modal_anterior = '';
-                this.form.feedback.autocomplete_label_vaga_modal = '';
-                this.form.feedback.vaga_id = '';
+                this.form.feedback.autocomplete_label_vaga_modal_anterior = "";
+                this.form.feedback.autocomplete_label_vaga_modal = "";
+                this.form.feedback.vaga_id = "";
                 setTimeout(() => {
-                    if (this.form.feedback.vaga_id === '') {
-                        mostraErro('Erro', 'O Campo Vaga não pode ficar vazio');
+                    if (this.form.feedback.vaga_id === "") {
+                        mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
                     }
                 }, 100);
             }
@@ -178,9 +178,9 @@ const app = new Vue({
         //GERAL
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
+                this.controle.dados.autocomplete_label_anterior = "";
+                this.controle.dados.autocomplete_label = "";
+                this.controle.dados.campoVaga = "";
             }
         },
 
@@ -202,38 +202,38 @@ const app = new Vue({
                 .then(response => {
                     let data = response.data;
                     Object.assign(this.form, data);
-                    this.form.admissao.funcao = this.form.admissao ? this.form.admissao.funcao : '';
+                    this.form.admissao.funcao = this.form.admissao ? this.form.admissao.funcao : "";
                     this.form.preload = false;
                 })
                 .catch(error => {
                     this.form.preload = false;
-                })
+                });
         },
 
         salvar() {
             formReset();
 
-            if (this.form.feedback.vaga_id === '') {
-                valida_campo_vazio($('#vaga_' + this.hash), 1);
-                $('#janelaPortaria #vaga_' + this.hash).focus().trigger('blur');
-                mostraErro('', 'O campo vaga não pode ficar vazio');
+            if (this.form.feedback.vaga_id === "") {
+                valida_campo_vazio($("#vaga_" + this.hash), 1);
+                $("#janelaPortaria #vaga_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O campo vaga não pode ficar vazio");
                 return false;
             }
 
-            if (this.form.feedback.curriculo.municipio_id === '') {
-                valida_campo_vazio($('#mun_' + this.hash), 1);
-                $('#janelaPortaria #mun_' + this.hash).focus().trigger('blur');
-                mostraErro('', 'O Campo Cidade não pode ficar vazio');
+            if (this.form.feedback.curriculo.municipio_id === "") {
+                valida_campo_vazio($("#mun_" + this.hash), 1);
+                $("#janelaPortaria #mun_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O Campo Cidade não pode ficar vazio");
                 return false;
             }
 
-            $('#janelaPortaria :input:visible').trigger('blur');
-            if ($('#janelaPortaria :input:visible.is-invalid').length) {
-                $('#janelaPortaria').animate({
-                    scrollTop: $($('.is-invalid')[0]).offset().top
-                }, 800, function () {
+            $("#janelaPortaria :input:visible").trigger("blur");
+            if ($("#janelaPortaria :input:visible.is-invalid").length) {
+                $("#janelaPortaria").animate({
+                    scrollTop: $($(".is-invalid")[0]).offset().top
+                }, 800, function() {
                 });
-                mostraErro('', 'Verifique os erros')
+                mostraErro("", "Verifique os erros");
                 return false;
             }
 
@@ -253,12 +253,13 @@ const app = new Vue({
 
         listaVagas() {
             this.preload = true;
-            $.get(`${URL_PUBLICO}/lista-vagas`)
-                .done((data) => {
+            axios.get(`${URL_PUBLICO}/lista-vagas`)
+                .then(response => {
+                    let data = response.data;
                     this.preload = false;
                     this.vagas = data.vagas;
                 })
-                .fail((data) => {
+                .catch(data => {
                     this.preload = false;
                 });
         },
@@ -274,6 +275,6 @@ const app = new Vue({
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
-        },
+        }
     }
 });
