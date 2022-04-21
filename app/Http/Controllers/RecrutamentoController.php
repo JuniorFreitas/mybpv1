@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\ZapNotificacao;
 use App\Exports\CurriculoExport;
 use App\Mail\DesclassificacaoMail;
 use App\Mail\ProvaMail;
@@ -119,6 +120,7 @@ class RecrutamentoController extends Controller
         try {
             DB::beginTransaction();
             $candidato = Curriculo::find($infCurriculo['id']);
+            $empresa = Cliente::find(auth()->user()->empresa_id);
             $dadosCurriculo = [
                 'nome' => $infCurriculo['nome'],
                 'rg' => $infCurriculo['rg'],
@@ -173,11 +175,10 @@ class RecrutamentoController extends Controller
             $dados['user_envia_whatsapp'] = null;
 
             $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-            $permite_envio_whatsapp = !empty($permite_envio_whatsapp) ? $permite_envio_whatsapp->envia_whatsapp : false;
+            $permite_envio_whatsapp = !empty($permite_envio_whatsapp) && $permite_envio_whatsapp->envia_whatsapp;
 
             if ($dados['contato_realizado'] && $permite_envio_whatsapp) {
-
-                $dados['envia_whatsapp'] = $dados['envia_whatsapp'] == 'true' ? true : false;
+                $dados['envia_whatsapp'] = $dados['envia_whatsapp'] == 'true';
                 $dados['data_envia_whatsapp'] = $dados['envia_whatsapp'] ? (new DataHora())->dataHoraInsert() : null;
                 $dados['user_envia_whatsapp'] = $dados['envia_whatsapp'] ? auth()->id() : null;
             } else {
@@ -204,59 +205,62 @@ class RecrutamentoController extends Controller
                             $dados['data_envia_mail_proxima_etapa'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_proxima_etapa'] = auth()->id();
                             $vaga_aberta = VagasAbertas::find($dados['vaga_id']);
-                            $empresa = Cliente::find(auth()->user()->empresa_id);
+
                             \Mail::send(new ProximaEtapaMail([
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
                                 'empresa' => $empresa->razao_social,
                                 'logo' => "https://mybp-prod.s3.amazonaws.com/public/email_" . $empresa->apelido . ".jpg",
-                                'vaga_selecionada' => $vaga_aberta->nome . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
+                                'vaga_selecionada' => $vaga_aberta->titulo . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
                                 'local_entrevista' => $dados['local_entrevista'],
                                 'data_entrevista' => $dados['data_entrevista'],
                             ]));
+                        }
+                        if ($dados['contato_realizado'] && $dados['envia_whatsapp'] && $permite_envio_whatsapp) {
+                            $mensagem = "👏🏽👏🏽Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nPara a vaga *{$vaga_aberta->titulo} - {$vaga_aberta->Municipio->nome}/{$vaga_aberta->Municipio->uf}* fique atento as próximas etapas do processo!\n\n📆 Data da entrevista: {$dados['data_entrevista']}\n📍Local da entrevista: {$dados['local_entrevista']}\n\nSucesso e esperamos vê-lo em breve. \n\n*☺️ Um forte abraço da equipe " . $empresa->razao_social . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+
+                            $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
+                            if ($telefonePrincipal->tipo == 'whatsapp') {
+                                $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                    'enviado_id' => $curriculo->id,
+                                    'telefone' => $telefonePrincipal->sonumero,
+                                    'mensagem' => $mensagem
+                                ]);
+                                if ($whatsNotificacao['result'] == 'success') {
+                                    $dados['data_envia_whatsapp'] = (new DataHora())->dataHoraInsert();
+                                    $dados['user_envia_whatsapp'] = auth()->id();
+                                }
+                            }
                         }
                     }
                     if ($dados['selecionado'] == 'sim' && $dados['tem_provas']) {
                         if ($dados['envia_mail_provas']) {
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_provas'] = auth()->id();
-                            $provas = SimuladoVaga::whereVagaId($dados['vaga_id'])->whereOnline(true)->get();
+                            $provas = SimuladoVaga::whereVagasAbertasId($dados['vagas_abertas_id'])->whereOnline(true)->get();
                             if ($dados['contato_realizado'] && $dados['envia_whatsapp'] && $permite_envio_whatsapp) {
                                 $qntProvas = count($provas);
-                                $mensagem = "";
                                 if ($qntProvas > 1) {
-                                    $mensagem .= "Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!
-                                Você está recebendo um convite para realizar  as avaliações abaixo relacionadas ao seu processo seletivo para a vaga de *{$dados['autocomplete_label_vaga_modal']}* através da empresa BPSE.
-                                Uma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.
-
-
-                                ";
+                                    $mensagem .= "Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nVocê está recebendo um convite para realizar  as avaliações abaixo relacionadas ao seu processo seletivo para a vaga de *{$dados['autocomplete_label_vaga_modal']}* através da plataforma MyBP.\nUma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n\n";
                                 } else {
-                                    $mensagem .= "Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!
-                                Você está recebendo um convite para realizar a avaliação abaixo relacionada ao seu processo seletivo para a vaga de *{$dados['autocomplete_label_vaga_modal']}* através da empresa BPSE.
-                                Uma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.
-
-
-                                ";
+                                    $mensagem .= "Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nVocê está recebendo um convite para realizar a avaliação abaixo relacionada ao seu processo seletivo para a vaga de *{$dados['autocomplete_label_vaga_modal']}* através da plataforma MyBP.\nUma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n\n";
                                 }
-
                                 foreach ($provas as $prova) {
-                                    $mensagem .= route('provas.prova.simulado', [$prova->vaga_id, $prova->simulado_id, $prova->Simulado->slug]);
+                                    $mensagem .= route('provas.prova.simulado', [$prova->vaga_id, $prova->simulado_id, $prova->Simulado->slug]) . "\n";
                                 }
+                                $mensagem .= "\n\nCuidado para não perder o prazo! Esperamos te ver em breve!\n\n*Equipe RH BPSE* ";
 
-                                $mensagem .= "
-
-                                Cuidado para não perder o prazo! Esperamos te ver em breve!
-
-                                *Equipe RH BPSE* ";
-
-                                NotificacaoWhats::sendNotificacaoAptoAdmissao([
-                                    'fone' => TelefoneCurriculo::find($dados['telefone_id'])->sonumero,
-                                    'curriculo_id' => $infCurriculo['id'],
-                                    'vaga_id' => $dados['vaga_id'],
-                                    'etapa_id' => 5,
-                                ], $mensagem);
-
+                                if ($telefonePrincipal->tipo == 'whatsapp') {
+                                    $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                        'enviado_id' => $curriculo->id,
+                                        'telefone' => $telefonePrincipal->sonumero,
+                                        'mensagem' => $mensagem
+                                    ]);
+                                    if ($whatsNotificacao['result'] == 'success') {
+                                        $dados['data_envia_whatsapp'] = (new DataHora())->dataHoraInsert();
+                                        $dados['user_envia_whatsapp'] = auth()->id();
+                                    }
+                                }
                             }
                             \Mail::send(new ProvaMail([
                                 'nome' => $infCurriculo['nome'],
@@ -265,23 +269,20 @@ class RecrutamentoController extends Controller
                                 'vaga_id' => $dados['vaga_id'],
                                 'provas' => $provas
                             ]));
+                        } else {
+                            $dados['envia_mail_provas'] = false;
+                            $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
+                            $dados['user_envia_mail_provas'] = auth()->id();
                         }
-//                        else{
-//                            $dados['envia_mail_provas'] = false;
-//                            $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
-//                            $dados['user_envia_mail_provas'] = auth()->id();
-//                        }
                     }
-
 
                     $dados['vagas_abertas_id'] = $dados['vaga_id'];
                     $dados['vaga_id'] = VagasAbertas::find($dados['vagas_abertas_id'])->vaga_id;
 
                     $curriculo->FeedBack()->create($dados);
-                    DB::commit();
                 }
             } else {
-                $dados['vagas_abertas_id'] = $dados['vaga_id'];
+                $dados['vagas_abertas_id'] = $dados['vaga_aberta']['id'];
                 $curriculo->FeedBack->update($dados);
                 if ($dados['selecionado'] == 'nao') {
                     if ($dados['envia_mail_desclassificacao']) {
@@ -298,60 +299,64 @@ class RecrutamentoController extends Controller
                         if ($dados['envia_mail_proxima_etapa']) {
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_provas'] = auth()->id();
-                            $vaga_aberta = VagasAbertas::find($dados['vaga_id']);
+                            $vaga_aberta = VagasAbertas::find($dados['vagas_abertas_id']);
                             $empresa = Cliente::find(auth()->user()->empresa_id);
                             \Mail::send(new ProximaEtapaMail([
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
                                 'empresa' => $empresa->razao_social,
                                 'logo' => "https://mybp-prod.s3.amazonaws.com/public/email_" . $empresa->apelido . ".jpg",
-                                'vaga_selecionada' => $vaga_aberta->nome . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
+                                'vaga_selecionada' => $vaga_aberta->titulo . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
                                 'local_entrevista' => $dados['local_entrevista'],
                                 'data_entrevista' => $dados['data_entrevista'],
                             ]));
                         }
+
+                        if ($dados['contato_realizado'] && $dados['envia_whatsapp'] && $permite_envio_whatsapp) {
+                            $mensagem = "👏🏽👏🏽Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nPara a vaga *{$vaga_aberta->titulo} - {$vaga_aberta->Municipio->nome}/{$vaga_aberta->Municipio->uf}* fique atento as próximas etapas do processo!\n\n📆 Data da entrevista: {$dados['data_entrevista']}\n📍Local da entrevista: {$dados['local_entrevista']}\n\nSucesso e esperamos vê-lo em breve. \n\n*☺️ Um forte abraço da equipe " . $empresa->razao_social . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+                            $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
+                            if ($telefonePrincipal->tipo == 'whatsapp') {
+                                $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                    'enviado_id' => $curriculo->id,
+                                    'telefone' => $telefonePrincipal->sonumero,
+                                    'mensagem' => $mensagem
+                                ]);
+                                if ($whatsNotificacao['result'] == 'success') {
+                                    $dados['data_envia_whatsapp'] = (new DataHora())->dataHoraInsert();
+                                    $dados['user_envia_whatsapp'] = auth()->id();
+                                }
+                            }
+                        }
                     }
+
                     if ($dados['selecionado'] == 'sim' && $dados['tem_provas']) {
                         if ($dados['envia_mail_provas']) {
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_provas'] = auth()->id();
-                            $provas = SimuladoVaga::whereVagaId($dados['vaga_id'])->whereOnline(true)->get();
+                            $provas = SimuladoVaga::whereVagasAbertasId($dados['vagas_abertas_id'])->whereOnline(true)->get();
                             if ($dados['contato_realizado'] && $dados['envia_whatsapp'] && $permite_envio_whatsapp) {
                                 $qntProvas = count($provas);
-                                $mensagem = "";
                                 if ($qntProvas > 1) {
-                                    $mensagem .= "Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!
-                                Você está recebendo um convite para realizar  as avaliações abaixo relacionadas ao seu processo seletivo para a vaga de *{$dados['autocomplete_label_vaga_modal']}* através da empresa BPSE.
-                                Uma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.
-
-
-                                ";
+                                    $mensagem .= "Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nVocê está recebendo um convite para realizar  as avaliações abaixo relacionadas ao seu processo seletivo para a vaga de *{$dados['autocomplete_label_vaga_modal']}* através da plataforma MyBP.\nUma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n\n";
                                 } else {
-                                    $mensagem .= "Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!
-                                Você está recebendo um convite para realizar a avaliação abaixo relacionada ao seu processo seletivo para a vaga de *{$dados['autocomplete_label_vaga_modal']}* através da empresa BPSE.
-                                Uma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.
-
-
-                                ";
+                                    $mensagem .= "Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nVocê está recebendo um convite para realizar a avaliação abaixo relacionada ao seu processo seletivo para a vaga de *{$dados['autocomplete_label_vaga_modal']}* através da plataforma MyBP.\nUma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n\n";
                                 }
-
                                 foreach ($provas as $prova) {
-                                    $mensagem .= route('provas.prova.simulado', [$prova->vaga_id, $prova->simulado_id, $prova->Simulado->slug]);
+                                    $mensagem .= route('provas.prova.simulado', [$prova->vaga_id, $prova->simulado_id, $prova->Simulado->slug]) . "\n";
                                 }
+                                $mensagem .= "\n\nCuidado para não perder o prazo! Esperamos te ver em breve!\n\n*Equipe RH BPSE* ";
 
-                                $mensagem .= "
-
-                                Cuidado para não perder o prazo! Esperamos te ver em breve!
-
-                                *Equipe RH BPSE* ";
-
-                                NotificacaoWhats::sendNotificacaoAptoAdmissao([
-                                    'fone' => TelefoneCurriculo::find($dados['telefone_id'])->sonumero,
-                                    'curriculo_id' => $infCurriculo['id'],
-                                    'vaga_id' => $dados['vaga_id'],
-                                    'etapa_id' => 5,
-                                ], $mensagem);
-
+                                if ($telefonePrincipal->tipo == 'whatsapp') {
+                                    $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                        'enviado_id' => $curriculo->id,
+                                        'telefone' => $telefonePrincipal->sonumero,
+                                        'mensagem' => $mensagem
+                                    ]);
+                                    if ($whatsNotificacao['result'] == 'success') {
+                                        $dados['data_envia_whatsapp'] = (new DataHora())->dataHoraInsert();
+                                        $dados['user_envia_whatsapp'] = auth()->id();
+                                    }
+                                }
                             }
                             \Mail::send(new ProvaMail([
                                 'nome' => $infCurriculo['nome'],
@@ -368,6 +373,7 @@ class RecrutamentoController extends Controller
             return response()->json([], 201);
 
         } catch (\Exception $e) {
+            return $e->getTrace();
             $msg = "error FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
             DB::rollback();
@@ -476,7 +482,7 @@ class RecrutamentoController extends Controller
 
         $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
 
-        $permite_envio_whatsapp = !empty($permite_envio_whatsapp) ? $permite_envio_whatsapp->envia_whatsapp : false ;
+        $permite_envio_whatsapp = !empty($permite_envio_whatsapp) ? $permite_envio_whatsapp->envia_whatsapp : false;
 
         return response()->json([
             'atual' => $resultado->currentPage(),
