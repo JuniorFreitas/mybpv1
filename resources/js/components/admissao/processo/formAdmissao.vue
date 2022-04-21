@@ -100,7 +100,7 @@
             </div>
         </div>
 
-        <div class="col-12 col-sm-6" v-if="form.tipo_admissao === 'TEMPORARIO' || form.tipo_admissao === 'DETERMINADO'">
+        <div class="col-12 col-sm-6" v-if="form.tipo_admissao === 'TEMPORARIO' || form.tipo_admissao === 'DETERMINADO' || form.tipo_admissao === 'INTERMITENTE'">
             <div class="form-group">
                 <datepicker label="Data de encerramento" v-model="form.data_encerramento" :disabled="visualizar || disabled"></datepicker>
             </div>

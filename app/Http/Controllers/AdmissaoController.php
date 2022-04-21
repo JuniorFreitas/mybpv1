@@ -448,10 +448,13 @@ class AdmissaoController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "error ADMISSAO AVULSA STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-            \Log::debug($dados);
             \Log::debug($msg);
-            return response()->json(['msg' => $msg], 400);
-//            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            \Log::debug($e->getTraceAsString());
+            \Log::info("-------DADOS-------");
+            Sistema::telegram(print_r($dados, true));
+            \Log::info("-------FIM DE DADOS-------");
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
+
         }
 
     }
@@ -585,6 +588,7 @@ class AdmissaoController extends Controller
 
         $feedback = $admissao;
         $admissaoDados = $dados['admissao'];
+        $admissaoDados['feedback_id'] = $feedback->id;
 
         $dadosVagaAberta = VagasAbertas::find($dados['vagas_abertas_id']);
 
@@ -743,6 +747,7 @@ class AdmissaoController extends Controller
 
                 }
                 if (in_array($admissaoDados['tipo_admissao'], $tipo_admissao)) {
+
                     $data = new DataHora($admissaoDados['data_encerramento']);
 
                     $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
@@ -799,7 +804,7 @@ class AdmissaoController extends Controller
                 \Log::alert($dados);
                 \Log::info("-------FIM DE DADOS-------");
 
-                return response()->json(['msg' => $msg], 400);
+                return response()->json(['msg' => $e->getTrace()], 400);
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
@@ -918,10 +923,9 @@ class AdmissaoController extends Controller
                 \Log::debug($msg);
                 \Log::debug($e->getTraceAsString());
                 \Log::info("-------DADOS-------");
-                \Log::alert($dados);
+                Sistema::telegram(print_r($dados, true));
                 \Log::info("-------FIM DE DADOS-------");
-                return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
             }
         }
     }
