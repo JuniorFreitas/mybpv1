@@ -12,14 +12,11 @@
                         <tr>
                             <td colspan="3"
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
-                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                                    <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="" style="height: 0.6cm">
-                                @else
+                                @if(count(auth()->user()->ClientesLogo) > 0)
                                     <img
-                                        src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
-                                        style="height: 0.6cm" alt="">
-                                    {{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Empresa->Cliente->Logo[0]->url }}"--}}
-                                    {{--                                         style="height: 0.6cm" alt="">--}}
+                                        src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                        alt="Logo" title="Logo" style="height: 0.6cm">
+                                    <br>
                                 @endif
                                 <br>
                                 <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
@@ -110,12 +107,12 @@
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
                                 <span style="font-family: 'Sacramento', cursive; color: blue">
-                                    Tiago Silva
+{{--                                    Tiago Silva--}}
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
                                 <span style="font-family: 'Sacramento', cursive; color: blue">
-                                    José Mesquita
+{{--                                    José Mesquita--}}
                                 </span>
                             </td>
                         </tr>
@@ -167,8 +164,7 @@
 
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
-                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
-                                : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }} : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
                             </td>
                         </tr>
 
@@ -266,12 +262,11 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
-                        @else
+                        @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
-                                alt="">
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
                         @endif
                     </div>
                     <div class="content">
@@ -304,11 +299,11 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
-                        @else
+                        @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg">
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
                         @endif
                         <br>
                     </div>
@@ -380,14 +375,11 @@
                         <tr>
                             <td colspan="3"
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
-                                @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                                    <img src="https://sgibpse.com.br/logo_bpse_color.png" alt="" style="height: 0.6cm">
-                                @else
+                                @if(count(auth()->user()->ClientesLogo) > 0)
                                     <img
-                                        src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
-                                        style="height: 0.6cm" alt="">
-                                    {{--                                    <img src="{{ $treinamento->FeedbackCurriculo->Empresa->Cliente->Logo[0]->url }}"--}}
-                                    {{--                                         style="height: 0.6cm" alt="">--}}
+                                        src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                        alt="Logo" title="Logo" style="height: 0.6cm">
+                                    <br>
                                 @endif
                                 <br>
                                 <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
@@ -395,7 +387,7 @@
                         </tr>
                         <tr>
                             <td colspan="3" style="height: 0.02cm; border-top:none;">
-                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
+                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->razao_social }}
                             </td>
                         </tr>
                         <tr>
@@ -478,12 +470,12 @@
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
                                 <span style="font-family: 'Sacramento', cursive; color: blue">
-                                    Tiago Silva
+{{--                                    Tiago Silva--}}
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
                                 <span style="font-family: 'Sacramento', cursive; color: blue">
-                                    José Mesquita
+{{--                                    José Mesquita--}}
                                 </span>
                             </td>
                         </tr>
@@ -622,12 +614,11 @@
             @foreach($treinamentos as $treinamento)
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
-                        @else
+                        @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
-                                alt="">
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
                         @endif
                         <br>
                     </div>
@@ -661,12 +652,11 @@
 
                 <div class="etiqueta">
                     <div class="logo">
-                        @if ($treinamento->FeedbackCurriculo->cliente_id == 1)
-                            <img src="https://sgi.bpse.com.br/logo_bpse_color.png" alt="">
-                        @else
+                        @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/9BcCdfliiHboQXFbvixAUBosjhbsGf8aU0JTe2cs_p.jpg"
-                                alt="">
+                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
                         @endif
                         <br>
                     </div>
@@ -709,7 +699,7 @@
                                     style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
-                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome }}</span></span>
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->razao_social }}</span></span>
                         </h6>
                         {{--                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span--}}
                         {{--                                    style="font-size: 6.8pt;">--}}
