@@ -272,7 +272,7 @@ class User extends Authenticatable
 
     public function Empresa()
     {
-        return $this->hasOne(User::class, 'id', 'empresa_id');
+        return $this->hasOne(Cliente::class, 'id', 'empresa_id');
     }
 
     public function Fornecedor()
@@ -322,12 +322,12 @@ class User extends Authenticatable
 
     public function ClientesLogo()
     {
-        return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id','empresa_id');
+        return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id', 'empresa_id');
     }
 
     public function ClientesMascote()
     {
-        return $this->belongsToMany(Arquivo::class, 'cliente_mascote', 'cliente_id', 'arquivo_id','empresa_id');
+        return $this->belongsToMany(Arquivo::class, 'cliente_mascote', 'cliente_id', 'arquivo_id', 'empresa_id');
     }
 
     public function ClienteFuncionarios()
@@ -418,6 +418,11 @@ class User extends Authenticatable
     public function Exportacoes()
     {
         return $this->hasMany(Exportacao::class, 'user_id', 'id')->whereRemovido(false)->orderBy('created_at', 'desc');
+    }
+
+    public function EmpresaConfiguracoes()
+    {
+        return $this->hasOne(ClienteConfig::class, 'cliente_id', 'empresa_id');
     }
 
     protected static function booted()

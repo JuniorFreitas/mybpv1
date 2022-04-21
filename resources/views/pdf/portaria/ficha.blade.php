@@ -191,7 +191,7 @@
 <body>
 <button id="printPageButton" onClick="window.print()">IMPRIMIR</button>
 <?php $cont = 0; ?>
-@foreach($curriculos as $candidato)
+@foreach($feedbacks as $candidato)
     <div class="a4">
         <div class="principal">
             <div class="principal2">
@@ -207,14 +207,14 @@
 
                 <div class="b-bottom b-right b-left float-right" style="width: 3cm; height: 4cm">
                     <img
-                        src="{{ count($candidato->FotoTres) > 0 ? $candidato->FotoTres[0]->url : asset('sem_foto.png')}}"
+                        src="{{ count($candidato->Curriculo->FotoTres) > 0 ? $candidato->Curriculo->FotoTres[0]->url : asset('sem_foto.png')}}"
                         style="max-height: 4cm; max-width: 3cm;" alt="">
                 </div>
 
                 <div class="b-bottom  b-left float-left linhas">
                     <div class="txt">Empresa:</div>
                     <div class="rsptxt">
-                        {{ $candidato->FeedBack->Empresa->razao_social }}
+                        {{ $candidato->Empresa->razao_social }}
                     </div>
                 </div>
 
@@ -237,14 +237,14 @@
                 <div class="b-bottom  b-left float-left linhas">
                     <div class="txt">Nome:</div>
                     <div class="rsptxt">
-                        {{ $candidato->nome}}
+                        {{ $candidato->Curriculo->nome}}
                     </div>
                 </div>
 
                 <div class="b-bottom  b-left float-left linhas">
                     <div class="txt" style="width: 40px;">Endereço:</div>
                     <div class="rsptxt">
-                        {{ $candidato->endereco_completo}}
+                        {{ $candidato->Curriculo->endereco_completo}}
                     </div>
                 </div>
 
@@ -258,8 +258,8 @@
                     <div class="txtComum" style="width: 100%; margin-bottom: 4px;">Carteira de Identidade / Emitente:
                     </div>
                     <div class="rsptxtComum">
-                        @if ($candidato->rg)
-                            {{ $candidato->rg}} | {{ $candidato->orgao_expeditor}}
+                        @if ($candidato->Curriculo->rg)
+                            {{ $candidato->Curriculo->rg}} | {{ $candidato->Curriculo->orgao_expeditor}}
                         @endif
                     </div>
                 </div>
@@ -267,14 +267,14 @@
                 <div class="b-bottom b-right float-left linhaComum" style="width: 2.97cm;">
                     <div class="txtComum" style="margin-left: 0px; margin-right: 0px; padding-left: 10px;">CPF:</div>
                     <div class="rsptxtComum" style="margin-left: 0px; margin-right: 0px; padding-left: 10px;">
-                        {{ $candidato->cpf}}
+                        {{ $candidato->Curriculo->cpf}}
                     </div>
                 </div>
 
                 <div class="b-bottom b-left b-right float-left linhaComum" style="width: 176px;">
                     <div class="txtComum" style="width: 100%; margin-bottom: 4px;">Data de Nasc.:</div>
                     <div class="rsptxtComum">
-                        {{ $candidato->nascimento}}
+                        {{ $candidato->Curriculo->nascimento}}
                     </div>
                 </div>
 
@@ -295,14 +295,14 @@
                 <div class="b-bottom b-left b-right  float-left linhaComum" style="width: 50%;">
                     <div class="txtComum" style="width: 100%; margin-bottom: 4px;">Nome do pai</div>
                     <div class="rsptxtComum">
-                        {{ $candidato->filiacao_pai}}
+                        {{ $candidato->Curriculo->filiacao_pai}}
                     </div>
                 </div>
 
                 <div class="b-bottom b-right float-left linhaComum" style="width: 50%;">
                     <div class="txtComum" style="width: 100%; margin-bottom: 4px;">Nome da mãe</div>
                     <div class="rsptxtComum">
-                        {{ $candidato->filiacao_mae}}
+                        {{ $candidato->Curriculo->filiacao_mae}}
                     </div>
                 </div>
 

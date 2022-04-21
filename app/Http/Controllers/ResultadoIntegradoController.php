@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\ZapNotificacao;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Cliente;
@@ -66,11 +67,31 @@ class ResultadoIntegradoController extends Controller
                 ResultadoIntegrado::create($dados);
                 \DB::commit();
                 $feedback = FeedbackCurriculo::whereId($dados['feedback_id'])->with('Curriculo')->first();
-                JobEnvioDocumento::dispatch([
-                    'nome' => $feedback->Curriculo->nome,
-                    'email' => $feedback->Curriculo->email,
-                    'empresa_id' => $feedback->empresa_id,
-                ]);
+                if ($dados['documentos_entregue']) {
+                    if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp) {
+                        if ($feedback->TelPrincipal->tipo == 'whatsapp') {
+                            $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nParabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
+                                "Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.\n\n" .
+                                env('APP_URL') . "/documentos\n\n" .
+                                "Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões para que não haja atraso na etapa de documentação, necessária para a continuidade de sua admissão.\n\n" .
+                                "Atenciosamente,\n\n" .
+                                "Equipe ".auth()->user()->Empresa->razao_social."\n\n" .
+                                "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+
+                            $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                'enviado_id' => $feedback->curriculo_id,
+                                'telefone' => $feedback->TelPrincipal->sonumero,
+                                'mensagem' => $mensagem
+                            ]);
+                        }
+                    }
+                    JobEnvioDocumento::dispatch([
+                        'nome' => $feedback->Curriculo->nome,
+                        'email' => $feedback->Curriculo->email,
+                        'empresa_id' => $feedback->empresa_id,
+                    ]);
+                }
+
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
@@ -165,7 +186,35 @@ class ResultadoIntegradoController extends Controller
         } else {
             try {
                 \DB::beginTransaction();
-                $resultadoIntegrado->update($dados);
+                if ($dados['documentos_entregue']) {
+                    $feedback = $resultadoIntegrado->Feedback;
+                    $resultadoIntegrado->update($dados);
+
+                    if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp) {
+                        if ($feedback->TelPrincipal->tipo == 'whatsapp') {
+                            $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nParabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
+                                "Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.\n\n" .
+                                env('APP_URL') . "/documentos\n\n" .
+                                "Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões para que não haja atraso na etapa de documentação, necessária para a continuidade de sua admissão.\n\n" .
+                                "Atenciosamente,\n\n" .
+                                "Equipe ".auth()->user()->Empresa->razao_social."\n\n" .
+                                "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+
+                            $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                'enviado_id' => $feedback->curriculo_id,
+                                'telefone' => $feedback->TelPrincipal->sonumero,
+                                'mensagem' => $mensagem
+                            ]);
+                        }
+                    }
+                    JobEnvioDocumento::dispatch([
+                        'nome' => $feedback->Curriculo->nome,
+                        'email' => $feedback->Curriculo->email,
+                        'empresa_id' => $feedback->empresa_id,
+                    ]);
+                }
+
+
                 \DB::commit();
                 return response()->json([], 201);
             } catch (\Exception $e) {
