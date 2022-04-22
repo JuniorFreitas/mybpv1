@@ -367,7 +367,7 @@
                     </a>
                 </li>
             @endcan
-            @can('pre_admissao')
+            @can('admissao_controle_exames')
                 <li>
                     <a href="{{route('g.controle_exames.index')}}" key="controle_exames">
                         CONTROLE DE EXAMES
