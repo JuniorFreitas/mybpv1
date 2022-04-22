@@ -28,25 +28,7 @@
                            autocomplete="off"
                            onblur="valida_campo_vazio(this,3)">
                 </div>
-                <div class="form-check mb-3" v-if="editando">
-                    <label class="form-check-label">
-                        <input class="form-check-input" type="checkbox" v-model="form.alterarSenha">
-                        Redefinir senha
-                    </label>
-                </div>
-                <div class="form-group" v-if="editando && form.alterarSenha || !editando">
-                    <label>Senha</label>
-                    <input type="password" class="form-control form-control-sm" v-model="form.password"
-                           placeholder="Senha"
-                           autocomplete="off"
-                           onblur="valida_campo_vazio(this,3)">
-                </div>
-                <div class="form-group" v-if="editando && form.alterarSenha || !editando">
-                    <label>Redigitar senha</label>
-                    <input type="password" class="form-control form-control-sm" v-model="form.password_confirmation"
-                           placeholder="Redigitar senha"
-                           autocomplete="off" onblur="valida_campo_vazio(this,3)">
-                </div>
+
                 <div class="form-group" v-if="empresa_id === 104">
                     <label>Empresa</label>
                     <select class="form-control form-control-sm" v-model="form.empresa_id"
@@ -74,9 +56,7 @@
                             onchange="valida_campo_vazio(this,1)"
                             onblur="valida_campo_vazio(this,1)">
                         <option value="">Selecione...</option>
-                        <option value="Administrador">Administrador</option>
-                        <option value="Funcionario">Funcionário</option>
-                        <option value="Suporte">Suporte</option>
+                        <option v-for="item in lista_tipos" :value="item">@{{item}}</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -86,10 +66,17 @@
                         <option :value="false">Não</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>Gestor</label>
+                    <select class="form-control form-control-sm" v-model="form.gestor">
+                        <option :value="true">Sim</option>
+                        <option :value="false">Não</option>
+                    </select>
+                </div>
                 <fieldset v-if="form.tipo === 'Administrador' || form.tipo === 'Suporte'">
                     <legend>Tipos de emails que esse usuário pode receber:</legend>
                     <div class="custom-control custom-switch"
-                         v-for="(tipo, key) in listaTipoEmail">
+                         v-for="(tipo, key) in listaTipoEmail" :key="tipo.id">
                         <input type="checkbox" class="custom-control-input mb-1"
                                v-model="form.user_recebe_email[tipo.id]" :value="tipo.id"
                                :id="`tipo_${tipo.id}`">

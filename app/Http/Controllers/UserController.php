@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobBoasVindas;
 use App\Jobs\JobRecuperaSenha;
 use App\Models\Arquivo;
 use App\Models\GrupoCloud;
@@ -47,12 +48,12 @@ class UserController extends Controller
         $this->authorize('usuarios_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados['login'] = strtolower(trim($dados['login']));
 
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
             'login' => 'unique:users,login',
-            'password' => 'required|confirmed|min:3',
             'grupo_id' => 'required|numeric',
             'tipo' => 'required',
             'ativo' => 'required|boolean',
@@ -66,9 +67,16 @@ class UserController extends Controller
         } else {
 
 //            $dados['tipo'] = Papel::find($dados['grupo_id'])->nome;
-            $dados['password'] = bcrypt($dados['password']);
+            $password = \Str::random(8);
+            $dados['password'] = bcrypt($password);
             $dados['cadastrou'] = auth()->id();
 
+            JobBoasVindas::dispatch([
+                'nome' => $dados['nome'],
+                'email' => $dados['login'],
+                'empresa_id' => $dados['empresa_id'],
+                'senha' => $password,
+            ]);
 
             $usuario = User::create($dados);
 
@@ -78,6 +86,7 @@ class UserController extends Controller
                     $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
                 }
             }
+
 
             return response()->json([], 201);
         }
@@ -115,17 +124,7 @@ class UserController extends Controller
         $this->authorize('usuarios_update');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['alterarSenha'] = $dados['alterarSenha'] == 'true' ? true : false;
-
-        if ($dados['alterarSenha']) {
-            if ($dados['password'] !== $dados['password_confirmation']) {
-                return response()->json([
-                    'msg' => 'Senhas não conscidem',
-                ], 400);
-            }
-        } else {
-            unset($dados['password']);
-        }
+        $dados['login'] = strtolower(trim($dados['login']));
 
         // Validacao para ajax sem dar erro de HTTP (402)
         $dadosValidados = \Validator::make($dados, [
@@ -141,9 +140,6 @@ class UserController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
         } else {
-            if ($dados['alterarSenha']) {
-                $dados['password'] = bcrypt($dados['password']);
-            }
             if (isset($dados['user_recebe_email'])) {
                 if (count($usuario->UserRecebeEmail) == 0) {
                     unset($dados['user_recebe_email'][0]);
@@ -234,6 +230,7 @@ class UserController extends Controller
                 ->where('tipo', '!=', 'Empresa');
         } else {
             $resultado = User::with('Papel:id,nome')
+                ->whereIn('tipo', User::TIPOS_USUARIOS_COMUNS)
                 ->where('empresa_id', auth()->user()->empresa_id);
         }
 
@@ -243,16 +240,20 @@ class UserController extends Controller
         }
 
         $empresa = auth()->user()->empresa_id;
+
         $tipo_email = TipoRecebeEmail::all();
 
         $ids_form = array();
         foreach ($tipo_email as $f) {
-                $ids_form[$f->id] = false;
+            $ids_form[$f->id] = false;
         }
 
         $formulario_vazio = collect($ids_form);
 
         $resultado = $resultado->orderBy('nome')->paginate($porPagina);
+
+        $lista_tipos = auth()->user()->empresa_id == 104 ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -262,6 +263,7 @@ class UserController extends Controller
                 'empresa' => $empresa,
                 'tipo_email' => $tipo_email,
                 'formulario_vazio' => $formulario_vazio,
+                'lista_tipos' => $lista_tipos
             ],
         ]);
 

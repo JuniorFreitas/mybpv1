@@ -12,17 +12,15 @@ const app = new Vue({
         user_recebe_emailDefault: null,
 
         form: {
-            alterarSenha: false,
             id: '',
             nome: '',
             login: '',
-            password: '',
-            password_confirmation: '',
             grupo_id: '',
             tipo: '',
             grupo_cloud_id: '',
             empresa_id: '',
             ativo: true,
+            gestor: false,
             user_recebe_email:[]
         },
         empresa_id: '',
@@ -30,6 +28,7 @@ const app = new Vue({
         listaPapeis: [],
         listaCloud: [],
         listaTipoEmail: [],
+        lista_tipos: [],
         lista: [],
         dados: {},
         controle: {
@@ -47,12 +46,18 @@ const app = new Vue({
     },
     methods: {
         formNovo() {
+
+            this.selecionaEmpresa(this.empresa_id);
+
             this.cadastrado = false;
             this.atualizado = false;
             this.editando = false;
             this.tituloJanela = "Cadastrando usuário";
             formReset();
             this.form = _.cloneDeep(this.formDefault) //copia
+            if (this.empresa_id !== 104){
+                this.form.empresa_id = this.empresa_id;
+            }
         },
 
         cadastrar() {
@@ -61,6 +66,7 @@ const app = new Vue({
                 alert('Verificar os erros');
                 return false;
             }
+
             this.preloadAjax = true;
             axios.post(`${URL_ADMIN}/usuarios`, this.form)
                 .then(response => {
@@ -74,6 +80,14 @@ const app = new Vue({
         },
 
         formAlterar(id) {
+            formReset();
+            this.form = _.cloneDeep(this.formDefault) //copia
+
+            this.selecionaEmpresa(this.empresa_id);
+            if (this.empresa_id !== 104){
+                this.form.empresa_id = this.empresa_id;
+            }
+
             this.form.id = id;
 
             this.cadastrado = false;
@@ -91,7 +105,6 @@ const app = new Vue({
                     this.listaPapeis = response.data.papeis
                     this.listaCloud = response.data.cloud;
                     this.form.user_recebe_email = response.data.formulario_vazio;
-                    this.form.password = '';
                     this.editando = true;
                     this.preloadAjax = false;
                 })
@@ -105,13 +118,6 @@ const app = new Vue({
             if ($('#janelaCadastrar :input:visible:enabled.is-invalid').length) {
                 alert('Verificar os erros');
                 return false;
-            }
-
-            if (this.form.alterarSenha) {
-                if (this.form.password !== this.form.password_confirmation) {
-                    mostraErro('', 'As senhas não conscidem');
-                    return false;
-                }
             }
 
             this.preloadAjax = true;
@@ -145,6 +151,7 @@ const app = new Vue({
             this.empresa_id = dados.empresa;
             this.listaTipoEmail = dados.tipo_email;
             this.user_recebe_emailDefault = dados.formulario_vazio;
+            this.lista_tipos = dados.lista_tipos;
             this.form.user_recebe_email = _.cloneDeep(this.user_recebe_emailDefault)
             this.controle.carregando = false;
         },
