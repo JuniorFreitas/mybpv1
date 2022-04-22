@@ -8,6 +8,7 @@ use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use MasterTag\DataHora;
 
 class PreAdmissaoController extends Controller
 {
@@ -54,6 +55,43 @@ class PreAdmissaoController extends Controller
             'VagaSelecionada:id,nome',
             'Admissao:feedback_id,data_admissao,funcao,cargo,status',
         );
+
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
+
+        if ($filtroPeriodo) {
+            $periodo = explode(' até ', $request->periodo);
+            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
+            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
+                $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+            });
+        }
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Curriculo', function ($query) use ($request) {
+                $query->where('nome', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('id', $request->campoBusca);
+            });
+        }
+
+        if ($request->filled('campoCPF')) {
+            $resultado->whereHas('Curriculo', function ($query) use ($request) {
+                $query->whereCpf($request->campoBusca);
+            });
+        }
+
+        if ($request->filled('campoVaga')) {
+            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
+                $query->whereId($request->campoVaga);
+            });
+        }
+
+        if ($request->filled('campoUf')) {
+            $resultado->whereHas('VagaAberta.Municipio', function ($q) use ($request) {
+                $q->whereUf($request->campoUf);
+            });
+        }
+
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 
