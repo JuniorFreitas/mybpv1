@@ -93,9 +93,9 @@
     @php
         if (isset($dados['empresa_id']) && !empty($dados['empresa_id'])){
             $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
-    }else{
-        $empresa = \App\Models\Cliente::withoutGlobalScopes()->find(auth()->user()->empresa_id);
-    }
+        }else{
+            $empresa = \App\Models\Cliente::withoutGlobalScopes()->find(auth()->user()->empresa_id);
+        }
     @endphp
     <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
         <tr>
@@ -104,7 +104,7 @@
                     <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$empresa->apelido}}.jpg"
                          style="width: 100%" alt=""> <br>
                 @else
-                    <img src="https://site.bpse.com.br/img/logo.png" alt=""> <br>
+                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_bpse.jpg" style="width: 100%" alt=""> <br>
                 @endif
             </td>
         </tr>
