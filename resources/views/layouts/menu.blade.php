@@ -435,35 +435,37 @@
         </a>
     </li>
 @endif
-<li>
-    <a href="javascript://" class="has-arrow waves-effect">
-        <i class="bx bx-aperture"></i>
-        <span>TREINAMENTO</span>
-    </a>
-    <ul class="sub-menu" aria-expanded="false">
-        @can('portaria')
-            <li>
-                <a href="{{route('g.portaria.index' )}}" key="portaria">
-                    Portaria
-                </a>
-            </li>
-        @endcan
-        @can('treinamento')
-            <li>
-                <a href="{{route('g.treinamentos.treinamento.index' )}}" key="carteira_etiquetas">
-                    Carteira/Etiquetas
-                </a>
-            </li>
-        @endcan
-        @can('certificado')
-            <li>
-                <a href="{{route('g.certificados.certificado.index' )}}" key="emissao_certificados">
-                    Emissão Certificados (NR33/NR35)
-                </a>
-            </li>
-        @endcan
-    </ul>
-</li>
+@if(\App\Models\Sistema::permitirLinks('portaria','treinamento','certificado'))
+    <li>
+        <a href="javascript://" class="has-arrow waves-effect">
+            <i class="bx bx-aperture"></i>
+            <span>TREINAMENTO</span>
+        </a>
+        <ul class="sub-menu" aria-expanded="false">
+            @can('portaria')
+                <li>
+                    <a href="{{route('g.portaria.index' )}}" key="portaria">
+                        Portaria
+                    </a>
+                </li>
+            @endcan
+            @can('treinamento')
+                <li>
+                    <a href="{{route('g.treinamentos.treinamento.index' )}}" key="carteira_etiquetas">
+                        Carteira/Etiquetas
+                    </a>
+                </li>
+            @endcan
+            @can('certificado')
+                <li>
+                    <a href="{{route('g.certificados.certificado.index' )}}" key="emissao_certificados">
+                        Emissão Certificados (NR33/NR35)
+                    </a>
+                </li>
+            @endcan
+        </ul>
+    </li>
+@endif
 @if(\App\Models\Sistema::permitirLinks('fluxo-caixa','classificacao-plano-conta','formas-pagamento'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
@@ -522,13 +524,13 @@
                 </li>
             @endforeach
 
-{{--            @can('cloud_configuracoes')--}}
-                <li>
-                    <a href="{{ route('g.cloud.cadastro.indexCadastro') }}" key="cloud_cadastro">
-                        Cadastro
-                    </a>
-                </li>
-{{--            @endcan--}}
+            {{--            @can('cloud_configuracoes')--}}
+            <li>
+                <a href="{{ route('g.cloud.cadastro.indexCadastro') }}" key="cloud_cadastro">
+                    Cadastro
+                </a>
+            </li>
+            {{--            @endcan--}}
 
             @can('cloud_configuracoes')
                 <li>

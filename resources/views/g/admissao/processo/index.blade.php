@@ -1213,39 +1213,41 @@
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-
-                <button type="button" class="btn btn-sm btn-primary mr-1 mb-2" :disabled="controle.carregando"
-                        data-toggle="modal"
-                        data-target="#janelaAdmissaoAvulsa"
-                        @click="formCadastraAvulsa"
-                >
-                    <i class="fas fa-plus"></i>
-                    ADMISSÃO AVULSA
-                </button>
-
-                <button class="btn btn-sm btn-danger mb-2 mr-1"
-                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionados.length === 0" @click="selecionados = []">
-                    <i class="fa fa-times"></i> LIMPAR SELEÇÃO
-                </button>
-
-                <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                </button>
+                @can('admissao_insert' || 'admissao_update')
+                    <button type="button" class="btn btn-sm btn-primary mr-1 mb-2" :disabled="controle.carregando"
+                            data-toggle="modal"
+                            data-target="#janelaAdmissaoAvulsa"
+                            @click="formCadastraAvulsa"
+                    >
+                        <i class="fas fa-plus"></i>
+                        ADMISSÃO AVULSA
+                    </button>
 
 
-                <button class="btn btn-sm btn-primary mb-2 mr-1"
-                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionados.length === 0"
-                        data-toggle="modal"
-                        data-target="#janelaAdmissaoMassa"
-                        @click="formCadastraMassa">
-                    <i class="fa fa-plus"></i> ATUALIZAR SELECIONADOS <span class="badge badge-light"
-                                                                            v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                </button>
+                    <button class="btn btn-sm btn-danger mb-2 mr-1"
+                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                            :disabled="selecionados.length === 0" @click="selecionados = []">
+                        <i class="fa fa-times"></i> LIMPAR SELEÇÃO
+                    </button>
+
+                    <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"
+                            @click.prevent="exportaExcel()"
+                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
+                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                    </button>
+
+
+                    <button class="btn btn-sm btn-primary mb-2 mr-1"
+                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                            :disabled="selecionados.length === 0"
+                            data-toggle="modal"
+                            data-target="#janelaAdmissaoMassa"
+                            @click="formCadastraMassa">
+                        <i class="fa fa-plus"></i> ATUALIZAR SELECIONADOS <span class="badge badge-light"
+                                                                                v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                    </button>
+                @endcan
 
             </div>
         </div>
@@ -1364,12 +1366,14 @@
                     </td>
 
                     <td>
-                        <button class="btn btn-sm btn-primary mb-2" content="Admitir" v-tippy
-                                @click.prevent="formEntrevistar(item.id); visualizar = false"
-                                data-toggle="modal"
-                                data-target="#janelaCadastrar">
-                            <i class="fa fa-check"></i>
-                        </button>
+                        @can('admissao_insert' || 'admissao_update')
+                            <button class="btn btn-sm btn-primary mb-2" content="Admitir" v-tippy
+                                    @click.prevent="formEntrevistar(item.id); visualizar = false"
+                                    data-toggle="modal"
+                                    data-target="#janelaCadastrar">
+                                <i class="fa fa-check"></i>
+                            </button>
+                        @endcan
 
                         <button class="btn btn-sm btn-primary mb-2" content="Visualizar" v-tippy
                                 @click.prevent="formEntrevistar(item.id); visualizar = true"
