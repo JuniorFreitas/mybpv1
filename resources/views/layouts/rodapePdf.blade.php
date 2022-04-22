@@ -6,10 +6,10 @@
     </p>
     <div>
         <hr style="border:none; border-top: 1px solid #999">
-        {{$empresa->razao_social}}
+        {{auth()->user()->Empresa->razao_social}}
         <br>
-        CNPJ: {{$empresa->cnpj}}
+        CNPJ: {{auth()->user()->Empresa->cnpj}}
         <br>
-        {{$empresa->endereco_completo}}
+        {{auth()->user()->Empresa->endereco_completo}}
     </div>
 </div>
