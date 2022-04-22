@@ -114,7 +114,8 @@ class DocumentosPreAdmissaoController extends Controller
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
-
+            'nome' => 'required',
+            'filiacao_mae' => 'required',
         ]);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
