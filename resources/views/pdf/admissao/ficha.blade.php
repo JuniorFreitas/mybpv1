@@ -52,7 +52,7 @@
                     Indicado para qual área:
                     <strong>{{ $dados->ParecerTecnica->indicado_area ?? 'Não informado' }}</strong>
                     <br>
-                    Endereço: <strong>{{ $dados->Curriculo->logradouro }}, {{ $dados->Curriculo->bairro }}
+                    Endereço: <strong>{{ $dados->Curriculo->cep }}, {{ $dados->Curriculo->logradouro }}, {{ $dados->Curriculo->bairro }}
                         , {{ $dados->Curriculo->municipio }}/{{ $dados->Curriculo->uf }}</strong>
                     <br>
                     Bairro Rota:
