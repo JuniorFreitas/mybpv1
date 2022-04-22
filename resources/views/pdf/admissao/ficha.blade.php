@@ -6,17 +6,17 @@
 @section('conteudo')
     <h5 class="text-center">FICHA DE ADMISSÃO</h5>
     <h5 style="margin-top: 5px; margin-bottom: 5px;">INFORMAÇÕES:</h5>
-
-
     <table width="100%" style="border: 1px solid #666666; padding: 8px 17px 15px">
         <tr>
             <td>
-                <p style="line-height: 17pt; font-size: 8.5pt;">
+                <p style="line-height: 17pt; font-size: 8.5pt; text-transform: uppercase">
 
                     Nome: <strong>{{ $dados->Curriculo->nome }}</strong>
 
-                    - <strong>{{ $dados->Curriculo->idade }} anos</strong>
-                    | PCD: <strong>{{ $dados->Curriculo->PCD ? 'Sim' : 'Não' }}</strong>
+                    - Data de Nascimento: <strong>{{ $dados->Curriculo->nascimento }} ({{ $dados->Curriculo->idade }}
+                        anos)</strong><br>
+                    PCD:
+                    <strong>{{ $dados->Curriculo->PCD ? 'Sim' : 'Não' }}</strong>
                     | CNH: <strong>{{ $dados->ParecerRh->cnh ? $dados->ParecerRh->cnh_tipo : 'Não possui' }}</strong>
                     <br>
                     RG: <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
@@ -24,12 +24,16 @@
                     <strong>{{ $dados->Curriculo->rg_data_emissao ?? 'Não informado' }}</strong>
                     | Naturalidade:
                     <strong>{{ $dados->Curriculo->naturalidade ?? 'Não informado' }}</strong>
+                    <br>Mãe:
+                    <strong>{{ $dados->Curriculo->filiacao_mae ?? 'Não informado' }}</strong> | Pai:
+                    <strong>{{ $dados->Curriculo->filiacao_pai ?? 'Não informado' }}</strong> |
                     <br>
                     Calça: <strong>{{ $dados->ParecerRh->calca }}</strong> |
                     Bota: <strong>{{ $dados->ParecerRh->bota }}</strong> | C.
                     Meia: <strong>{{ $dados->ParecerRh->camisa_meia }}</strong> | C.
                     Proteção: <strong>{{ $dados->ParecerRh->camisa_protecao }}</strong>
-                    <br> Vaga: <strong>{{ $dados->VagaAberta->VagaSelecionada->nome  . ' - ' . $dados->VagaAberta->Municipio->uf}}</strong>
+                    <br> Vaga:
+                    <strong>{{ $dados->VagaAberta->VagaSelecionada->nome  . ' - ' . $dados->VagaAberta->Municipio->uf}}</strong>
                     <br>
                     Contato:
                     <strong>{{ $dados->TelPrincipal ? $dados->TelPrincipal->numero: 'Não informado' }}</strong>
@@ -99,25 +103,22 @@
     <table style="border: 1px solid #666666; padding: 8px 17px 15px" width="100%">
         <tr>
             <td>
-                <p style="line-height: 15pt; font-size: 8.5pt;">
-                    Contrato: <strong>{{ $dados->Admissao->contrato }}</strong> <br>
-                    Função: <strong>{{ $dados->Admissao->funcao }}</strong> <br>
-                    Cargo: <strong>{{ $dados->Admissao->cargo }}</strong> <br>
-                    Salário R$: <strong>{{ $dados->Admissao->salario }}</strong> <br>
-                    Documento: <strong>{{ $dados->Admissao->documento }}</strong> <br>
-                    Documento Portaria: <strong>{{ $dados->Admissao->documento_portaria }}</strong> <br>
-                    Tipo de admissão: <strong>{{ $dados->Admissao->tipo_admissao }}</strong> <br>
-                    Treinamento: <strong>{{ $dados->Admissao->treinamento }}</strong> <br>
-                    Tipo de Treinamento: <strong>{{ $dados->Admissao->tipo_treinamento }}</strong> <br>
-                    Data Treinamento: <strong>{{ $dados->Admissao->data_treinamento }}</strong> <br>
-                    NR 33: <strong>{{ $dados->Admissao->nr_trinta_tres }}</strong> <br>
-                    Data NR 33: <strong>{{ $dados->Admissao->data_nr_trinta_tres }}</strong> <br>
-                    NR 35: <strong>{{ $dados->Admissao->nr_trinta_cinco }}</strong> <br>
-                    Data NR 35: <strong>{{ $dados->Admissao->data_nr_trinta_cinco }}</strong> <br>
-                    3260: <strong>{{ $dados->Admissao->trinta_dois_sessenta }}</strong> <br>
-                    Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta }}</strong> <br>
-                    Número Crachá: <strong>{{ $dados->Admissao->numero_cracha }}</strong> <br>
-                    Data do ASO: <strong>{{ $dados->Admissao->data_aso }}</strong> <br>
+                <p style="line-height: 15pt; font-size: 8.5pt; text-transform: uppercase; text-align: justify">
+                    Contrato: <strong>{{ $dados->Admissao->contrato ?? 'Não informado' }}</strong> | Função:
+                    <strong>{{ $dados->Admissao->funcao ?? 'Não informado' }}</strong> | Cargo: <strong>{{ $dados->VagaAberta->VagaSelecionada->nome }}</strong> | Salário R$: <strong>{{ $dados->Admissao->salario ?? 'Não informado'}}</strong> <br>
+                    Documento: <strong>{{ $dados->Admissao->documento ?? 'Não informado'}}</strong> | Documento Portaria: <strong>{{ $dados->Admissao->documento_portaria ?? 'Não informado' }}</strong> |
+                    Tipo de admissão: <strong>{{ $dados->Admissao->tipo_admissao ?? 'Não informado' }}</strong> |
+                    Treinamento: <strong>{{ $dados->Admissao->treinamento ?? 'Não informado' }}</strong> |
+                    Tipo de Treinamento: <strong>{{ $dados->Admissao->tipo_treinamento ?? 'Não informado' }}</strong> |
+                    Data Treinamento: <strong>{{ $dados->Admissao->data_treinamento ?? 'Não informado' }}</strong> |
+                    NR 33: <strong>{{ $dados->Admissao->nr_trinta_tres ?? 'Não informado' }}</strong> |
+                    Data NR 33: <strong>{{ $dados->Admissao->data_nr_trinta_tres ?? 'Não informado' }}</strong> |
+                    NR 35: <strong>{{ $dados->Admissao->nr_trinta_cinco ?? 'Não informado' }}</strong> |
+                    Data NR 35: <strong>{{ $dados->Admissao->data_nr_trinta_cinco ?? 'Não informado' }}</strong> |
+                    3260: <strong>{{ $dados->Admissao->trinta_dois_sessenta ?? 'Não informado' }}</strong> |
+                    Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong>  |
+                    Número Crachá: <strong>{{ $dados->Admissao->numero_cracha ?? 'Não informado' }}</strong> |
+                    Data do ASO: <strong>{{ $dados->Admissao->data_aso ?? 'Não informado' }}</strong> <br>
                     CTPS:
                     <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
                     | CTPS Série:
@@ -133,9 +134,9 @@
                     <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_zona :'Não Informado'}}</strong>
                     <br>
                     Status Carteira de Treinamento e Etiqueta:
-                    <strong>{{ $dados->Admissao->status_carteira_treinamento }}</strong> <br>
-                    Status: <strong>{{ $dados->Admissao->status }}</strong> <br>
-                    Data da Admissão: <strong>{{ $dados->Admissao->data_admissao }}</strong> <br>
+                    <strong>{{ $dados->Admissao->status_carteira_treinamento ?? 'Não Informado' }}</strong> <br>
+                    Status: <strong>{{ $dados->Admissao->status ?? 'Não Informado'}}</strong> <br>
+                    Data da Admissão: <strong>{{ $dados->Admissao->data_admissao ?? 'Não Informado'}}</strong> <br>
                 </p>
             </td>
         </tr>
