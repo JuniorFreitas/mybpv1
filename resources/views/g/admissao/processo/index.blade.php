@@ -1154,6 +1154,7 @@
                 </div>
             </div>
 
+
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <div class="form-group">
                     <label>Estado</label>
@@ -1187,6 +1188,18 @@
                         <option value="SP">SP</option>
                         <option value="SE">SE</option>
                         <option value="TO">TO</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-3">
+                <div class="form-group">
+                    <label for="">Status admissão</label>
+                    <select class="form-control form-control-sm" @change="atualizar"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoStatusAdmissao">
+                        <option value="">Todos</option>
+                        <option v-for="item in listaStatusAdmissao" :value="item">@{{ item }}</option>
                     </select>
                 </div>
             </div>

@@ -278,6 +278,39 @@ class Admissao extends Model
         'data_encerramento' => 'string',
     ];
 
+    const STATUS_ADMISSAO_AGUARDANDOQUALIFICAÇÃO = "AGUARDANDO QUALIFICAÇÃO";
+    const STATUS_ADMISSAO_PRONTOPARAADMISSAO = "PRONTO PARA ADMISSAO";
+    const STATUS_ADMISSAO_ADMITIDO = "ADMITIDO";
+    const STATUS_ADMISSAO_STANDBY = "STAND BY";
+    const STATUS_ADMISSAO_PENDENTEASO = "PENDENTE ASO";
+    const STATUS_ADMISSAO_PENDENTEDOCUMENTO = "PENDENTE DOCUMENTO";
+    const STATUS_ADMISSAO_PENDENTETREINAMENTO = "PENDENTE TREINAMENTO";
+    const STATUS_ADMISSAO_CANCELADO = "CANCELADO";
+    const STATUS_ADMISSAO_ENCAMINHADOEXAME = "ENCAMINHADO EXAME";
+    const STATUS_ADMISSAO_DESISTÊNCIA = "DESISTÊNCIA";
+    const STATUS_CARTEIRA_TREINAMENTO_PENDENTE = "PENDENTE";
+    const STATUS_CARTEIRA_TREINAMENTO_AGUARDANDOTREINAMENTO = "AGUARDANDO TREINAMENTO";
+    const STATUS_CARTEIRA_TREINAMENTO_ENTREGUE = "ENTREGUE";
+
+    const TODOS_STATUS_ADMISSAO = [
+        self::STATUS_ADMISSAO_AGUARDANDOQUALIFICAÇÃO,
+        self::STATUS_ADMISSAO_PRONTOPARAADMISSAO,
+        self::STATUS_ADMISSAO_ADMITIDO,
+        self::STATUS_ADMISSAO_STANDBY,
+        self::STATUS_ADMISSAO_PENDENTEASO,
+        self::STATUS_ADMISSAO_PENDENTEDOCUMENTO,
+        self::STATUS_ADMISSAO_PENDENTETREINAMENTO,
+        self::STATUS_ADMISSAO_CANCELADO,
+        self::STATUS_ADMISSAO_ENCAMINHADOEXAME,
+        self::STATUS_ADMISSAO_DESISTÊNCIA
+    ];
+
+    const TODOS_STATUS_CARTEIRA_TREINAMETO = [
+        self::STATUS_CARTEIRA_TREINAMENTO_PENDENTE,
+        self::STATUS_CARTEIRA_TREINAMENTO_AGUARDANDOTREINAMENTO,
+        self::STATUS_CARTEIRA_TREINAMENTO_ENTREGUE
+    ];
+
     public function getCipaAttribute($value)
     {
         return is_null($value) ? "" : (boolean)$value;
@@ -624,7 +657,8 @@ class Admissao extends Model
         return $this->hasOne(DadosAdmissao::class, 'admissao_id', 'id');
     }
 
-    public function Demissao(){
+    public function Demissao()
+    {
         return $this->hasOne(Demissao::class, 'feedback_id', 'feedback_id');
     }
 

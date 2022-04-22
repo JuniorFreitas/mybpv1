@@ -969,6 +969,7 @@ class AdmissaoController extends Controller
                 $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
             });
         }
+
         if ($request->filled('campoCliente')) {
             $resultado->whereClienteId($request->campoCliente);
         }
@@ -993,6 +994,12 @@ class AdmissaoController extends Controller
             });
         }
 
+        if ($request->filled('campoStatusAdmissao')) {
+            $resultado->whereHas('Admissao', function ($query) use ($request) {
+                $query->whereStatus($request->campoStatusAdmissao);
+            });
+        }
+
         if ($request->filled('campoUf')) {
             $resultado->whereHas('VagaAberta.Municipio', function ($q) use ($request) {
                 $q->whereUf($request->campoUf);
@@ -1011,7 +1018,11 @@ class AdmissaoController extends Controller
     public function atualizar(Request $request)
     {
         $pg = $this->filtro($request)->paginate($request->porPag ?: 20);
-        $dados = ['admissao_processo_dados_editar' => auth()->user()->can('admissao_processo_dados_editar')];
+        $dados = [
+            'admissao_processo_dados_editar' => auth()->user()->can('admissao_processo_dados_editar'),
+            'status_admissao' => Admissao::TODOS_STATUS_ADMISSAO,
+            'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
+        ];
         return Sistema::pg($pg, $dados);
     }
 

@@ -478,6 +478,7 @@ const app = new Vue({
         formResultadoIntegradoDefault: null,
 
         lista: [],
+        listaStatusAdmissao: [],
         vagas: [],
         areasEtiquetas: [],
 
@@ -498,6 +499,7 @@ const app = new Vue({
                 campoFiltro: "",
                 campoPcd: "",
                 campoCliente: "",
+                campoStatusAdmissao: "",
                 campoUf: ""
             }
         }
@@ -950,6 +952,7 @@ const app = new Vue({
         },
         carregou(dados) {
             this.lista = dados.itens;
+            this.listaStatusAdmissao = dados.status_admissao;
             this.editando = dados.admissao_processo_dados_editar;
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;
