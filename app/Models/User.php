@@ -214,6 +214,11 @@ class User extends Authenticatable
         self::GESTOR
     ];
 
+    public const TIPOS_USUARIOS_COMUNS = [
+        self::ADMINISTRADOR,
+        self::FUNCIONARIO,
+    ];
+
 
     public static function getUser($fields = null)
     {

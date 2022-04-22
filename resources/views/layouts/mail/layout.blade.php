@@ -99,7 +99,7 @@
     @endphp
     <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
         <tr>
-            <td align="middle" style="padding: 21px">
+            <td align="middle">
                 @if(isset($empresa) && !empty($empresa))
                     <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$empresa->apelido}}.jpg"
                          style="width: 100%" alt=""> <br>
