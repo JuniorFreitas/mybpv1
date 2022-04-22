@@ -16,7 +16,7 @@
                 </div>
                 <div class="form-group">
                     <label>Nome do Pai</label>
-                    <input v-model="formUser.filiacao_pai" onblur="valida_campo_vazio(this,3)" class="form-control">
+                    <input v-model="formUser.filiacao_pai" onblur="valida_campo(this,3)" class="form-control">
                 </div>
                 <telefones :model="formUser.telefones" :ramal="false" :pais="false" :qnt_min="1"></telefones>
                 <button type="button" class="btn btn-success" v-show="formUser.telefones.length > 0"
