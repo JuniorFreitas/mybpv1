@@ -45,6 +45,10 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read int|null $simulados_ativos_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
+ * @property int $ativo_sistema
+ * @property-read \App\Models\Cliente|null $Empresa
+ * @property-read \App\Models\Vaga|null $VagaSelecionada
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereAtivoSistema($value)
  */
 class VagasAbertas extends Model
 {
