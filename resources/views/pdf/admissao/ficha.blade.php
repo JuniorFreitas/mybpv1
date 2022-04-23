@@ -119,12 +119,9 @@
                     Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong>  |
                     Número Crachá: <strong>{{ $dados->Admissao->numero_cracha ?? 'Não informado' }}</strong> |
                     Data do ASO: <strong>{{ $dados->Admissao->data_aso ?? 'Não informado' }}</strong> <br>
-                    CTPS:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
-                    | CTPS Série:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
-                    | CTPS Data Emissão:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
+                    CTPS: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
+                    | CTPS Série: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
+                    | CTPS Data Emissão: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
                     <br>
                     Título de Eleitor:
                     <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_numero :'Não Informado'}}</strong>
@@ -132,6 +129,10 @@
                     <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_sessao :'Não Informado'}}</strong>
                     | Título de Eleitor Zona:
                     <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_zona :'Não Informado'}}</strong>
+                    <br>
+                    Banco: <strong>{{ $dados->BancoConta ? $dados->BancoConta->banco :'Não Informado'}}</strong> |
+                    Agência: <strong>{{ $dados->BancoConta ? $dados->BancoConta->agencia :'Não Informado'}}</strong> |
+                    Conta: <strong>{{ $dados->BancoConta ? $dados->BancoConta->conta :'Não Informado'}}</strong>
                     <br>
                     Status Carteira de Treinamento e Etiqueta:
                     <strong>{{ $dados->Admissao->status_carteira_treinamento ?? 'Não Informado' }}</strong> <br>
