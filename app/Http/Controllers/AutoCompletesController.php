@@ -20,7 +20,7 @@ class AutoCompletesController extends Controller
         }
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
-        return VagasAbertas::whereHas('VagaSelecionada', function ($query) use ($busca, $quantidade) {
+        return VagasAbertas::whereAtivoSistema(true)->whereHas('VagaSelecionada', function ($query) use ($busca, $quantidade) {
             $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
         })
 //                ->with(['VagaSelecionada.SimuladoVaga.Simulado' => function ($q) {
@@ -31,6 +31,22 @@ class AutoCompletesController extends Controller
             ->get()
             ->map(function ($item) {
                 $item->label = $item->VagaSelecionada->nome . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
+                return $item;
+            });
+    }
+
+    public function vagasAbertasAtivas(Request $request)
+    {
+        $busca = $request->query('busca');
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+        $quantidade = $request->query('rows');
+        $busca = $request->query('busca');
+        return VagasAbertas::whereAtivoSistema(true)->where('titulo', 'like', '%' . $busca . '%')->take($quantidade)
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->titulo . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
                 return $item;
             });
     }

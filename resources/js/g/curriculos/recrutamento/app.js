@@ -92,7 +92,7 @@ const app = new Vue({
             controle: {
                 carregando: false,
                 dados: {
-                    caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
+                    caminho_autocomplete: `autocomplete/todas-vagas-abertas-ativas`,
                     caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
                     autocomplete_label_anterior: '',
                     autocomplete_label: '',
