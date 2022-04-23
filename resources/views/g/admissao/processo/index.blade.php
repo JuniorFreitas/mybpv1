@@ -1158,49 +1158,14 @@
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <div class="form-group">
                     <label>Estado</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoUf">
-                        <option value="">SEM FILTRO</option>
-                        <option value="MA">MA</option>
-                        <option value="AC">AC</option>
-                        <option value="AL">AL</option>
-                        <option value="AP">AP</option>
-                        <option value="AM">AM</option>
-                        <option value="BA">BA</option>
-                        <option value="CE">CE</option>
-                        <option value="DF">DF</option>
-                        <option value="ES">ES</option>
-                        <option value="GO">GO</option>
-                        <option value="MT">MT</option>
-                        <option value="MS">MS</option>
-                        <option value="MG">MG</option>
-                        <option value="PA">PA</option>
-                        <option value="PB">PB</option>
-                        <option value="PR">PR</option>
-                        <option value="PE">PE</option>
-                        <option value="PI">PI</option>
-                        <option value="RJ">RJ</option>
-                        <option value="RN">RN</option>
-                        <option value="RS">RS</option>
-                        <option value="RO">RO</option>
-                        <option value="RR">RR</option>
-                        <option value="SC">SC</option>
-                        <option value="SP">SP</option>
-                        <option value="SE">SE</option>
-                        <option value="TO">TO</option>
-                    </select>
+                    <select2 :settings="settings2" :options="ufs" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoUf"></select2>
                 </div>
             </div>
 
             <div class="col-12 col-sm-4 col-md-3">
                 <div class="form-group">
                     <label for="">Status admissão</label>
-                    <select class="form-control form-control-sm" @change="atualizar"
-                            :disabled="controle.carregando"
-                            v-model="controle.dados.campoStatusAdmissao">
-                        <option value="">Todos</option>
-                        <option v-for="item in listaStatusAdmissao" :value="item">@{{ item }}</option>
-                    </select>
+                    <select2 :settings="settings2" :options="listaStatusAdmissao" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoStatusAdmissao"></select2>
                 </div>
             </div>
 
@@ -1210,9 +1175,7 @@
                     <select class="form-control form-control-sm" @change="atualizar"
                             :disabled="controle.carregando"
                             v-model="controle.dados.pages">
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
+                        <option v-for="item in por_pagina" :value="item">@{{ item }}</option>
                     </select>
                 </div>
             </div>

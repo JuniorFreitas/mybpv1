@@ -6,9 +6,13 @@ import telefone from "../../../components/Telefones";
 import DadosPessoais from "../../../components/entrevistas/DadosPessoaisTexto";
 import FormResultadoIntegrado from "../../../components/entrevistas/FormResultadoIntegrado";
 import formAdmissao from "../../../components/admissao/processo/formAdmissao";
+import Select2 from "../../../components/Select2/Select2";
+import configselect2 from "../../../components/Select2/mixSelec2";
+import Utils from "../../../mixins/Utils";
 
 const app = new Vue({
     el: "#app",
+    mixins: [configselect2, Utils],
     components: {
         endereco,
         datepicker,
@@ -17,7 +21,8 @@ const app = new Vue({
         DadosPessoais,
         formAdmissao,
         FormResultadoIntegrado,
-        DadosBancarios
+        DadosBancarios,
+        Select2
     },
     data: {
         tituloJanela: "Admissão",
@@ -846,18 +851,18 @@ const app = new Vue({
 
                     if (!data.feedback.parecer_tecnica) {
                         data.feedback.parecer_tecnica = {
-                            'indicado_area': "",
+                            "indicado_area": ""
                         };
                     }
 
                     if (!data.feedback.banco_conta) {
                         data.feedback.banco_conta = {
-                            'banco': "Banco do Brasil",
-                            'agencia': "",
-                            'conta': "",
-                            'pix': false,
-                            'tipochavepix': "",
-                            'chavepix': ""
+                            "banco": "Banco do Brasil",
+                            "agencia": "",
+                            "conta": "",
+                            "pix": false,
+                            "tipochavepix": "",
+                            "chavepix": ""
                         };
                     }
 
