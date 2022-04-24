@@ -141,6 +141,17 @@ return [
             ]
         ),
 
+        'disco-exames' => array_merge($default,
+            [
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-exames') : 'arquivos/disco-exames',
+                'urlShow' => env('APP_URL') . '/g/exames/anexo',
+                'urlDownload' => env('APP_URL') . '/g/exames/anexoDownload',
+                'urlThumb' => env('APP_URL') . '/g/exames/anexo',
+                'urlDelete' => env('APP_URL') . '/g/exames/anexo',
+                'visibility' => 'public',
+            ]
+        ),
+
         'disco-dossie' => array_merge($default,
             [
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-dossie') : 'arquivos/disco-dossie',
