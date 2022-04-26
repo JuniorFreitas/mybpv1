@@ -84,7 +84,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','vagas','vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','beneficio','areaetiqueta','centrocusto'))
+@if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','vagas','vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','beneficio','areaetiqueta','centrocusto','cadastro_empresa_temporaria'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bx-briefcase-alt-2"></i>
@@ -144,6 +144,13 @@
                 <li>
                     <a href="{{route('g.empresaexame.empresa-exame.index')}}" key="empresaexame">
                         Empresa Exames
+                    </a>
+                </li>
+            @endcan
+            @can('cadastro_empresa_temporaria')
+                <li>
+                    <a href="{{route('g.empresatemporaria.empresa-temporaria.index')}}" key="empresatemporaria">
+                        Empresa Temporaria
                     </a>
                 </li>
             @endcan

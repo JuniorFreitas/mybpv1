@@ -116,6 +116,10 @@ const app = new Vue({
         vagas: [],
         listaAreas: [],
 
+        posadmissao_form_rh: false,
+        posadmissao_form_adm: false,
+        posadmissao_form_ssma: false,
+
         controle: {
             carregando: false,
             dados: {
@@ -141,6 +145,25 @@ const app = new Vue({
                 return item.avaliacao;
             });
         },
+        formulariosAtivos() {
+            const formularios = [];
+            if (this.posadmissao_form_rh) {
+                formularios.push(this.formulario.setores.filter(item => {
+                    return item.nome === "Recursos Humanos";
+                })[0]);
+            }
+            if (this.posadmissao_form_adm) {
+                formularios.push(this.formulario.setores.filter(item => {
+                    return item.nome === "ALMOXARIFADO / ADM";
+                })[0]);
+            }
+            if (this.posadmissao_form_ssma) {
+                formularios.push(this.formulario.setores.filter(item => {
+                    return item.nome === "SEGURANÇA DO TRABALHO / SSMA";
+                })[0]);
+            }
+            return formularios;
+        },
         tudoMarcado() {
             let totalItens = this.comAvaliacao.length;
             let totalEncontrado = 0;
@@ -160,9 +183,10 @@ const app = new Vue({
             let resultado = totalItens === totalEncontrado;
             this.selecionaTudo = resultado;
             return resultado;
-        },
+        }
 
     },
+
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
 
@@ -172,10 +196,10 @@ const app = new Vue({
     },
     methods: {
         extensao(item) {
-            if (item === 'demissao_com_justa_causa') {
-                this.extensaoDocumento = '.doc'
+            if (item === "demissao_com_justa_causa") {
+                this.extensaoDocumento = ".doc";
             } else {
-                this.extensaoDocumento = '.pdf'
+                this.extensaoDocumento = ".pdf";
             }
         },
         selecionaTodos() {
@@ -438,16 +462,16 @@ const app = new Vue({
         },
         gerarPdf(item) {
             let link = `${URL_ADMIN}/posadmissao/demitir/pdf/${item}`;
-            open(link, 'blank');
+            open(link, "blank");
         },
         download(item) {
-            var extensao = '';
-            if (item === 'demissao_com_justa_causa') {
-                extensao = '.doc';
+            var extensao = "";
+            if (item === "demissao_com_justa_causa") {
+                extensao = ".doc";
             } else {
-                extensao = '.png';
+                extensao = ".png";
             }
-            open(`https://mybp-prod.s3.amazonaws.com/public/${item}${extensao}`, 'blank');
+            open(`https://mybp-prod.s3.amazonaws.com/public/${item}${extensao}`, "blank");
         },
 
         carregou(dados) {
@@ -460,6 +484,10 @@ const app = new Vue({
             this.selecionaTudo = this.tudoMarcado;
             this.form.alternativas = _.cloneDeep(this.alternativasDefault);
             this.controle.carregando = false;
+
+            this.posadmissao_form_rh = dados.posadmissao_form_rh;
+            this.posadmissao_form_adm = dados.posadmissao_form_adm;
+            this.posadmissao_form_ssma = dados.posadmissao_form_ssma;
         }
         ,
         carregando() {

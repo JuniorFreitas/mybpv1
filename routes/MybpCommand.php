@@ -86,3 +86,8 @@ Artisan::command('mybp:deploy', function () {
 
     \App\Models\Sistema::telegram("[MyBP] -- Deploy no ambiente de [{$ambiente}] solicitado por " . sdd()['user'] . ' no dia ' . sdd()['data']);
 })->describe("Deploy em ambiente de Desenvolvimento ou Produção");
+
+Artisan::command('mybp:syncfuncionarios', function () {
+    $this->info('Sincronizando Funcionarios');
+    \App\Models\Sistema::syncFuncionarios();
+})->describe("Sincronizando Funcionarios");

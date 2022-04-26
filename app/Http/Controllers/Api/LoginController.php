@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
+
     public function login(Request $request)
     {
         $usuario = User::whereLogin($request->login)->whereEmpresaId($request->empresa_id)->first();
@@ -15,6 +16,9 @@ class LoginController extends Controller
         if ($usuario && $usuario->ativo && password_verify($request->senha, $usuario->password)) {
             $habilidades = $usuario->Papel->Habilidades->pluck('nome')->toArray();
             $token = $usuario->createToken($usuario->tipo, $habilidades);
+
+            $usuario->update(['api_token' => $token->plainTextToken]);
+
             return response()->json([
                 "token" => $token->plainTextToken,
                 "success" => true

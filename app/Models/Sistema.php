@@ -597,4 +597,27 @@ class Sistema
             ->get(['empresa_id'])->pluck('empresa_id')->toArray();
     }
 
+    public static function syncFuncionarios()
+    {
+        $Empresas = \App\Models\User::select('id','nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
+
+        try {
+            echo "Iniciando Sincronização...\n";
+            DB::beginTransaction();
+            foreach ($Empresas as $Empresa){
+                echo "Sincronizando $Empresa->nome...\n";
+                $Funcionarios = \App\Models\User::select('id','nome','empresa_id')->whereEmpresaId($Empresa->id)->whereIn('tipo', \App\Models\User::TIPOS_USUARIOS_COMUNS);
+                $Empresa->EmpresaFuncionarios()->sync($Funcionarios->pluck('id'));
+                foreach ($Funcionarios->get() as $Funcionario){
+                    $Funcionario->ClienteFuncionarios()->sync($Empresa->id);
+                }
+            }
+            echo "Fim de Sincronização...\n";
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            echo $e->getTraceAsString();
+        }
+    }
+
 }

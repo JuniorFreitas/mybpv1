@@ -83,6 +83,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::put('concordarTermos', [\App\Http\Controllers\HomeController::class, 'concordarTermos'])->name('concordarTermos');
     Route::post('busca-data-admissao', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaDataAdmissao'])->name('buscaDataAdmissao');
     Route::get('periodos-aquisitivos', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaPeriodosAquisitivos'])->name('buscaPeriodosAquisitivos');
+    Route::get('get-pcmso', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getPcmos'])->name('getPcmos');
+    Route::get('get-empresa-exames', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getEmpresaExames'])->name('getEmpresaExames');
 
     // AutoCompletes
     Route::group(['as' => 'autocompletes.', 'prefix' => 'autocomplete'], function () {
@@ -251,6 +253,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('empresa-exame/atualizar', [\App\Http\Controllers\EmpresaExameController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_empresa_exame');
             Route::put('empresa-exame/{id}/ativa-desativa', [\App\Http\Controllers\EmpresaExameController::class, 'ativaDesativa'])->name('empresa_exame.ativaDesativa')->middleware('can:cadastro_empresa_exame');
             Route::resource('empresa-exame', \App\Http\Controllers\EmpresaExameController::class)->middleware('can:cadastro_empresa_exame');
+        });
+
+        Route::group(['as' => 'empresatemporaria.'], function () {
+            Route::post('empresa-temporaria/atualizar', [\App\Http\Controllers\EmpresaTemporariaController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_empresa_temporaria');
+            Route::put('empresa-temporaria/{id}/ativa-desativa', [\App\Http\Controllers\EmpresaTemporariaController::class, 'ativaDesativa'])->name('empresa_temporaria.ativaDesativa')->middleware('can:cadastro_empresa_temporaria');
+            Route::resource('empresa-temporaria', \App\Http\Controllers\EmpresaTemporariaController::class)->middleware('can:cadastro_empresa_temporaria');
         });
 
         Route::group(['as' => 'provas.'], function () {

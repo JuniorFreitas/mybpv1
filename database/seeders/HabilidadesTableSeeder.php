@@ -391,12 +391,22 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_empresa_exame_update', 'descricao' => 'Pode alterar empresa_exame'];
         $lista[] = ['nome' => 'cadastro_empresa_exame_delete', 'descricao' => 'Pode apagar feriados'];
 
+
+        //EMPRESA TEMPORARIA------------------------------
+        $lista[] = ['nome' => 'cadastro_empresa_temporaria', 'descricao' => 'Acessar rota/menu empresa_temporaria'];
+        $lista[] = ['nome' => 'cadastro_empresa_temporaria_insert', 'descricao' => 'Pode cadastrar empresa_temporaria'];
+        $lista[] = ['nome' => 'cadastro_empresa_temporaria_update', 'descricao' => 'Pode alterar empresa_temporaria'];
+        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
+
         try {
             DB::beginTransaction();
 
             foreach ($lista as $habilidade) {
                 if (Habilidade::whereNome($habilidade['nome'])->count() == 0) {
+                    echo "Criando habilidade: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
                     Habilidade::create($habilidade);
+                }else{
+                    echo "Habilidade já existe: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
                 }
             }
             DB::commit();

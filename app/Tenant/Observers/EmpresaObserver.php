@@ -8,13 +8,20 @@ class EmpresaObserver
 {
     public function creating(Model $model)
     {
-        $model->setAttribute('empresa_id', auth()->user()->empresa_id);
+        if (auth()->check()) {
+            $model->setAttribute('empresa_id', auth()->user()->empresa_id);
+        }else{
+            $model->setAttribute('empresa_id', $model->empresa_id);
+        }
 //        $model->setAttribute('cliente_id', auth()->user()->empresa_id);
     }
 
     public function updating(Model $model)
     {
-        $model->setAttribute('empresa_id', auth()->user()->empresa_id);
-//        $model->setAttribute('cliente_id', auth()->user()->empresa_id);
+        if (auth()->check()) {
+            $model->setAttribute('empresa_id', auth()->user()->empresa_id);
+        }else{
+            $model->setAttribute('empresa_id', $model->empresa_id);
+        }//        $model->setAttribute('cliente_id', auth()->user()->empresa_id);
     }
 }

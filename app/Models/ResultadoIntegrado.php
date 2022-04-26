@@ -93,6 +93,8 @@ class ResultadoIntegrado extends Model
         "documentos_entregue_data",
         "encaminhado_exame",
         "encaminhado_exame_data",
+        "pcmso_id",
+        "empresa_exame_id",
         "encaminhado_treinamento",
         "encaminhado_treinamento_data",
         "excessao",
@@ -111,6 +113,8 @@ class ResultadoIntegrado extends Model
         "documentos_entregue_data" => 'string',
         "encaminhado_exame" => 'boolean',
         "encaminhado_exame_data" => 'string',
+        "pcmso_id" => 'int',
+        "empresa_exame_id" => 'int',
         "encaminhado_treinamento" => 'boolean',
         "encaminhado_treinamento_data" => 'string',
         "excessao" => 'boolean',
@@ -194,6 +198,11 @@ class ResultadoIntegrado extends Model
             $data = new DataHora($this->attributes['created_at']);
             return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto() . 'h';
         }
+    }
+
+    public function Pcmso()
+    {
+        return $this->belongsTo(Pcmso::class, 'pcmso_id');
     }
 
     public function Admissao()

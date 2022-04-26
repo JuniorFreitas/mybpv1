@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use MasterTag\DataHora;
 
@@ -151,6 +152,7 @@ class User extends Authenticatable
         'termos',
         'ultimo_acesso',
         'device_token',
+        'api_token',
         'empresa_id',
         'gestor',
     ];
@@ -193,6 +195,7 @@ class User extends Authenticatable
         'termos' => 'boolean',
         'ultimo_acesso' => 'datetime:d/m/Y H:i:s',
         'device_token' => 'string',
+        'api_token' => 'string',
         'empresa_id' => 'int',
         'gestor' => 'boolean'
     ];
@@ -205,6 +208,7 @@ class User extends Authenticatable
     public const EMPRESA = "Empresa";
     public const GESTOR = "Gestor";
     public const CANDIDATO = "Candidato";
+    public const CLINICA_EXAME = "ClinicaExame";
 
 
     public const TIPOS_USUARIOS_GERENCIAIS = [
@@ -259,6 +263,14 @@ class User extends Authenticatable
         return trim(mb_strtolower($value));
     }
 
+    public function setUltimoAcessoAttribute($value)
+    {
+        $datahora = new DataHora($value);
+        $this->attributes['ultimo_acesso'] = $datahora->dataHoraInsert();
+    }
+
+    //relacionamento Tokens() esta dentro de HasApiTokens::class
+
     //Modificador ->nascimento
     public function setLoginlAttribute($value)
     {
@@ -285,13 +297,6 @@ class User extends Authenticatable
         return $this->hasOne(Fornecedor::class, 'id', 'id');
     }
 
-    public function setUltimoAcessoAttribute($value)
-    {
-        $datahora = new DataHora($value);
-        $this->attributes['ultimo_acesso'] = $datahora->dataHoraInsert();
-    }
-
-    //relacionamento Tokens() esta dentro de HasApiTokens::class
 
     public function Papel()
     {
@@ -432,6 +437,11 @@ class User extends Authenticatable
 
     protected static function booted()
     {
+        static::creating(function ($model) {
+            if ($model->tipo == self::CLINICA_EXAME) {
+                $model->setAttribute('api_token', Str::uuid());
+            }
+        });
 //        static::created(function ($model) {
 //            \Cache::forget("contatosEmpresa" . auth()->user()->empresa_id);
 //        });
