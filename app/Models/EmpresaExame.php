@@ -68,15 +68,18 @@ class EmpresaExame extends Model
 
         static::creating(function ($model) {
             $password = Str::random(8);
+            $grupo = Papel::whereEmpresaId($model->empresa_id)->Clinica()->first();
             $user = User::create([
                 'nome' => $model->nome,
                 'login' => $model->dados['email'],
-                'tipo' =>  User::CLINICA_EXAME,
+                'tipo' => User::CLINICA_EXAME,
                 'password' => bcrypt($password),
+                'grupo_id' => $grupo->id,
                 'temp' => false,
                 'empresa_id' => $model->empresa_id,
                 'ativo' => $model->ativo,
             ]);
+
             $model->setAttribute('user_id', $user->id);
 
             $dadosEmail = [

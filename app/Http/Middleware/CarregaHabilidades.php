@@ -19,8 +19,7 @@ class CarregaHabilidades
      */
     public function handle(Request $request, Closure $next)
     {
-
-        if (auth()->user()->tipo === 'Pessoa') {
+        if (!auth()->user()->ativo) {
             return redirect()->route('logout');
         }
 

@@ -599,16 +599,16 @@ class Sistema
 
     public static function syncFuncionarios()
     {
-        $Empresas = \App\Models\User::select('id','nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
+        $Empresas = \App\Models\User::select('id', 'nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
 
         try {
             echo "Iniciando Sincronização...\n";
             DB::beginTransaction();
-            foreach ($Empresas as $Empresa){
+            foreach ($Empresas as $Empresa) {
                 echo "Sincronizando $Empresa->nome...\n";
-                $Funcionarios = \App\Models\User::select('id','nome','empresa_id')->whereEmpresaId($Empresa->id)->whereIn('tipo', \App\Models\User::TIPOS_USUARIOS_COMUNS);
+                $Funcionarios = \App\Models\User::select('id', 'nome', 'empresa_id')->whereEmpresaId($Empresa->id)->whereIn('tipo', \App\Models\User::TIPOS_USUARIOS_COMUNS);
                 $Empresa->EmpresaFuncionarios()->sync($Funcionarios->pluck('id'));
-                foreach ($Funcionarios->get() as $Funcionario){
+                foreach ($Funcionarios->get() as $Funcionario) {
                     $Funcionario->ClienteFuncionarios()->sync($Empresa->id);
                 }
             }
@@ -617,6 +617,33 @@ class Sistema
         } catch (\Exception $e) {
             DB::rollBack();
             echo $e->getTraceAsString();
+        }
+    }
+
+    public static function grupoClinicaExame()
+    {
+        $Empresas = \App\Models\User::select('id', 'nome', 'empresa_id')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
+
+        try {
+            echo "Iniciando...\n";
+            DB::beginTransaction();
+            foreach ($Empresas as $Empresa) {
+                $apelido = strtoupper(\App\Models\Cliente::withoutGlobalScopes()->select('id', 'apelido')->find($Empresa->id)->apelido);
+                $nome_grupo = "$apelido - Clinica Exame";
+                if (\App\Models\Papel::withoutGlobalScopes()->whereNome($nome_grupo)->count() == 0) {
+                    echo "Criando Grupo Clinica Exame para $Empresa->nome...\n";
+                    $grupoClinica = \App\Models\Papel::withoutGlobalScopes()->create(['nome' => "$nome_grupo", 'descricao' => 'Grupo para clinicas de exame', 'empresa_id' => $Empresa->id, 'email' => 'dev@mybp.com.br', 'ativo' => true]);
+                    $habilidades_id = Habilidade::where('nome', 'like', 'acesso_clinica%')->where('nome','alterar-senha')->pluck('id');
+                    $grupoClinica->habilidades()->attach($habilidades_id);
+                } else {
+                    echo "Grupo Clinica Exame ja existe na $Empresa->nome...\n";
+                }
+            }
+            echo "Fim...\n";
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            echo $e->getMessage() . ' - ' . $e->getLine() . ' - ' . $e->getFile();
         }
     }
 

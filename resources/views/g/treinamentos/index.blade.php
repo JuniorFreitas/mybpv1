@@ -551,7 +551,7 @@
                                :disabled="emTreinamentos.length === 0" :checked="tudoMarcado"
                                @click="selecionaTodos">
                     </th>
-                    <th class="text-center">ID</th>
+{{--                    <th class="text-center">ID</th>--}}
                     <th>Nome</th>
                     <th class="text-center">Vaga</th>
                     <th class="text-center">Cargo</th>
@@ -584,12 +584,10 @@
 
                         </label>
                     </td>
-                    <td class="text-center">
-                        @{{resultado.id}}
-                    </td>
+
                     <td>
                         @{{resultado.curriculo.nome}} <br>
-{{--                        CPF: @{{resultado.curriculo.cpf}}--}}
+                        CPF: @{{resultado.curriculo.cpf}}
                     </td>
                     <td class="text-center">
                         @{{resultado.vaga_selecionada.nome}}
@@ -666,7 +664,6 @@
                                 data-target="#janelaTreinamento">
                             <i class="fa fa-edit"></i> Atualizar
                         </button>
-
 
                         <button class="btn btn-sm btn-primary mb-2"
                                 v-if="resultado.treinamento"

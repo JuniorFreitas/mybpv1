@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\JobBoasVindasClinica;
 use App\Models\EmpresaExame;
+use App\Models\Papel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -143,7 +144,7 @@ class EmpresaExameController extends Controller
                 $dados['dados']['endereco']['endereco_completo'] = "$logradouro, $end_numero , $complemento CEP: $cep, $bairro, $municipio/$uf";
 
                 DB::beginTransaction();
-
+                $grupo = Papel::whereEmpresaId($empresaExame->empresa_id)->Clinica()->first();
                 if (is_null($empresaExame->user_id)) {
                     $password = Str::random(8);
                     $user = User::create([
@@ -152,6 +153,7 @@ class EmpresaExameController extends Controller
                         'password' => bcrypt($password),
                         'tipo' =>  User::CLINICA_EXAME,
                         'temp' => false,
+                        'grupo_id' => $grupo->id,
                         'cadastrou' => auth()->id(),
                         'empresa_id' => $empresaExame->empresa_id,
                         'ativo' => $dados['ativo'],
@@ -168,6 +170,7 @@ class EmpresaExameController extends Controller
                 } else {
                     $empresaExame->Usuario->find($empresaExame->user_id)->update([
                         'nome' => $dados['nome'],
+                        'grupo_id' => $grupo->id,
                         'login' => $dados['dados']['email'],
                         'ativo' => $dados['ativo'],
                     ]);
@@ -202,6 +205,7 @@ class EmpresaExameController extends Controller
         $this->authorize('cadastro_empresa_exame_update');
 
         $empresa = EmpresaExame::find($request->id);
+        $grupo = Papel::whereEmpresaId($empresa->empresa_id)->Clinica()->first();
 
         if (is_null($empresa->user_id)) {
             $password = Str::random(8);
@@ -210,6 +214,7 @@ class EmpresaExameController extends Controller
                 'login' => $empresa->dados['email'],
                 'password' => bcrypt($password),
                 'tipo' =>  User::CLINICA_EXAME,
+                'grupo_id' => $grupo->id,
                 'temp' => false,
                 'cadastrou' => auth()->id(),
                 'empresa_id' => $empresa->empresa_id,
@@ -228,6 +233,7 @@ class EmpresaExameController extends Controller
             $empresa->Usuario->find($empresa->user_id)->update([
                 'nome' => $empresa->nome,
                 'login' => $empresa->dados['email'],
+                'grupo_id' => $grupo->id,
                 'ativo' => !$empresa->ativo,
             ]);
         }

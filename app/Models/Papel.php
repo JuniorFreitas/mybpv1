@@ -74,6 +74,16 @@ class Papel extends Model
         return $this->belongsToMany(Habilidade::class, 'papeis_habilidades');
     }
 
+    public function scopeNotClinica($query)
+    {
+        return $query->where('nome','NOT LIKE','%Clinica Exame');
+    }
+
+    public function scopeClinica($query)
+    {
+        return $query->where('nome','LIKE','%Clinica Exame');
+    }
+
     //Scopo de ClienteID (Empresa)
 //    protected static function booted() {
 //        static::creating(function ($model) {
