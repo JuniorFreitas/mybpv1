@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
 use App\Jobs\Entrevista\JobEnvioDocumento;
+use App\Jobs\Entrevista\ResultadoIntegrado\JobEncaminhamentoExame;
 use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Cliente;
+use App\Models\EmpresaExame;
 use App\Models\FeedbackCurriculo;
+use App\Models\Pcmso;
 use App\Models\ResultadoIntegrado;
 use App\Models\SimuladoVaga;
 use Illuminate\Http\Request;
@@ -67,18 +70,19 @@ class ResultadoIntegradoController extends Controller
                 ResultadoIntegrado::create($dados);
                 \DB::commit();
                 $feedback = FeedbackCurriculo::whereId($dados['feedback_id'])->with('Curriculo')->first();
+
                 if ($dados['documentos_entregue']) {
                     if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp) {
                         if ($feedback->TelPrincipal->tipo == 'whatsapp') {
-                            $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nParabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
+                            $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\n👏🏽 Parabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
                                 "Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.\n\n" .
                                 env('APP_URL') . "/documentos\n\n" .
                                 "Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões para que não haja atraso na etapa de documentação, necessária para a continuidade de sua admissão.\n\n" .
                                 "Atenciosamente,\n\n" .
-                                "Equipe ".auth()->user()->Empresa->razao_social."\n\n" .
+                                "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
                                 "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
 
-                            $whatsNotificacao = (new ZapNotificacao())->enviar([
+                            (new ZapNotificacao())->enviar([
                                 'enviado_id' => $feedback->curriculo_id,
                                 'telefone' => $feedback->TelPrincipal->sonumero,
                                 'mensagem' => $mensagem
@@ -91,12 +95,43 @@ class ResultadoIntegradoController extends Controller
                         'empresa_id' => $feedback->empresa_id,
                     ]);
                 }
+                if ($dados['encaminhado_exame']) {
+                    $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
+                    $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
+                    if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp) {
+                        if ($feedback->TelPrincipal->tipo == 'whatsapp') {
+                            $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem admissional*, " .
+                                "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
+                                "🏥 Local do Exame: \n*{$empresaExame->nome}*.\n" .
+                                "📍 Endereço: *{$empresaExame->dados['endereco']['endereco_completo']}*\n" .
+                                "📞 Contato: *{$empresaExame->dados['telefone']}*" .
+                                "\n\n" .
+                                "Atenciosamente,\n\n" .
+                                "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
+                                "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+
+                            (new ZapNotificacao())->enviar([
+                                'enviado_id' => $feedback->curriculo_id,
+                                'telefone' => $feedback->TelPrincipal->sonumero,
+                                'mensagem' => $mensagem
+                            ]);
+                        }
+                    }
+                    JobEncaminhamentoExame::dispatch([
+                        'colaborador' => $feedback->Curriculo,
+                        'cargo' => $feedback->VagaAberta->Vaga->nome,
+                        'clinica' => $empresaExame,
+                        'tipo_pcmso' => $tipo_pcmso,
+                        'empresa_id' => $feedback->empresa_id,
+                    ]);
+                }
 
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
                 $msg = "erro STORE RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
+                return $e->getMessage().' '.$e->getLine();
 //                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
@@ -186,21 +221,19 @@ class ResultadoIntegradoController extends Controller
         } else {
             try {
                 \DB::beginTransaction();
+                $feedback = $resultadoIntegrado->Feedback;
                 if ($dados['documentos_entregue']) {
-                    $feedback = $resultadoIntegrado->Feedback;
-                    $resultadoIntegrado->update($dados);
-
                     if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp) {
                         if ($feedback->TelPrincipal->tipo == 'whatsapp') {
-                            $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nParabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
+                            $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\n👏🏽 Parabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
                                 "Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.\n\n" .
                                 env('APP_URL') . "/documentos\n\n" .
                                 "Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões para que não haja atraso na etapa de documentação, necessária para a continuidade de sua admissão.\n\n" .
                                 "Atenciosamente,\n\n" .
-                                "Equipe ".auth()->user()->Empresa->razao_social."\n\n" .
+                                "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
                                 "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
 
-                            $whatsNotificacao = (new ZapNotificacao())->enviar([
+                            (new ZapNotificacao())->enviar([
                                 'enviado_id' => $feedback->curriculo_id,
                                 'telefone' => $feedback->TelPrincipal->sonumero,
                                 'mensagem' => $mensagem
@@ -213,12 +246,42 @@ class ResultadoIntegradoController extends Controller
                         'empresa_id' => $feedback->empresa_id,
                     ]);
                 }
+                if ($dados['encaminhado_exame']) {
+                    $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
+                    $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
+                    if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp) {
+                        if ($feedback->TelPrincipal->tipo == 'whatsapp') {
+                            $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem admissional*, " .
+                                "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
+                                "🏥 Local do Exame: \n*{$empresaExame->nome}*.\n" .
+                                "📍 Endereço: *{$empresaExame->dados['endereco']['endereco_completo']}*\n" .
+                                "📞 Contato: *{$empresaExame->dados['telefone']}*" .
+                                "\n\n" .
+                                "Atenciosamente,\n\n" .
+                                "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
+                                "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
 
-
+                            (new ZapNotificacao())->enviar([
+                                'enviado_id' => $feedback->curriculo_id,
+                                'telefone' => $feedback->TelPrincipal->sonumero,
+                                'mensagem' => $mensagem
+                            ]);
+                        }
+                    }
+                    JobEncaminhamentoExame::dispatch([
+                        'colaborador' => $feedback->Curriculo,
+                        'cargo' => $feedback->VagaAberta->Vaga->nome,
+                        'clinica' => $empresaExame,
+                        'tipo_pcmso' => $tipo_pcmso,
+                        'empresa_id' => $feedback->empresa_id,
+                    ]);
+                }
+                $resultadoIntegrado->update($dados);
                 \DB::commit();
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
+                return $e->getMessage() . ' - ' . $e->getLine();
                 Log::debug("erro update RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
@@ -294,11 +357,15 @@ class ResultadoIntegradoController extends Controller
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items()]
+            'dados' => [
+                'itens' => $resultado->items(),
+                'listaPcmso' => Pcmso::get()
+            ]
         ]);
     }
 
@@ -308,5 +375,21 @@ class ResultadoIntegradoController extends Controller
         $pdf = PDF::loadView('pdf.resultado_integrado.ficha', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("resultado_integrado_" . STR::slug($dados->Curriculo->nome) . ".pdf");
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPcmos()
+    {
+        return Pcmso::whereAtivo(true)->get();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEmpresaExames()
+    {
+        return EmpresaExame::whereAtivo(true)->get();
     }
 }

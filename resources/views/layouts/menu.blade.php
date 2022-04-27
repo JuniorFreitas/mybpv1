@@ -84,7 +84,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','vagas','vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','beneficio','areaetiqueta','centrocusto'))
+@if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','vagas','vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','beneficio','areaetiqueta','centrocusto','cadastro_empresa_temporaria'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bx-briefcase-alt-2"></i>
@@ -144,6 +144,13 @@
                 <li>
                     <a href="{{route('g.empresaexame.empresa-exame.index')}}" key="empresaexame">
                         Empresa Exames
+                    </a>
+                </li>
+            @endcan
+            @can('cadastro_empresa_temporaria')
+                <li>
+                    <a href="{{route('g.empresatemporaria.empresa-temporaria.index')}}" key="empresatemporaria">
+                        Empresa Temporaria
                     </a>
                 </li>
             @endcan
@@ -631,6 +638,50 @@
                 <li>
                     <a href="{{route('g.configuracoes.papeis.index')}}" key="grupo-usuarios">
                         Grupos de Usuários
+                    </a>
+                </li>
+            @endcan
+        </ul>
+    </li>
+@endif
+
+@if(\App\Models\Sistema::permitirLinks('habilidades','papel'))
+    <li>
+        <a href="javascript://" class="has-arrow waves-effect">
+            <i class="fa fa-cogs" style="font-size: 16px;"></i>
+            <span>CONFIGURAÇÕES</span>
+        </a>
+        <ul class="sub-menu" aria-expanded="false">
+            @can('habilidades')
+                <li>
+                    <a href="{{route('g.configuracoes.habilidades.index')}}" key="habilidades">
+                        Módulos do sistema
+                    </a>
+                </li>
+            @endcan
+            @can('papel')
+                <li>
+                    <a href="{{route('g.configuracoes.papeis.index')}}" key="grupo-usuarios">
+                        Grupos de Usuários
+                    </a>
+                </li>
+            @endcan
+        </ul>
+    </li>
+@endif
+
+{{--Menu CLinica--}}
+@if(\App\Models\Sistema::permitirLinks('acesso_clinica'))
+    <li>
+        <a href="javascript://" class="has-arrow waves-effect">
+            <i class="fas fa-notes-medical" style="font-size: 16px;"></i>
+            <span>Controle de exames</span>
+        </a>
+        <ul class="sub-menu" aria-expanded="false">
+            @can('acesso_clinica')
+                <li>
+                    <a href="{{route('g.acesso-clinica.acesso-clinica.index')}}" key="acesso-clinica-colaboradores">
+                        Colaboradores
                     </a>
                 </li>
             @endcan

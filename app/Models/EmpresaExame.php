@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Jobs\JobBoasVindasClinica;
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 /**
  * App\Models\Models\EmpresaExame
@@ -31,9 +34,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 class EmpresaExame extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
 
     protected $fillable = [
+        "user_id",
         "empresa_id",
         "nome",
         "dados",
@@ -42,6 +46,7 @@ class EmpresaExame extends Model
 
     protected $casts = [
         "id" => 'int',
+        "user_id" => 'int',
         "empresa_id" => 'int',
         "nome" => 'string',
         "dados" => 'array',
@@ -53,16 +58,38 @@ class EmpresaExame extends Model
         return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
+    public function Usuario()
+    {
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
     protected static function booted()
     {
+
         static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
+            $password = Str::random(8);
+            $grupo = Papel::whereEmpresaId($model->empresa_id)->Clinica()->first();
+            $user = User::create([
+                'nome' => $model->nome,
+                'login' => $model->dados['email'],
+                'tipo' => User::CLINICA_EXAME,
+                'password' => bcrypt($password),
+                'grupo_id' => $grupo->id,
+                'temp' => false,
+                'empresa_id' => $model->empresa_id,
+                'ativo' => $model->ativo,
+            ]);
+
+            $model->setAttribute('user_id', $user->id);
+
+            $dadosEmail = [
+                'nome' => $model->nome,
+                'email' => $model->dados['email'],
+                'senha' => $password,
+                'empresa_id' => $model->empresa_id,
+            ];
+//            JobBoasVindasClinica::dispatch($dadosEmail);
         });
 
-        static::updating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
-
-        static::addGlobalScope(new ScopeEmpresa());
     }
 }

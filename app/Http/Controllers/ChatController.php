@@ -46,18 +46,25 @@ class ChatController extends Controller
         // select DISTINCT de_id from mensagem_chats where para_id=1 and de_id != 1
 
         //Aplicando Cache
-        if (!\Cache::get("contatosEmpresa" . auth()->user()->empresa_id)) {
-            \Cache::rememberForever("contatosEmpresa" . auth()->user()->empresa_id, function () {
-                return User::select(['id', 'nome', 'empresa_id'])
-                    ->whereAtivo(true)
-                    ->whereIn("tipo", [User::ADMINISTRADOR, User::FUNCIONARIO])->whereEmpresaId(auth()->user()->empresa_id)
-                    ->whereNotIn('id', [auth()->id()])
-                    ->orderBy('nome')->get();
-            });
-        }
+//        if (!\Cache::get("contatosEmpresa" . auth()->user()->empresa_id)) {
+//            \Cache::rememberForever("contatosEmpresa" . auth()->user()->empresa_id, function () {
+//                return User::select(['id', 'nome', 'empresa_id'])
+//                    ->whereAtivo(true)
+//                    ->whereIn("tipo", [User::ADMINISTRADOR, User::FUNCIONARIO])->whereEmpresaId(auth()->user()->empresa_id)
+//                    ->whereNotIn('id', [auth()->id()])
+//                    ->orderBy('nome')->get();
+//            });
+//        }
+
+        $contatos = User::select(['id', 'nome', 'empresa_id'])
+            ->whereAtivo(true)
+            ->whereIn("tipo", [User::ADMINISTRADOR, User::FUNCIONARIO])->whereEmpresaId(auth()->user()->empresa_id)
+            ->whereNotIn('id', [auth()->id()])
+            ->orderBy('nome')->get();
 
         return response()->json([
-            'contatos' => \Cache::get("contatosEmpresa" . auth()->user()->empresa_id),
+//            'contatos' => \Cache::get("contatosEmpresa" . auth()->user()->empresa_id),
+            'contatos' => $contatos,
             'eu' => User::getUser(['id', 'nome', 'empresa_id']),
             'mensagens' => MensagemChat::whereIn('id', $mensagens)->orderBy('created_at')->distinct()->get()
         ], 200);

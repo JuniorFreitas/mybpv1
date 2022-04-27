@@ -111,11 +111,9 @@ class UserController extends Controller
 
         $formulario_vazio = collect($ids_form);
 
-        $papeis = Papel::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
+        $papeis = Papel::whereEmpresaId($usuario->empresa_id)->NotClinica()->orderBy('nome');
         $cloud = GrupoCloud::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
-
-
-        return response()->json(['usuario' => $usuario, 'papeis' => $papeis, 'cloud' => $cloud, 'formulario_vazio' => $formulario_vazio], 200);
+        return response()->json(['usuario' => $usuario, 'papeis' => $papeis->get(), 'cloud' => $cloud, 'formulario_vazio' => $formulario_vazio], 200);
     }
 
 

@@ -122,17 +122,11 @@
                         <div class="form-group">
                             <label>Tipo de formulário:</label>
                             <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.tipo_form" v-if="formulario.setores.length > 0">
+                                    class="form-control" v-model="form.tipo_form" v-if="formulariosAtivos.length > 0">
                                 <option value="">Selecione</option>
-                                @if(\App\Models\Sistema::permitirLinks('posadmissao_form_rh'))
-                                    <option :value="1">RECURSOS HUMANOS</option>
-                                @endif
-                                @if(\App\Models\Sistema::permitirLinks('posadmissao_form_adm'))
-                                    <option :value="2">ALMOXARIFADO / ADM</option>
-                                @endif
-                                @if(\App\Models\Sistema::permitirLinks('posadmissao_form_ssma'))
-                                    <option :value="3">SEGURANÇA DO TRABALHO / SSMA</option>
-                                @endif
+                                <option v-for="setor in formulariosAtivos" :value="setor.id">
+                                    @{{ setor.nome }}
+                                </option>
                             </select>
                             <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
                                     class="form-control" v-model="form.tipo_form" v-else>
@@ -142,9 +136,9 @@
                             </select>
                         </div>
 
-                        <div v-if="form.tipo_form === setor.id" v-for="(setor, setorIndex) in formulario.setores">
+                        <div v-if="form.tipo_form === setor.id" v-for="(setor, setorIndex) in formulariosAtivos">
                             <fieldset>
-                                <legend>Checklist - @{{ setor.nome }}</legend>
+                                <legend>Checklist - @{{ setor.nome }} - @{{setorIndex}}</legend>
                                 <div class="custom-control custom-switch"
                                      v-for="(alternativa, key) in setor.alternativas">
                                     <input type="checkbox" class="custom-control-input"
@@ -720,7 +714,8 @@
                     </td>
 
                     <td class="text-center" v-if="item.demissao">
-                        <a target="_blank" v-if="item.demissao.motivo_rescisao && ['demissao_com_justa_causa','pedido_colaborador_imediato', 'pedido_colaborador_trabalhado'].includes(item.demissao.motivo_rescisao.nome_pdf)"
+                        <a target="_blank"
+                           v-if="item.demissao.motivo_rescisao && ['demissao_com_justa_causa','pedido_colaborador_imediato', 'pedido_colaborador_trabalhado'].includes(item.demissao.motivo_rescisao.nome_pdf)"
                            :href="`https://mybp-prod.s3.amazonaws.com/public/${item.demissao.motivo_rescisao.nome_pdf + extensaoDocumento}`"
                            class="btn btn-sm btn-primary" title="Download Documento Demissão"
                            @click="extensao(item.demissao.motivo_rescisao.nome_pdf)" download>
