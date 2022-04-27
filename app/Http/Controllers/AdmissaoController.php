@@ -2,14 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\Entrevistas\admissaoExport;
-use App\Exports\ModeloRowsExport;
 use App\Jobs\JobExportaExcel;
-use App\Mail\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoMail;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaVencimento;
-use App\Models\AvaliacaoVencimento;
 use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
 use App\Models\FeedbackCurriculo;
@@ -21,7 +17,6 @@ use App\Models\UsuarioConta;
 use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 use MasterTag\DataHora;
 use PDF;
 
@@ -672,6 +667,9 @@ class AdmissaoController extends Controller
                 }
 
                 $dados['resultado_integrado']['documentos_entregue_data'] = $dados['resultado_integrado']['documentos_entregue'] ? $dados['resultado_integrado']['documentos_entregue_data'] : null;
+
+                $dados['resultado_integrado']['pcmso_id'] = $dados['resultado_integrado']['pcmso_id'] ?: null;
+
                 $dados['resultado_integrado']['encaminhado_exame_data'] = $dados['resultado_integrado']['encaminhado_exame'] ? $dados['resultado_integrado']['encaminhado_exame_data'] : null;
                 $dados['resultado_integrado']['encaminhado_treinamento_data'] = $dados['resultado_integrado']['encaminhado_treinamento'] ? $dados['resultado_integrado']['encaminhado_treinamento_data'] : null;
 
@@ -804,7 +802,7 @@ class AdmissaoController extends Controller
                 \Log::alert($dados);
                 \Log::info("-------FIM DE DADOS-------");
 
-                return response()->json(['msg' => $e->getTrace()], 400);
+                return response()->json(['msg' => $e->getMessage()], 400);
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }

@@ -78,7 +78,7 @@
                         v-model="form.empresa_exame_id"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="item in listaEmpresaExame" :value="item.user_id">{{ item.nome }}</option>
+                        <option v-for="item in listaEmpresaExame" :value="item.id">{{ item.nome }}</option>
                         >
                     </select>
                 </div>
