@@ -13,10 +13,10 @@
                 <br><br>
                 Clique abaixo para acessar a plataforma:
                 <br><br>
-                <a href="https://sistema.mybp.com.br/g/exames" class="link" target="_blank">ACESSAR A PLATAFORMA</a>
+                <a href="https://sistema.mybp.com.br" class="link" target="_blank">ACESSAR A PLATAFORMA</a>
                 <br><br>
                 Caso não consiga abrir copie e cole esse endereço no navegador:
-                <br>https://sistema.mybp.com.br/g/exames
+                <br>https://sistema.mybp.com.br
                 <br><br>
             </td>
         </tr>
