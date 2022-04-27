@@ -202,7 +202,7 @@ class VagaAbertaController extends Controller
             'nome' => 'required|min:3',
 //            'cpf' => 'required|min:14|unique:curriculos,cpf',
             'nascimento' => 'required|min:10',
-            'email' => 'required|email',
+            'email' => 'required|email:rfc,dns',
             'cep' => 'required|min:9',
             'logradouro' => 'required',
             'bairro' => 'required',
