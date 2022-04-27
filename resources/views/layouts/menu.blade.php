@@ -644,3 +644,47 @@
         </ul>
     </li>
 @endif
+
+@if(\App\Models\Sistema::permitirLinks('habilidades','papel'))
+    <li>
+        <a href="javascript://" class="has-arrow waves-effect">
+            <i class="fa fa-cogs" style="font-size: 16px;"></i>
+            <span>CONFIGURAÇÕES</span>
+        </a>
+        <ul class="sub-menu" aria-expanded="false">
+            @can('habilidades')
+                <li>
+                    <a href="{{route('g.configuracoes.habilidades.index')}}" key="habilidades">
+                        Módulos do sistema
+                    </a>
+                </li>
+            @endcan
+            @can('papel')
+                <li>
+                    <a href="{{route('g.configuracoes.papeis.index')}}" key="grupo-usuarios">
+                        Grupos de Usuários
+                    </a>
+                </li>
+            @endcan
+        </ul>
+    </li>
+@endif
+
+{{--Menu CLinica--}}
+@if(\App\Models\Sistema::permitirLinks('acesso_clinica'))
+    <li>
+        <a href="javascript://" class="has-arrow waves-effect">
+            <i class="fas fa-notes-medical" style="font-size: 16px;"></i>
+            <span>Controle de exames</span>
+        </a>
+        <ul class="sub-menu" aria-expanded="false">
+            @can('acesso_clinica')
+                <li>
+                    <a href="{{route('g.acesso-clinica.acesso-clinica.index')}}" key="acesso-clinica-colaboradores">
+                        Colaboradores
+                    </a>
+                </li>
+            @endcan
+        </ul>
+    </li>
+@endif

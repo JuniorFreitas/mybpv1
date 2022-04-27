@@ -126,13 +126,12 @@ class ResultadoIntegradoController extends Controller
                     ]);
                 }
 
-
-
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
                 $msg = "erro STORE RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
+                return $e->getMessage().' '.$e->getLine();
 //                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }

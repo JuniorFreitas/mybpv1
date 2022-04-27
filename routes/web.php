@@ -966,6 +966,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::resource('papeis', \App\Http\Controllers\PapeisController::class, ['parameters' => ['papeis' => 'papel']])->middleware('can:papel');
     });
 
+
+    // Clinica Exame
+    Route::group(['as' => 'acesso-clinica.'], function () {
+       Route::resource('acesso-clinica', \App\Http\Controllers\Clinica\ControleExamesController::class)->middleware('can:acesso_clinica');
+    });
+
 });
 
 

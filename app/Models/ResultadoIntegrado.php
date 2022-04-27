@@ -137,7 +137,7 @@ class ResultadoIntegrado extends Model
         if (!is_null($value)) {
             $data = new DataHora($value);
             $this->attributes['documentos_entregue_data'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['documentos_entregue_data'] = null;
         }
     }
@@ -148,7 +148,7 @@ class ResultadoIntegrado extends Model
         if (!is_null($value)) {
             $data = new DataHora($value);
             $this->attributes['encaminhado_exame_data'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['encaminhado_exame_data'] = null;
         }
     }
@@ -159,7 +159,7 @@ class ResultadoIntegrado extends Model
         if (!is_null($value)) {
             $data = new DataHora($value);
             $this->attributes['encaminhado_treinamento_data'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['encaminhado_treinamento_data'] = null;
         }
     }

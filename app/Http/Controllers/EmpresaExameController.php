@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\JobBoasVindasClinica;
+//use App\Jobs\JobBoasVindasClinica;
 use App\Models\EmpresaExame;
 use App\Models\Papel;
 use App\Models\User;
@@ -166,7 +166,7 @@ class EmpresaExameController extends Controller
                         'senha' => $password,
                         'empresa_id' => $empresaExame->empresa_id,
                     ];
-                    JobBoasVindasClinica::dispatch($dadosEmail);
+//                    JobBoasVindasClinica::dispatch($dadosEmail);
                 } else {
                     $empresaExame->Usuario->find($empresaExame->user_id)->update([
                         'nome' => $dados['nome'],
@@ -228,7 +228,7 @@ class EmpresaExameController extends Controller
                 'senha' => $password,
                 'empresa_id' => $empresa->empresa_id,
             ];
-            JobBoasVindasClinica::dispatch($dadosEmail);
+//            JobBoasVindasClinica::dispatch($dadosEmail);
         } else {
             $empresa->Usuario->find($empresa->user_id)->update([
                 'nome' => $empresa->nome,

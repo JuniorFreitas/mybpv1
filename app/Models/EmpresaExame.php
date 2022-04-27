@@ -88,7 +88,7 @@ class EmpresaExame extends Model
                 'senha' => $password,
                 'empresa_id' => $model->empresa_id,
             ];
-            JobBoasVindasClinica::dispatch($dadosEmail);
+//            JobBoasVindasClinica::dispatch($dadosEmail);
         });
 
     }
