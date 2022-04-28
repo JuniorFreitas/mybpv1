@@ -106,13 +106,13 @@
                         @endif
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
-                                <span style="font-family: 'Sacramento', cursive; color: blue">
-{{--                                    Tiago Silva--}}
+                               <span style="font-family: 'Sacramento', cursive; color: white">
+                                    -
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
-                                <span style="font-family: 'Sacramento', cursive; color: blue">
-{{--                                    José Mesquita--}}
+                                <span style="font-family: 'Sacramento', cursive; color: white">
+                                    -
                                 </span>
                             </td>
                         </tr>
@@ -145,7 +145,7 @@
                             <span
                                 style="font-size: 6pt;">
                                 EMERGÊNCIA LIGUE
-{{--                                : 1199 (RAMAL) 0800 727 1199 ou 3301-1199--}}
+                                : 1199 (RAMAL) 0800 727 1199 ou 3301-1199
                             </span>
                             </td>
                         </tr>
@@ -164,7 +164,8 @@
 
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
-                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }} : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
+                                : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
                             </td>
                         </tr>
 
@@ -346,11 +347,11 @@
                                     style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
-                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome }}</span></span>
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
                                     style="font-size: 6.8pt;">
-                            {{--                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}</span></span>--}}
+                                                                {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->empresa_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span
                                     style="font-size: 6.8pt;">PERMANENTE</span></span>
@@ -469,13 +470,13 @@
                         @endif
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
-                                <span style="font-family: 'Sacramento', cursive; color: blue">
-{{--                                    Tiago Silva--}}
+                                <span style="font-family: 'Sacramento', cursive; color: white">
+                                    -
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
-                                <span style="font-family: 'Sacramento', cursive; color: blue">
-{{--                                    José Mesquita--}}
+                               <span style="font-family: 'Sacramento', cursive; color: white">
+                                    -
                                 </span>
                             </td>
                         </tr>
@@ -508,7 +509,7 @@
                             <span
                                 style="font-size: 6pt;">
                                 EMERGÊNCIA LIGUE
-{{--                                : 1199 (RAMAL) 0800 727 1199 ou 3301-1199--}}
+                                : 1199 (RAMAL) 0800 727 1199 ou 3301-1199
                             </span>
                             </td>
                         </tr>
@@ -526,7 +527,7 @@
 
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
-                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}
                                 : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
                             </td>
                         </tr>
@@ -699,13 +700,13 @@
                                     style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
                         </h6>
                         <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
-                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->razao_social }}</span></span>
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}</span></span>
                         </h6>
-                        {{--                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span--}}
-                        {{--                                    style="font-size: 6.8pt;">--}}
-                        {{--                                    {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->cliente_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}--}}
-                        {{--                                </span></span>--}}
-                        {{--                        </h6>--}}
+                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
+                                    style="font-size: 6.8pt;">
+                                        {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->empresa_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}
+                                    </span></span>
+                        </h6>
                         <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span
                                     style="font-size: 6.8pt;">PERMANENTE</span></span>
                         </h6>
