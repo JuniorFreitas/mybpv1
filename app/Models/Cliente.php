@@ -399,6 +399,15 @@ class Cliente extends Model
         return $this->belongsToMany(User::class, 'empresa_funcionarios', 'empresa_id', 'funcionario_id');
     }
 
+    public function Temporaria()
+    {
+        return $this->hasOne(EmpresaTemporaria::class, 'empresa_id', 'id');
+    }
+
+    public function TemporariaAtiva(){
+        return $this->Temporaria()->whereAtivo(true);
+    }
+
     protected static function booted()
     {
         static::updating(function ($model) {
