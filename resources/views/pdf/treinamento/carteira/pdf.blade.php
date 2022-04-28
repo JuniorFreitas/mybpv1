@@ -24,7 +24,7 @@
                         </tr>
                         <tr>
                             <td colspan="3" style="height: 0.02cm; border-top:none;">
-                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
+                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}
                             </td>
                         </tr>
                         <tr>
@@ -164,7 +164,7 @@
 
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
-                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome }}
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}
                                 : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
                             </td>
                         </tr>
