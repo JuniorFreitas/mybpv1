@@ -231,7 +231,8 @@ class TarefasController extends Controller
                     'de' => auth()->user(),
                     'para' => User::find($request->user_id),
                     'acao' => TarefaEvent::ACAO_ADD,
-                    'modelTarefa' => $tarefa
+                    'modelTarefa' => $tarefa,
+                    'empresa_id' => $empresa->empresa_id,
                 ]);
             }
 
@@ -251,7 +252,8 @@ class TarefasController extends Controller
                     'de' => auth()->user(),
                     'para' => User::find($request->user_id),
                     'acao' => TarefaEvent::ACAO_DELETE,
-                    'modelTarefa' => $tarefa
+                    'modelTarefa' => $tarefa,
+                    'empresa_id' => $empresa->empresa_id,
                 ]);
             }
         }
