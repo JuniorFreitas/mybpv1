@@ -263,7 +263,7 @@
     <br>
     <br>
 </div>
-<div class="f11" style="line-height: 26pt;text-align: center">
+<div class="f11" style="line-height: 15pt;text-align: center">
     <div style="width: 48%; float: left">
         <hr style="  border:none; border-top: 1px solid #333">
         TESTEMUNHA
@@ -275,7 +275,8 @@
 </div>
 <div style="clear: both"></div>
 <br>
-<div class="f11" style="line-height: 26pt;text-align: center">
+<br>
+<div class="f11" style="line-height: 15pt;text-align: center">
     <div style="width: 48%; float: left">
         <hr style="  border:none;margin: 0px; border-top: 1px solid #333">
         TESTEMUNHA
@@ -307,7 +308,7 @@
 <br>
 <br>
 <br>
-<div class="f11" style="line-height: 26pt;text-align: center">
+<div class="f11" style="line-height: 15pt;text-align: center">
     <div style="width: 48%; float: left">
         <hr style="  border:none; border-top: 1px solid #333">
         TESTEMUNHA
@@ -319,7 +320,8 @@
 </div>
 <div style="clear: both"></div>
 <br>
-<div class="f11" style="line-height: 26pt;text-align: center">
+<br>
+<div class="f11" style="line-height: 15pt;text-align: center">
     <div style="width: 48%; float: left">
         <hr style="  border:none;margin: 0px; border-top: 1px solid #333">
         TESTEMUNHA
@@ -331,7 +333,6 @@
 </div>
 <div style="clear: both"></div>
 
-@include('layouts.rodapePdf')
 
 </body>
 </html>
