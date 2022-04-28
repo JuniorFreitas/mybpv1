@@ -345,6 +345,7 @@ class UserController extends Controller
                     'nome' => $usuario->nome,
                     'email' => $usuario->login,
                     'token' => $recSenha->token,
+                    'empresa_id' => $usuario->empresa_id,
                     'expiracao' => $recSenha->expiracao
                 ]);
                 return response()->json(['msg' => 'Olá enviamos um e-mail pra você verifique sua caixa e-mail (ENTRADA e SPAM)'], 200);
