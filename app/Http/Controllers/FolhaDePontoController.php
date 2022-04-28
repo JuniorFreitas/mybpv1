@@ -183,9 +183,8 @@ class FolhaDePontoController extends Controller {
         $porPagina = $request->get('porPagina');
 
         //Lista de funcionarios da empresa
-        $empresa = auth()->user()->Empresa;
 
-        $resultado = $empresa->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false);
+        $resultado = auth()->user()->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false);
         if ($request->filled('funcionario_id')) {
             $resultado->whereId($request->funcionario_id);
         }

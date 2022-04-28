@@ -394,6 +394,11 @@ class Cliente extends Model
         return $this->hasOne(ClienteConfig::class, 'cliente_id', 'id');
     }
 
+    public function EmpresaFuncionarios()
+    {
+        return $this->belongsToMany(User::class, 'empresa_funcionarios', 'empresa_id', 'funcionario_id');
+    }
+
     protected static function booted()
     {
         static::updating(function ($model) {

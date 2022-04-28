@@ -294,7 +294,7 @@ class AutoCompletesController extends Controller
         if ($busca == '') {
             return response()->json([], 200);
         }
-        return auth()->user()->Empresa->EmpresaFuncionarios()->select(['id', 'nome'])->where('nome', 'like', '%' . $busca . '%')
+        return auth()->user()->EmpresaFuncionarios()->select(['id', 'nome'])->where('nome', 'like', '%' . $busca . '%')
             ->take($quantidade)
             ->get()->map(function ($item) {
                 $item->label = $item->nome;

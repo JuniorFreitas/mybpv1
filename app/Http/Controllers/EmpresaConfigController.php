@@ -7,13 +7,15 @@ use App\Models\FormaPagamento;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-class EmpresaConfigController extends Controller {
+class EmpresaConfigController extends Controller
+{
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
+    public function index()
+    {
         return view('g.controle-ponto.configuracoes.index');
     }
 
@@ -22,7 +24,8 @@ class EmpresaConfigController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function create() {
+    public function create()
+    {
 
     }
 
@@ -32,7 +35,8 @@ class EmpresaConfigController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
 
     }
 
@@ -42,7 +46,8 @@ class EmpresaConfigController extends Controller {
      * @param \App\Models\EmpresaConfig $empresaConfig
      * @return \Illuminate\Http\Response
      */
-    public function show(EmpresaConfig $config) {
+    public function show(EmpresaConfig $config)
+    {
 
     }
 
@@ -52,7 +57,8 @@ class EmpresaConfigController extends Controller {
      * @param \App\Models\EmpresaConfig $config
      * @return \Illuminate\Http\Response
      */
-    public function edit(EmpresaConfig $config) {
+    public function edit(EmpresaConfig $config)
+    {
         //
     }
 
@@ -63,7 +69,8 @@ class EmpresaConfigController extends Controller {
      * @param \App\Models\EmpresaConfig $config
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, EmpresaConfig $config) {
+    public function update(Request $request, EmpresaConfig $config)
+    {
 
         $dados = $request->input();
 
@@ -95,10 +102,12 @@ class EmpresaConfigController extends Controller {
      * @param \App\Models\EmpresaConfig $config
      * @return \Illuminate\Http\Response
      */
-    public function destroy(EmpresaConfig $config) {
+    public function destroy(EmpresaConfig $config)
+    {
     }
 
-    public function getPermissoes(Request $request) {
+    public function getPermissoes(Request $request)
+    {
 
         return response()->json([
             'perimetros_insert' => auth()->user()->can('perimetros_insert'),
@@ -109,9 +118,9 @@ class EmpresaConfigController extends Controller {
         ]);
     }
 
-    public function atualizarFuncionarios(Request $request) {
-
-        $resultado = auth()->user()->Empresa->EmpresaFuncionarios();
+    public function atualizarFuncionarios(Request $request)
+    {
+        $resultado = auth()->user()->EmpresaFuncionarios();
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->filled('campoBusca')) {

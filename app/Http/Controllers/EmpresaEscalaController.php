@@ -224,7 +224,7 @@ class EmpresaEscalaController extends Controller {
 
     public function atualizarFuncionarios(Request $request) {
 
-        $resultado = auth()->user()->Empresa->EmpresaFuncionarios();
+        $resultado = auth()->user()->EmpresaFuncionarios();
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->filled('campoBusca')) {
