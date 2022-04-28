@@ -222,7 +222,7 @@
                         <tr v-for="funcionario in lista">
                             <td>
                                 <div class="row">
-                                    <div class="media ml-3">
+                                    <div class="media ml-3" style="display: flex; align-items: center;">
                                         <div class="avatar-md mr-3">
                                             <span class="avatar-title rounded-circle bg-soft-primary text-primary">
                                                 @{{ funcionario.nome | formataNome }}
