@@ -184,7 +184,7 @@ class FolhaDePontoController extends Controller {
 
         //Lista de funcionarios da empresa
 
-        $resultado = auth()->user()->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false);
+        $resultado = auth()->user()->Empresa->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false);
         if ($request->filled('funcionario_id')) {
             $resultado->whereId($request->funcionario_id);
         }
