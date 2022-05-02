@@ -92,7 +92,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CursoFormacaoRH[] $CursosFormacao
  * @property-read int|null $cursos_formacao_count
  * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CertificadoNr[] $Nr
  * @property-read int|null $nr_count
  * @property-read \App\Models\User|null $QuemEntrevistou
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
@@ -358,7 +357,7 @@ class ParecerRh extends Model
     {
         if (!is_null($value)) {
             $this->attributes['calca'] = $value;
-        }else{
+        } else {
             $this->attributes['calca'] = null;
         }
     }
@@ -373,7 +372,7 @@ class ParecerRh extends Model
     {
         if (!is_null($value)) {
             $this->attributes['camisa_meia'] = $value;
-        }else{
+        } else {
             $this->attributes['camisa_meia'] = null;
         }
     }
@@ -388,7 +387,7 @@ class ParecerRh extends Model
     {
         if (!is_null($value)) {
             $this->attributes['camisa_protecao'] = $value;
-        }else{
+        } else {
             $this->attributes['camisa_protecao'] = null;
         }
     }
@@ -403,7 +402,7 @@ class ParecerRh extends Model
     {
         if (!is_null($value)) {
             $this->attributes['bota'] = $value;
-        }else{
+        } else {
             $this->attributes['bota'] = null;
         }
     }
@@ -444,6 +443,11 @@ class ParecerRh extends Model
     public function entrevistaRh()
     {
         return $this->hasOne(EntrevistaRh::class, 'feedback_id', 'feedback_id');
+    }
+
+    public function Nr()
+    {
+        return $this->hasMany(CertificadoNr::class, 'feedback_id', 'feedback_id');
     }
 
     protected static function booted()
