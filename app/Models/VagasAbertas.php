@@ -62,6 +62,7 @@ class VagasAbertas extends Model
         'municipio_id',
         'empresa_id',
         'ativo',
+        'ativo_sistema',
     ];
     protected $casts = [
         'vaga_id' => 'int',
@@ -70,6 +71,7 @@ class VagasAbertas extends Model
         'municipio_id' => 'int',
         'empresa_id' => 'int',
         'ativo' => 'boolean',
+        'ativo_sistema' => 'boolean',
     ];
 
     public function Empresa()
@@ -100,6 +102,11 @@ class VagasAbertas extends Model
     public function SimuladosAtivos()
     {
         return $this->hasMany(SimuladoVaga::class, 'vaga_aberta_id', 'id')->whereAtivo(true);
+    }
+
+    public function Projetos()
+    {
+        return $this->hasMany(VagaProjeto::class, 'vaga_aberta_id', 'id');
     }
 
 }

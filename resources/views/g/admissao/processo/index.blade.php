@@ -269,19 +269,18 @@
                                     </div>
                                 </div>
 
-                                {{--                                <div class="col-12 col-sm-6 col-md-4">--}}
-                                {{--                                    <div class="form-group">--}}
-                                {{--                                        <label for="Cidade">Cidade</label>--}}
-                                {{--                                        <autocomplete :caminho="todos_municipios"--}}
-                                {{--                                                      :valido="formAvulsa.curriculo.municipio_id !== ''"--}}
-                                {{--                                                      v-model="formAvulsa.curriculo.autocomplete_label_municipio_modal"--}}
-                                {{--                                                      placeholder="Selecione um municipio"--}}
-                                {{--                                                      :formsm="false"--}}
-                                {{--                                                      :id="`mun_${hash}`"--}}
-                                {{--                                                      @onblur="resetaCampoMunicipioModal"--}}
-                                {{--                                                      @onselect="selecionaMunicipioModal"></autocomplete>--}}
-                                {{--                                    </div>--}}
-                                {{--                                </div>--}}
+                                <div class="col-12 col-sm-12 col-md-12" v-if="listaProjetos.length > 0">
+                                    <div class="form-group">
+                                        <label>Projeto</label>
+                                        <select class="form-control"
+                                                v-model="formAvulsa.feedback.projeto_id">
+                                            <option value="" selected>Selecione</option>
+                                            <option v-for="item in listaProjetos" :value="item.projeto.id">@{{
+                                                item.projeto.nome }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
 
                                 <div class="col-12 col-sm-6 col-md-3">
                                     <div class="form-group">
@@ -742,6 +741,30 @@
                                               :id="`vaga_${hash}`"
                                               @onblur="resetaCampoVagaModalEditar"
                                               @onselect="selecionaVagaModalEditar"></autocomplete>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-12 col-md-12" v-if="form.projeto[0] && !novoProjeto">
+                            <div class="form-group">
+                                <label>Projeto</label>
+                                <select class="form-control"
+                                        v-model="form.projeto[0].projeto_id" disabled>
+                                    <option value="" selected>Selecione</option>
+                                    <option v-for="item in listaProjetos" :value="item.projeto.id">@{{ item.projeto.nome }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-12 col-md-12" v-if="novoProjeto && encontrou">
+                            <div class="form-group">
+                                <label>Projeto</label>
+                                <select class="form-control"
+                                        v-model="form.projetoNovo.projeto_id">
+                                    <option value="" selected>Selecione</option>
+                                    <option :value="listaProjetos.projeto.id">@{{ listaProjetos.projeto.nome }}
+                                    </option>
+                                </select>
                             </div>
                         </div>
 

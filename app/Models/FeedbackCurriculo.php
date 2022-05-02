@@ -426,6 +426,11 @@ class FeedbackCurriculo extends Model
         return $this->hasOne(VagasAbertas::class, 'id', 'vagas_abertas_id');
     }
 
+    public function Projeto()
+    {
+        return $this->belongsToMany(VagaProjeto::class, 'vaga_projeto_feedback','feedback_id', 'vaga_projeto_id');
+    }
+
     public function Cliente()
     {
         return $this->hasOne(Cliente::class, 'id', 'cliente_id');
