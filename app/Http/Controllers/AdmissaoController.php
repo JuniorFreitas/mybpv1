@@ -437,6 +437,8 @@ class AdmissaoController extends Controller
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
 
+//                $dadosProjeto = $dados['feedback']['projeto_id'];
+
             }
             DB::commit();
             return response()->json([], 201);
@@ -515,7 +517,8 @@ class AdmissaoController extends Controller
             'Cliente.AreasEtiquetas',
             'TelPrincipal',
             'BancoConta',
-            'ResultadoIntegrado'
+            'ResultadoIntegrado',
+            'Projeto'
         );
 
         if (!is_null($feedback->BancoConta)) {
@@ -525,6 +528,10 @@ class AdmissaoController extends Controller
             $feedback->BancoConta->pix = $feedback->BancoConta ? $feedback->BancoConta->pix : false;
             $feedback->BancoConta->tipochavepix = $feedback->BancoConta ? $feedback->BancoConta->tipochavepix : '';
             $feedback->BancoConta->chavepix = $feedback->BancoConta ? $feedback->BancoConta->chavepix : '';
+        }
+
+        if (!is_null($feedback->Projeto)) {
+            $feedback->projeto = $feedback->Projeto ?: '';
         }
 
         $feedback->Curriculo->foto_tres_delete = [];
@@ -685,11 +692,11 @@ class AdmissaoController extends Controller
                     if (!isset($dadosAdmissao['id'])) {
                         $dadosAdmissao['admissao_id'] = $feedback->Admissao->id;
                         DadosAdmissao::create($dadosAdmissao);
-                    }else{
+                    } else {
                         $dadosAdmissaoUp = DadosAdmissao::find($dadosAdmissao['id']);
                         $dadosAdmissaoUp->update($dadosAdmissao);
                     }
-                }else{
+                } else {
                     $admissao_id = $feedback->Admissao()->create($admissaoDados);
                     $dadosAdmissao['admissao_id'] = $admissao_id['id'];
                     DadosAdmissao::create($dadosAdmissao);
@@ -788,6 +795,10 @@ class AdmissaoController extends Controller
                             }
                         }
                     }
+                }
+
+                if (isset($dados['projetoNovo'])){
+
                 }
 
                 DB::commit();
@@ -955,6 +966,7 @@ class AdmissaoController extends Controller
                 'VagaAberta.Municipio',
                 'Empresa:id,razao_social,cnpj,nome,cpf,area_id',
                 'Empresa.Area',
+                'VagaAberta.Projetos.Projeto'
             );
 
         $filtroPeriodo = $request->filtroPeriodo == 'true';
