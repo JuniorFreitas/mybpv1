@@ -282,7 +282,7 @@ class RecrutamentoController extends Controller
                     $curriculo->FeedBack()->create($dados);
                 }
             } else {
-                $dados['vagas_abertas_id'] = $dados['vaga_id'];
+                $dados['vagas_abertas_id'] = $dados['vaga_aberta']['id'];
                 $curriculo->FeedBack->update($dados);
                 if ($dados['selecionado'] == 'nao') {
                     if ($dados['envia_mail_desclassificacao']) {
