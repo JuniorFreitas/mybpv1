@@ -37,6 +37,8 @@ const app = new Vue({
         // disabled: true,
         disabledInput: false,
         btnBuscar: false,
+        novoProjeto: false,
+        encontrou: false,
 
         AUTENTICADO,
         cliente_id: "",
@@ -119,6 +121,7 @@ const app = new Vue({
             feedback: {
                 selecionado: "sim",
                 vaga_id: "",
+                projeto_id: "",
 
                 interesse: true,
 
@@ -455,6 +458,17 @@ const app = new Vue({
                 excessao: "",
                 autorizado_por: "",
                 responsavel_envio: ""
+            },
+
+            projeto: {
+                id: '',
+                projeto_id: '',
+                qnt_preenchida: '',
+                qnt_total: '',
+                vaga_aberta_id: '',
+            },
+            projetoNovo: {
+                projeto_id: '',
             }
         },
 
@@ -486,6 +500,7 @@ const app = new Vue({
         listaStatusAdmissao: [],
         vagas: [],
         areasEtiquetas: [],
+        listaProjetos: [],
 
         controle: {
             carregando: false,
@@ -549,6 +564,7 @@ const app = new Vue({
         }
         this.atualizar();
         this.listaVagas();
+        this.buscaTodosProjeto();
     },
     methods: {
         exportaExcel() {
@@ -564,7 +580,7 @@ const app = new Vue({
                 campoTecnica: this.controle.dados.campoTecnica,
                 campoTeste: this.controle.dados.campoTeste,
                 campoPcd: this.controle.dados.campoPcd
-            }).then(({ data }) => {
+            }).then(({data}) => {
                 mostraSucesso(data.msg);
                 this.preloadExportacao = false;
             }).catch(erro => {
@@ -572,6 +588,21 @@ const app = new Vue({
                 this.preloadExportacao = false;
             });
         },
+
+        buscaProjeto(vaga_aberta_id) {
+            this.listaProjetos = '';
+            axios.get(`${URL_ADMIN}/busca-projetos/${vaga_aberta_id}`).then(response => {
+                this.listaProjetos = response.data.dados;
+                this.encontrou = response.data.encontrou;
+            }).catch(error => (this.formAvulsa.preload = false));
+        },
+
+        buscaTodosProjeto() {
+            axios.get(`${URL_ADMIN}/busca-projetos/`).then(response => {
+                this.listaProjetos = response.data.dados;
+            }).catch(error => (this.form.preload = false));
+        },
+
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
@@ -657,6 +688,7 @@ const app = new Vue({
             this.formAvulsa.feedback.vaga_id = obj.id;
             this.formAvulsa.feedback.autocomplete_label_vaga_modal = obj.label;
             this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = obj.label;
+            this.buscaProjeto(obj.id);
         },
         resetaCampoVagaModal() {
             if (this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior !== this.formAvulsa.feedback.autocomplete_label_vaga_modal) {
@@ -672,9 +704,11 @@ const app = new Vue({
         },
 
         selecionaVagaModalEditar(obj) {
+            this.novoProjeto = true;
             this.form.vagas_abertas_id = obj.id;
             this.form.autocomplete_label_vaga_modal = obj.label;
             this.form.autocomplete_label_vaga_modal_anterior = obj.label;
+            this.buscaProjeto(obj.id);
         },
         resetaCampoVagaModalEditar() {
             if (this.form.autocomplete_label_vaga_modal_anterior !== this.form.autocomplete_label_vaga_modal) {
@@ -837,6 +871,7 @@ const app = new Vue({
             this.cadastrado = false;
             this.atualizado = false;
             this.cadastrando = false;
+            this.novoProjeto = false;
 
             this.preload = true;
             this.preloadForm = true;
@@ -846,6 +881,7 @@ const app = new Vue({
             formReset();
             axios.get(`${URL_ADMIN}/admissao/${id}/editar`)
                 .then(response => {
+
                     let data = response.data;
                     let admissao = data.feedback.admissao;
 
@@ -854,7 +890,6 @@ const app = new Vue({
                             "indicado_area": ""
                         };
                     }
-
                     if (!data.feedback.banco_conta) {
                         data.feedback.banco_conta = {
                             "banco": "Banco do Brasil",
@@ -867,6 +902,10 @@ const app = new Vue({
                     }
 
                     Object.assign(this.form, data.feedback);
+
+                    if (!data.feedback.projeto) {
+                        Object.assign(this.form.projeto, data.feedback.projeto);
+                    }
 
                     //Se não tiver parecer_rh
                     this.form.admissao = admissao ? admissao : _.cloneDeep(this.formDefault.admissao);
@@ -942,7 +981,7 @@ const app = new Vue({
             axios.get(`${URL_PUBLICO}/lista-vagas`)
                 .then(res => {
                     this.preload = false;
-                    this.vagas = res.data.vagas;
+                    this.vagas = res.data.areas;
                 })
                 .catch(err => {
                     this.preload = false;

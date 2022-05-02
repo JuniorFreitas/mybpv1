@@ -105,6 +105,13 @@
                     </a>
                 </li>
             @endcan
+            @can('projetos')
+                <li>
+                    <a href="{{route('g.projetos.projetos.index')}}" key="projetos">
+                        Projetos
+                    </a>
+                </li>
+            @endcan
             @can('vagas')
                 <li>
                     <a href="{{route('g.vagas.vagas.index')}}" key="vagas">

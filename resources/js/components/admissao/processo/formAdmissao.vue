@@ -4,10 +4,8 @@
             <div class="form-group">
                 <label>Área</label>
                 <select class="form-control" v-model="form.area_etiqueta_id"
-                        onchange="valida_campo_vazio(this,1)"
-                        onblur="valida_campo_vazio(this,1)"
                         :disabled="visualizar || disabled">
-                    <option :value="''">Selecione</option>
+                    <option value="">Selecione</option>
                     <option :value="item.id"
                             v-for="item in areasetiquetas">
                         {{ item.label }}
@@ -100,9 +98,11 @@
             </div>
         </div>
 
-        <div class="col-12 col-sm-6" v-if="form.tipo_admissao === 'TEMPORARIO' || form.tipo_admissao === 'DETERMINADO' || form.tipo_admissao === 'INTERMITENTE'">
+        <div class="col-12 col-sm-6"
+             v-if="form.tipo_admissao === 'TEMPORARIO' || form.tipo_admissao === 'DETERMINADO' || form.tipo_admissao === 'INTERMITENTE'">
             <div class="form-group">
-                <datepicker label="Data de encerramento" v-model="form.data_encerramento" :disabled="visualizar || disabled"></datepicker>
+                <datepicker label="Data de encerramento" v-model="form.data_encerramento"
+                            :disabled="visualizar || disabled"></datepicker>
             </div>
         </div>
 
@@ -402,9 +402,9 @@ export default {
         };
     },
     created() {
-        axios.get(`${URL_PUBLICO}/lista-areas/${AUTENTICADO.empresa_id}`)
+        axios.get(`${URL_PUBLICO}/lista-areas`)
             .then(response => {
-                this.areasetiquetas = response.data;
+                this.areasetiquetas = response.data.areas ?? '';
             }).catch(e => console.log(e));
     },
     methods: {
