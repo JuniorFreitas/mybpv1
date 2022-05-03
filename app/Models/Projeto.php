@@ -51,4 +51,8 @@ class Projeto extends Model
         'preenchidas' => 'int',
         'empresa_id' => 'int',
     ];
+
+    public function VagasProjeto(){
+        return $this->hasMany(VagaProjeto::class, 'projeto_id');
+    }
 }

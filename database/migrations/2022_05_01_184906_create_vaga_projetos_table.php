@@ -15,14 +15,15 @@ class CreateVagaProjetosTable extends Migration
     {
         Schema::create('vaga_projetos', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('empresa_id');
             $table->unsignedBigInteger('projeto_id');
-            $table->foreign('projeto_id')->references('id')->on('projetos');
             $table->unsignedBigInteger('vaga_aberta_id');
-            $table->foreign('vaga_aberta_id')->references('id')->on('vagas_abertas');
             $table->integer('qnt_total');
             $table->integer('qnt_preenchida');
-            $table->unsignedBigInteger('empresa_id');
-            $table->foreign('empresa_id')->references('id')->on('users');
+
+            $table->foreign('projeto_id')->references('id')->on('projetos')->cascadeOnDelete();
+            $table->foreign('vaga_aberta_id')->references('id')->on('vagas_abertas')->cascadeOnDelete();
+            $table->foreign('empresa_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }
 

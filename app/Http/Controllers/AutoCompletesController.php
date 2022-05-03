@@ -43,7 +43,7 @@ class AutoCompletesController extends Controller
         }
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
-        return VagasAbertas::whereAtivoSistema(true)->where('titulo', 'like', '%' . $busca . '%')->take($quantidade)
+        return VagasAbertas::whereAtivoSistema(true)->with('Vaga')->where('titulo', 'like', '%' . $busca . '%')->take($quantidade)
             ->get()
             ->map(function ($item) {
                 $item->label = $item->titulo . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;

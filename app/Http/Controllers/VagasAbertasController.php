@@ -93,15 +93,15 @@ class VagasAbertasController extends Controller
                             $projetos['qnt_preenchida'] = 0;
                             $qnt_total = intval($projetos['qnt_total']);
                             VagaProjeto::create($projetos);
-                            $todosProjetos = Projeto::find($projetos['projeto_id']);
-                            if ($qnt_total <= $todosProjetos->qnt_total_restante) {
-                                $projetoTotalRestante = $todosProjetos->qnt_total_restante - intval($projetos['qnt_total']);
-                                $projetoPreenchida = $todosProjetos->preenchidas + intval($projetos['qnt_total']);
-                                $vagaProjetosSoma = VagaProjeto::whereProjetoId($projetos['projeto_id'])->sum('qnt_total')->get();
+                            $Projeto = Projeto::find($projetos['projeto_id']);
+                            if ($qnt_total <= $Projeto->qnt_total_restante) {
+                                $projetoTotalRestante = $Projeto->qnt_total_restante - intval($projetos['qnt_total']);
+                                $projetoPreenchida = $Projeto->preenchidas;
+                                $vagaProjetosSoma = VagaProjeto::whereProjetoId($projetos['projeto_id'])->sum('qnt_total');
                                 if ($projetoPreenchida <= $vagaProjetosSoma) {
-                                    $todosProjetos->update([
+                                    $Projeto->update([
                                         'qnt_total_restante' => intval($projetoTotalRestante),
-                                        'preenchidas' => intval($projetoPreenchida),
+                                        'preenchidas' => 0,
                                     ]);
                                 }
                             } else {
@@ -211,7 +211,11 @@ class VagasAbertasController extends Controller
 
                 if (isset($dados['projetosDelete'])) {
                     foreach ($dados['projetosDelete'] as $id) {
-                        $vagaProjetos = VagaProjeto::whereProjetoId($id)->whereVagaAbertaId($vagas_aberta->id)->first();
+                        $vagaProjetos = VagaProjeto::whereId($id)->whereVagaAbertaId($vagas_aberta->id)->first();
+                        $projetoDel = Projeto::find($vagaProjetos->projeto_id);
+                        $projetoDel->update([
+                            'qnt_total_restante' => $projetoDel->qnt_total_restante + $vagaProjetos->qnt_total
+                        ]);
                         $vagaProjetos->delete();
                     }
                 }
@@ -219,40 +223,38 @@ class VagasAbertasController extends Controller
                 if (isset($dados['projetos'])) {
                     foreach ($dados['projetos'] as $projetos) {
                         $qnt_total = intval($projetos['qnt_total']);
-                        $todosProjetos = Projeto::find($projetos['projeto_id']);
+                        $Projeto = Projeto::find($projetos['projeto_id']);
                         if (isset($projetos['novo'])) {
                             $projetos['vaga_aberta_id'] = $vagas_aberta->id;
                             $projetos['qnt_preenchida'] = 0;
                             VagaProjeto::create($projetos);
-                            if ($qnt_total <= $todosProjetos->qnt_total_restante) {
-                                $projetoTotalRestante = $todosProjetos->qnt_total_restante - $qnt_total;
-                                $projetoPreenchida = $todosProjetos->preenchidas + $qnt_total;
-                                $todosProjetos->update([
-                                    'qnt_total_restante' => intval($projetoTotalRestante),
-                                    'preenchidas' => intval($projetoPreenchida),
+                            if ($qnt_total <= $Projeto->qnt_total_restante) {
+                                $Projeto->update([
+                                    'qnt_total_restante' => intval($Projeto->qnt_total_restante - $qnt_total),
                                 ]);
                             } else {
                                 return response()->json(['msg' => 'Erro, entre em contato com o desenvolvedor.'], 400);
                             }
                         } else {
-                            $vagaProjetos = VagaProjeto::whereProjetoId($projetos['projeto_id'])->whereVagaAbertaId($projetos['vaga_aberta_id'])->first();
-                            $vagaProjetosSoma = VagaProjeto::whereProjetoId($projetos['projeto_id'])->sum('qnt_total');
-                            if ($qnt_total <= $todosProjetos->qnt_total_restante) {
-                                $valor = $qnt_total - $todosProjetos->qnt_total_restante;
-                                $projetoTotalRestante = $valor + $todosProjetos->qnt_total_restante;
-                                $projetoPreenchida = $valor - $todosProjetos->preenchidas;
-                                if ($projetoPreenchida <= $vagaProjetosSoma) {
-                                    $todosProjetos->update([
-                                        'qnt_total_restante' => $projetoTotalRestante,
-                                        'preenchidas' => $projetoPreenchida,
-                                    ]);
-                                    $vagaProjetos->update(['qnt_total' => $qnt_total]);
-                                }else{
-                                    return response()->json(['msg' => 'Erro, quantidade de vagas indisponível para o projeto.'], 400);
-                                }
-                            } else {
-                                return response()->json(['msg' => 'Erro, quantidade de vagas indisponível para o projeto.'], 400);
-                            }
+//                            $vagaProjetos = VagaProjeto::whereProjetoId($projetos['projeto_id'])->whereVagaAbertaId($projetos['vaga_aberta_id'])->first();
+//                            $vagaProjetosSoma = (int) $vagaProjetos->sum('qnt_total');
+//                            $qnt = $qnt_total - $Projeto->qnt_total_restante;
+//                            $restante = $Projeto->qnt_total_restante - $qnt;
+//                            if ($restante > 0) {
+//                                $valor = $qnt_total - $Projeto->qnt_total_restante;
+//                                $projetoTotalRestante = $valor + $Projeto->qnt_total_restante;
+//                                $projetoPreenchida = $valor - $Projeto->preenchidas;
+//                                if ($projetoPreenchida <= $vagaProjetosSoma) {
+//                                    $Projeto->update([
+//                                        'qnt_total_restante' => $projetoTotalRestante,
+//                                    ]);
+//                                    $vagaProjetos->update(['qnt_total' => $qnt_total]);
+//                                } else {
+//                                    return response()->json(['msg' => 'Erro, quantidade de vagas indisponível para o projeto.'], 400);
+//                                }
+//                            } else {
+//                                return response()->json(['msg' => 'Erro, quantidade de vagas indisponível para o projeto.'], 400);
+//                            }
                         }
                     }
                 }

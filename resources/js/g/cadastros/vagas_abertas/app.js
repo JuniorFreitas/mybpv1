@@ -123,7 +123,8 @@ const app = new Vue({
         verificaQuantidadeVagas(qnt_disponivel, qnt_informado, projeto_id) {
             if (qnt_informado > qnt_disponivel) {
                 let projeto = _.find(this.listaProjetosAdicionais, {'id': projeto_id});
-                return mostraErro('', 'Não há quantidade disponível para o projeto: ' + projeto.nome);
+                 mostraErro('', 'Não há quantidade disponível para o projeto: ' + projeto.nome);
+                return false;
             }
         },
 

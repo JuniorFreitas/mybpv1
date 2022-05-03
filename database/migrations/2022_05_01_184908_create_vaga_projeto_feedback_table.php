@@ -15,9 +15,10 @@ class CreateVagaProjetoFeedbackTable extends Migration
     {
         Schema::create('vaga_projeto_feedback', function (Blueprint $table) {
             $table->unsignedBigInteger('feedback_id');
-            $table->foreign('feedback_id')->references('id')->on('feedback_curriculos');
             $table->unsignedBigInteger('vaga_projeto_id');
-            $table->foreign('vaga_projeto_id')->references('id')->on('vaga_projetos');
+
+            $table->foreign('feedback_id')->references('id')->on('feedback_curriculos')->cascadeOnDelete();
+            $table->foreign('vaga_projeto_id')->references('id')->on('vaga_projetos')->cascadeOnDelete();
         });
     }
 

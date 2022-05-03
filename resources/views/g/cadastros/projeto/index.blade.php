@@ -16,17 +16,66 @@
 
                 <div class="form-group">
                     <label>Nome</label>
-                    <input type="text" class="form-control" v-model="form.nome"
+                    <input type="text" class="form-control form-control-sm" v-model="form.nome"
                            placeholder="Nome"
                            autocomplete="off">
                 </div>
 
                 <div class="form-group">
                     <label>Quantidade total de vagas</label>
-                    <input type="number" class="form-control" v-model="form.qnt_total"
+                    <input type="number" class="form-control form-control-sm" v-model="form.qnt_total"
                            placeholder="Quantidade total de vagas"
                            autocomplete="off">
                 </div>
+
+                <fieldset>
+                    <legend>Vagas do projeto</legend>
+                    <h5 class="alert alert-warning text-uppercase">Total de vagas restante: @{{totalRestanteVagas}}</h5>
+
+                    <div class="form-group">
+                        <autocomplete :caminho="`autocomplete/todas-vagas-abertas-ativas`"
+                                      :formsm="true"
+                                      v-model="form.autocomplete_label_vaga_aberta"
+                                      placeholder="Selecione uma vaga"
+                                      :id="`vagas_projeto_${hash}`"
+                                      @onselect="selecionaVaga"></autocomplete>
+                    </div>
+
+                    <div class="table-responsive" v-if="form.vagas_projeto.length">
+                        <table class="table table-bordered table-hover table-condensed bg-white">
+                            <thead>
+                            <tr class="bg-default">
+{{--                                <th class="text-center">#</th>--}}
+                                <th class="text-center">Vaga Aberta/Cargo</th>
+                                <th class="text-center">Qnt Total</th>
+                                <th class="text-center">Qnt Preenchidas</th>
+{{--                                <th class="text-center">Remover</th>--}}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(item, index) in form.vagas_projeto">
+{{--                                <td class="text-center">@{{index + 1}}</td>--}}
+                                <td class="text-center">@{{ item.vaga_aberta.titulo }}
+                                    <br>
+                                    <pre>Cargo: @{{ item.vaga_aberta.vaga.nome }}</pre>
+                                </td>
+
+                                <td class="text-center">
+                                    <input type="number" class="form-control form-control-sm text-center" min="1" :maxlength="totalRestanteVagas" v-model="item.qnt_total">
+                                </td>
+
+                                <td class="text-center">@{{ item.qnt_preenchida }}</td>
+{{--                                <td class="text-center">--}}
+{{--                                    <a href="javascript://" class="btn btn-sm btn-danger"--}}
+{{--                                       @click.prevent="removerLIColaborador(index)">--}}
+{{--                                        <i class="fa fa-times" aria-hidden="true"></i>--}}
+{{--                                    </a>--}}
+{{--                                </td>--}}
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
 
             </form>
         </template>
@@ -85,9 +134,9 @@
                 <tr class="bg-default">
                     <th class="text-center">ID</th>
                     <th>Nome</th>
-                    <th>Quantidade de vagas</th>
-                    <th>Quantidade de vagas restantes</th>
-                    <th>Quantidade de vagas preenchidas</th>
+                    <th>Total de vagas</th>
+                    <th>Restantes</th>
+                    <th>Preenchidas</th>
                     <th></th>
                 </tr>
                 </thead>
