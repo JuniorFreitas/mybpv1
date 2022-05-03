@@ -403,6 +403,12 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'acesso_clinica_update', 'descricao' => 'Pode alterar exame'];
 //        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
 
+     //HABILIDADES CLINICA------------------------------
+        $lista[] = ['nome' => 'cadastro_projetos', 'descricao' => 'Acesso ao menu Projeto'];
+        $lista[] = ['nome' => 'cadastro_projetos_insert', 'descricao' => 'Pode cadastrar Projeto'];
+        $lista[] = ['nome' => 'cadastro_projetos_update', 'descricao' => 'Pode alterar Projeto'];
+//        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
+
         try {
             DB::beginTransaction();
 

@@ -16,7 +16,7 @@ class ProjetoController extends Controller
      */
     public function index()
     {
-        $this->authorize('projetos');
+        $this->authorize('cadastro_projetos');
         return view('g.cadastros.projeto.index');
     }
 
@@ -38,7 +38,7 @@ class ProjetoController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('projetos_insert');
+        $this->authorize('cadastro_projetos_insert');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -91,7 +91,7 @@ class ProjetoController extends Controller
      */
     public function edit($id)
     {
-        return Projeto::find($id);
+        return Projeto::find($id)->load('VagasProjeto.VagaAberta.Vaga');
     }
 
     /**
@@ -103,7 +103,7 @@ class ProjetoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->authorize('projetos_update');
+        $this->authorize('cadastro_projetos_update');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -171,7 +171,7 @@ class ProjetoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('projetos');
+        $this->authorize('cadastro_projetos');
 
         if ($request->filled('campoBusca')) {
             $resultado = Projeto::where('nome', 'like', '%' . $request->campoBusca . '%')->orderByDesc('updated_at')->paginate(50);

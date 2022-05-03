@@ -59,4 +59,9 @@ class VagaProjeto extends Model
     {
         return $this->hasOne(Projeto::class,'id','projeto_id');
     }
+
+    public function VagaAberta()
+    {
+        return $this->hasOne(VagasAbertas::class,'id','vaga_aberta_id');
+    }
 }

@@ -293,8 +293,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         // Projeto
         Route::group(['as' => 'projetos.'], function () {
-            Route::post('projetos/atualizar', [\App\Http\Controllers\ProjetoController::class, 'atualizar'])->name('projetos.atualizar')->middleware('can:projetos');
-            Route::resource('projetos', \App\Http\Controllers\ProjetoController::class)->middleware('can:projetos');
+            Route::post('projetos/atualizar', [\App\Http\Controllers\ProjetoController::class, 'atualizar'])->name('projetos.atualizar')->middleware('can:cadastro_projetos');
+            Route::resource('projetos', \App\Http\Controllers\ProjetoController::class)->middleware('can:cadastro_projetos');
            });
 
         Route::group(['as' => 'areas.'], function () {

@@ -20,8 +20,9 @@ class CreateProjetosTable extends Migration
             $table->integer('qnt_total_restante');
             $table->integer('preenchidas');
             $table->unsignedBigInteger('empresa_id');
-            $table->foreign('empresa_id')->references('id')->on('users');
             $table->timestamps();
+
+            $table->foreign('empresa_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }
 
