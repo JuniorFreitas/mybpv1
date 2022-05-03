@@ -35,6 +35,7 @@
                     <div class="form-group">
                         <autocomplete :caminho="`autocomplete/todas-vagas-abertas-ativas`"
                                       :formsm="true"
+                                      :disabled="totalRestanteVagas <= 0"
                                       v-model="form.autocomplete_label_vaga_aberta"
                                       placeholder="Selecione uma vaga"
                                       :id="`vagas_projeto_${hash}`"

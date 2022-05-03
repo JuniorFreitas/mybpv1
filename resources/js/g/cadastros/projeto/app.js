@@ -10,7 +10,7 @@ const app = new Vue({
 
         form: {
             nome: "",
-            qnt_total: "",
+            qnt_total: 1,
             vagas_projeto: [],
             vagas_projetoDelete: [],
             autocomplete_label_vaga_aberta: ""
