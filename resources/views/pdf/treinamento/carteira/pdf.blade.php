@@ -97,7 +97,7 @@
                                         {{ $vencimento->label }}
                                     </td>
                                     <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
-
+                                        {{ $vencimento->pivot->data_treinamento }}
                                     </td>
                                     <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; text-align: center">
                                         {{ $vencimento->pivot->data_vencimento }}
