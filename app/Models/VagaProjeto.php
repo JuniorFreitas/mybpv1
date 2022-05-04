@@ -53,6 +53,13 @@ class VagaProjeto extends Model
         'empresa_id' => 'int',
     ];
 
+    protected $appends = ['tem_vaga'];
+
+    public function getTemVagaAttribute()
+    {
+        return $this->qnt_total >= $this->qnt_preenchida;
+    }
+
     public $timestamps = false;
 
     public function Projeto()

@@ -52,62 +52,62 @@
                                   @onselect="selecionaMunicipioModal"></autocomplete>
                 </div>
 
-                <fieldset>
-                    <legend>Projetos</legend>
+{{--                <fieldset>--}}
+{{--                    <legend>Projetos</legend>--}}
 
-                    <button class="btn btn-sm btn-primary mb-3" @click="addLIProjeto">
-                        <i class="fa fa-plus"></i> Adicionar
-                    </button>
+{{--                    <button class="btn btn-sm btn-primary mb-3" @click="addLIProjeto">--}}
+{{--                        <i class="fa fa-plus"></i> Adicionar--}}
+{{--                    </button>--}}
 
-                    <fieldset class=" mb-2" v-if="form.projetos.length > 0"
-                              v-for="(obj, index) in form.projetos" :key="index">
-                        <legend>#@{{ index + 1 }}</legend>
-                        <div class="row">
+{{--                    <fieldset class=" mb-2" v-if="form.projetos.length > 0"--}}
+{{--                              v-for="(obj, index) in form.projetos" :key="index">--}}
+{{--                        <legend>#@{{ index + 1 }}</legend>--}}
+{{--                        <div class="row">--}}
 
-                            <div class="col-md-6">
-                                <label>Projeto</label>
+{{--                            <div class="col-md-6">--}}
+{{--                                <label>Projeto</label>--}}
 
-                                <select class="form-control" v-model="obj.projeto_id"
-                                        @change="selecionaProjeto(obj.projeto_id, index)"
-                                        onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
-                                    <option value="">Selecione...</option>
-                                    <option v-for="item in listaProjetos" :value="item.id">
-                                        @{{ item.nome }}
-                                    </option>
-                                </select>
-                            </div>
+{{--                                <select class="form-control" v-model="obj.projeto_id"--}}
+{{--                                        @change="selecionaProjeto(obj.projeto_id, index)"--}}
+{{--                                        onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">--}}
+{{--                                    <option value="">Selecione...</option>--}}
+{{--                                    <option v-for="item in listaProjetos" :value="item.id">--}}
+{{--                                        @{{ item.nome }}--}}
+{{--                                    </option>--}}
+{{--                                </select>--}}
+{{--                            </div>--}}
 
-                            <div class="col-md-2" v-show="obj.projeto_id > 0 && !editando">
-                                <label>Vagas disponíveis</label>
+{{--                            <div class="col-md-2" v-show="obj.projeto_id > 0 && !editando">--}}
+{{--                                <label>Vagas disponíveis</label>--}}
 
-                                <input type="number" disabled v-model="obj.qnt_disponivel"
-                                       v-mascara:numero
-                                       class="form-control"
-                                       onblur="valida_campo_vazio(this,1)">
-                            </div>
+{{--                                <input type="number" disabled v-model="obj.qnt_disponivel"--}}
+{{--                                       v-mascara:numero--}}
+{{--                                       class="form-control"--}}
+{{--                                       onblur="valida_campo_vazio(this,1)">--}}
+{{--                            </div>--}}
 
-                            <div class="col-md-4">
-                                  <label>Quantidade total de vagas</label>
-                                <input type="number" placeholder="Quantidade total de vagas para este projeto"
-                                       @change="verificaQuantidadeVagas(obj.qnt_disponivel,obj.qnt_total,obj.projeto_id)"
-                                       v-model="obj.qnt_total"
-                                       v-mascara:numero
-                                       class="form-control"
-                                       onblur="valida_campo_vazio(this,1)">
-                            </div>
+{{--                            <div class="col-md-4">--}}
+{{--                                  <label>Quantidade total de vagas</label>--}}
+{{--                                <input type="number" placeholder="Quantidade total de vagas para este projeto"--}}
+{{--                                       @change="verificaQuantidadeVagas(obj.qnt_disponivel,obj.qnt_total,obj.projeto_id)"--}}
+{{--                                       v-model="obj.qnt_total"--}}
+{{--                                       v-mascara:numero--}}
+{{--                                       class="form-control"--}}
+{{--                                       onblur="valida_campo_vazio(this,1)">--}}
+{{--                            </div>--}}
 
-                            <div class="col-12 mt-3">
-                                <button class="btn btn-sm btn-danger" @click="removerLIProjeto(index)"><i
-                                        class="fa fa-times"></i> Remover
-                                </button>
+{{--                            <div class="col-12 mt-3">--}}
+{{--                                <button class="btn btn-sm btn-danger" @click="removerLIProjeto(index)"><i--}}
+{{--                                        class="fa fa-times"></i> Remover--}}
+{{--                                </button>--}}
 
-                                <button class="btn btn-sm btn-primary mt" @click="addLIProjeto" v-show="index >=1">
-                                    <i class="fa fa-plus"></i> Adicionar
-                                </button>
-                            </div>
-                        </div>
-                    </fieldset>
-                </fieldset>
+{{--                                <button class="btn btn-sm btn-primary mt" @click="addLIProjeto" v-show="index >=1">--}}
+{{--                                    <i class="fa fa-plus"></i> Adicionar--}}
+{{--                                </button>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </fieldset>--}}
+{{--                </fieldset>--}}
 
                 <fieldset>
                     <legend>Provas</legend>

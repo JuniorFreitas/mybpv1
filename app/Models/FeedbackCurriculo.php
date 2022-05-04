@@ -224,6 +224,7 @@ class FeedbackCurriculo extends Model
         'data_envia_whatsapp',
         'user_envia_whatsapp',
         'vagas_abertas_id',
+        'vaga_projeto_id',
         'empresa_id',
     ];
     protected $casts = [
@@ -253,6 +254,7 @@ class FeedbackCurriculo extends Model
         'data_envia_whatsapp' => 'string',
         'user_envia_whatsapp' => 'int',
         'vagas_abertas_id' => 'int',
+        'vaga_projeto_id' => 'int',
         'empresa_id' => 'int',
     ];
 
@@ -424,11 +426,6 @@ class FeedbackCurriculo extends Model
     public function VagaAberta()
     {
         return $this->hasOne(VagasAbertas::class, 'id', 'vagas_abertas_id');
-    }
-
-    public function Projeto()
-    {
-        return $this->belongsToMany(VagaProjeto::class, 'vaga_projeto_feedback','feedback_id', 'vaga_projeto_id');
     }
 
     public function Cliente()
@@ -770,6 +767,10 @@ class FeedbackCurriculo extends Model
 
     public function Demissao(){
         return $this->hasOne(Demissao::class, 'feedback_id', 'id');
+    }
+
+    public function VagaProjeto(){
+        return $this->hasOne(VagaProjetoFeedback::class, 'feedback_id', 'id');
     }
 
     /**/

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class VagaProjetoFeedback extends Model
 {
     use HasFactory;
+    protected $primaryKey = 'feedback_id';
 
     protected $fillable = [
         'feedback_id',
@@ -15,6 +16,7 @@ class VagaProjetoFeedback extends Model
     ];
 
     protected $casts = [
+        'id' => 'int',
         'feedback_id' => 'int',
         'vaga_projeto_id' => 'int'
     ];
