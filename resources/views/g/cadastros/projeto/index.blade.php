@@ -24,6 +24,8 @@
                 <div class="form-group">
                     <label>Quantidade total de vagas</label>
                     <input type="number" class="form-control form-control-sm" v-model="form.qnt_total"
+                           oninput="this.value = Math.abs(this.value)"
+                           min="1"
                            placeholder="Quantidade total de vagas"
                            autocomplete="off">
                 </div>
@@ -55,14 +57,17 @@
                             </thead>
                             <tbody>
                             <tr v-for="(item, index) in form.vagas_projeto">
-{{--                                <td class="text-center">@{{index + 1}}</td>--}}
                                 <td class="text-center">@{{ item.vaga_aberta.titulo }}
                                     <br>
-                                    <pre>Cargo: @{{ item.vaga_aberta.vaga.nome }}</pre>
+                                    <pre class="text-danger">Cargo: @{{ item.vaga_aberta.vaga.nome }}</pre>
                                 </td>
 
                                 <td class="text-center">
-                                    <input type="number" class="form-control form-control-sm text-center" min="1" :maxlength="totalRestanteVagas" v-model="item.qnt_total">
+                                    <input type="number"
+                                           min="1"
+                                           oninput="this.value = Math.abs(this.value)"
+                                           class="form-control form-control-sm text-center"
+                                           :maxlength="totalRestanteVagas" v-model="item.qnt_total">
                                 </td>
 
                                 <td class="text-center">@{{ item.qnt_preenchida }}</td>

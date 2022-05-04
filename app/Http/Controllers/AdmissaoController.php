@@ -437,7 +437,6 @@ class AdmissaoController extends Controller
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
 
-//                $dadosProjeto = $dados['feedback']['projeto_id'];
 
             }
             DB::commit();
@@ -518,7 +517,7 @@ class AdmissaoController extends Controller
             'TelPrincipal',
             'BancoConta',
             'ResultadoIntegrado',
-            'Projeto'
+            'VagaProjeto'
         );
 
         if (!is_null($feedback->BancoConta)) {
@@ -530,9 +529,11 @@ class AdmissaoController extends Controller
             $feedback->BancoConta->chavepix = $feedback->BancoConta ? $feedback->BancoConta->chavepix : '';
         }
 
-        if (!is_null($feedback->Projeto)) {
-            $feedback->projeto = $feedback->Projeto ?: '';
-        }
+//        $feedback->vaga_projeto_id = is_null($feedback->vaga_projeto_id) ? null : $feedback->vaga_projeto_id;
+
+//        if (!is_null($feedback->Projeto)) {
+//            $feedback->projeto = $feedback->Projeto ?: '';
+//        }
 
         $feedback->Curriculo->foto_tres_delete = [];
 
@@ -560,6 +561,7 @@ class AdmissaoController extends Controller
             $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
             $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?: "";
         }
+
         $feedback->parecerRh->indicado_por = $feedback->parecerRh->indicado_por ?: "";
         $feedback->parecerRh->calca = $feedback->parecerRh->calca ?: "";
         $feedback->parecerRh->bota = $feedback->parecerRh->bota ?: "";
@@ -797,9 +799,6 @@ class AdmissaoController extends Controller
                     }
                 }
 
-                if (isset($dados['projetoNovo'])){
-
-                }
 
                 DB::commit();
                 return response()->json([], 201);

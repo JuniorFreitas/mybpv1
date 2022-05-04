@@ -250,6 +250,7 @@ const app = new Vue({
             cliente_id: "",
             autocomplete_label_cliente_modal: "",
             autocomplete_label_cliente_modal_anterior: "",
+            vagas_abertas_id: "",
 
             banco_conta: {
                 banco: "Banco do Brasil",

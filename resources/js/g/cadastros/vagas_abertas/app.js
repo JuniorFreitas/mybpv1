@@ -40,8 +40,8 @@ const app = new Vue({
             simulados: [],
             simuladosDelete: [],
 
-            projetos: [],
-            projetosDelete: [],
+            // projetos: [],
+            // projetosDelete: [],
 
             ativo: true,
             ativo_sistema: true

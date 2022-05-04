@@ -11,6 +11,7 @@ const app = new Vue({
         form: {
             nome: "",
             qnt_total: 1,
+            preenchidas: 0,
             vagas_projeto: [],
             vagas_projetoDelete: [],
             autocomplete_label_vaga_aberta: ""
@@ -43,6 +44,10 @@ const app = new Vue({
 
             let somatorio = totalProjeto - totalVagas;
 
+            if (isNaN(somatorio)) {
+                somatorio = -1;
+            }
+
             if (somatorio < 0) {
                 mostraErro("", "A soma das vagas não pode ser maior que a quantidade total do projeto.");
             }
@@ -62,7 +67,6 @@ const app = new Vue({
         //     this.form.vagas_projeto.splice(index, 1);
         // },
         selecionaVaga(obj) {
-            console.log(obj);
             const vagas_projeto = {};
             vagas_projeto.novo = true;
             vagas_projeto.vaga_aberta_id = obj.id;
@@ -107,7 +111,14 @@ const app = new Vue({
                 return false;
             }
 
+            if (this.totalRestanteVagas < 0) {
+                mostraErro("", "A soma das vagas não pode ser maior que a quantidade total do projeto.");
+                return false;
+            }
+
             this.preloadAjax = true;
+            this.form.qnt_total_restante = this.totalRestanteVagas;
+
             axios.post(`${URL_ADMIN}/cadastro/projetos`, this.form)
                 .then(response => {
                     if (response.status === 201) {
@@ -149,8 +160,14 @@ const app = new Vue({
                 return false;
             }
 
+            if (this.totalRestanteVagas < 0) {
+                mostraErro("", "A soma das vagas não pode ser maior que a quantidade total do projeto.");
+                return false;
+            }
+
             this.form._method = "PUT";
             this.preloadAjax = true;
+            this.form.qnt_total_restante = this.totalRestanteVagas;
 
             axios.put(`${URL_ADMIN}/cadastro/projetos/${this.form.id}`, this.form).then(response => {
                 this.preloadAjax = false;

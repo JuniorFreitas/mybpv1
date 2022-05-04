@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Projeto;
+use App\Models\Sistema;
+use App\Models\User;
 use App\Models\VagaProjeto;
 use Illuminate\Http\Request;
 use DB;
@@ -43,7 +45,7 @@ class ProjetoController extends Controller
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required',
-            'qnt_total' => 'required'
+            'qnt_total' => 'required|numeric',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -55,16 +57,30 @@ class ProjetoController extends Controller
             try {
                 DB::beginTransaction();
 
-                $dados['qnt_total_restante'] = $dados['qnt_total'];
-                $dados['preenchidas'] = 0;
+                $projeto = Projeto::create($dados);
 
-                Projeto::create($dados);
+                if (isset($dados['vagas_projeto'])) {
+                    foreach ($dados['vagas_projeto'] as $vaga_projeto) {
+                        $vaga_projeto['projeto_id'] = $projeto->id;
+                        if (isset($vaga_projeto['novo'])) {
+                            VagaProjeto::create($vaga_projeto);
+                        } else {
+                            VagaProjeto::find($vaga_projeto['id'])->update($vaga_projeto);
+                        }
+                    }
+                }
 
                 DB::commit();
                 return response()->json([], 201);
 
             } catch (\Exception $e) {
                 DB::rollBack();
+                $msg = "error PROJETO STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome . ' EMPRESA - ' . auth()->user()->Empresa->razao_social;
+                \Log::debug($msg);
+                \Log::debug($e->getTraceAsString());
+                \Log::info("-------DADOS-------");
+                Sistema::telegram(print_r($dados, true));
+                \Log::info("-------FIM DE DADOS-------");
                 return response()->json([
                     'msg' => $e->getMessage(),
                 ], 400);
@@ -122,35 +138,29 @@ class ProjetoController extends Controller
 
                 $projeto = Projeto::find($id);
 
-                switch (true) {
-                    case ($dados['qnt_total'] > $projeto->qnt_total):
-                        $dados['qnt_total_restante'] = ($dados['qnt_total'] - $projeto->qnt_total) + $projeto->qnt_total_restante;
-                        break;
-                    case ($dados['qnt_total'] < $projeto->qnt_total && $projeto->qnt_total == $projeto->qnt_total_restante && $projeto->preenchidas == 0):
-                        $dados['qnt_total_restante'] = $dados['qnt_total'];
-                        break;
-                    case ($dados['qnt_total'] < $projeto->qnt_total && $dados['qnt_total'] >= $projeto->qnt_total_restante):
-                        $dados['qnt_total_restante'] = $projeto->qnt_total_restante - ($projeto->qnt_total - $dados['qnt_total']);
-                        break;
-                    case ($dados['qnt_total'] < $projeto->qnt_total && $dados['qnt_total'] < $projeto->qnt_total_restante):
-                        $dados['qnt_total_restante'] = ($projeto->qnt_total_restante - ($projeto->qnt_total - $dados['qnt_total']));
-                        break;
-                    case ($dados['qnt_total'] == $projeto->qnt_total):
-                        $projeto->update($dados);
-                        break;
-                    default:
-                        return response()->json(['msg' => 'Erro ao atualizar projeto, a quantidade de vagas restantes não pode ficar negativo!'], 400);
+                if (isset($dados['vagas_projeto'])) {
+                    foreach ($dados['vagas_projeto'] as $vaga_projeto) {
+                        $vaga_projeto['projeto_id'] = $projeto->id;
+                        if (isset($vaga_projeto['novo'])) {
+                            VagaProjeto::create($vaga_projeto);
+                        } else {
+                            VagaProjeto::find($vaga_projeto['id'])->update($vaga_projeto);
+                        }
+                    }
+                }
 
-                }
-                if ($dados['qnt_total_restante'] >= 0) {
-                    $projeto->update($dados);
-                } else {
-                    return response()->json(['msg' => 'Erro ao atualizar projeto, a quantidade de vagas restantes não pode ficar negativo!'], 400);
-                }
+                $projeto->update($dados);
+
                 DB::commit();
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 DB::rollBack();
+                $msg = "error PROJETO UPDATE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome . ' EMPRESA - ' . auth()->user()->Empresa->razao_social;
+                \Log::debug($msg);
+                \Log::debug($e->getTraceAsString());
+                \Log::info("-------DADOS-------");
+                Sistema::telegram(print_r($dados, true));
+                \Log::info("-------FIM DE DADOS-------");
                 return response()->json([
                     'msg' => $e->getMessage(),
                 ], 400);
@@ -159,7 +169,7 @@ class ProjetoController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage.∂
      *
      * @param int $id
      * @return \Illuminate\Http\Response

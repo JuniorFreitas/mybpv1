@@ -52,6 +52,13 @@ class Projeto extends Model
         'empresa_id' => 'int',
     ];
 
+    protected $appends = ['tem_vaga'];
+
+    public function getTemVagaAttribute()
+    {
+        return $this->qnt_total >= $this->preenchidas;
+    }
+
     public function VagasProjeto(){
         return $this->hasMany(VagaProjeto::class, 'projeto_id');
     }
