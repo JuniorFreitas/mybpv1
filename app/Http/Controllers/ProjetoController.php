@@ -201,7 +201,7 @@ class ProjetoController extends Controller
 
     public function buscaProjeto($vaga_aberta_id)
     {
-        $dados = VagaProjeto::whereVagaAbertaId($vaga_aberta_id)->with('Projeto')->first();
+        $dados = VagaProjeto::whereVagaAbertaId($vaga_aberta_id)->with('Projeto')->get();
         return response()->json(['dados' => $dados, 'encontrou' => !empty($dados)], 201);
     }
 

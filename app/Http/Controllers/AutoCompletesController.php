@@ -21,7 +21,6 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
         return VagasAbertas::whereAtivoSistema(true)->with('Vaga')
-            ->with('Projetos.Projeto')
             ->whereHas('VagaSelecionada', function ($query) use ($busca, $quantidade) {
             $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
         })
@@ -46,9 +45,6 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
         return VagasAbertas::whereAtivoSistema(true)
-            ->with(
-                'Projetos.Projeto',
-                'Vaga')
             ->where('titulo', 'like', '%' . $busca . '%')->take($quantidade)
             ->get()
             ->map(function ($item) {
