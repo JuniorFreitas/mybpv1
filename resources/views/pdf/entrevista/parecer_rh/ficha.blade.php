@@ -127,7 +127,7 @@
             <fieldset>
                 <legend>Informações Certificado NR10</legend>
             </fieldset>
-            @foreach($dados->Nr as $item)
+            @foreach($dados->nr as $item)
                 Instituição: <span>{{ $item->instituicao }}</span> <br>
                 Data de Emissão: <span>{{ \MasterTag\DataHora::dataFormatada($item->nr_dez_emissao) }}</span> <br>
                 Data de Validade: <span>{{ \MasterTag\DataHora::dataFormatada($item->nr_dez_validade) }}</span> <br>

@@ -1,6 +1,7 @@
 @extends('pdf.treinamento.carteira.layout_carteira')
 @section('titulo', 'Carteiras')
 @section('conteudo')
+
     @if (count($treinamentos) > 1)
         <div class="a4">
             <?php $cont = 0; ?>
@@ -96,7 +97,7 @@
                                         {{ $vencimento->label }}
                                     </td>
                                     <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
-
+                                        {{ $vencimento->pivot->data_treinamento }}
                                     </td>
                                     <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; text-align: center">
                                         {{ $vencimento->pivot->data_vencimento }}
@@ -428,6 +429,7 @@
                         </tr>
                         @if (count($treinamento->Vencimentos) <= 11)
                             @foreach($treinamento->Vencimentos as $vencimento)
+
                                 <tr>
                                     <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; text-transform: uppercase">
                                         {{ $vencimento->label }}
@@ -460,7 +462,7 @@
                                         {{ $vencimento->label }}
                                     </td>
                                     <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
-
+                                        {{$vencimento->pivot->data_treinamento}}
                                     </td>
                                     <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; text-align: center">
                                         {{ $vencimento->pivot->data_vencimento }}
