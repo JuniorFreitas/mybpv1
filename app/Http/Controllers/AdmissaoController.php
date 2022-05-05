@@ -14,6 +14,7 @@ use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use App\Models\UsuarioConta;
+use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -202,6 +203,54 @@ class AdmissaoController extends Controller
 
                 $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
+                //Logica de Vagas
+                if ($feedback->vaga_projeto_id) {
+                    if ($request->input('vaga_projeto_id') != $feedback->vaga_projeto_id) {
+                        if ($request->filled('vaga_projeto_id')) {
+                            $vagaProjeto = VagaProjeto::find($request->input('vaga_projeto_id'));
+                            $vagaAnterior = VagaProjeto::find($feedback->vaga_projeto_id);
+                            if ($vagaProjeto->tem_vaga) {
+                                $vagaAnterior->decrement('qnt_preenchida');
+                                $vagaAnterior->save();
+                                $vagaAnterior->Projeto->decrement('preenchidas');
+
+                                $vagaProjeto->increment('qnt_preenchida');
+                                $vagaProjeto->save();
+                                $vagaProjeto->Projeto->increment('preenchidas');
+
+                                $feedback->update(['vaga_projeto_id' => $vagaProjeto->id]);
+                            } else {
+                                return response()->json([
+                                    'msg' => 'Vaga não disponível para o projeto selecionado'
+                                ], 400);
+                            }
+                        } else {
+                            $vagaProjeto = VagaProjeto::find($feedback->vaga_projeto_id);
+                            $vagaProjeto->decrement('qnt_preenchida');
+                            $vagaProjeto->save();
+                            $vagaProjeto->Projeto->decrement('preenchidas');
+                            $feedback->update(['vaga_projeto_id' => null]);
+                        }
+                    }
+                }
+
+                //Continuacao da Logica de Vagas
+                if ($request->filled('vaga_projeto_id')) {
+                    if (!$feedback->vaga_projeto_id) {
+                        $vagaProjeto = VagaProjeto::find($request->input('vaga_projeto_id'));
+                        if ($vagaProjeto->tem_vaga) {
+                            $vagaProjeto->increment('qnt_preenchida');
+                            $vagaProjeto->save();
+                            $vagaProjeto->Projeto->increment('preenchidas');
+                            $feedback->update(['vaga_projeto_id' => $vagaProjeto->id]);
+                        } else {
+                            return response()->json([
+                                'msg' => 'Vaga não disponível para o projeto selecionado'
+                            ], 400);
+                        }
+                    }
+                }
+
                 $feedback->ParecerRh()->create($dadosParecerRh);
                 $feedback->ParecerRota()->create($dadosParecerRota);
                 $feedback->ParecerTecnica()->create($dadosParecerTecnica);
@@ -364,6 +413,55 @@ class AdmissaoController extends Controller
                 $candidato->FeedBack->ParecerTeste ? $candidato->FeedBack->ParecerTeste->update($dadosParecerTeste) : $candidato->FeedBack->ParecerTeste()->create($dadosParecerTeste);
                 $candidato->FeedBack->ResultadoIntegrado ? $candidato->FeedBack->ResultadoIntegrado->update($dadosResultadoIntegrado) : $candidato->FeedBack->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
+                //Logica de Vagas
+                $feedback = $candidato->FeedBack;
+                if ($feedback->vaga_projeto_id) {
+                    if ($request->input('vaga_projeto_id') != $feedback->vaga_projeto_id) {
+                        if ($request->filled('vaga_projeto_id')) {
+                            $vagaProjeto = VagaProjeto::find($request->input('vaga_projeto_id'));
+                            $vagaAnterior = VagaProjeto::find($feedback->vaga_projeto_id);
+                            if ($vagaProjeto->tem_vaga) {
+                                $vagaAnterior->decrement('qnt_preenchida');
+                                $vagaAnterior->save();
+                                $vagaAnterior->Projeto->decrement('preenchidas');
+
+                                $vagaProjeto->increment('qnt_preenchida');
+                                $vagaProjeto->save();
+                                $vagaProjeto->Projeto->increment('preenchidas');
+
+                                $feedback->update(['vaga_projeto_id' => $vagaProjeto->id]);
+                            } else {
+                                return response()->json([
+                                    'msg' => 'Vaga não disponível para o projeto selecionado'
+                                ], 400);
+                            }
+                        } else {
+                            $vagaProjeto = VagaProjeto::find($feedback->vaga_projeto_id);
+                            $vagaProjeto->decrement('qnt_preenchida');
+                            $vagaProjeto->save();
+                            $vagaProjeto->Projeto->decrement('preenchidas');
+                            $feedback->update(['vaga_projeto_id' => null]);
+                        }
+                    }
+                }
+
+                //Continuacao da Logica de Vagas
+                if ($request->filled('vaga_projeto_id')) {
+                    if (!$feedback->vaga_projeto_id) {
+                        $vagaProjeto = VagaProjeto::find($request->input('vaga_projeto_id'));
+                        if ($vagaProjeto->tem_vaga) {
+                            $vagaProjeto->increment('qnt_preenchida');
+                            $vagaProjeto->save();
+                            $vagaProjeto->Projeto->increment('preenchidas');
+                            $feedback->update(['vaga_projeto_id' => $vagaProjeto->id]);
+                        } else {
+                            return response()->json([
+                                'msg' => 'Vaga não disponível para o projeto selecionado'
+                            ], 400);
+                        }
+                    }
+                }
+
                 $feedback_id = $candidato->FeedBack ? $candidato->FeedBack->id : '';
 
                 $admissaoCreate = $candidato->FeedBack->Admissao()->create($dadosAdmissao);
@@ -517,7 +615,6 @@ class AdmissaoController extends Controller
             'TelPrincipal',
             'BancoConta',
             'ResultadoIntegrado',
-            'VagaProjeto'
         );
 
         if (!is_null($feedback->BancoConta)) {
@@ -575,7 +672,13 @@ class AdmissaoController extends Controller
         $feedback->autocomplete_label_vaga_modal = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
         $feedback->autocomplete_label_vaga_modal_anterior = $feedback->VagaAberta->VagaSelecionada ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
 
-        return response()->json(['feedback' => $feedback], 200);
+        $lista_projetos = $feedback->VagaAberta->Projetos->filter(function ($item) {
+            return $item->tem_vaga;
+        });
+
+        return response()->json(['feedback' => $feedback,
+//            'listaProjetos' => $lista_projetos
+        ], 200);
     }
 
     /**
@@ -608,6 +711,54 @@ class AdmissaoController extends Controller
             try {
                 DB::beginTransaction();
 
+                //Logica de Vagas
+                if ($feedback->vaga_projeto_id) {
+                    if ($request->input('vaga_projeto_id') != $feedback->vaga_projeto_id) {
+                        if ($request->filled('vaga_projeto_id')) {
+                            $vagaProjeto = VagaProjeto::find($request->input('vaga_projeto_id'));
+                            $vagaAnterior = VagaProjeto::find($feedback->vaga_projeto_id);
+                            if ($vagaProjeto->tem_vaga) {
+                                $vagaAnterior->decrement('qnt_preenchida');
+                                $vagaAnterior->save();
+                                $vagaAnterior->Projeto->decrement('preenchidas');
+
+                                $vagaProjeto->increment('qnt_preenchida');
+                                $vagaProjeto->save();
+                                $vagaProjeto->Projeto->increment('preenchidas');
+
+                                $feedback->update(['vaga_projeto_id' => $vagaProjeto->id]);
+                            } else {
+                                return response()->json([
+                                    'msg' => 'Vaga não disponível para o projeto selecionado'
+                                ], 400);
+                            }
+                        } else {
+                            $vagaProjeto = VagaProjeto::find($feedback->vaga_projeto_id);
+                            $vagaProjeto->decrement('qnt_preenchida');
+                            $vagaProjeto->save();
+                            $vagaProjeto->Projeto->decrement('preenchidas');
+                            $feedback->update(['vaga_projeto_id' => null]);
+                        }
+                    }
+                }
+
+                //Continuacao da Logica de Vagas
+                if ($request->filled('vaga_projeto_id')) {
+                    if (!$feedback->vaga_projeto_id) {
+                        $vagaProjeto = VagaProjeto::find($request->input('vaga_projeto_id'));
+                        if ($vagaProjeto->tem_vaga) {
+                            $vagaProjeto->increment('qnt_preenchida');
+                            $vagaProjeto->save();
+                            $vagaProjeto->Projeto->increment('preenchidas');
+                            $feedback->update(['vaga_projeto_id' => $vagaProjeto->id]);
+                        } else {
+                            return response()->json([
+                                'msg' => 'Vaga não disponível para o projeto selecionado'
+                            ], 400);
+                        }
+                    }
+                }
+
                 $feedback->update([
                     'vaga_id' => $dadosVagaAberta->vaga_id,
                     'vagas_abertas_id' => $dadosVagaAberta->id,
@@ -636,6 +787,7 @@ class AdmissaoController extends Controller
                 if ($feedback->parecerRh) {
                     $feedback->parecerRh->update(
                         [
+                            'indicacao' => $dados['parecer_rh']['indicado_por'],
                             'indicado_por' => $dados['parecer_rh']['indicado_por'],
                             'calca' => $dados['parecer_rh']['calca'],
                             'bota' => $dados['parecer_rh']['bota'],
