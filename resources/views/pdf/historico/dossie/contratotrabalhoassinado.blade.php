@@ -63,15 +63,19 @@
         possibilidade fica expressamente prevista em contrato.
     </p><br>
     <p class="f12 text-justify">
-        <strong>6ª (Duração)</strong> – O presente contrato vigorará
-        por {{$dados->FeedBack->Admissao->pExperiencia()[0]}}
-        ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[0]) }}) dias, podendo este ser
-        prorrogado ou não por mais {{$dados->FeedBack->Admissao->pExperiencia()[1]}}
-        ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[1]) }}) dias sendo celebrado para as
-        partes verificarem reciprocamente,
-        a conveniência ou não de se vincularem em caráter definitivo a um Contrato de Trabalho. A empresa passando a
-        conhecer as aptidões do <strong>EMPREGADO</strong> e suas qualidades pessoais e morais; o
-        <strong>EMPREGADO</strong> verificando se o ambiente e os métodos de trabalho atendem à sua conveniência.
+        @if(!$dados->FeedBack->Admissao->pExperiencia())
+            <strong>6ª (Duração)</strong> – O presente contrato vigorará por tempo inderterminado.
+            @else
+            <strong>6ª (Duração)</strong> – O presente contrato vigorará
+            por {{$dados->FeedBack->Admissao->pExperiencia()[0]}}
+            ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[0]) }}) dias, podendo este ser
+            prorrogado ou não por mais {{$dados->FeedBack->Admissao->pExperiencia()[1]}}
+            ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[1]) }}) dias sendo celebrado para as
+            partes verificarem reciprocamente,
+            a conveniência ou não de se vincularem em caráter definitivo a um Contrato de Trabalho. A empresa passando a
+            conhecer as aptidões do <strong>EMPREGADO</strong> e suas qualidades pessoais e morais; o
+            <strong>EMPREGADO</strong> verificando se o ambiente e os métodos de trabalho atendem à sua conveniência.
+        @endif
     </p><br>
     <p class="f12 text-justify">
         <strong>7ª (EPIs)</strong> – A <strong>EMPREGADORA</strong> concederá ao colaborador, uniformes e EPIs
@@ -206,7 +210,7 @@
     </p><br>
     <br><br>
     <div class="f12" style="line-height: 26pt">
-        São Luís, MA, {{ (new \MasterTag\DataHora($dados->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}.
+        São Luís/MA, {{ (new \MasterTag\DataHora($dados->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}.
         <br>
         <br>
         <br>
