@@ -236,7 +236,7 @@
             <hr style="  border:none; border-top: 1px solid #333">
         </div>
     </div>
-    @include('layouts.rodapePdf',['semassinatura' => false])
+    @include('layouts.rodapePdf')
 @endsection
 
 @push('style')

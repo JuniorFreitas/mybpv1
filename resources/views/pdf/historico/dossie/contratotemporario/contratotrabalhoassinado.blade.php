@@ -332,7 +332,7 @@
     </div>
 </div>
 <div style="clear: both"></div>
-
+@include('layouts.rodapePdf',['semassinatura' => false])
 
 </body>
 </html>
