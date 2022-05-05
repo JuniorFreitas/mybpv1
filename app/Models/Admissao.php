@@ -278,7 +278,7 @@ class Admissao extends Model
         'data_encerramento' => 'string',
     ];
 
-    const STATUS_ADMISSAO_AGUARDANDOQUALIFICAÇÃO = "AGUARDANDO QUALIFICAÇÃO";
+    const STATUS_ADMISSAO_AGUARDANDOQUALIFICACAO = "AGUARDANDO QUALIFICAÇÃO";
     const STATUS_ADMISSAO_PRONTOPARAADMISSAO = "PRONTO PARA ADMISSAO";
     const STATUS_ADMISSAO_ADMITIDO = "ADMITIDO";
     const STATUS_ADMISSAO_STANDBY = "STAND BY";
@@ -287,7 +287,7 @@ class Admissao extends Model
     const STATUS_ADMISSAO_PENDENTETREINAMENTO = "PENDENTE TREINAMENTO";
     const STATUS_ADMISSAO_CANCELADO = "CANCELADO";
     const STATUS_ADMISSAO_ENCAMINHADOEXAME = "ENCAMINHADO EXAME";
-    const STATUS_ADMISSAO_DESISTÊNCIA = "DESISTÊNCIA";
+    const STATUS_ADMISSAO_DESISTENCIA = "DESISTÊNCIA";
     const STATUS_CARTEIRA_TREINAMENTO_PENDENTE = "PENDENTE";
     const STATUS_CARTEIRA_TREINAMENTO_AGUARDANDOTREINAMENTO = "AGUARDANDO TREINAMENTO";
     const STATUS_CARTEIRA_TREINAMENTO_ENTREGUE = "ENTREGUE";
@@ -305,7 +305,7 @@ class Admissao extends Model
     ];
 
     const TODOS_STATUS_ADMISSAO = [
-        self::STATUS_ADMISSAO_AGUARDANDOQUALIFICAÇÃO,
+        self::STATUS_ADMISSAO_AGUARDANDOQUALIFICACAO,
         self::STATUS_ADMISSAO_PRONTOPARAADMISSAO,
         self::STATUS_ADMISSAO_ADMITIDO,
         self::STATUS_ADMISSAO_STANDBY,
@@ -314,7 +314,7 @@ class Admissao extends Model
         self::STATUS_ADMISSAO_PENDENTETREINAMENTO,
         self::STATUS_ADMISSAO_CANCELADO,
         self::STATUS_ADMISSAO_ENCAMINHADOEXAME,
-        self::STATUS_ADMISSAO_DESISTÊNCIA
+        self::STATUS_ADMISSAO_DESISTENCIA
     ];
 
     const TODOS_STATUS_CARTEIRA_TREINAMETO = [
@@ -322,6 +322,28 @@ class Admissao extends Model
         self::STATUS_CARTEIRA_TREINAMENTO_AGUARDANDOTREINAMENTO,
         self::STATUS_CARTEIRA_TREINAMENTO_ENTREGUE
     ];
+
+    const PRAZO_NENHUM = 'Nenhum';
+    const TRINTA_MAIS_TRINTA = '30+30';
+    const QUARENTAECINCO_MAIS_QUARENTAECINCO = '45+45';
+    const TRINTA_MAIS_SESSENTA = '30+60';
+    const SESSENTA_MAIS_TRINTA = '60+30';
+
+    public function pExperiencia()
+    {
+        switch ($this->attributes['prazo_experiencia']) {
+            case self::PRAZO_NENHUM:
+                return false;
+            case self::TRINTA_MAIS_TRINTA:
+                return [30, 30];
+            case self::QUARENTAECINCO_MAIS_QUARENTAECINCO:
+                return [45, 45];
+            case self::TRINTA_MAIS_SESSENTA:
+                return [30, 60];
+            case self::SESSENTA_MAIS_TRINTA:
+                return [60, 30];
+        }
+    }
 
     public function getCipaAttribute($value)
     {

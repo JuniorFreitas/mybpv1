@@ -82,6 +82,10 @@
             text-align: center;
         }
 
+        .text-justify {
+            text-align: justify;
+        }
+
         p {
             font-size: 9pt;
         }
