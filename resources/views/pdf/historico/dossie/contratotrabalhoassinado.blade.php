@@ -63,8 +63,12 @@
         possibilidade fica expressamente prevista em contrato.
     </p><br>
     <p class="f12 text-justify">
-        <strong>6ª (Duração)</strong> – O presente contrato vigorará por 45 (quarenta e cinco) dias, podendo este ser
-        prorrogado ou não por mais 45 (quarenta e cinco) dias sendo celebrado para as partes verificarem reciprocamente,
+        <strong>6ª (Duração)</strong> – O presente contrato vigorará
+        por {{$dados->FeedBack->Admissao->pExperiencia()[0]}}
+        ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[0]) }}) dias, podendo este ser
+        prorrogado ou não por mais {{$dados->FeedBack->Admissao->pExperiencia()[1]}}
+        ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[1]) }}) dias sendo celebrado para as
+        partes verificarem reciprocamente,
         a conveniência ou não de se vincularem em caráter definitivo a um Contrato de Trabalho. A empresa passando a
         conhecer as aptidões do <strong>EMPREGADO</strong> e suas qualidades pessoais e morais; o
         <strong>EMPREGADO</strong> verificando se o ambiente e os métodos de trabalho atendem à sua conveniência.

@@ -330,15 +330,15 @@ class Admissao extends Model
 
     public function pExperiencia()
     {
-        switch ($this->attribute['prazo_experiencia']) {
+        switch ($this->attributes['prazo_experiencia']) {
             case self::TRINTA_MAIS_TRINTA:
-                return [30, 'Trinta', 30, 'Trinta'];
+                return [30, 30];
             case self::QUARENTAECINCO_MAIS_QUARENTAECINCO:
-                return [45, 'Quarenta e cinco', 45, 'Quarenta e cinco'];
+                return [45, 45];
             case self::TRINTA_MAIS_SESSENTA:
-                return [30, 'Trinta', 60, 'Sessenta'];
+                return [30, 60];
             case self::SESSENTA_MAIS_TRINTA:
-                return [60, 'Sessenta', 30, 'Trinta'];
+                return [60, 30];
         }
     }
 
