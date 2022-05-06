@@ -9,10 +9,11 @@ import formAdmissao from "../../../components/admissao/processo/formAdmissao";
 import Select2 from "../../../components/Select2/Select2";
 import configselect2 from "../../../components/Select2/mixSelec2";
 import Utils from "../../../mixins/Utils";
+import Validacoes from "../../../mixins/Validacoes";
 
 const app = new Vue({
     el: "#app",
-    mixins: [configselect2, Utils],
+    mixins: [configselect2, Utils, Validacoes],
     components: {
         endereco,
         datepicker,
@@ -216,6 +217,7 @@ const app = new Vue({
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
                 data_admissao: "",
+                data_adm_prevista: "",
 
                 data_entrega_area: "",
                 biometria: "",
@@ -427,6 +429,7 @@ const app = new Vue({
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
                 data_admissao: "",
+                data_adm_prevista: "",
 
                 data_entrega_area: "",
                 biometria: "",

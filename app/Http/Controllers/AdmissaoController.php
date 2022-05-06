@@ -1187,6 +1187,19 @@ class AdmissaoController extends Controller
         return Sistema::pg($pg, $dados);
     }
 
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function listSelects()
+    {
+        return response()->json([
+            'tipos_admissao' => Admissao::TODOS_TIPOS_ADMISSAO,
+            'status_admissao' => Admissao::TODOS_STATUS_ADMISSAO,
+            'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
+            'todos_prazos' => Admissao::TODOS_PRAZOS,
+        ]);
+    }
+
 // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {

@@ -198,6 +198,7 @@ class Admissao extends Model
         'usuario_id',
         'editado_usuario_id',
         'data_admissao',
+        'data_adm_prevista',
         'data_desmobilizacao',
         'avaliacao',
         'obs_avaliacao',
@@ -252,6 +253,7 @@ class Admissao extends Model
         'usuario_id' => 'int',
         'editado_usuario_id' => 'int',
         'data_admissao' => 'string',
+        'data_adm_prevista' => 'string',
         'data_desmobilizacao' => 'string',
         'avaliacao' => 'string',
         'obs_avaliacao' => 'string',
@@ -329,6 +331,14 @@ class Admissao extends Model
     const TRINTA_MAIS_SESSENTA = '30+60';
     const SESSENTA_MAIS_TRINTA = '60+30';
 
+    const TODOS_PRAZOS = [
+        self::PRAZO_NENHUM,
+        self::TRINTA_MAIS_TRINTA,
+        self::QUARENTAECINCO_MAIS_QUARENTAECINCO,
+        self::TRINTA_MAIS_SESSENTA,
+        self::SESSENTA_MAIS_TRINTA,
+    ];
+
     public function pExperiencia()
     {
         switch ($this->attributes['prazo_experiencia']) {
@@ -365,14 +375,34 @@ class Admissao extends Model
         return is_null($value) ? "" : (boolean)$value;
     }
 
+    //Acessor ->data_adm_prevista
+    public function getDataAdmPrevistaAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['data_adm_prevista']);
+            return $data->dataCompleta();
+        }
+        return null;
+    }
+
+    //Acessor ->data_adm_prevista
+    public function setDataAdmPrevistaAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($value);
+            $this->attributes['data_adm_prevista'] = $data->dataInsert();
+        }else{
+            $this->attributes['data_adm_prevista'] = null;
+        }
+    }
+
     public function getDataEntregaAreaAttribute($value)
     {
         if (!is_null($value)) {
             $data = new DataHora($this->attributes['data_entrega_area']);
             return $data->dataCompleta();
-        } else {
-            return null;
         }
+        return null;
     }
 
     public function setDataEntregaAreaAttribute($value)
@@ -390,9 +420,8 @@ class Admissao extends Model
         if (!is_null($value)) {
             $data = new DataHora($this->attributes['data_encerramento']);
             return $data->dataCompleta();
-        } else {
-            return null;
         }
+        return null;
     }
 
     public function setDataEncerramentoAttribute($value)
@@ -420,6 +449,8 @@ class Admissao extends Model
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_biometria'] = $data->dataInsert();
+        }else{
+            $this->attributes['data_biometria'] = null;
         }
     }
 
@@ -438,6 +469,8 @@ class Admissao extends Model
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_desmobilizacao'] = $data->dataInsert();
+        }else{
+            $this->attributes['data_desmobilizacao'] = null;
         }
     }
 
@@ -456,8 +489,9 @@ class Admissao extends Model
         if (!is_null($value)) {
             $data = new DataHora($value);
             $this->attributes['data_desmob'] = $data->dataHoraInsert();
+        }else{
+            $this->attributes['data_desmob'] = null;
         }
-        return null;
     }
 
 
@@ -476,6 +510,8 @@ class Admissao extends Model
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_avaliacao'] = $data->dataHoraInsert();
+        }else{
+            $this->attributes['data_avaliacao'] = null;
         }
     }
 
@@ -511,6 +547,8 @@ class Admissao extends Model
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_admissao'] = $data->dataInsert();
+        }else{
+            $this->attributes['data_admissao'] = null;
         }
     }
 

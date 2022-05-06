@@ -121,11 +121,12 @@
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
                                         <label>Nascimento</label>
-                                        <input type="text" class="form-control"
+                                        <input type="text" class="form-control validacampo"
                                                v-model="formAvulsa.curriculo.nascimento"
                                                placeholder="Ex: 10/10/2010"
                                                v-mascara:data
-                                               autocomplete="mybp" onblur="valida_data_vazio(this)">
+                                               autocomplete="mybp" @keyup.prevent="valida_data($event.target)"
+                                               @blur.prevent="valida_data($event.target)">
                                     </div>
                                 </div>
 
@@ -224,9 +225,10 @@
                                             <div class="col-12 col-sm-6 col-md-4">
                                                 <div class="form-group">
                                                     <label>RG Data Emissão</label>
-                                                    <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                                    <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                                            v-model="formAvulsa.curriculo.rg_data_emissao" v-mascara:data
-                                                           onblur="valida_data(this)" :disabled="visualizar">
+                                                           @keyup.prevent="valida_data($event.target)"
+                                                           @blur.prevent="valida_data($event.target)" :disabled="visualizar">
                                                 </div>
                                             </div>
                                         </div>
@@ -285,17 +287,30 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-12 col-md-12" v-if="listaProjetos.length || formAvulsa.feedback.vaga_projeto_id">
+                                <div class="col-12 col-sm-12 col-md-6"
+                                     v-if="listaProjetos.length || formAvulsa.feedback.vaga_projeto_id">
                                     <div class="form-group">
                                         <label>Projeto</label>
                                         <select class="form-control"
-                                                v-model="formAvulsa.feedback.vaga_projeto_id" >
+                                                v-model="formAvulsa.feedback.vaga_projeto_id">
                                             <option value="" selected>Selecione</option>
-                                            <option v-for="item in listaProjetos" :value="item.id" :key="item.projeto_id"
+                                            <option v-for="item in listaProjetos" :value="item.id"
+                                                    :key="item.projeto_id"
                                                     :disabled="!item.tem_vaga">
-                                                @{{ item.projeto.nome }} - (@{{ item.qnt_preenchida }} de @{{ item.qnt_total }})
+                                                @{{ item.projeto.nome }} - (@{{ item.qnt_preenchida }} de @{{
+                                                item.qnt_total }})
                                             </option>
                                         </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <label for="">Data admissão prevista</label>
+                                        <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" v-mascara:data
+                                               @keyup.prevent="valida_data($event.target)"
+                                               @blur.prevent="valida_data($event.target)"
+                                               v-model="formAvulsa.admissao.data_adm_prevista">
                                     </div>
                                 </div>
 
@@ -618,12 +633,13 @@
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>Nascimento</label>
-                                <input type="text" class="form-control"
+                                <input type="text" class="form-control validacampo"
                                        :disabled="visualizar"
                                        v-model="form.curriculo.nascimento"
                                        placeholder="Ex: 10/10/2010"
                                        v-mascara:data
-                                       autocomplete="mybp" onblur="valida_data_vazio(this)">
+                                       autocomplete="mybp" @keyup.prevent="valida_data_vazio($event.target)"
+                                       @blur.prevent="valida_data_vazio($event.target)">
                             </div>
                         </div>
 
@@ -716,11 +732,13 @@
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>RG Data Emissão</label>
-                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form.curriculo.rg_data_emissao" v-mascara:data
-                                       onblur="valida_data(this)" :disabled="visualizar">
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)" :disabled="visualizar">
                             </div>
                         </div>
+
                     </div>
                 </fieldset>
 
@@ -856,7 +874,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-12 col-md-12" v-if="listaProjetos.length || form.vaga_projeto_id">
+                        <div class="col-12 col-sm-12 col-md-6" v-if="listaProjetos.length || form.vaga_projeto_id">
                             <div class="form-group">
                                 <label>Projeto</label>
                                 <select class="form-control"
@@ -867,6 +885,16 @@
                                         @{{ item.projeto.nome }} - (@{{ item.qnt_preenchida }} de @{{ item.qnt_total }})
                                     </option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label for="">Data admissão prevista</label>
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" v-mascara:data
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)"
+                                       v-model="form.admissao.data_adm_prevista">
                             </div>
                         </div>
 
@@ -1083,9 +1111,10 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Data do ASO</label>
-                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.data_aso" v-mascara:data
-                                       onblur="valida_data(this)">
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)">
                             </div>
                         </div>
 
@@ -1128,18 +1157,20 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Data da Admissão</label>
-                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.data_admissao" v-mascara:data
-                                       onblur="valida_data(this)">
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)">
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Data da Entrega na área</label>
-                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.data_entrega_area" v-mascara:data
-                                       onblur="valida_data(this)">
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)">
                             </div>
                         </div>
 
