@@ -108,34 +108,7 @@
                                                autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
                                     </div>
                                 </div>
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Nascimento</label>
-                                        <input type="text" class="form-control"
-                                               v-model="formAvulsa.curriculo.nascimento"
-                                               placeholder="Ex: 10/10/2010"
-                                               v-mascara:data
-                                               autocomplete="mybp" onblur="valida_data_vazio(this)">
-                                    </div>
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Pai</label>
-                                        <input type="text" class="form-control"
-                                               v-model="formAvulsa.curriculo.filiacao_pai"
-                                               placeholder="Nome do Pai"
-                                               autocomplete="mybp">
-                                    </div>
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Mãe</label>
-                                        <input type="text" class="form-control"
-                                               v-model="formAvulsa.curriculo.filiacao_mae"
-                                               placeholder="Nome da Mãe"
-                                               autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
-                                    </div>
-                                </div>
+
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
                                         <label>E-mail</label>
@@ -144,6 +117,27 @@
                                                autocomplete="mybp" onblur="validaEmail(this)">
                                     </div>
                                 </div>
+
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label>Nascimento</label>
+                                        <input type="text" class="form-control validacampo"
+                                               v-model="formAvulsa.curriculo.nascimento"
+                                               placeholder="Ex: 10/10/2010"
+                                               v-mascara:data
+                                               autocomplete="mybp" @keyup.prevent="valida_data($event.target)"
+                                               @blur.prevent="valida_data($event.target)">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label>Naturalidade</label>
+                                        <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                                               v-model="formAvulsa.curriculo.naturalidade" :disabled="visualizar">
+                                    </div>
+                                </div>
+
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
                                         <label>Cota PCD (Lei nº 8.213/91)</label>
@@ -163,34 +157,23 @@
                                                placeholder="Informe o CID" v-model="formAvulsa.curriculo.cid">
                                     </div>
                                 </div>
-                                <div class="col-12 col-sm-6 col-lg-2">
-                                    <div class="form-group">
-                                        <label>CNH</label>
-                                        <input type="text" class="form-control" onblur="valida_campo(this,1)"
-                                               v-model="formAvulsa.curriculo.cnh" :disabled="visualizar">
-                                    </div>
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>RG</label>
-                                        <input type="text" class="form-control" onblur="valida_campo(this,2)"
-                                               v-model="formAvulsa.curriculo.rg" :disabled="visualizar">
-                                    </div>
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>RG Data Emissão</label>
-                                        <input type="text" class="form-control" placeholder="dd/mm/aaaa"
-                                               v-model="formAvulsa.curriculo.rg_data_emissao" v-mascara:data
-                                               onblur="valida_data(this)" :disabled="visualizar">
-                                    </div>
-                                </div>
 
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
-                                        <label>Naturalidade</label>
-                                        <input type="text" class="form-control" onblur="valida_campo(this,2)"
-                                               v-model="formAvulsa.curriculo.naturalidade" :disabled="visualizar">
+                                        <label>Pai</label>
+                                        <input type="text" class="form-control"
+                                               v-model="formAvulsa.curriculo.filiacao_pai"
+                                               placeholder="Nome do Pai"
+                                               autocomplete="mybp">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label>Mãe</label>
+                                        <input type="text" class="form-control"
+                                               v-model="formAvulsa.curriculo.filiacao_mae"
+                                               placeholder="Nome da Mãe"
+                                               autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
                                     </div>
                                 </div>
 
@@ -204,6 +187,7 @@
                                         </div>
                                     </fieldset>
                                 </div>
+
                                 <div class="col-12">
                                     <fieldset>
                                         <legend>Contato</legend>
@@ -217,6 +201,40 @@
                                         </div>
                                     </fieldset>
                                 </div>
+
+                                <div class="col-12">
+                                    <fieldset>
+                                        <legend>DOCUMENTOS</legend>
+                                        <div class="row">
+                                            <div class="col-12 col-sm-6 col-lg-2">
+                                                <div class="form-group">
+                                                    <label>CNH</label>
+                                                    <input type="text" class="form-control"
+                                                           onblur="valida_campo(this,1)"
+                                                           v-model="formAvulsa.curriculo.cnh" :disabled="visualizar">
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6 col-md-4">
+                                                <div class="form-group">
+                                                    <label>RG</label>
+                                                    <input type="text" class="form-control"
+                                                           onblur="valida_campo(this,2)"
+                                                           v-model="formAvulsa.curriculo.rg" :disabled="visualizar">
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6 col-md-4">
+                                                <div class="form-group">
+                                                    <label>RG Data Emissão</label>
+                                                    <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                                                           v-model="formAvulsa.curriculo.rg_data_emissao" v-mascara:data
+                                                           @keyup.prevent="valida_data($event.target)"
+                                                           @blur.prevent="valida_data($event.target)" :disabled="visualizar">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+
                                 <div class="col-12">
                                     <fieldset>
                                         <legend>Formação</legend>
@@ -252,16 +270,16 @@
 
                     <template v-if="exibiFormulario">
                         <fieldset>
-                            <legend>Informações</legend>
+                            <legend>SOBRE A VAGA</legend>
                             <div class="row">
 
                                 <div class="col-12 col-sm-12 col-md-12">
                                     <div class="form-group">
-                                        <label>Cargo</label>
+                                        <label>Vaga</label>
                                         <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                                       :valido="formAvulsa.feedback.vaga_id !== ''"
                                                       v-model="formAvulsa.feedback.autocomplete_label_vaga_modal"
-                                                      placeholder="Digite um cargo"
+                                                      placeholder="Digite uma vaga"
                                                       :formsm="false"
                                                       :id="`vaga_${hash}`"
                                                       @onblur="resetaCampoVagaModal"
@@ -269,19 +287,32 @@
                                     </div>
                                 </div>
 
-                                {{--                                <div class="col-12 col-sm-6 col-md-4">--}}
-                                {{--                                    <div class="form-group">--}}
-                                {{--                                        <label for="Cidade">Cidade</label>--}}
-                                {{--                                        <autocomplete :caminho="todos_municipios"--}}
-                                {{--                                                      :valido="formAvulsa.curriculo.municipio_id !== ''"--}}
-                                {{--                                                      v-model="formAvulsa.curriculo.autocomplete_label_municipio_modal"--}}
-                                {{--                                                      placeholder="Selecione um municipio"--}}
-                                {{--                                                      :formsm="false"--}}
-                                {{--                                                      :id="`mun_${hash}`"--}}
-                                {{--                                                      @onblur="resetaCampoMunicipioModal"--}}
-                                {{--                                                      @onselect="selecionaMunicipioModal"></autocomplete>--}}
-                                {{--                                    </div>--}}
-                                {{--                                </div>--}}
+                                <div class="col-12 col-sm-12 col-md-6"
+                                     v-if="listaProjetos.length || formAvulsa.feedback.vaga_projeto_id">
+                                    <div class="form-group">
+                                        <label>Projeto</label>
+                                        <select class="form-control"
+                                                v-model="formAvulsa.feedback.vaga_projeto_id">
+                                            <option value="" selected>Selecione</option>
+                                            <option v-for="item in listaProjetos" :value="item.id"
+                                                    :key="item.projeto_id"
+                                                    :disabled="!item.tem_vaga">
+                                                @{{ item.projeto.nome }} - (@{{ item.qnt_preenchida }} de @{{
+                                                item.qnt_total }})
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <div class="form-group">
+                                        <label for="">Data admissão prevista</label>
+                                        <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" v-mascara:data
+                                               @keyup.prevent="valida_data($event.target)"
+                                               @blur.prevent="valida_data($event.target)"
+                                               v-model="formAvulsa.admissao.data_adm_prevista">
+                                    </div>
+                                </div>
 
                                 <div class="col-12 col-sm-6 col-md-3">
                                     <div class="form-group">
@@ -479,7 +510,7 @@
 
                                             <div class="col-12 col-sm-6 col-md-4">
                                                 <div class="form-group">
-                                                    <label>Experiencia com cargas rigger</label>
+                                                    <label>Experiência com cargas rigger</label>
                                                     <select class="form-control"
                                                             v-model="formAvulsa.parecer_tecnica.experiencia_cargas_rigger">
                                                         <option :value="null">NÃO INFORMADO</option>
@@ -579,7 +610,7 @@
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
 
                 <fieldset>
-                    <legend class="text-uppercase">INFORMAÇÕES</legend>
+                    <legend>DADOS PESSOAIS</legend>
                     <div class="row">
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
@@ -589,15 +620,35 @@
                             </div>
                         </div>
 
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>E-mail</label>
+                                <input type="text" class="form-control"
+                                       :disabled="visualizar"
+                                       onblur="validaEmailVazio(this)"
+                                       v-model="form.curriculo.email">
+                            </div>
+                        </div>
+
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>Nascimento</label>
-                                <input type="text" class="form-control"
-                                       :disabled="!editando"
+                                <input type="text" class="form-control validacampo"
+                                       :disabled="visualizar"
                                        v-model="form.curriculo.nascimento"
                                        placeholder="Ex: 10/10/2010"
                                        v-mascara:data
-                                       autocomplete="mybp" onblur="valida_data_vazio(this)">
+                                       autocomplete="mybp" @keyup.prevent="valida_data_vazio($event.target)"
+                                       @blur.prevent="valida_data_vazio($event.target)">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>Naturalidade</label>
+                                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                                       :disabled="visualizar"
+                                       v-model="form.curriculo.naturalidade" :disabled="visualizar">
                             </div>
                         </div>
 
@@ -606,7 +657,7 @@
                                 <label>Cota PCD (Lei nº 8.213/91)</label>
                                 <select class="form-control" onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)"
-                                        :disabled="!editando"
+                                        :disabled="visualizar"
                                         v-model="form.curriculo.pcd">
                                     <option value="">Selecione</option>
                                     <option :value='true'>Sim</option>
@@ -615,11 +666,59 @@
                             </div>
                         </div>
 
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Pai</label>
+                                <input type="text" class="form-control"
+                                       v-model="form.curriculo.filiacao_pai" :disabled="visualizar"
+                                       placeholder="Nome do Pai"
+                                       autocomplete="mybp">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Mãe</label>
+                                <input type="text" class="form-control"
+                                       v-model="form.curriculo.filiacao_mae" :disabled="visualizar"
+                                       placeholder="Nome da Mãe"
+                                       autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Endereço</legend>
+                    <div class="row">
+                        <div class="col-12">
+                            <endereco :obrigatorio="false" :disabled="visualizar"
+                                      :model="form.curriculo"></endereco>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>CONTATO</legend>
+                    <div class="row">
+                        <div class="col-12">
+                            <telefone :model="form.curriculo.telefones" :pais="false"
+                                      :model-delete="form.curriculo.telefonesDelete"
+                                      :qnt_min="1"
+                                      :disabled="visualizar"
+                                      :ramal="false"></telefone>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>DOCUMENTOS</legend>
+                    <div class="row">
                         <div class="col-12 col-sm-6 col-lg-2">
                             <div class="form-group">
                                 <label>CNH</label>
                                 <input type="text" class="form-control"
-                                       :disabled="!editando"
+                                       :disabled="visualizar"
                                        :value="form.parecer_rh.cnh ? form.parecer_rh.cnh_tipo : 'Não possui'">
                             </div>
                         </div>
@@ -633,20 +732,19 @@
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>RG Data Emissão</label>
-                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form.curriculo.rg_data_emissao" v-mascara:data
-                                       onblur="valida_data(this)" :disabled="visualizar">
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)" :disabled="visualizar">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Naturalidade</label>
-                                <input type="text" class="form-control" onblur="valida_campo(this,2)"
-                                       v-model="form.curriculo.naturalidade" :disabled="visualizar">
-                            </div>
-                        </div>
+                    </div>
+                </fieldset>
 
+                <fieldset>
+                    <legend>EPI</legend>
+                    <div class="row">
                         <div class="col-12 col-sm-3">
                             <div class="form-group">
                                 <label>Calça</label>
@@ -707,37 +805,68 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+                </fieldset>
 
 
-                        <div class="col-12 col-sm-6">
+                <fieldset>
+                    <legend>Técnica</legend>
+                    <div class="row">
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>Pai</label>
-                                <input type="text" class="form-control"
-                                       v-model="form.curriculo.filiacao_pai" :disabled="visualizar"
-                                       placeholder="Nome do Pai"
-                                       autocomplete="mybp">
+                                <label>Experiência com cargas rigger</label>
+                                <select class="form-control" :disabled="visualizar"
+                                        v-model="form.parecer_tecnica.experiencia_cargas_rigger">
+                                    <option :value="null">NÃO INFORMADO</option>
+                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
+
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>Mãe</label>
-                                <input type="text" class="form-control"
-                                       v-model="form.curriculo.filiacao_mae" :disabled="visualizar"
-                                       placeholder="Nome da Mãe"
-                                       autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
+                                <label>Opera plataforma móvel</label>
+                                <select class="form-control" :disabled="visualizar"
+                                        v-model="form.parecer_tecnica.opera_plat_movel">
+                                    <option :value="null">NÃO INFORMADO</option>
+                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
                             </div>
                         </div>
 
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>Opera ponte rolante</label>
+                                <select class="form-control" :disabled="visualizar"
+                                        v-model="form.parecer_tecnica.opera_plat_ponte">
+                                    <option :value="null">NÃO INFORMADO</option>
+                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
+                                    <option value="true">Sim</option>
+                                    <option value="false">Não</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>SOBRE A VAGA</legend>
+                    <div class="row">
                         <div class="col-12 col-sm-12 col-md-12">
                             <div class="form-group">
-                                <label>Cargo</label>
+                                <label>Vaga</label>
                                 <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                               :valido="form.vagas_abertas_id !== ''"
                                               v-model="form.autocomplete_label_vaga_modal"
-                                              placeholder="Digite um cargo"
-                                              :disabled="!editando"
-                                              :readonly="!editando"
+                                              placeholder="Digite uma vaga"
+                                              :disabled="visualizar"
+                                              :readonly="visualizar"
                                               :formsm="false"
                                               :id="`vaga_${hash}`"
                                               @onblur="resetaCampoVagaModalEditar"
@@ -745,166 +874,135 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-12 col-md-6" v-if="listaProjetos.length || form.vaga_projeto_id">
+                            <div class="form-group">
+                                <label>Projeto</label>
+                                <select class="form-control"
+                                        v-model="form.vaga_projeto_id" :disabled="visualizar">
+                                    <option value="" selected>Selecione</option>
+                                    <option v-for="item in listaProjetos" :value="item.id" :key="item.projeto_id"
+                                            :disabled="!item.tem_vaga">
+                                        @{{ item.projeto.nome }} - (@{{ item.qnt_preenchida }} de @{{ item.qnt_total }})
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label for="">Data admissão prevista</label>
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" v-mascara:data
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)"
+                                       v-model="form.admissao.data_adm_prevista">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-3">
                             <div class="form-group">
                                 <label>Ex funcionário</label>
-                                <input type="text" class="form-control" :disabled="!editando"
-                                       :value="form.parecer_rh.ex_funcionario ? 'Sim' : 'Não'">
+                                <select class="form-control"
+                                        v-model="form.parecer_rh.ex_funcionario" :disabled="visualizar">
+                                    <option value="">Selecione</option>
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-sm-6 col-md-3">
                             <div class="form-group">
-                                <label>Contato</label>
+                                <label>Turno 6x2</label>
+                                <select class="form-control"
+                                        v-model="form.parecer_rh.turnos_seis_por_dois" :disabled="visualizar">
+                                    <option value="">Selecione</option>
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <div class="form-group">
+                                <label>Indicado</label>
+                                <select class="form-control" :disabled="visualizar"
+                                        v-model="form.parecer_rh.indicacao">
+                                    <option value="">Selecione</option>
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-3" v-show="form.parecer_rh.indicacao">
+                            <div class="form-group">
+                                <label>Quem indicou</label>
                                 <input type="text" class="form-control"
-                                       :disabled="!editando"
-                                       :value="form.tel_principal ? form.tel_principal.numero: 'não informado'">
+                                       v-model="form.parecer_rh.indicado_por" :disabled="visualizar"
+                                       placeholder="Nome"
+                                       autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>E-mail</label>
-                                <input type="text" class="form-control"
-                                       :disabled="visualizar"
-                                       onblur="validaEmailVazio(this)"
-                                       v-model="form.curriculo.email">
-                            </div>
-                        </div>
+                        <div class="col-12"></div>
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Disponibilidade para turnos 6X2</label>
-                                <input type="text" class="form-control" :disabled="!editando"
-                                       :value="form.parecer_rh.turnos_seis_por_dois ? 'Sim': 'Não'">
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Indicado por quem</label>
-                                <input type="text" class="form-control" :disabled="visualizar"
-                                       v-model="form.indicado_por">
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Indicado para qual área</label>
-                                <input type="text" class="form-control" :disabled="visualizar"
-                                       v-model="form.indicado_area">
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <fieldset>
-                                <legend>Endereço</legend>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <endereco :obrigatorio="false" :disabled="visualizar"
-                                                  :model="form.curriculo"></endereco>
+                        <fieldset v-if="form.parecer_rota">
+                            <legend>Rota</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Bairro Rota</label>
+                                        <input type="text" class="form-control" :disabled="visualizar"
+                                               :value="form.parecer_rota.bairro_rota">
                                     </div>
                                 </div>
-                            </fieldset>
-                        </div>
 
-
-                        <div class="col-12">
-                            <fieldset>
-                                <legend>RESULTADO INTEGRADO</legend>
-                                <form-resultado-integrado
-                                    :form="form.resultado_integrado" :disabled="!editando"
-                                    :visualizar="visualizar"></form-resultado-integrado>
-                            </fieldset>
-                        </div>
-
-                        <template v-if="form.parecer_rota">
-                            <div class="col-12 col-sm-6">
-                                <div class="form-group">
-                                    <label>Bairro Rota</label>
-                                    <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.parecer_rota.bairro_rota">
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-sm-6">
-                                <div class="form-group">
-                                    <label>Ponto Referência Rota</label>
-                                    <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.parecer_rota.ponto_referencia_rota">
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-sm-6">
-                                <div class="form-group">
-                                    <label>Ponto Referência Bairro</label>
-                                    <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.parecer_rota.ponto_referencia_residencia">
-                                </div>
-                            </div>
-                        </template>
-
-
-                        <template v-if="form.parecer_teste">
-                            <div class="col-12 col-sm-6">
-                                <div class="form-group">
-                                    <label>Teste aplicado</label>
-                                    <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.parecer_teste.qual_teste">
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-sm-6">
-                                <div class="form-group">
-                                    <label>Resultado Teste Prático</label>
-                                    <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.parecer_teste.parecer_final_teste">
-                                </div>
-                            </div>
-                        </template>
-
-                        <template v-if="form.parecer_tecnica">
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <div class="form-group">
-                                    <label>Rigger</label>
-                                    <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.indicado_areaexperiencia_cargas_rigger">
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <div class="form-group">
-                                    <label>Plataforma Movél</label>
-                                    <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.parecer_tecnica.opera_plat_movel">
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-sm-6">
-                                <div class="form-group">
-                                    <label>Ponte Rolante</label>
-                                    <input type="text" class="form-control" :disabled="!editando"
-                                           :value="form.parecer_tecnica.opera_plat_ponte">
-                                </div>
-                            </div>
-
-                        </template>
-
-                        <div class="col-12">
-                            <fieldset>
-                                <legend>Contato</legend>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <telefone :model="form.curriculo.telefones" :pais="false"
-                                                  :model-delete="form.curriculo.telefonesDelete"
-                                                  :qnt_min="1"
-                                                  :disabled="!editando"
-                                                  :ramal="false"></telefone>
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Ponto Referência Rota</label>
+                                        <input type="text" class="form-control" :disabled="visualizar"
+                                               :value="form.parecer_rota.ponto_referencia_rota">
                                     </div>
                                 </div>
-                            </fieldset>
-                        </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Ponto Referência Bairro</label>
+                                        <input type="text" class="form-control" :disabled="visualizar"
+                                               :value="form.parecer_rota.ponto_referencia_residencia">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset v-if="form.parecer_teste">
+                            <legend>Testes</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Teste aplicado</label>
+                                        <input type="text" class="form-control" :disabled="visualizar"
+                                               :value="form.parecer_teste.qual_teste">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <div class="form-group">
+                                        <label>Resultado Teste Prático</label>
+                                        <input type="text" class="form-control" :disabled="visualizar"
+                                               :value="form.parecer_teste.parecer_final_teste">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>RESULTADO INTEGRADO</legend>
+                    <form-resultado-integrado
+                        :form="form.resultado_integrado" :disabled="visualizar"
+                        :visualizar="visualizar"></form-resultado-integrado>
                 </fieldset>
 
 
@@ -926,12 +1024,12 @@
                                     url="{{ route('g.admissao.admissao.upload-anexos') }}"
                                     :apenas-imagens='true'
                                     :quantidade='1'
+                                    :disabled="visualizar"
                                     label='Selecionar Imagem'
                                     @onProgresso='anexoUploadAndamento=true'
                                     @onFinalizado='anexoUploadAndamento=false'></upload>
                         </fieldset>
                     </div>
-                </fieldset>
             </div>
         </template>
         <template slot="rodape">
@@ -1013,9 +1111,10 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Data do ASO</label>
-                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.data_aso" v-mascara:data
-                                       onblur="valida_data(this)">
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)">
                             </div>
                         </div>
 
@@ -1058,18 +1157,20 @@
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Data da Admissão</label>
-                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.data_admissao" v-mascara:data
-                                       onblur="valida_data(this)">
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)">
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
                                 <label>Data da Entrega na área</label>
-                                <input type="text" class="form-control" placeholder="dd/mm/aaaa"
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.data_entrega_area" v-mascara:data
-                                       onblur="valida_data(this)">
+                                       @keyup.prevent="valida_data($event.target)"
+                                       @blur.prevent="valida_data($event.target)">
                             </div>
                         </div>
 
@@ -1158,14 +1259,16 @@
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <div class="form-group">
                     <label>Estado</label>
-                    <select2 :settings="settings2" :options="ufs" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoUf"></select2>
+                    <select2 :settings="settings2" :options="ufs" @change="atualizar" :disabled="controle.carregando"
+                             v-model="controle.dados.campoUf"></select2>
                 </div>
             </div>
 
             <div class="col-12 col-sm-4 col-md-3">
                 <div class="form-group">
                     <label for="">Status admissão</label>
-                    <select2 :settings="settings2" :options="listaStatusAdmissao" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoStatusAdmissao"></select2>
+                    <select2 :settings="settings2" :options="listaStatusAdmissao" @change="atualizar"
+                             :disabled="controle.carregando" v-model="controle.dados.campoStatusAdmissao"></select2>
                 </div>
             </div>
 

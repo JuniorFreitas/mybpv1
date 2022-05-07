@@ -65,6 +65,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Treinamento|null $Treinamento
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoTres
  * @property-read int|null $foto_tres_count
+ * @property int|null $pcmso_id
+ * @property int|null $empresa_exame_id
+ * @property-read \App\Models\Pcmso|null $Pcmso
+ * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereEmpresaExameId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado wherePcmsoId($value)
  */
 class ResultadoIntegrado extends Model
 {

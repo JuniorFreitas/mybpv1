@@ -180,6 +180,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereUpdatedAt($value)
  * @mixin \Eloquent
  * @property-read mixed $data_entrevista
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CertificadoNr[] $Nr
  */
 class ParecerRh extends Model
 {

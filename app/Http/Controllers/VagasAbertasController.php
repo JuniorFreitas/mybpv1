@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Projeto;
 use App\Models\Simulado;
+use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
@@ -14,7 +16,7 @@ class VagasAbertasController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
     public function index()
     {
@@ -43,6 +45,7 @@ class VagasAbertasController extends Controller
         $this->authorize('vagas_abertas_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados['ativo_sistema'] = $dados['ativo_sistema'] == 'true' ? true : false;
 
         $dadosValidados = \Validator::make($dados, [
             'vaga_id' => 'required',
@@ -82,6 +85,32 @@ class VagasAbertasController extends Controller
                         }
                     }
                 }
+
+                if (isset($dados['projetos'])) {
+                    foreach ($dados['projetos'] as $projetos) {
+                        if (isset($projetos['novo'])) {
+                            $projetos['vaga_aberta_id'] = $vagas_aberta->id;
+                            $projetos['qnt_preenchida'] = 0;
+                            $qnt_total = intval($projetos['qnt_total']);
+                            VagaProjeto::create($projetos);
+                            $Projeto = Projeto::find($projetos['projeto_id']);
+                            if ($qnt_total <= $Projeto->qnt_total_restante) {
+                                $projetoTotalRestante = $Projeto->qnt_total_restante - intval($projetos['qnt_total']);
+                                $projetoPreenchida = $Projeto->preenchidas;
+                                $vagaProjetosSoma = VagaProjeto::whereProjetoId($projetos['projeto_id'])->sum('qnt_total');
+                                if ($projetoPreenchida <= $vagaProjetosSoma) {
+                                    $Projeto->update([
+                                        'qnt_total_restante' => intval($projetoTotalRestante),
+                                        'preenchidas' => 0,
+                                    ]);
+                                }
+                            } else {
+                                return response()->json(['msg' => 'Erro, entre em contato com o desenvolvedor.'], 400);
+                            }
+                        }
+                    }
+                }
+
                 DB::commit();
                 return response()->json([], 201);
 
@@ -113,7 +142,7 @@ class VagasAbertasController extends Controller
      */
     public function edit(VagasAbertas $vagas_aberta)
     {
-        $vagas_aberta->load('Municipio', 'Vaga', 'Simulados');
+        $vagas_aberta->load('Municipio', 'Vaga', 'Simulados', 'Projetos');
 
         $vagas_aberta->Simulados->transform(function ($item) {
             $item->tipo_prova = $item->simulado->tipo_prova;
@@ -136,6 +165,7 @@ class VagasAbertasController extends Controller
         $this->authorize('vagas_abertas_update');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados['ativo_sistema'] = $dados['ativo_sistema'] == 'true' ? true : false;
 
         $dadosValidados = \Validator::make($dados, [
             'vaga_id' => 'required',
@@ -178,6 +208,57 @@ class VagasAbertasController extends Controller
                         }
                     }
                 }
+
+                if (isset($dados['projetosDelete'])) {
+                    foreach ($dados['projetosDelete'] as $id) {
+                        $vagaProjetos = VagaProjeto::whereId($id)->whereVagaAbertaId($vagas_aberta->id)->first();
+                        $projetoDel = Projeto::find($vagaProjetos->projeto_id);
+                        $projetoDel->update([
+                            'qnt_total_restante' => $projetoDel->qnt_total_restante + $vagaProjetos->qnt_total
+                        ]);
+                        $vagaProjetos->delete();
+                    }
+                }
+
+                if (isset($dados['projetos'])) {
+                    foreach ($dados['projetos'] as $projetos) {
+                        $qnt_total = intval($projetos['qnt_total']);
+                        $Projeto = Projeto::find($projetos['projeto_id']);
+                        if (isset($projetos['novo'])) {
+                            $projetos['vaga_aberta_id'] = $vagas_aberta->id;
+                            $projetos['qnt_preenchida'] = 0;
+                            VagaProjeto::create($projetos);
+                            if ($qnt_total <= $Projeto->qnt_total_restante) {
+                                $Projeto->update([
+                                    'qnt_total_restante' => intval($Projeto->qnt_total_restante - $qnt_total),
+                                ]);
+                            } else {
+                                return response()->json(['msg' => 'Erro, entre em contato com o desenvolvedor.'], 400);
+                            }
+                        } else {
+//                            $vagaProjetos = VagaProjeto::whereProjetoId($projetos['projeto_id'])->whereVagaAbertaId($projetos['vaga_aberta_id'])->first();
+//                            $vagaProjetosSoma = (int) $vagaProjetos->sum('qnt_total');
+//                            $qnt = $qnt_total - $Projeto->qnt_total_restante;
+//                            $restante = $Projeto->qnt_total_restante - $qnt;
+//                            if ($restante > 0) {
+//                                $valor = $qnt_total - $Projeto->qnt_total_restante;
+//                                $projetoTotalRestante = $valor + $Projeto->qnt_total_restante;
+//                                $projetoPreenchida = $valor - $Projeto->preenchidas;
+//                                if ($projetoPreenchida <= $vagaProjetosSoma) {
+//                                    $Projeto->update([
+//                                        'qnt_total_restante' => $projetoTotalRestante,
+//                                    ]);
+//                                    $vagaProjetos->update(['qnt_total' => $qnt_total]);
+//                                } else {
+//                                    return response()->json(['msg' => 'Erro, quantidade de vagas indisponível para o projeto.'], 400);
+//                                }
+//                            } else {
+//                                return response()->json(['msg' => 'Erro, quantidade de vagas indisponível para o projeto.'], 400);
+//                            }
+                        }
+                    }
+                }
+
                 DB::commit();
                 return response()->json([], 201);
 
@@ -217,12 +298,17 @@ class VagasAbertasController extends Controller
 
         $resultado = $resultado->orderByDesc('updated_at')->paginate(50);
         $simulados = Simulado::whereAtivo(true)->orderBy('titulo')->get();
+        $projetos = Projeto::where('qnt_total_restante', '>=', 0)->get();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items(), 'simulados' => $simulados]
+            'dados' => [
+                'itens' => $resultado->items(),
+                'simulados' => $simulados,
+                'projetos' => $projetos,
+            ]
         ]);
     }
 
@@ -235,14 +321,14 @@ class VagasAbertasController extends Controller
         return response()->json(['ativo' => $vagas_aberta->ativo], 201);
     }
 
-    public function vagaAbertaSimulado($simulado,$vaga_aberta)
+    public function vagaAbertaSimulado($simulado, $vaga_aberta)
     {
 
         $vaga = VagasAbertas::find($vaga_aberta)->load('Vaga');
 
         $prova = Simulado::find($simulado)->load('Perguntas');
 
-        $pdf = \PDF::loadView('pdf.cadastro.prova.provasubjetiva', compact('prova','vaga'));
+        $pdf = \PDF::loadView('pdf.cadastro.prova.provasubjetiva', compact('prova', 'vaga'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("prova.pdf");
     }

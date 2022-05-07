@@ -1,13 +1,11 @@
 <template>
-    <div class="row">
+    <div class="row" v-if="!preload">
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Área</label>
                 <select class="form-control" v-model="form.area_etiqueta_id"
-                        onchange="valida_campo_vazio(this,1)"
-                        onblur="valida_campo_vazio(this,1)"
                         :disabled="visualizar || disabled">
-                    <option :value="''">Selecione</option>
+                    <option value="">Selecione</option>
                     <option :value="item.id"
                             v-for="item in areasetiquetas">
                         {{ item.label }}
@@ -76,10 +74,7 @@
                         onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
                         v-model="form.tipo_admissao">
                     <option value="">Selecione</option>
-                    <option value="TEMPORARIO">TEMPORARIO</option>
-                    <option value="INTERMITENTE">INTERMITENTE</option>
-                    <option value="DETERMINADO">DETERMINADO</option>
-                    <option value="FIXO">FIXO</option>
+                    <option v-for="item in listSelects.tipos_admissao" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -90,19 +85,17 @@
                 <select class="form-control" onchange="valida_campo_vazio(this,1)"
                         onblur="valida_campo_vazio(this,1)" :disabled="visualizar || disabled"
                         v-model="form.prazo_experiencia">
-                    <option :value="''">Selecione</option>
-                    <option value="Nenhum">Nenhum</option>
-                    <option value="30+30">30+30</option>
-                    <option value="45+45">45+45</option>
-                    <option value="30+60">30+60</option>
-                    <option value="60+30">60+30</option>
+                    <option value="">Selecione</option>
+                    <option v-for="item in listSelects.todos_prazos" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6" v-if="form.tipo_admissao === 'TEMPORARIO' || form.tipo_admissao === 'DETERMINADO' || form.tipo_admissao === 'INTERMITENTE'">
+        <div class="col-12 col-sm-6"
+             v-if="form.tipo_admissao === 'TEMPORARIO' || form.tipo_admissao === 'DETERMINADO' || form.tipo_admissao === 'INTERMITENTE'">
             <div class="form-group">
-                <datepicker label="Data de encerramento" v-model="form.data_encerramento" :disabled="visualizar || disabled"></datepicker>
+                <datepicker label="Data de encerramento" v-model="form.data_encerramento"
+                            :disabled="visualizar || disabled"></datepicker>
             </div>
         </div>
 
@@ -174,10 +167,10 @@
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Data do ASO</label>
-                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
                        v-model="form.data_aso" v-mascara:data
-                       onblur="valida_data(this)"
-                       @blur="validaData">
+                       @keyup.prevent="valida_data($event.target)"
+                       @blur.prevent="valida_data($event.target)">
             </div>
         </div>
 
@@ -188,9 +181,7 @@
                         onblur="valida_campo(this,1)"
                         v-model="form.status_carteira_treinamento">
                     <option value="">Selecione</option>
-                    <option value="PENDENTE">PENDENTE</option>
-                    <option value="AGUARDANDO TREINAMENTO">AGUARDANDO TREINAMENTO</option>
-                    <option value="ENTREGUE">ENTREGUE</option>
+                    <option v-for="item in listSelects.status_carteira_treinamento" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -203,16 +194,7 @@
                         onblur="valida_campo_vazio(this,1)"
                         v-model="form.status">
                     <option value="">Selecione</option>
-                    <option value="AGUARDANDO QUALIFICAÇÃO">AGUARDANDO QUALIFICAÇÃO</option>
-                    <option value="PRONTO PARA ADMISSAO">PRONTO PARA ADMISSAO</option>
-                    <option value="ADMITIDO">ADMITIDO</option>
-                    <option value="STAND BY">STAND BY</option>
-                    <option value="PENDENTE ASO">PENDENTE ASO</option>
-                    <option value="PENDENTE DOCUMENTO">PENDENTE DOCUMENTO</option>
-                    <option value="PENDENTE TREINAMENTO">PENDENTE TREINAMENTO</option>
-                    <option value="CANCELADO">CANCELADO</option>
-                    <option value="ENCAMINHADO EXAME">ENCAMINHADO EXAME</option>
-                    <option value="DESISTÊNCIA">DESISTÊNCIA</option>
+                    <option v-for="item in listSelects.status_admissao" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -220,19 +202,20 @@
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Data da Admissão</label>
-                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
                        v-model="form.data_admissao" v-mascara:data
-                       onblur="valida_data(this)"
-                       @blur="validaDataAdmissao">
+                       @keyup.prevent="valida_data($event.target)"
+                       @blur.prevent="valida_data($event.target)">
             </div>
         </div>
 
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Data da Entrega na área</label>
-                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
                        v-model="form.data_entrega_area" v-mascara:data
-                       onblur="valida_data(this)">
+                       @keyup.prevent="valida_data($event.target)"
+                       @blur.prevent="valida_data($event.target)">
             </div>
         </div>
 
@@ -252,9 +235,10 @@
         <div class="col-12 col-sm-6" v-if="form.biometria">
             <div class="form-group">
                 <label>Data Biometria</label>
-                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
                        v-model="form.data_biometria" v-mascara:data
-                       onblur="valida_data(this)">
+                       @keyup.prevent="valida_data($event.target)"
+                       @blur.prevent="valida_data($event.target)">
             </div>
         </div>
 
@@ -288,10 +272,10 @@
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Data Emissão CTPS</label>
-                <input type="text" class="form-control" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
                        v-model="form.dados_admissoes.ctps_data_emissao" v-mascara:data
-                       onblur="valida_data(this)"
-                       @blur="validaData">
+                       @keyup.prevent="valida_data($event.target)"
+                       @blur.prevent="valida_data($event.target)">
             </div>
         </div>
 
@@ -326,7 +310,9 @@
 </template>
 
 <script>
+import Validacoes from "../../../mixins/Validacoes";
 export default {
+    mixins: [Validacoes],
     props: {
         form: {
             type: Object,
@@ -357,6 +343,7 @@ export default {
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
                 data_admissao: "",
+                data_adm_prevista: "",
 
                 data_entrega_area: "",
                 biometria: "",
@@ -373,16 +360,16 @@ export default {
                 camisa_protecao: "",
                 camisa_meia: "",
                 pis: "",
-                prazo_experiencia: '',
-                prazo_encerramento: '',
+                prazo_experiencia: "",
+                prazo_encerramento: "",
                 dados_admissoes: {
-                    ctps_numero: '',
-                    ctps_serie: '',
-                    ctps_data_emissao: '',
-                    titulo_eleitor_numero: '',
-                    titulo_eleitor_sessao: '',
-                    titulo_eleitor_zona: '',
-                },
+                    ctps_numero: "",
+                    ctps_serie: "",
+                    ctps_data_emissao: "",
+                    titulo_eleitor_numero: "",
+                    titulo_eleitor_sessao: "",
+                    titulo_eleitor_zona: ""
+                }
             }
         },
         visualizar: {
@@ -392,20 +379,29 @@ export default {
         disabled: {
             type: Boolean,
             default: false
-        },
+        }
     },
     data() {
         return {
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
             preload: true,
-            areasetiquetas: []
+            areasetiquetas: [],
+            listSelects: []
         };
     },
-    created() {
-        axios.get(`${URL_PUBLICO}/lista-areas/${AUTENTICADO.empresa_id}`)
+    async created() {
+        this.preload = true;
+        await axios.get(`${URL_PUBLICO}/lista-areas`)
             .then(response => {
-                this.areasetiquetas = response.data;
+                this.areasetiquetas = response.data.areas ?? "";
             }).catch(e => console.log(e));
+
+        await axios.get(`${URL_ADMIN}/admissao/listSelects`)
+            .then(response => {
+                this.listSelects = response.data;
+            }).catch(e => console.log(e));
+
+        this.preload = false;
     },
     methods: {
         validaData() {

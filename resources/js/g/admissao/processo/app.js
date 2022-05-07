@@ -9,10 +9,11 @@ import formAdmissao from "../../../components/admissao/processo/formAdmissao";
 import Select2 from "../../../components/Select2/Select2";
 import configselect2 from "../../../components/Select2/mixSelec2";
 import Utils from "../../../mixins/Utils";
+import Validacoes from "../../../mixins/Validacoes";
 
 const app = new Vue({
     el: "#app",
-    mixins: [configselect2, Utils],
+    mixins: [configselect2, Utils, Validacoes],
     components: {
         endereco,
         datepicker,
@@ -37,6 +38,7 @@ const app = new Vue({
         // disabled: true,
         disabledInput: false,
         btnBuscar: false,
+        encontrou: false,
 
         AUTENTICADO,
         cliente_id: "",
@@ -121,7 +123,7 @@ const app = new Vue({
                 vaga_id: "",
 
                 interesse: true,
-
+                vaga_projeto_id: "",
                 autocomplete_label_vaga_modal: "",
                 autocomplete_label_vaga_modal_anterior: "",
 
@@ -215,6 +217,7 @@ const app = new Vue({
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
                 data_admissao: "",
+                data_adm_prevista: "",
 
                 data_entrega_area: "",
                 biometria: "",
@@ -247,6 +250,7 @@ const app = new Vue({
             cliente_id: "",
             autocomplete_label_cliente_modal: "",
             autocomplete_label_cliente_modal_anterior: "",
+            vaga_projeto_id: "",
 
             banco_conta: {
                 banco: "Banco do Brasil",
@@ -425,6 +429,7 @@ const app = new Vue({
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
                 data_admissao: "",
+                data_adm_prevista: "",
 
                 data_entrega_area: "",
                 biometria: "",
@@ -455,7 +460,7 @@ const app = new Vue({
                 excessao: "",
                 autorizado_por: "",
                 responsavel_envio: ""
-            }
+            },
         },
 
         formDefault: null,
@@ -486,6 +491,7 @@ const app = new Vue({
         listaStatusAdmissao: [],
         vagas: [],
         areasEtiquetas: [],
+        listaProjetos: [],
 
         controle: {
             carregando: false,
@@ -572,6 +578,20 @@ const app = new Vue({
                 this.preloadExportacao = false;
             });
         },
+
+        buscaProjeto(vaga_aberta_id) {
+            this.listaProjetos = [];
+            axios.get(`${URL_ADMIN}/busca-projetos/${vaga_aberta_id}`).then(response => {
+                this.listaProjetos = response.data.dados;
+            }).catch(error => (this.formAvulsa.preload = false));
+        },
+
+        buscaTodosProjeto() {
+            axios.get(`${URL_ADMIN}/busca-projetos/`).then(response => {
+                this.listaProjetos = response.data.dados;
+            }).catch(error => (this.form.preload = false));
+        },
+
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
@@ -657,12 +677,15 @@ const app = new Vue({
             this.formAvulsa.feedback.vaga_id = obj.id;
             this.formAvulsa.feedback.autocomplete_label_vaga_modal = obj.label;
             this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = obj.label;
+            this.buscaProjeto(obj.id);
         },
         resetaCampoVagaModal() {
             if (this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior !== this.formAvulsa.feedback.autocomplete_label_vaga_modal) {
                 this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = "";
                 this.formAvulsa.feedback.autocomplete_label_vaga_modal = "";
                 this.formAvulsa.feedback.vaga_id = "";
+                this.form.feedback.vaga_projeto_id = "";
+                this.listaProjetos = [];
                 setTimeout(() => {
                     if (this.formAvulsa.feedback.vaga_id === "") {
                         mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
@@ -675,12 +698,15 @@ const app = new Vue({
             this.form.vagas_abertas_id = obj.id;
             this.form.autocomplete_label_vaga_modal = obj.label;
             this.form.autocomplete_label_vaga_modal_anterior = obj.label;
+            this.buscaProjeto(obj.id);
         },
         resetaCampoVagaModalEditar() {
             if (this.form.autocomplete_label_vaga_modal_anterior !== this.form.autocomplete_label_vaga_modal) {
                 this.form.autocomplete_label_vaga_modal_anterior = "";
                 this.form.autocomplete_label_vaga_modal = "";
                 this.form.vagas_abertas_id = "";
+                this.form.feedback.vaga_projeto_id = "";
+                this.listaProjetos = [];
                 setTimeout(() => {
                     if (this.form.vagas_abertas_id === "") {
                         mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
@@ -847,6 +873,8 @@ const app = new Vue({
             axios.get(`${URL_ADMIN}/admissao/${id}/editar`)
                 .then(response => {
                     let data = response.data;
+                    this.buscaProjeto(data.feedback.vagas_abertas_id);
+
                     let admissao = data.feedback.admissao;
 
                     if (!data.feedback.parecer_tecnica) {
@@ -854,7 +882,6 @@ const app = new Vue({
                             "indicado_area": ""
                         };
                     }
-
                     if (!data.feedback.banco_conta) {
                         data.feedback.banco_conta = {
                             "banco": "Banco do Brasil",
@@ -868,6 +895,7 @@ const app = new Vue({
 
                     Object.assign(this.form, data.feedback);
 
+
                     //Se não tiver parecer_rh
                     this.form.admissao = admissao ? admissao : _.cloneDeep(this.formDefault.admissao);
 
@@ -879,6 +907,9 @@ const app = new Vue({
                     this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id == null ? "" : admissao.area_etiqueta_id;
                     this.form.curriculo.pcd = data.feedback.curriculo.pcd ?? "false";
 
+
+                    this.form.vaga_projeto_id = !data.feedback.vaga_projeto_id ? "" : data.feedback.vaga_projeto_id;
+                    this.form.parecer_rh.indicacao = !data.feedback.parecer_rh.indicacao ? "" : data.feedback.parecer_rh.indicacao;
 
                     if (!admissao.dados_admissoes) {
                         this.form.admissao.dados_admissoes = {
@@ -942,7 +973,7 @@ const app = new Vue({
             axios.get(`${URL_PUBLICO}/lista-vagas`)
                 .then(res => {
                     this.preload = false;
-                    this.vagas = res.data.vagas;
+                    this.vagas = res.data.areas;
                 })
                 .catch(err => {
                     this.preload = false;

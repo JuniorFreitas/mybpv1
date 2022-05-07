@@ -151,6 +151,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $naturalidade
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNaturalidade($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereRgDataEmissao($value)
+ * @property string|null $end_numero
+ * @property bool|null $disponibilidade_sabado
+ * @property bool|null $disponibilidade_domingo
+ * @property-read \App\Models\VagasAbertas|null $VagaAberta
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDisponibilidadeDomingo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDisponibilidadeSabado($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEndNumero($value)
  */
 class Curriculo extends Model
 {

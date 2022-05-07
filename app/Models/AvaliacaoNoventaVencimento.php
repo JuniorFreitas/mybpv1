@@ -43,6 +43,7 @@ use function PHPUnit\Framework\isNull;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDezInicial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDiaFinal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDiaInicial($value)
+ * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
  */
 class AvaliacaoNoventaVencimento extends Model
 {

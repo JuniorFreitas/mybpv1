@@ -40,7 +40,11 @@ const app = new Vue({
             simulados: [],
             simuladosDelete: [],
 
-            ativo: true
+            // projetos: [],
+            // projetosDelete: [],
+
+            ativo: true,
+            ativo_sistema: true
 
         },
 
@@ -52,6 +56,8 @@ const app = new Vue({
 
         lista: [],
         listaSimulados: [],
+        listaProjetos: [],
+        listaProjetosAdicionais: [],
 
         controle: {
             carregando: false,
@@ -87,6 +93,39 @@ const app = new Vue({
                 this.form.simuladosDelete.push(this.form.simulados[index].id);
             }
             this.form.simulados.splice(index, 1);
+        },
+
+        addLIProjeto() {
+            const obj = {};
+            obj.novo = true;
+
+            obj.projeto_id = '';
+            obj.qnt_disponivel = '';
+            obj.qnt_total = '';
+
+            this.form.projetos.push(obj);
+        },
+
+        removerLIProjeto(index) {
+            if (this.editando && !this.form.projetos[index].novo) {
+                this.form.projetosDelete.push(this.form.projetos[index].id);
+            }
+            this.form.projetos.splice(index, 1);
+        },
+
+
+        selecionaProjeto(projeto_id, index) {
+            let projeto = _.find(this.listaProjetos, {'id': projeto_id});
+            this.form.projetos[index].qnt_disponivel = projeto.qnt_total_restante;
+        },
+
+
+        verificaQuantidadeVagas(qnt_disponivel, qnt_informado, projeto_id) {
+            if (qnt_informado > qnt_disponivel) {
+                let projeto = _.find(this.listaProjetosAdicionais, {'id': projeto_id});
+                 mostraErro('', 'Não há quantidade disponível para o projeto: ' + projeto.nome);
+                return false;
+            }
         },
 
         selecionaVagaModal(obj) {
@@ -244,6 +283,7 @@ const app = new Vue({
             this.form.simulados[index].tipo_prova = simulado.tipo_prova;
         },
 
+
         imprimeProva(simulado, vaga_aberta) {
             window.location.href = `${URL_ADMIN}/cadastro/vagas-abertas/prova/${simulado}/${vaga_aberta}`;
         },
@@ -251,6 +291,8 @@ const app = new Vue({
         carregou(dados) {
             this.lista = dados.itens;
             this.listaSimulados = dados.simulados;
+            this.listaProjetos = dados.projetos;
+            this.listaProjetosAdicionais = dados.projetos;
             this.controle.carregando = false;
         },
 

@@ -403,6 +403,16 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'acesso_clinica_update', 'descricao' => 'Pode alterar exame'];
 //        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
 
+        //HABILIDADES PROJETO------------------------------
+        $lista[] = ['nome' => 'cadastro_projetos', 'descricao' => 'Acesso ao menu Projeto'];
+        $lista[] = ['nome' => 'cadastro_projetos_insert', 'descricao' => 'Pode cadastrar Projeto'];
+        $lista[] = ['nome' => 'cadastro_projetos_update', 'descricao' => 'Pode alterar Projeto'];
+//        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
+
+        //HABILIDADES PLANEJAMENTO MOBILIZAÇÃO------------------------------
+        $lista[] = ['nome' => 'planejamento_mobilizacao', 'descricao' => 'Acesso ao menu Mobilização dentro de Planejamento'];
+
+
         try {
             DB::beginTransaction();
 
@@ -410,7 +420,7 @@ class HabilidadesTableSeeder extends Seeder
                 if (Habilidade::whereNome($habilidade['nome'])->count() == 0) {
                     echo "Criando habilidade: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
                     Habilidade::create($habilidade);
-                }else{
+                } else {
                     echo "Habilidade já existe: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
                 }
             }

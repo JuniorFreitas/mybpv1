@@ -119,6 +119,15 @@ use MasterTag\DataHora;
  * @property-read int|null $clouds_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GrupoCloud[] $GrupoClouds
  * @property-read int|null $grupo_clouds_count
+ * @property string|null $api_token
+ * @property-read \App\Models\ClienteConfig|null $EmpresaConfiguracoes
+ * @property-read \App\Models\EmpresaExame|null $EmpresaExame
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Exportacao[] $Exportacoes
+ * @property-read int|null $exportacoes_count
+ * @property-read \App\Models\RecuperacaoSenha|null $RecuperacaoSenha
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\TipoRecebeEmail[] $UserRecebeEmail
+ * @property-read int|null $user_recebe_email_count
+ * @method static Builder|User whereApiToken($value)
  */
 class User extends Authenticatable
 {

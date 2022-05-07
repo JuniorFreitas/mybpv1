@@ -78,10 +78,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     });
 
     Route::get('dashboard', [\App\Http\Controllers\HomeController::class, 'dashboard'])->name('dashboard');
-    Route::post('downloads',[\App\Http\Controllers\HomeController::class, 'downloads'])->name('downloads');
-    Route::get('downloads/exportacao/{arquivo}',[\App\Http\Controllers\HomeController::class, 'downloadArquivo'])->name('downloadArquivo');
+    Route::post('downloads', [\App\Http\Controllers\HomeController::class, 'downloads'])->name('downloads');
+    Route::get('downloads/exportacao/{arquivo}', [\App\Http\Controllers\HomeController::class, 'downloadArquivo'])->name('downloadArquivo');
     Route::put('concordarTermos', [\App\Http\Controllers\HomeController::class, 'concordarTermos'])->name('concordarTermos');
     Route::post('busca-data-admissao', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaDataAdmissao'])->name('buscaDataAdmissao');
+    Route::get('busca-projetos/{projeto_id}', [\App\Http\Controllers\ProjetoController::class, 'buscaProjeto'])->name('buscaProjeto');
+    Route::get('busca-projetos', [\App\Http\Controllers\ProjetoController::class, 'buscaTodosProjeto'])->name('buscaTodosProjeto');
     Route::get('periodos-aquisitivos', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaPeriodosAquisitivos'])->name('buscaPeriodosAquisitivos');
     Route::get('get-pcmso', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getPcmos'])->name('getPcmos');
     Route::get('get-empresa-exames', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getEmpresaExames'])->name('getEmpresaExames');
@@ -90,10 +92,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::group(['as' => 'autocompletes.', 'prefix' => 'autocomplete'], function () {
         //Auto completes
         Route::get('todas-vagas-ativas', [\App\Http\Controllers\AutoCompletesController::class, 'vagasAtivas'])->name('vagas-ativas');
+        Route::get('todas-vagas-abertas-ativas', [\App\Http\Controllers\AutoCompletesController::class, 'vagasAbertasAtivas'])->name('vagas-abertas-ativas');
         Route::get('cargos_ativos', [\App\Http\Controllers\AutoCompletesController::class, 'cargosAtivos'])->name('cargos-ativos');
         Route::get('todos-clientes-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'clientesAtivos'])->name('clientes-ativos');
         Route::get('todos-usuarios-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'usuariosAtivos'])->name('usuarios-ativos');
-
         Route::get('todos-gestores-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'gestoresAtivos'])->name('gestores-ativos');
 
         Route::get('todos-municipios', [\App\Http\Controllers\AutoCompletesController::class, 'municipiosAll'])->name('municipiosAll');
@@ -289,6 +291,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::resource('vagas-abertas', \App\Http\Controllers\VagasAbertasController::class)->middleware('can:vagas_abertas');
         });
 
+        // Projeto
+        Route::group(['as' => 'projetos.'], function () {
+            Route::post('projetos/atualizar', [\App\Http\Controllers\ProjetoController::class, 'atualizar'])->name('projetos.atualizar')->middleware('can:cadastro_projetos');
+            Route::resource('projetos', \App\Http\Controllers\ProjetoController::class)->middleware('can:cadastro_projetos');
+        });
+
         Route::group(['as' => 'areas.'], function () {
             Route::put('areas/{area}/ativa-desativa', [\App\Http\Controllers\AreaEtiquetasController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:areaetiqueta');
             Route::post('areas/atualizar', [\App\Http\Controllers\AreaEtiquetasController::class, 'atualizar'])->name('atualizar')->middleware('can:areaetiqueta');
@@ -309,7 +317,6 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('requisicao-vaga/atualizar', [\App\Http\Controllers\RequisicaoVagaController::class, 'atualizar'])->name('atualizar')->middleware('can:requisicao_vaga');
             Route::resource('requisicao-vaga', \App\Http\Controllers\RequisicaoVagaController::class)->middleware('can:requisicao_vaga');
         });
-
 
         Route::group(['as' => 'movimentacao.', 'prefix' => 'movimentacao'], function () {
 
@@ -362,6 +369,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
             //Rota raiz
             Route::get('/', [\App\Http\Controllers\MovimentacaoController::class, 'index'])->name('index');
+        });
+
+        Route::group(['as' => 'mobilizacao.'], function () {
+            Route::post('mobilizacao/atualizar', [\App\Http\Controllers\MobilizacaoController::class, 'atualizar'])->name('atualizar')->middleware('can:planejamento_mobilizacao');
+            Route::get('mobilizacao/get-projetos', [\App\Http\Controllers\MobilizacaoController::class, 'getProjetos'])->name('getProjetos')->middleware('can:planejamento_mobilizacao');
+            Route::get('mobilizacao/seleciona-projeto/{projeto}', [\App\Http\Controllers\MobilizacaoController::class, 'selecionaProjeto'])->name('seleciona-projeto')->middleware('can:planejamento_mobilizacao');
+            Route::get('mobilizacao', [\App\Http\Controllers\MobilizacaoController::class, 'index'])->name('index')->middleware('can:planejamento_mobilizacao');
         });
     });
 
@@ -513,6 +527,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('admissao/anexoDownload/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'download'])->name('admissao.anexo-download');
         Route::delete('admissao/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoDelete'])->name('admissao.anexo-delete');
 
+        Route::get('admissao/listSelects', [\App\Http\Controllers\AdmissaoController::class, 'listSelects'])->name('admissao.listSelects')->middleware('can:admissao'); // manter essa rota antes do resource
         Route::post('admissao/atualizar', [\App\Http\Controllers\AdmissaoController::class, 'atualizar'])->name('admissao.atualizar')->middleware('can:admissao'); // manter essa rota antes do resource
         Route::get('admissao/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao'); // manter essa rota antes do resource
 
@@ -969,7 +984,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
     // Clinica Exame
     Route::group(['as' => 'acesso-clinica.'], function () {
-       Route::resource('acesso-clinica', \App\Http\Controllers\Clinica\ControleExamesController::class)->middleware('can:acesso_clinica');
+        Route::resource('acesso-clinica', \App\Http\Controllers\Clinica\ControleExamesController::class)->middleware('can:acesso_clinica');
     });
 
 });

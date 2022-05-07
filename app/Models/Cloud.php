@@ -31,6 +31,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|Cloud whereEmpresaId($value)
+ * @property bool $ativo
+ * @property-read \App\Models\Cliente $Empresa
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Usuarios
+ * @property-read int|null $usuarios_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Cloud whereAtivo($value)
  */
 class Cloud extends Model
 {

@@ -109,6 +109,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\ClienteConfig|null $ClienteConfig
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
  * @property-read int|null $vagas_abertas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $EmpresaFuncionarios
+ * @property-read int|null $empresa_funcionarios_count
+ * @property-read \App\Models\EmpresaTemporaria|null $Temporaria
  */
 class Cliente extends Model
 {

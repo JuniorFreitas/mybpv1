@@ -172,6 +172,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Cliente|null $Empresa
  * @property-read \App\Models\VagasAbertas|null $VagaAberta
  * @property-read mixed $vaga_aberta_municipio
+ * @property int|null $vaga_projeto_id
+ * @property-read \App\Models\AvaliacaoNoventaVencimento|null $AvaliacaoNoventaVencimento
+ * @property-read \App\Models\Demissao|null $Demissao
+ * @property-read \App\Models\VagaProjetoFeedback|null $VagaProjeto
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagaProjetoId($value)
  */
 class FeedbackCurriculo extends Model
 {
@@ -224,6 +229,7 @@ class FeedbackCurriculo extends Model
         'data_envia_whatsapp',
         'user_envia_whatsapp',
         'vagas_abertas_id',
+        'vaga_projeto_id',
         'empresa_id',
     ];
     protected $casts = [
@@ -253,6 +259,7 @@ class FeedbackCurriculo extends Model
         'data_envia_whatsapp' => 'string',
         'user_envia_whatsapp' => 'int',
         'vagas_abertas_id' => 'int',
+        'vaga_projeto_id' => 'int',
         'empresa_id' => 'int',
     ];
 
@@ -765,6 +772,10 @@ class FeedbackCurriculo extends Model
 
     public function Demissao(){
         return $this->hasOne(Demissao::class, 'feedback_id', 'id');
+    }
+
+    public function VagaProjeto(){
+        return $this->hasOne(VagaProjetoFeedback::class, 'feedback_id', 'id');
     }
 
     /**/

@@ -105,6 +105,13 @@
                     </a>
                 </li>
             @endcan
+            @can('cadastro_projetos')
+                <li>
+                    <a href="{{route('g.projetos.projetos.index')}}" key="projetos">
+                        Projetos
+                    </a>
+                </li>
+            @endcan
             @can('vagas')
                 <li>
                     <a href="{{route('g.vagas.vagas.index')}}" key="vagas">
@@ -186,7 +193,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('requisicao_vaga'))
+@if(\App\Models\Sistema::permitirLinks('requisicao_vaga','planejamento_mobilizacao'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect"><i class="bx bx-add-to-queue"></i>
             <span>PLANEJAMENTO</span>
@@ -204,6 +211,13 @@
                     Movimentação
                 </a>
             </li>
+            @can('planejamento_mobilizacao')
+                <li>
+                    <a href="{{ route('g.mobilizacao.index') }}" key="mobilizacao">
+                        Mobilização
+                    </a>
+                </li>
+            @endcan
         </ul>
     </li>
 @endif
@@ -616,31 +630,6 @@
                 </li>
             @endcan
 
-        </ul>
-    </li>
-@endif
-
-@if(\App\Models\Sistema::permitirLinks('habilidades','papel'))
-    <li>
-        <a href="javascript://" class="has-arrow waves-effect">
-            <i class="fa fa-cogs" style="font-size: 16px;"></i>
-            <span>CONFIGURAÇÕES</span>
-        </a>
-        <ul class="sub-menu" aria-expanded="false">
-            @can('habilidades')
-                <li>
-                    <a href="{{route('g.configuracoes.habilidades.index')}}" key="habilidades">
-                        Módulos do sistema
-                    </a>
-                </li>
-            @endcan
-            @can('papel')
-                <li>
-                    <a href="{{route('g.configuracoes.papeis.index')}}" key="grupo-usuarios">
-                        Grupos de Usuários
-                    </a>
-                </li>
-            @endcan
         </ul>
     </li>
 @endif

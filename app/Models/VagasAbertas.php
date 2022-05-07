@@ -45,6 +45,12 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read int|null $simulados_ativos_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
+ * @property int $ativo_sistema
+ * @property-read \App\Models\Cliente|null $Empresa
+ * @property-read \App\Models\Vaga|null $VagaSelecionada
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereAtivoSistema($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagaProjeto[] $Projetos
+ * @property-read int|null $projetos_count
  */
 class VagasAbertas extends Model
 {
@@ -58,6 +64,7 @@ class VagasAbertas extends Model
         'municipio_id',
         'empresa_id',
         'ativo',
+        'ativo_sistema',
     ];
     protected $casts = [
         'vaga_id' => 'int',
@@ -66,6 +73,7 @@ class VagasAbertas extends Model
         'municipio_id' => 'int',
         'empresa_id' => 'int',
         'ativo' => 'boolean',
+        'ativo_sistema' => 'boolean',
     ];
 
     public function Empresa()
@@ -96,6 +104,11 @@ class VagasAbertas extends Model
     public function SimuladosAtivos()
     {
         return $this->hasMany(SimuladoVaga::class, 'vaga_aberta_id', 'id')->whereAtivo(true);
+    }
+
+    public function Projetos()
+    {
+        return $this->hasMany(VagaProjeto::class, 'vaga_aberta_id', 'id');
     }
 
 }
