@@ -8,6 +8,7 @@ use App\Models\EntrevistaRh;
 use App\Models\FeedbackCurriculo;
 use App\Models\GestorRh;
 use App\Models\IndividualRh;
+use App\Models\ParecerEntrevistaTecnica;
 use App\Models\ParecerRh;
 use App\Models\ParecerRota;
 use App\Models\ParecerTestePratico;
@@ -56,21 +57,10 @@ class MobilizacaoController extends Controller
 
     public function selecionaProjeto(Request $request, Projeto $projeto)
     {
-        /*
-         * 1 - Buscar todas as vagas relacionadas ao projeto (ok)
-         * 2 - Buscar todos os feedbacks relacionados a vagas projeto (ok)
-         * 3 - Dentro de cada feedback buscar:
-         *     3.1 - QNT que estao em processo de seleção (ok)
-         *     3.2 - QNT que estao em treinamentos (ok)
-         *     3.3 - QNT que estao em exame
-         *     3.4 - QNT que estao em aprovados
-         */
-
         $vagasProjeto = VagaProjeto::whereEmpresaId(auth()->user()->empresa_id)
             ->whereProjetoId($projeto->id)
             ->with('VagaAberta:id,vaga_id,empresa_id,titulo', 'VagaAberta.Vaga:id,empresa_id,nome')
             ->get();
-
 
         $vagasProjeto = $vagasProjeto->transform(function ($item) {
             $feedbacks = FeedbackCurriculo::whereVagaProjetoId($item->id)->pluck('id');
@@ -103,7 +93,6 @@ class MobilizacaoController extends Controller
         $feedbackSelecionado = FeedbackCurriculo::where('selecionado', 'sim')->whereInteresse(true);
         $feedbackStandBy = FeedbackCurriculo::where('selecionado', 'standby')->whereInteresse(true);
 
-
         return response()->json([
             'projeto' => $projeto,
             'vagas_projeto' => $vagasProjeto,
@@ -113,6 +102,7 @@ class MobilizacaoController extends Controller
             'total_em_parecer_rh' => ParecerRh::whereIn('feedback_id', $feedbackSelecionado->pluck('id'))->count(),
             'total_em_parecer_rota' => ParecerRota::whereIn('feedback_id', $feedbackSelecionado->pluck('id'))->count(),
             'total_em_parecer_teste' => ParecerTestePratico::whereIn('feedback_id', $feedbackSelecionado->pluck('id'))->count(),
+            'total_em_parecer_tecnica' => ParecerEntrevistaTecnica::whereIn('feedback_id', $feedbackSelecionado->pluck('id'))->count(),
             'total_em_individual_rh' => IndividualRh::whereIn('feedback_id', $feedbackSelecionado->pluck('id'))->count(),
             'total_em_gestor_rh' => GestorRh::whereIn('feedback_id', $feedbackSelecionado->pluck('id'))->count(),
             'total_em_entrevista_rh' => EntrevistaRh::whereIn('feedback_id', $feedbackSelecionado->pluck('id'))->count(),
