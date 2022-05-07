@@ -621,6 +621,18 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Vencimento de ASO</label>
+                                            <select v-model="form.cliente_config.vencimento_aso" class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option value="1">30 dias</option>
+                                                <option value="2">60 dias</option>
+                                                <option value="3">90 dias</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </fieldset>
                         </div>

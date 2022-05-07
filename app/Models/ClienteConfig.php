@@ -31,12 +31,14 @@ class ClienteConfig extends Model
         'envia_whatsapp',
         'verifica_mes_vencimento',
         'cliente_id',
+        'vencimento_aso',
     ];
 
     protected $casts = [
         'envia_whatsapp' => 'boolean',
         'verifica_mes_vencimento' => 'int',
         'cliente_id' => 'int',
+        'vencimento_aso' => 'int',
     ];
 
     public $timestamps = false;
