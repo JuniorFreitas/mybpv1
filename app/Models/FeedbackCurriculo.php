@@ -172,6 +172,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Cliente|null $Empresa
  * @property-read \App\Models\VagasAbertas|null $VagaAberta
  * @property-read mixed $vaga_aberta_municipio
+ * @property int|null $vaga_projeto_id
+ * @property-read \App\Models\AvaliacaoNoventaVencimento|null $AvaliacaoNoventaVencimento
+ * @property-read \App\Models\Demissao|null $Demissao
+ * @property-read \App\Models\VagaProjetoFeedback|null $VagaProjeto
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagaProjetoId($value)
  */
 class FeedbackCurriculo extends Model
 {

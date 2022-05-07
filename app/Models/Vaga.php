@@ -33,6 +33,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereEmpresaId($value)
  * @property-read \App\Models\Cliente|null $Empresa
+ * @property-read \App\Models\VagasAbertas|null $VagaAberta
  */
 class Vaga extends Model
 {

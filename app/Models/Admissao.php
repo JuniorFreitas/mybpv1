@@ -146,6 +146,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\DadosAdmissao|null $DadosAdmissoes
  * @property mixed $prazo_encerramento
  * @property mixed $prazo_experiencia
+ * @property string|null $data_encerramento
+ * @property string|null $data_adm_prevista
+ * @property-read \App\Models\Demissao|null $Demissao
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereDataAdmPrevista($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereDataEncerramento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao wherePrazoExperiencia($value)
  */
 class Admissao extends Model
 {
@@ -281,15 +287,18 @@ class Admissao extends Model
     ];
 
     const STATUS_ADMISSAO_AGUARDANDOQUALIFICACAO = "AGUARDANDO QUALIFICAÇÃO";
-    const STATUS_ADMISSAO_PRONTOPARAADMISSAO = "PRONTO PARA ADMISSAO";
+    const STATUS_ADMISSAO_PRONTOPARAADMISSAO = "PRONTO PARA ADMISSÃO";
     const STATUS_ADMISSAO_ADMITIDO = "ADMITIDO";
     const STATUS_ADMISSAO_STANDBY = "STAND BY";
     const STATUS_ADMISSAO_PENDENTEASO = "PENDENTE ASO";
+    const STATUS_ADMISSAO_ASO_NO_AMBULATORIO = "ASO NO AMBULATÓRIO";
     const STATUS_ADMISSAO_PENDENTEDOCUMENTO = "PENDENTE DOCUMENTO";
     const STATUS_ADMISSAO_PENDENTETREINAMENTO = "PENDENTE TREINAMENTO";
     const STATUS_ADMISSAO_CANCELADO = "CANCELADO";
     const STATUS_ADMISSAO_ENCAMINHADOEXAME = "ENCAMINHADO EXAME";
     const STATUS_ADMISSAO_DESISTENCIA = "DESISTÊNCIA";
+
+
     const STATUS_CARTEIRA_TREINAMENTO_PENDENTE = "PENDENTE";
     const STATUS_CARTEIRA_TREINAMENTO_AGUARDANDOTREINAMENTO = "AGUARDANDO TREINAMENTO";
     const STATUS_CARTEIRA_TREINAMENTO_ENTREGUE = "ENTREGUE";
@@ -312,11 +321,22 @@ class Admissao extends Model
         self::STATUS_ADMISSAO_ADMITIDO,
         self::STATUS_ADMISSAO_STANDBY,
         self::STATUS_ADMISSAO_PENDENTEASO,
+        self::STATUS_ADMISSAO_ASO_NO_AMBULATORIO,
         self::STATUS_ADMISSAO_PENDENTEDOCUMENTO,
         self::STATUS_ADMISSAO_PENDENTETREINAMENTO,
         self::STATUS_ADMISSAO_CANCELADO,
         self::STATUS_ADMISSAO_ENCAMINHADOEXAME,
         self::STATUS_ADMISSAO_DESISTENCIA
+    ];
+
+    const STATUS_EM_PROCESSO_SELECAO = [
+        self::STATUS_ADMISSAO_AGUARDANDOQUALIFICACAO,
+        self::STATUS_ADMISSAO_PRONTOPARAADMISSAO,
+        self::STATUS_ADMISSAO_STANDBY,
+        self::STATUS_ADMISSAO_PENDENTEASO,
+        self::STATUS_ADMISSAO_PENDENTEDOCUMENTO,
+        self::STATUS_ADMISSAO_PENDENTETREINAMENTO,
+        self::STATUS_ADMISSAO_ENCAMINHADOEXAME
     ];
 
     const TODOS_STATUS_CARTEIRA_TREINAMETO = [

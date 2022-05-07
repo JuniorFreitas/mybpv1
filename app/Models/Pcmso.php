@@ -6,6 +6,23 @@ use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\Pcmso
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property string $label
+ * @property bool $ativo
+ * @property-read \App\Models\Cliente $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|Pcmso newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Pcmso newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Pcmso query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Pcmso whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Pcmso whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Pcmso whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Pcmso whereLabel($value)
+ * @mixin \Eloquent
+ */
 class Pcmso extends Model
 {
     use HasFactory, TenantTrait;

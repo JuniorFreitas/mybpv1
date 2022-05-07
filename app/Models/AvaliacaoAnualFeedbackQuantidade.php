@@ -33,6 +33,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereUpdatedAt($value)
  * @mixin \Eloquent
  * @property-read \App\Models\FeedbackCurriculo $Feedback
+ * @property-read \App\Models\User|null $Usuario
  */
 class AvaliacaoAnualFeedbackQuantidade extends Model
 {

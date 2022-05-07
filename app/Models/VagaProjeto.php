@@ -28,6 +28,11 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto whereQntTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto whereVagaAbertaId($value)
  * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedbackCurriculo[] $Feedbacks
+ * @property-read int|null $feedbacks_count
+ * @property-read \App\Models\Projeto|null $Projeto
+ * @property-read \App\Models\VagasAbertas|null $VagaAberta
+ * @property-read mixed $tem_vaga
  */
 class VagaProjeto extends Model
 {
@@ -64,11 +69,16 @@ class VagaProjeto extends Model
 
     public function Projeto()
     {
-        return $this->hasOne(Projeto::class,'id','projeto_id');
+        return $this->hasOne(Projeto::class, 'id', 'projeto_id');
     }
 
     public function VagaAberta()
     {
-        return $this->hasOne(VagasAbertas::class,'id','vaga_aberta_id');
+        return $this->hasOne(VagasAbertas::class, 'id', 'vaga_aberta_id');
+    }
+
+    public function Feedbacks()
+    {
+        return $this->hasMany(FeedbackCurriculo::class, 'vaga_projeto_id', 'id');
     }
 }

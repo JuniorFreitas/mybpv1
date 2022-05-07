@@ -193,7 +193,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('requisicao_vaga'))
+@if(\App\Models\Sistema::permitirLinks('requisicao_vaga','planejamento_mobilizacao'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect"><i class="bx bx-add-to-queue"></i>
             <span>PLANEJAMENTO</span>
@@ -211,6 +211,13 @@
                     Movimentação
                 </a>
             </li>
+            @can('planejamento_mobilizacao')
+                <li>
+                    <a href="{{ route('g.mobilizacao.index') }}" key="mobilizacao">
+                        Mobilização
+                    </a>
+                </li>
+            @endcan
         </ul>
     </li>
 @endif

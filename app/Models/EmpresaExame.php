@@ -31,6 +31,9 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereUpdatedAt($value)
  * @mixin \Eloquent
  * @property-read \App\Models\User|null $Empresa
+ * @property int|null $user_id
+ * @property-read \App\Models\User|null $Usuario
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereUserId($value)
  */
 class EmpresaExame extends Model
 {

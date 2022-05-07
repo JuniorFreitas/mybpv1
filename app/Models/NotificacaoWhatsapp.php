@@ -9,6 +9,34 @@ use phpDocumentor\Reflection\Types\Self_;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\NotificacaoWhatsapp
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property string $telefone
+ * @property int $messageid
+ * @property int $enviado_id
+ * @property string $mensagem
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $EnviadoPor
+ * @property-read \App\Models\User $User
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp query()
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp whereEnviadoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp whereMensagem($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp whereMessageid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp whereTelefone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp whereUserId($value)
+ * @mixin \Eloquent
+ */
 class NotificacaoWhatsapp extends Model
 {
     use HasFactory, LogsActivity;

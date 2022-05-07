@@ -49,6 +49,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read \App\Models\Cliente|null $Empresa
  * @property-read \App\Models\Vaga|null $VagaSelecionada
  * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereAtivoSistema($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagaProjeto[] $Projetos
+ * @property-read int|null $projetos_count
  */
 class VagasAbertas extends Model
 {

@@ -64,6 +64,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDevolveCracha($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDevolveEpi($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEncerramentoPrevisto($value)
+ * @property int $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEmpresaId($value)
  */
 class Intermitente extends Model
 {

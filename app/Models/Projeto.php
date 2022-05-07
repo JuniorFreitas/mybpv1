@@ -29,6 +29,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto whereQntTotalRestante($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagaProjeto[] $VagasProjeto
+ * @property-read int|null $vagas_projeto_count
+ * @property-read mixed $tem_vaga
  */
 class Projeto extends Model
 {
@@ -62,4 +65,5 @@ class Projeto extends Model
     public function VagasProjeto(){
         return $this->hasMany(VagaProjeto::class, 'projeto_id');
     }
+
 }

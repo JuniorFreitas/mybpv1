@@ -5,6 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\VagaProjetoFeedback
+ *
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \App\Models\VagaProjeto|null $VagaProjeto
+ * @method static \Illuminate\Database\Eloquent\Builder|VagaProjetoFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|VagaProjetoFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|VagaProjetoFeedback query()
+ * @mixin \Eloquent
+ */
 class VagaProjetoFeedback extends Model
 {
     use HasFactory;

@@ -31,6 +31,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|Papel whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Papel clinica()
+ * @method static \Illuminate\Database\Eloquent\Builder|Papel notClinica()
  */
 class Papel extends Model
 {

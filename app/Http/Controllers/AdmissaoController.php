@@ -701,7 +701,11 @@ class AdmissaoController extends Controller
 
         $dados['curriculo']['email'] = $dados['curriculo']['email'] == "" ? Sistema::EMAILPADRAO : $dados['curriculo']['email'];
 
-        $dadosValidados = \Validator::make($dados, []);
+        $dadosValidados = \Validator::make($dados, [
+            'curriculo.email' => 'required|email:rfc,dns',
+            'admissao.status' => 'required|in:'.implode(',', Admissao::TODOS_STATUS_ADMISSAO),
+            'admissao.status_carteira_treinamento' => 'sometimes|nullable|string|in:'.implode(',', Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO),
+        ]);
         if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Salvar Admissão',

@@ -31,6 +31,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereEmpresaId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Users
+ * @property-read int|null $users_count
  */
 class GrupoCloud extends Model
 {
