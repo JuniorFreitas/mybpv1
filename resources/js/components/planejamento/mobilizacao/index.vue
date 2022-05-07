@@ -58,25 +58,22 @@
                             <li class="list-group-item">Portaria: <strong>
                                 Portaria
                             </strong></li>
-                            <li class="list-group-item">Admitidos: <strong>
-                                {{ item.status_admitido }}
-                            </strong></li>
-                            <li class="list-group-item">Ag. Qualificação: <strong>
+                            <li class="list-group-item">Aguardando Qualificação: <strong>
                                 {{ item.status_aguardando_qualificacao }}
                             </strong></li>
                             <li class="list-group-item">ASO no Ambulatório: <strong>
                                 {{ item.status_aso_no_ambulatorio }}
                             </strong></li>
-                            <li class="list-group-item">Cancelado: <strong>
+                            <li class="list-group-item">Cancelados: <strong>
                                 {{ item.status_cancelado }}
+                            </strong></li>
+                            <li class="list-group-item">Desistências: <strong>
+                                {{ item.status_desistencia }}
                             </strong></li>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Desistências: <strong>
-                                {{ item.status_desistencia }}
-                            </strong></li>
                             <li class="list-group-item">Encaminhado para Exames: <strong>
                                 {{ item.status_encaminhado_exame }}
                             </strong></li>
@@ -89,7 +86,7 @@
                             <li class="list-group-item">Pronto para admissão: <strong>
                                 {{ item.status_pronto_para_admissao }}
                             </strong></li>
-                            <li class="list-group-item">Admitido: <strong>
+                            <li class="list-group-item">Admitidos: <strong>
                                 {{ item.status_admitido }}
                             </strong></li>
                             <li class="list-group-item">StandBy: <strong>
@@ -104,7 +101,7 @@
                             <li class="list-group-item">Admissão tipo intermitente: <strong>
                                 {{ item.tipo_admissao_intermitente }}
                             </strong></li>
-                            <li class="list-group-item">Admissão Temporária: <strong>
+                            <li class="list-group-item">Admissão tipo temporária: <strong>
                                 {{ item.tipo_admissao_temporario }}
                             </strong></li>
                         </ul>
@@ -174,10 +171,12 @@
                 </div>
             </div>
 
-            <div class="col-12">
+            <div class="col-12 py-3">
                 <div class="row">
+                    <div class="col-12 text-center">
+                        <h5 class="mb-4 text-uppercase">Resumo geral mobilização:</h5>
+                    </div>
                     <div class="col-md-6">
-                        <h5 class="mb-2">Resumo geral mobilização:</h5>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">Total de currículos cadastrados:
                                 <strong>{{ dados.total_geral_curriculos }}</strong></li>
@@ -191,6 +190,10 @@
                                     }}</strong></li>
                             <li class="list-group-item">Total de currículos standby:
                                 <strong>{{ dados.total_geral_curriculos_standby }}</strong></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
                             <li class="list-group-item">Total de currículos em Parecer RH:
                                 <strong>{{ dados.total_em_parecer_rh }}</strong></li>
                             <li class="list-group-item">Total de currículos em Parecer Rota - Transporte:
