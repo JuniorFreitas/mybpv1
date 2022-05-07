@@ -185,17 +185,14 @@
                             <li class="list-group-item">Total de currículos selecionados:
                                 <strong>{{ dados.total_geral_curriculos_selecionados
                                     }}</strong></li>
-                            <li class="list-group-item">Total de currículos selecionados:
-                                <strong>{{ dados.total_geral_curriculos_selecionados
-                                    }}</strong></li>
                             <li class="list-group-item">Total de currículos standby:
                                 <strong>{{ dados.total_geral_curriculos_standby }}</strong></li>
+                            <li class="list-group-item">Total de currículos em Parecer RH:
+                                <strong>{{ dados.total_em_parecer_rh }}</strong></li>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Total de currículos em Parecer RH:
-                                <strong>{{ dados.total_em_parecer_rh }}</strong></li>
                             <li class="list-group-item">Total de currículos em Parecer Rota - Transporte:
                                 <strong>{{ dados.total_em_parecer_rota
                                     }}</strong></li>
