@@ -115,6 +115,72 @@ class TreinamentoController extends Controller
         }
     }
 
+    public function storeMassa(Request $request)
+    {
+        $dados = $request->input();
+        $dados['cadastrou'] = auth()->id();
+        $exame = $dados['exame'];
+
+        try {
+            DB::beginTransaction();
+
+            $listaVencimentos = collect($dados['listaVencimentos'])->filter(function ($item) {
+                return $item['fez_treinamento'];
+            });
+
+            foreach ($dados['selecionadosMassa'] as $feedback_id) {
+
+                $dados['feedback_id'] = $feedback_id;
+                $treinamento = Treinamento::whereFeedbackId($feedback_id)->first();
+
+                if (isset($treinamento)) {
+                    $this->authorize('treinamento_update');
+
+                    unset($dados['enviado_email']);
+                    unset($dados['email_aberto']);
+                    unset($dados['data_email_aberto']);
+                    unset($dados['data_envio']);
+
+                    $treinamento->update($dados);
+                    $treinamento->Vencimentos()->detach();
+
+                } else {
+                    $this->authorize('treinamento_insert');
+                    $treinamento = Treinamento::create($dados);
+                }
+
+
+                foreach ($listaVencimentos as $lista) {
+                    $dataHora = new DataHora($lista['data_treinamento']);
+                    $dataTreinamento = $dataHora->dataInsert();
+
+                    if ($dados['tipo'] == 'Parada') {
+                        $dataVencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
+                    } else {
+                        $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
+                    }
+
+                    $treinamento->Vencimentos()->attach($lista['id'], [
+                        'data_treinamento' => $dataTreinamento,
+                        'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
+                        'numero_fat' => $lista['numero_fat']
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
+
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Não foi possivel realizar o cadastro'], 400);
+        }
+    }
+
     /**
      * Display the specified resource.
      *
@@ -226,6 +292,13 @@ class TreinamentoController extends Controller
             'Treinamento.QuemCadastrou'
         );
 
+        $vencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get();
+
+        $vencimentos->transform(function ($i) {
+            $i->fez_treinamento = false;
+            return $i;
+        });
+
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
                 $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
@@ -270,12 +343,12 @@ class TreinamentoController extends Controller
         if ($request->filled('campoNr_trinta_tres')) {
             if ($request->campoNr_trinta_tres) {
                 $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
-                   $query->where('label','NR33');
+                    $query->where('label', 'NR33');
                 });
             }
             if (!$request->campoNr_trinta_tres) {
                 $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label','NR33');
+                    $query->where('label', 'NR33');
                 });
             }
             if ($request->campoNr_trinta_tres == 'NÃO SE APLICA') {
@@ -288,12 +361,12 @@ class TreinamentoController extends Controller
         if ($request->filled('campoNr_trinta_cinco')) {
             if ($request->campoNr_trinta_cinco) {
                 $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label','NR35');
+                    $query->where('label', 'NR35');
                 });
             }
             if (!$request->campoNr_trinta_cinco) {
                 $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label','NR35');
+                    $query->where('label', 'NR35');
                 });
             }
             if ($request->campoNr_trinta_cinco == 'NÃO SE APLICA') {
@@ -307,12 +380,12 @@ class TreinamentoController extends Controller
 
             if ($request->campoNr_ebtv) {
                 $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label','EBTV');
+                    $query->where('label', 'EBTV');
                 });
             }
             if (!$request->campoNr_ebtv) {
                 $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label','EBTV');
+                    $query->where('label', 'EBTV');
                 });
             }
 
@@ -392,7 +465,10 @@ class TreinamentoController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $itens]
+            'dados' => [
+                'itens' => $itens,
+                'vencimentos' => $vencimentos
+            ]
         ]);
     }
 
