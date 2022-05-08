@@ -261,6 +261,25 @@ const app = new Vue({
             setupCampo()
         },
 
+        abrirFormMassa(){
+            this.preload = true
+
+            if (this.formMassa.listaVencimentos.length > 0 && !this.formMassaDefault) {
+                this.formMassaDefault = _.cloneDeep(this.formMassa) //copia
+            }
+
+            Object.assign(this.formMassa, this.formMassaDefault)
+
+            this.atualizado = false
+            this.cadastrando = false
+            this.visualizar = false
+            this.cadastrado = false
+
+            setTimeout(() => {
+                this.preload = false
+            }, 1000)
+        },
+
         formAlterar(curriculo_id) {
             this.preload = true
 
@@ -514,6 +533,7 @@ const app = new Vue({
             this.lista = dados.itens
             this.selecionaTudo = this.tudoMarcado
             this.formMassa.listaVencimentos = dados.vencimentos
+
             this.controle.carregando = false
         },
         carregando() {

@@ -163,7 +163,7 @@ class TreinamentoController extends Controller
                     $treinamento->Vencimentos()->attach($lista['id'], [
                         'data_treinamento' => $dataTreinamento,
                         'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
-                        'numero_fat' => $lista['numero_fat']
+                        'numero_fat' => $lista['numero_fat'] ?? null
                     ]);
                 }
             }
@@ -177,7 +177,8 @@ class TreinamentoController extends Controller
             $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
 
             \Log::debug($msg);
-            return response()->json(['msg' => 'Não foi possivel realizar o cadastro'], 400);
+//            return response()->json(['msg' => 'Não foi possivel realizar o cadastro'], 400);
+            return response()->json(['msg' => $e->getMessage()], 400);
         }
     }
 

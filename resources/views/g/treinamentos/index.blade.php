@@ -250,7 +250,7 @@
         </template>
         <template slot="rodape">
             <button type="button" class="btn btn-sm btn-primary" @click="salvarMassa"
-                    v-if="!preload && (!cadastrado && !atualizado)">
+                    v-if="!preload && formMassa.tipo && (!cadastrado && !atualizado)">
                 <i class="fa fa-save"></i> Salvar
             </button>
         </template>
@@ -566,29 +566,30 @@
                     @csrf
                     <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
                     <button type="submit" class="btn btn-sm btn-primary mr-1"
-                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                            :disabled="selecionados.length === 0">
+                            :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                            :disabled="!selecionados.length">
                         Gerar Carteira <span class="badge badge-light">@{{ selecionados.length }}</span>
                     </button>
                 </form>
 
                 <button class="btn btn-sm btn-danger mr-1"
-                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionados.length === 0" @click="selecionados = []">
+                        :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        :disabled="!selecionados.length" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
 
                 <button class="btn btn-sm btn-primary mr-1"
-                        :style="selecionadosMassa.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        @click.pre.prevent="abrirFormMassa()"
                         data-toggle="modal"
                         data-target="#janelaTreinamentoMassa"
-                        :disabled="selecionadosMassa.length === 0">
+                        :disabled="!selecionadosMassa.length">
                     <i class="fa fa-plus"></i> Atualizar em massa <span class="badge badge-light">@{{ selecionadosMassa.length }}</span>
                 </button>
 
-                <button class="btn btn-sm btn-danger mr-1 mt-1"
-                        :style="selecionadosMassa.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionadosMassa.length === 0" @click="selecionadosMassa = []">
+                <button class="btn btn-sm btn-danger mr-1"
+                        :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        :disabled="!selecionadosMassa.length" @click="selecionadosMassa = []">
                     <i class="fa fa-times"></i> Limpar seleção em massa
                 </button>
 
@@ -615,7 +616,7 @@
                 {{--                    <input type="hidden" name="campo_dataFim" :value="controle.dados.campo_dataFim">--}}
 
                 {{--                    <button type="submit" class="btn btn-sm btn-primary ml-1"--}}
-                {{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">--}}
+                {{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && !selecionados.length) ">--}}
                 {{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
                 {{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
                 {{--                    </button>--}}
@@ -644,8 +645,8 @@
                 <tr class="bg-default">
                     <th class="text-center">
                         <input type="checkbox"
-                               :style="emTreinamentos.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                               :disabled="emTreinamentos.length === 0" :checked="tudoMarcado"
+                               :style="!emTreinamentos.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                               :disabled="!emTreinamentos.length" :checked="tudoMarcado"
                                @click="selecionaTodos">
                     </th>
                     <th class="text-center">
