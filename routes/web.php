@@ -627,6 +627,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('treinamento/vencimentos', [\App\Http\Controllers\TreinamentoController::class, 'vencimentos'])->name('vencimentos');
 
         Route::post('treinamento/proximovencimento', [\App\Http\Controllers\TreinamentoController::class, 'treinamentoProximoVencimento'])->name('vencimentoTreinamento');
+        Route::post('treinamento/salvar-massa', [\App\Http\Controllers\TreinamentoController::class, 'storeMassa'])->name('storeMassa');
 
         Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)->middleware('can:treinamento');
     });

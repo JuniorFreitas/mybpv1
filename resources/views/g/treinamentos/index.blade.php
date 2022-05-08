@@ -24,7 +24,8 @@
                             <h6 v-if="editando">Funcionário: @{{ form.nome }}</h6>
                             <fieldset>
                                 <label>Tipo</label>
-                                <select class="form-control" v-model="form.tipo" :disabled='editando' onchange="valida_campo_vazio(this,1)"
+                                <select class="form-control" v-model="form.tipo" :disabled='editando'
+                                        onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)">
                                     <option value="">Selecione ...</option>
                                     <option value="Fixo">Fixo</option>
@@ -33,68 +34,68 @@
                             </fieldset>
                         </div>
 
-{{--                        <div class="col-12" v-if="form.tipo">--}}
-{{--                            <fieldset>--}}
-{{--                                <legend>Exame</legend>--}}
-{{--                                <div class="row">--}}
-{{--                                    <div class="col-12 col-md-6">--}}
-{{--                                        <div class="form-group">--}}
-{{--                                            <label for="">EXAME REALIZADO?</label>--}}
-{{--                                            <select class="form-control" v-model="form.exame.exame_realizado">--}}
-{{--                                                <option value="">Selecione...</option>--}}
-{{--                                                <option :value="true">Sim</option>--}}
-{{--                                                <option :value="false">Não</option>--}}
-{{--                                            </select>--}}
-{{--                                        </div>--}}
-{{--                                    </div>--}}
+                        {{--                        <div class="col-12" v-if="form.tipo">--}}
+                        {{--                            <fieldset>--}}
+                        {{--                                <legend>Exame</legend>--}}
+                        {{--                                <div class="row">--}}
+                        {{--                                    <div class="col-12 col-md-6">--}}
+                        {{--                                        <div class="form-group">--}}
+                        {{--                                            <label for="">EXAME REALIZADO?</label>--}}
+                        {{--                                            <select class="form-control" v-model="form.exame.exame_realizado">--}}
+                        {{--                                                <option value="">Selecione...</option>--}}
+                        {{--                                                <option :value="true">Sim</option>--}}
+                        {{--                                                <option :value="false">Não</option>--}}
+                        {{--                                            </select>--}}
+                        {{--                                        </div>--}}
+                        {{--                                    </div>--}}
 
-{{--                                    <template v-if="form.exame.exame_realizado">--}}
-{{--                                        <div class="col-12 col-md-6">--}}
-{{--                                            <label for="">DATA DO EXAME:--}}
-{{--                                            </label>--}}
-{{--                                            <datepicker v-model="form.exame.data_realizado"--}}
-{{--                                                        max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"--}}
-{{--                                                        onblur="valida_data_vazio(this)"></datepicker>--}}
-{{--                                        </div>--}}
+                        {{--                                    <template v-if="form.exame.exame_realizado">--}}
+                        {{--                                        <div class="col-12 col-md-6">--}}
+                        {{--                                            <label for="">DATA DO EXAME:--}}
+                        {{--                                            </label>--}}
+                        {{--                                            <datepicker v-model="form.exame.data_realizado"--}}
+                        {{--                                                        max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"--}}
+                        {{--                                                        onblur="valida_data_vazio(this)"></datepicker>--}}
+                        {{--                                        </div>--}}
 
-{{--                                        <div class="col-12 col-md-6">--}}
-{{--                                            <div class="form-group">--}}
-{{--                                                <label for="">TIPO DO EXAME</label>--}}
-{{--                                                <select class="form-control" v-model="form.exame.tipo_exame">--}}
-{{--                                                    <option value="">Selecione ...</option>--}}
-{{--                                                    <option value="ADMISSIONAL">ADMISSIONAL</option>--}}
-{{--                                                    <option value="PERIODICO">PERIODICO</option>--}}
-{{--                                                    <option value="RETORNO AO TRABALHO">RETORNO AO TRABALHO</option>--}}
-{{--                                                </select>--}}
-{{--                                            </div>--}}
-{{--                                        </div>--}}
+                        {{--                                        <div class="col-12 col-md-6">--}}
+                        {{--                                            <div class="form-group">--}}
+                        {{--                                                <label for="">TIPO DO EXAME</label>--}}
+                        {{--                                                <select class="form-control" v-model="form.exame.tipo_exame">--}}
+                        {{--                                                    <option value="">Selecione ...</option>--}}
+                        {{--                                                    <option value="ADMISSIONAL">ADMISSIONAL</option>--}}
+                        {{--                                                    <option value="PERIODICO">PERIODICO</option>--}}
+                        {{--                                                    <option value="RETORNO AO TRABALHO">RETORNO AO TRABALHO</option>--}}
+                        {{--                                                </select>--}}
+                        {{--                                            </div>--}}
+                        {{--                                        </div>--}}
 
-{{--                                        <div class="col-12 col-md-6">--}}
-{{--                                            <div class="form-group">--}}
-{{--                                                <label for="">APTO TRABALHO EM ALTURA?</label>--}}
-{{--                                                <select class="form-control" v-model="form.exame.trabalho_altura">--}}
-{{--                                                    <option value="">Selecione ...</option>--}}
-{{--                                                    <option :value="true">Sim</option>--}}
-{{--                                                    <option :value="false">Não</option>--}}
-{{--                                                </select>--}}
-{{--                                            </div>--}}
-{{--                                        </div>--}}
+                        {{--                                        <div class="col-12 col-md-6">--}}
+                        {{--                                            <div class="form-group">--}}
+                        {{--                                                <label for="">APTO TRABALHO EM ALTURA?</label>--}}
+                        {{--                                                <select class="form-control" v-model="form.exame.trabalho_altura">--}}
+                        {{--                                                    <option value="">Selecione ...</option>--}}
+                        {{--                                                    <option :value="true">Sim</option>--}}
+                        {{--                                                    <option :value="false">Não</option>--}}
+                        {{--                                                </select>--}}
+                        {{--                                            </div>--}}
+                        {{--                                        </div>--}}
 
-{{--                                        <div class="col-12 col-md-6">--}}
-{{--                                            <div class="form-group">--}}
-{{--                                                <label for="">APTO TRABALHO EM ESPACO CONFINADO?</label>--}}
-{{--                                                <select class="form-control" v-model="form.exame.espaco_confinado">--}}
-{{--                                                    <option value="">Selecione ...</option>--}}
-{{--                                                    <option :value="true">Sim</option>--}}
-{{--                                                    <option :value="false">Não</option>--}}
-{{--                                                </select>--}}
-{{--                                            </div>--}}
-{{--                                        </div>--}}
+                        {{--                                        <div class="col-12 col-md-6">--}}
+                        {{--                                            <div class="form-group">--}}
+                        {{--                                                <label for="">APTO TRABALHO EM ESPACO CONFINADO?</label>--}}
+                        {{--                                                <select class="form-control" v-model="form.exame.espaco_confinado">--}}
+                        {{--                                                    <option value="">Selecione ...</option>--}}
+                        {{--                                                    <option :value="true">Sim</option>--}}
+                        {{--                                                    <option :value="false">Não</option>--}}
+                        {{--                                                </select>--}}
+                        {{--                                            </div>--}}
+                        {{--                                        </div>--}}
 
-{{--                                    </template>--}}
-{{--                                </div>--}}
-{{--                            </fieldset>--}}
-{{--                        </div>--}}
+                        {{--                                    </template>--}}
+                        {{--                                </div>--}}
+                        {{--                            </fieldset>--}}
+                        {{--                        </div>--}}
 
                         <div class="col-12 col-md-6" v-for="(treinamento, index) in form.listaVencimentos"
                              v-if="form.tipo">
@@ -167,6 +168,88 @@
         </template>
         <template slot="rodape">
             <button type="button" class="btn btn-sm btn-primary" @click="salvar"
+                    v-if="!preload && (!cadastrado && !atualizado)">
+                <i class="fa fa-save"></i> Salvar
+            </button>
+        </template>
+    </modal>
+
+    <modal id="janelaTreinamentoMassa" titulo="Treinamentos" :size="95">
+        <template slot="conteudo">
+            <div class="alert alert-success text-center" v-show="cadastrado">
+                <h4><i class="icon fa fa-check"></i> Treinamento atualizado com sucesso</h4>
+            </div>
+            <p class=" mt-2 text-center" v-if="preload">
+                <i class="fa fa-spinner fa-pulse"></i> Aguarde ...
+            </p>
+
+            <div v-if="!preload && (!cadastrado && !atualizado)">
+
+                <fieldset>
+                    <legend>Treinamentos</legend>
+                    <div class="row">
+                        <div class="col-12">
+                            <fieldset>
+                                <label>Tipo</label>
+                                <select class="form-control" v-model="formMassa.tipo"
+                                        onchange="valida_campo_vazio(this,1)"
+                                        onblur="valida_campo_vazio(this,1)">
+                                    <option value="">Selecione ...</option>
+                                    <option value="Fixo">Fixo</option>
+                                    <option value="Parada">Parada</option>
+                                </select>
+                            </fieldset>
+                        </div>
+
+                        <div class="col-12 col-md-6" v-for="(treinamento, index) in formMassa.listaVencimentos"
+                             v-if="formMassa.tipo !== ''">
+                            <fieldset>
+                                <legend>@{{ treinamento.label }}</legend>
+
+                                <div class="alert alert-warning p-2" style="font-size: 0.85rem;"
+                                     v-show="treinamento.descricao">
+                                    A quem se destina: @{{ treinamento.descricao }}
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="">Realizou este treinamento?</label>
+                                            <select class="form-control" v-model="treinamento.fez_treinamento">
+                                                <option :value="true">Sim</option>
+                                                <option :value="false">Não</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6" v-if="treinamento.fez_treinamento">
+                                        <div class="form-group">
+                                            <template v-if="treinamento.prazo_fixo && treinamento.prazo_parada">
+                                                <label for="">Data do treinamento:
+                                                    <span class="text-danger" style="font-size: 0.85rem;"
+                                                          v-show="treinamento.prazo_fixo || treinamento.prazo_parada">
+                                                     Vencimento: @{{ treinamento.data_vencimento }}
+                                                </span>
+                                                </label>
+                                                <datepicker v-model="treinamento.data_treinamento"
+                                                            max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
+                                                            onblur="valida_data_vazio(this)"></datepicker>
+
+                                            </template>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="">Numero da FAT</label>
+                                            <input type="text" class="form-control" v-model="treinamento.numero_fat">
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+        </template>
+        <template slot="rodape">
+            <button type="button" class="btn btn-sm btn-primary" @click="salvarMassa"
                     v-if="!preload && (!cadastrado && !atualizado)">
                 <i class="fa fa-save"></i> Salvar
             </button>
@@ -285,24 +368,24 @@
                                   v-model="controle.dados.autocomplete_label"
                                   placeholder="Por vaga"
                                   @onblur="resetaCampo"
-                                 @onselect="selecionaVaga"></autocomplete>
+                                  @onselect="selecionaVaga"></autocomplete>
                 </div>
             </div>
 
-{{--            @if(!Request::has('cliente_id'))--}}
-{{--                <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
-{{--                    <div class="form-group">--}}
-{{--                        <label>Por Cliente</label>--}}
-{{--                        <autocomplete :disabled="controle.carregando"--}}
-{{--                                      :caminho="controle.dados.caminho_cliente_autocomplete"--}}
-{{--                                      :valido="controle.dados.campoCliente !== ''"--}}
-{{--                                      v-model="controle.dados.autocomplete_label_cliente"--}}
-{{--                                      placeholder="Por cliente"--}}
-{{--                                      @onblur="resetaCampoCliente"--}}
-{{--                                     @onselect="selecionaCliente"></autocomplete>--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--            @endif--}}
+            {{--            @if(!Request::has('cliente_id'))--}}
+            {{--                <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
+            {{--                    <div class="form-group">--}}
+            {{--                        <label>Por Cliente</label>--}}
+            {{--                        <autocomplete :disabled="controle.carregando"--}}
+            {{--                                      :caminho="controle.dados.caminho_cliente_autocomplete"--}}
+            {{--                                      :valido="controle.dados.campoCliente !== ''"--}}
+            {{--                                      v-model="controle.dados.autocomplete_label_cliente"--}}
+            {{--                                      placeholder="Por cliente"--}}
+            {{--                                      @onblur="resetaCampoCliente"--}}
+            {{--                                     @onselect="selecionaCliente"></autocomplete>--}}
+            {{--                    </div>--}}
+            {{--                </div>--}}
+            {{--            @endif--}}
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
                 <label>Áreas</label>
@@ -489,40 +572,54 @@
                     </button>
                 </form>
 
-                <button class="btn btn-sm btn-danger"
+                <button class="btn btn-sm btn-danger mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
 
-{{--                <form target="_blank"--}}
-{{--                      action="{{ \App\Models\Sistema::UrlServidor }}/carteira-etiqueta/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
-{{--                                            action="{{ route('carteira.excel') }}"--}}
-{{--                      method="get">--}}
-{{--                    @csrf--}}
-{{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
-{{--                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">--}}
-{{--                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">--}}
-{{--                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">--}}
-{{--                    <input type="hidden" name="campoArea" :value="controle.dados.campoArea">--}}
-{{--                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">--}}
-{{--                    <input type="hidden" name="campoCargo" :value="controle.dados.campoCargo">--}}
-{{--                    <input type="hidden" name="campo_treinados" :value="controle.dados.campo_treinados">--}}
-{{--                    <input type="hidden" name="campoNr_trinta_tres" :value="controle.dados.campoNr_trinta_tres">--}}
-{{--                    <input type="hidden" name="campoNr_trinta_cinco" :value="controle.dados.campoNr_trinta_cinco">--}}
-{{--                    <input type="hidden" name="campoNr_ebtv" :value="controle.dados.campoNr_ebtv">--}}
-{{--                    <input type="hidden" name="campoAdmitido" :value="controle.dados.campoAdmitido">--}}
-{{--                    <input type="hidden" name="campoCracha" :value="controle.dados.campoCracha">--}}
-{{--                    <input type="hidden" name="campoFoto" :value="controle.dados.campoFoto">--}}
-{{--                    <input type="hidden" name="campo_dataInicio" :value="controle.dados.campo_dataInicio">--}}
-{{--                    <input type="hidden" name="campo_dataFim" :value="controle.dados.campo_dataFim">--}}
+                <button class="btn btn-sm btn-primary mr-1"
+                        :style="selecionadosMassa.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        data-toggle="modal"
+                        data-target="#janelaTreinamentoMassa"
+                        :disabled="selecionadosMassa.length === 0">
+                    <i class="fa fa-plus"></i> Atualizar em massa <span class="badge badge-light">@{{ selecionadosMassa.length }}</span>
+                </button>
 
-{{--                    <button type="submit" class="btn btn-sm btn-primary ml-1"--}}
-{{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">--}}
-{{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
-{{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
-{{--                    </button>--}}
-{{--                </form>--}}
+                <button class="btn btn-sm btn-danger mr-1 mt-1"
+                        :style="selecionadosMassa.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        :disabled="selecionadosMassa.length === 0" @click="selecionadosMassa = []">
+                    <i class="fa fa-times"></i> Limpar seleção em massa
+                </button>
+
+                {{--                <form target="_blank"--}}
+                {{--                      action="{{ \App\Models\Sistema::UrlServidor }}/carteira-etiqueta/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
+                {{--                                            action="{{ route('carteira.excel') }}"--}}
+                {{--                      method="get">--}}
+                {{--                    @csrf--}}
+                {{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
+                {{--                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">--}}
+                {{--                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">--}}
+                {{--                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">--}}
+                {{--                    <input type="hidden" name="campoArea" :value="controle.dados.campoArea">--}}
+                {{--                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">--}}
+                {{--                    <input type="hidden" name="campoCargo" :value="controle.dados.campoCargo">--}}
+                {{--                    <input type="hidden" name="campo_treinados" :value="controle.dados.campo_treinados">--}}
+                {{--                    <input type="hidden" name="campoNr_trinta_tres" :value="controle.dados.campoNr_trinta_tres">--}}
+                {{--                    <input type="hidden" name="campoNr_trinta_cinco" :value="controle.dados.campoNr_trinta_cinco">--}}
+                {{--                    <input type="hidden" name="campoNr_ebtv" :value="controle.dados.campoNr_ebtv">--}}
+                {{--                    <input type="hidden" name="campoAdmitido" :value="controle.dados.campoAdmitido">--}}
+                {{--                    <input type="hidden" name="campoCracha" :value="controle.dados.campoCracha">--}}
+                {{--                    <input type="hidden" name="campoFoto" :value="controle.dados.campoFoto">--}}
+                {{--                    <input type="hidden" name="campo_dataInicio" :value="controle.dados.campo_dataInicio">--}}
+                {{--                    <input type="hidden" name="campo_dataFim" :value="controle.dados.campo_dataFim">--}}
+
+                {{--                    <button type="submit" class="btn btn-sm btn-primary ml-1"--}}
+                {{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">--}}
+                {{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
+                {{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
+                {{--                    </button>--}}
+                {{--                </form>--}}
 
                 @if (auth()->user()->cliente_id != \App\Models\User::BPSE)
                     {{--                    <button class="btn btn-sm btn-primary ml-1" @click.prevent="abriJanelaEnviarAviso"--}}
@@ -551,7 +648,11 @@
                                :disabled="emTreinamentos.length === 0" :checked="tudoMarcado"
                                @click="selecionaTodos">
                     </th>
-{{--                    <th class="text-center">ID</th>--}}
+                    <th class="text-center">
+                        <input type="checkbox"
+                               :checked="tudoMarcadoMassa"
+                               @click="selecionaTodosMassa">
+                    </th>
                     <th>Nome</th>
                     <th class="text-center">Vaga</th>
                     <th class="text-center">Cargo</th>
@@ -582,6 +683,17 @@
                             >
                             <input type="checkbox" v-else disabled="disabled" title="Candidato sem treinamento">
 
+                        </label>
+                    </td>
+                    <td class="text-center">
+                        <label :for="resultado.id">
+                            <input
+                                type="checkbox"
+                                v-model="selecionadosMassa"
+                                :value="resultado.id"
+                                :id="resultado.id"
+                                :style="resultado.id ? 'cursor:pointer' : 'cursor: not-allowed'"
+                            >
                         </label>
                     </td>
 
