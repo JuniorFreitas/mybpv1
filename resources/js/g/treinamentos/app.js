@@ -27,6 +27,9 @@ const app = new Vue({
         selecionados: [],
         selecionaTudo: false,
 
+        selecionadosMassa: [],
+        selecionaTudoMassa: false,
+
         form: {
             //_method: "post",
             feedback_id: '',
@@ -52,6 +55,31 @@ const app = new Vue({
             }
         },
         formDefault: null,
+
+        formMassa: {
+            tipo: '',
+            gerou_id: '',
+            data_envio: '',
+            enviado_email: '',
+            enviou_id: '',
+            email_envio: '',
+            email_aberto: '',
+            data_email_aberto: '',
+            listaVencimentos: [],
+            nr_trinta_tres: true,
+            nr_trinta_cinco: true,
+            selecionadosMassa: '',
+            exame: {
+                feedback_id: '',
+                exame_realizado: '',
+                data_realizado: '',
+                tipo_exame: '',
+                trabalho_altura: '',
+                espaco_confinado: ''
+            }
+        },
+        formMassaDefault: null,
+        vencimentos: [],
 
 
         formEnviar: {
@@ -103,8 +131,8 @@ const app = new Vue({
                 campoFoto: '',
                 campo_dataInicio: '',
                 campo_dataFim: '',
-                campoVencimento:'',
-                vencimento:'',
+                campoVencimento: '',
+                vencimento: '',
             }
         }
     },
@@ -147,6 +175,32 @@ const app = new Vue({
             let resultado = totalTreinamento === totalEncontrado
             this.selecionaTudo = resultado
             return resultado
+        },
+        emTreinamentosMassa() {
+            return this.lista.filter(item => {
+                return item.treinamento
+            })
+        },
+        tudoMarcadoMassa() {
+            let totalTreinamento = this.emTreinamentosMassa.length
+            let totalEncontrado = 0
+
+            if (totalTreinamento === 0) {
+                return false
+            }
+
+            this.emTreinamentosMassa.forEach(item => {
+                let id = item.id
+                if (this.selecionadosMassa.indexOf(id) >= 0) {
+                    totalEncontrado++
+                    //faz nada
+                } else {
+                    return false
+                }
+            })
+            let resultado = totalTreinamento === totalEncontrado
+            this.selecionaTudoMassa = resultado
+            return resultado
         }
     },
     methods: {
@@ -170,8 +224,28 @@ const app = new Vue({
             }
         },
 
+        selecionaTodosMassa() {
+            this.selecionaTudoMassa = !this.selecionaTudoMassa
+            if (this.selecionaTudoMassa) {
+                this.lista.map(item => {
+                    let id = item.id
+                    if (this.selecionadosMassa.indexOf(id) === -1) {
+                        this.selecionadosMassa.push(id)
+                    }
+                })
+            } else {
+                this.lista.map(item => {
+                    let id = item.id
+                    let index = this.selecionadosMassa.indexOf(id)
+                    if (index >= 0) {
+                        this.selecionadosMassa.splice(index, 1)
+                    }
+                })
+            }
+        },
+
         gerarCarteiras() {
-            axios.get(`${URL_ADMIN}/treinamento/carteiras`, { selecionados: this.selecionados })
+            axios.get(`${URL_ADMIN}/treinamento/carteiras`, {selecionados: this.selecionados})
                 .then(response => {
                     let data = response.data
 
@@ -185,6 +259,25 @@ const app = new Vue({
             this.form = _.cloneDeep(this.formDefault) //copia
             formReset()
             setupCampo()
+        },
+
+        abrirFormMassa(){
+            this.preload = true
+
+            if (this.formMassa.listaVencimentos.length > 0 && !this.formMassaDefault) {
+                this.formMassaDefault = _.cloneDeep(this.formMassa) //copia
+            }
+
+            Object.assign(this.formMassa, this.formMassaDefault)
+
+            this.atualizado = false
+            this.cadastrando = false
+            this.visualizar = false
+            this.cadastrado = false
+
+            setTimeout(() => {
+                this.preload = false
+            }, 1000)
         },
 
         formAlterar(curriculo_id) {
@@ -228,12 +321,12 @@ const app = new Vue({
 
                     if (!this.form.nr_trinta_tres) {
                         //NR33
-                        let index = _.findIndex(this.form.listaVencimentos, { 'id': 7 })
+                        let index = _.findIndex(this.form.listaVencimentos, {'id': 7})
                         this.form.listaVencimentos.splice(index, 1)
                     }
                     if (!this.form.nr_trinta_cinco) {
                         //NR35
-                        let index = _.findIndex(this.form.listaVencimentos, { 'id': 6 })
+                        let index = _.findIndex(this.form.listaVencimentos, {'id': 6})
                         this.form.listaVencimentos.splice(index, 1)
                     }
                     this.preload = false
@@ -249,7 +342,7 @@ const app = new Vue({
             // if (this.nr_trinta_tres || this.nr_trinta_cinco) {
             if (this.nr_trinta_tres) {
                 //NR33
-                let nr33 = _.find(this.form.listaVencimentos, { 'id': 7, 'fez_treinamento': false })
+                let nr33 = _.find(this.form.listaVencimentos, {'id': 7, 'fez_treinamento': false})
                 if (nr33) {
                     nr33.fez_treinamento = false
                     mostraErro('', 'ATENÇÃO NR33 não pode ser vazio!')
@@ -258,7 +351,7 @@ const app = new Vue({
             }
 
             if (this.nr_trinta_cinco) {
-                let nr35 = _.find(this.form.listaVencimentos, { 'id': 6, 'fez_treinamento': false })
+                let nr35 = _.find(this.form.listaVencimentos, {'id': 6, 'fez_treinamento': false})
 
                 if (nr35) {
                     nr35.fez_treinamento = false
@@ -277,6 +370,29 @@ const app = new Vue({
             this.preload = true
 
             axios.post(`${URL_ADMIN}/treinamento`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.preload = false
+                        this.cadastrado = true
+                        this.atualizar()
+                    }
+                }).catch(error => (this.preload = false))
+        },
+
+        salvarMassa() {
+            formReset()
+            $('#janelaTreinamentoMassa :input:visible').trigger('blur')
+
+
+            if ($('#janelaTreinamentoMassa :input:visible.is-invalid').length) {
+                mostraErro('', 'Verifique os erros')
+                return false
+            }
+
+            this.preload = true;
+            this.formMassa.selecionadosMassa = this.selecionadosMassa;
+
+            axios.post(`${URL_ADMIN}/treinamento/salvar-massa`, this.formMassa)
                 .then(response => {
                     if (response.status === 201) {
                         this.preload = false
@@ -416,7 +532,8 @@ const app = new Vue({
         carregou(dados) {
             this.lista = dados.itens
             this.selecionaTudo = this.tudoMarcado
-            this.vencimentos = dados.vencimentos
+            this.formMassa.listaVencimentos = dados.vencimentos
+
             this.controle.carregando = false
         },
         carregando() {
