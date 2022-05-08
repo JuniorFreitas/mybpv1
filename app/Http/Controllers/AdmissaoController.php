@@ -1201,6 +1201,9 @@ class AdmissaoController extends Controller
             'status_admissao' => Admissao::TODOS_STATUS_ADMISSAO,
             'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
             'todos_prazos' => Admissao::TODOS_PRAZOS,
+            'todos_status_treinamentos' => Admissao::TODOS_STATUS_TREINAMENTOS,
+            'todos_status_documentos' => Admissao::TODOS_STATUS_DOCUMENTOS,
+            'todos_status_documentos_portaria' => Admissao::TODOS_STATUS_DOCUMENTOS_PORTARIA,
         ]);
     }
 

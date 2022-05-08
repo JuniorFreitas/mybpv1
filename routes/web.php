@@ -373,6 +373,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         Route::group(['as' => 'mobilizacao.'], function () {
             Route::post('mobilizacao/atualizar', [\App\Http\Controllers\MobilizacaoController::class, 'atualizar'])->name('atualizar')->middleware('can:planejamento_mobilizacao');
+            Route::post('mobilizacao/export-excel', [\App\Http\Controllers\MobilizacaoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:planejamento_mobilizacao');
+            Route::get('mobilizacao/pdf/{projeto}', [\App\Http\Controllers\MobilizacaoController::class, 'geraPdf'])->name('geraPdf')->middleware('can:planejamento_mobilizacao');
             Route::get('mobilizacao/get-projetos', [\App\Http\Controllers\MobilizacaoController::class, 'getProjetos'])->name('getProjetos')->middleware('can:planejamento_mobilizacao');
             Route::get('mobilizacao/seleciona-projeto/{projeto}', [\App\Http\Controllers\MobilizacaoController::class, 'selecionaProjeto'])->name('seleciona-projeto')->middleware('can:planejamento_mobilizacao');
             Route::get('mobilizacao', [\App\Http\Controllers\MobilizacaoController::class, 'index'])->name('index')->middleware('can:planejamento_mobilizacao');

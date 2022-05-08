@@ -47,9 +47,7 @@
                         onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
                         v-model="form.documento">
                     <option value="">Selecione</option>
-                    <option value="PENDENTE">PENDENTE</option>
-                    <option value="INCOMPLETO">INCOMPLETO</option>
-                    <option value="CONCLUIDO">CONCLUIDO</option>
+                    <option v-for="item in listSelects.todos_status_documentos" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -61,8 +59,7 @@
                         onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
                         v-model="form.documento_portaria">
                     <option value="">Selecione</option>
-                    <option value="PENDENTE">PENDENTE</option>
-                    <option value="CONCLUIDO">CONCLUIDO</option>
+                    <option v-for="item in listSelects.todos_status_documentos_portaria" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -106,9 +103,7 @@
                         onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
                         v-model="form.treinamento">
                     <option value="">Selecione</option>
-                    <option value="AGENDAR">AGENDAR</option>
-                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                    <option value="REALIZADO">REALIZADO</option>
+                    <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -134,9 +129,7 @@
                         onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
                         v-model="form.nr_trinta_tres">
                     <option value="">Selecione</option>
-                    <option value="AGENDAR">AGENDAR</option>
-                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                    <option value="REALIZADO">REALIZADO</option>
+                    <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -148,9 +141,7 @@
                         onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
                         v-model="form.nr_trinta_cinco">
                     <option value="">Selecione</option>
-                    <option value="AGENDAR">AGENDAR</option>
-                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                    <option value="REALIZADO">REALIZADO</option>
+                    <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>

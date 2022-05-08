@@ -359,6 +359,31 @@ class Admissao extends Model
         self::SESSENTA_MAIS_TRINTA,
     ];
 
+    const DOC_PENDENTE = "PENDENTE";
+    const DOC_INCOMPLETO = "INCOMPLETO";
+    const DOC_CONCLUIDO = "CONCLUIDO";
+
+    const TODOS_STATUS_DOCUMENTOS = [
+        self::DOC_PENDENTE,
+        self::DOC_INCOMPLETO,
+        self::DOC_CONCLUIDO
+    ];
+
+    const TODOS_STATUS_DOCUMENTOS_PORTARIA = [
+        self::DOC_PENDENTE,
+        self::DOC_CONCLUIDO
+    ];
+
+    const STATUS_TREINAMENTO_AGENDAR = "AGENDAR";
+    const STATUS_TREINAMENTO_NAO_SE_APLICA = "NÃO SE APLICA";
+    const STATUS_TREINAMENTO_REALIZADO = "REALIZADO";
+
+    const TODOS_STATUS_TREINAMENTOS = [
+        self::STATUS_TREINAMENTO_AGENDAR,
+        self::STATUS_TREINAMENTO_NAO_SE_APLICA,
+        self::STATUS_TREINAMENTO_REALIZADO
+    ];
+
     public function pExperiencia()
     {
         switch ($this->attributes['prazo_experiencia']) {
@@ -411,7 +436,7 @@ class Admissao extends Model
         if (!is_null($value)) {
             $data = new DataHora($value);
             $this->attributes['data_adm_prevista'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['data_adm_prevista'] = null;
         }
     }
@@ -469,7 +494,7 @@ class Admissao extends Model
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_biometria'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['data_biometria'] = null;
         }
     }
@@ -489,7 +514,7 @@ class Admissao extends Model
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_desmobilizacao'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['data_desmobilizacao'] = null;
         }
     }
@@ -509,7 +534,7 @@ class Admissao extends Model
         if (!is_null($value)) {
             $data = new DataHora($value);
             $this->attributes['data_desmob'] = $data->dataHoraInsert();
-        }else{
+        } else {
             $this->attributes['data_desmob'] = null;
         }
     }
@@ -530,7 +555,7 @@ class Admissao extends Model
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_avaliacao'] = $data->dataHoraInsert();
-        }else{
+        } else {
             $this->attributes['data_avaliacao'] = null;
         }
     }
@@ -567,7 +592,7 @@ class Admissao extends Model
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_admissao'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['data_admissao'] = null;
         }
     }
