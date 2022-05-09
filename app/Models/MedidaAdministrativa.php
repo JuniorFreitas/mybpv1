@@ -106,6 +106,7 @@ class MedidaAdministrativa extends Model
         'Desrespeito às normas de SSMA',
         'Descumprimento dos procedimentos internos',
         'Insubordinação',
+        'Desidia',
         'Sob efeito ou uso de drogas',
         'Negociação administrativa e comercial sem consentimento',
         'Violação de segredos estratégicos',
