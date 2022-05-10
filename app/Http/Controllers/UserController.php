@@ -144,6 +144,11 @@ class UserController extends Controller
                     foreach ($dados['user_recebe_email'] as $index => $email) {
                         $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
                     }
+                }else if (count($usuario->UserRecebeEmail) < count($dados['user_recebe_email'])){
+                    foreach ($dados['user_recebe_email'] as $index => $email) {
+                        $usuario->UserRecebeEmail()->detach($index);
+                        $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
+                    }
                 } else {
                     foreach ($dados['user_recebe_email'] as $index => $email) {
                         $usuario->UserRecebeEmail()->updateExistingPivot($index, ['ativo' => $email]);

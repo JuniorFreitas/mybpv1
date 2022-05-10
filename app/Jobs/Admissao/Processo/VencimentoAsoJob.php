@@ -2,6 +2,9 @@
 
 namespace App\Jobs\Admissao\Processo;
 
+use App\Mail\Admissao\Processo\VencimentoAsoMail;
+use App\Models\ClienteConfig;
+use App\Models\FeedbackCurriculo;
 use App\Models\Sistema;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -42,64 +45,60 @@ class VencimentoAsoJob implements ShouldQueue
      */
     public function handle()
     {
-        $agora = new DataHora();
-        $agora = $agora->dataCompleta();
-
         $listaDeEmprasaID = Sistema::listaEmpresas();
 
         foreach ($listaDeEmprasaID as $empresa_id) {
 
-            $vencimentoParaLembrar = AvaliacaoNoventaVencimento::whereHas('FeedbackCurriculo', function ($q) use ($empresa_id) {
-                $q->withoutGlobalScopes()->where('empresa_id', $empresa_id);
-            })->with(['FeedbackCurriculo' => function ($q) use ($empresa_id) {
-                $q->withoutGlobalScopes()->where('empresa_id', $empresa_id);
-            }, 'FeedbackCurriculo.Curriculo' => function ($qu) {
-                $qu->withoutGlobalScopes();
-            }])->get();
+            $cliente = ClienteConfig::whereClienteId($empresa_id)->first();
 
-            $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                ->whereIn('tipo', ['Administrador', 'Suporte'])
-                ->whereHas('UserRecebeEmail', function ($q) {
-                    $q->where('nome', 'Avaliação 90 Dias');
-                    $q->where('ativo', true);
-                })
-                ->with(['UserRecebeEmail' => function ($q) {
-                    $q->where('nome', 'Avaliação 90 Dias');
-                    $q->where('ativo', true);
-                }])
-                ->get(['id', 'nome', 'login']);
+            if (!empty($cliente)) {
 
-            foreach ($usuarios as $usuario) {
-                $vencimentos = array();
-                $dados = array();
-                foreach ($vencimentoParaLembrar as $vencimento) {
+                $agora = new DataHora();
+                $addMes = $agora->addMes($cliente->vencimento_aso);
+                $addMes = new DataHora($addMes);
+                $addMes = $addMes->dataInsert();
 
-                    $dados['colaborador'] = $vencimento['FeedbackCurriculo']['Curriculo']->nome;
-                    if ($vencimento['prazo_dez_inicial'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
-                    } elseif ($vencimento['prazo_cinco_inicial'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
-                    } elseif ($vencimento['prazo_dia_inicial'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
-                    } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_dez_final'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
-                    } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_cinco_final'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
-                    } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_dia_final'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
 
+                $vencimentoParaLembrar = FeedbackCurriculo::withoutGlobalScopes()->where('empresa_id', $empresa_id)
+                    ->whereHas('Admissao', function ($q) use ($addMes) {
+                        $q->whereDataAso($addMes);
+                    })->with(['Admissao' => function ($q) use ($addMes) {
+                        $q->whereDataAso($addMes);
+                    }, 'Curriculo'])
+                    ->get();
+
+                $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                    ->whereAtivo(true)
+                    ->whereHas('UserRecebeEmail', function ($q) {
+                        $q->where('nome', 'Vencimento ASO');
+                        $q->where('ativo', true);
+                    })
+                    ->with(['UserRecebeEmail' => function ($q) {
+                        $q->where('nome', 'Vencimento ASO');
+                        $q->where('ativo', true);
+                    }])
+                    ->get(['id', 'nome', 'login']);
+
+                foreach ($usuarios as $usuario) {
+                    $vencimentos = array();
+                    $dados = array();
+                    foreach ($vencimentoParaLembrar as $vencimento) {
+
+                        $dados['colaborador'] = $vencimento->Curriculo->nome;
+                        $dados['data_aso'] = $vencimento->Admissao->data_aso;
+
+                        if (!empty($dados)) {
+                            array_push($vencimentos, $dados);
+                        }
                     }
-                    if (!empty($dados['prazo_vencido'])){
-                        array_push($vencimentos, $dados);
-                    }
-                }
 
-                if (!empty($vencimentos)){
-                    \Mail::send(new AvaliacaoNoventaVencimentoMail([
-                        'usuario' => $usuario,
-                        'vencimentos' => $vencimentos,
-                        'empresa_id' => $empresa_id,
-                    ]));
+                    if (!empty($vencimentos)) {
+                        \Mail::send(new VencimentoAsoMail([
+                            'usuario' => $usuario,
+                            'vencimentos' => $vencimentos,
+                            'empresa_id' => $empresa_id,
+                        ]));
+                    }
                 }
             }
         }

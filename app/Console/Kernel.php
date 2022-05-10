@@ -43,7 +43,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(new VerificaSaidaFeriasJob)->monthly();
         $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily();
         $schedule->call(new JobDeletaExportacaoExcel)->daily();
-        $schedule->call(new VencimentoAsoJob())->daily();
+        $schedule->call(new VencimentoAsoJob)->daily();
     }
 
     /**

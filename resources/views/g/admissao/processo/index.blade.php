@@ -1218,6 +1218,20 @@
                 </div>
             </div>
 
+            <div class="col-12 col-md-3">
+                <div class="form-check" style="margin-bottom: -11px;">
+                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
+                           id="filtroIntervaloAso"
+                           v-model="controle.dados.filtroAso">
+                    <label class="form-check-label cursor-pointer" for="filtroIntervaloAso">Data do ASO</label>
+                </div>
+                <div class="form-group">
+                    <datepicker range formsm label=""
+                                :disabled="controle.carregando || !controle.dados.filtroAso"
+                                v-model="controle.dados.campoAso"></datepicker>
+                </div>
+            </div>
+
             <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                 <div class="form-group">
                     <label>Nome</label>
@@ -1359,6 +1373,7 @@
                     <th>Resp. Encaminhamento</th>
                     <th>Crachá</th>
                     <th>Foto 3x4</th>
+                    <th v-if="controle.dados.filtroAso">Data ASO</th>
                     <th>Status Admissão</th>
                     <th>
                         <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
@@ -1437,6 +1452,10 @@
 
                     <td>
                         @{{item.curriculo.foto_tres.length > 0 ? 'SIM' : 'NÃO' }}
+                    </td>
+
+                    <td v-if="controle.dados.filtroAso">
+                        @{{item.admissao ? item.admissao.data_aso : '' }}
                     </td>
 
                     <td>

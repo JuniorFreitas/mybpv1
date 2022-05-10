@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  * @property bool|null $envia_whatsapp
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereEnviaWhatsapp($value)
+ * @property int|null $vencimento_aso
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
  */
 class ClienteConfig extends Model
 {
