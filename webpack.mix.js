@@ -192,7 +192,6 @@ mix.babel([
     // 'resources/template/app.js',
 
     "resources/js/funcoes.js",
-    "resources/js/bootstraptable.js",
     "resources/js/jquery.mask.js",
     "resources/js/jquery.maskMoney.js"
 ], "public/js/funcoes.js");
