@@ -107,23 +107,23 @@
                         @endif
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
-                               <span style="font-family: 'Sacramento', cursive; color: white">
-                                    -
+                                <span style="font-family: 'Sacramento', cursive; color: blue">
+                                    {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome }}
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
-                                <span style="font-family: 'Sacramento', cursive; color: white">
-                                    -
+                               <span style="font-family: 'Sacramento', cursive; color: blue">
+                                   {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome }}
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td align="center"
                                 style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; border-right: none; text-align: center;">
-                                SESMT
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo }}
                             </td>
                             <td align="center" style="height: 0.02cm; border-top:none; " colspan="2">
-                                GERENTE OU RH
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo }}
                             </td>
                         </tr>
 
@@ -472,23 +472,23 @@
                         @endif
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
-                                <span style="font-family: 'Sacramento', cursive; color: white">
-                                    -
+                                <span style="font-family: 'Sacramento', cursive; color: blue">
+                                    {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome }}
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
-                               <span style="font-family: 'Sacramento', cursive; color: white">
-                                    -
+                               <span style="font-family: 'Sacramento', cursive; color: blue">
+                                   {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome }}
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td align="center"
                                 style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; border-right: none; text-align: center;">
-                                SESMT
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo }}
                             </td>
                             <td align="center" style="height: 0.02cm; border-top:none; " colspan="2">
-                                GERENTE OU RH
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo }}
                             </td>
                         </tr>
 
