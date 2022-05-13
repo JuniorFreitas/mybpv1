@@ -18,7 +18,6 @@ use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use App\Models\VagasAbertas;
-use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 use Mail;
@@ -312,7 +311,7 @@ class VagaAbertaController extends Controller
                 if ($dados['temexperiencia'] == 'true') {
                     foreach ($dados['experiencias'] as $linha) {
                         $linha['curriculo_id'] = $usuario->id;
-                        $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
+                        $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
                         CurriculoExperiencia::create($linha);
                     }
                 }
@@ -385,10 +384,10 @@ class VagaAbertaController extends Controller
                     }
                     foreach ($dados['experiencias'] as $linha) {
                         if (isset($linha['id'])) {
-                            $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
+                            $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
                             $curriculo->Experiencias()->find($linha['id'])->update($linha);
                         } else {
-                            $linha['data_fim'] = $linha['data_fim'] == "" ? Carbon::now() : $linha['data_fim'];
+                            $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
                             $curriculo->Experiencias()->create($linha);
                         }
                     }

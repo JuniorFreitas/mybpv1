@@ -48,7 +48,8 @@ class CurriculoExperiencia extends Model
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
 
-    public function getDescriptionForEvent(string $eventName): string {
+    public function getDescriptionForEvent(string $eventName): string
+    {
         return $eventName;
     }
 
@@ -87,7 +88,7 @@ class CurriculoExperiencia extends Model
 
     public function Curriculo()
     {
-        return $this->hasOne(Curriculo::class,'id','curriculo');
+        return $this->hasOne(Curriculo::class, 'id', 'curriculo');
     }
 
     //Acessor ->data_inicio
@@ -114,8 +115,12 @@ class CurriculoExperiencia extends Model
     //Modificador ->data_fim
     public function setDataFimAttribute($value)
     {
-        $data = new DataHora($value);
-        $this->attributes['data_fim'] = $data->dataInsert();
+        if (!is_null($value)) {
+            $data = new DataHora($value);
+            $this->attributes['data_fim'] = $data->dataInsert();
+        } else {
+            $this->attributes['data_fim'] = null;
+        }
     }
 
 }
