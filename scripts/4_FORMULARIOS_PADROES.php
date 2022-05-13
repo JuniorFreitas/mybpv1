@@ -14,7 +14,9 @@ ini_set('memory_limit', '-1');
 ini_set('max_execution_time', '-1');
 
 unset($argv[0]);
-$Empresas = \App\Models\User::select('id', 'nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
+$empresa_id = $argv[1];
+$Empresa = DB::table('clientes')->find($empresa_id);
+
 $formPos = "Formulario CheckList Pos Admissão";
 $formExame = "Exames";
 
@@ -23,8 +25,7 @@ try {
     $tblForm = \App\Models\Formulario::withoutGlobalScopes();
     //    ---------------------Formulario de PosAdmissao -----------------------------
     echo "Iniciando Sincronização Formulario $formPos...\n";
-    foreach ($Empresas as $Empresa) {
-
+//    foreach ($Empresas as $Empresa) {
         if ($tblForm->where('empresa_id', $Empresa->id)->where('titulo', $formPos)->count() == 0) {
             echo $Empresa->nome . " Formulario $formPos" . "\n";
             $dadosFormPosAdmissao = ['empresa_id' => $Empresa->id, 'titulo' => $formPos, 'descricao' => null];
@@ -113,7 +114,7 @@ try {
 //                $Setor = \App\Models\Setor::create($dadosSetor);
             }
         }
-    }
+//    }
     echo "Fim de Sincronização Formulario $formPos...\n";
 
     //    ---------------------Formulario de Exames -----------------------------
@@ -127,7 +128,7 @@ try {
 //        }
 //    }
 //    echo "Fim de Sincronização Formulario $formExame...\n";
-//    DB::commit();
+    DB::commit();
 
 } catch (Exception $e) {
     DB::rollBack();

@@ -101,10 +101,10 @@
         <tr>
             <td align="middle">
                 @if(isset($empresa) && !empty($empresa))
-                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_{{$empresa->apelido}}.jpg"
+                    <img src="{{env('AWS_URL')}}/public/email_{{$empresa->apelido}}.jpg"
                          style="width: 100%" alt=""> <br>
                 @else
-                    <img src="https://mybp-prod.s3.amazonaws.com/public/email_bpse.jpg" style="width: 100%" alt=""> <br>
+                    <img src="{{env('AWS_URL')}}/public/email_bpse.jpg" style="width: 100%" alt=""> <br>
                 @endif
             </td>
         </tr>
@@ -143,7 +143,7 @@
     <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
         <tr style="background-color: #072433; padding-top: 15px; padding-bottom: 15px">
             <td align="middle" style="padding: 21px">
-                <img src="https://mybp-prod.s3.amazonaws.com/logo_mybp.png" alt="" style="height: 75px"> <br>
+                <img src="{{env('AWS_URL')}}/logo_mybp.png" alt="" style="height: 75px"> <br>
             </td>
         </tr>
     </table>

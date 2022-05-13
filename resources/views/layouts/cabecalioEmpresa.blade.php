@@ -4,7 +4,7 @@
         <th style="font-size: 17pt; font-weight: normal !important; padding-right: 10px; width: 60px">
             @if(count(auth()->user()->ClientesLogo) > 0)
                 <img
-                    src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                    src="{{auth()->user()->ClientesLogo[0]->urlThumb}}"
                     alt="BPSE" title="BPSE" style="height: 70px; margin-top: 0px;">
                 <br>
             @endif

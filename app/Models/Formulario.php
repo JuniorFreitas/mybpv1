@@ -44,11 +44,11 @@ class Formulario extends Model
 
     protected static function booted() {
         static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
+            $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
         });
 
         static::updating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
+            $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
         });
 
         static::addGlobalScope(new ScopeEmpresa());
