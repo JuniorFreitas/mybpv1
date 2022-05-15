@@ -511,7 +511,8 @@ const app = new Vue({
                 campoPcd: "",
                 campoCliente: "",
                 campoStatusAdmissao: "",
-                campoUf: ""
+                campoUf: "",
+                campoAso:""
             }
         }
     },

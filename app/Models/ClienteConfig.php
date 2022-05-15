@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  * @property bool|null $envia_whatsapp
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereEnviaWhatsapp($value)
+ * @property int|null $vencimento_aso
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
  */
 class ClienteConfig extends Model
 {
@@ -31,12 +33,14 @@ class ClienteConfig extends Model
         'envia_whatsapp',
         'verifica_mes_vencimento',
         'cliente_id',
+        'vencimento_aso',
     ];
 
     protected $casts = [
         'envia_whatsapp' => 'boolean',
         'verifica_mes_vencimento' => 'int',
         'cliente_id' => 'int',
+        'vencimento_aso' => 'int',
     ];
 
     public $timestamps = false;

@@ -219,6 +219,7 @@ class ClientesController extends Controller
                     $dados = [
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                         'cliente_id' => $cliente->id
                     ];
                     ClienteConfig::create($dados);
@@ -525,11 +526,13 @@ class ClientesController extends Controller
                     $config->update([
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                     ]);
                 } else {
                     $dados = [
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                         'cliente_id' => $cliente->id
                     ];
                     ClienteConfig::create($dados);

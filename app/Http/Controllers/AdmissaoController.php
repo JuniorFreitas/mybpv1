@@ -1135,6 +1135,18 @@ class AdmissaoController extends Controller
             });
         }
 
+
+        $filtroAso = $request->filtroAso == 'true';
+
+        if ($filtroAso) {
+            $periodo = explode(' até ', $request->campoAso);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->whereHas('Admissao', function ($q) use ($dataInicio, $dataFim) {
+                $q->where('data_aso', '>=', $dataInicio->dataInsert())->where('data_aso', '<=', $dataFim->dataInsert());
+            });
+        }
+
         if ($request->filled('campoCliente')) {
             $resultado->whereClienteId($request->campoCliente);
         }
