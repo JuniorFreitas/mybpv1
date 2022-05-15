@@ -476,7 +476,7 @@ class TreinamentoController extends Controller
 
     public function carteiraPdf(Request $request)
     {
-        $treinamentos = Treinamento::whereIn('id', $request->selecionados)->orWhereIn('feedback_id', $request->selecionados)->get();
+        $treinamentos = Treinamento::whereIn('feedback_id', $request->selecionados)->get();
 
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
     }

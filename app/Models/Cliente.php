@@ -411,6 +411,19 @@ class Cliente extends Model
         return $this->Temporaria()->whereAtivo(true);
     }
 
+    public function CarteiraAssinatura()
+    {
+        return $this->hasOne(CarteiraAssinatura::class, 'empresa_id', 'id');
+    }
+
+    public function CarteiraAssinaturaGestorRh(){
+        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_GERENTE_OU_RH)->first();
+    }
+
+    public function CarteiraAssinaturaSesmt(){
+        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_SESMT)->first();
+    }
+
     protected static function booted()
     {
         static::updating(function ($model) {

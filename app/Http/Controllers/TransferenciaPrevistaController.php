@@ -227,7 +227,7 @@ class TransferenciaPrevistaController extends Controller
             'QuemAprovou:id,nome',
             'UserCadastrou:id,nome',
             'GestorAprovacao:id,nome',
-            'Colaborador');
+            'Colaborador','UserAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
         if ($filtroPeriodo) {
@@ -304,4 +304,31 @@ class TransferenciaPrevistaController extends Controller
         return \Excel::download(new ModeloRowsExport($head, $rows), 'Transferência - ' . (new DataHora())->nomeUnico() . '.xlsx');
 
     }
+    public function atualizacaoStatus(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            foreach ($request->selecionados[0] as $selecionado) {
+
+                $dados = TransferenciaPrevista::find($selecionado);
+
+                $dados->update([
+                    'user_aprovacao_id' => auth()->id(),
+                    'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                    'obs_aprovacao' => $request->obs_aprovacao,
+                    'status_aprovacao' => $request->status_aprovacao,
+                ]);
+
+                DB::commit();
+            }
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar solicitação em massa:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+    }
+
 }

@@ -123,6 +123,28 @@
             </template>
         </modal>
 
+        <modal id="janelaAtualizaStatus" titulo="Deseja APROVAR ou REPROVAR todos os colaboradores selecionados?"
+               :centralizada="true" label-fechar="Fechar">
+            <template slot="conteudo">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label>Observação</label>
+                        <textarea class="form-control"
+                                  v-model="formConfirmacao.obs_aprovacao"
+                                  cols="5" rows="5"></textarea>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="button" class="btn btn-sm btn-success" @click="confirmaAtualizacaoStatus('aprovado')">
+                        APROVAR
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" @click="confirmaAtualizacaoStatus('reprovado')">
+                        REPROVAR
+                    </button>
+                </div>
+            </template>
+        </modal>
+
         <fieldset class="mt-0">
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
@@ -178,6 +200,14 @@
                             @click.prevent="formNovo">
                         Solicitar
                     </button>
+
+                    <button type="submit" class="btn btn-sm btn-primary mr-1" v-show="selecionados.length > 0"
+                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                            :disabled="selecionados.length === 0"
+                            data-toggle="modal"
+                            data-target="#janelaAtualizaStatus">
+                        Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
+                    </button>
                 </div>
             </form>
         </fieldset>
@@ -202,6 +232,12 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
+                        <th class="text-center">
+                            <input type="checkbox"
+                                   :style="naoAprovados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                                   :disabled="naoAprovados.length === 0" :checked="tudoMarcado"
+                                   @click="selecionaTodos">
+                        </th>
                         <th>CÓD</th>
                         <th>Solicitação</th>
                         <th>Centro de custo</th>
@@ -215,6 +251,21 @@
                     <tbody>
                     <tr v-for="item in lista"
                         :class="!item.status_aprovacao ? 'table-warning' : item.status_aprovacao === 'reprovado' ? 'table-danger' : item.status_aprovacao === 'aprovado' ? 'table-success' : null">
+                        <td class="text-center">
+                            <label :for="item.id">
+                                <input
+                                    type="checkbox"
+                                    v-model="selecionados"
+                                    :value="item.id"
+                                    :id="item.id"
+                                    :style="!item.status_aprovacao ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                    :title="item.status_aprovacao ? null : 'Não possui aprovação'"
+                                    v-if="!item.status_aprovacao"
+                                >
+                                <input type="checkbox" v-else disabled="disabled" title="Status já atualizado">
+
+                            </label>
+                        </td>
                         <td>
                             {{ item.id }}
                         </td>
@@ -243,7 +294,7 @@
 
                         <span v-if="item.status_aprovacao !== null">
                             <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br/>
-                            Por: {{ item.gestor_aprovacao.nome }}
+                            Por: {{ item.user_aprovacao.nome }}
                         </span>
 
                             <span v-else>
@@ -317,6 +368,18 @@ export default {
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
+
+            selecionados: [],
+            selecionaTudo: false,
+
+            formConfirmacao: {
+                selecionados: [],
+                obs_aprovacao: '',
+                status_aprovacao: '',
+            },
+
+            formConfirmacaoDefault: null,
+
             form: {
 
                 colaborador_id: '',
@@ -362,8 +425,77 @@ export default {
     mounted() {
         this.atualizar();
         this.formDefault = _.cloneDeep(this.form) //copia
+
+        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao);
+    },
+    computed: {
+        naoAprovados() {
+            return this.lista.filter(item => {
+                if (item.status_aprovacao === null) {
+                    return item.id
+                }
+            })
+        },
+        tudoMarcado() {
+            let totalAprovado = this.naoAprovados.length
+            let totalEncontrado = 0
+
+            if (totalAprovado === 0) {
+                return false
+            }
+
+            this.naoAprovados.forEach(item => {
+                let id = item.id
+                if (this.selecionados.indexOf(id) >= 0) {
+                    totalEncontrado++
+                } else {
+                    return false
+                }
+            })
+            let resultado = totalAprovado === totalEncontrado
+            this.selecionaTudo = resultado
+            return resultado
+        },
     },
     methods: {
+        selecionaTodos() {
+            this.selecionaTudo = !this.selecionaTudo
+            if (this.selecionaTudo) {
+                this.naoAprovados.map(item => {
+                    let id = item.id
+                    if (this.selecionados.indexOf(id) === -1) {
+                        this.selecionados.push(id)
+                    }
+                })
+            } else {
+                this.naoAprovados.map(item => {
+                    let id = item.id
+                    let index = this.selecionados.indexOf(id)
+                    if (index >= 0) {
+                        this.selecionados.splice(index, 1)
+                    }
+                })
+            }
+        },
+        confirmaAtualizacaoStatus(confirmacao) {
+
+            this.preloadAtualizacao = true;
+            this.formConfirmacao.status_aprovacao = confirmacao;
+            this.formConfirmacao.selecionados.push(this.selecionados)
+
+            axios.post(`${URL_ADMIN}/planejamento/movimentacao/valor-extra-prevista/atualizacao-status`, this.formConfirmacao)
+                .then(res => {
+                    this.preloadAtualizacao = false;
+                    $('#janelaAtualizaStatus').modal('hide');
+                    mostraSucesso('Status atualizados com sucesso!');
+                    this.selecionados = [];
+                    this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault) //copia
+                    this.$refs.componente.buscar();
+                })
+                .catch(error => {
+                    this.preloadAtualizacao = false;
+                });
+        },
         /***Campos de Filtros ****/
         selecionaVaga(obj) {
             this.controle.dados.campoVaga = obj.id;

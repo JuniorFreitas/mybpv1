@@ -164,4 +164,10 @@ class AdmissoesPrevista extends Model
     {
         return $this->hasOne(User::class, 'id', 'gestor_id');
     }
+
+
+    public function UserAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
 }

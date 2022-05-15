@@ -321,6 +321,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'movimentacao.', 'prefix' => 'movimentacao'], function () {
 
             Route::group(['as' => 'solicitacao_demissao.'], function () {
+                Route::post('demissao-prevista/atualizacao-status', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizacaoStatus'])->name('demissao-prevista.atualizacaoStatus');
                 Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
                 Route::post('demissao-prevista/atualizar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovar'])->name('aprovar');
@@ -337,30 +338,35 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             });
 
             Route::group(['as' => 'solicitacao_admissoes.'], function () {
+                Route::post('admissoes-prevista/atualizacao-status', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizacaoStatus'])->name('admissoes-prevista.atualizacaoStatus');
                 Route::post('admissoes-prevista/atualizar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('admissoes-prevista/{admissoesPrevista}/aprovar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'aprovar'])->name('aprovar');
                 Route::resource('admissoes-prevista', \App\Http\Controllers\AdmissoesPrevistaController::class, ['parameters' => ['admissoes-prevista' => 'admissoes_prevista']]);
             });
 
             Route::group(['as' => 'solicitacao_valor-extra.'], function () {
+                Route::post('valor-extra-prevista/atualizacao-status', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'atualizacaoStatus'])->name('valor-extra-prevista.atualizacaoStatus');
                 Route::post('valor-extra-prevista/atualizar', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('valor-extra-prevista/{valorExtraPrevista}/aprovar', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'aprovar'])->name('aprovar');
                 Route::resource('valor-extra-prevista', \App\Http\Controllers\ValorExtraPrevistaController::class, ['parameters' => ['valor-extra-prevista' => 'valor_extra_prevista']]);
             });
 
             Route::group(['as' => 'solicitacao_cargo.'], function () {
+                Route::post('muda-cargo-prevista/atualizacao-status', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizacaoStatus'])->name('muda-cargo-prevista.atualizacaoStatus');
                 Route::post('muda-cargo-prevista/atualizar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('muda-cargo-prevista/{mudaCargoPrevista}/aprovar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'aprovar'])->name('aprovar');
                 Route::resource('muda-cargo-prevista', \App\Http\Controllers\MudaCargoPrevistaController::class, ['parameters' => ['muda-cargo-prevista' => 'muda_cargo_prevista']]);
             });
 
             Route::group(['as' => 'solicitacao_intermitente.'], function () {
+                Route::post('intermitente-fixo-prevista/atualizacao-status', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizacaoStatus'])->name('intermitente-fixo-prevista.atualizacaoStatus');
                 Route::post('intermitente-fixo-prevista/atualizar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('intermitente-fixo-prevista/{intermitenteFixoPrevista}/aprovar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'aprovar'])->name('aprovar');
                 Route::resource('intermitente-fixo-prevista', \App\Http\Controllers\IntermitenteFixoPrevistaController::class, ['parameters' => ['intermitente-fixo-prevista' => 'intermitente_fixo_prevista']]);
             });
 
             Route::group(['as' => 'solicitacao_transferencia.'], function () {
+                Route::post('transferencia-prevista/atualizacao-status', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizacaoStatus'])->name('transferencia-prevista.atualizacaoStatus');
 //                Route::post('transferencia-prevista/exportaExcel', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'exportaExcel'])->name('exportaExcel');
                 Route::post('transferencia-prevista/atualizar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovar'])->name('aprovar');

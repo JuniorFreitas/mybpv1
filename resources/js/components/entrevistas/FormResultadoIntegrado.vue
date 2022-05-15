@@ -30,6 +30,18 @@
                         v-model="form.documentos_entregue_data"
                     ></datepicker>
                 </div>
+                <div class="col-2" v-if="form.documentos_entregue">
+                    <div class="switchToggle">
+                        <input type="checkbox" v-model="form.envia_email_documentos" id="envia_email_documentos">
+                        <label for="envia_email_documentos">Enviar E-mail</label>
+                    </div>
+                </div>
+                <div class="col-2" v-if="form.documentos_entregue">
+                    <div class="switchToggle">
+                        <input type="checkbox" v-model="form.envia_whatsapp_documentos" id="envia_whatsapp_documentos">
+                        <label for="envia_whatsapp_documentos">Enviar Whatsapp</label>
+                    </div>
+                </div>
             </div>
         </fieldset>
 
@@ -92,6 +104,19 @@
                         onblur="valida_campo_vazio(this,1)"
                         v-model="form.encaminhado_exame_data"
                     ></datepicker>
+                </div>
+
+                <div class="col-2" v-if="form.encaminhado_exame">
+                    <div class="switchToggle">
+                        <input type="checkbox" v-model="form.envia_email_exame" id="envia_email_exame">
+                        <label for="envia_email_exame">Enviar E-mail</label>
+                    </div>
+                </div>
+                <div class="col-2" v-if="form.encaminhado_exame">
+                    <div class="switchToggle">
+                        <input type="checkbox" v-model="form.envia_whatsapp_exame" id="envia_whatsapp_exame">
+                        <label for="envia_whatsapp_exame">Enviar Whatsapp</label>
+                    </div>
                 </div>
             </div>
         </fieldset>
@@ -184,7 +209,7 @@
                     <label>Observações</label>
                     <input type="text" :disabled="visualizar || disabled || form.obs === 'ADMISSÃO AVULSA'"
                            autocomplete="off"
-                           class="form-control" v-model="form.obs" />
+                           class="form-control" v-model="form.obs"/>
                 </div>
             </div>
         </div>
@@ -214,7 +239,11 @@ export default {
                 excessao: "",
                 autorizado_por: "",
                 responsavel_envio: "",
-                obs: ""
+                obs: "",
+                envia_email_documentos: false,
+                envia_whatsapp_documentos: false,
+                envia_email_exame: false,
+                envia_whatsapp_exame: false,
             }
         },
         visualizar: {

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
 use DateTimeInterface;
 use MasterTag\DataHora;
 
@@ -138,5 +138,10 @@ class TransferenciaPrevista extends Model
     public function GestorAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'gestor_id');
+    }
+
+    public function UserAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
     }
 }

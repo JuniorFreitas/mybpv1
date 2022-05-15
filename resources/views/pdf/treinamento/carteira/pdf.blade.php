@@ -15,7 +15,7 @@
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
                                 @if(count(auth()->user()->ClientesLogo) > 0)
                                     <img
-                                        src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                        src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                         alt="Logo" title="Logo" style="height: 0.6cm">
                                     <br>
                                 @endif
@@ -107,23 +107,23 @@
                         @endif
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
-                               <span style="font-family: 'Sacramento', cursive; color: white">
-                                    -
+                                <span style="font-family: 'Sacramento', cursive; color: blue">
+                                    {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
-                                <span style="font-family: 'Sacramento', cursive; color: white">
-                                    -
+                               <span style="font-family: 'Sacramento', cursive; color: blue">
+                                   {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome : 'Não informado' }}
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td align="center"
                                 style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; border-right: none; text-align: center;">
-                                SESMT
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo : 'Não informado' }}
                             </td>
                             <td align="center" style="height: 0.02cm; border-top:none; " colspan="2">
-                                GERENTE OU RH
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo : 'Não informado' }}
                             </td>
                         </tr>
 
@@ -266,7 +266,7 @@
                     <div class="logo">
                         @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo">
                             <br>
                         @endif
@@ -303,7 +303,7 @@
                     <div class="logo">
                         @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo">
                             <br>
                         @endif
@@ -379,7 +379,7 @@
                                 style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
                                 @if(count(auth()->user()->ClientesLogo) > 0)
                                     <img
-                                        src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                        src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                         alt="Logo" title="Logo" style="height: 0.6cm">
                                     <br>
                                 @endif
@@ -472,23 +472,23 @@
                         @endif
                         <tr>
                             <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
-                                <span style="font-family: 'Sacramento', cursive; color: white">
-                                    -
+                                <span style="font-family: 'Sacramento', cursive; color: blue">
+                                    {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}
                                 </span>
                             </td>
                             <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
-                               <span style="font-family: 'Sacramento', cursive; color: white">
-                                    -
+                               <span style="font-family: 'Sacramento', cursive; color: blue">
+                                   {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome : 'Não informado' }}
                                 </span>
                             </td>
                         </tr>
                         <tr>
                             <td align="center"
                                 style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; border-right: none; text-align: center;">
-                                SESMT
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo : 'Não informado' }}
                             </td>
                             <td align="center" style="height: 0.02cm; border-top:none; " colspan="2">
-                                GERENTE OU RH
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo : 'Não informado' }}
                             </td>
                         </tr>
 
@@ -619,7 +619,7 @@
                     <div class="logo">
                         @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo">
                             <br>
                         @endif
@@ -657,7 +657,7 @@
                     <div class="logo">
                         @if(count(auth()->user()->ClientesLogo) > 0)
                             <img
-                                src="https://mybp-prod.s3.amazonaws.com/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo">
                             <br>
                         @endif
