@@ -166,7 +166,7 @@ const app = new Vue({
 
             parecer_teste: {
                 qual_teste: "",
-                parecer_final_teste: ""
+                parecer_final_teste: "NÃO SE APLICA"
             },
 
             resultado_integrado: {
