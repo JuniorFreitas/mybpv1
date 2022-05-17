@@ -471,86 +471,86 @@
                                     </fieldset>
                                 </div>
 
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>Testes</legend>
-                                        <div class="row">
-                                            <div class="col-12 col-sm-6">
-                                                <div class="form-group">
-                                                    <label>Qual o teste foi aplicado</label>
-                                                    <input type="text" class="form-control"
-                                                           v-model="formAvulsa.parecer_teste.ponto_referencia_residencia"
-                                                           placeholder="Teste"
-                                                           autocomplete="mybp">
-                                                </div>
-                                            </div>
+{{--                                <div class="col-12">--}}
+{{--                                    <fieldset>--}}
+{{--                                        <legend>Testes</legend>--}}
+{{--                                        <div class="row">--}}
+{{--                                            <div class="col-12 col-sm-6">--}}
+{{--                                                <div class="form-group">--}}
+{{--                                                    <label>Qual o teste foi aplicado</label>--}}
+{{--                                                    <input type="text" class="form-control"--}}
+{{--                                                           v-model="formAvulsa.parecer_teste.qual_teste"--}}
+{{--                                                           placeholder="Teste"--}}
+{{--                                                           autocomplete="mybp">--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
 
-                                            <div class="col-12 col-sm-6">
-                                                <div class="form-group">
-                                                    <label>Resultado do Teste</label>
-                                                    <select class="form-control"
-                                                            v-model="formAvulsa.parecer_teste.parecer_final_teste">
-                                                        <option value="">Selecione</option>
-                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                                                        <option value="favoravel">Favorável</option>
-                                                        <option value="restricao">Restrição</option>
-                                                        <option value="desfavoravel">Desfavorável</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+{{--                                            <div class="col-12 col-sm-6">--}}
+{{--                                                <div class="form-group">--}}
+{{--                                                    <label>Resultado do Teste</label>--}}
+{{--                                                    <select class="form-control"--}}
+{{--                                                            v-model="formAvulsa.parecer_teste.parecer_final_teste">--}}
+{{--                                                        <option value="">Selecione</option>--}}
+{{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
+{{--                                                        <option value="favoravel">Favorável</option>--}}
+{{--                                                        <option value="restricao">Restrição</option>--}}
+{{--                                                        <option value="desfavoravel">Desfavorável</option>--}}
+{{--                                                    </select>--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
 
-                                        </div>
-                                    </fieldset>
-                                </div>
+{{--                                        </div>--}}
+{{--                                    </fieldset>--}}
+{{--                                </div>--}}
 
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>Técnica</legend>
-                                        <div class="row">
+{{--                                <div class="col-12">--}}
+{{--                                    <fieldset>--}}
+{{--                                        <legend>Técnica</legend>--}}
+{{--                                        <div class="row">--}}
 
-                                            <div class="col-12 col-sm-6 col-md-4">
-                                                <div class="form-group">
-                                                    <label>Experiência com cargas rigger</label>
-                                                    <select class="form-control"
-                                                            v-model="formAvulsa.parecer_tecnica.experiencia_cargas_rigger">
-                                                        <option :value="null">NÃO INFORMADO</option>
-                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                                                        <option value="Sim">Sim</option>
-                                                        <option value="Não">Não</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+{{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
+{{--                                                <div class="form-group">--}}
+{{--                                                    <label>Experiência com cargas rigger</label>--}}
+{{--                                                    <select class="form-control"--}}
+{{--                                                            v-model="formAvulsa.parecer_tecnica.experiencia_cargas_rigger">--}}
+{{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
+{{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
+{{--                                                        <option value="Sim">Sim</option>--}}
+{{--                                                        <option value="Não">Não</option>--}}
+{{--                                                    </select>--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
 
 
-                                            <div class="col-12 col-sm-6 col-md-4">
-                                                <div class="form-group">
-                                                    <label>Opera plataforma móvel</label>
-                                                    <select class="form-control"
-                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_movel">
-                                                        <option :value="null">NÃO INFORMADO</option>
-                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                                                        <option value="Sim">Sim</option>
-                                                        <option value="Não">Não</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+{{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
+{{--                                                <div class="form-group">--}}
+{{--                                                    <label>Opera plataforma móvel</label>--}}
+{{--                                                    <select class="form-control"--}}
+{{--                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_movel">--}}
+{{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
+{{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
+{{--                                                        <option value="Sim">Sim</option>--}}
+{{--                                                        <option value="Não">Não</option>--}}
+{{--                                                    </select>--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
 
-                                            <div class="col-12 col-sm-6 col-md-4">
-                                                <div class="form-group">
-                                                    <label>Opera ponte rolante</label>
-                                                    <select class="form-control"
-                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_ponte">
-                                                        <option :value="null">NÃO INFORMADO</option>
-                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                                                        <option value="true">Sim</option>
-                                                        <option value="false">Não</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+{{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
+{{--                                                <div class="form-group">--}}
+{{--                                                    <label>Opera ponte rolante</label>--}}
+{{--                                                    <select class="form-control"--}}
+{{--                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_ponte">--}}
+{{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
+{{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
+{{--                                                        <option value="true">Sim</option>--}}
+{{--                                                        <option value="false">Não</option>--}}
+{{--                                                    </select>--}}
+{{--                                                </div>--}}
+{{--                                            </div>--}}
 
-                                        </div>
-                                    </fieldset>
-                                </div>
+{{--                                        </div>--}}
+{{--                                    </fieldset>--}}
+{{--                                </div>--}}
 
                                 <div class="col-12">
                                     <fieldset>
