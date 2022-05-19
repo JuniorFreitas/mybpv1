@@ -153,9 +153,11 @@ export default {
     },
     mounted() {
         this.atualizar();
+        this.formDefault = _.cloneDeep(this.form);
     },
     methods: {
         addFNDias() {
+            this.form = _.cloneDeep(this.formDefault);
             this.form.perguntas = _.cloneDeep(this.perguntas);
             this.form.gestor_imediato = '';
             this.form.observacao = '';

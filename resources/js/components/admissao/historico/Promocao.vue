@@ -105,90 +105,91 @@
 
 <script>
 
-    import DatePicker from "../../DatePicker";
+import DatePicker from "../../DatePicker";
 
-    export default {
-        props: {
-            feedback_id: {
-                type: Number,
-                required: true
+export default {
+    props: {
+        feedback_id: {
+            type: Number,
+            required: true
+        },
+        model: {
+            type: Array
+        },
+        hash: {
+            type: String,
+            default: `mastertag_${parseInt((Math.random() * 999999))}`
+        }
+    },
+    components: {
+        DatePicker
+    },
+    data() {
+        return {
+            preload: false,
+            preloadSalvar: false,
+            URL_ADMIN,
+
+            promocao: [],
+
+            form: {
+                feedback_id: "",
+                novo_cargo: "",
+                novo_salario: "",
+                motivo: "",
+                percentual: "",
+                tipo: ""
             },
-            model: {
-                type: Array,
-            },
-            hash: {
-                type: String,
-                default: `mastertag_${parseInt((Math.random() * 999999))}`
+            formDefault: null
+        };
+    },
+    mounted() {
+        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form);
+    },
+    methods: {
+        addPromocao() {
+            this.form = _.cloneDeep(this.formDefault);
+            this.form.feedback_id = this.feedback_id;
+            this.preloadSalvar = false;
+            formReset();
+            setupCampo();
+        },
+        salvar() {
+            $(`#janelaPromocao :input:visible`).trigger("blur");
+            if ($(`#janelaPromocao :input:visible.is-invalid`).length) {
+                mostraErro("", "Verifique os erros.");
+                return false;
             }
-        },
-        components: {
-            DatePicker,
-        },
-        data() {
-            return {
-                preload: false,
-                preloadSalvar: false,
-                URL_ADMIN,
 
-                promocao: [],
-
-                form: {
-                    feedback_id: '',
-                    novo_cargo: '',
-                    novo_salario: '',
-                    motivo: '',
-                    percentual: '',
-                    tipo: '',
-                },
-                formDefault: null,
-            }
-        },
-        mounted() {
-            this.atualizar();
-        },
-        methods: {
-            addPromocao() {
-                this.formDefault = _.cloneDeep(this.form);
-                this.form.feedback_id = this.feedback_id;
-                this.preloadSalvar = false;
-                formReset();
-                setupCampo();
-            },
-            salvar() {
-                $(`#janelaPromocao :input:visible`).trigger('blur');
-                if ($(`#janelaPromocao :input:visible.is-invalid`).length) {
-                    mostraErro('', 'Verifique os erros.')
-                    return false;
-                }
-
-                this.preloadSalvar = true;
-                //criar
-                axios.post(`${URL_ADMIN}/historico/promocao/${this.feedback_id}`, this.form)
-                    .then(response => {
-                        if (response.status === 201) {
-                            this.preloadSalvar = false;
-                            mostraSucesso('Promoção adicionada com sucesso.');
-                            $('#janelaPromocao').modal('hide');
-                            this.form = _.cloneDeep(this.formDefault);
-                            // this.cadastrado = true;
-                            this.atualizar();
-                        }
-                    })
-                    .catch(error => (this.preloadSalvar = false));
-
-            },
-            atualizar() {
-                this.preload = true;
-                axios.get(`${URL_ADMIN}/historico/promocao/atualizar/${this.feedback_id}`).then(res => {
-                    let data = res.data;
-                    this.form.feedback_id = data.feedback;
-                    this.promocao = data.promocoes;
-                    this.formDefault = _.cloneDeep(this.form);
-                    this.preload = false;
+            this.preloadSalvar = true;
+            //criar
+            axios.post(`${URL_ADMIN}/historico/promocao/${this.feedback_id}`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.preloadSalvar = false;
+                        mostraSucesso("Promoção adicionada com sucesso.");
+                        $("#janelaPromocao").modal("hide");
+                        this.form = _.cloneDeep(this.formDefault);
+                        // this.cadastrado = true;
+                        this.atualizar();
+                    }
                 })
-            }
+                .catch(error => (this.preloadSalvar = false));
+
+        },
+        atualizar() {
+            this.preload = true;
+            axios.get(`${URL_ADMIN}/historico/promocao/atualizar/${this.feedback_id}`).then(res => {
+                let data = res.data;
+                this.form.feedback_id = data.feedback;
+                this.promocao = data.promocoes;
+                this.formDefault = _.cloneDeep(this.form);
+                this.preload = false;
+            });
         }
     }
+};
 </script>
 
 <style scoped>

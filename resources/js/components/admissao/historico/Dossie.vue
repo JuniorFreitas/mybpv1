@@ -435,7 +435,7 @@ export default {
             required: true
         },
         model: {
-            type: Array,
+            type: Array
         },
         hash: {
             type: String,
@@ -453,7 +453,7 @@ export default {
             urlAnexoUpload: `${URL_ADMIN}/historico/dossie/uploadAnexos`,
             anexoUploadAndamento: false,
 
-            hoje: '',
+            hoje: "",
 
             form: {
                 // foto_tres: [], //FOTO 3X4
@@ -541,12 +541,12 @@ export default {
                 arquivamento_eletronicoDel: [],
 
                 arquivamento_dossie: [],
-                arquivamento_dossieDel: [],
+                arquivamento_dossieDel: []
 
             },
-            formDefault: null,
+            formDefault: null
 
-        }
+        };
     },
     mounted() {
         this.atualizar();
@@ -558,9 +558,9 @@ export default {
         },
         salvar() {
             formReset();
-            $(`#form_${this.hash} :input:visible`).trigger('blur');
+            $(`#form_${this.hash} :input:visible`).trigger("blur");
             if ($(`#form_${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os erros')
+                mostraErro("", "Verifique os erros");
                 return false;
             }
 
@@ -570,7 +570,7 @@ export default {
                 .then(response => {
                     if (response.status === 201) {
                         this.preload = false;
-                        mostraSucesso('Dossiê salvo com sucesso!');
+                        mostraSucesso("Dossiê salvo com sucesso!");
                         this.atualizar();
                     }
                 }).catch(error => (this.preload = false));
@@ -583,14 +583,14 @@ export default {
                 let data = res.data;
                 this.form = data;
                 this.preload = false;
-            })
+            });
         },
         modelo(tipo_modelo) {
             let link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.curriculo_id}`;
-            open(link, 'blank');
-        },
+            open(link, "blank");
+        }
     }
-}
+};
 </script>
 
 <style scoped>
