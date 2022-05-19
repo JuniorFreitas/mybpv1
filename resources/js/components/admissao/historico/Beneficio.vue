@@ -18,7 +18,7 @@
                                     onchange="valida_campo_vazio(this,1)"
                                     onblur="valida_campo_vazio(this,1)">
                                 <option value="">Selecione</option>
-                                <option v-for="item in beneficio" :value="item.id">{{item.nome}}</option>
+                                <option v-for="item in beneficio" :value="item.id">{{ item.nome }}</option>
                             </select>
                         </div>
                     </div>
@@ -76,93 +76,94 @@
 
 <script>
 
-    import DatePicker from "../../DatePicker";
+import DatePicker from "../../DatePicker";
 
-    export default {
-        props: {
-            feedback_id: {
-                type: Number,
-                required: true
+export default {
+    props: {
+        feedback_id: {
+            type: Number,
+            required: true
+        },
+        model: {
+            type: Array
+        },
+        hash: {
+            type: String,
+            default: `mastertag_${parseInt((Math.random() * 999999))}`
+        }
+    },
+    components: {
+        DatePicker
+    },
+    data() {
+        return {
+            preload: false,
+            URL_ADMIN,
+
+            hoje: "",
+
+            beneficio: [],
+            listaBeneficio: [],
+
+            form: {
+                beneficio_id: "",
+                feedback_id: ""
             },
-            model: {
-                type: Array,
-            },
-            hash: {
-                type: String,
-                default: `mastertag_${parseInt((Math.random() * 999999))}`
+            formDefault: null
+        };
+    },
+    mounted() {
+        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form);
+    },
+    methods: {
+        addBeneficio() {
+            this.form = _.cloneDeep(this.formDefault);
+            this.form.feedback_id = this.feedback_id;
+            this.preload = false;
+            formReset();
+            setupCampo();
+        },
+        salvar() {
+            $(`#janelaBeneficio :input:visible`).trigger("blur");
+            if ($(`#janelaBeneficio :input:visible.is-invalid`).length) {
+                mostraErro("", "Verifique os erros.");
+                return false;
             }
-        },
-        components: {
-            DatePicker,
-        },
-        data() {
-            return {
-                preload: false,
-                URL_ADMIN,
 
-                hoje: '',
-
-                beneficio: [],
-                listaBeneficio: [],
-
-                form: {
-                    beneficio_id: '',
-                    feedback_id: '',
-                },
-                formDefault: null,
-            }
-        },
-        mounted() {
-            this.atualizar();
-        },
-        methods: {
-            addBeneficio() {
-                this.formDefault = _.cloneDeep(this.form);
-                this.form.feedback_id = this.feedback_id;
-                this.preload = false;
-                formReset();
-                setupCampo();
-            },
-            salvar() {
-                $(`#janelaBeneficio :input:visible`).trigger('blur');
-                if ($(`#janelaBeneficio :input:visible.is-invalid`).length) {
-                    mostraErro('', 'Verifique os erros.')
-                    return false;
-                }
-
-                this.preload = true;
-                //criar
-                axios.post(`${URL_ADMIN}/historico/beneficio/${this.feedback_id}`, this.form)
-                    .then(response => {
-                        if (response.status === 201) {
-                            this.preload = false;
-                            mostraSucesso('Benefício adicionado com sucesso.');
-                            $('#janelaBeneficio').modal('hide');
-                            this.form = _.cloneDeep(this.formDefault);
-                            // this.cadastrado = true;
-                            this.atualizar();
-                        }
-                    })
-                    .catch(error => (this.preload = false));
-
-            },
-            // gerarPdf(item) {
-            //     let link = `${URL_ADMIN}/historico/ferias/${item.id}/${item.feedback_id}/pdf`;
-            //     open(link, 'blank');
-            // },
-            atualizar() {
-                this.preload = true;
-                axios.get(`${URL_ADMIN}/historico/beneficio/${this.feedback_id}`).then(res => {
-                    let data = res.data;
-                    this.form.feedback_id = data.feedback_id;
-                    this.beneficio = data.beneficio;
-                    this.listaBeneficio = data.listaBeneficio;
-                    this.formDefault = _.cloneDeep(this.form);
-                    this.preload = false;
+            this.preload = true;
+            //criar
+            axios.post(`${URL_ADMIN}/historico/beneficio/${this.feedback_id}`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.preload = false;
+                        mostraSucesso("Benefício adicionado com sucesso.");
+                        $("#janelaBeneficio").modal("hide");
+                        this.form = _.cloneDeep(this.formDefault);
+                        // this.cadastrado = true;
+                        this.atualizar();
+                    }
                 })
-            }
+                .catch(error => (this.preload = false));
+
+        },
+        // gerarPdf(item) {
+        //     let link = `${URL_ADMIN}/historico/ferias/${item.id}/${item.feedback_id}/pdf`;
+        //     open(link, 'blank');
+        // },
+        atualizar() {
+            this.preload = true;
+            axios.get(`${URL_ADMIN}/historico/beneficio/${this.feedback_id}`).then(res => {
+                let data = res.data;
+                this.form.feedback_id = data.feedback_id;
+                this.beneficio = data.beneficio;
+                this.listaBeneficio = data.listaBeneficio;
+                this.formDefault = _.cloneDeep(this.form);
+                this.preload = false;
+            });
         }
     }
+};
 </script>
 
 <style scoped>

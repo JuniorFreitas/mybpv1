@@ -5,7 +5,7 @@
         </p>
         <div v-if="!preload" :id="`form_${hash}`">
 
-            <button class="btn btn-primary mb-3" @click="addLIMedida">
+            <button class="btn btn-sm btn-primary mb-3" @click="addLIMedida">
                 <i class="fa fa-plus"></i> Adicionar Medida
             </button>
 
@@ -83,11 +83,11 @@
                     </div>
 
                     <div class="col-12 mt-3" v-show="obj.novo">
-                        <button class="btn btn-danger" @click="removerLIMedida(index)"><i
+                        <button class="btn btn-sm btn-danger" @click="removerLIMedida(index)"><i
                             class="fa fa-times"></i> Remover
                         </button>
 
-                        <button class="btn btn-primary mt" @click="addLIMedida" v-show="index >=1">
+                        <button class="btn btn-sm btn-primary mt" @click="addLIMedida" v-show="index >=1">
                             <i class="fa fa-plus"></i> Adicionar
                         </button>
                     </div>
@@ -97,14 +97,14 @@
                          obj.tipo === 'Suspensão de 1 dia' ||
                          obj.tipo === 'Suspensão de 2 ou 3 dias' ||
                          obj.tipo === 'Suspensão acima de 3 dias'">
-                        <button class="btn btn-outline-primary" @click="gerarPdf(obj)" v-show="!obj.novo"><i
+                        <button class="btn btn-sm btn-outline-primary" @click="gerarPdf(obj)" v-show="!obj.novo"><i
                             class="fas fa-file-pdf"></i> GERAR PDF
                         </button>
                     </div>
                 </div>
             </fieldset>
 
-            <button class="btn btn-primary mb-3" v-if="form.medidas_administrativas.length > 0" @click="salvar">
+            <button class="btn btn-sm btn-primary mb-3" v-if="form.medidas_administrativas.length > 0" @click="salvar">
                 <i class="fa fa-save"></i> Salvar
             </button>
         </div>
@@ -167,12 +167,12 @@ export default {
             obj.causa = '';
             obj.definicao = '';
             obj.motivo = '';
-            obj.data_solicitacao = '';
-            obj.data_retorno = '';
+            obj.data_solicitacao = this.hoje;
+            obj.data_retorno = this.hoje;
             obj.anexos = [];
             obj.anexosDel = [];
 
-            this.form.medidas_administrativas.push(obj);
+            this.form.medidas_administrativas.unshift(obj);
         },
         removerLIMedida(index) {
             if (this.editando) {

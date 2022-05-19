@@ -554,58 +554,82 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::resource('posadmissao', \App\Http\Controllers\PosAdmissaoController::class, ['parameters' => ['posadmissao' => 'admissao']])->middleware('can:admissao');
     });
 
-    Route::group(['as' => 'historico.'], function () {
+    Route::group(['as' => 'historico.', 'prefix' => 'historico'], function () {
+        Route::post('/atualizar', [\App\Http\Controllers\HistoricoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
+        Route::get('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'show'])->name('show');
+        Route::post('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'storeMedidas'])->name('storeMedidas');
+        Route::put('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'updateMedidas'])->name('updateMedidas');
+        Route::get('/', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('index')->middleware('can:historico'); // manter essa rota antes do resource
+
         //Rotas Medidas Administrativas
-        Route::post('historico/medidas-administrativas/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('medidas-administrativas.upload-anexos');
-        Route::get('historico/medidas-administrativas/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoShow'])->name('medidas-administrativas.anexo-show');
-        Route::get('historico/medidas-administrativas/anexoDownload/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'download'])->name('medidas-administrativas.anexo-download');
-        Route::delete('historico/medidas-administrativas/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('medidas-administrativas.anexo-delete');
-        Route::get('historico/medidas-administrativas/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
-        Route::post('historico/atualizar', [\App\Http\Controllers\HistoricoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
-        Route::get('historico/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'show'])->name('show');
-        Route::post('historico/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'storeMedidas'])->name('storeMedidas');
-        Route::put('historico/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'updateMedidas'])->name('updateMedidas');
+        Route::group(['as' => 'medidas-administrativas.', 'prefix' => 'medidas-administrativas'], function () {
+            Route::get('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoShow'])->name('anexo-show');
+            Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'download'])->name('anexo-download');
+            Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('anexo-delete');
+            Route::post('/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('.upload-anexos');
+            Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
+        });
 
         //Rotas Formulario Noventa Dias
-        Route::post('historico/formulario-noventa-dias/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'storeFormularioNoventaDias'])->name('storeNoventaDias');
-        Route::get('historico/formulario-noventa-dias/{quantidade_avaliacao}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'formularioNoventaDiasPDF'])->name('formularioNoventaDiasPDF');
-
-        Route::get('historico', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('index')->middleware('can:historico'); // manter essa rota antes do resource
+        Route::group(['as' => 'formulario-noventa-dias.', 'prefix' => 'formulario-noventa-dias'], function () {
+            Route::post('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'storeFormularioNoventaDias'])->name('storeNoventaDias');
+            Route::get('/{quantidade_avaliacao}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'formularioNoventaDiasPDF'])->name('formularioNoventaDiasPDF');
+        });
 
         //Rotas DOSSIE
-        Route::post('historico/dossie/uploadAnexos', [\App\Http\Controllers\DossieController::class, 'uploadAnexos'])->name('dossie.upload-anexos');
-        Route::get('historico/dossie/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoShow'])->name('dossie.anexo-show');
-        Route::get('historico/dossie/anexoDownload/{arquivo}', [\App\Http\Controllers\DossieController::class, 'download'])->name('dossie.anexo-download');
-        Route::delete('historico/dossie/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoDelete'])->name('dossie.anexo-delete');
-//        Route::get('historico/dossie/{feedback_id}/pdf', [\App\Http\Controllers\DossieController::class,'medidasAdministrativasPDF'])->name('pdfDossie');
-        Route::post('historico/dossie/{feedback}', [\App\Http\Controllers\DossieController::class, 'store'])->name('dossie.store');
-        Route::get('historico/dossie/{feedback}', [\App\Http\Controllers\DossieController::class, 'show'])->name('dossie.show');
-        Route::get('historico/dossie/{tipo_modelo}/{curriculo_id}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('dossie.downloadModelo');
+        Route::group(['as' => 'dossie.', 'prefix' => 'dossie'], function () {
+            Route::post('/uploadAnexos', [\App\Http\Controllers\DossieController::class, 'uploadAnexos'])->name('upload-anexos');
+            Route::get('/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoShow'])->name('anexo-show');
+            Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\DossieController::class, 'download'])->name('anexo-download');
+            Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoDelete'])->name('anexo-delete');
+//        Route::get('/{feedback_id}/pdf', [\App\Http\Controllers\DossieController::class,'medidasAdministrativasPDF'])->name('pdfDossie');
+            Route::post('/{feedback}', [\App\Http\Controllers\DossieController::class, 'store'])->name('store');
+            Route::get('/{feedback}', [\App\Http\Controllers\DossieController::class, 'show'])->name('show');
+            Route::get('/{tipo_modelo}/{curriculo_id}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('downloadModelo');
+        });
 
         //Rotas Avaliacao Anual
-        Route::get('historico/avaliacao-anual/{feedback}', [\App\Http\Controllers\AvaliacaoAnualFeedbackController::class, 'show'])->name('showAvaliacaoAnual');
-        Route::post('historico/avaliacao-anual/{feedback}', [\App\Http\Controllers\AvaliacaoAnualFeedbackController::class, 'store'])->name('storeAvaliacaoAnual');
-        Route::get('historico/avaliacao-anual/{quantidade_avaliacao}/{feedback_id}/pdf', [\App\Http\Controllers\AvaliacaoAnualFeedbackController::class, 'avaliacaoAnualPDF'])->name('avaliacaoAnualPDF');
+        Route::group(['as' => 'avaliacao-anual.', 'prefix' => 'avaliacao-anual'], function () {
+            Route::get('/{feedback}', [\App\Http\Controllers\AvaliacaoAnualFeedbackController::class, 'show'])->name('showAvaliacaoAnual');
+            Route::post('/{feedback}', [\App\Http\Controllers\AvaliacaoAnualFeedbackController::class, 'store'])->name('storeAvaliacaoAnual');
+            Route::get('/{quantidade_avaliacao}/{feedback_id}/pdf', [\App\Http\Controllers\AvaliacaoAnualFeedbackController::class, 'avaliacaoAnualPDF'])->name('avaliacaoAnualPDF');
+        });
 
         //Rotas Ferias e listagem Afastamento
-        Route::get('historico/ferias/{feedback}', [\App\Http\Controllers\FeriasFeedbackController::class, 'show'])->name('showFeriasFeedback');
-        Route::post('historico/ferias/{feedback}', [\App\Http\Controllers\FeriasFeedbackController::class, 'store'])->name('storeFeriasFeedback');
-        Route::get('historico/ferias/{id}/{feedback_id}/pdf', [\App\Http\Controllers\FeriasFeedbackController::class, 'feriasPDF'])->name('feriasPDF');
+        Route::group(['as' => 'ferias.', 'prefix' => 'ferias'], function () {
+            Route::get('/{feedback}', [\App\Http\Controllers\FeriasFeedbackController::class, 'show'])->name('showFeriasFeedback');
+            Route::post('/{feedback}', [\App\Http\Controllers\FeriasFeedbackController::class, 'store'])->name('storeFeriasFeedback');
+            Route::get('/{id}/{feedback_id}/pdf', [\App\Http\Controllers\FeriasFeedbackController::class, 'feriasPDF'])->name('feriasPDF');
+        });
 
         //Rotas Afastamento
-        Route::post('historico/afastamento/{feedback}', [\App\Http\Controllers\AfastamentoFeedbackController::class, 'store'])->name('storeAfastamentoFeedback');
-        Route::get('historico/afastamento/{id}/{feedback_id}/pdf', [\App\Http\Controllers\AfastamentoFeedbackController::class, 'afastamentoPDF'])->name('afastamentoPDF');
+        Route::group(['as' => 'afastamento.', 'prefix' => 'afastamento'], function () {
+            Route::post('/{feedback}', [\App\Http\Controllers\AfastamentoFeedbackController::class, 'store'])->name('storeAfastamentoFeedback');
+            Route::get('/{id}/{feedback_id}/pdf', [\App\Http\Controllers\AfastamentoFeedbackController::class, 'afastamentoPDF'])->name('afastamentoPDF');
+        });
 
-        Route::get('historico/beneficio/{feedback}', [\App\Http\Controllers\BeneficioController::class, 'showBeneficio'])->name('showBeneficio');
-        Route::post('historico/beneficio/{feedback}', [\App\Http\Controllers\BeneficioController::class, 'storeBeneficio'])->name('storeBeneficio');
+        Route::group(['as' => 'beneficio.', 'prefix' => 'beneficio'], function () {
+            Route::get('/{feedback}', [\App\Http\Controllers\BeneficioController::class, 'showBeneficio'])->name('showBeneficio');
+            Route::post('/{feedback}', [\App\Http\Controllers\BeneficioController::class, 'storeBeneficio'])->name('storeBeneficio');
+        });
 
-        Route::get('historico/cih/{feedback}', [\App\Http\Controllers\CihController::class, 'atualizarHistorico'])->name('atualizarHistorico');
+        Route::get('/cih/{feedback}', [\App\Http\Controllers\CihController::class, 'atualizarHistorico'])->name('atualizarHistorico');
 
-        Route::get('historico/promocao/atualizar/{feedback}', [\App\Http\Controllers\PromocaoFeedbackController::class, 'atualizar'])->name('atualizarPromocao'); // manter essa rota antes do resource
-        Route::post('historico/promocao/{feedback}', [\App\Http\Controllers\PromocaoFeedbackController::class, 'store'])->name('storePromocao');
+        Route::group(['as' => 'promocao.', 'prefix' => 'promocao'], function () {
+            Route::get('/atualizar/{feedback}', [\App\Http\Controllers\PromocaoFeedbackController::class, 'atualizar'])->name('atualizarPromocao'); // manter essa rota antes do resource
+            Route::post('/{feedback}', [\App\Http\Controllers\PromocaoFeedbackController::class, 'store'])->name('storePromocao');
+        });
 
-        Route::get('historico/meta/atualizar/{feedback}', [\App\Http\Controllers\MetasFeedbackController::class, 'atualizar'])->name('atualizarMeta'); // manter essa rota antes do resource
-        Route::post('historico/meta/{feedback}', [\App\Http\Controllers\MetasFeedbackController::class, 'store'])->name('storeMeta');
+        Route::group(['as' => 'meta.', 'prefix' => 'meta'], function () {
+            Route::get('/atualizar/{feedback}', [\App\Http\Controllers\MetasFeedbackController::class, 'atualizar'])->name('atualizarMeta'); // manter essa rota antes do resource
+            Route::post('/{feedback}', [\App\Http\Controllers\MetasFeedbackController::class, 'store'])->name('storeMeta');
+        });
+
+        Route::group(['as' => 'feedbackhistorico.', 'prefix' => 'feedback-historico'], function () {
+            Route::get('/atualizar/{feedback}', [\App\Http\Controllers\FeedbackHistoricoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
+            Route::post('/{feedback}', [\App\Http\Controllers\FeedbackHistoricoController::class, 'store'])->name('store');
+        });
+
 
     });
     //Fim Menu Admissao

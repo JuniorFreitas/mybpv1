@@ -3,6 +3,19 @@
         <fieldset>
             <legend>Filtro</legend>
             <form class="row">
+                <div class="col-12 col-md-3">
+                    <div class="form-check" style="margin-bottom: -11px;">
+                        <input type="checkbox" class="form-check-input"
+                               id="filtroIntervalo"
+                               v-model="filtroPeriodo">
+                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
+                    </div>
+                    <div class="form-group">
+                        <datepicker range formsm label=""
+                                    :disabled="!filtroPeriodo"
+                                    v-model="periodo"></datepicker>
+                    </div>
+                </div>
                 <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label>Projetos</label>
@@ -23,8 +36,7 @@
             <div class="col-12">
                 <div class="text-center">
                     <h5 class="text-uppercase">Projeto: {{ dados.projeto.nome }}</h5>
-                    <pre style="margin-bottom: -8px">{{ dados.projeto.preenchidas
-                        }} preenchida(s) de {{ dados.projeto.qnt_total }} vaga(s)
+                    <pre style="margin-bottom: -8px">{{ dados.projeto.preenchidas }} preenchida(s) de {{ dados.projeto.qnt_total }} vaga(s) <span v-if="filtroPeriodo">no periodo de {{ periodo }}</span>
                     </pre>
                     <a class="btn btn-primary btn-sm" target="_blank" :href="`mobilizacao/pdf/${projeto_id}`"
                        v-if="dados.vagas_projeto.length">
@@ -262,6 +274,8 @@ export default {
         return {
             preload: false,
             preloadExportacao: false,
+            filtroPeriodo: false,
+            periodo: "",
             projeto_id: null,
             listProjetos: [],
             showRelatorio: false,

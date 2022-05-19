@@ -1,5 +1,5 @@
-import Dossie from '../../../components/admissao/historico/Dossie';
-import MedidasAdministrativas from '../../../components/admissao/MedidasAdministrativas';
+import Dossie from "../../../components/admissao/historico/Dossie";
+import MedidasAdministrativas from "../../../components/admissao/MedidasAdministrativas";
 import FormularioNoventaDias from "../../../components/admissao/historico/FormularioNoventaDias";
 import AvaliacaoAnual from "../../../components/admissao/historico/AvaliacaoAnual";
 import Ferias from "../../../components/admissao/historico/Ferias";
@@ -7,45 +7,54 @@ import Beneficio from "../../../components/admissao/historico/Beneficio";
 import Cih from "../../../components/admissao/historico/CIH";
 import Promocao from "../../../components/admissao/historico/Promocao";
 import Metas from "../../../components/admissao/historico/Meta";
+import FeedbackHistorico from "../../../components/admissao/historico/FeedbackHistorico";
 
 const app = new Vue({
-    el: '#app',
+    el: "#app",
+    name: "Historico",
     components: {
         Dossie,
         MedidasAdministrativas,
+        FeedbackHistorico,
         FormularioNoventaDias,
         AvaliacaoAnual,
         Ferias,
         Beneficio,
         Cih,
         Promocao,
-        Metas,
+        Metas
     },
     data: {
-        tituloJanela: 'Histórico',
+        tituloJanela: "Histórico",
         preload: false,
         cadastrando: false,
-        abrirDossie: false,
-        abrirMedidas: false,
-        abrirFormularioNoventa: false,
-        abrirAvaliacaoAnual: false,
-        abrirFerias: false,
-        abrirBeneficio: false,
-        abrirCih: false,
-        abrirPromocao: false,
-        abrirMetas: false,
+
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
+
+        abas:{
+            abrirDossie: false,
+            abrirMedidas: false,
+            abrirFeedbackHistorico: false,
+            abrirFormularioNoventa: false,
+            abrirAvaliacaoAnual: false,
+            abrirFerias: false,
+            abrirBeneficio: false,
+            abrirCih: false,
+            abrirPromocao: false,
+            abrirMetas: false,
+        },
+        abasDefault: null,
 
         form: {
             feedback_id: 0,
             curriculo_id: 0,
             medidas_administrativas: [],
-            medidas_administrativasDelete: [],
+            medidas_administrativasDelete: []
         },
 
         formDefault: null,
 
-        cliente_id: '',
+        cliente_id: "",
 
         lista: [],
         cargos: [],
@@ -55,44 +64,41 @@ const app = new Vue({
             dados: {
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
                 pages: 20,
-                campoBusca: '',
-                campoCargo: ''
-            },
-        },
+                campoBusca: "",
+                campoCargo: ""
+            }
+        }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formDefault = _.cloneDeep(this.form); //copia
+        this.abasDefault = _.cloneDeep(this.abas) //copia
+        this.abas.abrirDossie = true
         this.atualizar();
     },
     methods: {
+        trocaAba(aba) {
+            this.abas = _.cloneDeep(this.abasDefault) //copia
+            this.abas[aba] = true
+        },
         abrirHistorico(obj) {
             this.tituloJanela = `#${obj.id} - Histórico: ${obj.curriculo.nome}`;
-            this.abrirDossie = false;
-            this.abrirMedidas = false;
-            this.abrirFormularioNoventa = false;
-            this.abrirAvaliacaoAnual = false;
-            this.abrirFerias = false;
-            this.abrirBeneficio = false;
-            this.abrirCih = false;
-            this.abrirPromocao = false;
-            this.abrirMetas = false;
-            this.form = _.cloneDeep(obj)
+            this.form = _.cloneDeep(obj);
             this.form.feedback_id = obj.id;
             this.form.curriculo_id = obj.curriculo_id;
 
             setTimeout(() => {
-                this.abrirDossie = true;
-            }, 200)
-            $('#nav-dossie-tab').tab('show');
+                this.trocaAba('abrirDossie')
+            }, 200);
+            $("#nav-dossie-tab").tab("show");
 
         },
 
         //GERAL
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
+                this.controle.dados.autocomplete_label_anterior = "";
+                this.controle.dados.autocomplete_label = "";
+                this.controle.dados.campoVaga = "";
             }
         },
 
@@ -104,32 +110,10 @@ const app = new Vue({
 
         resetaCampoCliente() {
             if (this.controle.dados.autocomplete_label_cliente_anterior !== this.controle.dados.autocomplete_label_cliente) {
-                this.controle.dados.autocomplete_label_cliente_anterior = '';
-                this.controle.dados.autocomplete_label_cliente = '';
-                this.controle.dados.campoCliente = '';
+                this.controle.dados.autocomplete_label_cliente_anterior = "";
+                this.controle.dados.autocomplete_label_cliente = "";
+                this.controle.dados.campoCliente = "";
             }
-        },
-
-        selecionaCliente(obj) {
-            this.controle.dados.campoCliente = obj.id;
-            this.controle.dados.autocomplete_label_cliente = obj.label;
-            this.controle.dados.autocomplete_label_cliente_anterior = obj.label;
-        },
-
-        usuarioAutenticado() {
-            this.controle.carregando = true;
-            axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-                .then(response => {
-                    let data = response.data;
-
-                    this.cliente_id = data.cliente_id;
-
-                    this.colunasTabela.cliente = this.cliente_id === 0;
-                    this.controle.dados.campoCliente = this.cliente_id !== 0 ? this.cliente_id : this.controle.dados.campoCliente;
-                })
-                .catch(error => {
-                    this.preload = false;
-                })
         },
 
         carregou(dados) {
@@ -143,6 +127,6 @@ const app = new Vue({
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
-        },
+        }
     }
 });

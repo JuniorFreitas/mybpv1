@@ -1,11 +1,11 @@
 import moment from 'moment';
 
 const validacoes = {
-    computed: {
-        hash() {
-            return `${parseInt(Math.random() * 999999)}`;
-        },
-    },
+    // computed: {
+    //     hash() {
+    //         return `${parseInt(Math.random() * 999999)}`;
+    //     },
+    // },
     methods: {
         mostraErro(retornoLaravel, titulo = "Ocorreu um erro", quantidade = 3) {
             if (retornoLaravel === undefined) {
