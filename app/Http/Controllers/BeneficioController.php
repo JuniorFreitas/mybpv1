@@ -19,7 +19,7 @@ class BeneficioController extends Controller
      */
     public function index()
     {
-        //$this->authorize('beneficio');
+        //$this->authorize('cadastro_beneficio');
         return view('g.cadastros.beneficio.index');
     }
 
@@ -41,7 +41,7 @@ class BeneficioController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('beneficio_insert');
+        $this->authorize('cadastro_beneficio_insert');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados,
@@ -80,7 +80,7 @@ class BeneficioController extends Controller
 
     public function cadastroTipo(Request $request)
     {
-        $this->authorize('beneficio_insert');
+        $this->authorize('cadastro_beneficio_insert');
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados,
             [
@@ -130,7 +130,7 @@ class BeneficioController extends Controller
      */
     public function update(Request $request, Beneficio $beneficio)
     {
-        $this->authorize('beneficio_update');
+        $this->authorize('cadastro_beneficio_update');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados,
@@ -180,7 +180,7 @@ class BeneficioController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('beneficio');
+        $this->authorize('cadastro_beneficio');
         $porPagina = $request->get('porPagina');
         $resultado = Beneficio::with('TipoBeneficio');
         $tipos = TipoBeneficio::whereHas('Empresa')->get();
@@ -220,7 +220,7 @@ class BeneficioController extends Controller
 
     public function showBeneficio($feedback)
     {
-        $this->authorize('beneficio');
+        $this->authorize('cadastro_beneficio');
 
         $beneficio = Beneficio::where('cliente_id', auth()->user()->id)->get();
 
@@ -270,7 +270,7 @@ class BeneficioController extends Controller
 
     public function ativaDesativa($beneficio)
     {
-        $this->authorize('beneficio');
+        $this->authorize('cadastro_beneficio');
 
         $beneficio = TipoBeneficio::where('id', $beneficio)->first();
 
@@ -282,20 +282,19 @@ class BeneficioController extends Controller
 
     public function editarTipo(TipoBeneficio $tipobeneficio)
     {
-        $this->authorize('beneficio_update');
+        $this->authorize('cadastro_beneficio_update');
         return $tipobeneficio;
     }
 
     public function updateTipo(Request $request, TipoBeneficio $tipobeneficio)
     {
-        $this->authorize('beneficio_update');
+        $this->authorize('cadastro_beneficio_update');
         $dados = $request->input();
 
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required',
-            'cliente_id' => 'required|numeric',
             'ativo' => 'required'
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..

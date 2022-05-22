@@ -350,7 +350,7 @@
                                 @click.prevent="formVisualizar(resultado.id)"
                                 data-toggle="modal"
                                 data-target="#janelaVisualizar"><i class="fa fa-search-plus"></i></button>
-                        @can('admissao_pre_admissao_reencaminhar_email')
+                        @can('privilegio_admissao_pre_admissao_reencaminhar_email')
                             <button class="btn btn-sm btn-primary" title="Reenviar Email"
                                     @click.prevent="formEnviarEmail(resultado.id)"
                                     data-toggle="modal"

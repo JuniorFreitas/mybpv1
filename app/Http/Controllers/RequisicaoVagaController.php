@@ -165,7 +165,7 @@ class RequisicaoVagaController extends Controller
 
     public function aprovar(Request $request, RequisicaoVaga $requisicaoVaga)
     {
-        $this->authorize('aprovar_por_gestor');
+        $this->authorize('privilegio_aprovar_por_gestor');
         $dados = $request->input();
         try {
             DB::beginTransaction();

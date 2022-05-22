@@ -34,7 +34,7 @@ class FeriadoController extends Controller {
      */
     public function store(Request $request) {
 
-        $this->authorize('feriados_insert');
+        $this->authorize('controle_ponto_feriados_insert');
         $dados = $request->input();
         $data = new DataHora($request->data);
 
@@ -72,7 +72,7 @@ class FeriadoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function edit(Feriado $feriado) {
-        $this->authorize('feriados_update');
+        $this->authorize('controle_ponto_feriados_update');
         return $feriado;
     }
 
@@ -84,7 +84,7 @@ class FeriadoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Feriado $feriado) {
-        $this->authorize('feriados_update');
+        $this->authorize('controle_ponto_feriados_update');
         $dados = $request->input();
         $data = new DataHora($dados['data']);
         $dados['data'] = $data->dataInsert();
@@ -112,12 +112,12 @@ class FeriadoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy(Feriado $feriado) {
-        $this->authorize('feriados_delete');
+        $this->authorize('controle_ponto_feriados_delete');
         $feriado->delete();
     }
 
     public function atualizar(Request $request) {
-        $this->authorize('feriados');
+        $this->authorize('controle_ponto_feriados');
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->has('campoBusca')) {

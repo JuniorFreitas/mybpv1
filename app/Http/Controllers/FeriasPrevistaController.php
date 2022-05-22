@@ -274,7 +274,7 @@ class FeriasPrevistaController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'periodo' => $periodo,
-                'aprovar_por_gestor' => auth()->user()->can('aprovar_por_gestor'),
+                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
             ]
         ]);
     }
@@ -326,7 +326,7 @@ class FeriasPrevistaController extends Controller
             $resultado->whereStatusAprovacao($status);
         }
 
-        if (!auth()->user()->can('gestao_rh')) {
+        if (!auth()->user()->can('privilegio_gestao_rh')) {
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 

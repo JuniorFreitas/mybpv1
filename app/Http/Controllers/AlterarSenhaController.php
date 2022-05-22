@@ -19,7 +19,7 @@ class AlterarSenhaController extends Controller
 
     public function update(Request $request)
     {
-        $this->authorize('alterar-senha');
+        $this->authorize('usuario_alterar-senha');
 
         $dadosValidados = \Validator::make($request->only('password','password_confirmation'), [
             'password' => 'confirmed|min:3',

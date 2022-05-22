@@ -154,7 +154,7 @@ class AdmissoesPrevistaController extends Controller
 
     public function aprovar(Request $request, AdmissoesPrevista $admissoesPrevista)
     {
-        $this->authorize('aprovar_por_gestor');
+        $this->authorize('privilegio__aprovar_por_gestor');
         $dados = $request->input();
         try {
             DB::beginTransaction();
@@ -234,7 +234,7 @@ class AdmissoesPrevistaController extends Controller
             $resultado->whereStatusAprovacao($status);
         }
 
-        if (!auth()->user()->can('gestao_rh')){
+        if (!auth()->user()->can('privilegio_gestao_rh')){
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
@@ -246,7 +246,7 @@ class AdmissoesPrevistaController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'aprovar_por_gestor' => auth()->user()->can('aprovar_por_gestor'),
+                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
             ]
         ]);
     }

@@ -1305,7 +1305,7 @@
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-                @can('admissao_insert')
+                @can('admissao_pos_admissao_insert')
                     <button type="button" class="btn btn-sm btn-primary mr-1 mb-2" :disabled="controle.carregando"
                             data-toggle="modal"
                             data-target="#janelaAdmissaoAvulsa"
@@ -1463,7 +1463,7 @@
                     </td>
 
                     <td>
-                        @can('admissao_insert')
+                        @can('admissao_pos_admissao_insert')
                             <button class="btn btn-sm btn-primary mb-2" content="Admitir" v-tippy
                                     @click.prevent="formEntrevistar(item.id); visualizar = false"
                                     data-toggle="modal"

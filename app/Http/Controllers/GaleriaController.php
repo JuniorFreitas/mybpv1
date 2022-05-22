@@ -37,7 +37,7 @@ class GaleriaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('galeria_site_insert');
+        $this->authorize('site_galeria_site_insert');
 
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
@@ -115,7 +115,7 @@ class GaleriaController extends Controller
      */
     public function update(Request $request, Galeria $galeria)
     {
-        $this->authorize('galeria_site_update');
+        $this->authorize('site_galeria_site_update');
 
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
@@ -196,7 +196,7 @@ class GaleriaController extends Controller
 
     public function ativaDesativa(Galeria $galeria)
     {
-        $this->authorize('fornecedores_update');
+        $this->authorize('administracao_fornecedores_update');
         $galeria->ativo = !$galeria->ativo;
         $galeria->save();
         $galeria->refresh();
@@ -205,7 +205,7 @@ class GaleriaController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('galeria_site');
+        $this->authorize('site_galeria_site');
         $resultado = Galeria::withCount('Fotos');
 
         if ($request->filled('campoBusca')) {
@@ -225,13 +225,13 @@ class GaleriaController extends Controller
     // Fotos -------------------------------------------------
     public function uploadFotos(Request $request)
     {
-        $this->authorize('galeria_site_insert');
+        $this->authorize('site_galeria_site_insert');
         return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_PUBLICO);
     }
 
     public function fotoDelete(Request $request, $arquivo)
     {
-        $this->authorize('galeria_site_delete');
+        $this->authorize('site_galeria_site_delete');
         return Arquivo::anexoDelete([Arquivo::DISCO_PUBLICO], $arquivo);
     }
 

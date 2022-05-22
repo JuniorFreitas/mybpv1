@@ -40,7 +40,7 @@ class PlanejamentoDiarioController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('planejamentodiario');
+        $this->authorize('administracao_planejamentodiario');
         $dados = $request->input();
         $dados['user_id'] = auth()->user()->id;
 
@@ -113,7 +113,7 @@ class PlanejamentoDiarioController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->authorize('planejamentodiario');
+        $this->authorize('administracao_planejamentodiario');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados,
@@ -161,7 +161,7 @@ class PlanejamentoDiarioController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('planejamentodiario');
+        $this->authorize('administracao_planejamentodiario');
         $porPagina = $request->get('porPagina');
         $resultado = PlanejamentoDiario::where('user_id', auth()->user()->id);
 

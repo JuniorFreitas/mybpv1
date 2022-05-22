@@ -37,7 +37,7 @@ class FeedbackHistoricoController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('historico');
+        $this->authorize('admissao_historico');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -117,7 +117,7 @@ class FeedbackHistoricoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('historico');
+        $this->authorize('admissao_historico');
         $feedback_historico = FeedbackHistorico::with('Feedback')->get();
 
         return response()->json([

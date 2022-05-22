@@ -641,7 +641,7 @@
                             <i class="far fa-file-pdf"></i>
                         </a>
 
-                        @can('curriculos_delete')
+                        @can('curriculos_recrutamento_delete')
                             <a href="javascript://" class="btn btn-sm mb-2 btn-danger" content="Remover" v-tippy
                                @click.prevent="janelaConfirmar(curriculo.id)"
                                data-toggle="modal"

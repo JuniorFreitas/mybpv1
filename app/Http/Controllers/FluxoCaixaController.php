@@ -30,10 +30,10 @@ class FluxoCaixaController extends Controller {
             'cliente' => $empresa,
             'dataInicial' => $dataInicial->dataCompleta(),
             'dataFinal' => $dataFinal->dataCompleta(),
-            'pode_insert' => auth()->user()->can('fluxo-caixa_insert'),
-            'pode_update' => auth()->user()->can('fluxo-caixa_update'),
-            'pode_delete' => auth()->user()->can('fluxo-caixa_delete'),
-            'pode_realizar' => auth()->user()->can('realizar-lancamento'),
+            'pode_insert' => auth()->user()->can('financeiro_fluxo-caixa_insert'),
+            'pode_update' => auth()->user()->can('financeiro_fluxo-caixa_update'),
+            'pode_delete' => auth()->user()->can('financeiro_fluxo-caixa_delete'),
+            'pode_realizar' => auth()->user()->can('privilegio_realizar-lancamento'),
         ], 200);
     }
 
@@ -165,8 +165,8 @@ class FluxoCaixaController extends Controller {
 
     public function alterarLancamento(Request $request, User $empresa, Lancamento $lancamento) {
 
-        $this->authorize('fluxo-caixa_update');
-        $PODE_REALIZAR = auth()->user()->can('realizar-lancamento');
+        $this->authorize('financeiro_fluxo-caixa_update');
+        $PODE_REALIZAR = auth()->user()->can('privilegio_realizar-lancamento');
 
 
         $dadosValidados = \Validator::make($request->all(), [
@@ -317,7 +317,7 @@ class FluxoCaixaController extends Controller {
 
     public function excluirLancamento(Request $request, User $empresa, Lancamento $lancamento) {
 
-        $this->authorize('fluxo-caixa_delete');
+        $this->authorize('financeiro_fluxo-caixa_delete');
 
         try {
             \DB::beginTransaction();

@@ -252,7 +252,7 @@
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>Atualizar
                 </button>
 
-                @can('cih_lancar')
+                @can('admissao_cih_lancar')
                     <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
                             :disabled="controle.carregando"
                             data-target="#janelaCadastrar"
@@ -343,7 +343,7 @@
                     </td>
 
                     <td class="text-center">
-                        @can('cih_aprovar')
+                        @can('admissao_cih_aprovar')
                             <a v-show="item.status === 'aberto'" href="javascript://" class="btn btn-sm btn-primary"
                                content="Visualizar"
                                v-tippy

@@ -43,7 +43,7 @@ class IntermitenteController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('intermitente');
+        $this->authorize('admissao_intermitente');
         $dados = $request->input();
         $dados['user_lancamento_id'] = auth()->id();
 //        $dados['data_lancamento'] = (new DataHora($dados['data_lancamento'] . ' ' . date('H:m:s')))->dataHoraInsert();
@@ -104,7 +104,7 @@ class IntermitenteController extends Controller
 
     public function storeTipo(Request $request)
     {
-        $this->authorize('intermitente');
+        $this->authorize('admissao_intermitente');
         $dados = $request->input();
         $dados['ativo'] = true;
         $dadosValidados = \Validator::make($dados, [
@@ -134,7 +134,7 @@ class IntermitenteController extends Controller
 
     public function storeProrrogacao(Request $request)
     {
-        $this->authorize('intermitente');
+        $this->authorize('admissao_intermitente');
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados, [
             'prorrogacao*data_inicio' => 'required',
@@ -235,7 +235,7 @@ class IntermitenteController extends Controller
 
     public function encerrarConvocacao(Request $request)
     {
-        $this->authorize('intermitente');
+        $this->authorize('admissao_intermitente');
         $dados = $request->input();
         $dados['user_aprovacao_id'] = auth()->id();
         $dados['status'] = 'encerrado';
@@ -266,7 +266,7 @@ class IntermitenteController extends Controller
 
     public function aprovar(Request $request)
     {
-        $this->authorize('intermitente');
+        $this->authorize('admissao_intermitente');
         $dados = $request->input();
         $dados['user_aprovacao_id'] = auth()->id();
         $dados['status'] = $dados['status_aprovacao'];

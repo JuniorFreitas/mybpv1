@@ -525,7 +525,7 @@
 
 
                     <td class="text-center">
-                        @can('aprovar_por_gestor')
+                        @can('privilegio_aprovar_por_gestor')
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
                                v-if="!item.data_aprovacao"
                                @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; editando = false"

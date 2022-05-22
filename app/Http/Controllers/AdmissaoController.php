@@ -561,7 +561,7 @@ class AdmissaoController extends Controller
      */
     public function show(FeedbackCurriculo $admissao)
     {
-        $this->authorize('admissao');
+        $this->authorize('admissao_processo');
 
         /*$admissao = ResultadoIntegrado::whereFeedbackId($admissao)->first();
 
@@ -690,7 +690,7 @@ class AdmissaoController extends Controller
      */
     public function update(Request $request, FeedbackCurriculo $admissao)
     {
-        $this->authorize('admissao_update');
+        $this->authorize('admissao_processo_update');
         $dados = $request->input();
 
         $feedback = $admissao;
@@ -976,7 +976,7 @@ class AdmissaoController extends Controller
 
     public function cadastraMassa(Request $request)
     {
-        $this->authorize('admissao_update');
+        $this->authorize('admissao_processo_update');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, []);
@@ -1196,7 +1196,7 @@ class AdmissaoController extends Controller
     {
         $pg = $this->filtro($request)->paginate($request->porPag ?: 20);
         $dados = [
-            'admissao_processo_dados_editar' => auth()->user()->can('admissao_processo_dados_editar'),
+            'admissao_processo_dados_editar' => auth()->user()->can('privilegio_admissao_processo_dados_editar'),
             'status_admissao' => Admissao::TODOS_STATUS_ADMISSAO,
             'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
         ];

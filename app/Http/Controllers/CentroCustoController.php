@@ -37,7 +37,7 @@ class CentroCustoController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('centrocusto_insert');
+        $this->authorize('cadastro_centrocusto_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -98,7 +98,7 @@ class CentroCustoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->authorize('centrocusto_update');
+        $this->authorize('cadastro_centrocusto_update');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -142,7 +142,7 @@ class CentroCustoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('centrocusto');
+        $this->authorize('cadastro_centrocusto');
         $porPagina = $request->get('porPagina');
         $resultado = CentroCusto::with('Empresa')->orderBy('id');
 
@@ -163,7 +163,7 @@ class CentroCustoController extends Controller
 
     public function ativaDesativa(Request $request)
     {
-        $this->authorize('centrocusto');
+        $this->authorize('cadastro_centrocusto');
 
         $centro = CentroCusto::find($request->id);
         $centro->ativo = !$centro->ativo;

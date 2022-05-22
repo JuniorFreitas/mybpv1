@@ -37,7 +37,7 @@ class ClienteLogoSiteController extends Controller
      */
     public function store(Request $request)
     {
-//        $this->authorize('galeria_site_insert');
+//        $this->authorize('site_galeria_site_insert');
         $dados = $request->input();
         $cliente = LogoCliente::find(1);
         try {
@@ -106,7 +106,7 @@ class ClienteLogoSiteController extends Controller
     {
         $cliente2 = LogoCliente::find(1);
 
-//        $this->authorize('galeria_site_update');
+//        $this->authorize('site_galeria_site_update');
         $dados = $request->input();
         try {
 

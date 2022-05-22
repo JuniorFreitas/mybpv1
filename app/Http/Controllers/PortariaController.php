@@ -38,7 +38,7 @@ class PortariaController extends Controller
 
     public function update(Request $request,FeedbackCurriculo $resultado)
     {
-        $this->authorize('portaria_insert');
+        $this->authorize('treinamento_portaria_insert');
 
         $dados = $request->input();
         $curriculo = $dados['feedback']['curriculo'];
@@ -142,7 +142,7 @@ class PortariaController extends Controller
 
     public function pdf(Request $request)
     {
-        $this->authorize('portaria');
+        $this->authorize('treinamento_portaria');
         $feedbacks = FeedbackCurriculo::whereIn('id', $request->selecionados)->get();
         return view('pdf.portaria.ficha', compact('feedbacks'));
     }
@@ -150,7 +150,7 @@ class PortariaController extends Controller
     //Excel
     public function export(Request $request)
     {
-        $this->authorize('portaria');
+        $this->authorize('treinamento_portaria');
 //        $curriculo = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->orderBy('curriculo_id');
 //
 //        if ($request->selecionados) {
