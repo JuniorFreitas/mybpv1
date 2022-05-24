@@ -222,20 +222,20 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('curriculo_curriculos'))
+@if(\App\Models\Sistema::permitirLinks('curriculos_recrutamento','curriculos_selecionados'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect"><i class="bx bx-notepad"></i>
             <span>CURRÍCULOS</span>
         </a>
         <ul class="sub-menu" aria-expanded="false">
-            @can('curriculo_recrutamento')
+            @can('curriculos_recrutamento')
                 <li>
                     <a href="{{route('g.recrutamento.recrutamentos.index')}}" key="recrutamento">
                         Recrutamento
                     </a>
                 </li>
             @endcan
-            @can('curriculo_selecionados')
+            @can('curriculos_selecionados')
                 <li>
                     <a href="{{route('g.curriculoselecao.curriculos-selecionados.index')}}" key="selecionados">
                         Selecionados
