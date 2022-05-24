@@ -47,7 +47,7 @@ class ParecerRhController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('parecer_rh_insert');
+        $this->authorize('entrevista_parecer_rh_insert');
         $dados = $request->input();
         $dadosRh = $dados['parecer_rh'];
 
@@ -203,7 +203,7 @@ class ParecerRhController extends Controller
      */
     public function update(Request $request, ParecerRh $parecerRh)
     {
-        $this->authorize('parecer_rh_update');
+        $this->authorize('entrevista_parecer_rh_update');
         $dados = $request->input();
         $dadosRh = $dados['parecer_rh'];
 
