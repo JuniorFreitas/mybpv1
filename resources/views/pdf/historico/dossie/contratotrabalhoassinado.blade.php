@@ -7,7 +7,7 @@
     <p class="f12"
        style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase"><br>
         <strong>CONTRATO DE TRABALHO A TÍTULO DE EXPERIÊNCIA</strong><br>
-        (Alínea ‘c’ do § 2º do artigo 443 da CLT)<br><br>
+        (Alínea ‘c’ do § 2º do artigo 443 da CLT)<br><br><br>
     </p>
     <p class="f12 text-justify">
         Pelo presente Instrumento Particular de Contrato de Trabalho a Título de Experiência, que de um lado celebra a
@@ -28,8 +28,9 @@
     </p><br>
     <p class="f12 text-justify">
         <strong>1ª (Função/Salário)</strong> – Fica o <strong>EMPREGADO</strong> admitido no quadro de funcionários da
-        EMPREGADORA para exercer as funções de CARGO mediante a remuneração mensal de
-        R$ {{ $dados->FeedBack->Admissao->salario }}
+        <strong>EMPREGADORA</strong> para exercer as funções de <span
+            style="text-transform: uppercase; font-weight: bold">{{ $dados->FeedBack->VagaAberta->VagaSelecionada->nome }}</span>
+        mediante a remuneração mensal de R$ {{ $dados->FeedBack->Admissao->salario }}
         ({{\App\Models\Sistema::valorPorExtenso($dados->FeedBack->Admissao->salario)}}). A circunstância, porém, de ser
         a função especificada não importa na intransferibilidade do <strong>EMPREGADO</strong> para outro serviço, no
         qual demonstre melhor capacidade de adaptação desde que compatível com sua condição pessoal.
@@ -42,7 +43,7 @@
         horário que lhe for determinado, observando o limite legal.
     </p><br>
     <p class="f12 text-justify">
-        <strong>3ª (Horas Extras)</strong> – Obriga-se também o EMPREGADO a prestar serviços em horas extraordinárias,
+        <strong>3ª (Horas Extras)</strong> – Obriga-se também o <strong>EMPREGADO</strong> a prestar serviços em horas extraordinárias,
         sempre que lhe for determinado pela <strong>EMPREGADORA</strong>, na forma prevista em Lei. Na hipótese desta
         faculdade pela <strong>EMPREGADORA</strong>, o <strong>EMPREGADO</strong> receberá as horas extraordinárias com
         o acréscimo
@@ -65,12 +66,13 @@
     <p class="f12 text-justify">
         @if(!$dados->FeedBack->Admissao->pExperiencia())
             <strong>6ª (Duração)</strong> – O presente contrato vigorará por tempo inderterminado.
-            @else
+        @else
             <strong>6ª (Duração)</strong> – O presente contrato vigorará
             por {{$dados->FeedBack->Admissao->pExperiencia()[0]}}
             ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[0]) }}) dias, podendo este ser
             prorrogado ou não por mais {{$dados->FeedBack->Admissao->pExperiencia()[1]}}
-            ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[1]) }}) dias sendo celebrado para as
+            ({{ \MasterTag\GExtenso::numero($dados->FeedBack->Admissao->pExperiencia()[1]) }}) dias sendo celebrado para
+            as
             partes verificarem reciprocamente,
             a conveniência ou não de se vincularem em caráter definitivo a um Contrato de Trabalho. A empresa passando a
             conhecer as aptidões do <strong>EMPREGADO</strong> e suas qualidades pessoais e morais; o

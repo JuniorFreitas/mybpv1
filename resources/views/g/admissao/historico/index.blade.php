@@ -30,18 +30,18 @@
                            role="tab" aria-controls="nav-dossie" aria-selected="true">DOSSIÊ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-item nav-link" id="nav-medidas-administrativas-tab"
-                           @click.prevent="trocaAba('abrirMedidas')" data-toggle="tab"
-                           href="#nav-medidas-administrativas"
-                           role="tab" aria-controls="nav-medidas-administrativas" aria-selected="true">
-                            MEDIDAS ADMINISTRATIVAS</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-item nav-link" id="nav-feedback-historico-tab"
                            @click.prevent="trocaAba('abrirFeedbackHistorico')" data-toggle="tab"
                            href="#nav-feedback-historico"
                            role="tab" aria-controls="nav-feedback-historico" aria-selected="true">
                             FEEDBACK</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-item nav-link" id="nav-medidas-administrativas-tab"
+                           @click.prevent="trocaAba('abrirMedidas')" data-toggle="tab"
+                           href="#nav-medidas-administrativas"
+                           role="tab" aria-controls="nav-medidas-administrativas" aria-selected="true">
+                            MEDIDAS ADMINISTRATIVAS</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-item nav-link" id="nav-formulario-noventa-tab" data-toggle="tab"
@@ -92,15 +92,15 @@
                          aria-labelledby="nav-dossie-tab">
                         <dossie v-if="abas.abrirDossie" :feedback_id="form.feedback_id"></dossie>
                     </div>
+                    <div class="tab-pane fade show" id="nav-feedback-historico" role="tabpanel"
+                         aria-labelledby="nav-feedback-historico-tab">
+                        <feedback-historico v-if="abas.abrirFeedbackHistorico"
+                                            :feedback_id="form.feedback_id"></feedback-historico>
+                    </div>
                     <div class="tab-pane fade show" id="nav-medidas-administrativas" role="tabpanel"
                          aria-labelledby="nav-medidas-administrativas-tab">
                         <medidas-administrativas v-if="abas.abrirMedidas"
                                                  :feedback_id="form.feedback_id"></medidas-administrativas>
-                    </div>
-                    <div class="tab-pane fade show" id="nav-feedback-historico" role="tabpanel"
-                         aria-labelledby="nav-feedback-historico-tab">
-                        <feedback-historico v-if="abas.abrirFeedbackHistorico"
-                                                 :feedback_id="form.feedback_id"></feedback-historico>
                     </div>
                     <div class="tab-pane fade show" id="nav-formulario-noventa" role="tabpanel"
                          aria-labelledby="nav-formulario-noventa-tab">
