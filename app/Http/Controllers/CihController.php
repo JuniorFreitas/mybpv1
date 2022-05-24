@@ -45,7 +45,7 @@ class CihController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('cih_lancar');
+        $this->authorize('admissao_cih_lancar');
         $dados = $request->input();
         $dados['user_lancamento_id'] = auth()->id();
         $dados['data_lancamento'] = (new DataHora($dados['data_lancamento'] . ' ' . date('H:m:s')))->dataHoraInsert();
@@ -152,7 +152,7 @@ class CihController extends Controller
      */
     public function aprovar(Request $request, Cih $cih)
     {
-        $this->authorize('cih_aprovar');
+        $this->authorize('admissao_cih_aprovar');
         $dados = $request->input();
         $dados['user_aprovacao_id'] = auth()->id();
         $dados['status'] = $dados['status_aprovacao'];

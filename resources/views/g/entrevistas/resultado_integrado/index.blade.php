@@ -434,7 +434,7 @@
                             <i class="far fa-share-square"></i>
                         </button>
 
-                        @can('resultado_integrado_update')
+                        @can('entrevista_resultado_integrado_update')
                             <button class="btn btn-sm btn-primary mb-2" content="Editar" v-tippy
                                     v-show="entrevista.resultado_integrado"
                                     @click.prevent="formEntrevistar(entrevista.id); editando = true" data-toggle="modal"

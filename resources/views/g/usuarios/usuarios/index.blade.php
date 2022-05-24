@@ -135,7 +135,7 @@
                 :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
             Atualizar
         </button>
-        @can('usuarios_insert')
+        @can('usuario_usuarios_insert')
             <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
                     @click="formNovo()">
                 Criar novo usuário
@@ -169,7 +169,7 @@
                         <bt-ativo :rota="`usuarios/${usuario.id}/ativa-desativa`" :model="usuario"></bt-ativo>
                     </td>
                     <td>
-                        @can('usuarios_update')
+                        @can('usuario_usuarios_update')
                             <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
                                @click.prevent="formAlterar(usuario.id)"
                                data-toggle="modal"

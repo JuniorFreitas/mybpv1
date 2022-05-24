@@ -38,7 +38,7 @@ class PlanoContaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('plano-conta_insert');
+        $this->authorize('financeiro_plano-conta_insert');
         $dadosValidados = \Validator::make($request->input(), [
             //'descricao' => 'required|min:3|unique:plano_contas,descricao',
             'descricao' => ['required','min:3',
@@ -93,7 +93,7 @@ class PlanoContaController extends Controller
      */
     public function update(Request $request, PlanoConta $plano)
     {
-        $this->authorize('plano-conta_update');
+        $this->authorize('financeiro_plano-conta_update');
 
         $dadosValidados = \Validator::make($request->input(), [
             //'descricao' => 'required|min:3|unique:plano_contas,descricao,' . $plano->id,
@@ -125,14 +125,14 @@ class PlanoContaController extends Controller
     public function destroy(PlanoConta $plano)
     {
 
-        $this->authorize('plano-conta_delete');
+        $this->authorize('financeiro_plano-conta_delete');
         $plano->delete();
         return response()->json([], 200);
     }
 
     public function atualizar(Request $request)
     {
-        $this->authorize('plano-conta');
+        $this->authorize('financeiro_plano-conta');
         $categorias = CategoriaPlanoConta::orderBy('descricao')->get(['id', 'descricao']);
         $porPagina = $request->get('porPagina');
         $busca = false;

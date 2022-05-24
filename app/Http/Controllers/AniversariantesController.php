@@ -77,7 +77,7 @@ class AniversariantesController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('aniversariantes');
+        $this->authorize('administracao_aniversariantes');
         $porPagina = $request->get('porPagina');
         $dataHoje = new DataHora();
 

@@ -40,7 +40,7 @@ class FornecedorController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('fornecedores_insert');
+        $this->authorize('administracao_fornecedores_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -209,7 +209,7 @@ class FornecedorController extends Controller
      */
     public function update(Request $request, Fornecedor $fornecedor)
     {
-        $this->authorize('fornecedores_update');
+        $this->authorize('administracao_fornecedores_update');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -387,7 +387,7 @@ class FornecedorController extends Controller
      */
     public function destroy(Fornecedor $fornecedor)
     {
-        $this->authorize('fornecedores_delete');
+        $this->authorize('administracao_fornecedores_delete');
         $fornecedor->delete();
     }
 
@@ -429,7 +429,7 @@ class FornecedorController extends Controller
 
     public function ativaDesativa(Fornecedor $fornecedor)
     {
-        $this->authorize('fornecedores_update');
+        $this->authorize('administracao_fornecedores_update');
         $fornecedor->ativo = !$fornecedor->ativo;
         $fornecedor->save();
         $fornecedor->refresh();

@@ -43,7 +43,7 @@ class AtaReuniaoController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('atareuniao_insert');
+        $this->authorize('administracao_atareuniao_insert');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados,
@@ -167,7 +167,7 @@ class AtaReuniaoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->authorize('beneficio_update');
+        $this->authorize('cadastro_beneficio_update');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados,
@@ -231,7 +231,7 @@ class AtaReuniaoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('atareuniao');
+        $this->authorize('administracao_atareuniao');
         $porPagina = $request->get('porPagina');
         $resultado = AtaReuniao::with('Assuntos', 'Tipos', 'Acoes', 'Participantes', 'QuemCadastrou');
 

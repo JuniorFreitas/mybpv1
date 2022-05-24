@@ -45,7 +45,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('usuarios_insert');
+        $this->authorize('usuario_usuarios_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['login'] = strtolower(trim($dados['login']));
@@ -101,7 +101,7 @@ class UserController extends Controller
 
     public function edit(User $usuario)
     {
-        $this->authorize('usuarios_update');
+        $this->authorize('usuario_usuarios_update');
         $usuario->load('papel:id,nome', 'Empresa', 'UserRecebeEmail');
 
         $ids_form = array();
@@ -119,7 +119,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $usuario)
     {
-        $this->authorize('usuarios_update');
+        $this->authorize('usuario_usuarios_update');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['login'] = strtolower(trim($dados['login']));
@@ -168,7 +168,7 @@ class UserController extends Controller
      */
     public function destroy(User $usuario)
     {
-        $this->authorize('usuarios_delete');
+        $this->authorize('usuario_usuarios_delete');
         $usuario->delete();
     }
 
@@ -214,7 +214,7 @@ class UserController extends Controller
     public function ativaDesativa(Request $request)
     {
 
-        $this->authorize('usuarios_update');
+        $this->authorize('usuario_usuarios_update');
         $user = User::select('id', 'ativo')->find($request->id);
         $user->ativo = !$user->ativo;
         $user->save();
@@ -224,7 +224,7 @@ class UserController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('usuarios');
+        $this->authorize('usuario_usuarios');
         $porPagina = $request->get('porPagina');
 
         if (auth()->user()->empresa_id === 104) {

@@ -27,7 +27,7 @@ class AreaEtiquetasController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('areaetiqueta');
+        $this->authorize('cadastro_areaetiqueta');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -83,7 +83,7 @@ class AreaEtiquetasController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->authorize('areaetiqueta');
+        $this->authorize('cadastro_areaetiqueta');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -127,7 +127,7 @@ class AreaEtiquetasController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('areaetiqueta');
+        $this->authorize('cadastro_areaetiqueta');
         $porPagina = $request->get('porPagina');
         $resultado = AreaEtiqueta::orderBy('id');
 
@@ -148,7 +148,7 @@ class AreaEtiquetasController extends Controller
 
     public function ativaDesativa(Request $request)
     {
-        $this->authorize('areaetiqueta');
+        $this->authorize('cadastro_areaetiqueta');
 
         $area = AreaEtiqueta::find($request->id);
         $area->ativo = !$area->ativo;

@@ -35,7 +35,7 @@ class HabilidadesController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('habilidades_insert');
+        $this->authorize('configuracao_habilidades_insert');
         // Validacao para PHP
         /*$dadosValidados = $request->validate([
             'nome' => 'required|min:3',
@@ -80,7 +80,7 @@ class HabilidadesController extends Controller
      */
     public function edit(Habilidade $habilidade)
     {
-        $this->authorize('habilidades_update');
+        $this->authorize('configuracao_habilidades_update');
         return  $habilidade;
     }
 
@@ -93,7 +93,7 @@ class HabilidadesController extends Controller
      */
     public function update(Request $request, Habilidade $habilidade)
     {
-        $this->authorize('habilidades_update');
+        $this->authorize('configuracao_habilidades_update');
 
         // Validacao para ajax sem dar erro de HTTP (402)
         $dadosValidados = \Validator::make($request->all(), [
@@ -122,7 +122,7 @@ class HabilidadesController extends Controller
      */
     public function destroy(Habilidade $habilidade)
     {
-        $this->authorize('habilidades_delete');
+        $this->authorize('configuracao_habilidades_delete');
         $habilidade->delete();
     }
 

@@ -182,7 +182,7 @@ class PesquisaClimaController extends Controller
 
     public function atualizar()
     {
-        $this->authorize('pesquisaclima');
+        $this->authorize('administracao_pesquisaclima');
 
         $resultado = PesquisaClimaCliente::with('Cliente')->get();
 

@@ -16,7 +16,7 @@ class VagaController extends Controller
      */
     public function index()
     {
-        $this->authorize('vagas');
+        $this->authorize('cadastro_vagas');
         return view('g.cadastros.vagas.index');
     }
 
@@ -38,7 +38,7 @@ class VagaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('vagas_insert');
+        $this->authorize('cadastro_vagas_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -103,7 +103,7 @@ class VagaController extends Controller
      */
     public function update(Request $request, Vaga $vaga)
     {
-        $this->authorize('vagas_update');
+        $this->authorize('cadastro_vagas_update');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -150,7 +150,7 @@ class VagaController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('vagas');
+        $this->authorize('cadastro_vagas');
         $resultado = Vaga::orderBy('nome');
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
@@ -173,7 +173,7 @@ class VagaController extends Controller
 
     public function ativaDesativa(Vaga $vaga)
     {
-        $this->authorize('vagas_update');
+        $this->authorize('cadastro_vagas_update');
         $vaga->ativo = !$vaga->ativo;
         $vaga->save();
         $vaga->refresh();

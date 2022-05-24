@@ -36,7 +36,7 @@ class OcorrenciaJornadaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('ocorrencias_jornadas_insert');
+        $this->authorize('controle_ponto_ocorrencias_jornadas_insert');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -92,7 +92,7 @@ class OcorrenciaJornadaController extends Controller
      */
     public function update(Request $request, OcorrenciaJornada $ocorrencia_jornada)
     {
-        $this->authorize('ocorrencias_jornadas_update');
+        $this->authorize('controle_ponto_ocorrencias_jornadas_update');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -125,7 +125,7 @@ class OcorrenciaJornadaController extends Controller
      */
     public function destroy(OcorrenciaJornada $ocorrencia_jornada)
     {
-        $this->authorize('ocorrencias_jornadas_delete');
+        $this->authorize('controle_ponto_ocorrencias_jornadas_delete');
         $ocorrencia_jornada->delete();
         return response()->json([], 200);
     }
@@ -133,7 +133,7 @@ class OcorrenciaJornadaController extends Controller
     //campo de busca
     public function atualizar(Request $request)
     {
-        $this->authorize('ocorrencias_jornadas');
+        $this->authorize('controle_ponto_ocorrencias_jornadas');
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->has('campoBusca')) {

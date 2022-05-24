@@ -32,7 +32,7 @@ class FormaPagamentoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        $this->authorize('formas-pagamento_insert');
+        $this->authorize('financeiro_formas-pagamento_insert');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -83,7 +83,7 @@ class FormaPagamentoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, FormaPagamento $forma) {
-        $this->authorize('formas-pagamento_update');
+        $this->authorize('financeiro_formas-pagamento_update');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -122,14 +122,14 @@ class FormaPagamentoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy(FormaPagamento $forma) {
-        $this->authorize('formas-pagamento_delete');
+        $this->authorize('financeiro_formas-pagamento_delete');
         $forma->delete();
         return response()->json([], 200);
     }
 
     //campo de busca
     public function atualizar(Request $request) {
-        $this->authorize('formas-pagamento');
+        $this->authorize('financeiro_formas-pagamento');
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->has('campoBusca')) {

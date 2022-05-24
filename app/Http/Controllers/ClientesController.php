@@ -52,7 +52,7 @@ class ClientesController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('clientes_insert');
+        $this->authorize('administracao_clientes_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -280,7 +280,7 @@ class ClientesController extends Controller
      */
     public function update(Request $request, Cliente $cliente)
     {
-        $this->authorize('clientes_insert');
+        $this->authorize('administracao_clientes_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -561,7 +561,7 @@ class ClientesController extends Controller
 
     public function destroy(Cliente $cliente)
     {
-        $this->authorize('clientes_delete');
+        $this->authorize('administracao_clientes_delete');
         $cliente->delete();
     }
 

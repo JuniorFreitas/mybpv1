@@ -35,7 +35,7 @@ class EmpresaEscalaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        $this->authorize('escalas_insert');
+        $this->authorize('controle_ponto_escalas_insert');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -115,7 +115,7 @@ class EmpresaEscalaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, EmpresaEscala $escala) {
-        $this->authorize('escalas_update');
+        $this->authorize('controle_ponto_escalas_update');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -205,7 +205,7 @@ class EmpresaEscalaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy(EmpresaEscala $escala) {
-        $this->authorize('escalas_delete');
+        $this->authorize('controle_ponto_escalas_delete');
         $escala->delete();
         return response()->json([],200);
     }

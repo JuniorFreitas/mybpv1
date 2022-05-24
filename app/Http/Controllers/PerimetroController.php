@@ -32,7 +32,7 @@ class PerimetroController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        $this->authorize('perimetros_insert');
+        $this->authorize('controle_ponto_perimetros_insert');
         $dados = $request->only([
             'descricao','lat','long','perimetro','obrigatorio'
         ]);
@@ -86,7 +86,7 @@ class PerimetroController extends Controller {
      */
     public function update(Request $request, EmpresaPerimetro $perimetro) {
 
-        $this->authorize('perimetros_update');
+        $this->authorize('controle_ponto_perimetros_update');
         $dados = $request->only([
             'descricao','lat','long','perimetro','obrigatorio'
         ]);
@@ -118,7 +118,7 @@ class PerimetroController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy(EmpresaPerimetro $perimetro) {
-        $this->authorize('perimetros_delete');
+        $this->authorize('controle_ponto_perimetros_delete');
         $perimetro->delete();
         return response()->json([],200);
     }

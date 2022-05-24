@@ -187,7 +187,7 @@
         </div>
 
         <button type="button" class="btn btn-sm btn-success" id="btnAtualizar">Atualizar</button>
-        @can('papel_insert')
+        @can('configuracao_papel_insert')
             <button type="button" class="btn btn-sm btn-primary" id="btnFormCadastrar" data-toggle="modal"
                     data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
             </button>
@@ -223,14 +223,14 @@
                         <bt-ativo :rota="`papeis/${papel.id}/ativa-desativa`" :model="papel"></bt-ativo>
                     </td>
                     <td class="text-center">
-                        @can('papel_update')
+                        @can('configuracao_papel_update')
                             <a class="btn btn-sm btn-success btnFormAlterar" href="javascript://"
                                @click.prevent="formAlterar(papel.id)" data-toggle="modal"
                                data-target="#janelaCadastrar">
                                 <i class="fa fa-edit"></i>
                             </a>
                         @endcan
-                        @can('papel_delete')
+                        @can('configuracao_papel_delete')
                             <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"
                                @click.prevent="janelaConfirmar(papel.id)" data-toggle="modal"
                                data-target="#janelaConfirmar">

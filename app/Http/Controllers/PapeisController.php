@@ -43,7 +43,7 @@ class PapeisController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('papel_insert');
+        $this->authorize('configuracao_papel_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -92,7 +92,7 @@ class PapeisController extends Controller
      */
     public function edit(Papel $papel)
     {
-        $this->authorize('papel_update');
+        $this->authorize('configuracao_papel_update');
         $papel->load('habilidades');
 
         $listaDeHabilidades = Habilidade::orderBy('nome', 'asc')->get()->map(function ($habilidade) {
@@ -113,7 +113,7 @@ class PapeisController extends Controller
     public function update(Request $request, Papel $papel)
     {
 
-        $this->authorize('papel_update');
+        $this->authorize('configuracao_papel_update');
 
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
@@ -150,7 +150,7 @@ class PapeisController extends Controller
      */
     public function destroy(Papel $papel)
     {
-        $this->authorize('papel_delete');
+        $this->authorize('configuracao_papel_delete');
         $papel->habilidades()->detach();
         $papel->delete();
     }
@@ -184,7 +184,7 @@ class PapeisController extends Controller
 
     public function ativaDesativa(Papel $papel)
     {
-        $this->authorize('papel_update');
+        $this->authorize('configuracao_papel_update');
         $papel->ativo = !$papel->ativo;
         $papel->save();
         $papel->refresh();

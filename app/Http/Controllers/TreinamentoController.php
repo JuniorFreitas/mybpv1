@@ -68,7 +68,7 @@ class TreinamentoController extends Controller
             });
 
             if (isset($dados['id'])) {
-                $this->authorize('treinamento_update');
+                $this->authorize('treinamento_carteira-etiquetas_update');
                 $treinamento = Treinamento::find($dados['id']);
 
                 // retirando envio de e-mail ao atualizar
@@ -81,7 +81,7 @@ class TreinamentoController extends Controller
                 $treinamento->Vencimentos()->detach();
 
             } else {
-                $this->authorize('treinamento_insert');
+                $this->authorize('treinamento_carteira-etiquetas_insert');
                 $treinamento = Treinamento::create($dados);
             }
 
@@ -134,7 +134,7 @@ class TreinamentoController extends Controller
                 $treinamento = Treinamento::whereFeedbackId($feedback_id)->first();
 
                 if (isset($treinamento)) {
-                    $this->authorize('treinamento_update');
+                    $this->authorize('treinamento_carteira-etiquetas_update');
 
                     unset($dados['enviado_email']);
                     unset($dados['email_aberto']);
@@ -145,7 +145,7 @@ class TreinamentoController extends Controller
                     $treinamento->Vencimentos()->detach();
 
                 } else {
-                    $this->authorize('treinamento_insert');
+                    $this->authorize('treinamento_carteira-etiquetas_insert');
                     $treinamento = Treinamento::create($dados);
                 }
 
@@ -280,7 +280,7 @@ class TreinamentoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('treinamento');
+        $this->authorize('treinamento_carteira-etiquetas');
 
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoTreinamento(true);

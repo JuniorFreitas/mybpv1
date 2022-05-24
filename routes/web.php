@@ -18,13 +18,13 @@ Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
     Route::get('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoShow'])->name('cloud.anexo-show');
 //    Route::get('cloud/{arquivo}', [\App\Http\Controllers\CloudController::class,'download'])->name('cloud.anexo-download')->middleware(['auth', 'habilidades', 'can:cloud']);
     Route::get('cloud/anexoDownload/{arquivo}', [\App\Http\Controllers\CloudController::class, 'download'])->name('cloud.anexo-download');
-    Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('cloud.anexo-delete')->middleware(['auth', 'habilidades', 'can:cloud']);
+    Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('cloud.anexo-delete')->middleware(['auth', 'configuracao_habilidades', 'can:cloud']);
 
 
     Route::get('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoShow'])->name('cloud.anexo-show');
 //    Route::get('cloud/{arquivo}', [\App\Http\Controllers\CloudController::class,'download'])->name('cloud.anexo-download')->middleware(['auth', 'habilidades', 'can:cloud']);
     Route::get('cloud/anexoDownload/{arquivo}', [\App\Http\Controllers\CloudController::class, 'download'])->name('cloud.anexo-download');
-    Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('cloud.anexo-delete')->middleware(['auth', 'habilidades', 'can:cloud']);
+    Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('cloud.anexo-delete')->middleware(['auth', 'configuracao_habilidades', 'can:cloud']);
 
 });
 
@@ -34,8 +34,8 @@ Route::group(['prefix' => 'g'], function () {
     Route::post('login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
     Route::get('sair', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
     // Registration Routes...
-    Route::get('register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('auth', 'habilidades');
-    Route::post('register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('auth', 'habilidades');
+    Route::get('register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('auth', 'configuracao_habilidades');
+    Route::post('register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('auth', 'configuracao_habilidades');
     // Password Reset Routes...
     Route::get('password/reset', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('password/email', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
@@ -124,97 +124,97 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     // Administração
     Route::group(['as' => 'administracao.', 'prefix' => 'administracao'], function () {
         // Anexos
-        Route::post('clientes/uploadAnexos', [\App\Http\Controllers\ClientesController::class, 'uploadAnexos'])->name('clientes.upload-anexos')->middleware('can:clientes');
-        Route::get('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoShow'])->name('clientes.anexo-show')->middleware('can:clientes');
-        Route::get('clientes/anexoDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'logoDownload'])->name('clientes.anexo-download')->middleware('can:clientes');
-        Route::delete('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoDelete'])->name('clientes.anexo-delete')->middleware('can:clientes');
+        Route::post('clientes/uploadAnexos', [\App\Http\Controllers\ClientesController::class, 'uploadAnexos'])->name('clientes.upload-anexos')->middleware('can:administracao_clientes');
+        Route::get('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoShow'])->name('clientes.anexo-show')->middleware('can:administracao_clientes');
+        Route::get('clientes/anexoDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'logoDownload'])->name('clientes.anexo-download')->middleware('can:administracao_clientes');
+        Route::delete('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoDelete'])->name('clientes.anexo-delete')->middleware('can:administracao_clientes');
 
         // Anexos Logo
-        Route::post('clientes/uploadLogo', [\App\Http\Controllers\ClientesController::class, 'uploadLogo'])->name('clientes.upload-logo')->middleware('can:clientes');
-        Route::get('clientes/logo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'logoShow'])->name('clientes.logo-show')->middleware('can:clientes');
-        Route::get('clientes/logoDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'download'])->name('clientes.logo-download')->middleware('can:clientes');
-        Route::delete('clientes/logo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'logoDelete'])->name('clientes.logo-delete')->middleware('can:clientes');
+        Route::post('clientes/uploadLogo', [\App\Http\Controllers\ClientesController::class, 'uploadLogo'])->name('clientes.upload-logo')->middleware('can:administracao_clientes');
+        Route::get('clientes/logo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'logoShow'])->name('clientes.logo-show')->middleware('can:administracao_clientes');
+        Route::get('clientes/logoDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'download'])->name('clientes.logo-download')->middleware('can:administracao_clientes');
+        Route::delete('clientes/logo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'logoDelete'])->name('clientes.logo-delete')->middleware('can:administracao_clientes');
 
         // Anexos Mascote
-        Route::post('clientes/uploadMascote', [\App\Http\Controllers\ClientesController::class, 'uploadMascote'])->name('clientes.upload-mascote')->middleware('can:clientes');
-        Route::get('clientes/mascote/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteShow'])->name('clientes.mascote-show')->middleware('can:clientes');
-        Route::get('clientes/mascoteDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteDownload'])->name('clientes.mascote-download')->middleware('can:clientes');
-        Route::delete('clientes/mascote/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteDelete'])->name('clientes.mascote-delete')->middleware('can:clientes');
+        Route::post('clientes/uploadMascote', [\App\Http\Controllers\ClientesController::class, 'uploadMascote'])->name('clientes.upload-mascote')->middleware('can:administracao_clientes');
+        Route::get('clientes/mascote/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteShow'])->name('clientes.mascote-show')->middleware('can:administracao_clientes');
+        Route::get('clientes/mascoteDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteDownload'])->name('clientes.mascote-download')->middleware('can:administracao_clientes');
+        Route::delete('clientes/mascote/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteDelete'])->name('clientes.mascote-delete')->middleware('can:administracao_clientes');
 
-//            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('clientes.excel')->middleware('can:clientes');
-        Route::get('clientes/buscar-cnpj', [\App\Http\Controllers\ClientesController::class, 'buscaCNPJ'])->name('clientes.verifica-cnpj')->middleware('can:clientes');
-        Route::get('clientes/buscar-cpf', [\App\Http\Controllers\ClientesController::class, 'buscaCPF'])->name('clientes.verifica-cpf')->middleware('can:clientes');
+//            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('clientes.excel')->middleware('can:administracao_clientes');
+        Route::get('clientes/buscar-cnpj', [\App\Http\Controllers\ClientesController::class, 'buscaCNPJ'])->name('clientes.verifica-cnpj')->middleware('can:administracao_clientes');
+        Route::get('clientes/buscar-cpf', [\App\Http\Controllers\ClientesController::class, 'buscaCPF'])->name('clientes.verifica-cpf')->middleware('can:administracao_clientes');
 
         // Clientes
         Route::group(['as' => 'clientes.'], function () {
             // Anexos
-            Route::post('clientes/uploadAnexos', [\App\Http\Controllers\ClientesController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:clientes');
-            Route::get('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoShow'])->name('anexo-show')->middleware('can:clientes');
-            Route::get('clientes/anexoDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'download'])->name('anexo-download')->middleware('can:clientes');
-            Route::delete('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:clientes');
+            Route::post('clientes/uploadAnexos', [\App\Http\Controllers\ClientesController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:administracao_clientes');
+            Route::get('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoShow'])->name('anexo-show')->middleware('can:administracao_clientes');
+            Route::get('clientes/anexoDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'download'])->name('anexo-download')->middleware('can:administracao_clientes');
+            Route::delete('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:administracao_clientes');
 
-//            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('excel')->middleware('can:clientes');
-            Route::get('clientes/buscar-cnpj', [\App\Http\Controllers\ClientesController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:clientes');
-            Route::get('clientes/buscar-cpf', [\App\Http\Controllers\ClientesController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:clientes');
+//            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('excel')->middleware('can:administracao_clientes');
+            Route::get('clientes/buscar-cnpj', [\App\Http\Controllers\ClientesController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:administracao_clientes');
+            Route::get('clientes/buscar-cpf', [\App\Http\Controllers\ClientesController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_clientes');
 
             Route::get('clientes/{cliente}/pdf', [\App\Http\Controllers\ClientesController::class, 'getFichaPdf'])->name('getFichapdf');
-            Route::put('clientes/{cliente}/ativa-desativa', [\App\Http\Controllers\ClientesController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:clientes');
-            Route::post('clientes/search', [\App\Http\Controllers\ClientesController::class, 'searchCliente'])->name('search')->middleware('can:clientes');
-            Route::post('clientes/atualizar', [\App\Http\Controllers\ClientesController::class, 'atualizar'])->name('atualizar')->middleware('can:clientes');
-            Route::resource('clientes', \App\Http\Controllers\ClientesController::class)->middleware('can:clientes');
+            Route::put('clientes/{cliente}/ativa-desativa', [\App\Http\Controllers\ClientesController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_clientes');
+            Route::post('clientes/search', [\App\Http\Controllers\ClientesController::class, 'searchCliente'])->name('search')->middleware('can:administracao_clientes');
+            Route::post('clientes/atualizar', [\App\Http\Controllers\ClientesController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_clientes');
+            Route::resource('clientes', \App\Http\Controllers\ClientesController::class)->middleware('can:administracao_clientes');
         });
 
         // Fornecedores
         Route::group(['as' => 'fornecedor.'], function () {
             // Anexos Fornecedor
-            Route::post('fornecedor/uploadAnexos', [\App\Http\Controllers\FornecedorController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:fornecedores');
-            Route::get('fornecedor/anexo/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'anexoShow'])->name('anexo-show')->middleware('can:fornecedores');
-            Route::get('fornecedor/anexoDownload/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'download'])->name('anexo-download')->middleware('can:fornecedores');
-            Route::delete('fornecedor/anexo/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:fornecedores');
+            Route::post('fornecedor/uploadAnexos', [\App\Http\Controllers\FornecedorController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:administracao_fornecedores');
+            Route::get('fornecedor/anexo/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'anexoShow'])->name('anexo-show')->middleware('can:administracao_fornecedores');
+            Route::get('fornecedor/anexoDownload/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'download'])->name('anexo-download')->middleware('can:administracao_fornecedores');
+            Route::delete('fornecedor/anexo/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:administracao_fornecedores');
 
             // Anexos Fornecedor
-            Route::post('fornecedor/servico/uploadAnexos', [\App\Http\Controllers\FornecedorController::class, 'uploadServicoAnexos'])->name('upload-anexos-servico')->middleware('can:fornecedores');
-            Route::get('fornecedor/servico/anexo/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'anexoServicoShow'])->name('anexo-servico-show')->middleware('can:fornecedores');
-            Route::get('fornecedor/servico/anexoDownload/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'downloadServico'])->name('anexo-servico-download')->middleware('can:fornecedores');
-            Route::delete('fornecedor/servico/anexo/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'anexoServicoDelete'])->name('anexo-servico-delete')->middleware('can:fornecedores');
+            Route::post('fornecedor/servico/uploadAnexos', [\App\Http\Controllers\FornecedorController::class, 'uploadServicoAnexos'])->name('upload-anexos-servico')->middleware('can:administracao_fornecedores');
+            Route::get('fornecedor/servico/anexo/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'anexoServicoShow'])->name('anexo-servico-show')->middleware('can:administracao_fornecedores');
+            Route::get('fornecedor/servico/anexoDownload/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'downloadServico'])->name('anexo-servico-download')->middleware('can:administracao_fornecedores');
+            Route::delete('fornecedor/servico/anexo/{arquivo}', [\App\Http\Controllers\FornecedorController::class, 'anexoServicoDelete'])->name('anexo-servico-delete')->middleware('can:administracao_fornecedores');
             // Anexos Serviços
 
             //Comuns Fornecedores
-            Route::get('fornecedor/buscar-cnpj', [\App\Http\Controllers\FornecedorController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:fornecedores');
-            Route::get('fornecedor/buscar-cpf', [\App\Http\Controllers\FornecedorController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:fornecedores');
-            Route::put('fornecedor/{fornecedor}/ativa-desativa', [\App\Http\Controllers\FornecedorController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:fornecedores');
-            Route::post('fornecedor/search', [\App\Http\Controllers\FornecedorController::class, 'searchCliente'])->name('search')->middleware('can:fornecedores');
-            Route::post('fornecedor/atualizar', [\App\Http\Controllers\FornecedorController::class, 'atualizar'])->name('atualizar')->middleware('can:fornecedores');
-            Route::resource('fornecedor', \App\Http\Controllers\FornecedorController::class)->middleware('can:fornecedores');
+            Route::get('fornecedor/buscar-cnpj', [\App\Http\Controllers\FornecedorController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:administracao_fornecedores');
+            Route::get('fornecedor/buscar-cpf', [\App\Http\Controllers\FornecedorController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_fornecedores');
+            Route::put('fornecedor/{fornecedor}/ativa-desativa', [\App\Http\Controllers\FornecedorController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_fornecedores');
+            Route::post('fornecedor/search', [\App\Http\Controllers\FornecedorController::class, 'searchCliente'])->name('search')->middleware('can:administracao_fornecedores');
+            Route::post('fornecedor/atualizar', [\App\Http\Controllers\FornecedorController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_fornecedores');
+            Route::resource('fornecedor', \App\Http\Controllers\FornecedorController::class)->middleware('can:administracao_fornecedores');
         });
 
         //Ata de Reunião
         Route::group(['as' => 'atareuniao.'], function () {
-            Route::post('atareuniao/atualizar', [\App\Http\Controllers\AtaReuniaoController::class, 'atualizar'])->name('atualizarAtaReuniao')->middleware('can:atareuniao');
-            Route::get('atareuniao/pdf/{item}', [\App\Http\Controllers\AtaReuniaoController::class, 'pdf'])->name('pdfAtaReuniao')->middleware('can:atareuniao');
-            Route::resource('atareuniao', \App\Http\Controllers\AtaReuniaoController::class)->middleware('can:atareuniao');
+            Route::post('atareuniao/atualizar', [\App\Http\Controllers\AtaReuniaoController::class, 'atualizar'])->name('atualizarAtaReuniao')->middleware('can:administracao_atareuniao');
+            Route::get('atareuniao/pdf/{item}', [\App\Http\Controllers\AtaReuniaoController::class, 'pdf'])->name('pdfAtaReuniao')->middleware('can:administracao_atareuniao');
+            Route::resource('atareuniao', \App\Http\Controllers\AtaReuniaoController::class)->middleware('can:administracao_atareuniao');
         });
 
         //Pesquisa de Clima
         Route::group(['as' => 'pesquisaclima.'], function () {
-            Route::get('pesquisaclima/atualizar', [\App\Http\Controllers\PesquisaClimaController::class, 'atualizar'])->name('atualizar')->middleware('can:pesquisaclima');
-            Route::get('pesquisaclima/pdf/{item}', [\App\Http\Controllers\PesquisaClimaController::class, 'pdf'])->name('pdfPesquisaClima')->middleware('can:pesquisaclima');
-            Route::get('pesquisaclima', [\App\Http\Controllers\PesquisaClimaController::class, 'indexAdm'])->name('indexAdm')->middleware('can:pesquisaclima');
-            Route::get('pesquisaclima/chart/{cliente_id}', [\App\Http\Controllers\PesquisaClimaController::class, 'chart'])->name('chart')->middleware('can:pesquisaclima');
-            Route::get('pesquisaclima/contador', [\App\Http\Controllers\PesquisaClimaController::class, 'contador'])->name('contador')->middleware('can:pesquisaclima');
+            Route::get('pesquisaclima/atualizar', [\App\Http\Controllers\PesquisaClimaController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_pesquisaclima');
+            Route::get('pesquisaclima/pdf/{item}', [\App\Http\Controllers\PesquisaClimaController::class, 'pdf'])->name('pdfPesquisaClima')->middleware('can:administracao_pesquisaclima');
+            Route::get('pesquisaclima', [\App\Http\Controllers\PesquisaClimaController::class, 'indexAdm'])->name('indexAdm')->middleware('can:administracao_pesquisaclima');
+            Route::get('pesquisaclima/chart/{cliente_id}', [\App\Http\Controllers\PesquisaClimaController::class, 'chart'])->name('chart')->middleware('can:administracao_pesquisaclima');
+            Route::get('pesquisaclima/contador', [\App\Http\Controllers\PesquisaClimaController::class, 'contador'])->name('contador')->middleware('can:administracao_pesquisaclima');
         });
 
         //Planejamento Diario
         Route::group(['as' => 'planejamentodiario.'], function () {
-            Route::post('planejamentodiario/atualizar', [\App\Http\Controllers\PlanejamentoDiarioController::class, 'atualizar'])->name('atualizarPlanejamentoDiario')->middleware('can:planejamentodiario');
-            Route::resource('planejamentodiario', \App\Http\Controllers\PlanejamentoDiarioController::class)->middleware('can:planejamentodiario');
+            Route::post('planejamentodiario/atualizar', [\App\Http\Controllers\PlanejamentoDiarioController::class, 'atualizar'])->name('atualizarPlanejamentoDiario')->middleware('can:administracao_planejamentodiario');
+            Route::resource('planejamentodiario', \App\Http\Controllers\PlanejamentoDiarioController::class)->middleware('can:administracao_planejamentodiario');
         });
 
         //Aniversariantes
         Route::group(['as' => 'aniversariantes.'], function () {
-            Route::post('aniversariantes/atualizar', [\App\Http\Controllers\AniversariantesController::class, 'atualizar'])->name('atualizar')->middleware('can:aniversariantes');
-            Route::post('aniversariantes/enviaEmail', [\App\Http\Controllers\AniversariantesController::class, 'enviaEmail'])->name('enviaEmail')->middleware('can:aniversariantes');
-            Route::resource('aniversariantes', \App\Http\Controllers\AniversariantesController::class)->middleware('can:aniversariantes');
+            Route::post('aniversariantes/atualizar', [\App\Http\Controllers\AniversariantesController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_aniversariantes');
+            Route::post('aniversariantes/enviaEmail', [\App\Http\Controllers\AniversariantesController::class, 'enviaEmail'])->name('enviaEmail')->middleware('can:administracao_aniversariantes');
+            Route::resource('aniversariantes', \App\Http\Controllers\AniversariantesController::class)->middleware('can:administracao_aniversariantes');
         });
     });
 
@@ -270,25 +270,25 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
 
         Route::group(['as' => 'beneficios.'], function () {
-            Route::put('beneficios/{beneficio}/ativa-desativa', [\App\Http\Controllers\BeneficioController::class, 'ativaDesativa'])->name('beneficios.ativaDesativa')->middleware('can:beneficio');
-            Route::get('beneficios/{tipobeneficio}/editarTipo', [\App\Http\Controllers\BeneficioController::class, 'editarTipo'])->name('beneficios.editarTipo')->middleware('can:beneficio');
-            Route::put('/beneficios/updateTipos/{tipobeneficio}', [\App\Http\Controllers\BeneficioController::class, 'updateTipo'])->name('beneficios.updateTipo')->middleware('can:beneficio');
-            Route::post('beneficios/atualizar', [\App\Http\Controllers\BeneficioController::class, 'atualizar'])->name('beneficios.atualizar')->middleware('can:beneficio'); // manter essa rota antes do resource
-            Route::post('beneficios/atualizar-historico', [\App\Http\Controllers\BeneficioController::class, 'atualizarHistorico'])->name('beneficios.atualizarHistorico')->middleware('can:beneficio'); // manter essa rota antes do resource
-            Route::post('beneficios/cadastro-tipo', [\App\Http\Controllers\BeneficioController::class, 'cadastroTipo'])->name('beneficios.cadastroTipo')->middleware('can:beneficio'); // manter essa rota antes do resource
-            Route::resource('beneficios', \App\Http\Controllers\BeneficioController::class)->middleware('can:beneficio');
+            Route::put('beneficios/{beneficio}/ativa-desativa', [\App\Http\Controllers\BeneficioController::class, 'ativaDesativa'])->name('beneficios.ativaDesativa')->middleware('can:cadastro_beneficio');
+            Route::get('beneficios/{tipobeneficio}/editarTipo', [\App\Http\Controllers\BeneficioController::class, 'editarTipo'])->name('beneficios.editarTipo')->middleware('can:cadastro_beneficio');
+            Route::put('/beneficios/updateTipos/{tipobeneficio}', [\App\Http\Controllers\BeneficioController::class, 'updateTipo'])->name('beneficios.updateTipo')->middleware('can:cadastro_beneficio');
+            Route::post('beneficios/atualizar', [\App\Http\Controllers\BeneficioController::class, 'atualizar'])->name('beneficios.atualizar')->middleware('can:cadastro_beneficio'); // manter essa rota antes do resource
+            Route::post('beneficios/atualizar-historico', [\App\Http\Controllers\BeneficioController::class, 'atualizarHistorico'])->name('beneficios.atualizarHistorico')->middleware('can:cadastro_beneficio'); // manter essa rota antes do resource
+            Route::post('beneficios/cadastro-tipo', [\App\Http\Controllers\BeneficioController::class, 'cadastroTipo'])->name('beneficios.cadastroTipo')->middleware('can:cadastro_beneficio'); // manter essa rota antes do resource
+            Route::resource('beneficios', \App\Http\Controllers\BeneficioController::class)->middleware('can:cadastro_beneficio');
         });
 
         // Vagas
         Route::group(['as' => 'vagas.'], function () {
-            Route::put('vagas/{vaga}/ativa-desativa', [\App\Http\Controllers\VagaController::class, 'ativaDesativa'])->name('vagas.ativaDesativa')->middleware('can:vagas_update');
-            Route::post('vagas/atualizar', [\App\Http\Controllers\VagaController::class, 'atualizar'])->name('vagas.atualizar')->middleware('can:vagas');
-            Route::resource('vagas', \App\Http\Controllers\VagaController::class)->middleware('can:vagas');
+            Route::put('vagas/{vaga}/ativa-desativa', [\App\Http\Controllers\VagaController::class, 'ativaDesativa'])->name('vagas.ativaDesativa')->middleware('can:cadastro_vagas_update');
+            Route::post('vagas/atualizar', [\App\Http\Controllers\VagaController::class, 'atualizar'])->name('vagas.atualizar')->middleware('can:cadastro_vagas');
+            Route::resource('vagas', \App\Http\Controllers\VagaController::class)->middleware('can:cadastro_vagas');
 
-            Route::put('vagas-abertas/{vagas_aberta}/ativa-desativa', [\App\Http\Controllers\VagasAbertasController::class, 'ativaDesativa'])->name('vagas_abertas.ativaDesativa')->middleware('can:vagas_abertas_update');
-            Route::post('vagas-abertas/atualizar', [\App\Http\Controllers\VagasAbertasController::class, 'atualizar'])->name('vagas_abertas.atualizar')->middleware('can:vagas_abertas');
-            Route::get('vagas-abertas/prova/{simulado}/{vaga_aberta}', [\App\Http\Controllers\VagasAbertasController::class, 'vagaAbertaSimulado'])->name('vagas_abertas.vagaAbertaSimulado')->middleware('can:vagas_abertas');
-            Route::resource('vagas-abertas', \App\Http\Controllers\VagasAbertasController::class)->middleware('can:vagas_abertas');
+            Route::put('vagas-abertas/{vagas_aberta}/ativa-desativa', [\App\Http\Controllers\VagasAbertasController::class, 'ativaDesativa'])->name('vagas_abertas.ativaDesativa')->middleware('can:cadastro_vagas_abertas_update');
+            Route::post('vagas-abertas/atualizar', [\App\Http\Controllers\VagasAbertasController::class, 'atualizar'])->name('vagas_abertas.atualizar')->middleware('can:cadastro_vagas_abertas');
+            Route::get('vagas-abertas/prova/{simulado}/{vaga_aberta}', [\App\Http\Controllers\VagasAbertasController::class, 'vagaAbertaSimulado'])->name('vagas_abertas.vagaAbertaSimulado')->middleware('can:cadastro_vagas_abertas');
+            Route::resource('vagas-abertas', \App\Http\Controllers\VagasAbertasController::class)->middleware('can:cadastro_vagas_abertas');
         });
 
         // Projeto
@@ -298,24 +298,24 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
 
         Route::group(['as' => 'areas.'], function () {
-            Route::put('areas/{area}/ativa-desativa', [\App\Http\Controllers\AreaEtiquetasController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:areaetiqueta');
-            Route::post('areas/atualizar', [\App\Http\Controllers\AreaEtiquetasController::class, 'atualizar'])->name('atualizar')->middleware('can:areaetiqueta');
-            Route::resource('areas', \App\Http\Controllers\AreaEtiquetasController::class)->middleware('can:areaetiqueta');
+            Route::put('areas/{area}/ativa-desativa', [\App\Http\Controllers\AreaEtiquetasController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_areaetiqueta');
+            Route::post('areas/atualizar', [\App\Http\Controllers\AreaEtiquetasController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_areaetiqueta');
+            Route::resource('areas', \App\Http\Controllers\AreaEtiquetasController::class)->middleware('can:cadastro_areaetiqueta');
         });
 
         Route::group(['as' => 'centrocusto.'], function () {
-            Route::put('centrocusto/{centrocusto}/ativa-desativa', [\App\Http\Controllers\CentroCustoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:centrocusto');
-            Route::post('centrocusto/atualizar', [\App\Http\Controllers\CentroCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:centrocusto');
-            Route::resource('centrocusto', \App\Http\Controllers\CentroCustoController::class)->middleware('can:centrocusto');
+            Route::put('centrocusto/{centrocusto}/ativa-desativa', [\App\Http\Controllers\CentroCustoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_centrocusto');
+            Route::post('centrocusto/atualizar', [\App\Http\Controllers\CentroCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_centrocusto');
+            Route::resource('centrocusto', \App\Http\Controllers\CentroCustoController::class)->middleware('can:cadastro_centrocusto');
         });
     });
 
     //Planejamento
     Route::group(['prefix' => 'planejamento'], function () {
         Route::group(['as' => 'requisicao_vagas.'], function () {
-            Route::put('requisicao-vaga/{requisicaoVaga}/aprovar', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovar'])->name('aprovar')->middleware('can:requisicao_vaga');
-            Route::post('requisicao-vaga/atualizar', [\App\Http\Controllers\RequisicaoVagaController::class, 'atualizar'])->name('atualizar')->middleware('can:requisicao_vaga');
-            Route::resource('requisicao-vaga', \App\Http\Controllers\RequisicaoVagaController::class)->middleware('can:requisicao_vaga');
+            Route::put('requisicao-vaga/{requisicaoVaga}/aprovar', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovar'])->name('aprovar')->middleware('can:planejamento_requisicao_vaga');
+            Route::post('requisicao-vaga/atualizar', [\App\Http\Controllers\RequisicaoVagaController::class, 'atualizar'])->name('atualizar')->middleware('can:planejamento_requisicao_vaga');
+            Route::resource('requisicao-vaga', \App\Http\Controllers\RequisicaoVagaController::class)->middleware('can:planejamento_requisicao_vaga');
         });
 
         Route::group(['as' => 'movimentacao.', 'prefix' => 'movimentacao'], function () {
@@ -392,12 +392,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         // Recrutamento
         Route::group(['as' => 'recrutamento.'], function () {
             //Recrutamento colocar depois Middleware
-            Route::get('recrutamentos/export', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel')->middleware('can:curriculos');
+            Route::get('recrutamentos/export', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel')->middleware('can:curriculos_recrutamento');
             //Lido
-            Route::put('recrutamentos/{curriculo}/lido', [\App\Http\Controllers\RecrutamentoController::class, 'marcaLido'])->name('recrutamentos.marcaLido')->middleware('can:curriculos');
-            Route::post('recrutamentos/search', [\App\Http\Controllers\RecrutamentoController::class, 'searchCliente'])->name('recrutamentos.search')->middleware('can:curriculos');
-            Route::post('recrutamentos/atualizar', [\App\Http\Controllers\RecrutamentoController::class, 'atualizar'])->name('recrutamentos.atualizar')->middleware('can:curriculos');
-            Route::resource('recrutamentos', \App\Http\Controllers\RecrutamentoController::class)->middleware('can:curriculos');
+            Route::put('recrutamentos/{curriculo}/lido', [\App\Http\Controllers\RecrutamentoController::class, 'marcaLido'])->name('recrutamentos.marcaLido')->middleware('can:curriculos_recrutamento');
+            Route::post('recrutamentos/search', [\App\Http\Controllers\RecrutamentoController::class, 'searchCliente'])->name('recrutamentos.search')->middleware('can:curriculos_recrutamento');
+            Route::post('recrutamentos/atualizar', [\App\Http\Controllers\RecrutamentoController::class, 'atualizar'])->name('recrutamentos.atualizar')->middleware('can:curriculos_recrutamento');
+            Route::resource('recrutamentos', \App\Http\Controllers\RecrutamentoController::class)->middleware('can:curriculos_recrutamento');
         });
 
         // Curriculo Seleção
@@ -414,34 +414,34 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::group(['as' => 'entrevista.', 'prefix' => 'entrevistas'], function () {
         //Parecer de RH
         Route::group(['as' => 'parecer_rh.'], function () {
-            Route::post('parecer_rh/export', [\App\Http\Controllers\ParecerRhController::class, 'export'])->name('excel')->middleware('can:parecer_rh');
-            Route::post('parecer_rh/atualizar', [\App\Http\Controllers\ParecerRhController::class, 'atualizar'])->name('atualizar')->middleware('can:parecer_rh');
-            Route::post('parecer_rh/ficha_pdf', [\App\Http\Controllers\ParecerRhController::class, 'getFichaPdf'])->name('getFichaPdf')->middleware('can:parecer_rh');
-            Route::resource('parecer_rh', \App\Http\Controllers\ParecerRhController::class)->middleware('can:parecer_rh');
+            Route::post('parecer_rh/export', [\App\Http\Controllers\ParecerRhController::class, 'export'])->name('excel')->middleware('can:entrevista_parecer_rh');
+            Route::post('parecer_rh/atualizar', [\App\Http\Controllers\ParecerRhController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_rh');
+            Route::post('parecer_rh/ficha_pdf', [\App\Http\Controllers\ParecerRhController::class, 'getFichaPdf'])->name('getFichaPdf')->middleware('can:entrevista_parecer_rh');
+            Route::resource('parecer_rh', \App\Http\Controllers\ParecerRhController::class)->middleware('can:entrevista_parecer_rh');
         });
 
         //Parecer Rota Transporte
         Route::group(['as' => 'parecer_rota_transporte.'], function () {
-            Route::get('parecer-rota/export', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel')->middleware('can:parecer_rota');
-            Route::post('parecer-rota/atualizar', [\App\Http\Controllers\ParecerRotaController::class, 'atualizar'])->name('atualizar')->middleware('can:parecer_rota');
-            Route::post('parecer-rota/ficha_pdf', [\App\Http\Controllers\ParecerRotaController::class, 'getFichaPdf'])->name('parecer_rota_transporte.getFichaPdf')->middleware('can:parecer_rota');
-            Route::resource('parecer-rota', \App\Http\Controllers\ParecerRotaController::class, ['parameters' => ['parecer-rota' => 'parecer_rota']])->middleware('can:parecer_rota');
+            Route::get('parecer-rota/export', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel')->middleware('can:entrevista_parecer_rota');
+            Route::post('parecer-rota/atualizar', [\App\Http\Controllers\ParecerRotaController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_rota');
+            Route::post('parecer-rota/ficha_pdf', [\App\Http\Controllers\ParecerRotaController::class, 'getFichaPdf'])->name('parecer_rota_transporte.getFichaPdf')->middleware('can:entrevista_parecer_rota');
+            Route::resource('parecer-rota', \App\Http\Controllers\ParecerRotaController::class, ['parameters' => ['parecer-rota' => 'parecer_rota']])->middleware('can:entrevista_parecer_rota');
         });
 
         //Parecer Entrevista Técnica
         Route::group(['as' => 'parecer_entrevista_tecnica.'], function () {
-            Route::get('parecer-entrevista-tecnica/export', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel')->middleware('can:parecer_entrevista');
-            Route::post('parecer-entrevista-tecnica/atualizar', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'atualizar'])->name('atualizar')->middleware('can:parecer_entrevista');
-            Route::post('parecer-entrevista-tecnica/ficha_pdf', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'getFichaPdf'])->name('parecer_entrevista_tecnica.getFichaPdf')->middleware('can:parecer_entrevista');
-            Route::resource('parecer-entrevista-tecnica', \App\Http\Controllers\ParecerEntrevistaTecnicaController::class, ['parameters' => ['parecer-entrevista-tecnica' => 'entrevista_tecnica']])->middleware('can:parecer_entrevista');
+            Route::get('parecer-entrevista-tecnica/export', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel')->middleware('can:entrevista_parecer_entrevista');
+            Route::post('parecer-entrevista-tecnica/atualizar', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_entrevista');
+            Route::post('parecer-entrevista-tecnica/ficha_pdf', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'getFichaPdf'])->name('parecer_entrevista_tecnica.getFichaPdf')->middleware('can:entrevista_parecer_entrevista');
+            Route::resource('parecer-entrevista-tecnica', \App\Http\Controllers\ParecerEntrevistaTecnicaController::class, ['parameters' => ['parecer-entrevista-tecnica' => 'entrevista_tecnica']])->middleware('can:entrevista_parecer_entrevista');
         });
 
         //Parecer Entrevista Técnica
         Route::group(['as' => 'parecer_teste_pratico.'], function () {
-            Route::get('parecer-teste-pratico/export', [\App\Http\Controllers\ParecerTestePraticoController::class, 'export'])->name('parecer_teste_pratico.excel')->middleware('can:parecer_teste_pratico');
-            Route::post('parecer-teste-pratico/atualizar', [\App\Http\Controllers\ParecerTestePraticoController::class, 'atualizar'])->name('atualizar')->middleware('can:parecer_teste_pratico');
-            Route::post('parecer-teste-pratico/ficha_pdf', [\App\Http\Controllers\ParecerTestePraticoController::class, 'getFichaPdf'])->name('parecer_teste_pratico.getFichaPdf')->middleware('can:parecer_teste_pratico');
-            Route::resource('parecer-teste-pratico', \App\Http\Controllers\ParecerTestePraticoController::class)->middleware('can:parecer_teste_pratico');
+            Route::get('parecer-teste-pratico/export', [\App\Http\Controllers\ParecerTestePraticoController::class, 'export'])->name('parecer_teste_pratico.excel')->middleware('can:entrevista_parecer_teste_pratico');
+            Route::post('parecer-teste-pratico/atualizar', [\App\Http\Controllers\ParecerTestePraticoController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_teste_pratico');
+            Route::post('parecer-teste-pratico/ficha_pdf', [\App\Http\Controllers\ParecerTestePraticoController::class, 'getFichaPdf'])->name('parecer_teste_pratico.getFichaPdf')->middleware('can:entrevista_parecer_teste_pratico');
+            Route::resource('parecer-teste-pratico', \App\Http\Controllers\ParecerTestePraticoController::class)->middleware('can:entrevista_parecer_teste_pratico');
         });
 
         //Entrevista Rh Cliente
@@ -462,12 +462,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         //Entrevista Resultado Integrado
         Route::group(['as' => 'resultado-integrado.'], function () {
-            Route::get('resultado-integrado/ficha/{feedback}', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getFichaPdf'])->name('resultado_integrado.getFichapdf')->middleware('can:resultado_integrado');
+            Route::get('resultado-integrado/ficha/{feedback}', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getFichaPdf'])->name('resultado_integrado.getFichapdf')->middleware('can:entrevista_resultado_integrado');
 
-            Route::get('resultado-integrado/export', [\App\Http\Controllers\ResultadoIntegradoController::class, 'export'])->name('resultado_integrado.excel')->middleware('can:resultado_integrado');
-            Route::post('resultado-integrado/atualizar', [\App\Http\Controllers\ResultadoIntegradoController::class, 'atualizar'])->name('resultado_integrado.atualizar')->middleware('can:resultado_integrado');
-//            Route::get('resultado-integrado/ficha/{resultado}', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getFichaPdf'])->name('resultado_integrado.getFichapdf')->middleware('can:resultado_integrado');
-            Route::resource('resultado-integrado', \App\Http\Controllers\ResultadoIntegradoController::class)->middleware('can:resultado_integrado');
+            Route::get('resultado-integrado/export', [\App\Http\Controllers\ResultadoIntegradoController::class, 'export'])->name('resultado_integrado.excel')->middleware('can:entrevista_resultado_integrado');
+            Route::post('resultado-integrado/atualizar', [\App\Http\Controllers\ResultadoIntegradoController::class, 'atualizar'])->name('resultado_integrado.atualizar')->middleware('can:entrevista_resultado_integrado');
+//            Route::get('resultado-integrado/ficha/{resultado}', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getFichaPdf'])->name('resultado_integrado.getFichapdf')->middleware('can:entrevista_resultado_integrado');
+            Route::resource('resultado-integrado', \App\Http\Controllers\ResultadoIntegradoController::class)->middleware('can:entrevista_resultado_integrado');
         });
 
     });
@@ -483,7 +483,6 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('controle-exames', [\App\Http\Controllers\ControleExameController::class, 'index'])->name('index');
     });
 
-
     //Menu Admissão
     Route::group(['as' => 'admissao.'], function () {
         Route::group(['as' => 'cih.', 'prefix' => 'apontamento'], function () {
@@ -497,7 +496,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('cih/geraexcel', [\App\Http\Controllers\CihController::class, 'relatorioExcel'])->name('relatorioExcel'); // manter essa rota antes do resource
             Route::post('cih/atualizar', [\App\Http\Controllers\CihController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::put('cih/aprovar/{cih}', [\App\Http\Controllers\CihController::class, 'aprovar'])->name('aprovar'); // manter essa rota antes do resource
-            Route::resource('cih', \App\Http\Controllers\CihController::class)->middleware('can:cih');
+            Route::resource('cih', \App\Http\Controllers\CihController::class)->middleware('can:admissao_cih');
         });
         Route::group(['as' => 'intermitente.', 'prefix' => 'apontamento'], function () {
             //anexo
@@ -514,7 +513,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('intermitente/atualizar', [\App\Http\Controllers\IntermitenteController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::post('intermitente/storeTipo', [\App\Http\Controllers\IntermitenteController::class, 'storeTipo'])->name('storeTipo'); // manter essa rota antes do resource
             Route::put('intermitente/aprovar/{intermitente}', [\App\Http\Controllers\IntermitenteController::class, 'aprovar'])->name('aprovar'); // manter essa rota antes do resource
-            Route::resource('intermitente', \App\Http\Controllers\IntermitenteController::class)->middleware('can:intermitente');
+            Route::resource('intermitente', \App\Http\Controllers\IntermitenteController::class)->middleware('can:admissao_intermitente');
         });
 
         Route::group(['as' => 'preadm.', 'prefix' => 'preadmissao'], function () {
@@ -535,23 +534,23 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('admissao/anexoDownload/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'download'])->name('admissao.anexo-download');
         Route::delete('admissao/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoDelete'])->name('admissao.anexo-delete');
 
-        Route::get('admissao/listSelects', [\App\Http\Controllers\AdmissaoController::class, 'listSelects'])->name('admissao.listSelects')->middleware('can:admissao'); // manter essa rota antes do resource
-        Route::post('admissao/atualizar', [\App\Http\Controllers\AdmissaoController::class, 'atualizar'])->name('admissao.atualizar')->middleware('can:admissao'); // manter essa rota antes do resource
-        Route::get('admissao/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao'); // manter essa rota antes do resource
+        Route::get('admissao/listSelects', [\App\Http\Controllers\AdmissaoController::class, 'listSelects'])->name('admissao.listSelects')->middleware('can:admissao_processo'); // manter essa rota antes do resource
+        Route::post('admissao/atualizar', [\App\Http\Controllers\AdmissaoController::class, 'atualizar'])->name('admissao.atualizar')->middleware('can:admissao_processo'); // manter essa rota antes do resource
+        Route::get('admissao/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao_processo'); // manter essa rota antes do resource
 
 
-        Route::resource('admissao', \App\Http\Controllers\AdmissaoController::class)->middleware('can:admissao');
+        Route::resource('admissao', \App\Http\Controllers\AdmissaoController::class)->middleware('can:admissao_processo');
     });
 
     Route::group(['as' => 'posadmissao.'], function () {
-        Route::post('posadmissao/atualizar', [\App\Http\Controllers\PosAdmissaoController::class, 'atualizar'])->name('posadmissao.atualizar')->middleware('can:admissao'); // manter essa rota antes do resource
+        Route::post('posadmissao/atualizar', [\App\Http\Controllers\PosAdmissaoController::class, 'atualizar'])->name('posadmissao.atualizar')->middleware('can:admissao_pos_admissao'); // manter essa rota antes do resource
         Route::put('posadmissao/desmobilizar', [\App\Http\Controllers\PosAdmissaoController::class, 'desmobilizar'])->name('posadmissao.desmobilizar'); // manter essa rota antes do resource
         Route::post('posadmissao/entrevistar', [\App\Http\Controllers\PosAdmissaoController::class, 'entrevistar'])->name('posadmissao.entrevistar'); // manter essa rota antes do resource
         Route::put('posadmissao/entrevistar/{entrevista}', [\App\Http\Controllers\PosAdmissaoController::class, 'entrevistarUpdate'])->name('posadmissao.entrevistarUpdate'); // manter essa rota antes do resource
         Route::get('posadmissao/entrevista/{curriculo}', [\App\Http\Controllers\PosAdmissaoController::class, 'entrevista'])->name('posadmissao.entrevista'); // manter essa rota antes do resource
         Route::post('posadmissao/demitir', [\App\Http\Controllers\PosAdmissaoController::class, 'demitir'])->name('posadmissao.demitir'); // manter essa rota antes do resource
         Route::get('posadmissao/demitir/pdf/{id}', [\App\Http\Controllers\PosAdmissaoController::class, 'demissaoPdf'])->name('posadmissao.demissaoPdf'); // manter essa rota antes do resource
-        Route::resource('posadmissao', \App\Http\Controllers\PosAdmissaoController::class, ['parameters' => ['posadmissao' => 'admissao']])->middleware('can:admissao');
+        Route::resource('posadmissao', \App\Http\Controllers\PosAdmissaoController::class, ['parameters' => ['posadmissao' => 'admissao']])->middleware('can:admissao_pos_admissao');
     });
 
     Route::group(['as' => 'historico.', 'prefix' => 'historico'], function () {
@@ -559,7 +558,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'show'])->name('show');
         Route::post('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'storeMedidas'])->name('storeMedidas');
         Route::put('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'updateMedidas'])->name('updateMedidas');
-        Route::get('/', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('index')->middleware('can:historico'); // manter essa rota antes do resource
+        Route::get('/', [\App\Http\Controllers\HistoricoController::class, 'index'])->name('index')->middleware('can:admissao_historico'); // manter essa rota antes do resource
 
         //Rotas Medidas Administrativas
         Route::group(['as' => 'medidas-administrativas.', 'prefix' => 'medidas-administrativas'], function () {
@@ -659,7 +658,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::post('treinamento/proximovencimento', [\App\Http\Controllers\TreinamentoController::class, 'treinamentoProximoVencimento'])->name('vencimentoTreinamento');
         Route::post('treinamento/salvar-massa', [\App\Http\Controllers\TreinamentoController::class, 'storeMassa'])->name('storeMassa');
 
-        Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)->middleware('can:treinamento');
+        Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)->middleware('can:treinamento_carteira-etiquetas');
     });
 
     //PORTARIA
@@ -668,7 +667,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::post('portaria/pdf', [\App\Http\Controllers\PortariaController::class, 'pdf'])->name('pdf');
         Route::get('portaria/{resultado}', [\App\Http\Controllers\PortariaController::class, 'edit'])->name('edit');
         Route::put('portaria/{resultado}', [\App\Http\Controllers\PortariaController::class, 'update'])->name('update');
-        Route::get('portaria', [\App\Http\Controllers\PortariaController::class, 'index'])->name('index');
+        Route::get('portaria', [\App\Http\Controllers\PortariaController::class, 'index'])->name('index')->middleware('can:treinamento_portaria');
     });
 
     // CERTIFICADO
@@ -678,7 +677,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::post('certificado/atualizar', [\App\Http\Controllers\CertificadoController::class, 'atualizar'])->name('atualizar');
 
         Route::post('certificado/pdf', [\App\Http\Controllers\CertificadoController::class, 'certificadoPdf'])->name('certificadoPdf');
-        Route::resource('certificado', \App\Http\Controllers\CertificadoController::class)->middleware('can:treinamento');
+        Route::resource('certificado', \App\Http\Controllers\CertificadoController::class)->middleware('can:treinamento_certificado');
     });
 
     //Cloud
@@ -732,6 +731,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::put('itenscloud/{item}/aprovar', [\App\Http\Controllers\ItensCloudController::class, 'aprovar']);
         Route::resource('itenscloud', \App\Http\Controllers\ItensCloudController::class)->middleware('can:cloud');
     });
+
     // Ocorrencias
     Route::group(['as' => 'ocorrencia.'], function () {
         //Controle de Ocorrencias
@@ -753,38 +753,39 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     // Site
     Route::group(['as' => 'site.'], function () {
         //ANEXO DE FOTOS
-        Route::post('galeria/uploadFotos', [\App\Http\Controllers\GaleriaController::class, 'uploadFotos'])->name('galeria.upload-fotos')->middleware('can:galeria_site');
-        Route::get('galeria/fotoDownload/{arquivo}', [\App\Http\Controllers\GaleriaController::class, 'download'])->name('galeria.foto-download')->middleware('can:galeria_site');
-        Route::put('galeria/{galeria}/ativa-desativa', [\App\Http\Controllers\GaleriaController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:galeria_site');
+        Route::post('galeria/uploadFotos', [\App\Http\Controllers\GaleriaController::class, 'uploadFotos'])->name('galeria.upload-fotos')->middleware('can:site_galeria_site');
+        Route::get('galeria/fotoDownload/{arquivo}', [\App\Http\Controllers\GaleriaController::class, 'download'])->name('galeria.foto-download')->middleware('can:site_galeria_site');
+        Route::put('galeria/{galeria}/ativa-desativa', [\App\Http\Controllers\GaleriaController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:site_galeria_site');
 
-        Route::post('galeria/atualizar', [\App\Http\Controllers\GaleriaController::class, 'atualizar'])->name('galeria.atualizar')->middleware('can:galeria_site');
-        Route::resource('galeria', \App\Http\Controllers\GaleriaController::class, ['parameters' => ['galeria' => 'galeria']])->middleware('can:galeria_site');
+        Route::post('galeria/atualizar', [\App\Http\Controllers\GaleriaController::class, 'atualizar'])->name('galeria.atualizar')->middleware('can:site_galeria_site');
+        Route::resource('galeria', \App\Http\Controllers\GaleriaController::class, ['parameters' => ['galeria' => 'galeria']])->middleware('can:site_galeria_site');
 
         //CLIENTES
         Route::group(['as' => 'cliente.'], function () {
-            Route::post('cliente-logo/atualizar', [\App\Http\Controllers\ClienteLogoSiteController::class, 'atualizar'])->name('atualizar')->middleware('can:cartela_cliente_site');
-            Route::post('cliente-logo/fotoUpload', [\App\Http\Controllers\ClienteLogoSiteController::class, 'fotoUpload'])->name('upload-fotos')->middleware('can:cartela_cliente_site_insert');
+            Route::post('cliente-logo/atualizar', [\App\Http\Controllers\ClienteLogoSiteController::class, 'atualizar'])->name('atualizar')->middleware('can:site_cartela_cliente_site');
+            Route::post('cliente-logo/fotoUpload', [\App\Http\Controllers\ClienteLogoSiteController::class, 'fotoUpload'])->name('upload-fotos')->middleware('can:site_cartela_cliente_site_insert');
 //                Route::get('cliente/fotoDownload/{arquivo}', 'ClientesController@download')->name('foto-download');
-            Route::resource('cliente-logo', \App\Http\Controllers\ClienteLogoSiteController::class)->middleware('can:cartela_cliente_site');
+            Route::resource('cliente-logo', \App\Http\Controllers\ClienteLogoSiteController::class)->middleware('can:site_cartela_cliente_site');
         });
 
         Route::group(['as' => 'testemunhal.'], function () {
             // Anexos
-            Route::post('testemunhal/uploadAnexos', [\App\Http\Controllers\TestemunhalController::class, 'uploadAnexos'])->name('testemunhal.upload-anexos')->middleware('can:depoimento_site_insert');
+            Route::post('testemunhal/uploadAnexos', [\App\Http\Controllers\TestemunhalController::class, 'uploadAnexos'])->name('testemunhal.upload-anexos')->middleware('can:site_depoimento_site_insert');
             Route::get('testemunhal/anexo/{arquivo}', [\App\Http\Controllers\TestemunhalController::class, 'anexoShow'])->name('testemunhal.anexo-show');
             Route::get('testemunhal/anexoDownload/{arquivo}', [\App\Http\Controllers\TestemunhalController::class, 'download'])->name('testemunhal.anexo-download');
             Route::delete('testemunhal/anexo/{arquivo}', [\App\Http\Controllers\TestemunhalController::class, 'anexoDelete'])->name('testemunhal.anexo-delete');
 
 
-            Route::post('testemunhal/atualizar', [\App\Http\Controllers\TestemunhalController::class, 'atualizar'])->name('testemunhal.atualizar')->middleware('can:depoimento_site');
-            Route::resource('testemunhal', \App\Http\Controllers\TestemunhalController::class)->middleware('can:depoimento_site');
+            Route::post('testemunhal/atualizar', [\App\Http\Controllers\TestemunhalController::class, 'atualizar'])->name('testemunhal.atualizar')->middleware('can:site_depoimento_site');
+            Route::resource('testemunhal', \App\Http\Controllers\TestemunhalController::class)->middleware('can:site_depoimento_site');
         });
     });
+
     // Relatorios
     Route::group(['as' => 'relatorios.'], function () {
         Route::group(['as' => 'controleusuarios.'], function () {
-            Route::get('relatorios/controleusuarios', [\App\Http\Controllers\ControleUsuariosController::class, 'index'])->name('index')->middleware('can:relatorios');
-            Route::post('relatorios/controleusuarios/dados', [\App\Http\Controllers\ControleUsuariosController::class, 'dadosusuarioSistema'])->name('dadosusuarioSistema')->middleware('can:relatorios');
+            Route::get('relatorios/controleusuarios', [\App\Http\Controllers\ControleUsuariosController::class, 'index'])->name('index')->middleware('can:relatorio_relatorios');
+            Route::post('relatorios/controleusuarios/dados', [\App\Http\Controllers\ControleUsuariosController::class, 'dadosusuarioSistema'])->name('dadosusuarioSistema')->middleware('can:relatorio_relatorios');
 //            Route::get('relatorios/controleusuarios/pdf/{dados}', [\App\Http\Controllers\ControleUsuariosController::class, 'usuarioSistema'])->name('usuarioSistema')->middleware('can:relatorios');
         });
     });
@@ -794,17 +795,17 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         //Usuários
         Route::get('usuario/autenticado', [\App\Http\Controllers\UserController::class, 'getUsuario'])->name('getUsuario');
 
-        Route::post('usuarios/atualizar', [\App\Http\Controllers\UserController::class, 'atualizar'])->name('usuarios.atualizar')->middleware('can:usuarios');
-        Route::put('usuarios/{usuario}/ativa-desativa', [\App\Http\Controllers\UserController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:usuarios');
+        Route::post('usuarios/atualizar', [\App\Http\Controllers\UserController::class, 'atualizar'])->name('usuarios.atualizar')->middleware('can:usuario_usuarios');
+        Route::put('usuarios/{usuario}/ativa-desativa', [\App\Http\Controllers\UserController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:usuario_usuarios');
         //Alterar senha
-        Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('can:alterar-senha');
-        Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('can:alterar-senha');
+        Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('can:usuario_alterar-senha');
+        Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('can:usuario_alterar-senha');
 
 
-        Route::resource('usuarios', \App\Http\Controllers\UserController::class)->middleware('can:usuarios');
+        Route::resource('usuarios', \App\Http\Controllers\UserController::class)->middleware('can:usuario_usuarios');
 
         //busca os grupos da uma empresa
-        Route::get('usuario/busca-grupo-empresa/{empresa_id}', [\App\Http\Controllers\UserController::class, 'buscaGrupoEmpresa'])->name('buscaGrupoEmpresa')->middleware('can:usuarios');
+        Route::get('usuario/busca-grupo-empresa/{empresa_id}', [\App\Http\Controllers\UserController::class, 'buscaGrupoEmpresa'])->name('buscaGrupoEmpresa')->middleware('can:usuario_usuarios');
 
     });
 
@@ -821,37 +822,37 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::group(['as' => 'financeiro.'], function () {
 
         Route::group(['as' => 'fluxo-caixa.'], function () {
-            Route::put('fluxo-caixa/{empresa}/lancamento/{lancamento}/mudarStatus', [\App\Http\Controllers\FluxoCaixaController::class, 'mudarStatus'])->name('mudarStatus')->middleware('can:realizar-lancamento');
-            Route::put('fluxo-caixa/{empresa}/lancamento/{lancamento}', [\App\Http\Controllers\FluxoCaixaController::class, 'alterarLancamento'])->name('alterarLancamento')->middleware('can:fluxo-caixa');
-            Route::delete('fluxo-caixa/{empresa}/lancamento/{lancamento}', [\App\Http\Controllers\FluxoCaixaController::class, 'excluirLancamento'])->name('excluirLancamento')->middleware('can:fluxo-caixa');
-            Route::post('fluxo-caixa/{empresa}/lancamento', [\App\Http\Controllers\FluxoCaixaController::class, 'cadastrarLancamento'])->name('cadastrarLancamento')->middleware('can:fluxo-caixa_insert');
-            Route::get('fluxo-caixa/{empresa}/lancamento/{lancamento}', [\App\Http\Controllers\FluxoCaixaController::class, 'carregarLancamento'])->name('carregarLancamento')->middleware('can:fluxo-caixa');
-            Route::get('fluxo-caixa/buscaNomePlanoConta', [\App\Http\Controllers\FluxoCaixaController::class, 'buscaNomePlanoConta'])->name('buscaNomePlanoConta'); //->middleware('can:fluxo-caixa'); não tem restrição (tela de recibos usa)
-            Route::post('fluxo-caixa/{empresa}/atualizaFluxoCaixa', [\App\Http\Controllers\FluxoCaixaController::class, 'atualizaFluxoCaixa'])->name('atualizaFluxoCaixa')->middleware('can:fluxo-caixa');
-            Route::get('fluxo-caixa/{empresa}', [\App\Http\Controllers\FluxoCaixaController::class, 'show'])->name('show')->middleware('can:fluxo-caixa');
-            Route::get('fluxo-caixa', [\App\Http\Controllers\FluxoCaixaController::class, 'index'])->name('index')->middleware('can:fluxo-caixa');
+            Route::put('fluxo-caixa/{empresa}/lancamento/{lancamento}/mudarStatus', [\App\Http\Controllers\FluxoCaixaController::class, 'mudarStatus'])->name('mudarStatus')->middleware('can:privilegio_realizar-lancamento');
+            Route::put('fluxo-caixa/{empresa}/lancamento/{lancamento}', [\App\Http\Controllers\FluxoCaixaController::class, 'alterarLancamento'])->name('alterarLancamento')->middleware('can:financeiro_fluxo-caixa');
+            Route::delete('fluxo-caixa/{empresa}/lancamento/{lancamento}', [\App\Http\Controllers\FluxoCaixaController::class, 'excluirLancamento'])->name('excluirLancamento')->middleware('can:financeiro_fluxo-caixa');
+            Route::post('fluxo-caixa/{empresa}/lancamento', [\App\Http\Controllers\FluxoCaixaController::class, 'cadastrarLancamento'])->name('cadastrarLancamento')->middleware('can:financeiro_fluxo-caixa_insert');
+            Route::get('fluxo-caixa/{empresa}/lancamento/{lancamento}', [\App\Http\Controllers\FluxoCaixaController::class, 'carregarLancamento'])->name('carregarLancamento')->middleware('can:financeiro_fluxo-caixa');
+            Route::get('fluxo-caixa/buscaNomePlanoConta', [\App\Http\Controllers\FluxoCaixaController::class, 'buscaNomePlanoConta'])->name('buscaNomePlanoConta'); //->middleware('can:financeiro_fluxo-caixa'); não tem restrição (tela de recibos usa)
+            Route::post('fluxo-caixa/{empresa}/atualizaFluxoCaixa', [\App\Http\Controllers\FluxoCaixaController::class, 'atualizaFluxoCaixa'])->name('atualizaFluxoCaixa')->middleware('can:financeiro_fluxo-caixa');
+            Route::get('fluxo-caixa/{empresa}', [\App\Http\Controllers\FluxoCaixaController::class, 'show'])->name('show')->middleware('can:financeiro_fluxo-caixa');
+            Route::get('fluxo-caixa', [\App\Http\Controllers\FluxoCaixaController::class, 'index'])->name('index')->middleware('can:financeiro_fluxo-caixa');
         });
 
         //Categoria Plano Conta
         Route::group(['as' => 'classificacao-plano-conta.'], function () {
-            Route::get('classificacao-plano-conta/buscar', [\App\Http\Controllers\CategoriaPlanoContaController::class, 'buscaCategoria'])->name('buscar')->middleware('can:classificacao-plano-conta');
-            Route::post('classificacao-plano-conta/atualizar', [\App\Http\Controllers\CategoriaPlanoContaController::class, 'atualizar'])->name('atualizar')->middleware('can:classificacao-plano-conta');
+            Route::get('classificacao-plano-conta/buscar', [\App\Http\Controllers\CategoriaPlanoContaController::class, 'buscaCategoria'])->name('buscar')->middleware('can:financeiro_classificacao-plano-conta');
+            Route::post('classificacao-plano-conta/atualizar', [\App\Http\Controllers\CategoriaPlanoContaController::class, 'atualizar'])->name('atualizar')->middleware('can:financeiro_classificacao-plano-conta');
         });
-        Route::resource('classificacao-plano-conta', \App\Http\Controllers\CategoriaPlanoContaController::class, ['parameters' => ['classificacao-plano-conta' => 'categoria']])->middleware('can:classificacao-plano-conta');
+        Route::resource('classificacao-plano-conta', \App\Http\Controllers\CategoriaPlanoContaController::class, ['parameters' => ['classificacao-plano-conta' => 'categoria']])->middleware('can:financeiro_classificacao-plano-conta');
 
         //Planos de conta
         Route::group(['as' => 'plano-conta.'], function () {
-            Route::get('plano-conta/buscar', [\App\Http\Controllers\PlanoContaController::class, 'busca'])->name('buscar')->middleware('can:plano-conta');
-            Route::post('plano-conta/atualizar', [\App\Http\Controllers\PlanoContaController::class, 'atualizar'])->name('atualizar')->middleware('can:plano-conta');
+            Route::get('plano-conta/buscar', [\App\Http\Controllers\PlanoContaController::class, 'busca'])->name('buscar')->middleware('can:financeiro_plano-conta');
+            Route::post('plano-conta/atualizar', [\App\Http\Controllers\PlanoContaController::class, 'atualizar'])->name('atualizar')->middleware('can:financeiro_plano-conta');
         });
-        Route::resource('plano-conta', \App\Http\Controllers\PlanoContaController::class, ['parameters' => ['plano-conta' => 'plano']])->middleware('can:plano-conta');
+        Route::resource('plano-conta', \App\Http\Controllers\PlanoContaController::class, ['parameters' => ['plano-conta' => 'plano']])->middleware('can:financeiro_plano-conta');
 
         //Formas de pagamento
         Route::group(['as' => 'formas-pagamento.'], function () {
-            Route::get('formas-pagamento/buscar', [\App\Http\Controllers\FormaPagamentoController::class, 'buscaCategoria'])->name('buscar')->middleware('can:formas-pagamento');
-            Route::post('formas-pagamento/atualizar', [\App\Http\Controllers\FormaPagamentoController::class, 'atualizar'])->name('atualizar')->middleware('can:formas-pagamento');
+            Route::get('formas-pagamento/buscar', [\App\Http\Controllers\FormaPagamentoController::class, 'buscaCategoria'])->name('buscar')->middleware('can:financeiro_formas-pagamento');
+            Route::post('formas-pagamento/atualizar', [\App\Http\Controllers\FormaPagamentoController::class, 'atualizar'])->name('atualizar')->middleware('can:financeiro_formas-pagamento');
         });
-        Route::resource('formas-pagamento', \App\Http\Controllers\FormaPagamentoController::class, ['parameters' => ['formas-pagamento' => 'forma']])->middleware('can:formas-pagamento');
+        Route::resource('formas-pagamento', \App\Http\Controllers\FormaPagamentoController::class, ['parameters' => ['formas-pagamento' => 'forma']])->middleware('can:financeiro_formas-pagamento');
 
     });
 
@@ -860,71 +861,71 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         //Configuracoes
         Route::group(['as' => 'configuracoes.'], function () {
-            Route::post('configuracoes/buscarPerimetros', [\App\Http\Controllers\EmpresaConfigController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:config_empresa');
-            Route::post('configuracoes/atualizarFuncionarios', [\App\Http\Controllers\EmpresaConfigController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:config_empresa');
+            Route::post('configuracoes/buscarPerimetros', [\App\Http\Controllers\EmpresaConfigController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
+            Route::post('configuracoes/atualizarFuncionarios', [\App\Http\Controllers\EmpresaConfigController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
             Route::get('configuracoes/getPermissoes', [\App\Http\Controllers\EmpresaConfigController::class, 'getPermissoes'])->name('getPermissoes');
 
         });
-        Route::resource('configuracoes', \App\Http\Controllers\EmpresaConfigController::class, ['parameters' => ['configuracoes' => 'config']])->middleware('can:config_empresa');
+        Route::resource('configuracoes', \App\Http\Controllers\EmpresaConfigController::class, ['parameters' => ['configuracoes' => 'config']])->middleware('can:controle_ponto_config_empresa');
 
         // Feriados
         Route::group(['as' => 'feriados.'], function () {
-            Route::put('feriados/{feriado}/ativa-desativa', [\App\Http\Controllers\FeriadoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:feriados');
-            Route::post('feriados/search', [\App\Http\Controllers\FeriadoController::class, 'searchFeriado'])->name('search')->middleware('can:feriados');
-            Route::post('feriados/atualizar', [\App\Http\Controllers\FeriadoController::class, 'atualizar'])->name('atualizar')->middleware('can:feriados');
+            Route::put('feriados/{feriado}/ativa-desativa', [\App\Http\Controllers\FeriadoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:controle_ponto_feriados');
+            Route::post('feriados/search', [\App\Http\Controllers\FeriadoController::class, 'searchFeriado'])->name('search')->middleware('can:controle_ponto_feriados');
+            Route::post('feriados/atualizar', [\App\Http\Controllers\FeriadoController::class, 'atualizar'])->name('atualizar')->middleware('can:controle_ponto_feriados');
         });
-        Route::resource('feriados', \App\Http\Controllers\FeriadoController::class,)->middleware('can:feriados');
+        Route::resource('feriados', \App\Http\Controllers\FeriadoController::class,)->middleware('can:controle_ponto_feriados');
 
         //Perimetro
         Route::group(['as' => 'perimetros.'], function () {
-            Route::post('perimetros/atualizarPerimetros', [\App\Http\Controllers\PerimetroController::class, 'atualizarPerimetros'])->name('atualizarPerimetros')->middleware('can:perimetros');
-            Route::put('perimetros/assosicarPerimetro', [\App\Http\Controllers\PerimetroController::class, 'assosicarPerimetro'])->name('assosicarPerimetro')->middleware('can:perimetros_funcionarios');
+            Route::post('perimetros/atualizarPerimetros', [\App\Http\Controllers\PerimetroController::class, 'atualizarPerimetros'])->name('atualizarPerimetros')->middleware('can:controle_ponto_perimetros');
+            Route::put('perimetros/assosicarPerimetro', [\App\Http\Controllers\PerimetroController::class, 'assosicarPerimetro'])->name('assosicarPerimetro')->middleware('can:controle_ponto_perimetros_funcionarios');
         });
-        Route::resource('perimetros', \App\Http\Controllers\PerimetroController::class, ['parameters' => ['perimetros' => 'perimetro']])->middleware('can:perimetros');
+        Route::resource('perimetros', \App\Http\Controllers\PerimetroController::class, ['parameters' => ['perimetros' => 'perimetro']])->middleware('can:controle_ponto_perimetros');
 
         //Ocorrencais jornadas
         Route::group(['as' => 'ocorrencias_jornadas.'], function () {
-            Route::get('ocorrencias_jornadas/buscar', [\App\Http\Controllers\OcorrenciaJornadaController::class, 'buscaCategoria'])->name('buscar')->middleware('can:ocorrencias_jornadas');
-            Route::post('ocorrencias_jornadas/atualizar', [\App\Http\Controllers\OcorrenciaJornadaController::class, 'atualizar'])->name('atualizar')->middleware('can:ocorrencias_jornadas');
+            Route::get('ocorrencias_jornadas/buscar', [\App\Http\Controllers\OcorrenciaJornadaController::class, 'buscaCategoria'])->name('buscar')->middleware('can:controle_ponto_ocorrencias_jornadas');
+            Route::post('ocorrencias_jornadas/atualizar', [\App\Http\Controllers\OcorrenciaJornadaController::class, 'atualizar'])->name('atualizar')->middleware('can:controle_ponto_ocorrencias_jornadas');
         });
-        Route::resource('ocorrencias_jornadas', \App\Http\Controllers\OcorrenciaJornadaController::class, ['parameters' => ['ocorrencias_jornadas' => 'ocorrencia_jornada']])->middleware('can:ocorrencias_jornadas');
+        Route::resource('ocorrencias_jornadas', \App\Http\Controllers\OcorrenciaJornadaController::class, ['parameters' => ['ocorrencias_jornadas' => 'ocorrencia_jornada']])->middleware('can:controle_ponto_ocorrencias_jornadas');
 
         //Escalas
         Route::group(['as' => 'escalas.'], function () {
-            Route::post('escalas/atualizarEscalas', [\App\Http\Controllers\EmpresaEscalaController::class, 'atualizarEscalas'])->name('atualizarEscalas')->middleware('can:escalas');
-            Route::put('escalas/assosicarEscalas', [\App\Http\Controllers\EmpresaEscalaController::class, 'assosicarEscalas'])->name('assosicarEscalas')->middleware('can:escalas_funcionarios');
+            Route::post('escalas/atualizarEscalas', [\App\Http\Controllers\EmpresaEscalaController::class, 'atualizarEscalas'])->name('atualizarEscalas')->middleware('can:controle_ponto_escalas');
+            Route::put('escalas/assosicarEscalas', [\App\Http\Controllers\EmpresaEscalaController::class, 'assosicarEscalas'])->name('assosicarEscalas')->middleware('can:controle_ponto_escalas_funcionarios');
 
-            Route::post('escalas/atualizarFuncionarios', [\App\Http\Controllers\EmpresaEscalaController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:escalas');
+            Route::post('escalas/atualizarFuncionarios', [\App\Http\Controllers\EmpresaEscalaController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_escalas');
             Route::get('escalas/getPermissoes', [\App\Http\Controllers\EmpresaEscalaController::class, 'getPermissoes'])->name('getPermissoes');
 
         });
-        Route::resource('escalas', \App\Http\Controllers\EmpresaEscalaController::class, ['parameters' => ['escalas' => 'escala']])->middleware('can:escalas');
+        Route::resource('escalas', \App\Http\Controllers\EmpresaEscalaController::class, ['parameters' => ['escalas' => 'escala']])->middleware('can:controle_ponto_escalas');
 
 
         //Ponto eletronico
         Route::group(['as' => 'ponto-eletronico.'], function () {
-            Route::get('ponto-eletronico/fotos/{arquivo}', [\App\Http\Controllers\PontoEletronicoController::class, 'fotoShow'])->name('fotoShow')->middleware('can:ponto-eletronico');
-            Route::get('ponto-eletronico/init', [\App\Http\Controllers\PontoEletronicoController::class, 'init'])->name('init')->middleware('can:ponto-eletronico');
-            Route::post('ponto-eletronico/atualizarHistorico', [\App\Http\Controllers\PontoEletronicoController::class, 'atualizarHistorico'])->name('atualizarHistorico')->middleware('can:ponto-eletronico');
-            Route::get('ponto-eletronico/{ponto}/{periodo}', [\App\Http\Controllers\PontoEletronicoController::class, 'showPeriodo'])->name('showPeriodo')->middleware('can:ponto-eletronico');
+            Route::get('ponto-eletronico/fotos/{arquivo}', [\App\Http\Controllers\PontoEletronicoController::class, 'fotoShow'])->name('fotoShow')->middleware('can:controle_ponto_ponto-eletronico');
+            Route::get('ponto-eletronico/init', [\App\Http\Controllers\PontoEletronicoController::class, 'init'])->name('init')->middleware('can:controle_ponto_ponto-eletronico');
+            Route::post('ponto-eletronico/atualizarHistorico', [\App\Http\Controllers\PontoEletronicoController::class, 'atualizarHistorico'])->name('atualizarHistorico')->middleware('can:controle_ponto_ponto-eletronico');
+            Route::get('ponto-eletronico/{ponto}/{periodo}', [\App\Http\Controllers\PontoEletronicoController::class, 'showPeriodo'])->name('showPeriodo')->middleware('can:controle_ponto_ponto-eletronico');
         });
-        Route::resource('ponto-eletronico', \App\Http\Controllers\PontoEletronicoController::class, ['parameters' => ['ponto-eletronico' => 'ponto']])->middleware('can:ponto-eletronico');
+        Route::resource('ponto-eletronico', \App\Http\Controllers\PontoEletronicoController::class, ['parameters' => ['ponto-eletronico' => 'ponto']])->middleware('can:controle_ponto_ponto-eletronico');
 
         //Ajustar jornada
         Route::group(['as' => 'ajustar-jornadas.'], function () {
-            Route::post('ajustar-jornadas/atualizaJornadasVerificadas', [\App\Http\Controllers\AjusteJornadaController::class, 'atualizaJornadasVerificadas'])->name('atualizaJornadasVerificadas')->middleware('can:ajustar-jornadas');
-            Route::post('ajustar-jornadas/atualizaJornadasPendentes', [\App\Http\Controllers\AjusteJornadaController::class, 'atualizaJornadasPendentes'])->name('atualizaJornadasPendentes')->middleware('can:ajustar-jornadas');
-            Route::post('ajustar-jornadas/atualizaJornadasIncompletas', [\App\Http\Controllers\AjusteJornadaController::class, 'atualizaJornadasIncompletas'])->name('atualizaJornadasIncompletas')->middleware('can:ajustar-jornadas');
+            Route::post('ajustar-jornadas/atualizaJornadasVerificadas', [\App\Http\Controllers\AjusteJornadaController::class, 'atualizaJornadasVerificadas'])->name('atualizaJornadasVerificadas')->middleware('can:controle_ponto_ajustar-jornadas');
+            Route::post('ajustar-jornadas/atualizaJornadasPendentes', [\App\Http\Controllers\AjusteJornadaController::class, 'atualizaJornadasPendentes'])->name('atualizaJornadasPendentes')->middleware('can:controle_ponto_ajustar-jornadas');
+            Route::post('ajustar-jornadas/atualizaJornadasIncompletas', [\App\Http\Controllers\AjusteJornadaController::class, 'atualizaJornadasIncompletas'])->name('atualizaJornadasIncompletas')->middleware('can:controle_ponto_ajustar-jornadas');
         });
-        Route::resource('ajustar-jornadas', \App\Http\Controllers\AjusteJornadaController::class, ['parameters' => ['ajustar-jornadas' => 'ponto']])->middleware('can:ajustar-jornadas');
+        Route::resource('ajustar-jornadas', \App\Http\Controllers\AjusteJornadaController::class, ['parameters' => ['ajustar-jornadas' => 'ponto']])->middleware('can:controle_ponto_ajustar-jornadas');
 
         //Folha de ponto
         Route::group(['as' => 'folha-ponto.'], function () {
-            Route::post('folha-ponto/atualizarLista', [\App\Http\Controllers\FolhaDePontoController::class, 'atualizarLista'])->name('atualizarLista')->middleware('can:folha-ponto');
-            Route::post('folha-ponto/{user}/frequencia', [\App\Http\Controllers\FolhaDePontoController::class, 'buscarFrequencia'])->name('buscarFrequencia')->middleware('can:folha-ponto');
-            Route::post('folha-ponto/{user}/imprimir', [\App\Http\Controllers\FolhaDePontoController::class, 'imprimir'])->name('imprimir')->middleware('can:folha-ponto');
+            Route::post('folha-ponto/atualizarLista', [\App\Http\Controllers\FolhaDePontoController::class, 'atualizarLista'])->name('atualizarLista')->middleware('can:controle_ponto_folha-ponto');
+            Route::post('folha-ponto/{user}/frequencia', [\App\Http\Controllers\FolhaDePontoController::class, 'buscarFrequencia'])->name('buscarFrequencia')->middleware('can:controle_ponto_folha-ponto');
+            Route::post('folha-ponto/{user}/imprimir', [\App\Http\Controllers\FolhaDePontoController::class, 'imprimir'])->name('imprimir')->middleware('can:controle_ponto_folha-ponto');
         });
-        Route::resource('folha-ponto', \App\Http\Controllers\FolhaDePontoController::class, ['parameters' => ['folha-ponto' => 'user']])->middleware('can:folha-ponto');
+        Route::resource('folha-ponto', \App\Http\Controllers\FolhaDePontoController::class, ['parameters' => ['folha-ponto' => 'user']])->middleware('can:controle_ponto_folha-ponto');
 
 
     });
@@ -1006,14 +1007,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     // Configurações
     Route::group(['as' => 'configuracoes.'], function () {
         // Habilidades
-        Route::post('habilidades/atualizar', [\App\Http\Controllers\HabilidadesController::class, 'atualizar'])->name('habilidades.atualizar')->middleware('can:habilidades'); // manter essa rota antes do resource
-        Route::resource('habilidades', \App\Http\Controllers\HabilidadesController::class)->middleware('can:habilidades');
+        Route::post('habilidades/atualizar', [\App\Http\Controllers\HabilidadesController::class, 'atualizar'])->name('habilidades.atualizar')->middleware('can:configuracao_habilidades'); // manter essa rota antes do resource
+        Route::resource('habilidades', \App\Http\Controllers\HabilidadesController::class)->middleware('can:configuracao_habilidades');
         // Papeis
-        Route::put('papeis/{papel}/ativa-desativa', [\App\Http\Controllers\PapeisController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:papel');
-        Route::post('papeis/atualizar', [\App\Http\Controllers\PapeisController::class, 'atualizar'])->name('papeis.atualizar')->middleware('can:papel');
-        Route::resource('papeis', \App\Http\Controllers\PapeisController::class, ['parameters' => ['papeis' => 'papel']])->middleware('can:papel');
+        Route::put('papeis/{papel}/ativa-desativa', [\App\Http\Controllers\PapeisController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:configuracao_papel');
+        Route::post('papeis/atualizar', [\App\Http\Controllers\PapeisController::class, 'atualizar'])->name('papeis.atualizar')->middleware('can:configuracao_papel');
+        Route::resource('papeis', \App\Http\Controllers\PapeisController::class, ['parameters' => ['papeis' => 'papel']])->middleware('can:configuracao_papel');
     });
-
 
     // Clinica Exame
     Route::group(['as' => 'acesso-clinica.'], function () {

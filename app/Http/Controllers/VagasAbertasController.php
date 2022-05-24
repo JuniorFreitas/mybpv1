@@ -20,7 +20,7 @@ class VagasAbertasController extends Controller
      */
     public function index()
     {
-        $this->authorize('vagas_abertas');
+        $this->authorize('cadastro_vagas_abertas');
         return view('g.cadastros.vagas_abertas.index');
     }
 
@@ -42,7 +42,7 @@ class VagasAbertasController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('vagas_abertas_insert');
+        $this->authorize('cadastro_vagas_abertas_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['ativo_sistema'] = $dados['ativo_sistema'] == 'true' ? true : false;
@@ -162,7 +162,7 @@ class VagasAbertasController extends Controller
      */
     public function update(Request $request, VagasAbertas $vagas_aberta)
     {
-        $this->authorize('vagas_abertas_update');
+        $this->authorize('cadastro_vagas_abertas_update');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['ativo_sistema'] = $dados['ativo_sistema'] == 'true' ? true : false;
@@ -284,7 +284,7 @@ class VagasAbertasController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('vagas_abertas');
+        $this->authorize('cadastro_vagas_abertas');
         $resultado = VagasAbertas::with('Vaga', 'Municipio', 'Simulados.Simulado');
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Vaga', function ($q) use ($request) {
@@ -314,7 +314,7 @@ class VagasAbertasController extends Controller
 
     public function ativaDesativa(VagasAbertas $vagas_aberta)
     {
-        $this->authorize('vagas_abertas_update');
+        $this->authorize('cadastro_vagas_abertas_update');
         $vagas_aberta->ativo = !$vagas_aberta->ativo;
         $vagas_aberta->save();
         $vagas_aberta->refresh();

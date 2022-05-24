@@ -36,7 +36,7 @@ class CategoriaPlanoContaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('classificacao-plano-conta_insert');
+        $this->authorize('financeiro_classificacao-plano-conta_insert');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -90,7 +90,7 @@ class CategoriaPlanoContaController extends Controller
      */
     public function update(Request $request, CategoriaPlanoConta $categoria)
     {
-        $this->authorize('classificacao-plano-conta_update');
+        $this->authorize('financeiro_classificacao-plano-conta_update');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -121,7 +121,7 @@ class CategoriaPlanoContaController extends Controller
      */
     public function destroy(CategoriaPlanoConta $categoria)
     {
-        $this->authorize('classificacao-plano-conta_delete');
+        $this->authorize('financeiro_classificacao-plano-conta_delete');
         $categoria->delete();
         return response()->json([], 200);
     }
@@ -129,7 +129,7 @@ class CategoriaPlanoContaController extends Controller
     //campo de busca
     public function atualizar(Request $request)
     {
-        $this->authorize('classificacao-plano-conta');
+        $this->authorize('financeiro_classificacao-plano-conta');
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->has('campoBusca')) {

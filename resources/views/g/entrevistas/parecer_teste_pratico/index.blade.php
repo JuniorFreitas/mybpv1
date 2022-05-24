@@ -425,7 +425,7 @@
                             <i class="far fa-list-alt"></i>
                         </button>
 
-                        @can('parecer_entrevista_update')
+                        @can('entrevista_parecer_entrevista_update')
                             <button class="btn btn-sm btn-primary mb-2" content="Editar" v-tippy
                                     v-show="entrevista.parecer_teste"
                                     @click.prevent="formEntrevistar(entrevista.id); editando = true"

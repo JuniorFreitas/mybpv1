@@ -40,7 +40,7 @@ class CertificadoController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('certificado_insert');
+        $this->authorize('treinamento_certificado_insert');
         $dados = $request->input();
 
         try {
@@ -155,7 +155,7 @@ class CertificadoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $this->authorize('certificado');
+        $this->authorize('treinamento_certificado');
 
         $filtroIntervalo = $request->filtroPeriodo == 'true' ? true : false;
 
