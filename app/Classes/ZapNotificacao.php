@@ -21,7 +21,7 @@ class ZapNotificacao
 
     public function enviar(array $dados)
     {
-        $dados['telefone'] = "5598999023762";
+//        $dados['telefone'] = "5598999023762";
         $send = $this->Zap->sendMessage($dados['telefone'], $dados['mensagem'])->getResult();
         if ($send['result'] == 'success') {
             $notificacao = new NotificacaoWhatsapp();
