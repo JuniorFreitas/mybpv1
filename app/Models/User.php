@@ -247,6 +247,7 @@ class User extends Authenticatable
     public const TIPOS_USUARIOS_COMUNS = [
         self::ADMINISTRADOR,
         self::FUNCIONARIO,
+        self::GESTOR
     ];
 
 
