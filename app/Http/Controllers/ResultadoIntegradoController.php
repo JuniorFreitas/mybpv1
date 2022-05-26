@@ -186,17 +186,16 @@ class ResultadoIntegradoController extends Controller
         $feedback->autocomplete_label_cliente_modal = $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
         $feedback->autocomplete_label_cliente_modal_anterior = $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
 
-        $feedback->ResultadoIntegrado->envia_email_documentos = false;
-        $feedback->ResultadoIntegrado->envia_whatsapp_documentos = false;
-        $feedback->ResultadoIntegrado->envia_email_exame = false;
-        $feedback->ResultadoIntegrado->envia_whatsapp_exame = false;
-
         $simulados = SimuladoVaga::whereVagaId($feedback->vaga_id)
             ->whereHas('Simulado', function ($q) {
                 $q->whereAtivo(true);
             })->count();
 
-        return response()->json(['feedback' => $feedback, 'provas' => $simulados], 200);
+        return response()->json([
+            'feedback' => $feedback,
+            'provas' => $simulados,
+            'whatsapp_liberado' => auth()->user()->EmpresaConfiguracoes->envia_whatsapp
+        ], 200);
     }
 
     /**

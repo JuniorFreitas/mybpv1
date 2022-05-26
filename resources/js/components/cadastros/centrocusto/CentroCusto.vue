@@ -153,7 +153,6 @@ export default {
     },
 
     mounted() {
-        this.usuarioAutenticado();
         this.atualizar();
         this.formDefault = _.cloneDeep(this.form);
     },
@@ -259,20 +258,6 @@ export default {
                     this.cadastrado = false;
                     this.preload = false;
                 });
-        },
-        usuarioAutenticado() {
-            this.controle.carregando = true;
-            axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-                .then(response => {
-                    let data = response.data;
-
-                    this.cliente_id = data.cliente_id;
-
-                    this.controle.dados.campoCliente = this.cliente_id !== 0 ? this.cliente_id : this.controle.dados.campoCliente;
-                })
-                .catch(error => {
-                    this.preload = false;
-                })
         },
         carregou(dados) {
             this.lista = dados.items;

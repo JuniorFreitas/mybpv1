@@ -37,7 +37,7 @@
                     </div>
                 </div>
                 <div class="col-2" v-if="form.documentos_entregue">
-                    <div class="switchToggle">
+                    <div class="switchToggle" v-show="whatsappLiberado">
                         <input type="checkbox" v-model="form.envia_whatsapp_documentos" id="envia_whatsapp_documentos">
                         <label for="envia_whatsapp_documentos">Enviar Whatsapp</label>
                     </div>
@@ -113,7 +113,7 @@
                     </div>
                 </div>
                 <div class="col-2" v-if="form.encaminhado_exame">
-                    <div class="switchToggle">
+                    <div class="switchToggle" v-show="whatsappLiberado">
                         <input type="checkbox" v-model="form.envia_whatsapp_exame" id="envia_whatsapp_exame">
                         <label for="envia_whatsapp_exame">Enviar Whatsapp</label>
                     </div>
