@@ -74,7 +74,7 @@ class FeedbackHistorico extends Model
         'situacao' => 'string',
         'descricao' => 'string',
         'compromisso' => 'string',
-        'data' => 'date:d/m/Y',
+        'data' => 'string',
         'user_id' => 'int',
     ];
 
