@@ -46,66 +46,70 @@ class AvaliacaoNoventaVencimentoJob implements ShouldQueue
      */
     public function handle()
     {
-        $agora = new DataHora();
-        $agora = $agora->dataCompleta();
+        try {
+            $agora = new DataHora();
+            $agora = $agora->dataCompleta();
 
-        $listaDeEmprasaID = Sistema::listaEmpresas();
+            $listaDeEmprasaID = Sistema::listaEmpresas();
 
-        foreach ($listaDeEmprasaID as $empresa_id) {
+            foreach ($listaDeEmprasaID as $empresa_id) {
 
-            $vencimentoParaLembrar = AvaliacaoNoventaVencimento::whereHas('FeedbackCurriculo', function ($q) use ($empresa_id) {
-                $q->withoutGlobalScopes()->where('empresa_id', $empresa_id);
-            })->with(['FeedbackCurriculo' => function ($q) use ($empresa_id) {
-                $q->withoutGlobalScopes()->where('empresa_id', $empresa_id);
-            }, 'FeedbackCurriculo.Curriculo' => function ($qu) {
-                $qu->withoutGlobalScopes();
-            }])->get();
+                $vencimentoParaLembrar = AvaliacaoNoventaVencimento::whereHas('FeedbackCurriculo', function ($q) use ($empresa_id) {
+                    $q->withoutGlobalScopes()->where('empresa_id', $empresa_id);
+                })->with(['FeedbackCurriculo' => function ($q) use ($empresa_id) {
+                    $q->withoutGlobalScopes()->where('empresa_id', $empresa_id);
+                }, 'FeedbackCurriculo.Curriculo' => function ($qu) {
+                    $qu->withoutGlobalScopes();
+                }])->get();
 
-            $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                ->whereIn('tipo', ['Administrador', 'Suporte'])
-                ->whereHas('UserRecebeEmail', function ($q) {
-                    $q->where('nome', 'Avaliação 90 Dias');
-                    $q->where('ativo', true);
-                })
-                ->with(['UserRecebeEmail' => function ($q) {
-                    $q->where('nome', 'Avaliação 90 Dias');
-                    $q->where('ativo', true);
-                }])
-                ->get(['id', 'nome', 'login']);
+                $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                    ->whereIn('tipo', ['Administrador', 'Suporte'])
+                    ->whereHas('UserRecebeEmail', function ($q) {
+                        $q->where('nome', 'Avaliação 90 Dias');
+                        $q->where('ativo', true);
+                    })
+                    ->with(['UserRecebeEmail' => function ($q) {
+                        $q->where('nome', 'Avaliação 90 Dias');
+                        $q->where('ativo', true);
+                    }])
+                    ->get(['id', 'nome', 'login']);
 
-            foreach ($usuarios as $usuario) {
-                $vencimentos = array();
-                $dados = array();
-                foreach ($vencimentoParaLembrar as $vencimento) {
+                foreach ($usuarios as $usuario) {
+                    $vencimentos = array();
+                    $dados = array();
+                    foreach ($vencimentoParaLembrar as $vencimento) {
 
-                    $dados['colaborador'] = $vencimento['FeedbackCurriculo']['Curriculo']->nome;
-                    if ($vencimento['prazo_dez_inicial'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
-                    } elseif ($vencimento['prazo_cinco_inicial'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
-                    } elseif ($vencimento['prazo_dia_inicial'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
-                    } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_dez_final'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
-                    } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_cinco_final'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
-                    } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_dia_final'] == $agora) {
-                        $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
+                        $dados['colaborador'] = $vencimento['FeedbackCurriculo']['Curriculo']->nome;
+                        if ($vencimento['prazo_dez_inicial'] == $agora) {
+                            $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
+                        } elseif ($vencimento['prazo_cinco_inicial'] == $agora) {
+                            $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
+                        } elseif ($vencimento['prazo_dia_inicial'] == $agora) {
+                            $dados['prazo_vencido'] = $vencimento['prazo_dia_inicial'];
+                        } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_dez_final'] == $agora) {
+                            $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
+                        } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_cinco_final'] == $agora) {
+                            $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
+                        } elseif ($vencimento['prazo_dez_final'] != null && $vencimento['prazo_dia_final'] == $agora) {
+                            $dados['prazo_vencido'] = $vencimento['prazo_dia_final'];
 
+                        }
+                        if (!empty($dados['prazo_vencido'])) {
+                            array_push($vencimentos, $dados);
+                        }
                     }
-                    if (!empty($dados['prazo_vencido'])){
-                        array_push($vencimentos, $dados);
-                    }
-                }
 
-                if (!empty($vencimentos)){
-                    \Mail::send(new AvaliacaoNoventaVencimentoMail([
-                        'usuario' => $usuario,
-                        'vencimentos' => $vencimentos,
-                        'empresa_id' => $empresa_id,
-                    ]));
+                    if (!empty($vencimentos)) {
+                        \Mail::send(new AvaliacaoNoventaVencimentoMail([
+                            'usuario' => $usuario,
+                            'vencimentos' => $vencimentos,
+                            'empresa_id' => $empresa_id,
+                        ]));
+                    }
                 }
             }
+        } catch (\Exception $e) {
+            \Log::error($e->getFile() . " - " . $e->getMessage() . " - " . $e->getCode() . ' Avaliacaao Noventa Vencimento');
         }
     }
 }

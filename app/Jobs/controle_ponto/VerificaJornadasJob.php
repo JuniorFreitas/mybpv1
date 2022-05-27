@@ -179,12 +179,8 @@ class VerificaJornadasJob implements ShouldQueue {
             \DB::commit();
         }catch (\Exception $e){
             \DB::rollBack();
-            echo "deu um erro {$e->getMessage()}\n";
+            \Log::error($e->getFile()." - ".$e->getMessage()." - ".$e->getCode().' Verifica Jornada');
         }
-
-
-
-
 
     }
 }

@@ -47,7 +47,7 @@ class VerificaSaidaFeriasJob implements ShouldQueue
      */
     public function handle()
     {
-
+        try {
         $agora = new DataHora();
         $inicio = $agora->dataInsert();
         $ultimoDiaMes = $agora->ultimoDiaMes();
@@ -88,6 +88,9 @@ class VerificaSaidaFeriasJob implements ShouldQueue
                     ]));
                 }
             }
+        }
+        } catch (\Exception $e) {
+            \Log::error($e->getFile() . " - " . $e->getMessage() . " - " . $e->getCode() . ' Verifica Saida Ferias');
         }
     }
 }

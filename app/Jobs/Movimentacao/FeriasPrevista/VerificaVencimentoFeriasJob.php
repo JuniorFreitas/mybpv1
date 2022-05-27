@@ -46,51 +46,53 @@ class VerificaVencimentoFeriasJob implements ShouldQueue
      */
     public function handle()
     {
+        try {
+            $listaDeEmprasaID = Sistema::listaEmpresas();
+            foreach ($listaDeEmprasaID as $empresa_id) {
 
-        $listaDeEmprasaID = Sistema::listaEmpresas();
+                $cliente = ClienteConfig::whereClienteId($empresa_id)->first();
 
-        foreach ($listaDeEmprasaID as $empresa_id) {
+                if (!empty($cliente)) {
 
-            $cliente = ClienteConfig::whereClienteId($empresa_id)->first();
+                    $agora = new DataHora();
+                    $agora->addMes($cliente->verifica_mes_vencimento);
+                    $inicio = $agora->dataInsert();
+                    $ultimoDiaMes = $agora->ultimoDiaMes();
+                    $mes = $agora->mes();
+                    $ano = $agora->ano();
+                    $dataHora = $ano . '-' . $mes . '-' . $ultimoDiaMes;
+                    $fim = new DataHora($dataHora);
+                    $fim = $fim->dataInsert();
 
-            if (!empty($cliente)) {
+                    $tarefaParaLembrar = FeriasPrevista::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                        ->whereBetween('ultima_data', [$inicio, $fim])
+                        ->with(['Colaborador' => function ($q) {
+                            $q->withoutGlobalScopes();
+                        }])->get();
 
-                $agora = new DataHora();
-                $agora->addMes($cliente->verifica_mes_vencimento);
-                $inicio = $agora->dataInsert();
-                $ultimoDiaMes = $agora->ultimoDiaMes();
-                $mes = $agora->mes();
-                $ano = $agora->ano();
-                $dataHora = $ano . '-' . $mes . '-' . $ultimoDiaMes;
-                $fim = new DataHora($dataHora);
-                $fim = $fim->dataInsert();
+                    $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                        ->whereIn('tipo', ['Administrador', 'Suporte'])
+                        ->whereHas('UserRecebeEmail', function ($q) {
+                            $q->where('nome', 'Vencimento Férias');
+                            $q->where('ativo', true);
+                        })
+                        ->with(['UserRecebeEmail' => function ($q) {
+                            $q->where('nome', 'Vencimento Férias');
+                            $q->where('ativo', true);
+                        }])
+                        ->get(['id', 'nome', 'login']);
 
-                $tarefaParaLembrar = FeriasPrevista::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                    ->whereBetween('ultima_data', [$inicio, $fim])
-                    ->with(['Colaborador' => function ($q) {
-                        $q->withoutGlobalScopes();
-                    }])->get();
-
-                $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                    ->whereIn('tipo', ['Administrador', 'Suporte'])
-                    ->whereHas('UserRecebeEmail', function ($q) {
-                        $q->where('nome', 'Vencimento Férias');
-                        $q->where('ativo', true);
-                    })
-                    ->with(['UserRecebeEmail' => function ($q) {
-                        $q->where('nome', 'Vencimento Férias');
-                        $q->where('ativo', true);
-                    }])
-                    ->get(['id', 'nome', 'login']);
-
-                foreach ($usuarios as $usuario) {
-                    Mail::send(new VencimentoMail([
-                        'usuario' => $usuario,
-                        'vencimento' => $tarefaParaLembrar,
-                        'empresa_id' => $empresa_id
-                    ]));
+                    foreach ($usuarios as $usuario) {
+                        Mail::send(new VencimentoMail([
+                            'usuario' => $usuario,
+                            'vencimento' => $tarefaParaLembrar,
+                            'empresa_id' => $empresa_id
+                        ]));
+                    }
                 }
             }
+        } catch (\Exception $e) {
+            \Log::error($e->getFile() . " - " . $e->getMessage() . " - " . $e->getCode() . ' Verifica Vencimento Ferias Job');
         }
     }
 }

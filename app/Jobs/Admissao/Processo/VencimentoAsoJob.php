@@ -45,62 +45,66 @@ class VencimentoAsoJob implements ShouldQueue
      */
     public function handle()
     {
-        $listaDeEmprasaID = Sistema::listaEmpresas();
+        try {
+            $listaDeEmprasaID = Sistema::listaEmpresas();
 
-        foreach ($listaDeEmprasaID as $empresa_id) {
+            foreach ($listaDeEmprasaID as $empresa_id) {
 
-            $cliente = ClienteConfig::whereClienteId($empresa_id)->first();
+                $cliente = ClienteConfig::whereClienteId($empresa_id)->first();
 
-            if (!empty($cliente)) {
+                if (!empty($cliente)) {
 
-                $agora = new DataHora();
-                $addMes = $agora->addMes($cliente->vencimento_aso);
-                $addMes = new DataHora($addMes);
-                $addMes = $addMes->dataInsert();
+                    $agora = new DataHora();
+                    $addMes = $agora->addMes($cliente->vencimento_aso);
+                    $addMes = new DataHora($addMes);
+                    $addMes = $addMes->dataInsert();
 
 
-                $vencimentoParaLembrar = FeedbackCurriculo::withoutGlobalScopes()->where('empresa_id', $empresa_id)
-                    ->whereHas('Admissao', function ($q) use ($addMes) {
-                        $q->whereDataAso($addMes);
-                    })->with(['Admissao' => function ($q) use ($addMes) {
-                        $q->whereDataAso($addMes);
-                    }, 'Curriculo'])
-                    ->get();
+                    $vencimentoParaLembrar = FeedbackCurriculo::withoutGlobalScopes()->where('empresa_id', $empresa_id)
+                        ->whereHas('Admissao', function ($q) use ($addMes) {
+                            $q->whereDataAso($addMes);
+                        })->with(['Admissao' => function ($q) use ($addMes) {
+                            $q->whereDataAso($addMes);
+                        }, 'Curriculo'])
+                        ->get();
 
-                $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                    ->whereAtivo(true)
-                    ->whereHas('UserRecebeEmail', function ($q) {
-                        $q->where('nome', 'Vencimento ASO');
-                        $q->where('ativo', true);
-                    })
-                    ->with(['UserRecebeEmail' => function ($q) {
-                        $q->where('nome', 'Vencimento ASO');
-                        $q->where('ativo', true);
-                    }])
-                    ->get(['id', 'nome', 'login']);
+                    $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                        ->whereAtivo(true)
+                        ->whereHas('UserRecebeEmail', function ($q) {
+                            $q->where('nome', 'Vencimento ASO');
+                            $q->where('ativo', true);
+                        })
+                        ->with(['UserRecebeEmail' => function ($q) {
+                            $q->where('nome', 'Vencimento ASO');
+                            $q->where('ativo', true);
+                        }])
+                        ->get(['id', 'nome', 'login']);
 
-                foreach ($usuarios as $usuario) {
-                    $vencimentos = array();
-                    $dados = array();
-                    foreach ($vencimentoParaLembrar as $vencimento) {
+                    foreach ($usuarios as $usuario) {
+                        $vencimentos = array();
+                        $dados = array();
+                        foreach ($vencimentoParaLembrar as $vencimento) {
 
-                        $dados['colaborador'] = $vencimento->Curriculo->nome;
-                        $dados['data_aso'] = $vencimento->Admissao->data_aso;
+                            $dados['colaborador'] = $vencimento->Curriculo->nome;
+                            $dados['data_aso'] = $vencimento->Admissao->data_aso;
 
-                        if (!empty($dados)) {
-                            array_push($vencimentos, $dados);
+                            if (!empty($dados)) {
+                                array_push($vencimentos, $dados);
+                            }
                         }
-                    }
 
-                    if (!empty($vencimentos)) {
-                        \Mail::send(new VencimentoAsoMail([
-                            'usuario' => $usuario,
-                            'vencimentos' => $vencimentos,
-                            'empresa_id' => $empresa_id,
-                        ]));
+                        if (!empty($vencimentos)) {
+                            \Mail::send(new VencimentoAsoMail([
+                                'usuario' => $usuario,
+                                'vencimentos' => $vencimentos,
+                                'empresa_id' => $empresa_id,
+                            ]));
+                        }
                     }
                 }
             }
+        } catch (\Exception $e) {
+            \Log::error($e->getFile() . " - " . $e->getMessage() . " - " . $e->getCode() . ' Verifica Saida Ferias');
         }
     }
 }

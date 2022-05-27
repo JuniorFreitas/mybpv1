@@ -42,22 +42,26 @@ class JobDeletaExportacaoExcel implements ShouldQueue
      */
     public function handle()
     {
-        $hoje = new DataHora();
-        $hoje->subtrairDia(1);
+        try {
+            $hoje = new DataHora();
+            $hoje->subtrairDia(1);
 
-        $exportacoes = Exportacao::whereRemovido(false)
-            ->where('created_at', '<=', $hoje->dataInsert() . ' 23:59:59')
-            ->get();
+            $exportacoes = Exportacao::whereRemovido(false)
+                ->where('created_at', '<=', $hoje->dataInsert() . ' 23:59:59')
+                ->get();
 
-        foreach ($exportacoes as $exportacao) {
-            $exportacao->removido = true;
-            $exportacao->save();
+            foreach ($exportacoes as $exportacao) {
+                $exportacao->removido = true;
+                $exportacao->save();
 
-            $disco = 'disco-exportacao';
-            $discoStorage = Storage::disk($disco);
-            if ($discoStorage->exists($exportacao->arquivo)) {
-                $discoStorage->delete($exportacao->arquivo);
+                $disco = 'disco-exportacao';
+                $discoStorage = Storage::disk($disco);
+                if ($discoStorage->exists($exportacao->arquivo)) {
+                    $discoStorage->delete($exportacao->arquivo);
+                }
             }
+        } catch (\Exception $e) {
+            \Log::error($e->getFile() . " - " . $e->getMessage() . " - " . $e->getCode() . ' Deleta Exportacao');
         }
 
     }
