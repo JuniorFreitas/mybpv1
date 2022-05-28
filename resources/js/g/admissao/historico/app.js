@@ -27,11 +27,12 @@ const app = new Vue({
     data: {
         tituloJanela: "Histórico",
         preload: false,
+        openHistorico: true,
         cadastrando: false,
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
-        abas:{
+        abas: {
             abrirDossie: false,
             abrirMedidas: false,
             abrirFeedbackHistorico: false,
@@ -41,7 +42,7 @@ const app = new Vue({
             abrirBeneficio: false,
             abrirCih: false,
             abrirPromocao: false,
-            abrirMetas: false,
+            abrirMetas: false
         },
         abasDefault: null,
 
@@ -71,24 +72,26 @@ const app = new Vue({
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
-        this.abasDefault = _.cloneDeep(this.abas) //copia
-        this.abas.abrirDossie = true
+        this.abasDefault = _.cloneDeep(this.abas); //copia
+        this.abas.abrirDossie = true;
         this.atualizar();
     },
     methods: {
         trocaAba(aba) {
-            this.abas = _.cloneDeep(this.abasDefault) //copia
-            this.abas[aba] = true
+            this.abas = _.cloneDeep(this.abasDefault); //copia
+            this.abas[aba] = true;
         },
         abrirHistorico(obj) {
+            this.openHistorico = true;
             this.tituloJanela = `#${obj.id} - Histórico: ${obj.curriculo.nome}`;
             this.form = _.cloneDeep(obj);
             this.form.feedback_id = obj.id;
             this.form.curriculo_id = obj.curriculo_id;
 
             setTimeout(() => {
-                this.trocaAba('abrirDossie')
-            }, 200);
+                this.trocaAba("abrirDossie");
+                this.openHistorico = false;
+            }, 100);
             $("#nav-dossie-tab").tab("show");
 
         },

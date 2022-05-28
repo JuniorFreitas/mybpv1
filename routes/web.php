@@ -625,7 +625,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
 
         Route::group(['as' => 'feedbackhistorico.', 'prefix' => 'feedback-historico'], function () {
-            Route::get('/atualizar/{feedback}', [\App\Http\Controllers\FeedbackHistoricoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
+            Route::get('/atualizar/{feedback_id}', [\App\Http\Controllers\FeedbackHistoricoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::post('/{feedback}', [\App\Http\Controllers\FeedbackHistoricoController::class, 'store'])->name('store');
         });
 

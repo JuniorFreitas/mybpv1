@@ -18,9 +18,9 @@ require('bootstrap-daterangepicker');
 window.Vue = require('vue');
 
 import VueTippy, { TippyComponent } from "vue-tippy";
-import configuracoes from './mixins/Configuracoes';
+// import configuracoes from './mixins/Configuracoes';
 
-Vue.mixin(configuracoes);
+// Vue.mixin(configuracoes);
 
 
 Vue.use(VueTippy);

@@ -8,7 +8,7 @@
 
     <modal id="janelaHistorico" :titulo="tituloJanela" :size="95">
         <template slot="conteudo">
-            <div v-if="form.feedback_id > 0">
+            <div v-if="!openHistorico">
                 <fieldset>
                     <legend>Informações do Colaborador</legend>
                     <div style="text-transform: uppercase">

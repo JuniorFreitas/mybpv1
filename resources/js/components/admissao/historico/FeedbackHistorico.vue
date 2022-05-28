@@ -62,8 +62,12 @@
                         <tbody>
                         <tr v-for="item in feedback_historico">
                             <td class="text-center">{{ item.situacao }}</td>
-                            <td class="text-center"><div v-html="item.descricao"></div></td>
-                            <td class="text-center"><div v-html="item.compromisso"></div></td>
+                            <td class="text-center">
+                                <div v-html="item.descricao"></div>
+                            </td>
+                            <td class="text-center">
+                                <div v-html="item.compromisso | remover_html()"></div>
+                            </td>
                             <td class="text-center">{{ item.data }}</td>
                         </tr>
                         </tbody>
@@ -100,6 +104,16 @@ export default {
     components: {
         DatePicker,
         Editor
+    },
+    filters: {
+        remover_html(value) {
+            return value.replace(/<[^>]*>?/gm, "");
+        },
+        limitarTexto(value) {
+            if (!value) return "";
+            value = value.toString();
+            return value.length > 500 ? value.substring(0, 100) + "..." : value;
+        }
     },
     data() {
         return {

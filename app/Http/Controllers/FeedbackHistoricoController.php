@@ -118,7 +118,7 @@ class FeedbackHistoricoController extends Controller
     public function atualizar(Request $request)
     {
         $this->authorize('admissao_historico');
-        $feedback_historico = FeedbackHistorico::with('Feedback')->get();
+        $feedback_historico = FeedbackHistorico::whereFeedbackId($request->feedback_id)->with('Feedback')->get();
 
         return response()->json([
             'feedback_historico' => $feedback_historico,
