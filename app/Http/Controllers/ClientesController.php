@@ -10,6 +10,8 @@ use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\FeriasPrevista;
+use App\Models\Habilidade;
+use App\Models\Papel;
 use App\Models\Servico;
 use App\Models\Sistema;
 use App\Models\User;
@@ -216,23 +218,44 @@ class ClientesController extends Controller
 
                 if (isset($dados['cliente_config'])) {
                     $dados['cliente_config']['envia_whatsapp'] = $dados['cliente_config']['envia_whatsapp'] == 'true' ? true : false;
-                    $dados = [
+                    $dadosClienteConfig = [
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                         'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                         'cliente_id' => $cliente->id
                     ];
-                    ClienteConfig::create($dados);
+                    ClienteConfig::create($dadosClienteConfig);
 
                 }
+
+                $dados_papel = [
+                    'empresa_id' => $cliente->id,
+                    'nome' => $dados['tipo'] == Cliente::TIPO_PESSOA_JURIDICA ? $dados['razao_social'] . ' - MASTER' : $dados['nome'] . ' - MASTER',
+                    'descricao' => 'MASTER',
+                    'email' => $dados['email'],
+                    'ativo' => true,
+                    'master' => true
+                ];
+
+                $papel = Papel::create($dados_papel);
+
+                $habilidades = collect($request->listaDeHabilidades)->filter(function ($habilidade) {
+                    if ($habilidade['acesso'] == 'true') {
+                        return $habilidade;
+                    }
+                })->pluck('id');
+
+                $papel->habilidades()->attach($habilidades);
 
                 DB::commit();
                 return response()->json([], 201);
 
             } catch (\Exception $e) {
                 DB::rollBack();
+                $msg = "error STORE CLIENTES:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                \Log::debug($msg);
                 return response()->json([
-                    'msg' => $e->getMessage(),
+                    'msg' => $msg,
                 ], 400);
             }
         }
@@ -254,11 +277,11 @@ class ClientesController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\Cliente $cliente
-     * @return Cliente
+     * @return \Illuminate\Http\JsonResponse
      */
     public function edit(Cliente $cliente)
     {
-        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote', 'ClienteConfig');
+        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote', 'ClienteConfig', 'Papel.habilidades');
         $cliente->areas_etiquetas_del = [];
         $cliente->ServicosCliente->transform(function ($item) {
             $item->anexosDel = [];
@@ -268,7 +291,24 @@ class ClientesController extends Controller
             $item->anexosDel = [];
             return $item;
         });
-        return $cliente;
+
+        $listaDeHabilidades = Habilidade::orderBy('nome', 'asc')->get()->map(function ($habilidade) {
+            $habilidade->caracter = substr_count($habilidade->nome, '_');
+            $habilidade->acesso = false;
+            $habilidade->menu = strstr($habilidade->nome, "_", true) == false ? $habilidade->nome : strstr($habilidade->nome, "_", true);
+            if ($habilidade->caracter >= 2) {
+                $habilidade->submenu = strstr($habilidade->nome, "_", false) == false ? $habilidade->nome : substr(strstr($habilidade->nome, "_", false), 1);
+            }
+            return $habilidade;
+        });
+
+        $todosMenu = array_unique(array_column($listaDeHabilidades->toArray(), 'menu'));
+
+        return response()->json([
+            'cliente' => $cliente,
+            'listaDeHabilidades' => $listaDeHabilidades,
+            'todosMenu' => $todosMenu
+        ]);
     }
 
     /**
@@ -529,13 +569,36 @@ class ClientesController extends Controller
                         'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                     ]);
                 } else {
-                    $dados = [
+                    $dadosClienteConfig = [
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                         'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                         'cliente_id' => $cliente->id
                     ];
-                    ClienteConfig::create($dados);
+                    ClienteConfig::create($dadosClienteConfig);
+                }
+
+                $verificaTrue = $dados['listaDeHabilidades'];
+                $verificaFalse = $dados['listaDeHabilidades'];
+
+                $habilidades = collect($verificaTrue)->filter(function ($habilidade) {
+                    if ($habilidade['acesso'] == true) {
+                        return $habilidade;
+                    }
+                })->pluck('id');
+
+                $cliente->Papel->habilidades()->sync($habilidades);
+
+                $todosPapeis = Papel::whereEmpresaId($cliente->id)->where('master', false)->with('habilidades')->get();
+
+                $habilidadesRetiradas = collect($verificaFalse)->filter(function ($habilidade) {
+                    if ($habilidade['acesso'] == false) {
+                        return $habilidade;
+                    }
+                })->pluck('id');
+
+                foreach ($todosPapeis as $papel) {
+                    $papel->habilidades()->detach($habilidadesRetiradas);
                 }
 
                 DB::commit();
@@ -544,8 +607,10 @@ class ClientesController extends Controller
             } catch (\Exception $e) {
 
                 DB::rollBack();
+                $msg = "error STORE CLIENTES:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                \Log::debug($msg);
                 return response()->json([
-                    'msg' => $e->getMessage(),
+                    'msg' => $msg,
                 ], 400);
             }
         }
@@ -569,6 +634,11 @@ class ClientesController extends Controller
     {
         //        $resultado = User::with('Area:id,label', 'Telefones:id,cliente_id,numero');
         $resultado = Cliente::with('Area:id,label', 'Telefones:id,cliente_id,numero');
+
+        $listaDeHabilidades = Habilidade::orderBy('nome', 'asc')->get()->map(function ($habilidade) {
+            $habilidade->acesso = false;
+            return $habilidade;
+        });
 
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
@@ -598,7 +668,12 @@ class ClientesController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items(), 'servicos' => $servicos, 'areas' => $areas]
+            'dados' => [
+                'itens' => $resultado->items(),
+                'servicos' => $servicos,
+                'areas' => $areas,
+                'listaDeHabilidades' => $listaDeHabilidades
+            ]
         ]);
     }
 
