@@ -19,6 +19,11 @@ const app = new Vue({
 
         pages: 10,
 
+        listaDeHabilidades: [],
+        todosMenu: [],
+        todasHabilidades: true,
+        menuHabilidades: true,
+
         form: {
             tipo_cliente: '',
             cnpj: '',
@@ -80,7 +85,9 @@ const app = new Vue({
                 verifica_mes_vencimento: '',
                 envia_whatsapp: '',
                 vencimento_aso: '',
-            }
+            },
+
+            listaDeHabilidades: '',
         },
 
         urlAnexoUpload: `${URL_ADMIN}/administracao/clientes/uploadAnexos`,
@@ -117,6 +124,22 @@ const app = new Vue({
         this.atualizar();
     },
     methods: {
+        selecionarTodas() {
+            this.todasHabilidades = !this.todasHabilidades;
+            var valor = this.todasHabilidades;
+            _.forEach(this.listaDeHabilidades, function (habilidade) {
+                habilidade.acesso = valor;
+            });
+        },
+        selecionarPorModulo(menu) {
+            this.menuHabilidades = !this.menuHabilidades;
+            var valor = this.menuHabilidades;
+            _.forEach(this.listaDeHabilidades, function (habilidade) {
+                if (habilidade.menu === menu) {
+                    habilidade.acesso = valor;
+                }
+            });
+        },
         addLIServicoCliente() {
             const obj = {};
             obj.nova = true;
@@ -191,7 +214,7 @@ const app = new Vue({
                 mostraErro('', 'Por favor insira um Telefone');
                 return false;
             }
-
+            this.form.listaDeHabilidades = this.listaDeHabilidades;
             this.preloadAjax = true;
             axios.post(`${URL_ADMIN}/administracao/clientes`, this.form)
                 .then(response => {
@@ -215,10 +238,10 @@ const app = new Vue({
 
             axios.get(`${URL_ADMIN}/administracao/clientes/${id}/editar`)
                 .then(response => {
-                    Object.assign(this.form, response.data);
+                    Object.assign(this.form, response.data.cliente);
                     this.editando = true;
                     this.preloadAjax = false;
-                    if (!response.data.cliente_config) {
+                    if (!response.data.cliente.cliente_config) {
                         this.form.cliente_config = {
                             'verifica_mes_vencimento': '',
                             'envia_whatsapp': '',
@@ -226,6 +249,18 @@ const app = new Vue({
                         }
                     }
                     this.form.como_conheceu = !this.form.como_conheceu ? '' : this.form.como_conheceu;
+
+                    this.listaDeHabilidades = response.data.listaDeHabilidades;
+                    this.todosMenu = response.data.todosMenu;
+
+                    var habilidades_papel = response.data.cliente.papel.habilidades;
+                    _.forEach(this.listaDeHabilidades, function (habilidade) {
+
+                        var achou = _.find(habilidades_papel, {'id': habilidade.id});
+                        if (achou) {
+                            habilidade.acesso = true;
+                        }
+                    });
 
                     setupCampo();
                 }).catch(
@@ -252,6 +287,7 @@ const app = new Vue({
             }
 
             this.form._method = 'PUT';
+            this.form.listaDeHabilidades = this.listaDeHabilidades;
             this.preloadAjax = true;
 
             axios.put(`${URL_ADMIN}/administracao/clientes/${this.form.id}`, this.form).then(response => {
@@ -285,6 +321,7 @@ const app = new Vue({
             this.lista = dados.itens;
             this.listaServicos = dados.servicos;
             this.listaAreas = dados.areas;
+            this.listaDeHabilidades = dados.listaDeHabilidades;
             this.controle.carregando = false;
 
         },

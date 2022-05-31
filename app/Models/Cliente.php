@@ -407,7 +407,8 @@ class Cliente extends Model
         return $this->hasOne(EmpresaTemporaria::class, 'empresa_id', 'id');
     }
 
-    public function TemporariaAtiva(){
+    public function TemporariaAtiva()
+    {
         return $this->Temporaria()->whereAtivo(true);
     }
 
@@ -416,12 +417,24 @@ class Cliente extends Model
         return $this->hasOne(CarteiraAssinatura::class, 'empresa_id', 'id');
     }
 
-    public function CarteiraAssinaturaGestorRh(){
+    public function CarteiraAssinaturaGestorRh()
+    {
         return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_GERENTE_OU_RH)->first();
     }
 
-    public function CarteiraAssinaturaSesmt(){
+    public function CarteiraAssinaturaSesmt()
+    {
         return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_SESMT)->first();
+    }
+
+    public function Papel()
+    {
+        return $this->hasOne(Papel::class, 'empresa_id', 'id')->where('master', true);
+    }
+
+    public function EmpresaHabilidades()
+    {
+        return $this->hasMany(EmpresaHabilidade::class, 'empresa_id', 'id');
     }
 
     protected static function booted()

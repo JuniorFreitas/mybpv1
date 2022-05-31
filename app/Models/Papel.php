@@ -55,7 +55,7 @@ class Papel extends Model
 
     protected $table = 'papeis';
     protected $fillable = [
-        'id', 'nome', 'email', 'descricao', 'ativo', 'empresa_id'
+        'id', 'nome', 'email', 'descricao', 'ativo', 'master', 'empresa_id'
     ];
     protected $casts = [
         'id' => 'int',
@@ -64,6 +64,7 @@ class Papel extends Model
         'email' => 'string',
         'empresa_id' => 'int',
         'ativo' => 'boolean',
+        'master' => 'boolean',
     ];
 
     public function usesTimestamps(): bool
@@ -78,12 +79,12 @@ class Papel extends Model
 
     public function scopeNotClinica($query)
     {
-        return $query->where('nome','NOT LIKE','%Clinica Exame');
+        return $query->where('nome', 'NOT LIKE', '%Clinica Exame');
     }
 
     public function scopeClinica($query)
     {
-        return $query->where('nome','LIKE','%Clinica Exame');
+        return $query->where('nome', 'LIKE', '%Clinica Exame');
     }
 
     //Scopo de ClienteID (Empresa)
