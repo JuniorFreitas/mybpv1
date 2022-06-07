@@ -341,9 +341,9 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'weekly_report_quadro_lista_update', 'descricao' => 'Pode editar uma lista de tarefas em um quadro no Weekly report'];
         $lista[] = ['nome' => 'weekly_report_quadro_lista_delete', 'descricao' => 'Pode excluir uma lista de tarefas em um quadro no Weekly report'];
 
-        $lista[] = ['nome' => 'tarefa_insert', 'descricao' => 'Pode criar uma nova tarefa em Weekly report'];
-        $lista[] = ['nome' => 'tarefa_update', 'descricao' => 'Pode editar título e descrição de uma tarefa em Weekly report'];
-        $lista[] = ['nome' => 'tarefa_delete', 'descricao' => 'Pode excluir uma tarefa em Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_tarefa_insert', 'descricao' => 'Pode criar uma nova tarefa em Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_tarefa_update', 'descricao' => 'Pode editar título e descrição de uma tarefa em Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_tarefa_delete', 'descricao' => 'Pode excluir uma tarefa em Weekly report'];
 
         $lista[] = ['nome' => 'cadastro_areaetiqueta', 'descricao' => 'Acessar rota Area Etiquetas'];
 
