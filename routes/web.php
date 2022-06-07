@@ -965,23 +965,23 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/updateMembro', [\App\Http\Controllers\TarefasController::class, 'updateMembro'])->name('updateMembro');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/buscarMembros', [\App\Http\Controllers\AutoCompletesController::class, 'buscarMembros'])->name('buscarMembros');
 
-        Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'destroy'])->name('delete')->middleware('can:tarefa_delete');
-        Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'update'])->name('update')->middleware('can:tarefa_update');
+        Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_tarefa_delete');
+        Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_tarefa_update');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'show'])->name('show');
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas', [\App\Http\Controllers\TarefasController::class, 'atualizarOrdem'])->name('atualizarOrdem');
-        Route::post('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas', [\App\Http\Controllers\TarefasController::class, 'store'])->name('store')->middleware('can:tarefa_insert');
+        Route::post('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas', [\App\Http\Controllers\TarefasController::class, 'store'])->name('store')->middleware('can:weekly_report_quadro_tarefa_insert');
 
         //Listas
-        Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}', [\App\Http\Controllers\ListaTarefaController::class, 'destroy'])->name('delete')->middleware('can:lista_delete');
-        Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}', [\App\Http\Controllers\ListaTarefaController::class, 'update'])->name('update')->middleware('can:lista_update');
+        Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}', [\App\Http\Controllers\ListaTarefaController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_lista_delete');
+        Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}', [\App\Http\Controllers\ListaTarefaController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_lista_update');
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'atualizarOrdem'])->name('atualizarOrdem');
-        Route::post('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'store'])->name('store')->middleware('can:lista_insert');
+        Route::post('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'store'])->name('store')->middleware('can:weekly_report_quadro_lista_insert');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'index'])->name('index');
 
         //Quadros
-        Route::delete('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'destroy'])->name('delete')->middleware('can:quadro_delete');
-        Route::put('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'update'])->name('update')->middleware('can:quadro_update');
-        Route::post('weekly-report/{empresa}/quadros', [\App\Http\Controllers\QuadroController::class, 'store'])->name('store')->middleware('can:quadro_insert');
+        Route::delete('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_delete');
+        Route::put('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_update');
+        Route::post('weekly-report/{empresa}/quadros', [\App\Http\Controllers\QuadroController::class, 'store'])->name('store')->middleware('can:weekly_report_quadro_insert');
         Route::get('weekly-report/{empresa}', [\App\Http\Controllers\QuadroController::class, 'show'])->name('show')->middleware('can:weekly-report');
         Route::get('weekly-report', [\App\Http\Controllers\QuadroController::class, 'index'])->name('index')->middleware('can:weekly-report');
     });

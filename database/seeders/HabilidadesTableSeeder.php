@@ -333,17 +333,17 @@ class HabilidadesTableSeeder extends Seeder
 
         //weekly-report
         $lista[] = ['nome' => 'weekly-report', 'descricao' => 'Acessar rota Weekley report'];
-        $lista[] = ['nome' => 'quadro_insert', 'descricao' => 'Pode criar um novo quadro no Weekly report'];
-        $lista[] = ['nome' => 'quadro_update', 'descricao' => 'Pode alterar um quadro no Weekly report'];
-        $lista[] = ['nome' => 'quadro_delete', 'descricao' => 'Pode excluir um quadro no Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_insert', 'descricao' => 'Pode criar um novo quadro no Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_update', 'descricao' => 'Pode alterar um quadro no Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_delete', 'descricao' => 'Pode excluir um quadro no Weekly report'];
 
-        $lista[] = ['nome' => 'lista_insert', 'descricao' => 'Pode criar uma nova lista de tarefas em um quadro no Weekly report'];
-        $lista[] = ['nome' => 'lista_update', 'descricao' => 'Pode editar uma lista de tarefas em um quadro no Weekly report'];
-        $lista[] = ['nome' => 'lista_delete', 'descricao' => 'Pode excluir uma lista de tarefas em um quadro no Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_lista_insert', 'descricao' => 'Pode criar uma nova lista de tarefas em um quadro no Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_lista_update', 'descricao' => 'Pode editar uma lista de tarefas em um quadro no Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_lista_delete', 'descricao' => 'Pode excluir uma lista de tarefas em um quadro no Weekly report'];
 
-        $lista[] = ['nome' => 'tarefa_insert', 'descricao' => 'Pode criar uma nova tarefa em Weekly report'];
-        $lista[] = ['nome' => 'tarefa_update', 'descricao' => 'Pode editar título e descrição de uma tarefa em Weekly report'];
-        $lista[] = ['nome' => 'tarefa_delete', 'descricao' => 'Pode excluir uma tarefa em Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_tarefa_insert', 'descricao' => 'Pode criar uma nova tarefa em Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_tarefa_update', 'descricao' => 'Pode editar título e descrição de uma tarefa em Weekly report'];
+        $lista[] = ['nome' => 'weekly_report_quadro_tarefa_delete', 'descricao' => 'Pode excluir uma tarefa em Weekly report'];
 
         $lista[] = ['nome' => 'cadastro_areaetiqueta', 'descricao' => 'Acessar rota Area Etiquetas'];
 
