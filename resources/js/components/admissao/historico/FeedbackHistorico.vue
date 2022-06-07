@@ -66,7 +66,7 @@
                                 <div v-html="item.descricao"></div>
                             </td>
                             <td class="text-center">
-                                <div v-html="item.compromisso | remover_html()"></div>
+                                <div v-html="item.compromisso"></div>
                             </td>
                             <td class="text-center">{{ item.data }}</td>
                         </tr>
