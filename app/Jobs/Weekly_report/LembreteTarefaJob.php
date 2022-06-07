@@ -52,6 +52,8 @@ class LembreteTarefaJob implements ShouldQueue {
                     'para' => $usuario,
                     'modelTarefa' => $tarefa
                 ]));
+                \Log::info("E-mail Lembrate Tarefa enviado com sucesso - {$usuario['nome']} horario: {$agora}");
+
             }
 
         }

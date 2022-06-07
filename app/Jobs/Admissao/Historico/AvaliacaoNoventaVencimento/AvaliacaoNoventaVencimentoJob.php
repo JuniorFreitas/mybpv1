@@ -63,6 +63,7 @@ class AvaliacaoNoventaVencimentoJob implements ShouldQueue
                 }])->get();
 
                 $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                    ->select(['id', 'nome', 'login'])
                     ->whereIn('tipo', ['Administrador', 'Suporte'])
                     ->whereHas('UserRecebeEmail', function ($q) {
                         $q->where('nome', 'Avaliação 90 Dias');
@@ -71,8 +72,7 @@ class AvaliacaoNoventaVencimentoJob implements ShouldQueue
                     ->with(['UserRecebeEmail' => function ($q) {
                         $q->where('nome', 'Avaliação 90 Dias');
                         $q->where('ativo', true);
-                    }])
-                    ->get(['id', 'nome', 'login']);
+                    }]);
 
                 foreach ($usuarios as $usuario) {
                     $vencimentos = array();
@@ -105,6 +105,8 @@ class AvaliacaoNoventaVencimentoJob implements ShouldQueue
                             'vencimentos' => $vencimentos,
                             'empresa_id' => $empresa_id,
                         ]));
+                        \Log::info("E-mail de Avaliação enviado com sucesso - {$usuario['nome']} - {$empresa_id} horario: {$agora}");
+
                     }
                 }
             }

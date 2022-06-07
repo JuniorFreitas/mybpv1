@@ -69,6 +69,7 @@ class VencimentoAsoJob implements ShouldQueue
                         ->get();
 
                     $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                        ->select(['id', 'nome', 'login'])
                         ->whereAtivo(true)
                         ->whereHas('UserRecebeEmail', function ($q) {
                             $q->where('nome', 'Vencimento ASO');
@@ -77,8 +78,7 @@ class VencimentoAsoJob implements ShouldQueue
                         ->with(['UserRecebeEmail' => function ($q) {
                             $q->where('nome', 'Vencimento ASO');
                             $q->where('ativo', true);
-                        }])
-                        ->get(['id', 'nome', 'login']);
+                        }]);
 
                     foreach ($usuarios as $usuario) {
                         $vencimentos = array();
@@ -99,6 +99,8 @@ class VencimentoAsoJob implements ShouldQueue
                                 'vencimentos' => $vencimentos,
                                 'empresa_id' => $empresa_id,
                             ]));
+                        \Log::info("E-mail de Vencimento ASO enviado com sucesso - {$usuario['nome']} - {$empresa_id} horario: {$agora}");
+
                         }
                     }
                 }
