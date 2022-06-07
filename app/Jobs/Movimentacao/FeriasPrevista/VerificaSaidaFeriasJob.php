@@ -68,6 +68,7 @@ class VerificaSaidaFeriasJob implements ShouldQueue
                 }])->get();
 
             $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
+                ->select(['id', 'nome', 'login'])    
                 ->whereIn('tipo', ['Administrador', 'Suporte'])
                 ->whereHas('UserRecebeEmail', function ($q) {
                     $q->where('nome', 'Vencimento Férias');
@@ -76,8 +77,7 @@ class VerificaSaidaFeriasJob implements ShouldQueue
                 ->with(['UserRecebeEmail' => function ($q) {
                     $q->where('nome', 'Vencimento Férias');
                     $q->where('ativo', true);
-                }])
-                ->get(['id', 'nome', 'login']);
+                }]);
 
             foreach ($usuarios as $usuario) {
                 if (!empty($tarefaParaLembrar)) {
@@ -86,6 +86,8 @@ class VerificaSaidaFeriasJob implements ShouldQueue
                         'vencimento' => $tarefaParaLembrar,
                         'empresa_id' => $empresa_id
                     ]));
+                    \Log::info("E-mail de Verificar Saida de Ferias enviado com sucesso - {$usuario['nome']} - {$empresa_id} horario: {$agora}");
+
                 }
             }
         }
