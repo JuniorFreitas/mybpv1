@@ -85,8 +85,8 @@
         Em: ________________________________________________________
     </p><br><br>
     <p class="f11" style="line-height: 22pt;text-align: justify">
-        *Em atendimento a Lei nº 13.709/2018, Lei Geral de Proteção de Dados, viemos através deste solicitar o
-        consentimento do uso dos dados acima para fins de processsamento da admissão na ABF ENGENHARIA por prazo
+        * Em atendimento a Lei nº 13.709/2018, Lei Geral de Proteção de Dados, viemos através deste solicitar o
+        consentimento do uso dos dados acima para fins de processsamento da admissão na {{ auth()->user()->DadosEmpresa->razao_social  }} por prazo
         indeterminado assim como registro nos órgãos competetes e permitir a gestão de pessoas por parte da empresa.
         Comunicamos ainda que as cópias das documentações solicitadas serão de uso exclusivo da contabilidade e
         responsável pela recursos humanos da empresa. Após o processo de desligamento, a documentação será armazenada
