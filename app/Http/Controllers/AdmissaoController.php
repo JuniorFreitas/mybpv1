@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
+use App\Models\AdmissaoAso;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaVencimento;
 use App\Models\Curriculo;
@@ -601,6 +602,7 @@ class AdmissaoController extends Controller
 
         $feedback->load(
             'Admissao.DadosAdmissoes',
+            'Admissao.UltimoAsoAtivo',
             'Curriculo.Formacao',
             'Curriculo.FotoTres',
             'Curriculo.Telefones',
@@ -654,11 +656,11 @@ class AdmissaoController extends Controller
             $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?: "";
             $feedback->Admissao->status = $feedback->Admissao->status ?: "";
             $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?: "";
-            $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
+            // $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
             $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
             $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?: "";
         }
-
+        
         $feedback->parecerRh->indicado_por = $feedback->parecerRh->indicado_por ?: "";
         $feedback->parecerRh->calca = $feedback->parecerRh->calca ?: "";
         $feedback->parecerRh->bota = $feedback->parecerRh->bota ?: "";
@@ -846,6 +848,38 @@ class AdmissaoController extends Controller
                 unset($admissaoDados['dados_admissoes']);
 
                 if ($feedback->Admissao) {
+                    $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];    
+                    if(isset($ultimo_aso_ativo_dados['id'])){
+                       
+                        $tem_aso = $feedback->Admissao->UltimoAsoAtivo->where('data_aso',
+                         (new DataHora($ultimo_aso_ativo_dados['data_aso']))
+                         ->dataInsert())
+                         ->first();
+                        
+                        if(!$tem_aso){
+                            $feedback->Admissao->UltimoAsoAtivo->update([
+                                'ativo' => false,
+                                'user_alterou_id' => auth()->id()
+                            ]);
+
+                            $feedback->Admissao->UltimoAsoAtivo()->create([
+                                'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                'ativo' => true,
+                                'user_alterou_id' => auth()->id()
+                            ]);
+                        }else{
+                            $feedback->Admissao->UltimoAsoAtivo->update([
+                                'user_alterou_id' => auth()->id()
+                            ]);
+                        }
+                    }else{
+                        $feedback->Admissao->UltimoAsoAtivo()->create([
+                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                            'ativo' => true,
+                            'user_alterou_id' => auth()->id()
+                        ]);
+                    }
+
                     $feedback->Admissao->update($admissaoDados);
                     if (!isset($dadosAdmissao['id'])) {
                         $dadosAdmissao['admissao_id'] = $feedback->Admissao->id;
@@ -858,6 +892,15 @@ class AdmissaoController extends Controller
                     $admissao_id = $feedback->Admissao()->create($admissaoDados);
                     $dadosAdmissao['admissao_id'] = $admissao_id['id'];
                     DadosAdmissao::create($dadosAdmissao);
+
+                    $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
+                    AdmissaoAso::create([
+                        'admissao_id' => $dadosAdmissao['admissao_id'],
+                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                        'ativo' => true,
+                        'user_alterou_id' => auth()->id()
+                    ]);
+                    
                 }
 
                 $datas = [];
@@ -1390,7 +1433,7 @@ class AdmissaoController extends Controller
                 $row->Admissao ? $row->Admissao->trinta_dois_sessenta ?: "" : "",
                 $row->Admissao ? $row->Admissao->data_trinta_dois_sessenta ?: "" : "",
                 $row->Admissao ? $row->Admissao->numero_cracha ?: "" : "",
-                $row->Admissao ? $row->Admissao->data_aso ?: "" : "",
+                $row->Admissao ? $row->Admissao->UltimoAsoAtivo->data_aso ?: "" : "",
                 $row->Admissao ? $row->Admissao->status_carteira_treinamento ?: "" : "",
                 $row->Admissao ? $row->Admissao->status ?: "" : "",
                 $row->Admissao ? $row->Admissao->data_admissao ?: "" : "",

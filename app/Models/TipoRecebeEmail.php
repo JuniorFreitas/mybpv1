@@ -32,4 +32,16 @@ class TipoRecebeEmail extends Model
     protected $table = 'tipo_recebe_email';
 
     public $timestamps = false;
+
+    const AVALIACAO_90_DIAS  = 'Avaliação 90 Dias';
+    const VENCIMENTO_ASO  = 'Vencimento ASO';
+    const VENCIMENTO_FERIAS  = 'Vencimento Férias';
+    const VENCIMENTO_TREINAMENTO  = 'Vencimento Treinamento';
+
+    const LISTA_TIPOS  = [
+        self::AVALIACAO_90_DIAS,
+        self::VENCIMENTO_ASO,
+        self::VENCIMENTO_FERIAS,
+        self::VENCIMENTO_TREINAMENTO,
+    ];
 }

@@ -159,7 +159,7 @@
             <div class="form-group">
                 <label>Data do ASO</label>
                 <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
-                       v-model="form.data_aso" v-mascara:data
+                       v-model="form.ultimo_aso_ativo.data_aso" v-mascara:data
                        @keyup.prevent="valida_data($event.target)"
                        @blur.prevent="valida_data($event.target)">
             </div>
@@ -172,7 +172,7 @@
                         onblur="valida_campo(this,1)"
                         v-model="form.status_carteira_treinamento">
                     <option value="">Selecione</option>
-                    <option v-for="item in listSelects.status_carteira_treinamento" :value="item">{{ item }}</option>
+                    <option v-for="item in listSelects.status_carteira_treinamento" :key="item" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -185,7 +185,7 @@
                         onblur="valida_campo_vazio(this,1)"
                         v-model="form.status">
                     <option value="">Selecione</option>
-                    <option v-for="item in listSelects.status_admissao" :value="item">{{ item }}</option>
+                    <option v-for="item in listSelects.status_admissao" :key="item" :value="item">{{ item }}</option>
                 </select>
             </div>
         </div>
@@ -330,7 +330,6 @@ export default {
                 trinta_dois_sessenta: "",
                 data_trinta_dois_sessenta: "",
                 numero_cracha: "",
-                data_aso: "",
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
                 data_admissao: "",
@@ -360,7 +359,10 @@ export default {
                     titulo_eleitor_numero: "",
                     titulo_eleitor_sessao: "",
                     titulo_eleitor_zona: ""
-                }
+                },
+                ultimo_aso_ativo: {
+                    data_aso: ""
+                },
             }
         },
         visualizar: {
@@ -396,11 +398,11 @@ export default {
     },
     methods: {
         validaData() {
-            if (this.form.data_aso.length >= 10) {
-                let dataCorreta = moment(this.form.data_aso, "DD/MM/YYYY");
+            if (this.form.ultimo_aso_ativo.data_aso.length >= 10) {
+                let dataCorreta = moment(this.form.ultimo_aso_ativo.data_aso, "DD/MM/YYYY");
                 if (!dataCorreta.isValid()) {
                     mostraErro("", "A data do ASO inserida é inválida");
-                    this.form.data_aso = "";
+                    this.form.ultimo_aso_ativo.data_aso = "";
                 }
             }
         },

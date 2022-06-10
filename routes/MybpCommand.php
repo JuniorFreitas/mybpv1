@@ -96,3 +96,8 @@ Artisan::command('mybp:grupoClinicaExame', function () {
     $this->info('Sincronizando Funcionarios');
     \App\Models\Sistema::grupoClinicaExame();
 })->describe("Sincronizando Funcionarios");
+
+Artisan::command('mybp:syncAso', function () {
+    $this->info('Sincronizando data ASOs');
+    \App\Models\Sistema::syncAso();
+})->describe("Sincronizando data ASOs");

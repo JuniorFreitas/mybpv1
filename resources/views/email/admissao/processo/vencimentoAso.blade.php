@@ -9,13 +9,13 @@
                 Olá, <strong>{{ $dados['usuario']->nome }}</strong>,<br><br>
                 @foreach($dados['vencimentos'] as $vencimento)
 
-                    O vencimento do ASO do(a) coloborador(a) <strong>{{$vencimento['colaborador']}}</strong> está próximo,
-                    o prazo de vencimento é: <strong>{{$vencimento['data_aso']}}</strong>
+                    O vencimento do ASO do(a) colaborador(a) <strong>{{$vencimento['colaborador']}}</strong> está próximo,
+                    o prazo de vencimento é: <strong>{{$vencimento['data_vencimento']}}</strong>
 
                     <br><br>
                 @endforeach
 
-                MyBP - Business Partners Serviços Empresariais
+                MyBP
                 <br><br>
 
             </td>

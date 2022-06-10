@@ -574,6 +574,42 @@ class Sistema
         }
     }
 
+    public static function syncAso()
+    {
+        $Empresas = \App\Models\User::select('id', 'nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
+
+        try {
+            echo "Iniciando Sincronização...\n";
+            DB::beginTransaction();
+            foreach ($Empresas as $Empresa) {
+                echo "Sincronizando $Empresa->nome...\n";
+
+                $admissoes = DB::table('feedback_curriculos as FC')
+                ->select(['A.id', 'A.data_aso'])
+                ->join('admissoes as A', 'A.feedback_id', '=' , 'FC.id')
+                ->where('FC.empresa_id', $Empresa->id)
+                ->whereNotNull('A.data_aso')
+                ->get();
+                
+                foreach ($admissoes as $admissao) {
+                 $aso = AdmissaoAso::withoutGlobalScopes()->create([
+                    'empresa_id' => $Empresa->id, 
+                    'admissao_id' => $admissao->id,
+                    'user_alterou_id'=> 1,
+                    'data_aso' => $admissao->data_aso,
+                    'ativo' => 1
+                    ]);
+                echo $aso->data_aso."Criado\n";
+                }
+            }
+            echo "Fim de Sincronização...\n";
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            echo $e->getTraceAsString();
+        }
+    }
+
     public static function grupoClinicaExame()
     {
         $Empresas = \App\Models\User::select('id', 'nome', 'empresa_id')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
