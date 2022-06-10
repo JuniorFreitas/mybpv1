@@ -50,17 +50,17 @@ class VencimentoAsoJob implements ShouldQueue
     {
         try {
             $listaDeEmprasaID = Sistema::listaEmpresas();
-    
+
             foreach ($listaDeEmprasaID as $empresa_id) {
-    
+
                 $cliente = ClienteConfig::whereClienteId($empresa_id)->first();
                 $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[$cliente->vencimento_aso];
-    
+
                 if (!empty($cliente)) {
                     $periodo_vencimento = 365 - preg_replace("/[^0-9]/", "", $periodo_vencimento);
                     $data = new DataHora();
                     $data->addDia($periodo_vencimento);
-                    
+
                     $usuarios = User::whereEmpresaId($empresa_id)
                         ->select(['id', 'nome', 'login'])
                         ->whereAtivo(true)
@@ -72,11 +72,12 @@ class VencimentoAsoJob implements ShouldQueue
                             $q->where('nome', TipoRecebeEmail::VENCIMENTO_ASO);
                             $q->where('ativo', true);
                         }]);
-    
-                      $data_ano = new DataHora();
-                      $data_ano->addDia(365);
-    
-                        $AdmissoesAso = AdmissaoAso::whereAtivo(true)->whereEmpresaId($empresa_id)
+
+                    $data_ano = new DataHora();
+                    $data_ano->addDia(365);
+
+                    $AdmissoesAso = AdmissaoAso::whereAtivo(true)->whereEmpresaId($empresa_id)
+                        ->whereBetween('data_vencimento', [$data->dataInsert(), $data_ano->dataInsert()])
                         ->where('data_vencimento', '>=', $data->dataInsert())
                         ->where('data_vencimento', '<=', $data_ano->dataInsert())
                         ->with('Admissao:id,feedback_id')
@@ -99,25 +100,25 @@ class VencimentoAsoJob implements ShouldQueue
                     foreach ($usuarios as $usuario) {
                         $vencimentos = array();
                         $dados = array();
-    
+
                         foreach ($AdmissoesAso as $vencimento) {
-    
+
                             $dados['colaborador'] = $vencimento->Admissao->Feedback->Curriculo->nome;
                             $dados['data_vencimento'] = $vencimento->data_vencimento;
-    
+
                             if (!empty($dados)) {
                                 array_push($vencimentos, $dados);
                             }
                         }
-    
+
                         if (!empty($vencimentos)) {
                             \Mail::send(new VencimentoAsoMail([
                                 'usuario' => $usuario,
                                 'vencimentos' => $vencimentos,
                                 'empresa_id' => $empresa_id,
                             ]));
-                        \Log::info("E-mail de Vencimento ASO enviado com sucesso - {$usuario['nome']} - {$empresa_id}");
-    
+                            \Log::info("E-mail de Vencimento ASO enviado com sucesso - {$usuario['nome']} - {$empresa_id}");
+
                         }
                     }
                 }

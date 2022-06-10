@@ -546,7 +546,8 @@ class Sistema
 
     public static function listaEmpresas()
     {
-        return \DB::table('users')->whereAtivo(true)->whereNotIn('empresa_id', [104])
+        return \DB::table('users')->whereAtivo(true)
+//            ->whereNotIn('empresa_id', [104])
             ->whereTemp(false)->selectRaw('DISTINCT empresa_id')
             ->get(['empresa_id'])->pluck('empresa_id')->toArray();
     }
@@ -590,10 +591,10 @@ class Sistema
                 ->where('FC.empresa_id', $Empresa->id)
                 ->whereNotNull('A.data_aso')
                 ->get();
-                
+
                 foreach ($admissoes as $admissao) {
                  $aso = AdmissaoAso::withoutGlobalScopes()->create([
-                    'empresa_id' => $Empresa->id, 
+                    'empresa_id' => $Empresa->id,
                     'admissao_id' => $admissao->id,
                     'user_alterou_id'=> 1,
                     'data_aso' => $admissao->data_aso,

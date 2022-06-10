@@ -13,7 +13,7 @@ class AdmissaoAso extends Model
     use HasFactory;
 
     protected $fillable = [
-        'empresa_id', 
+        'empresa_id',
         'admissao_id',
         'user_alterou_id',
         'data_aso',
@@ -30,6 +30,15 @@ class AdmissaoAso extends Model
         'data_vencimento' => 'string',
         'ativo' => 'boolean',
     ];
+
+    protected $appends = [
+        'data_vencimento_formatada',
+    ];
+
+    public function getDataVencimentoFormatadaAttribute($value)
+    {
+        return (new DataHora($this->data_vencimento))->dataCompleta();
+    }
 
     //Acessor ->data_aso
     public function getDataAsoAttribute($value)
@@ -70,6 +79,6 @@ class AdmissaoAso extends Model
 
         });
     }
-    
+
 
 }

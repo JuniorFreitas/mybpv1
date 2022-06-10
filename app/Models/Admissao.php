@@ -760,6 +760,10 @@ class Admissao extends Model
         return $this->hasOne(Demissao::class, 'feedback_id', 'feedback_id');
     }
 
+    public function scopeAdmitidos($query)
+    {
+        return $query->whereDoesntHave('Demissao');
+    }
 //    public function ChecklistDemissao()
 //    {
 //        return $this->hasOne(ChecklistDemissao::class, 'curriculo_id', 'curriculo_id');
@@ -785,6 +789,6 @@ class Admissao extends Model
     }
 
     public function UltimoAsoAtivo(){
-        return $this->hasOne(AdmissaoAso::class, 'admissao_id', 'id')->whereAtivo(true);        
+        return $this->hasOne(AdmissaoAso::class, 'admissao_id', 'id')->whereAtivo(true);
     }
 }
