@@ -55,7 +55,7 @@ class HistoricoController extends Controller
 //            $q->with('Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
 //        }])->whereIn('status', ['ADMITIDO']);
 
-        $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
+        $resultado = FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO']);
         })->with('Admissao', 'Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
         if ($request->filled('campoBusca')) {

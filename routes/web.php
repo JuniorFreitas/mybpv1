@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-
 Route::redirect('/', 'g/login');
 
 Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {

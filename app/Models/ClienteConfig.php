@@ -50,4 +50,20 @@ class ClienteConfig extends Model
         return $this->hasOne(Cliente::class, 'id', 'cliente_id');
     }
 
+    const TRINTA_DIAS = '30 dias';
+    const QUARENTA_E_CINCO_DIAS = '45 dias';
+    const SESSENTA_DIAS = '60 dias';
+    const NOVENTA_DIAS = '90 dias';
+    const CENTO_E_VINTE_DIAS = '120 dias';
+
+
+    const LISTA_VENCIMENTOS = [
+        1 => self::TRINTA_DIAS,
+        5 => self::QUARENTA_E_CINCO_DIAS,
+        2 => self::SESSENTA_DIAS,
+        3 => self::NOVENTA_DIAS,
+        4 => self::CENTO_E_VINTE_DIAS,
+    ];
+
+    
 }

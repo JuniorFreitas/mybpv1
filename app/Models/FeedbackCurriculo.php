@@ -770,11 +770,13 @@ class FeedbackCurriculo extends Model
             ->whereTipo('ArquivamentoDossie');
     }
 
-    public function Demissao(){
+    public function Demissao()
+    {
         return $this->hasOne(Demissao::class, 'feedback_id', 'id');
     }
 
-    public function VagaProjeto(){
+    public function VagaProjeto()
+    {
         return $this->hasOne(VagaProjetoFeedback::class, 'feedback_id', 'id');
     }
 
@@ -786,6 +788,11 @@ class FeedbackCurriculo extends Model
 //            return $query->where('cliente_id', auth()->user()->cliente_id);
 //        }
 //    }
+
+    public function scopeAdmitidos($query)
+    {
+        return $query->whereDoesntHave('Demissao');
+    }
 
     //Scopo de ClienteID (Empresa)
     protected static function booted()

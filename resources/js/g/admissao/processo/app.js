@@ -213,7 +213,10 @@ const app = new Vue({
                     titulo_eleitor_sessao: "",
                     titulo_eleitor_zona: ""
                 },
-                data_aso: "",
+                // data_aso: "",
+                ultimo_aso_ativo: {
+                    data_aso: ""
+                },
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
                 data_admissao: "",
@@ -425,7 +428,10 @@ const app = new Vue({
                     titulo_eleitor_sessao: "",
                     titulo_eleitor_zona: ""
                 },
-                data_aso: "",
+                // data_aso: "",
+                ultimo_aso_ativo: {
+                    data_aso: ""
+                },
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
                 data_admissao: "",

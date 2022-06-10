@@ -670,25 +670,6 @@ class Admissao extends Model
         }
     }
 
-    //Acessor ->data_aso
-    public function getDataAsoAttribute($value)
-    {
-        if ($value) {
-            $data = new DataHora($this->attributes['data_aso']);
-            return $data->dataCompleta();
-        }
-    }
-
-    //Modificador ->data_aso
-    public function setDataAsoAttribute($value)
-    {
-        if ($value) {
-            $data = new DataHora($value);
-            $this->attributes['data_aso'] = $data->dataInsert();
-        }
-    }
-
-
     //Modificador ->salario
     public function setSalarioAttribute($value)
     {
@@ -779,6 +760,10 @@ class Admissao extends Model
         return $this->hasOne(Demissao::class, 'feedback_id', 'feedback_id');
     }
 
+    public function scopeAdmitidos($query)
+    {
+        return $query->whereDoesntHave('Demissao');
+    }
 //    public function ChecklistDemissao()
 //    {
 //        return $this->hasOne(ChecklistDemissao::class, 'curriculo_id', 'curriculo_id');
@@ -801,5 +786,9 @@ class Admissao extends Model
     public static function getNumeroSupervisor($cliente_id, $area_etiqueta_id)
     {
         return ClienteAreaEtiqueta::whereClienteId($cliente_id)->whereAreaEtiquetaId($area_etiqueta_id)->first()->numero_supervisor;
+    }
+
+    public function UltimoAsoAtivo(){
+        return $this->hasOne(AdmissaoAso::class, 'admissao_id', 'id')->whereAtivo(true);
     }
 }
