@@ -889,6 +889,13 @@ const app = new Vue({
                             "indicado_area": ""
                         };
                     }
+                    
+                    if (!data.feedback.admissao.ultimo_aso_ativo) {
+                        data.feedback.admissao.ultimo_aso_ativo = {
+                            "data_aso": ""
+                        };
+                    }
+
                     if (!data.feedback.banco_conta) {
                         data.feedback.banco_conta = {
                             "banco": "Banco do Brasil",
