@@ -81,7 +81,19 @@ class HistoricoController extends Controller
         }*/
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        $permissoes = [
+            'dossie' => auth()->user()->can('historico_dossie'),
+            'medida_administrativa' => auth()->user()->can('medidas_administrativa_componente'),
+            'feedback' => auth()->user()->can('historico_feedback'),
+            'avaliacao_noventa_dias' => auth()->user()->can('avaliacao_noventa'),
+            'avaliacao_anual' => auth()->user()->can('historico_avaliacao_anual'),
+            'ferias' => auth()->user()->can('historico_ferias'),
+            'beneficio' => auth()->user()->can('cadastro_beneficio'),
+            'cih' => auth()->user()->can('admissao_cih'),
+            'promocao' => auth()->user()->can('historico_promocao'),
+            'metas' => auth()->user()->can('historico_metas'),
 
+        ];
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -89,6 +101,7 @@ class HistoricoController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'cargos' => $cargos,
+                'permissoes' => $permissoes
             ]
         ]);
     }

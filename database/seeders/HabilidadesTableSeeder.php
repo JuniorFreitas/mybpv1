@@ -229,6 +229,12 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'historico_dossie', 'descricao' => 'Acessar Dossie'];
         $lista[] = ['nome' => 'historico_dossie_insert', 'descricao' => 'Acessar Dossie Insert'];
         $lista[] = ['nome' => 'historico_dossie_update', 'descricao' => 'Acessar Dossie Update'];
+        
+        $lista[] = ['nome' => 'historico_feedback', 'descricao' => 'Pode Acessar aba de Feedback no historico'];
+        $lista[] = ['nome' => 'historico_avaliacao_anual', 'descricao' => 'Pode Acessar aba de Avaliacao Anual no historico'];
+        $lista[] = ['nome' => 'historico_ferias', 'descricao' => 'Pode Acessar aba de Ferias no historico'];
+        $lista[] = ['nome' => 'historico_promocao', 'descricao' => 'Pode Acessar aba de Promocao no historico'];
+        $lista[] = ['nome' => 'historico_metas', 'descricao' => 'Pode Acessar aba de Metas no historico'];
 
         $lista[] = ['nome' => 'administracao_pesquisaclima', 'descricao' => 'Acessar Pesquisa Clima'];
         $lista[] = ['nome' => 'administracao_pesquisaclima_insert', 'descricao' => 'Acessar Pesquisa Clima Insert'];

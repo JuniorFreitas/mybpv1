@@ -259,3 +259,8 @@ UPDATE `habilidades` SET `nome` = 'cadastro_projetos', `descricao` = 'Acesso ao 
 UPDATE `habilidades` SET `nome` = 'cadastro_projetos_insert', `descricao` = 'Pode cadastrar Projeto' WHERE `id` = 259;
 UPDATE `habilidades` SET `nome` = 'cadastro_projetos_update', `descricao` = 'Pode alterar Projeto' WHERE `id` = 260;
 UPDATE `habilidades` SET `nome` = 'planejamento_mobilizacao', `descricao` = 'Acesso ao menu Mobilização dentro de Planejamento' WHERE `id` = 261;
+UPDATE `habilidades` SET `nome` = 'historico_feedback', `descricao` = 'Pode Acessar aba de Feedback no historico' WHERE `id` = 262;
+UPDATE `habilidades` SET `nome` = 'historico_avaliacao_anual', `descricao` = 'Pode Acessar aba de Avaliacao Anual no historico' WHERE `id` = 263;
+UPDATE `habilidades` SET `nome` = 'historico_ferias', `descricao` = 'Pode Acessar aba de Ferias no historico' WHERE `id` = 264;
+UPDATE `habilidades` SET `nome` = 'historico_promocao', `descricao` = 'Pode Acessar aba de Promocao no historico' WHERE `id` = 264;
+UPDATE `habilidades` SET `nome` = 'historico_metas', `descricao` = 'Pode Acessar aba de Metas no historico' WHERE `id` = 266;
