@@ -656,11 +656,11 @@ class AdmissaoController extends Controller
             $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?: "";
             $feedback->Admissao->status = $feedback->Admissao->status ?: "";
             $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?: "";
+            // $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
             $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
             $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?: "";
-                        
         }
-        
+
         $feedback->parecerRh->indicado_por = $feedback->parecerRh->indicado_por ?: "";
         $feedback->parecerRh->calca = $feedback->parecerRh->calca ?: "";
         $feedback->parecerRh->bota = $feedback->parecerRh->bota ?: "";
@@ -848,14 +848,14 @@ class AdmissaoController extends Controller
                 unset($admissaoDados['dados_admissoes']);
 
                 if ($feedback->Admissao) {
-                    $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];    
+                    $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
                     if(isset($ultimo_aso_ativo_dados['id'])){
-                       
+
                         $tem_aso = $feedback->Admissao->UltimoAsoAtivo->where('data_aso',
                          (new DataHora($ultimo_aso_ativo_dados['data_aso']))
                          ->dataInsert())
                          ->first();
-                        
+
                         if(!$tem_aso){
                             $feedback->Admissao->UltimoAsoAtivo->update([
                                 'ativo' => false,
@@ -900,7 +900,7 @@ class AdmissaoController extends Controller
                         'ativo' => true,
                         'user_alterou_id' => auth()->id()
                     ]);
-                    
+
                 }
 
                 $datas = [];
@@ -1155,6 +1155,7 @@ class AdmissaoController extends Controller
     protected function filtro(Request $request)
     {
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado')
+            ->Admitidos()
             ->with(
                 'Admissao',
                 'ResultadoIntegrado',
