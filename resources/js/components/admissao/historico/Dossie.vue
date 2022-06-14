@@ -456,8 +456,8 @@ export default {
             hoje: "",
 
             form: {
-                // foto_tres: [], //FOTO 3X4
-                // foto_tresDel: [],
+                foto_tres: [], //FOTO 3X4
+                foto_tresDel: [],
 
                 doc_selecao: [],
                 doc_selecaoDel: [],
@@ -549,13 +549,10 @@ export default {
         };
     },
     mounted() {
+        this.formDefault = _.cloneDeep(this.form);
         this.atualizar();
     },
     methods: {
-        gerarPdf(obj) {
-            // let link = `${URL_ADMIN}/historico/medidas-administrativas/${obj.id}/${obj.feedback_id}/pdf`;
-            // open(link, 'blank');
-        },
         salvar() {
             formReset();
             $(`#form_${this.hash} :input:visible`).trigger("blur");
@@ -577,11 +574,10 @@ export default {
         },
         atualizar() {
             this.preload = true;
-            this.form.medidas_administrativas = [];
-            this.form.medidas_administrativasDelete = [];
+            this.form = _.cloneDeep(this.formDefault);
             axios.get(`${URL_ADMIN}/historico/dossie/${this.feedback_id}`).then(res => {
-                let data = res.data;
-                this.form = data;
+                Object.assign(this.form, res.data);
+                // this.form = data;
                 this.preload = false;
             });
         },
