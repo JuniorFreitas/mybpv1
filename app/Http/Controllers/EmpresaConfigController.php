@@ -82,17 +82,26 @@ class EmpresaConfigController extends Controller
             'dia_nova_frequencia' => 'required|numeric|min:1',
         ]);
 
-
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao salvar as configuraçôes da empresa',
                 'erros' => $dadosValidados->errors()
             ], 400);
         } else {
-            $config->update($dados);
+            try {
+                \DB::beginTransaction();
+                $config->update($dados);
+                \DB::commit();
+                return response()->json([], 200);
+            }catch (\Exception $e) {
+                \DB::rollBack();
+                \Log::error($e->getMessage());
+                return response()->json([
+                    'msg' => 'Erro ao salvar as configuraçôes da empresa',
+                    'erros' => $e->getMessage()
+                ], 400);
+            }
 
-
-            return response()->json([], 200);
         }
     }
 
@@ -110,11 +119,11 @@ class EmpresaConfigController extends Controller
     {
 
         return response()->json([
-            'perimetros_insert' => auth()->user()->can('perimetros_insert'),
-            'perimetros_update' => auth()->user()->can('perimetros_update'),
-            'perimetros_delete' => auth()->user()->can('perimetros_delete'),
-            'perimetros_funcionarios' => auth()->user()->can('perimetros_funcionarios'),
-            'config_empresa' => auth()->user()->can('config_empresa'),
+            'perimetros_insert' => auth()->user()->can('controle_ponto_perimetros_insert'),
+            'perimetros_update' => auth()->user()->can('controle_ponto_perimetros_update'),
+            'perimetros_delete' => auth()->user()->can('controle_ponto_perimetros_delete'),
+            'perimetros_funcionarios' => auth()->user()->can('controle_ponto_perimetros_funcionarios'),
+            'config_empresa' => auth()->user()->can('controle_ponto_config_empresa'),
         ]);
     }
 

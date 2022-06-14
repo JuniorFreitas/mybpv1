@@ -217,7 +217,9 @@
 </template>
 
 <script>
+import MixinConfig from '../../mixins/Configuracoes';
 export default {
+    mixins: [MixinConfig],
     props: {
         form: {
             type: Object,
