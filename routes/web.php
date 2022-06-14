@@ -981,8 +981,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::delete('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_delete');
         Route::put('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_update');
         Route::post('weekly-report/{empresa}/quadros', [\App\Http\Controllers\QuadroController::class, 'store'])->name('store')->middleware('can:weekly_report_quadro_insert');
-        Route::get('weekly-report/{empresa}', [\App\Http\Controllers\QuadroController::class, 'show'])->name('show')->middleware('can:weekly-report');
-        Route::get('weekly-report', [\App\Http\Controllers\QuadroController::class, 'index'])->name('index')->middleware('can:weekly-report');
+        Route::get('weekly-report/{empresa}', [\App\Http\Controllers\QuadroController::class, 'show'])->name('show')->middleware('can:weekly_report');
+        Route::get('weekly-report', [\App\Http\Controllers\QuadroController::class, 'index'])->name('index')->middleware('can:weekly_report');
     });
 
     //Chat

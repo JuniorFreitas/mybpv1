@@ -742,9 +742,9 @@
                 <div class="row">
                     <div v-if="quadro_insert" class="col form-inline">
                         <form @submit.prevent="addQuadro">
-                            <input v-model="formQuadros.titulo" :disabled="preloadQuadro" class="form-control"
+                            <input v-model="formQuadros.titulo" :disabled="preloadQuadro" class="form-control form-control-sm"
                                    placeholder="Nome do Quadro" type="text">
-                            <button :disabled="formQuadros.titulo==='' || preloadQuadro" class="btn btn-primary ml-3"
+                            <button :disabled="formQuadros.titulo==='' || preloadQuadro" class="btn btn-primary btn-sm ml-3"
                                     type="submit" @click="addQuadro"><i class="fa fa-plus"></i> Novo quadro
                             </button>
                         </form>
