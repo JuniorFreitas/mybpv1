@@ -23,7 +23,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'configuracao_habilidades_delete', 'descricao' => 'Pode apagar uma habilidade'];
 
         //Papeis------------------------------
-        $lista[] = ['nome' => 'configuracao_habilidadespapel', 'descricao' => 'Acessar rota/menu papeis'];
+        $lista[] = ['nome' => 'configuracao_papel', 'descricao' => 'Acessar rota/menu papeis'];
         $lista[] = ['nome' => 'configuracao_papel_insert', 'descricao' => 'Pode cadastrar um papel'];
         $lista[] = ['nome' => 'configuracao_papel_update', 'descricao' => 'Pode alterar um papel'];
         $lista[] = ['nome' => 'configuracao_papel_delete', 'descricao' => 'Pode apagar um papel'];
@@ -96,29 +96,11 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cloud_update', 'descricao' => 'Pode alterar um Cloud'];
         $lista[] = ['nome' => 'cloud_delete', 'descricao' => 'Pode apagar um Cloud'];
 
-        //Cloud------------------------------
-        $lista[] = ['nome' => 'cloud_bpse', 'descricao' => 'Acessar rota/menu Cloud BPSE'];
-        $lista[] = ['nome' => 'cloud_bpse_insert', 'descricao' => 'Pode cadastrar um Cloud BPSE'];
-        $lista[] = ['nome' => 'cloud_bpse_update', 'descricao' => 'Pode alterar um Cloud BPSE'];
-        $lista[] = ['nome' => 'cloud_bpse_delete', 'descricao' => 'Pode apagar um Cloud BPSE'];
-
-        //Cloud------------------------------
-        $lista[] = ['nome' => 'cloud_clientes', 'descricao' => 'Acessar rota/menu Cloud Clientes'];
-        $lista[] = ['nome' => 'cloud_clientes_insert', 'descricao' => 'Pode cadastrar um Cloud Clientes'];
-        $lista[] = ['nome' => 'cloud_clientes_update', 'descricao' => 'Pode alterar um Cloud Clientes'];
-        $lista[] = ['nome' => 'cloud_clientes_delete', 'descricao' => 'Pode apagar um Cloud Clientes'];
-
         //Cloud Cadastro------------------------------
         $lista[] = ['nome' => 'cloud_cadastro', 'descricao' => 'Acessar rota/menu Cloud Cadastro'];
         $lista[] = ['nome' => 'cloud_cadastro_insert', 'descricao' => 'Pode cadastrar um Cloud'];
         $lista[] = ['nome' => 'cloud_cadastro_update', 'descricao' => 'Pode alterar ativar e desativar um Cloud'];
         $lista[] = ['nome' => 'cloud_cadastro_delete', 'descricao' => 'Pode apagar um Cloud '];
-
-        //Cloud------------------------------
-        $lista[] = ['nome' => 'cloud_publica', 'descricao' => 'Acessar rota/menu Cloud Pública'];
-        $lista[] = ['nome' => 'cloud_publica_insert', 'descricao' => 'Pode cadastrar um Cloud Pública'];
-        $lista[] = ['nome' => 'cloud_publica_update', 'descricao' => 'Pode alterar um Cloud Pública'];
-        $lista[] = ['nome' => 'cloud_publica_delete', 'descricao' => 'Pode apagar um Cloud Pública'];
 
         //Cloud------------------------------
         $lista[] = ['nome' => 'cloud_configuracoes', 'descricao' => 'Acessar rota/menu Cloud Configurações'];
@@ -203,13 +185,11 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'posadmissao_desmobilizar', 'descricao' => 'Acessar formulario desmobilizar'];
         $lista[] = ['nome' => 'posadmissao_desmobilizar_insert', 'descricao' => 'Pode cadastrar desmobilização'];
         $lista[] = ['nome' => 'posadmissao_desmobilizar_update', 'descricao' => 'Pode alterar desmobilização'];
-// @can(
         $lista[] = ['nome' => 'posadmissao_entrevista_desligamento', 'descricao' => 'Acessar formulario de entrevista desligamento'];
         $lista[] = ['nome' => 'posadmissao_entrevista_desligamento_insert', 'descricao' => 'Pode cadastrar entrevista desligamento'];
         $lista[] = ['nome' => 'posadmissao_entrevista_desligamento_update', 'descricao' => 'Pode alterar entrevista desligamento'];
 
 
-        // cliente 55 solucoes
         $lista[] = ['nome' => 'entrevista_rh_cliente', 'descricao' => 'Acessar menu EntrevistaRH cliente'];
         $lista[] = ['nome' => 'entrevista_rh_cliente_insert', 'descricao' => 'Pode cadastrar EntrevistaRH cliente'];
         $lista[] = ['nome' => 'entrevista_rh_cliente_update', 'descricao' => 'Pode alterar EntrevistaRH cliente'];
@@ -218,28 +198,16 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'entrevista_gestor_cliente_insert', 'descricao' => 'Pode cadastrar EntrevistaGestor cliente'];
         $lista[] = ['nome' => 'entrevista_gestor_cliente_update', 'descricao' => 'Pode alterar EntrevistaGestor cliente'];
 
-        $lista[] = ['nome' => 'visualiza_cliente_55', 'descricao' => 'Acessar menu 55Solucoes'];
-
-
-        $lista[] = ['nome' => 'visualiza_cliente_montisol', 'descricao' => 'Acessar menu MONTISOL'];
-        $lista[] = ['nome' => 'visualiza_cliente_cmpc', 'descricao' => 'Acessar menu CMPC'];
-        $lista[] = ['nome' => 'visualiza_cliente_cimar', 'descricao' => 'Acessar menu CIMAR'];
-        $lista[] = ['nome' => 'visualiza_cliente_brk', 'descricao' => 'Acessar menu BRK'];
-
-
         $lista[] = ['nome' => 'admissao_cih', 'descricao' => 'Acessar menu Apontamento - CIH'];
         $lista[] = ['nome' => 'admissao_cih_lancar', 'descricao' => 'Pode lançar uma ocorrencia CIH'];
         $lista[] = ['nome' => 'admissao_cih_aprovar', 'descricao' => 'Pode aprovar uma ocorrencia CIH'];
 
-
         $lista[] = ['nome' => 'admissao_historico', 'descricao' => 'Acessar menu Historico'];
         $lista[] = ['nome' => 'medidas_administrativa_componente', 'descricao' => 'Pode ver o Componente Medidas Administrativa'];
-
 
         $lista[] = ['nome' => 'ocorrencia', 'descricao' => 'Acessar menu Ocorrencia'];
         $lista[] = ['nome' => 'ocorrencia_tag', 'descricao' => 'Acessar Ocorrencia Tag'];
         $lista[] = ['nome' => 'ocorrencia_setor', 'descricao' => 'Acessar Ocorrencia Setor'];
-
 
         $lista[] = ['nome' => 'avaliacao_noventa', 'descricao' => 'Acessar Avaliação'];
         $lista[] = ['nome' => 'avaliacao_noventa_insert', 'descricao' => 'Inserir Avaliação'];
@@ -317,22 +285,18 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_provas_insert', 'descricao' => 'Inseri Cadastro Provas Insert'];
         $lista[] = ['nome' => 'cadastro_provas_update', 'descricao' => 'Atualiza Cadastro Provas Update'];
 
-
         $lista[] = ['nome' => 'administracao_aniversariantes', 'descricao' => 'Acessar Aniversariantes'];
         $lista[] = ['nome' => 'administracao_aniversariantes_enviar', 'descricao' => 'Enviar Email Para os Aniversariantes'];
-
 
         //Relatorios
         $lista[] = ['nome' => 'relatorio_relatorios', 'descricao' => 'Acessar Relatórios'];
         $lista[] = ['nome' => 'relatorio_controleusuarios', 'descricao' => 'Acessar Controle de Usuarios'];
 
-
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
 
-
         //weekly-report
-        $lista[] = ['nome' => 'weekly-report', 'descricao' => 'Acessar rota Weekley report'];
+        $lista[] = ['nome' => 'weekly_report', 'descricao' => 'Acessar rota Weekley report'];
         $lista[] = ['nome' => 'weekly_report_quadro_insert', 'descricao' => 'Pode criar um novo quadro no Weekly report'];
         $lista[] = ['nome' => 'weekly_report_quadro_update', 'descricao' => 'Pode alterar um quadro no Weekly report'];
         $lista[] = ['nome' => 'weekly_report_quadro_delete', 'descricao' => 'Pode excluir um quadro no Weekly report'];

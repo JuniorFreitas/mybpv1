@@ -448,7 +448,7 @@
         </a>
     </li>
 @endif
-@if(\App\Models\Sistema::permitirLinks('weekly-report'))
+@if(\App\Models\Sistema::permitirLinks('weekly_report'))
     <li>
         <a href="{{ (route('g.weekly-report.index')) }}" class="waves-effect">
             <i class="fas fa-tasks"></i>

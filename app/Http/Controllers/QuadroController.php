@@ -63,23 +63,22 @@ class QuadroController extends Controller {
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\Quadro $quadro
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param User $empresa
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show(Request $request,  User $empresa) {
         return response()->json([
             'lista' => Quadro::all(),
-            'quadro_insert' => auth()->user()->can('weekly-report_quadro_quadro_insert'),
-            'quadro_update' => auth()->user()->can('weekly-report_quadro_quadro_update'),
-            'quadro_delete' => auth()->user()->can('weekly-report_quadro_quadro_delete'),
-            'lista_insert' => auth()->user()->can('weekly-report_quadro_lista_quadro_insert'),
-            'lista_update' => auth()->user()->can('weekly-report_quadro_lista_quadro_update'),
-            'lista_delete' => auth()->user()->can('weekly-report_quadro_lista_quadro_delete'),
-            'tarefa_insert' => auth()->user()->can('weekly-report_quadro_tarefa_insert'),
-            'tarefa_update' => auth()->user()->can('weekly-report_quadro_tarefa_update'),
-            'tarefa_delete' => auth()->user()->can('weekly-report_quadro_tarefa_delete'),
+            'quadro_insert' => auth()->user()->can('weekly_report_quadro_insert'),
+            'quadro_update' => auth()->user()->can('weekly_report_quadro_update'),
+            'quadro_delete' => auth()->user()->can('weekly_report_quadro_delete'),
+            'lista_insert' => auth()->user()->can('weekly_report_quadro_lista_quadro_insert'),
+            'lista_update' => auth()->user()->can('weekly_report_quadro_lista_quadro_update'),
+            'lista_delete' => auth()->user()->can('weekly_report_quadro_lista_quadro_delete'),
+            'tarefa_insert' => auth()->user()->can('weekly_report_quadro_tarefa_insert'),
+            'tarefa_update' => auth()->user()->can('weekly_report_quadro_tarefa_update'),
+            'tarefa_delete' => auth()->user()->can('weekly_report_quadro_tarefa_delete'),
         ], 200);
     }
 
