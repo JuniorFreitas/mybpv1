@@ -203,13 +203,13 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_cih_aprovar', 'descricao' => 'Pode aprovar uma ocorrencia CIH'];
 
         $lista[] = ['nome' => 'admissao_historico', 'descricao' => 'Acessar menu Historico'];
-        $lista[] = ['nome' => 'medidas_administrativa_componente', 'descricao' => 'Pode ver o Componente Medidas Administrativa'];
+        $lista[] = ['nome' => 'admissao_historico_aba_medidas_administrativas', 'descricao' => 'Pode ver o Componente Medidas Administrativa'];
 
         $lista[] = ['nome' => 'ocorrencia', 'descricao' => 'Acessar menu Ocorrencia'];
         $lista[] = ['nome' => 'ocorrencia_tag', 'descricao' => 'Acessar Ocorrencia Tag'];
         $lista[] = ['nome' => 'ocorrencia_setor', 'descricao' => 'Acessar Ocorrencia Setor'];
 
-        $lista[] = ['nome' => 'avaliacao_noventa', 'descricao' => 'Acessar Avaliação'];
+        $lista[] = ['nome' => 'admissao_historico_aba_avaliacao_noventa_dias', 'descricao' => 'Acessar Avaliação'];
         $lista[] = ['nome' => 'avaliacao_noventa_insert', 'descricao' => 'Inserir Avaliação'];
 
         $lista[] = ['nome' => 'cadastro_beneficio', 'descricao' => 'Acessar Beneficio'];
@@ -226,15 +226,15 @@ class HabilidadesTableSeeder extends Seeder
 
         $lista[] = ['nome' => 'admissao_pre_admissao', 'descricao' => 'Acessar Menu Pré Admissão'];
 
-        $lista[] = ['nome' => 'historico_dossie', 'descricao' => 'Acessar Dossie'];
+        $lista[] = ['nome' => 'admissao_historico_aba_dossie', 'descricao' => 'Acessar Dossie'];
         $lista[] = ['nome' => 'historico_dossie_insert', 'descricao' => 'Acessar Dossie Insert'];
         $lista[] = ['nome' => 'historico_dossie_update', 'descricao' => 'Acessar Dossie Update'];
         
-        $lista[] = ['nome' => 'historico_feedback', 'descricao' => 'Pode Acessar aba de Feedback no historico'];
-        $lista[] = ['nome' => 'historico_avaliacao_anual', 'descricao' => 'Pode Acessar aba de Avaliacao Anual no historico'];
-        $lista[] = ['nome' => 'historico_ferias', 'descricao' => 'Pode Acessar aba de Ferias no historico'];
-        $lista[] = ['nome' => 'historico_promocao', 'descricao' => 'Pode Acessar aba de Promocao no historico'];
-        $lista[] = ['nome' => 'historico_metas', 'descricao' => 'Pode Acessar aba de Metas no historico'];
+        $lista[] = ['nome' => 'admissao_historico_aba_feedback', 'descricao' => 'Pode Acessar aba de Feedback no historico'];
+        $lista[] = ['nome' => 'admissao_historico_aba_avaliacao_anual', 'descricao' => 'Pode Acessar aba de Avaliacao Anual no historico'];
+        $lista[] = ['nome' => 'admissao_historico_aba_ferias', 'descricao' => 'Pode Acessar aba de Ferias no historico'];
+        $lista[] = ['nome' => 'admissao_historico_aba_promocao', 'descricao' => 'Pode Acessar aba de Promocao no historico'];
+        $lista[] = ['nome' => 'admissao_historico_aba_metas', 'descricao' => 'Pode Acessar aba de Metas no historico'];
 
         $lista[] = ['nome' => 'administracao_pesquisaclima', 'descricao' => 'Acessar Pesquisa Clima'];
         $lista[] = ['nome' => 'administracao_pesquisaclima_insert', 'descricao' => 'Acessar Pesquisa Clima Insert'];

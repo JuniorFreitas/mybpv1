@@ -82,17 +82,16 @@ class HistoricoController extends Controller
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
         $permissoes = [
-            'dossie' => auth()->user()->can('historico_dossie'),
-            'medida_administrativa' => auth()->user()->can('medidas_administrativa_componente'),
-            'feedback' => auth()->user()->can('historico_feedback'),
-            'avaliacao_noventa_dias' => auth()->user()->can('avaliacao_noventa'),
-            'avaliacao_anual' => auth()->user()->can('historico_avaliacao_anual'),
-            'ferias' => auth()->user()->can('historico_ferias'),
+            'dossie' => auth()->user()->can('admissao_historico_aba_dossie'),
+            'medida_administrativa' => auth()->user()->can('admissao_historico_aba_medidas_administrativas'),
+            'feedback' => auth()->user()->can('admissao_historico_aba_feedback'),
+            'avaliacao_noventa_dias' => auth()->user()->can('admissao_historico_aba_avaliacao_noventa_dias'),
+            'avaliacao_anual' => auth()->user()->can('admissao_historico_aba_avaliacao_anual'),
+            'ferias' => auth()->user()->can('admissao_historico_aba_ferias'),
+            'promocao' => auth()->user()->can('admissao_historico_aba_promocao'),
+            'metas' => auth()->user()->can('admissao_historico_aba_metas'),
             'beneficio' => auth()->user()->can('cadastro_beneficio'),
             'cih' => auth()->user()->can('admissao_cih'),
-            'promocao' => auth()->user()->can('historico_promocao'),
-            'metas' => auth()->user()->can('historico_metas'),
-
         ];
         return response()->json([
             'atual' => $resultado->currentPage(),

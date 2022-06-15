@@ -104,7 +104,7 @@
                     </div>
                     <div class="tab-pane fade show" id="nav-formulario-noventa" role="tabpanel"
                          aria-labelledby="nav-formulario-noventa-tab">
-                        <formulario-noventa-dias v-if="abas.abrirFormularioNoventa && avaliacao_noventa_dias"
+                        <formulario-noventa-dias v-if="abas.abrirFormularioNoventa && permissoes.avaliacao_noventa_dias"
                                                  :feedback_id="form.feedback_id"></formulario-noventa-dias>
                     </div>
                     <div class="tab-pane fade show" id="nav-avaliacao-anual" role="tabpanel"
@@ -134,7 +134,7 @@
                     </div>
                     <div class="tab-pane fade show" id="nav-meta" role="tabpanel"
                          aria-labelledby="nav-meta-tab">
-                        <metas v-if="abas.abrirMetas && promocao.metas"
+                        <metas v-if="abas.abrirMetas && permissoes.metas"
                         :feedback_id="form.feedback_id"></metas>
                     </div>
                 </div>
