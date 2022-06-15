@@ -849,6 +849,7 @@ class AdmissaoController extends Controller
 
                 if ($feedback->Admissao) {
                     $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
+                    
                     if(isset($ultimo_aso_ativo_dados['id'])){
 
                         $tem_aso = $feedback->Admissao->UltimoAsoAtivo->where('data_aso',
@@ -872,7 +873,7 @@ class AdmissaoController extends Controller
                                 'user_alterou_id' => auth()->id()
                             ]);
                         }
-                    }else{
+                    }elseif(!is_null($ultimo_aso_ativo_dados['data_aso'])){
                         $feedback->Admissao->UltimoAsoAtivo()->create([
                             'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
                             'ativo' => true,
@@ -894,12 +895,14 @@ class AdmissaoController extends Controller
                     DadosAdmissao::create($dadosAdmissao);
 
                     $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
-                    AdmissaoAso::create([
-                        'admissao_id' => $dadosAdmissao['admissao_id'],
-                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                        'ativo' => true,
-                        'user_alterou_id' => auth()->id()
-                    ]);
+                    if(!is_null($ultimo_aso_ativo_dados['data_aso'])){
+                        AdmissaoAso::create([
+                            'admissao_id' => $dadosAdmissao['admissao_id'],
+                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                            'ativo' => true,
+                            'user_alterou_id' => auth()->id()
+                        ]);    
+                    }
 
                 }
 
