@@ -52,35 +52,6 @@ class DossieController extends Controller
             'ArquivamentoDossie'
         )->first();
 
-        $feedback->doc_selecaoDel = [];
-        $feedback->doc_checklistDel = [];
-        $feedback->ficha_registradaDel = [];
-        $feedback->contrato_trabalho_assinadoDel = [];
-        $feedback->termo_confiabilidadeDel = [];
-        $feedback->vale_transporte_assinadoDel = [];
-        $feedback->acordo_horaDel = [];
-        $feedback->salario_familia_assinadoDel = [];
-        $feedback->declaracao_dependentes_impostoDel = [];
-        $feedback->comprovante_dev_ctpDel = [];
-        $feedback->ordem_servico_assinadaDel = [];
-        $feedback->certificado_trein_segDel = [];
-        $feedback->ficha_entrega_epiDel = [];
-        $feedback->contra_cheque_mensaisDel = [];
-        $feedback->cartoes_pontoDel = [];
-        $feedback->aviso_feriasDel = [];
-        $feedback->controle_asosDel = [];
-        $feedback->book_rescisaoDel = [];
-        $feedback->termo_rescisaoDel = [];
-        $feedback->guia_seguro_desempregoDel = [];
-        $feedback->chave_fgtsDel = [];
-        $feedback->comprovante_pagamentoDel = [];
-        $feedback->exame_demissionalDel = [];
-        $feedback->nada_consta_ficha_epiDel = [];
-        $feedback->comprovante_devolucao_ctpsDel = [];
-        $feedback->ppp_assinadoDel = [];
-        $feedback->arquivamento_eletronicoDel = [];
-        $feedback->arquivamento_dossieDel = [];
-
         return $feedback;
     }
 

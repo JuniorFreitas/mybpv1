@@ -889,6 +889,7 @@ const app = new Vue({
                             "indicado_area": ""
                         };
                     }
+
                     if (!data.feedback.banco_conta) {
                         data.feedback.banco_conta = {
                             "banco": "Banco do Brasil",
@@ -902,7 +903,6 @@ const app = new Vue({
 
                     Object.assign(this.form, data.feedback);
 
-
                     //Se não tiver parecer_rh
                     this.form.admissao = admissao ? admissao : _.cloneDeep(this.formDefault.admissao);
 
@@ -913,7 +913,6 @@ const app = new Vue({
                     this.form.parecer_rh.camisa_meia = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_meia : "";
                     this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id == null ? "" : admissao.area_etiqueta_id;
                     this.form.curriculo.pcd = data.feedback.curriculo.pcd ?? "false";
-
 
                     this.form.vaga_projeto_id = !data.feedback.vaga_projeto_id ? "" : data.feedback.vaga_projeto_id;
                     this.form.parecer_rh.indicacao = !data.feedback.parecer_rh.indicacao ? "" : data.feedback.parecer_rh.indicacao;
@@ -926,6 +925,12 @@ const app = new Vue({
                             "titulo_eleitor_numero": "",
                             "titulo_eleitor_sessao": "",
                             "titulo_eleitor_zona": ""
+                        };
+                    }
+
+                    if (!admissao.ultimo_aso_ativo) {
+                        this.form.admissao.ultimo_aso_ativo = {
+                            "data_aso": ""
                         };
                     }
 
