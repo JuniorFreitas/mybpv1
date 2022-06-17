@@ -45,6 +45,8 @@ const app = new Vue({
             abrirMetas: false
         },
         abasDefault: null,
+        
+        permissoes: [],
 
         form: {
             feedback_id: 0,
@@ -122,6 +124,7 @@ const app = new Vue({
         carregou(dados) {
             this.lista = dados.itens;
             this.cargos = dados.cargos;
+            this.permissoes = dados.permissoes;
             this.controle.carregando = false;
         },
         carregando() {

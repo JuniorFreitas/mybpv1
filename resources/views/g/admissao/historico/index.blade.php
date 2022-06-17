@@ -23,63 +23,63 @@
 
                 <ul class="nav nav-tabs bg-light" id="tabslist" role="tablist"
                     style="border-bottom: 1px solid #653232">
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.dossie">
                         <a class="nav-item nav-link active" id="nav-dossie-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirDossie')"
                            href="#nav-dossie"
                            role="tab" aria-controls="nav-dossie" aria-selected="true">DOSSIÊ</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.feedback">
                         <a class="nav-item nav-link" id="nav-feedback-historico-tab"
                            @click.prevent="trocaAba('abrirFeedbackHistorico')" data-toggle="tab"
                            href="#nav-feedback-historico"
                            role="tab" aria-controls="nav-feedback-historico" aria-selected="true">
                             FEEDBACK</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.medida_administrativa">
                         <a class="nav-item nav-link" id="nav-medidas-administrativas-tab"
                            @click.prevent="trocaAba('abrirMedidas')" data-toggle="tab"
                            href="#nav-medidas-administrativas"
                            role="tab" aria-controls="nav-medidas-administrativas" aria-selected="true">
                             MEDIDAS ADMINISTRATIVAS</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.avaliacao_noventa_dias">
                         <a class="nav-item nav-link" id="nav-formulario-noventa-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirFormularioNoventa')"
                            href="#nav-formulario-noventa"
                            role="tab" aria-controls="nav-formulario-noventa" aria-selected="false">AVALIAÇÃO 90 DIAS</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.avaliacao_anual">
                         <a class="nav-item nav-link" id="nav-avaliacao-anual-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirAvaliacaoAnual')"
                            href="#nav-avaliacao-anual"
                            role="tab" aria-controls="nav-avaliacao-anual" aria-selected="false">AVALIAÇÃO ANUAL</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.ferias">
                         <a class="nav-item nav-link" id="nav-ferias-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirFerias')"
                            href="#nav-ferias"
                            role="tab" aria-controls="nav-ferias" aria-selected="false">FÉRIAS</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.beneficio">
                         <a class="nav-item nav-link" id="nav-beneficio-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirBeneficio')"
                            href="#nav-beneficio"
                            role="tab" aria-controls="nav-beneficio" aria-selected="false">BENEFÍCIO</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.cih">
                         <a class="nav-item nav-link" id="nav-cih-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirCih')"
                            href="#nav-cih"
                            role="tab" aria-controls="nav-cih" aria-selected="false">CIH</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.promocao">
                         <a class="nav-item nav-link" id="nav-promocao-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirPromocao')"
                            href="#nav-promocao"
                            role="tab" aria-controls="nav-promocao" aria-selected="false">PROMOÇÃO</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="permissoes.metas">
                         <a class="nav-item nav-link" id="nav-meta-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirMetas')"
                            href="#nav-meta"
@@ -90,46 +90,52 @@
                 <div class="tab-content py-3 p-2">
                     <div class="tab-pane fade show active" id="nav-dossie" role="tabpanel"
                          aria-labelledby="nav-dossie-tab">
-                        <dossie v-if="abas.abrirDossie" :feedback_id="form.feedback_id"></dossie>
+                        <dossie v-if="abas.abrirDossie && permissoes.dossie" :feedback_id="form.feedback_id"></dossie>
                     </div>
                     <div class="tab-pane fade show" id="nav-feedback-historico" role="tabpanel"
                          aria-labelledby="nav-feedback-historico-tab">
-                        <feedback-historico v-if="abas.abrirFeedbackHistorico"
+                        <feedback-historico v-if="abas.abrirFeedbackHistorico && permissoes.feedback"
                                             :feedback_id="form.feedback_id"></feedback-historico>
                     </div>
                     <div class="tab-pane fade show" id="nav-medidas-administrativas" role="tabpanel"
                          aria-labelledby="nav-medidas-administrativas-tab">
-                        <medidas-administrativas v-if="abas.abrirMedidas"
+                        <medidas-administrativas v-if="abas.abrirMedidas && permissoes.medida_administrativa"
                                                  :feedback_id="form.feedback_id"></medidas-administrativas>
                     </div>
                     <div class="tab-pane fade show" id="nav-formulario-noventa" role="tabpanel"
                          aria-labelledby="nav-formulario-noventa-tab">
-                        <formulario-noventa-dias v-if="abas.abrirFormularioNoventa"
+                        <formulario-noventa-dias v-if="abas.abrirFormularioNoventa && permissoes.avaliacao_noventa_dias"
                                                  :feedback_id="form.feedback_id"></formulario-noventa-dias>
                     </div>
                     <div class="tab-pane fade show" id="nav-avaliacao-anual" role="tabpanel"
                          aria-labelledby="nav-avaliacao-anual-tab">
-                        <avaliacao-anual v-if="abas.abrirAvaliacaoAnual" :feedback_id="form.feedback_id"></avaliacao-anual>
+                        <avaliacao-anual v-if="abas.abrirAvaliacaoAnual" v-if="avaliacao_anual" 
+                                                :feedback_id="form.feedback_id"></avaliacao-anual>
                     </div>
                     <div class="tab-pane fade show" id="nav-ferias" role="tabpanel"
                          aria-labelledby="nav-ferias-tab">
-                        <ferias v-if="abas.abrirFerias" :feedback_id="form.feedback_id" :curriculo_id="form.curriculo_id"></ferias>
+                        <ferias v-if="abas.abrirFerias && permissoes.ferias"
+                        :feedback_id="form.feedback_id" :curriculo_id="form.curriculo_id"></ferias>
                     </div>
                     <div class="tab-pane fade show" id="nav-beneficio" role="tabpanel"
                          aria-labelledby="nav-beneficio-tab">
-                        <beneficio v-if="abas.abrirBeneficio" :feedback_id="form.feedback_id"></beneficio>
+                        <beneficio v-if="abas.abrirBeneficio && permissoes.beneficio"
+                        :feedback_id="form.feedback_id"></beneficio>
                     </div>
                     <div class="tab-pane fade show" id="nav-cih" role="tabpanel"
                          aria-labelledby="nav-cih-tab">
-                        <cih v-if="abas.abrirCih" :feedback_id="form.feedback_id"></cih>
+                        <cih v-if="abas.abrirCih && permissoes.cih" 
+                        :feedback_id="form.feedback_id"></cih>
                     </div>
                     <div class="tab-pane fade show" id="nav-promocao" role="tabpanel"
                          aria-labelledby="nav-promocao-tab">
-                        <promocao v-if="abas.abrirPromocao" :feedback_id="form.feedback_id"></promocao>
+                        <promocao v-if="abas.abrirPromocao && permissoes.promocao"
+                        :feedback_id="form.feedback_id"></promocao>
                     </div>
                     <div class="tab-pane fade show" id="nav-meta" role="tabpanel"
                          aria-labelledby="nav-meta-tab">
-                        <metas v-if="abas.abrirMetas" :feedback_id="form.feedback_id"></metas>
+                        <metas v-if="abas.abrirMetas && permissoes.metas"
+                        :feedback_id="form.feedback_id"></metas>
                     </div>
                 </div>
 

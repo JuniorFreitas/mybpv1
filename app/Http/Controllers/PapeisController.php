@@ -46,6 +46,7 @@ class PapeisController extends Controller
         $this->authorize('configuracao_papel_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados['master'] = false;
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
@@ -95,12 +96,16 @@ class PapeisController extends Controller
         $this->authorize('configuracao_papel_update');
         $papel->load('habilidades');
 
-        $listaDeHabilidades = Habilidade::orderBy('nome', 'asc')->get()->map(function ($habilidade) {
+        $listaDeHabilidades = Papel::whereEmpresaId($papel->empresa_id)->where('master', true)->with('habilidades', function ($q) {
+            $q->orderBy('nome');
+        })->first();
+
+        $listaDeHabilidades->habilidades->map(function ($habilidade) {
             $habilidade->acesso = false;
             return $habilidade;
         });
 
-        return response()->json(['listaDeHabilidade' => $listaDeHabilidades, 'papel' => $papel], 201);
+        return response()->json(['listaDeHabilidade' => $listaDeHabilidades->habilidades, 'papel' => $papel], 201);
     }
 
     /**
@@ -117,6 +122,7 @@ class PapeisController extends Controller
 
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados['master'] = false;
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
@@ -161,7 +167,7 @@ class PapeisController extends Controller
         $porPagina = $request->get('porPagina');
         $busca = false;
 
-        $resultado = Papel::orderBy('nome');
+        $resultado = Papel::whereEmpresaId(auth()->user()->empresa_id)->where('master', false)->orderBy('nome');
 
         if ($request->has('campoBusca')) {
             $busca = $request->get('campoBusca');
