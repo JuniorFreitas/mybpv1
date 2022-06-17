@@ -1,5 +1,18 @@
 @extends('layouts.sistema')
 @section('title', 'Cliente / Prospect')
+@push('css')
+    <style type="text/css">
+        .card-header {
+            background-color: #174257 !important;
+            border-radius: 10px;
+        }
+
+        .btn-link {
+            font-weight: 400 !important;
+            color: #ffffff !important;
+        }
+    </style>
+@endpush
 @section('content_header')
     <h4 class="text-default">CLIENTES</h4>
     <hr class="bg-default" style="margin-top: -5px;">
@@ -600,7 +613,8 @@
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <div class="form-group">
                                             <label>Vencimento de Férias</label>
-                                            <select v-model="form.cliente_config.verifica_mes_vencimento" class="form-control"
+                                            <select v-model="form.cliente_config.verifica_mes_vencimento"
+                                                    class="form-control"
                                                     onblur="valida_campo_vazio(this,1)">
                                                 <option value="">Selecione ...</option>
                                                 <option value="1">30 dias</option>
@@ -631,6 +645,80 @@
                                                 <option value="2">60 dias</option>
                                                 <option value="3">90 dias</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend class="text-uppercase">
+                                    <span>Parametrização - Módulos</span>
+                                </legend>
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <a class="btn btn-sm btn-success float-right" href="javascript://"
+                                               @click.prevent="selecionarTodas()" v-if="!todasHabilidades">
+                                                <span class="fa fa-ok" aria-hidden="true"></span> Todos os módulos
+                                            </a>
+                                            <a class="btn btn-sm btn-danger float-right" href="javascript://"
+                                               @click.prevent="selecionarTodas()" v-if="todasHabilidades">
+                                                <span class="fa fa-remove" aria-hidden="true"></span> Todos os módulos
+                                            </a>
+                                        </div>
+                                        <div class="col-md-12" id="accordion"
+                                             v-for="(menu, index) in todosMenu">
+                                            <div class="card">
+                                                <div class="card-header" :id="'heading'+index">
+                                                    <div class="row justify-content-between">
+                                                        <div class="col-4">
+                                                            <h5 class="mb-0">
+                                                                <button class="btn btn-link text-uppercase"
+                                                                        data-toggle="collapse"
+                                                                        :data-target="'#collapseOne'+index"
+                                                                        aria-expanded="true"
+                                                                        aria-controls="collapseOne">
+                                                                    @{{menu}}
+                                                                </button>
+                                                            </h5>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <a class="btn btn-sm btn-info float-right"
+                                                               href="javascript://"
+                                                               @click.prevent="selecionarPorModulo(menu)">
+                                                                <span class="fa fa-ok" aria-hidden="true"></span> Todos
+                                                                em @{{menu}}
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div :id="'collapseOne'+index" class="collapse"
+                                                     :aria-labelledby="'headingOne'+index"
+                                                     data-parent="#accordion">
+                                                    <div class="card-body"
+                                                         v-for="habilidade in listaDeHabilidades"
+                                                         v-if="menu === habilidade.menu">
+                                                        @{{habilidade.nome}}
+                                                        <div class="float-right col-md-1">
+                                                            <a class="btn btn-sm btn-block btn-success"
+                                                               href="javascript://"
+                                                               @click.prevent="habilidade.acesso=!habilidade.acesso"
+                                                               v-if="habilidade.acesso">
+                                                                            <span class="fa fa-check"
+                                                                                  aria-hidden="true"></span>
+                                                            </a>
+                                                            <a class="btn btn-sm btn-block btn-danger"
+                                                               href="javascript://"
+                                                               @click.prevent="habilidade.acesso=!habilidade.acesso"
+                                                               v-if="!habilidade.acesso">
+                                                                            <span class="fa fa-times"
+                                                                                  aria-hidden="true"></span>
+                                                            </a>
+                                                        </div>
+                                                        <hr>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -805,6 +893,8 @@
                             v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
     </div>
 @stop
+
 @push('js')
     <script src="{{mix('js/g/clientes/app.js')}}"></script>
 @endpush
+
