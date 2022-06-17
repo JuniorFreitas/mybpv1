@@ -189,7 +189,7 @@ class Cliente extends Model
         'uf' => 'string',
         'contato' => 'string',
         'email' => 'string',
-        'aniversario' => 'date:d/m/Y',
+        'aniversario' => 'string',
         'como_conheceu' => 'string',
         'como_conheceu_outro' => 'string',
         'apelido' => 'string',
