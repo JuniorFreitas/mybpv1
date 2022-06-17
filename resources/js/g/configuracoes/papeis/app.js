@@ -94,11 +94,13 @@ const app = new Vue({
                     if (response.status === 201) {
                         this.preloadAjax = false;
                         let data = response.data;
-                        this.listaDeHabilidades = data.listaDeHabilidade;
-
                         Object.assign(this.form, data.papel);
 
+                        this.listaDeHabilidades = data.listaDeHabilidade;
+                        // this.listaDeHabilidades = data.papel.habilidades;
+
                         //ligando os botoes
+                        // var habilidades_papel = data.listaDeHabilidade;
                         var habilidades_papel = data.papel.habilidades;
                         _.forEach(this.listaDeHabilidades, function (habilidade) {
                             var achou = _.find(habilidades_papel, {'id': habilidade.id});

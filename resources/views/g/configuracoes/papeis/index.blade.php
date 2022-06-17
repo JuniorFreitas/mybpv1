@@ -10,18 +10,18 @@
             <span v-show="preloadAjax">
                 <i class="fa fa-spinner fa-pulse"></i> Carregando...
             </span>
-{{--            <div class="alert alert-success alert-dismissible" v-show="cadastrado">--}}
-{{--                <h4>--}}
-{{--                    <i class="icon fa fa-check"></i>--}}
-{{--                    Papel cadastrado com sucesso!--}}
-{{--                </h4>--}}
-{{--            </div>--}}
-{{--            <div class="alert alert-success alert-dismissible" v-show="atualizado">--}}
-{{--                <h4>--}}
-{{--                    <i class="icon fa fa-check"></i>--}}
-{{--                    Papel alterado com sucesso!--}}
-{{--                </h4>--}}
-{{--            </div>--}}
+            {{--            <div class="alert alert-success alert-dismissible" v-show="cadastrado">--}}
+            {{--                <h4>--}}
+            {{--                    <i class="icon fa fa-check"></i>--}}
+            {{--                    Papel cadastrado com sucesso!--}}
+            {{--                </h4>--}}
+            {{--            </div>--}}
+            {{--            <div class="alert alert-success alert-dismissible" v-show="atualizado">--}}
+            {{--                <h4>--}}
+            {{--                    <i class="icon fa fa-check"></i>--}}
+            {{--                    Papel alterado com sucesso!--}}
+            {{--                </h4>--}}
+            {{--            </div>--}}
             <form v-show="!preloadAjax && (!cadastrado && !atualizado)" id="form">
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
@@ -209,7 +209,7 @@
                     <th class="text-center">Nome</th>
                     <th class="text-center">Descrição</th>
                     <th class="text-center">Status</th>
-                    <th></th>
+                    <th>Ações</th>
                 </tr>
                 </thead>
 
@@ -219,10 +219,11 @@
                     {{--<td>@{{ab.id}}</td>--}}
                     <td data-label="Nome" class="text-center">@{{papel.nome}}</td>
                     <td data-label="Descrição" class="text-center">@{{papel.descricao}}</td>
-                    <td data-label="Status" class="text-center">
+                    <td data-label="Status" class="text-center" v-if="papel.master !== true">
                         <bt-ativo :rota="`papeis/${papel.id}/ativa-desativa`" :model="papel"></bt-ativo>
                     </td>
-                    <td class="text-center">
+                    <td v-else></td>
+                    <td class="text-center" v-if="papel.master !== true">
                         @can('configuracao_papel_update')
                             <a class="btn btn-sm btn-success btnFormAlterar" href="javascript://"
                                @click.prevent="formAlterar(papel.id)" data-toggle="modal"
@@ -238,6 +239,7 @@
                             </a>
                         @endcan
                     </td>
+                    <td v-else></td>
                 </tr>
 
                 </tbody>
