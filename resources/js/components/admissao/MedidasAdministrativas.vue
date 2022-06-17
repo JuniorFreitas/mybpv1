@@ -67,7 +67,7 @@
                     </div>
 
                     <div class="col-md-2">
-                        <date-picker label="Data Retorno" v-model="obj.data_retorno" :min="hoje" :disabled="!obj.novo"></date-picker>
+                        <date-picker v-if="obj.tipo != 'Advertência Verbal' && obj.tipo != 'Advertência Escrita'" label="Data Retorno" v-model="obj.data_retorno" :min="hoje" :disabled="!obj.novo"></date-picker>
                     </div>
 
                     <div class="col-12">
@@ -138,7 +138,7 @@ export default {
             preload: false,
             URL_ADMIN,
 
-            url_anexo: `${URL_ADMIN}/storage/uploadAnexos`,
+            url_anexo: `${URL_ADMIN}/historico/medidas-administrativas/uploadAnexos`,
             anexoUploadAndamento: false,
 
             hoje: '',
