@@ -22,7 +22,7 @@
     <div class="f12" style="line-height: 22pt;text-align: justify">
         O Senhor trabalhando nesta empresa desde {{$medida->Feedback->Admissao->data_admissao}}, esta sendo advertido no
         dia {{$medida->data_solicitacao}}, em virtude de <strong>{{$medida->definicao}}</strong>
-        ({{$medida->motivo}}) com retorno no dia ({{$medida->data_retorno}}). Em razão disso e na forma do artigo 482
+        ({{$medida->motivo}}) @if({{$medida->tipo}} != 'Advertência Escrita') com retorno no dia ({{$medida->data_retorno}}) @endif(). Em razão disso e na forma do artigo 482
         alínea h, o Sr., está sendo advertido, para que
         repense suas atitudes e passe a se adequar nas regras internas da empresa, evitando a reincidência, que poderá
         provocar outras medidas disciplinares.

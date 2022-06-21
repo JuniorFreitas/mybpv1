@@ -129,30 +129,50 @@ class HistoricoController extends Controller
                 //todo Verifica se ja existe a pessoa se existir so da um increment
                 DB::beginTransaction();
                 foreach ($dados['medidas_administrativas'] as $medida) {
-                    $medida['user_id'] = auth()->id();
-                    $medidaAdm = MedidaAdministrativa::create($medida);
-                    //Remove a foto de anexo
+                    if(isset($medida['novo'])){
+                        $medida['user_id'] = auth()->id();
+                        $medidaAdm = MedidaAdministrativa::create($medida);
+                        //Remove a foto de anexo
 
-                    if (isset($medida['anexosDel'])) {
-                        foreach ($medida['anexosDel'] as $id_anexo) {
-                            $arquivo = Arquivo::find($id_anexo);
-                            $arquivo->excluir();
+                        if (isset($medida['anexosDel'])) {
+                            foreach ($medida['anexosDel'] as $id_anexo) {
+                                $arquivo = Arquivo::find($id_anexo);
+                                $arquivo->excluir();
+                            }
                         }
-                    }
 
-                    // inseri uma nova foto de anexo
-                    if (isset($medida['anexos'])) {
-                        foreach ($medida['anexos'] as $index => $anexo) {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $medidaAdm->Anexos()->attach($arquivo->id);
+                        // inseri uma nova foto de anexo
+                        if (isset($medida['anexos'])) {
+                            foreach ($medida['anexos'] as $index => $anexo) {
+                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                                if ($arquivo) {
+                                    $arquivo->temporario = false;
+                                    $arquivo->chave = '';
+                                    $arquivo->save();
+                                    $medidaAdm->Anexos()->attach($arquivo->id);
+                                }
+                            }
+                        }
+                    }else{
+                        if (isset($medida['anexosDel'])) {
+                            foreach ($medida['anexosDel'] as $id_anexo) {
+                                $arquivo = Arquivo::find($id_anexo);
+                                $arquivo->excluir();
+                            }
+                        }
+                        $Medida = MedidaAdministrativa::find($medida['id']);
+                        if (isset($medida['anexos'])) {
+                            foreach ($medida['anexos'] as $index => $anexo) {
+                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                                if ($arquivo) {
+                                    $arquivo->temporario = false;
+                                    $arquivo->chave = '';
+                                    $arquivo->save();
+                                    $Medida->Anexos()->attach($arquivo->id);
+                                }
                             }
                         }
                     }
-
                 }
                 DB::commit();
                 return response()->json([], 201);
@@ -271,23 +291,23 @@ class HistoricoController extends Controller
     // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {
-        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENSPDF, Arquivo::DISCO_SERVICO_FORNECEDOR);
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENSPDF, Arquivo::DISCO_MEDIDAS);
     }
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow(Arquivo::DISCO_OCORRENCIA, $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_MEDIDAS, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete(Arquivo::DISCO_OCORRENCIA, $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_MEDIDAS, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload(Arquivo::DISCO_OCORRENCIA, $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_MEDIDAS, $arquivo);
     }
 
     //**************************FORMULARIO NOVENTA DIAS**************************//
