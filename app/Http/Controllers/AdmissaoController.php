@@ -263,6 +263,50 @@ class AdmissaoController extends Controller
                 $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
                 DadosAdmissao::create($tableDadosAdmissao);
 
+                if ($feedback->Admissao) {
+                    $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
+                    
+                    if(!empty($ultimo_aso_ativo_dados['data_aso'])){
+
+                        $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
+                        
+                        if($tem_aso->count() > 0){
+                            $UltimoAsoColaborador = $tem_aso->where('data_aso',
+                            (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);
+                            
+                            if($UltimoAsoColaborador->count() == 0){
+                                AdmissaoAso::where('admissao_id', $feedback->Admissao->id)->update([
+                                    'ativo' => false,
+                                    'user_alterou_id' => auth()->id()
+                                ]);
+
+                                $feedback->Admissao->UltimoAsoAtivo()->create([
+                                    'admissao_id' => $feedback->Admissao['admissao_id'],
+                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                    'ativo' => true,
+                                    'user_alterou_id' => auth()->id()
+                                ]);
+                            }
+                        }else{
+                            $feedback->Admissao->UltimoAsoAtivo()->create([
+                                'admissao_id' => $feedback->Admissao['admissao_id'],
+                                'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                'ativo' => true,
+                                'user_alterou_id' => auth()->id()
+                            ]);
+                        }  
+                    }
+                } else {                    
+                    $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
+                    AdmissaoAso::create([
+                        'admissao_id' => $dadosAdmissao['admissao_id'],
+                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                        'ativo' => true,
+                        'user_alterou_id' => auth()->id()
+                    ]);
+
+                }
+
                 $datas = [];
                 if ($dadosAdmissao['tipo_admissao'] == 'FIXO') {
                     $data = new DataHora($dadosAdmissao['data_admissao']);
@@ -470,6 +514,50 @@ class AdmissaoController extends Controller
                 DadosAdmissao::create($tableDadosAdmissao);
 
                 $datas = [];
+
+                if ($candidato->FeedBack->Admissao) {
+                    $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
+                    
+                    if(!empty($ultimo_aso_ativo_dados['data_aso'])){
+
+                        $tem_aso = $candidato->FeedBack->Admissao->UltimoAsoAtivo();
+                        
+                        if($tem_aso->count() > 0){
+                            $UltimoAsoColaborador = $tem_aso->where('data_aso',
+                            (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);
+                            
+                            if($UltimoAsoColaborador->count() == 0){
+                                AdmissaoAso::where('admissao_id', $candidato->FeedBack->Admissao->id)->update([
+                                    'ativo' => false,
+                                    'user_alterou_id' => auth()->id()
+                                ]);
+
+                                $candidato->FeedBack->Admissao->UltimoAsoAtivo()->create([
+                                    'admissao_id' => $candidato->FeedBack->Admissao['admissao_id'],
+                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                    'ativo' => true,
+                                    'user_alterou_id' => auth()->id()
+                                ]);
+                            }
+                        }else{
+                            $candidato->FeedBack->Admissao->UltimoAsoAtivo()->create([
+                                'admissao_id' => $candidato->FeedBack->Admissao['admissao_id'],
+                                'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                'ativo' => true,
+                                'user_alterou_id' => auth()->id()
+                            ]);
+                        }  
+                    }
+                } else {                    
+                    $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
+                    AdmissaoAso::create([
+                        'admissao_id' => $dadosAdmissao['admissao_id'],
+                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                        'ativo' => true,
+                        'user_alterou_id' => auth()->id()
+                    ]);
+
+                }
 
                 if ($dadosAdmissao['tipo_admissao'] === 'FIXO') {
                     $data = new DataHora($dadosAdmissao['data_admissao']);
@@ -850,35 +938,35 @@ class AdmissaoController extends Controller
                 if ($feedback->Admissao) {
                     $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
                     
-                    if(isset($ultimo_aso_ativo_dados['id'])){
+                    if(!empty($ultimo_aso_ativo_dados['data_aso'])){
 
-                        $tem_aso = $feedback->Admissao->UltimoAsoAtivo->where('data_aso',
-                         (new DataHora($ultimo_aso_ativo_dados['data_aso']))
-                         ->dataInsert())
-                         ->first();
+                        $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
+                        
+                        if($tem_aso->count() > 0){
+                            $UltimoAsoColaborador = $tem_aso->where('data_aso',
+                            (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);
+                            
+                            if($UltimoAsoColaborador->count() == 0){
+                                AdmissaoAso::where('admissao_id', $feedback->Admissao->id)->update([
+                                    'ativo' => false,
+                                    'user_alterou_id' => auth()->id()
+                                ]);
 
-                        if(!$tem_aso){
-                            $feedback->Admissao->UltimoAsoAtivo->update([
-                                'ativo' => false,
-                                'user_alterou_id' => auth()->id()
-                            ]);
-
+                                $feedback->Admissao->UltimoAsoAtivo()->create([
+                                    'admissao_id' => $feedback->Admissao['admissao_id'],
+                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                    'ativo' => true,
+                                    'user_alterou_id' => auth()->id()
+                                ]);
+                            }
+                        }else{
                             $feedback->Admissao->UltimoAsoAtivo()->create([
+                                'admissao_id' => $feedback->Admissao['admissao_id'],
                                 'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
                                 'ativo' => true,
                                 'user_alterou_id' => auth()->id()
                             ]);
-                        }else{
-                            $feedback->Admissao->UltimoAsoAtivo->update([
-                                'user_alterou_id' => auth()->id()
-                            ]);
-                        }
-                    }elseif(!is_null($ultimo_aso_ativo_dados['data_aso'])){
-                        $feedback->Admissao->UltimoAsoAtivo()->create([
-                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                            'ativo' => true,
-                            'user_alterou_id' => auth()->id()
-                        ]);
+                        }  
                     }
 
                     $feedback->Admissao->update($admissaoDados);
@@ -895,14 +983,12 @@ class AdmissaoController extends Controller
                     DadosAdmissao::create($dadosAdmissao);
 
                     $ultimo_aso_ativo_dados =  $dados['admissao']['ultimo_aso_ativo'];
-                    if(!is_null($ultimo_aso_ativo_dados['data_aso'])){
-                        AdmissaoAso::create([
-                            'admissao_id' => $dadosAdmissao['admissao_id'],
-                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                            'ativo' => true,
-                            'user_alterou_id' => auth()->id()
-                        ]);    
-                    }
+                    AdmissaoAso::create([
+                        'admissao_id' => $dadosAdmissao['admissao_id'],
+                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                        'ativo' => true,
+                        'user_alterou_id' => auth()->id()
+                    ]);
 
                 }
 
@@ -1024,6 +1110,8 @@ class AdmissaoController extends Controller
     {
         $this->authorize('admissao_processo_update');
         $dados = $request->input();
+        
+        $ultimo_aso_ativo_dados = $dados['ultimo_aso_ativo'];
 
         $dadosValidados = \Validator::make($dados, []);
         if ($dadosValidados->fails()) {
@@ -1043,15 +1131,13 @@ class AdmissaoController extends Controller
                 foreach ($dados['selecionados'] as $feedback_id) {
                     $feedback = FeedbackCurriculo::find($feedback_id);
                     $info = ['selecionado' => 'sim'];
-
+    
                     $feedback->update($info);
-
                     $dados = [
                         "tipo_admissao" => $dados['tipo_admissao'],
                         "prazo_experiencia" => $dados['prazo_experiencia'],
                         "data_encerramento" => $dados['data_encerramento'],
                         "documento_portaria" => $dados['documento_portaria'],
-                        "data_aso" => $dados['data_aso'],
                         "status_carteira_treinamento" => $dados['status_carteira_treinamento'],
                         "status" => $dados['status'],
                         "data_admissao" => $dados['data_admissao'],
@@ -1059,8 +1145,48 @@ class AdmissaoController extends Controller
                         "biometria" => $dados['biometria'],
                     ];
 
-                    $feedback->Admissao ? $feedback->Admissao->update($dados) : $feedback->Admissao()->create($dados);
+                    if($feedback->Admissao){
+                    
+                        $feedback->Admissao->update($dados);
 
+                        if(!empty($ultimo_aso_ativo_dados['data_aso'])){
+                                $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
+                                
+                                if($tem_aso->count() > 0){
+                                    $UltimoAsoColaborador = $tem_aso->where('data_aso',
+                                    (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);
+                                    
+                                    if($UltimoAsoColaborador->count() == 0){
+                                        AdmissaoAso::where('admissao_id', $feedback->Admissao->id)->update([
+                                            'ativo' => false,
+                                            'user_alterou_id' => auth()->id()
+                                        ]);
+
+                                        $feedback->Admissao->UltimoAsoAtivo()->create([
+                                            'admissao_id' => $feedback->Admissao['admissao_id'],
+                                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                            'ativo' => true,
+                                            'user_alterou_id' => auth()->id()
+                                        ]);
+                                    }
+                                }else{
+                                    $feedback->Admissao->UltimoAsoAtivo()->create([
+                                        'admissao_id' => $feedback->Admissao['admissao_id'],
+                                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                        'ativo' => true,
+                                        'user_alterou_id' => auth()->id()
+                                    ]);
+                                }               
+                        }
+                    }
+                    $feedback->Admissao()->create($dados);
+                    AdmissaoAso::create([
+                        'admissao_id' => $feedback->Admissao['admissao_id'],
+                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                        'ativo' => true,
+                        'user_alterou_id' => auth()->id()
+                    ]);
+                    
                     $datas = [];
                     if ($dados['tipo_admissao'] == 'FIXO') {
                         $data = new DataHora($dados['data_admissao']);
@@ -1189,8 +1315,19 @@ class AdmissaoController extends Controller
             $periodo = explode(' até ', $request->campoAso);
             $dataInicio = new DataHora($periodo[0]);
             $dataFim = new DataHora($periodo[1]);
-            $resultado->whereHas('Admissao', function ($q) use ($dataInicio, $dataFim) {
+            $resultado->whereHas('Admissao.UltimoAsoAtivo', function ($q) use ($dataInicio, $dataFim) {
                 $q->where('data_aso', '>=', $dataInicio->dataInsert())->where('data_aso', '<=', $dataFim->dataInsert());
+            });
+        }
+
+        $filtroDataAdmissao = $request->filtroDataAdmissao == 'true';
+
+        if ($filtroDataAdmissao) {
+            $periodo = explode(' até ', $request->campoAdmisaoData);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->whereHas('Admissao', function ($q) use ($dataInicio, $dataFim) {
+                $q->where('data_admissao', '>=', $dataInicio->dataInsert())->where('data_admissao', '<=', $dataFim->dataInsert());
             });
         }
 
@@ -1224,6 +1361,12 @@ class AdmissaoController extends Controller
             });
         }
 
+        if ($request->filled('campoTipoAdmissao')) {
+            $resultado->whereHas('Admissao', function ($query) use ($request) {
+                $query->whereTipoAdmissao($request->campoTipoAdmissao);
+            });
+        }
+
         if ($request->filled('campoUf')) {
             $resultado->whereHas('VagaAberta.Municipio', function ($q) use ($request) {
                 $q->whereUf($request->campoUf);
@@ -1245,6 +1388,7 @@ class AdmissaoController extends Controller
         $dados = [
             'admissao_processo_dados_editar' => auth()->user()->can('privilegio_admissao_processo_dados_editar'),
             'status_admissao' => Admissao::TODOS_STATUS_ADMISSAO,
+            'tipos_admissao' => Admissao::TODOS_TIPOS_ADMISSAO,
             'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
         ];
         return Sistema::pg($pg, $dados);

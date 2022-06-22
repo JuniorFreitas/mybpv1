@@ -247,3 +247,4 @@ UPDATE `habilidades` SET `nome` = 'admissao_historico_aba_avaliacao_anual', `des
 UPDATE `habilidades` SET `nome` = 'admissao_historico_aba_ferias', `descricao` = 'Pode Acessar aba de Ferias no historico' WHERE `id` = 264;
 UPDATE `habilidades` SET `nome` = 'admissao_historico_aba_promocao', `descricao` = 'Pode Acessar aba de Promocao no historico' WHERE `id` = 264;
 UPDATE `habilidades` SET `nome` = 'admissao_historico_aba_metas', `descricao` = 'Pode Acessar aba de Metas no historico' WHERE `id` = 266;
+UPDATE `habilidades` SET `nome` = 'curriculos_selecionados', `descricao` = 'Acessar menu curriculo' WHERE `id` = 267;

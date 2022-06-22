@@ -479,7 +479,10 @@ const app = new Vue({
             prazo_experiencia: "",
             data_encerramento: "",
             documento_portaria: "",
-            data_aso: "",
+            // data_aso: "",
+            ultimo_aso_ativo: {
+                data_aso: ""
+            },
             status_carteira_treinamento: "",
             status: "",
             data_admissao: "",
@@ -495,6 +498,7 @@ const app = new Vue({
 
         lista: [],
         listaStatusAdmissao: [],
+        listaTipoAdmissao: [],
         vagas: [],
         areasEtiquetas: [],
         listaProjetos: [],
@@ -517,8 +521,10 @@ const app = new Vue({
                 campoPcd: "",
                 campoCliente: "",
                 campoStatusAdmissao: "",
+                campoTipoAdmissao: "",
                 campoUf: "",
-                campoAso:""
+                campoAso:"",
+                campoAdmissao:""
             }
         }
     },
@@ -1001,6 +1007,7 @@ const app = new Vue({
         carregou(dados) {
             this.lista = dados.itens;
             this.listaStatusAdmissao = dados.status_admissao;
+            this.listaTipoAdmissao = dados.tipos_admissao;
             this.editando = dados.admissao_processo_dados_editar;
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;

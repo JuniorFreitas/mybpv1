@@ -47,6 +47,8 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'curriculos_recrutamento_update', 'descricao' => 'Pode alterar um curriculo recrutamento'];
         $lista[] = ['nome' => 'curriculos_recrutamento_delete', 'descricao' => 'Pode apagar um curriculo recrutamento'];
 
+        $lista[] = ['nome' => 'curriculos_selecionados', 'descricao' => 'Pode acessar menu curriculo'];
+
         //FeedBack Curriculos------------------------------
         $lista[] = ['nome' => 'feedback_curriculos', 'descricao' => 'Acessar rota/menu Feedback Curriculos'];
         $lista[] = ['nome' => 'feedback_curriculos_insert', 'descricao' => 'Pode cadastrar um Feedback Curriculo'];

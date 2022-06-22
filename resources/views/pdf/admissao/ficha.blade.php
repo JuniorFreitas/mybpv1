@@ -118,7 +118,7 @@
                     3260: <strong>{{ $dados->Admissao->trinta_dois_sessenta ?? 'Não informado' }}</strong> |
                     Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong>  |
                     Número Crachá: <strong>{{ $dados->Admissao->numero_cracha ?? 'Não informado' }}</strong> |
-                    Data do ASO: <strong>{{ $dados->Admissao->data_aso ?? 'Não informado' }}</strong> <br>
+                    Data do ASO: <strong>{{ $dados->Admissao->UltimoAsoAtivo->data_aso ?? 'Não informado' }}</strong> <br>
                     CTPS: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
                     | CTPS Série: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
                     | CTPS Data Emissão: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
