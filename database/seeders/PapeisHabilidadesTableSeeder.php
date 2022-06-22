@@ -17,6 +17,7 @@ class PapeisHabilidadesTableSeeder extends Seeder
     {
         $papel = Papel::find(1); // Suporte
         $habilidades = Habilidade::all();
+        $papel->habilidades()->detach();
         $papel->habilidades()->attach($habilidades);
 
 

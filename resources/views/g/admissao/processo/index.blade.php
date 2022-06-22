@@ -1067,6 +1067,7 @@
                                     <option value="INTERMITENTE">INTERMITENTE</option>
                                     <option value="DETERMINADO">DETERMINADO</option>
                                     <option value="FIXO">FIXO</option>
+                                    <option value="PJ">PJ</option>
                                 </select>
                             </div>
                         </div>
@@ -1112,7 +1113,7 @@
                             <div class="form-group">
                                 <label>Data do ASO</label>
                                 <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
-                                       v-model="form_massa.data_aso" v-mascara:data
+                                       v-model="form_massa.ultimo_aso_ativo.data_aso" v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
                                        @blur.prevent="valida_data($event.target)">
                             </div>
@@ -1204,7 +1205,7 @@
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <form class="row" @submit.prevent="$refs.componente.buscar()">
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-2">
                 <div class="form-check" style="margin-bottom: -11px;">
                     <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
                            id="filtroIntervalo"
@@ -1218,7 +1219,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-2">
                 <div class="form-check" style="margin-bottom: -11px;">
                     <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
                            id="filtroIntervaloAso"
@@ -1229,6 +1230,20 @@
                     <datepicker range formsm label=""
                                 :disabled="controle.carregando || !controle.dados.filtroAso"
                                 v-model="controle.dados.campoAso"></datepicker>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-2">
+                <div class="form-check" style="margin-bottom: -11px;">
+                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
+                           id="filtroAdmissao"
+                           v-model="controle.dados.filtroDataAdmissao">
+                    <label class="form-check-label cursor-pointer" for="filtroAdmissao">Data da Admissao</label>
+                </div>
+                <div class="form-group">
+                    <datepicker range formsm label=""
+                                :disabled="controle.carregando || !controle.dados.filtroDataAdmissao"
+                                v-model="controle.dados.campoAdmisaoData"></datepicker>
                 </div>
             </div>
 
@@ -1283,6 +1298,14 @@
                     <label for="">Status admissão</label>
                     <select2 :settings="settings2" :options="listaStatusAdmissao" @change="atualizar"
                              :disabled="controle.carregando" v-model="controle.dados.campoStatusAdmissao"></select2>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-3">
+                <div class="form-group">
+                    <label for="">Tipo admissão</label>
+                    <select2 :settings="settings2" :options="listaTipoAdmissao" @change="atualizar"
+                             :disabled="controle.carregando" v-model="controle.dados.campoTipoAdmissao"></select2>
                 </div>
             </div>
 
@@ -1374,6 +1397,7 @@
                     <th>Crachá</th>
                     <th>Foto 3x4</th>
                     <th v-if="controle.dados.filtroAso">Data ASO</th>
+                    <th v-if="controle.dados.filtroDataAdmissao">Data da Admissao</th>
                     <th>Status Admissão</th>
                     <th>
                         <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
@@ -1456,6 +1480,10 @@
 
                     <td v-if="controle.dados.filtroAso">
                         @{{item.admissao ? item.admissao.data_aso : '' }}
+                    </td>
+
+                    <td v-if="controle.dados.filtroDataAdmissao">
+                        @{{item.admissao ? item.admissao.data_admissao : '' }}
                     </td>
 
                     <td>
