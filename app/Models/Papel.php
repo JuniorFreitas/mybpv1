@@ -33,6 +33,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Papel whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Papel clinica()
  * @method static \Illuminate\Database\Eloquent\Builder|Papel notClinica()
+ * @property bool|null $master
+ * @method static \Illuminate\Database\Eloquent\Builder|Papel whereMaster($value)
  */
 class Papel extends Model
 {

@@ -66,6 +66,7 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereTipoAviso($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserAprovacaoId($value)
  * @property-read User|null $GestorAprovacao
+ * @property-read User|null $UserAprovacao
  */
 class DemissaoPrevista extends Model
 {

@@ -5,7 +5,12 @@
                <i class="fas fa-circle text-danger ml-2"></i>
                Colaborador com menos de 30 dias para o vencimento.
            </p>
-           <table class="mt-4 table table-bordered tabela">
+
+            <div class="alert alert-warning" v-show="!dados.length">
+                <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+            </div>
+
+           <table class="mt-4 table table-bordered tabela" v-if="dados.length">
                 <thead>
                 <tr>
                     <th style="text-align: center; width: 2% ;">#</th>
@@ -24,7 +29,7 @@
                     <td style="text-align: center">{{ vencimento.data_admissao }}</td>
                     <td style="text-align: center">{{ vencimento.data_vencimento }}</td>
                     <td style="text-align: center">{{ vencimento.dias_vencer }}</td>
-            
+
                 </tr>
                 </tbody>
             </table>

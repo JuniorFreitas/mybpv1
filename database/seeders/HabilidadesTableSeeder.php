@@ -231,7 +231,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_historico_aba_dossie', 'descricao' => 'Acessar Dossie'];
         $lista[] = ['nome' => 'historico_dossie_insert', 'descricao' => 'Acessar Dossie Insert'];
         $lista[] = ['nome' => 'historico_dossie_update', 'descricao' => 'Acessar Dossie Update'];
-        
+
         $lista[] = ['nome' => 'admissao_historico_aba_feedback', 'descricao' => 'Pode Acessar aba de Feedback no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_avaliacao_anual', 'descricao' => 'Pode Acessar aba de Avaliacao Anual no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_ferias', 'descricao' => 'Pode Acessar aba de Ferias no historico'];
@@ -301,6 +301,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'relatorio_controleusuarios', 'descricao' => 'Acessar Controle de Usuarios'];
         $lista[] = ['nome' => 'relatorio_asos', 'descricao' => 'Acessar Relatorio Aso'];
         $lista[] = ['nome' => 'relatorio_medidas_administrativas', 'descricao' => 'Acessar Relatorio Medidas Administrativas'];
+        $lista[] = ['nome' => 'relatorio_treinamento', 'descricao' => 'Acessar Relatorio de Treinamentos'];
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
@@ -392,10 +393,10 @@ class HabilidadesTableSeeder extends Seeder
 
             foreach ($lista as $habilidade) {
                 if (Habilidade::whereNome($habilidade['nome'])->count() == 0) {
-                    echo "Criando habilidade: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
+                    echo "\e[032mCriando habilidade: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
                     Habilidade::create($habilidade);
                 } else {
-                    echo "Habilidade já existe: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
+                    echo "\e[34mHabilidade já existe: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
                 }
             }
             DB::commit();

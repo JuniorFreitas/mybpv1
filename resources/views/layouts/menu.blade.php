@@ -610,7 +610,6 @@
                     </a>
                 </li>
             @endcan
-
         </ul>
 
         <ul class="sub-menu" aria-expanded="false">
@@ -621,7 +620,16 @@
                     </a>
                 </li>
             @endcan
+        </ul>
 
+        <ul class="sub-menu" aria-expanded="false">
+            @can('relatorio_treinamento')
+                <li>
+                    <a href="{{route('g.relatorios.vencimentotreinamento.index')}}" key="relatorio_treinamento">
+                        Treinamentos
+                    </a>
+                </li>
+            @endcan
         </ul>
 
         <ul class="sub-menu" aria-expanded="false">

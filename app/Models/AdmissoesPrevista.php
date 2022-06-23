@@ -63,6 +63,7 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObsAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereStatusAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserAprovacaoId($value)
+ * @property-read \App\Models\User|null $UserAprovacao
  */
 class AdmissoesPrevista extends Model
 {

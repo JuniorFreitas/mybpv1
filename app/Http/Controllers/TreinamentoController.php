@@ -282,7 +282,7 @@ class TreinamentoController extends Controller
     {
         $this->authorize('treinamento_carteira-etiquetas');
 
-        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
+        $resultado = FeedbackCurriculo::Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoTreinamento(true);
         })->with(
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',

@@ -792,10 +792,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'show'])->name('show')->middleware('can:relatorio_asos');
         });
         Route::group(['as' => 'medidasadministrativas.'], function () {
-            Route::get('medidasadministrativas', [\App\Http\Controllers\Relatorios\MedidasAdministrativasController::class, 'index'])->name('index');
-            // ->middleware('can:relatorio_medidas_administrativas');
-            Route::post('medidasadministrativas', [\App\Http\Controllers\Relatorios\MedidasAdministrativasController::class, 'show'])->name('show');
-            // ->middleware('can:relatorio_medidas_administrativas');
+            Route::get('medidasadministrativas', [\App\Http\Controllers\Relatorios\MedidasAdministrativasController::class, 'index'])->name('index')->middleware('can:relatorio_medidas_administrativas');
+            Route::post('medidasadministrativas', [\App\Http\Controllers\Relatorios\MedidasAdministrativasController::class, 'show'])->name('show')->middleware('can:relatorio_medidas_administrativas');
+        });
+
+        Route::group(['as' => 'vencimentotreinamento.'], function () {
+            Route::get('vencimento-treinamento', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'index'])->name('index')->middleware('can:relatorio_treinamento');
+            Route::post('vencimento-treinamento', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'show'])->name('show')->middleware('can:relatorio_treinamento');
         });
     });
 

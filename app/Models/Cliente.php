@@ -112,6 +112,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $EmpresaFuncionarios
  * @property-read int|null $empresa_funcionarios_count
  * @property-read \App\Models\EmpresaTemporaria|null $Temporaria
+ * @property-read \App\Models\CarteiraAssinatura|null $CarteiraAssinatura
+ * @property-read \App\Models\Papel|null $Papel
  */
 class Cliente extends Model
 {
