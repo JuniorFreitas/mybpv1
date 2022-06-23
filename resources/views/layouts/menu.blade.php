@@ -596,7 +596,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos'))
+@if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bx-user-circle"></i>
@@ -618,6 +618,17 @@
                 <li>
                     <a href="{{route('g.relatorios.vencimentoasos.index')}}" key="vencimentoasos">
                         Vencimento de Asos
+                    </a>
+                </li>
+            @endcan
+
+        </ul>
+
+        <ul class="sub-menu" aria-expanded="false">
+            @can('relatorio_medidas_administrativas')
+                <li>
+                    <a href="{{route('g.relatorios.medidasadministrativas.index')}}" key="medidasadministrativas">
+                        Medidas Administrativas
                     </a>
                 </li>
             @endcan
