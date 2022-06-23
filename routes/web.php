@@ -781,11 +781,15 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     });
 
     // Relatorios
-    Route::group(['as' => 'relatorios.'], function () {
+    Route::group(['as' => 'relatorios.', 'prefix' => 'relatorios'], function () {
         Route::group(['as' => 'controleusuarios.'], function () {
-            Route::get('relatorios/controleusuarios', [\App\Http\Controllers\ControleUsuariosController::class, 'index'])->name('index')->middleware('can:relatorio_relatorios');
-            Route::post('relatorios/controleusuarios/dados', [\App\Http\Controllers\ControleUsuariosController::class, 'dadosusuarioSistema'])->name('dadosusuarioSistema')->middleware('can:relatorio_relatorios');
+            Route::get('controleusuarios', [\App\Http\Controllers\ControleUsuariosController::class, 'index'])->name('index')->middleware('can:relatorio_relatorios');
+            Route::post('controleusuarios/dados', [\App\Http\Controllers\ControleUsuariosController::class, 'dadosusuarioSistema'])->name('dadosusuarioSistema')->middleware('can:relatorio_relatorios');
 //            Route::get('relatorios/controleusuarios/pdf/{dados}', [\App\Http\Controllers\ControleUsuariosController::class, 'usuarioSistema'])->name('usuarioSistema')->middleware('can:relatorios');
+        });
+        Route::group(['as' => 'vencimentoasos.'], function () {
+            Route::get('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'index'])->name('index')->middleware('can:relatorio_asos');
+            Route::post('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'show'])->name('show')->middleware('can:relatorio_asos');
         });
     });
 
