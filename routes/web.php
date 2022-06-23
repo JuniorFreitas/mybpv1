@@ -797,6 +797,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('medidasadministrativas', [\App\Http\Controllers\Relatorios\MedidasAdministrativasController::class, 'show'])->name('show');
             // ->middleware('can:relatorio_medidas_administrativas');
         });
+
+        Route::group(['as' => 'vencimentotreinamento.'], function () {
+            Route::get('vencimento-treinamento', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'index'])->name('index');
+//                ->middleware('can:relatorio_treinamento');
+            Route::post('vencimento-treinamento', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'show'])->name('show');
+//                ->middleware('can:relatorio_treinamento');
+        });
     });
 
     // Usuarios

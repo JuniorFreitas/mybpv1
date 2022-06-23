@@ -74,6 +74,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereObsAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereStatusAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserAprovacaoId($value)
+ * @property-read \App\Models\User|null $UserAprovacao
  */
 class IntermitenteFixoPrevista extends Model
 {

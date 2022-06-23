@@ -38,47 +38,42 @@
                 <!-- Tab panes -->
                 <div class="tab-content">
                     <div role="tabpanel" class="tab-pane active" id="abaIdentificacao">
-                        <div class="form-group">
-                            <label>Nome</label>
-                            <input type="text" class="form-control form-control-sm" v-model="form.nome"
-                                   placeholder="Nome do papel"
-                                   autocomplete="off" onblur="valida_campo_vazio(this,3)">
-                        </div>
+                        <div class="col-12 py-3">
+                            <div class="form-group">
+                                <label>Nome</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.nome"
+                                       placeholder="Nome do grupo"
+                                       autocomplete="off" onblur="valida_campo_vazio(this,3)">
+                            </div>
 
-                        <div class="form-group">
-                            <label>E-mail</label>
-                            <input type="text" class="form-control form-control-sm" v-model="form.email"
-                                   placeholder="Um e-mail"
-                                   autocomplete="off" onblur="validaEmailVazio(this)">
-                        </div>
+                            <div class="form-group" v-if="">
+                                <label>Empresa</label>
+                                <select class="form-control form-control-sm" v-model="form.empresa_id"
+                                        onchange="valida_campo_vazio(this,1)"
+                                        onblur="valida_campo_vazio(this,1)">
+                                    <option value="">Selecione...</option>
+                                    @foreach (\App\Models\Cliente::whereAtivo(true)->get() as $cliente)
+                                        <option value="{{$cliente->id}}">{{$cliente->nome_fantasia}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <div class="form-group">
-                            <label>Empresa</label>
-                            <select class="form-control form-control-sm" v-model="form.empresa_id"
-                                    onchange="valida_campo_vazio(this,1)"
-                                    onblur="valida_campo_vazio(this,1)">
-                                <option value="">Selecione...</option>
-                                @foreach (\App\Models\Cliente::whereAtivo(true)->get() as $cliente)
-                                    <option value="{{$cliente->id}}">{{$cliente->nome_fantasia}}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                            <div class="form-group">
+                                <label>Descrição</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.descricao"
+                                       placeholder="Descrição do papel"
+                                       autocomplete="off" onblur="valida_campo_vazio(this,3)">
+                            </div>
 
-                        <div class="form-group">
-                            <label>Descrição</label>
-                            <input type="text" class="form-control form-control-sm" v-model="form.descricao"
-                                   placeholder="Descrição do papel"
-                                   autocomplete="off" onblur="valida_campo_vazio(this,3)">
-                        </div>
+                            <div class="form-group">
+                                <label>Ativo</label>
+                                <select v-model="form.ativo" class="form-control form-control-sm">
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
+                            </div>
 
-                        <div class="form-group">
-                            <label>Ativo</label>
-                            <select v-model="form.ativo" class="form-control form-control-sm">
-                                <option value="true">Sim</option>
-                                <option value="false">Não</option>
-                            </select>
                         </div>
-
                     </div>
 
                     <div role="tabpanel" class="tab-pane" id="abaHabilidades">
@@ -87,7 +82,6 @@
                                 <thead>
                                 <tr>
                                     {{--<th>Cód.</th>--}}
-                                    <th>Nome</th>
                                     <th>Descrição</th>
                                     <th>
                                         <a class="btn btn-sm btn-success" href="javascript://"
@@ -104,8 +98,6 @@
                                 <tbody>
 
                                 <tr v-for="habilidade in listaDeHabilidades">
-                                    {{--<td>@{{ab.id}}</td>--}}
-                                    <td>@{{habilidade.nome}}</td>
                                     <td>@{{habilidade.descricao}}</td>
                                     <td>
                                         <a class="btn btn-sm btn-block btn-success" href="javascript://"

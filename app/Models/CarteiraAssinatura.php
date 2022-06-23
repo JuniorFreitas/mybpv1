@@ -6,6 +6,32 @@ use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\CarteiraAssinatura
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int|null $arquivo_id
+ * @property string $nome
+ * @property string $tipo
+ * @property bool $ativo
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Arquivo|null $Arquivo
+ * @property-read \App\Models\Cliente $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura query()
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereArquivoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class CarteiraAssinatura extends Model
 {
     use HasFactory, TenantTrait;

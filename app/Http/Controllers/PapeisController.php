@@ -27,10 +27,15 @@ class PapeisController extends Controller
      */
     public function create()
     {
-        $listaDeHabilidades = Habilidade::orderBy('nome', 'asc')->get()->map(function ($habilidade) {
+//        $listaDeHabilidades = Habilidade::orderBy('nome', 'asc')->get()->map(function ($habilidade) {
+//            $habilidade->acesso = true;
+//            return $habilidade;
+//        });
+
+        $listaDeHabilidades = Papel::whereEmpresaId(auth()->user()->empresa_id)->where('master', true)->first()->habilidades->map(function ($habilidade) {
             $habilidade->acesso = true;
             return $habilidade;
-        });
+        });;
 
         return response()->json($listaDeHabilidades, 201);
     }
@@ -50,7 +55,6 @@ class PapeisController extends Controller
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
-            'email' => 'required|email',
             'descricao' => 'required|min:3',
             'ativo' => 'required|boolean',
             'empresa_id' => 'required',
@@ -81,7 +85,6 @@ class PapeisController extends Controller
      */
     public function show(Papel $papel)
     {
-
         return response()->json($papel, 201);
     }
 
@@ -126,7 +129,6 @@ class PapeisController extends Controller
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
-            'email' => 'required|email',
             'descricao' => 'required|min:3',
             'ativo' => 'required|boolean',
             'empresa_id' => 'required',
