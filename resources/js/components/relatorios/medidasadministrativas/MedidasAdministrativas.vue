@@ -20,7 +20,10 @@
             </fieldset>
             <preload v-if="preload"/>
             <template v-if="!preload">
-                <div v-for="(medidas, index) in dados" :key="index" class="mb-3">
+                <div class="alert alert-warning" v-show="!dados.length">
+                    <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+                </div>
+                <div v-for="(medidas, index) in dados" :key="index" v-if="dados.length" class="mb-3">
                     <h5 class="text-center">{{medidas.nome}}</h5>
                     <h6 class="text-center">{{medidas.cargo}}</h6>
 
