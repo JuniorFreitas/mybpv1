@@ -597,7 +597,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas'))
+@if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bx-chart"></i>
@@ -628,6 +628,16 @@
                 <li>
                     <a href="{{route('g.relatorios.vencimentotreinamento.index')}}" key="relatorio_treinamento">
                         Treinamentos
+                    </a>
+                </li>
+            @endcan
+        </ul>
+
+        <ul class="sub-menu" aria-expanded="false">
+            @can('relatorio_ferias')
+                <li>
+                    <a href="{{route('g.relatorios.vencimentoferias.index')}}" key="relatorio_ferias">
+                        Férias
                     </a>
                 </li>
             @endcan
