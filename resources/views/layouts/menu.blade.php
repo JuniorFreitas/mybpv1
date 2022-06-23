@@ -596,7 +596,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('relatorio_relatorios'))
+@if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bx-user-circle"></i>
@@ -607,6 +607,17 @@
                 <li>
                     <a href="{{route('g.relatorios.controleusuarios.index')}}" key="controleusuarios">
                         Controle de Usuários
+                    </a>
+                </li>
+            @endcan
+
+        </ul>
+
+        <ul class="sub-menu" aria-expanded="false">
+            @can('relatorio_asos')
+                <li>
+                    <a href="{{route('g.relatorios.vencimentoasos.index')}}" key="vencimentoasos">
+                        Vencimento de Asos
                     </a>
                 </li>
             @endcan
