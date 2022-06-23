@@ -158,6 +158,9 @@ class FeriasPrevista extends Model
         'periodo_aquisitivo_id' => 'int',
     ];
 
+    const STATUS_APROVADO = 'aprovado';
+    const STATUS_REPROVADO = 'reprovado';
+
     public function setDataSaidaAttribute($value)
     {
         if (!is_null($value)) {
@@ -213,6 +216,11 @@ class FeriasPrevista extends Model
     public function Colaborador()
     {
         return $this->hasOne(Curriculo::class, 'id', 'colaborador_id');
+    }
+
+    public function Feedback()
+    {
+        return $this->hasOne(FeedbackCurriculo::class, 'curriculo_id', 'colaborador_id');
     }
 
     public function CentroCusto()
