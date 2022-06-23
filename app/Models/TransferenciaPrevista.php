@@ -54,6 +54,7 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserId($value)
  * @mixin \Eloquent
+ * @property-read User|null $UserAprovacao
  */
 class TransferenciaPrevista extends Model
 {

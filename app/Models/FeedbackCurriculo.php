@@ -177,6 +177,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Demissao|null $Demissao
  * @property-read \App\Models\VagaProjetoFeedback|null $VagaProjeto
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagaProjetoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo admitidos()
  */
 class FeedbackCurriculo extends Model
 {

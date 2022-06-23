@@ -130,6 +130,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\TipoRecebeEmail[] $UserRecebeEmail
  * @property-read int|null $user_recebe_email_count
  * @method static Builder|User whereApiToken($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
  */
 class User extends Authenticatable
 {

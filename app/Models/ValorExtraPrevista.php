@@ -55,6 +55,7 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereObsAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereStatusAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereUserAprovacaoId($value)
+ * @property-read \App\Models\User|null $UserAprovacao
  */
 class ValorExtraPrevista extends Model
 {

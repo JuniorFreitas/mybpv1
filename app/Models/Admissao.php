@@ -152,6 +152,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereDataAdmPrevista($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereDataEncerramento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao wherePrazoExperiencia($value)
+ * @property-read \App\Models\AdmissaoAso|null $UltimoAsoAtivo
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao admitidos()
  */
 class Admissao extends Model
 {

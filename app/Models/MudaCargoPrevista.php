@@ -67,6 +67,7 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereObsAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereStatusAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereUserAprovacaoId($value)
+ * @property-read \App\Models\User|null $UserAprovacao
  */
 class MudaCargoPrevista extends Model
 {
