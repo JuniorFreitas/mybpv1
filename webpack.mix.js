@@ -155,6 +155,7 @@ mix.js("resources/js/app.js", "public/js")
     .js("resources/js/g/relatorios/vencimentoasos/app.js", "public/js/g/relatorios/vencimentoasos/")
     .js("resources/js/g/relatorios/medidasadministrativas/app.js", "public/js/g/relatorios/medidasadministrativas/")
     .js("resources/js/g/relatorios/treinamento/app.js", "public/js/g/relatorios/treinamento/")
+    .js("resources/js/g/relatorios/ferias/app.js", "public/js/g/relatorios/ferias/")
 
     //Site G/
     .js("resources/js/g/site/galeria/app.js", "public/js/g/site/galeria")

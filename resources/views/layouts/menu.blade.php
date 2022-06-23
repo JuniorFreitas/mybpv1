@@ -318,7 +318,8 @@
 
 @if(\App\Models\Sistema::permitirLinks('controle_ponto_config_empresa','controle_ponto_ocorrencias_jornadas','controle_ponto_escalas'))
     <li>
-        <a href="javascript://" class="has-arrow waves-effect"><i class="fas fa-business-time"></i>
+        <a href="javascript://" class="has-arrow waves-effect">
+            <i class="bx bx-time"></i>
             <span>CONTROLE DE PONTO</span>
         </a>
         <ul class="sub-menu" aria-expanded="false">
@@ -596,10 +597,10 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas'))
+@if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
-            <i class="bx bx-user-circle"></i>
+            <i class="bx bx-chart"></i>
             <span>RELATÓRIOS</span>
         </a>
         <ul class="sub-menu" aria-expanded="false">
@@ -627,6 +628,16 @@
                 <li>
                     <a href="{{route('g.relatorios.vencimentotreinamento.index')}}" key="relatorio_treinamento">
                         Treinamentos
+                    </a>
+                </li>
+            @endcan
+        </ul>
+
+        <ul class="sub-menu" aria-expanded="false">
+            @can('relatorio_ferias')
+                <li>
+                    <a href="{{route('g.relatorios.vencimentoferias.index')}}" key="relatorio_ferias">
+                        Férias
                     </a>
                 </li>
             @endcan
