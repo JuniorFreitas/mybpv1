@@ -794,16 +794,21 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'medidasadministrativas.'], function () {
             Route::get('medidasadministrativas', [\App\Http\Controllers\Relatorios\MedidasAdministrativasController::class, 'index'])->name('index')->middleware('can:relatorio_medidas_administrativas');
             Route::post('medidasadministrativas', [\App\Http\Controllers\Relatorios\MedidasAdministrativasController::class, 'show'])->name('show')->middleware('can:relatorio_medidas_administrativas');
+            Route::post('medidasadministrativas/export-excel', [\App\Http\Controllers\Relatorios\MedidasAdministrativasController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_medidas_administrativas');
         });
 
         Route::group(['as' => 'vencimentotreinamento.'], function () {
             Route::get('vencimento-treinamento', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'index'])->name('index')->middleware('can:relatorio_treinamento');
             Route::post('vencimento-treinamento', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'show'])->name('show')->middleware('can:relatorio_treinamento');
+            Route::post('vencimento-treinamento/export-excel', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_treinamento');
+
         });
 
         Route::group(['as' => 'vencimentoferias.'], function () {
             Route::get('vencimento-ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'index'])->name('index')->middleware('can:relatorio_ferias');
             Route::post('vencimento-ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'show'])->name('show')->middleware('can:relatorio_ferias');
+            Route::post('vencimento-ferias/export-excel', [\App\Http\Controllers\Relatorios\FeriasController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_ferias');
+
         });
     });
 

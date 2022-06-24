@@ -1345,7 +1345,7 @@ class AdmissaoController extends Controller
 
         if ($request->filled('campoCPF')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->whereCpf($request->campoBusca);
+                $query->whereCpf($request->campoCPF);
             });
         }
 
@@ -1581,7 +1581,7 @@ class AdmissaoController extends Controller
                 $row->Admissao ? $row->Admissao->trinta_dois_sessenta ?: "" : "",
                 $row->Admissao ? $row->Admissao->data_trinta_dois_sessenta ?: "" : "",
                 $row->Admissao ? $row->Admissao->numero_cracha ?: "" : "",
-                $row->Admissao ? $row->Admissao->UltimoAsoAtivo->data_aso ?: "" : "",
+                $row->Admissao ? $row->Admissao->UltimoAsoAtivo ? $row->Admissao->UltimoAsoAtivo->data_aso : "" : "",
                 $row->Admissao ? $row->Admissao->status_carteira_treinamento ?: "" : "",
                 $row->Admissao ? $row->Admissao->status ?: "" : "",
                 $row->Admissao ? $row->Admissao->data_admissao ?: "" : "",

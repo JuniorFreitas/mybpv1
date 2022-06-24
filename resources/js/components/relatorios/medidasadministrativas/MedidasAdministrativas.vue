@@ -11,8 +11,12 @@
                         <div class="form-group">
                             <datepicker range formsm label=""
                                         v-model="periodo"></datepicker>
-                            <button class="btn btn-sm btn-primary" @click.prevent="buscarDados()" type="button">
+                            <button type="button" class="btn btn-sm btn-primary" @click.prevent="buscarDados()">
                                 <i class="fa fa-search"></i> Buscar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary"
+                                @click.prevent="exportaExcel()">
+                                <i class="fas fa-file-excel"></i> Exportar Excel
                             </button>
                         </div>
                     </div>
@@ -23,7 +27,7 @@
                 <div class="alert alert-warning" v-show="!dados.length">
                     <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
                 </div>
-                <div v-for="(medidas, index) in dados" :key="index" v-if="dados.length" class="mb-3">
+                <div v-for="(medidas, index) in dados" :key="index" v-show="dados.length" class="mb-3">
                     <h5 class="text-center">{{medidas.nome}}</h5>
                     <h6 class="text-center">{{medidas.cargo}}</h6>
 
@@ -42,9 +46,11 @@
 
 <script>
 import preload from '../../preload.vue';
+import ExportacaoMixin from '../../../mixins/Exportacoes';
 
     export default {
   components: { preload },
+  mixins: [ExportacaoMixin],
         data() {
             return {
                 hash: String(Math.random()).substr(2),
@@ -52,6 +58,7 @@ import preload from '../../preload.vue';
                 preload: false,
                 dados: [],
                 periodo: '',
+                urlExportacao: `${URL_ADMIN}/relatorios/medidasadministrativas/export-excel`,
             }
         },
         mounted() {
@@ -60,6 +67,13 @@ import preload from '../../preload.vue';
             this.periodo = `${inicio_de_mes} até ${fim_de_mes}`
             this.buscarDados();
         },
+        computed: {
+            paramsExport() {
+                return {
+                    periodo: this.periodo
+                }
+            }
+        },
         methods: {
             buscarDados() {
                 this.preload = true;
@@ -67,10 +81,6 @@ import preload from '../../preload.vue';
                     this.dados = res.data;
                     this.preload = false;
                 })
-            },
-            gerarPdf() {
-                // let link = `${URL_ADMIN}/relatorios/controleusuarios/pdf/${this.form}`;
-                // open(link, '_blank');
             },
         }
 
