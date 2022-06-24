@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\JobExportaExcel;
 use App\Models\ClienteConfig;
 use App\Models\FeriasPrevista;
 use App\Models\User;
@@ -73,5 +74,55 @@ class FeriasController extends Controller
 
         return $resultado->sortBy('dias_vencer')->values()->all();
 
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $ferias = $this->show($request);
+        
+        $head = [
+            'nome',
+            'cargo',
+            'data_admissao',
+            'gestor',
+            'quem_aprovou',
+            'centro_custo',
+            'data_saida',
+            'data_retorno',
+            'qnt_dias',
+            'dias_saldo',
+            'tem_faltas',
+            'qnt_faltas',
+            'periodo_aquisitivo',
+            'ultima_data',
+            'status_aprovacao',
+            'dias_vencer',
+        ];
+        $rows = [];
+
+        foreach ($ferias as $row) {
+            $rows[] = array(
+                $row['nome'],
+                $row['cargo'],
+                $row['data_admissao'],
+                $row['gestor'],
+                $row['quem_aprovou'],
+                $row['centro_custo'],
+                $row['data_saida'],
+                $row['data_retorno'],
+                $row['qnt_dias'],
+                $row['dias_saldo'],
+                $row['tem_faltas'],
+                $row['qnt_faltas'],
+                $row['periodo_aquisitivo'],
+                $row['ultima_data'],
+                $row['status_aprovacao'],
+                $row['dias_vencer'],
+            );
+        }
+
+        $nameArquivo = "vencimento_ferias_" . \Str::slug('Vencimento Ferias') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Vencimento Ferias ", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 }

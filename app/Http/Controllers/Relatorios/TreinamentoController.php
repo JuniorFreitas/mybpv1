@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\JobExportaExcel;
 use App\Models\Treinamento;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -59,6 +60,41 @@ class TreinamentoController extends Controller
             ]);
         }
 
-        return response()->json($resultado);
+        return $resultado;
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $medidas = $this->show($request);
+        $head = [
+            'label',
+            'descricao',
+            'data_vencimento',
+            'data_treinamento',
+            'dias_vencer',
+            'nome',
+            'cargo',
+            'tipo',
+            'treinamentos'
+        ];
+        $rows = [];
+
+        foreach ($medidas as $row) {
+            $rows[] = array(
+                $row['label'],
+                $row['descricao'],
+                $row['data_vencimento'],
+                $row['data_treinamento'],
+                $row['dias_vencer'],
+                $row['nome'],
+                $row['cargo'],
+                $row['tipo'],
+                $row['treinamentos']
+            );
+        }
+
+        $nameArquivo = "vencimento_treinamento" . \Str::slug('Vencimento Treinamento') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Vencimento Treinamento ", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 }

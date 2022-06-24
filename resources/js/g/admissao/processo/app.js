@@ -10,10 +10,11 @@ import Select2 from "../../../components/Select2/Select2";
 import configselect2 from "../../../components/Select2/mixSelec2";
 import Utils from "../../../mixins/Utils";
 import Validacoes from "../../../mixins/Validacoes";
+import ExportacaoMixin from "../../../mixins/Exportacoes";
 
 const app = new Vue({
     el: "#app",
-    mixins: [configselect2, Utils, Validacoes],
+    mixins: [configselect2, Utils, Validacoes, ExportacaoMixin],
     components: {
         endereco,
         datepicker,
@@ -62,6 +63,7 @@ const app = new Vue({
         anexoUploadAndamento: false,
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
+        urlExportacao: `${URL_ADMIN}/admissao/export`,
 
         todos_municipios: `autocomplete/todos-municipios`,
 
@@ -554,6 +556,20 @@ const app = new Vue({
             let resultado = totalItens === totalEncontrado;
             this.selecionaTudo = resultado;
             return resultado;
+        },
+        paramsExport() {
+            return {
+                selecionados: this.selecionados,
+                campoVaga: this.controle.dados.campoVaga,
+                campoCliente: this.controle.dados.campoCliente,
+                campoUf: this.controle.dados.campoUf,
+                campoRh: this.controle.dados.campoRh,
+                campoFinalRh: this.controle.dados.campoFinalRh,
+                campoRota: this.controle.dados.campoRota,
+                campoTecnica: this.controle.dados.campoTecnica,
+                campoTeste: this.controle.dados.campoTeste,
+                campoPcd: this.controle.dados.campoPcd
+            }
         }
     },
     mounted() {
@@ -570,28 +586,6 @@ const app = new Vue({
         this.listaVagas();
     },
     methods: {
-        exportaExcel() {
-            this.preloadExportacao = true;
-            axios.post(`${URL_ADMIN}/admissao/export`, {
-                selecionados: this.selecionados,
-                campoVaga: this.controle.dados.campoVaga,
-                campoCliente: this.controle.dados.campoCliente,
-                campoUf: this.controle.dados.campoUf,
-                campoRh: this.controle.dados.campoRh,
-                campoFinalRh: this.controle.dados.campoFinalRh,
-                campoRota: this.controle.dados.campoRota,
-                campoTecnica: this.controle.dados.campoTecnica,
-                campoTeste: this.controle.dados.campoTeste,
-                campoPcd: this.controle.dados.campoPcd
-            }).then(({ data }) => {
-                mostraSucesso(data.msg);
-                this.preloadExportacao = false;
-            }).catch(erro => {
-                mostraErro(erro);
-                this.preloadExportacao = false;
-            });
-        },
-
         buscaProjeto(vaga_aberta_id) {
             this.listaProjetos = [];
             axios.get(`${URL_ADMIN}/busca-projetos/${vaga_aberta_id}`).then(response => {

@@ -14,6 +14,10 @@
                             <button class="btn btn-sm btn-primary" @click.prevent="buscarDados()" type="button">
                                 <i class="fa fa-search"></i> Buscar
                             </button>
+                            <button type="button" class="btn btn-sm btn-primary"
+                                @click.prevent="exportaExcel()">
+                                <i class="fas fa-file-excel"></i> Exportar Excel
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -68,13 +72,16 @@
     </div>
 </template>
 <script>
+import ExportacaoMixin from '../../../mixins/Exportacoes';
 
 export default {
+    mixins: [ExportacaoMixin],
     data() {
         return {
             preload: false,
             dados: [],
-            periodo: ""
+            periodo: "",
+            urlExportacao: `${URL_ADMIN}/relatorios/vencimento-ferias/export-excel`,
         };
     },
     mounted() {
@@ -82,6 +89,13 @@ export default {
         let fim_de_mes = moment().add(1, "M").endOf("month").format("DD/MM/YYYY");
         this.periodo = `${inicio_de_mes} até ${fim_de_mes}`;
         this.buscarDados();
+    },
+    computed: {
+        paramsExport() {
+            return {
+                periodo: this.periodo
+            }
+        }
     },
     methods: {
         buscarDados() {

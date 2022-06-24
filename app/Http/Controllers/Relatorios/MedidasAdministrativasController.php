@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\JobExportaExcel;
 use App\Models\MedidaAdministrativa;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -52,8 +53,42 @@ class MedidasAdministrativasController extends Controller
             ]);
         }
 
-        return response()->json($medidas);
+        return $medidas;
     
+    }
+    
+    public function exportExcel(Request $request)
+    {
+        $medidas = $this->show($request);
+        
+        $head = [
+            'nome',
+            'cargo',
+            'motivo',
+            'causa',
+            'data_solicitacao',
+            'data_retorno',
+            'solicitante',
+            'tipo'
+        ];
+        $rows = [];
+
+        foreach ($medidas as $row) {
+            $rows[] = array(
+                $row['nome'],
+                $row['cargo'],
+                $row['motivo'],
+                $row['causa'],
+                $row['data_solicitacao'],
+                $row['data_retorno'],
+                $row['solicitante'],
+                $row['tipo']
+            );
+        }
+
+        $nameArquivo = "medidas_administrativas_" . \Str::slug('Medidas Administrativas') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Medidas Administrativas ", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
 }
