@@ -3,7 +3,7 @@
         <div class="form-group">
             <label>Gestor Aprovação</label>
             <autocomplete :caminho="`autocomplete/todos-gestores-ativos/`"
-                          :formsm="false"
+                          :formsm="formsm"
                           :valido="model.gestor_id !== ''"
                           v-model="model.autocomplete_label_gestor_modal"
                           placeholder="Digite o nome do(a) gestor(a)"
@@ -36,6 +36,11 @@ export default {
                     hash: `gestor_${parseInt((Math.random() * 999999))}`,
                 }
             }
+        },
+        formsm: {
+            type: Boolean,
+            default: true,
+            required: false,
         },
         verifica: {
             type: Boolean,

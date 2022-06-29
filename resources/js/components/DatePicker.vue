@@ -2,7 +2,7 @@
     <div class="form-group">
         <div class="input-group" v-if="append">
             <div class="input-group-append">
-                <div  class="input-group-text">{{ label }}</div>
+                <div class="input-group-text">{{ label }}</div>
             </div>
 
             <input
@@ -74,25 +74,25 @@ export default {
         value: {
             type: String,
             required: false,
-            default: ''
+            default: ""
         },
         id: {
             type: String,
-            required: false,
+            required: false
         },
         leitura: {
             type: Boolean,
             default: true,
-            required: false,
+            required: false
         },
         disabled: {
             type: Boolean,
-            required: false,
+            required: false
         },
 
         placeholder: {
             type: String,
-            required: false,
+            required: false
         },
 
         append: {
@@ -110,7 +110,7 @@ export default {
         label: {
             type: String,
             required: false,
-            default: 'Data'
+            default: "Data"
         },
 
         min: { //Data hora minima, no formato configurado no campo
@@ -161,7 +161,7 @@ export default {
         posicao: {
             type: String,
             required: false,
-            default: 'down'
+            default: "down"
         }
     },
 
@@ -170,7 +170,7 @@ export default {
             isOpen: false,
             isLoading: false,
             el: null,
-            event: null,
+            event: null
         };
     },
     methods: {
@@ -192,23 +192,23 @@ export default {
         this.$emit("input", this.el.value);
         if (this.range) {
             let texto = this.el.value.trim();
-            let datas = texto.replace(this.separador + ' ', '#');
-            datas = datas.split('#');
+            let datas = texto.replace(this.separador + " ", "#");
+            datas = datas.split("#");
             if (datas.length > 1) {
-                $(this.el).data('daterangepicker').setStartDate(datas[0]);
-                $(this.el).data('daterangepicker').setEndDate(datas[1]);
+                $(this.el).data("daterangepicker").setStartDate(datas[0]);
+                $(this.el).data("daterangepicker").setEndDate(datas[1]);
             } else {
-                let datas = texto.replace(this.separador, '#');
-                datas = datas.split('#');
-                $(this.el).data('daterangepicker').setStartDate(datas[0]);
-                $(this.el).data('daterangepicker').setEndDate(datas[1]);
+                let datas = texto.replace(this.separador, "#");
+                datas = datas.split("#");
+                $(this.el).data("daterangepicker").setStartDate(datas[0]);
+                $(this.el).data("daterangepicker").setEndDate(datas[1]);
             }
 
 
         } else {
             let texto = this.el.value.trim();
-            $(this.el).data('daterangepicker').setStartDate(texto);
-            $(this.el).data('daterangepicker').setEndDate(texto);
+            $(this.el).data("daterangepicker").setStartDate(texto);
+            $(this.el).data("daterangepicker").setEndDate(texto);
         }
 
 
@@ -216,9 +216,9 @@ export default {
     mounted() {
         // this.label = this.label ? this.label : 'Data';
 
-        this.el = $(this.$el).find(':input:text:eq(0)')[0];
+        this.el = $(this.$el).find(":input:text:eq(0)")[0];
         let ref = this;
-        let valueInicial = $(this.el).attr('value');
+        let valueInicial = $(this.el).attr("value");
 
         if (valueInicial) {
             this.el.value = valueInicial;
@@ -236,7 +236,7 @@ export default {
                 maxDate: this.max,
                 //autoUpdateInput:false,
                 drops: this.posicao,
-                opens: 'center',
+                opens: "center",
                 locale: {
                     separator: this.separador,
                     applyLabel: this.aplicarLabel,
@@ -244,10 +244,10 @@ export default {
                     fromLabel: this.deLabel,
                     toLabel: this.paraLabel,
                     format: this.hora ? `L [às] HH:mm` : `DD/MM/YYYY`
-                },
+                }
             });
 
-            $(this.el).on('apply.daterangepicker', function (ev, picker) {
+            $(this.el).on("apply.daterangepicker", function(ev, picker) {
                 /*if(ref.hora){
                     $(this).val(picker.startDate.format('L [às] HH:mm') + ref.separador + picker.endDate.format('L [às] HH:mm'));
                     ref.$emit("input", ref.el.value);
@@ -271,24 +271,24 @@ export default {
 
             });
 
-            $(this.el).on('hide.daterangepicker', function (ev, picker) {
+            $(this.el).on("hide.daterangepicker", function(ev, picker) {
                 if (ref.hora) {
-                    $(this).val(picker.startDate.format('L [às] HH:mm') + ref.separador + picker.endDate.format('L [às] HH:mm'));
+                    $(this).val(picker.startDate.format("L [às] HH:mm") + ref.separador + picker.endDate.format("L [às] HH:mm"));
                     ref.$emit("input", ref.el.value);
-                    ref.$emit('onselect', {
-                        data_inicio: picker.startDate.format('DD/MM/YYYY'),
-                        hora_inicio: picker.startDate.format('HH:mm'),
+                    ref.$emit("onselect", {
+                        data_inicio: picker.startDate.format("DD/MM/YYYY"),
+                        hora_inicio: picker.startDate.format("HH:mm"),
 
-                        data_fim: picker.endDate.format('DD/MM/YYYY'),
-                        hora_fim: picker.endDate.format('HH:mm'),
+                        data_fim: picker.endDate.format("DD/MM/YYYY"),
+                        hora_fim: picker.endDate.format("HH:mm"),
                         value: ref.el.value
                     });
                 } else {
-                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ref.separador + picker.endDate.format('DD/MM/YYYY'));
+                    $(this).val(picker.startDate.format("DD/MM/YYYY") + ref.separador + picker.endDate.format("DD/MM/YYYY"));
                     ref.$emit("input", ref.el.value);
-                    ref.$emit('onselect', {
-                        inicio: picker.startDate.format('DD/MM/YYYY'),
-                        fim: picker.endDate.format('DD/MM/YYYY'),
+                    ref.$emit("onselect", {
+                        inicio: picker.startDate.format("DD/MM/YYYY"),
+                        fim: picker.endDate.format("DD/MM/YYYY"),
                         value: ref.el.value
                     });
                 }
@@ -305,17 +305,17 @@ export default {
                 maxDate: this.max,
                 //autoUpdateInput: false,
                 drops: this.posicao,
-                opens: 'center',
+                opens: "center",
                 locale: {
                     applyLabel: this.aplicarLabel,
                     cancelLabel: this.cancelarLabel,
                     fromLabel: this.deLabel,
                     toLabel: this.paraLabel,
-                    format: this.hora ? "L [às] HH:mm" : 'DD/MM/YYYY'
-                },
+                    format: this.hora ? "L [às] HH:mm" : "DD/MM/YYYY"
+                }
             });
 
-            $(this.el).on('apply.daterangepicker', function (ev, picker) {
+            $(this.el).on("apply.daterangepicker", function(ev, picker) {
                 /*if(ref.hora){
                     $(this).val(picker.startDate.format('L [às] HH:mm'));
                 }else{
@@ -327,15 +327,15 @@ export default {
 
             });
 
-            $(this.el).on('hide.daterangepicker', function (ev, picker) {
+            $(this.el).on("hide.daterangepicker", function(ev, picker) {
                 if (ref.hora) {
-                    $(this).val(picker.startDate.format('L [às] HH:mm'));
+                    $(this).val(picker.startDate.format("L [às] HH:mm"));
                 } else {
-                    $(this).val(picker.startDate.format('DD/MM/YYYY'));
+                    $(this).val(picker.startDate.format("DD/MM/YYYY"));
                 }
 
                 ref.$emit("input", ref.el.value);
-                ref.$emit('onselect', ref.el.value);
+                ref.$emit("onselect", ref.el.value);
             });
 
         }
@@ -347,9 +347,10 @@ export default {
 };
 </script>
 <style>
-.inLine{
+.inLine {
     display: block !important;
 }
+
 .daterangepicker .drp-selected {
     display: inline-block;
     font-size: 17px;
@@ -363,6 +364,6 @@ export default {
 }
 
 .disabled {
-    background-color: #e9ecef !important;
+    background-color: #e3e3e3 !important;
 }
 </style>

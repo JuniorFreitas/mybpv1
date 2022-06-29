@@ -3,7 +3,7 @@
         <div class="form-group">
             <label>Colaborador </label>
             <autocomplete :caminho="`autocomplete/colaboradores/`"
-                          :formsm="false"
+                          :formsm="formsm"
                           :valido="model.colaborador_id !== ''"
                           v-model="model.autocomplete_label_colaborador"
                           placeholder="Digite o nome do(a) colaborador(a)"
@@ -36,6 +36,11 @@ export default {
                     hash: `colaborador_${parseInt((Math.random() * 999999))}`,
                 }
             }
+        },
+        formsm: {
+            type: Boolean,
+            default: true,
+            required: false,
         },
         verifica: {
             type: Boolean,
