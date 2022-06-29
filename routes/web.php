@@ -568,6 +568,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
         });
 
+        //Rotas Afastamento Historico
+        Route::group(['as' => 'afastamento-historico.', 'prefix' => 'afastamento-historico'], function () {
+            Route::post('/', [\App\Http\Controllers\AfastamentoController::class, 'store'])->name('store-afastamento');
+            Route::get('/{feedback}', [\App\Http\Controllers\AfastamentoController::class, 'show'])->name('show-afastamento');
+            Route::post('/uploadAnexos', [\App\Http\Controllers\AfastamentoController::class, 'uploadAnexos'])->name('.upload-anexos');
+        });
+
         //Rotas Formulario Noventa Dias
         Route::group(['as' => 'formulario-noventa-dias.', 'prefix' => 'formulario-noventa-dias'], function () {
             Route::post('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'storeFormularioNoventaDias'])->name('storeNoventaDias');
