@@ -14,10 +14,10 @@ class CreateAfastamentoAnexosTable extends Migration
     public function up()
     {
         Schema::create('afastamento_anexos', function (Blueprint $table) {
+            $table->unsignedInteger('arquivo_id');
             $table->unsignedBigInteger('afastamento_id');
-            $table->unsignedBigInteger('arquivo_id');
-            $table->foreign('arquivo_id')->references('id')->on('arquivos')->onDelete('CASCADE');
-            $table->foreign('afastamento_id')->references('id')->on('afastamentos')->onDelete('CASCADE');
+            $table->foreign('arquivo_id')->references('id')->on('arquivos')->onUpdate('RESTRICT')->onDelete('CASCADE');
+            $table->foreign('afastamento_id')->references('id')->on('afastamentos')->onUpdate('CASCADE')->onDelete('CASCADE');
         });
     }
 

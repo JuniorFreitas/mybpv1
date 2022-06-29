@@ -15,12 +15,12 @@ class CreateAfastamentosTable extends Migration
     {
         Schema::create('afastamentos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('feedback_id')->nullable();
-            $table->unsignedBigInteger('cadastrado_id')->nullable();
+            $table->unsignedBigInteger('feedback_id');
+            $table->unsignedBigInteger('cadastrado_id');
             $table->text('motivo');
             $table->date('data_inicio');
             $table->date('data_fim');
-            $table->string('observacao')->nullable();
+            $table->text('observacao')->nullable();
             $table->timestamps();
 
 
