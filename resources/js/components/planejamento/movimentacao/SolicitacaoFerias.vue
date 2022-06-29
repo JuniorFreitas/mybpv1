@@ -10,14 +10,18 @@
 
                             <colaborador :model="form" :verifica="visualizar" :hash="hash"></colaborador>
 
-                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="form.colaborador_id !== ''">
-                                <legend>Data de Admissão: {{ dataAdmissao }}</legend>
+                            <div class="col-12 col-md-4" v-if="form.colaborador_id !== ''">
+                                <div class="form-group">
+                                    <label>Data de Admissão</label>
+                                    <input type="text" class="form-control form-control-sm" v-model="dataAdmissao" readonly="readonly"
+                                           disabled="disabled">
+                                </div>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo</label>
-                                    <select v-model="form.centro_custo_id" class="form-control"
+                                    <select v-model="form.centro_custo_id" class="form-control form-control-sm"
                                             :disabled="visualizar"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -26,17 +30,16 @@
                                             {{ item.label }}
                                         </option>
                                     </select>
+
+<!--                                    <select2 :settings="settings2" :options="centro_custos" :disabled="controle.carregando"-->
+<!--                                             v-model="form.centro_custo_id"></select2>-->
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="ultimaData !== ''">
-                                <legend>Período Aquisitivo: {{ periodo_label }}</legend>
-                            </div>
-
-                            <div class="col-12 col-md-4" v-else>
+                            <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Período Aquisitivo</label>
-                                    <select v-model="form.periodo_aquisitivo_id" class="form-control"
+                                    <select v-model="form.periodo_aquisitivo_id" class="form-control form-control-sm"
                                             :disabled="visualizar">
                                         <option value="">Selecione</option>
                                         <option v-for="periodo in periodos" :value="periodo.id">{{ periodo.label }}
@@ -45,17 +48,19 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-4 mt-4 mb-4 " v-if="ultimaData !== ''">
-                                <legend>Última Data: {{ ultimaData }}</legend>
+                            <div class="col-12 col-md-4" v-if="ultimaData !== ''">
+                                <div class="form-group">
+                                    <label>Última Data</label>
+                                    <input type="text" class="form-control form-control-sm" v-model="ultimaData" readonly="readonly"
+                                           disabled="disabled">
+                                </div>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label>Tem Falta?</label>
-                                <select type="text" class="form-control" v-model="form.tem_faltas"
+                                <select type="text" class="form-control form-control-sm" v-model="form.tem_faltas"
                                         :disabled="visualizar"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        onblur="valida_campo_vazio(this,1)">
-                                    <option :value="''">Selecione</option>
+                                        @change.prevent="verificaFaltas()">
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
                                 </select>
@@ -63,43 +68,52 @@
 
                             <div class="col-12 col-md-4" v-if="form.tem_faltas === true">
                                 <label>Quantidade de faltas</label>
-                                <input type="text" class="form-control" v-model="form.qnt_faltas"
-                                       :disabled="visualizar"
-                                       onchange="valida_campo_vazio(this,1)">
+                                <select class="form-control form-control-sm" v-model="form.qnt_faltas"
+                                        :disabled="visualizar"
+                                        @change.prevent="form.qnt_dias=5">
+                                    <option v-for="cont in 32" :value="cont" v-show="cont >= 1">{{ cont }}</option>
+                                </select>
                             </div>
 
-                            <div class="col-12 col-md-4 mt-4 mb-4" v-if="!aprovando">
-                                <legend>Quantidade de dias disponíveis: {{ qntDias }}</legend>
+                            <div class="col-12 col-md-4" v-if="!aprovando">
+                                <label>Quantidade de dias disponíveis</label>
+                                <input type="text" class="form-control form-control-sm" v-model="qntDias" readonly="readonly"
+                                       disabled="disabled">
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label>Dias de férias:</label>
-                                <input type="text" class="form-control" v-model="form.qnt_dias"
-                                       :disabled="visualizar">
+                                <select class="form-control form-control-sm" v-model="form.qnt_dias" :disabled="visualizar">
+                                    <option v-for="cont in listaDiaDeFerias" :value="cont" v-show="cont >= 5">
+                                        {{ cont }}
+                                    </option>
+                                </select>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label>Data da saída</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_saida"
+                                <datepicker label="" formsm class="corrigiDatepicker" v-model="form.data_saida"
                                             :disabled="visualizar"></datepicker>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label>Data do retorno</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_retorno"
-                                            :disabled="visualizar"></datepicker>
+                                <input type="text" class="form-control form-control-sm" v-model="dataRetorno" readonly="readonly"
+                                       disabled="disabled">
                             </div>
 
-                            <div class="col-12 col-md-4 mb-4 mt-4" v-if="!aprovando">
-                                <legend>Dias de saldo: {{ qntSaldo }}</legend>
+                            <div class="col-12 col-md-4 mb-3" v-if="!aprovando">
+                                <label>Dias de saldo</label>
+                                <input type="text" class="form-control form-control-sm" v-model="qntSaldo" readonly="readonly"
+                                       disabled="disabled">
                             </div>
 
-                            <gestoraprovacao :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>
+                            <gestoraprovacao formsm :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>
 
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Observação</label>
-                                    <textarea class="form-control" v-model="form.obs" cols="5" rows="5"
+                                    <textarea class="form-control form-control-sm" v-model="form.obs" cols="5" rows="5"
                                               :disabled="visualizar"></textarea>
                                 </div>
                             </div>
@@ -127,7 +141,7 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label>Observação</label>
-                                        <textarea class="form-control" :disabled="!aprovando"
+                                        <textarea class="form-control form-control-sm" :disabled="!aprovando"
                                                   v-model="form.obs_aprovacao"
                                                   cols="5" rows="5"></textarea>
                                     </div>
@@ -138,7 +152,7 @@
                                         <label>Status</label>
                                         <select :disabled="!aprovando"
                                                 v-model="form.status_aprovacao"
-                                                class="form-control">
+                                                class="form-control form-control-sm">
                                             <option value="">Selecione...</option>
                                             <option value="aprovado">Aprovar</option>
                                             <option value="reprovado">Reprovar</option>
@@ -171,7 +185,7 @@
                 <div class="col-12">
                     <div class="form-group">
                         <label>Observação</label>
-                        <textarea class="form-control"
+                        <textarea class="form-control form-control-sm"
                                   v-model="formConfirmacao.obs_aprovacao"
                                   cols="5" rows="5"></textarea>
                     </div>
@@ -403,16 +417,12 @@
                         <span class="text-uppercase" v-if="item.quem_aprovou">
                             <span
                                 v-if="item.status_aprovacao === 'aprovado' && !item.resposta_rh">
-                                {{
-                                    item.status_aprovacao
-                                }} em {{ item.data_aprovacao }}<br/>
-                                    Por gestor(a): {{ item.quem_aprovou.nome }}
+                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br />
+                                Por gestor(a): {{ item.quem_aprovou.nome }}
                             </span>
                             <span v-if="item.status_aprovacao === 'reprovado'">
-                                {{
-                                    item.status_aprovacao
-                                }} em {{ item.data_aprovacao }}<br/>
-                                    Por gestor(a): {{ item.quem_aprovou.nome }}
+                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br />
+                                Por gestor(a): {{ item.quem_aprovou.nome }}
                             </span>
                         </span>
                             <span v-else>
@@ -447,18 +457,21 @@
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             :url="urlPaginacao" :por-pagina="controle.dados.pages"
                             :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando"/>
+                            v-on:carregou="carregou" v-on:carregando="carregando" />
     </div>
 </template>
 
 <script>
 import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
+import configselect2 from "../../../components/Select2/mixSelec2";
+import Select2 from "../../../components/Select2/Select2";
 
 export default {
+    mixins: [configselect2],
     data() {
         return {
-            tituloJanela: 'Solicitacao de férias',
+            tituloJanela: "Solicitacao de férias",
             preload: false,
             visualizar: false,
             aprovando: false,
@@ -474,50 +487,50 @@ export default {
 
             formConfirmacao: {
                 selecionados: [],
-                obs_aprovacao: '',
-                status_aprovacao: '',
+                obs_aprovacao: "",
+                status_aprovacao: ""
             },
             formConfirmacaoDefault: null,
 
 
             form: {
 
-                colaborador_id: '',
-                autocomplete_label_colaborador: '',
-                autocomplete_label_colaborador_anterior: '',
+                colaborador_id: "",
+                autocomplete_label_colaborador: "",
+                autocomplete_label_colaborador_anterior: "",
 
-                gestor_id: '',
-                autocomplete_label_gestor_modal: '',
-                autocomplete_label_gestor_modal_anterior: '',
+                gestor_id: "",
+                autocomplete_label_gestor_modal: "",
+                autocomplete_label_gestor_modal_anterior: "",
 
-                centro_custo_id: '',
-                data_saida: '',
-                qnt_dias: '',
-                tem_faltas: '',
+                centro_custo_id: "",
+                data_saida: "",
+                qnt_dias: 5,
+                tem_faltas: false,
                 qnt_faltas: 0,
-                data_retorno: '',
-                dias_saldo: '',
-                user_id: '',
-                solicitante: '',
-                status: '',
-                obs: '',
+                data_retorno: "",
+                dias_saldo: "",
+                user_id: "",
+                solicitante: "",
+                status: "",
+                obs: "",
 
-                obs_aprovacao: '',
-                status_aprovacao: '',
+                obs_aprovacao: "",
+                status_aprovacao: "",
 
                 data_admissao: "",
 
-                periodo_aquisitivo_id: '',
+                periodo_aquisitivo_id: "",
 
-                ultima_data: '',
+                ultima_data: ""
 
             },
 
             formDefault: null,
             lista: [],
             periodos: [],
-            ultimaData: '',
-            periodo_label: '',
+            ultimaData: "",
+            periodo_label: "",
             centro_custos: [],
 
             /**
@@ -533,25 +546,26 @@ export default {
                 carregando: false,
                 dados: {
                     filtroPeriodo: false,
-                    periodo: '',
+                    periodo: "",
                     campoBusca: "",
                     campoStatus: "",
                     pages: 50,
                     filtroVencimento: false,
                     vencimento: "",
                     filtroInicioFerias: false,
-                    inicioFerias: "",
-                },
-            },
-        }
+                    inicioFerias: ""
+                }
+            }
+        };
     },
     components: {
         colaborador,
         gestoraprovacao,
+        Select2
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form) //copia
-        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao) //copia
+        this.formDefault = _.cloneDeep(this.form); //copia
+        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao); //copia
         this.atualizar();
         this.periodosAquisitivos();
     },
@@ -559,29 +573,29 @@ export default {
         naoAprovados() {
             return this.lista.filter(item => {
                 if (item.status_aprovacao === null) {
-                    return item.id
+                    return item.id;
                 }
-            })
+            });
         },
         tudoMarcado() {
-            let totalAprovado = this.naoAprovados.length
-            let totalEncontrado = 0
+            let totalAprovado = this.naoAprovados.length;
+            let totalEncontrado = 0;
 
             if (totalAprovado === 0) {
-                return false
+                return false;
             }
 
             this.naoAprovados.forEach(item => {
-                let id = item.id
+                let id = item.id;
                 if (this.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++
+                    totalEncontrado++;
                 } else {
-                    return false
+                    return false;
                 }
-            })
-            let resultado = totalAprovado === totalEncontrado
-            this.selecionaTudo = resultado
-            return resultado
+            });
+            let resultado = totalAprovado === totalEncontrado;
+            this.selecionaTudo = resultado;
+            return resultado;
         },
         qntDias() {
             let total = 0;
@@ -601,14 +615,29 @@ export default {
             }
             return total;
         },
-
         qntSaldo() {
             this.form.dias_saldo = this.qntDias - this.form.qnt_dias;
 
             return this.form.dias_saldo;
         },
-
-
+        listaDiaDeFerias() {
+            let qnt_faltas = this.form.qnt_faltas;
+            if (qnt_faltas < 5) {
+                return 30;
+            }
+            if (qnt_faltas >= 6 && qnt_faltas <= 14) {
+                return 24;
+            }
+            if (qnt_faltas >= 15 && qnt_faltas <= 23) {
+                return 18;
+            }
+            if (qnt_faltas >= 24 && qnt_faltas <= 32) {
+                return 12;
+            }
+            if (qnt_faltas >= 33) {
+                return 0;
+            }
+        },
         dataAdmissao() {
             if (this.form.colaborador_id !== "") {
                 axios.post(`${URL_ADMIN}/busca-data-admissao`, {
@@ -626,12 +655,12 @@ export default {
                         this.periodo_label = response.data.periodo.label;
                     }
 
-                    if (response.data.ultimaData === '') {
+                    if (response.data.ultimaData === "") {
                         let dataAtual = new Date();
                         let dia = dataAtual.getDate();
                         let mes = dataAtual.getMonth();
                         let ano = dataAtual.getFullYear();
-                        let dataHoje = dia + '/' + (mes + 1) + '/' + ano;
+                        let dataHoje = this.padTo2Digits(dia) + "/" + this.padTo2Digits((mes + 1)) + "/" + ano;
                         this.form.ultima_data = dataHoje;
                         this.form.data_saida = dataHoje;
                         this.form.data_retorno = dataHoje;
@@ -644,41 +673,62 @@ export default {
                 return this.form.data_admissao;
             }
         },
+        dataRetorno() {
+            let dias_ferias = this.form.qnt_dias;
+            let data_saida = this.form.data_saida.split("/");
+            let data_saida_convert = data_saida[2] + "-" + data_saida[1] + "-" + data_saida[0];
+
+            let data_retorno = new Date(data_saida_convert);
+            data_retorno.setDate(data_retorno.getDate() + dias_ferias);
+            let data_retorno_ptbr = this.padTo2Digits(data_retorno.getDate()) + "/" + this.padTo2Digits((data_retorno.getMonth() + 1)) + "/" + data_retorno.getFullYear();
+            this.form.data_retorno = data_retorno_ptbr;
+
+            return data_retorno_ptbr;
+        }
 
     },
     methods: {
+        padTo2Digits(num) {
+            return num.toString().padStart(2, "0");
+        },
+        verificaFaltas() {
+            this.form.qnt_faltas = 1;
+            if (!this.form.tem_faltas) {
+                this.form.qnt_faltas = 0;
+            }
+        },
         selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo
+            this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
                 this.naoAprovados.map(item => {
-                    let id = item.id
+                    let id = item.id;
                     if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id)
+                        this.selecionados.push(id);
                     }
-                })
+                });
             } else {
                 this.naoAprovados.map(item => {
-                    let id = item.id
-                    let index = this.selecionados.indexOf(id)
+                    let id = item.id;
+                    let index = this.selecionados.indexOf(id);
                     if (index >= 0) {
-                        this.selecionados.splice(index, 1)
+                        this.selecionados.splice(index, 1);
                     }
-                })
+                });
             }
         },
         confirmaAtualizacaoStatus(confirmacao) {
 
             this.preloadAtualizacao = true;
             this.formConfirmacao.status_aprovacao = confirmacao;
-            this.formConfirmacao.selecionados.push(this.selecionados)
+            this.formConfirmacao.selecionados.push(this.selecionados);
 
             axios.post(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/atualizacao-status`, this.formConfirmacao)
                 .then(res => {
                     this.preloadAtualizacao = false;
-                    $('#janelaAtualizaStatus').modal('hide');
-                    mostraSucesso('Status das Férias atualizado com sucesso!');
+                    $("#janelaAtualizaStatus").modal("hide");
+                    mostraSucesso("Status das Férias atualizado com sucesso!");
                     this.selecionados = [];
-                    this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault) //copia
+                    this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault); //copia
                     this.$refs.componente.buscar();
                 })
                 .catch(error => {
@@ -697,7 +747,7 @@ export default {
 
         periodosAquisitivos() {
             axios.get(`${URL_ADMIN}/periodos-aquisitivos`).then(response => {
-                this.periodos = response.data.periodos
+                this.periodos = response.data.periodos;
             });
         },
 
@@ -707,31 +757,31 @@ export default {
             this.tituloJanela = "Solicitação de férias";
 
             formReset();
-            this.form = _.cloneDeep(this.formDefault) //copia
-            this.form.centro_custo_id = '';
+            this.form = _.cloneDeep(this.formDefault); //copia
+            this.form.centro_custo_id = "";
             this.listaCentroCusto();
         },
 
         cadastrar() {
 
-            if (this.form.colaborador_id === '') {
+            if (this.form.colaborador_id === "") {
                 valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio');
+                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger("blur");
+                mostraErro("", "Campo COLABORADOR não pode ficar vazio");
                 this.resetaCampoColaborador();
                 return false;
             }
-            if (this.form.gestor_id === '') {
+            if (this.form.gestor_id === "") {
                 valida_campo_vazio($(`#gestor_${this.hash}`), 1);
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo GESTOR não pode ficar vazio');
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger("blur");
+                mostraErro("", "Campo GESTOR não pode ficar vazio");
                 this.resetaCampoGestor();
                 return false;
             }
 
-            $(`#${this.hash} :input:visible`).trigger('blur');
+            $(`#${this.hash} :input:visible`).trigger("blur");
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+                mostraErro("", "Verifique os campos marcados");
                 return false;
             }
 
@@ -740,16 +790,16 @@ export default {
             axios.post(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista`, this.form)
                 .then(response => {
                     if (response.status === 201) {
-                        $(`#${this.hash} `).modal('hide');
+                        $(`#${this.hash} `).modal("hide");
                         let data = response.data;
-                        mostraSucesso('', 'Solicitação registrada com sucesso!');
+                        mostraSucesso("", "Solicitação registrada com sucesso!");
                         this.$refs.componente.buscar();
                         this.preload = false;
                     }
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         formOpen(id) {
@@ -760,7 +810,7 @@ export default {
 
             formReset();
             this.preload = true;
-            this.form.data_admissao = '';
+            this.form.data_admissao = "";
 
             axios.get(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${id}/editar`)
                 .then(response => {
@@ -772,22 +822,22 @@ export default {
 
                     this.tituloJanela = `#${id} Solicitação de férias`;
 
-                    this.form.status_aprovacao = data.status_aprovacao === null ? '' : data.status_aprovacao;
-                    this.form.obs_aprovacao = data.status_aprovacao === null ? '' : data.obs_aprovacao;
+                    this.form.status_aprovacao = data.status_aprovacao === null ? "" : data.status_aprovacao;
+                    this.form.obs_aprovacao = data.status_aprovacao === null ? "" : data.obs_aprovacao;
                     this.periodo_label = data.periodo_aquistivo.label;
 
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
         aprovarGestor() {
 
-            $(`#${this.hash} :input:visible`).trigger('blur');
+            $(`#${this.hash} :input:visible`).trigger("blur");
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+                mostraErro("", "Verifique os campos marcados");
                 return false;
             }
 
@@ -796,14 +846,14 @@ export default {
             axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovargestor`, this.form)
                 .then(response => {
                     let data = response.data;
-                    mostraSucesso('', 'Registro salvo com sucesso!');
-                    $(`#${this.hash} `).modal('hide');
+                    mostraSucesso("", "Registro salvo com sucesso!");
+                    $(`#${this.hash} `).modal("hide");
                     this.$refs.componente.buscar();
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
-                })
+                });
         },
 
 
@@ -819,9 +869,9 @@ export default {
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
-        },
+        }
     }
-}
+};
 </script>
 
 <style scoped>

@@ -188,7 +188,7 @@ class AutoCompletesController extends Controller
 
         $busca = $request->query('busca');
 
-        return FeedbackCurriculo::whereHas('Admissao', function ($q) {
+        return FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO']);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
@@ -208,7 +208,7 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
 
         $busca = $request->query('busca');
-        return $feedback = FeedbackCurriculo::whereHas('Admissao', function ($q) {
+        return $feedback = FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO']);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
@@ -228,7 +228,7 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
 
         $busca = $request->query('busca');
-        return FeedbackCurriculo::whereHas('Admissao', function ($q) {
+        return FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO'])->whereTipoAdmissao('INTERMITENTE');
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');

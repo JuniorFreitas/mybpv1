@@ -60,8 +60,11 @@ class PublicoController extends Controller
 
     public function listaCentroCusto(Request $request)
     {
-        $centros = CentroCusto::whereAtivo(true)->get();
-        return response()->json(['centro_custos' => $centros], 200);
+        $centros = CentroCusto::select(['id','label'])->whereAtivo(true)->get()->transform(function ($item) {
+            $item->text = $item->label;
+            return $item;
+        });
+        return ['centro_custos' => $centros];
     }
 
     public function cnpjbusca(Request $request)
