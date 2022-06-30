@@ -144,7 +144,6 @@
                 <fieldset>
                     <legend>CARTÃO VACINA (ATÉ 6 ANOS)</legend>
                     <upload label="Selecionar anexo(s)"
-
                             :leitura="true"
                             :model="form.cartao_vacina_filho"
                             :model-delete="form.cartao_vacina_filhoDel" :url="urlAnexoUpload"
@@ -171,14 +170,26 @@
         <template slot="conteudo">
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preload">
+                <div class="alert alert-warning">Observação: Ao trocar o e-mail, implicará no e-mail de acesso ao
+                    Sistema.
+                </div>
                 <fieldset>
-                    <legend>Envio de Email</legend>
+                    <legend>Envio de E-mail</legend>
                     <div class="col-12">
                         <div class="form-group">
-                            <label>Email</label>
-                            <input type="text" class="form-control"
+                            <label>E-mail</label>
+                            <input type="text" class="form-control form-control-sm validacampo"
                                    v-model="formEmail.email"
-                                   autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
+                                   autocomplete="mybp" @keyup.prevent="validaEmailVazio($event.target)"
+                                   blur.prevent="validaEmailVazio($event.target)">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label>Observação</label>
+                            <textarea cols="3" rows="5" maxlength="255" class="form-control form-control-sm"
+                                      v-model="formEmail.observacao"
+                                      autocomplete="mybp"></textarea>
                         </div>
                     </div>
                 </fieldset>
@@ -278,31 +289,6 @@
                     Atualizar
                 </button>
 
-                {{--                <button class="btn btn-danger"--}}
-                {{--                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"--}}
-                {{--                        :disabled="selecionados.length === 0" @click="selecionados = []">--}}
-                {{--                    <i class="fa fa-times"></i> Limpar seleção--}}
-                {{--                </button>--}}
-                {{--                <form target="_blank"--}}
-                {{--                      action="{{ \App\Models\Sistema::UrlServidor }}/admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
-                {{--                      method="get">--}}
-                {{--                    @csrf--}}
-                {{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
-                {{--                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">--}}
-                {{--                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">--}}
-                {{--                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">--}}
-                {{--                    <input type="hidden" name="campoRh" :value="controle.dados.campoRh">--}}
-                {{--                    <input type="hidden" name="campoFinalRh" :value="controle.dados.campoFinalRh">--}}
-                {{--                    <input type="hidden" name="campoRota" :value="controle.dados.campoRota">--}}
-                {{--                    <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">--}}
-                {{--                    <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">--}}
-                {{--                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">--}}
-                {{--                    <button type="submit" class="btn btn-primary ml-1"--}}
-                {{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">--}}
-                {{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
-                {{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
-                {{--                    </button>--}}
-                {{--                </form>--}}
             </div>
         </div>
 
@@ -323,6 +309,7 @@
                     <th>CPF</th>
                     <th class="text-center" v-if="cliente_id === 1">Cliente</th>
                     <th class="text-center">Vaga</th>
+                    <th class="text-center">Qnt Anexos</th>
                     <th class="text-center"></th>
                 </tr>
                 </thead>
@@ -344,6 +331,16 @@
                     </td>
                     <td class="text-center">
                         @{{resultado.vaga_selecionada.nome}}
+                    </td>
+                    <td class="text-center">
+                        @{{ resultado.curriculo.anexos_cpf_rg_count + resultado.curriculo.antecedentes_count +
+                        resultado.curriculo.carta_sindicato_count + resultado.curriculo.cartao_vacina_filho_count +
+                        resultado.curriculo.carteira_vacina_count + resultado.curriculo.certificado_escolaridade_count +
+                        resultado.curriculo.certificado_reservista_count + resultado.curriculo.comprovante_end_count +
+                        resultado.curriculo.conta_banco_count + resultado.curriculo.ctps_frente_count +
+                        resultado.curriculo.ctps_verso_count + resultado.curriculo.declaracao_escolar_filho_count +
+                        resultado.curriculo.foto_tres_count + resultado.curriculo.pis_rescisao_count +
+                        resultado.curriculo.rgcpf_filho_count + resultado.curriculo.titulo_eleitor_count }} anexo(s)
                     </td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-primary" title="Visuzalizar"

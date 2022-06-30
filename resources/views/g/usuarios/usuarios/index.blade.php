@@ -23,10 +23,10 @@
                            onblur="valida_campo_vazio(this,3)">
                 </div>
                 <div class="form-group">
-                    <label>Login</label>
-                    <input type="text" class="form-control form-control-sm" v-model="form.login" placeholder="Login"
+                    <label>E-mail</label>
+                    <input type="text" class="form-control form-control-sm" v-model="form.login" placeholder="E-mail"
                            autocomplete="off"
-                           onblur="valida_campo_vazio(this,3)">
+                           onblur="validaEmail(this)">
                 </div>
 
                 <div class="form-group" v-if="empresa_id === 104">
