@@ -61,7 +61,7 @@
                            href="#nav-ferias"
                            role="tab" aria-controls="nav-ferias" aria-selected="false">FÉRIAS</a>
                     </li>
-                    <li class="nav-item" v-if="">
+                    <li class="nav-item" v-if="permissoes.afastamento">
                         <a class="nav-item nav-link" id="nav-afastamento-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirAfastamento')"
                            href="#nav-afastamento"

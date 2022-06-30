@@ -14,21 +14,41 @@
                 <legend>#{{ index + 1 }}</legend>
                 <div class="row">
 
-                    <div class="col-md-7">
-                        <label>Motivo</label>
-                        <input type="text" class="form-control" v-model="obj.motivo" :disabled="!obj.novo"
-                               onblur="valida_campo_vazio(this,1)">
-                    </div>
-                    <div class="col-md-2">
-                        <date-picker label="Data Inicio" v-model="obj.data_inicio" :max="hoje" :disabled="!obj.novo"></date-picker>
+                    <div class="col-md-3">
+                        <date-picker label="Período" range v-model="obj.periodo" formsm
+                                     :disabled="!obj.novo"></date-picker>
                     </div>
 
-                    <div class="col-md-2">
-                        <date-picker label="Data Fim" v-model="obj.data_fim" :min="hoje" :disabled="!obj.novo"></date-picker>
+                    <div class="col-12"></div>
+
+                    <div class="col-md-12 mb-3">
+                        <label>Motivo</label>
+                        <input type="text" class="form-control form-control-sm" v-model="obj.motivo"
+                               :disabled="!obj.novo"
+                               onblur="valida_campo_vazio(this,1)">
                     </div>
-                    <div class="col-md-7">
+
+                    <div class="col-md-12">
                         <label>Observação</label>
-                        <textarea type="text" rows="3" v-model="obj.observacao" class="form-control"></textarea>
+                        <textarea type="text" rows="3" v-model="obj.observacao"
+                                  :disabled="!obj.novo"
+                                  class="form-control form-control-sm"></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <fieldset>
+                            <legend>Anexo</legend>
+                            <upload :model="obj.anexos"
+                                    :model-delete="obj.anexosDel"
+                                    :url="url_anexo"
+                                    label="Selecionar"
+                                    :leitura="!obj.novo"
+                                    @onProgresso="anexoUploadAndamento=true"
+                                    @onFinalizado="anexoUploadAndamento=false"></upload>
+                            <div class="alert alert-warning mt-2 text-center mb-0" v-if="obj.anexos.length === 0 && !obj.novo">
+                                Nenhum anexo encontrado.
+                            </div>
+                        </fieldset>
                     </div>
 
                     <div class="col-12 mt-3" v-show="obj.novo">
@@ -36,23 +56,26 @@
                             class="fa fa-times"></i> Remover
                         </button>
 
-                        <button class="btn btn-sm btn-primary mt" @click="addLIMedida" v-show="index >=1">
-                            <i class="fa fa-plus"></i> Adicionar
+                        <button class="btn btn-sm btn-primary" v-if="obj.novo" @click="salvar">
+                            <i class="fa fa-save"></i> Salvar
                         </button>
+
+<!--                        <button class="btn btn-sm btn-primary mt" @click="addLIMedida" v-show="index >=1">-->
+<!--                            <i class="fa fa-plus"></i> Adicionar-->
+<!--                        </button>-->
                     </div>
 
                 </div>
             </fieldset>
 
-            <button class="btn btn-sm btn-primary mb-3" v-if="form.afastamento.length > 0" @click="salvar">
-                <i class="fa fa-save"></i> Salvar
-            </button>
+
         </div>
     </div>
 </template>
 
 <script>
 import DatePicker from "../../DatePicker";
+import Upload from "../../Upload";
 
 export default {
     props: {
@@ -61,7 +84,7 @@ export default {
             required: true
         },
         model: {
-            type: Array,
+            type: Array
         },
         hash: {
             type: String,
@@ -69,35 +92,40 @@ export default {
         }
     },
     components: {
-        DatePicker
+        DatePicker,
+        Upload
     },
     data() {
         return {
             preload: false,
             URL_ADMIN,
 
-            hoje: '',
+            hoje: "",
+            url_anexo: `${URL_ADMIN}/historico/afastamento-historico/uploadAnexos`,
+            anexoUploadAndamento: false,
 
             form: {
                 afastamento: [],
-                afastamentoDelete: [],
+                afastamentoDelete: []
             },
-            formDefault: null,
+            formDefault: null
 
-        }
+        };
     },
     mounted() {
         this.atualizar();
     },
     methods: {
+        padTo2Digits(num) {
+            return num.toString().padStart(2, "0");
+        },
         addLIMedida() {
             const obj = {};
             obj.novo = true;
             obj.feedback_id = this.feedback_id;
-            obj.motivo = '';
-            obj.observacao = '';
-            obj.data_inicio = this.hoje;
-            obj.data_fim = this.hoje;
+            obj.motivo = "";
+            obj.observacao = "";
+            obj.periodo = this.hoje;
             obj.anexos = [];
             obj.anexosDel = [];
 
@@ -111,9 +139,9 @@ export default {
         },
         salvar() {
             formReset();
-            $(`#form_${this.hash} :input:visible`).trigger('blur');
+            $(`#form_${this.hash} :input:visible`).trigger("blur");
             if ($(`#form_${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os erros')
+                mostraErro("", "Verifique os erros");
                 return false;
             }
 
@@ -125,7 +153,7 @@ export default {
                         if (response.status === 201) {
                             this.preload = false;
                             // this.cadastrado = true;
-                            mostraSucesso('Afastamento alterado com sucesso');
+                            mostraSucesso("Afastamento alterado com sucesso");
                             this.atualizar();
                         }
                     }).catch(error => (this.preload = false));
@@ -134,7 +162,7 @@ export default {
                     .then(response => {
                         if (response.status === 200) {
                             this.preload = false;
-                            mostraSucesso('Afastamento criado com sucesso');
+                            mostraSucesso("Afastamento criado com sucesso");
                             // this.cadastrado = true;
                             this.atualizar();
                         }
@@ -150,10 +178,10 @@ export default {
                 this.form.afastamento = data.afastamentos;
                 this.hoje = data.hoje;
                 this.preload = false;
-            })
+            });
         }
     }
-}
+};
 </script>
 
 <style scoped>

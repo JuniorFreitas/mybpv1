@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -38,11 +39,21 @@ class Afastamento extends Model
     protected $casts = [
         'feedback_id' => 'int',
         'cadastrado_id' =>'int',
-        'motivo' => 'text',
+        'motivo' => 'string',
         'data_inicio' => 'string',
         'data_fim' => 'string',
         'observacao' =>'string',
     ];
+
+    protected $appends = ['periodo'];
+
+    public function getPeriodoAttribute()
+    {
+        $dataInicio = (new DataHora($this->data_inicio))->dataCompleta();
+        $dataFim = (new DataHora($this->data_fim))->dataCompleta();
+
+        return "{$dataInicio} até {$dataFim}";
+    }
 
     public function Anexos()
     {
@@ -52,6 +63,23 @@ class Afastamento extends Model
     public function Feedback()
     {
         return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $periodo = explode(' até ', $model['periodo']);
+            $model->cadastrado_id = auth()->check() ? auth()->id() : $model->cadastrado_id;
+            $model->data_inicio = (new DataHora($periodo[0]))->dataInsert();
+            $model->data_fim = (new DataHora($periodo[1]))->dataInsert();
+        });
+
+        static::updating(function ($model) {
+            $periodo = explode(' até ', $model['periodo']);
+            $model->data_inicio = (new DataHora($periodo[0]))->dataInsert();
+            $model->data_fim = (new DataHora($periodo[1]))->dataInsert();
+        });
+
     }
 
 }

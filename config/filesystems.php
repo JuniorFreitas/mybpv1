@@ -229,9 +229,9 @@ return [
             [
                 'urlDelete' => env('APP_URL') . '/g/historico/afastamento/anexo',
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-afastamento') : 'arquivos/disco-afastamento',
-                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
-                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
-                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/historico/afastamento-historico/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/historico/afastamento-historico/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/historico/afastamento-historico/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
 
                 'visibility' => 'public',
             ]

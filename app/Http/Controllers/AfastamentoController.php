@@ -7,6 +7,7 @@ use App\Models\Arquivo;
 use App\Models\FeedbackCurriculo;
 use DB;
 use Illuminate\Http\Request;
+use MasterTag\DataHora;
 
 class AfastamentoController extends Controller
 {
@@ -14,9 +15,8 @@ class AfastamentoController extends Controller
     {
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados, [
-            'motivo' => 'required',
-            'data_inicio' => 'required',
-            'data_fim' => 'required'
+            'afastamento.*.motivo' => 'required',
+            'afastamento.*.periodo' => 'required',
         ]);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -26,14 +26,27 @@ class AfastamentoController extends Controller
             ], 400);
         } else {
             try {
-                DB::beginTransaction();
-
-                $dados['quem_cadastrou'] = auth()->id();
-
-                Afastamento::create($dados);
-
+                DB::beginTransaction();//
+                foreach ($dados['afastamento'] as $afastamento) {
+                    if(isset($afastamento['novo'])){
+                        $afastamentoAdm = Afastamento::create($afastamento);
+                            foreach ($afastamento['anexosDel'] as $id_anexo) {
+                                $arquivo = Arquivo::find($id_anexo);
+                                $arquivo->excluir();
+                            }
+                            foreach ($afastamento['anexos'] as $index => $anexo) {
+                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                                if ($arquivo) {
+                                    $arquivo->temporario = false;
+                                    $arquivo->chave = '';
+                                    $arquivo->save();
+                                    $afastamentoAdm->Anexos()->attach($arquivo->id);
+                                }
+                            }
+                    }
+                }
                 DB::commit();
-                return response()->json([], 201);
+                return response()->json([]);
             } catch (\Exception $e) {
                 DB::rollback();
                 $msg = "error CADASTRO DE AFASTAMENTO HISTORICO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
@@ -45,7 +58,11 @@ class AfastamentoController extends Controller
 
     public function show(FeedbackCurriculo $feedback)
     {
-        return $feedback->load('Afastamentos');
+        $feedback->load(['Afastamentos' => function($query){
+            $query->with('Anexos')->orderBy('id', 'desc');
+        }]);
+        $feedback->hoje = (new DataHora())->dataCompleta();
+        return $feedback;
     }
 
     // Anexos-------------------------------------------------
