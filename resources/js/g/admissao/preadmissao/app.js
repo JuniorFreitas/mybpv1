@@ -1,7 +1,9 @@
 import upload from '../../../components/Upload';
+import validacoes from "../../../mixins/Validacoes";
 
 const app = new Vue({
     el: '#app',
+    mixins: [validacoes],
     components: {
         upload,
     },
@@ -17,6 +19,7 @@ const app = new Vue({
         disabled: true,
         disabledInput: false,
         btnBuscar: false,
+        email_padrao: '',
 
         cliente_id: 0,
 
@@ -92,7 +95,8 @@ const app = new Vue({
         formEmail: {
             id: '',
             email: '',
-            curriculo_id: ''
+            curriculo_id: '',
+            observacao: ''
         },
         formEmailDefault: null,
 
@@ -117,7 +121,7 @@ const app = new Vue({
                 campoFiltro: '',
                 campoPcd: '',
                 campoCliente: '',
-                campoUf: 'MA'
+                campoUf: ''
             },
         },
     },
@@ -152,7 +156,6 @@ const app = new Vue({
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.formEmailDefault = _.cloneDeep(this.formEmail) //copia
-        this.formAvulsaDefault = _.cloneDeep(this.formAvulsa) //copia
         this.formResultadoIntegradoDefault = _.cloneDeep(this.formResultadoIntegrado) //copia
         this.atualizar();
         this.listaVagas();
@@ -175,64 +178,6 @@ const app = new Vue({
                         this.selecionados.splice(index, 1)
                     }
                 });
-            }
-        },
-        // AVULSA
-        buscaCpf() {
-            if (valida_cpf_vazio(this.$refs.cpf)) {
-                if (this.formAvulsa.curriculo.cpf.length === 14) {
-                    this.disabledInput = true;
-                    this.exibiFormulario = false;
-                    this.formAvulsa.preload = true;
-
-                    axios.post(`${URL_ADMIN}/admissao/busca-cpf`, {
-                        cpf: this.formAvulsa.curriculo.cpf
-                    }).then(response => {
-                        let data = response.data;
-                        if (data.achou) {
-                            Object.assign(this.formAvulsa, response.data);
-                            this.exibiFormulario = true;
-                            this.formAvulsa.preload = false;
-                        }
-
-                        if (!data.achou) {
-                            let cpf = this.formAvulsa.curriculo.cpf;
-                            this.formAvulsa = _.cloneDeep(this.formAvulsaDefault);
-                            this.formAvulsa.curriculo.cpf = cpf;
-                            this.exibiFormulario = true;
-                            this.formAvulsa.preload = false;
-                        }
-                    })
-                        .catch(error => {
-                            this.formAvulsa.preload = false;
-                            this.disabledInput = false;
-                            this.exibiFormulario = false;
-                        })
-                }
-            } else {
-                this.disabledInput = false;
-                this.exibiFormulario = false;
-                this.formAvulsa.preload = false;
-            }
-
-        },
-
-        selecionaVagaModal(obj) {
-            this.formAvulsa.feedback.vaga_id = obj.id;
-            this.formAvulsa.feedback.autocomplete_label_vaga_modal = obj.label;
-            this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = obj.label;
-        },
-
-        resetaCampoVagaModal() {
-            if (this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior !== this.formAvulsa.feedback.autocomplete_label_vaga_modal) {
-                this.formAvulsa.feedback.autocomplete_label_vaga_modal_anterior = '';
-                this.formAvulsa.feedback.autocomplete_label_vaga_modal = '';
-                this.formAvulsa.feedback.vaga_id = '';
-                setTimeout(() => {
-                    if (this.formAvulsa.feedback.vaga_id === '') {
-                        mostraErro('Erro', 'O Campo Vaga não pode ficar vazio');
-                    }
-                }, 100);
             }
         },
 
@@ -292,7 +237,7 @@ const app = new Vue({
                     this.formEmail.curriculo_id = data.curriculo.id;
                     this.formEmail.id = data.id;
                     this.formEmail.email = data.curriculo.email;
-                    this.tituloJanela = `Reenvio de Email - ${data.curriculo.nome}`;
+                    this.tituloJanela = `Reenvio de E-mail - ${data.curriculo.nome}`;
                     this.preload = false;
                 })
                 .catch(error => {
@@ -301,6 +246,20 @@ const app = new Vue({
         },
 
         enviarEmail() {
+            this.formEmail.email = this.formEmail.email.toLowerCase().trim();
+
+            this.validaBlur();
+            $(`#janelaEnviarEmail :input:visible.is-invalid`).length;
+            if ($(`#janelaEnviarEmail :input:visible.is-invalid`).length) {
+                this.mostraErro("", "Preencha todos os campos obrigatórios");
+                return false;
+            }
+
+            if(this.formEmail.email === this.email_padrao.toLowerCase().trim()){
+                this.mostraErro('', `Preencha com um e-mail diferente de ${this.email_padrao}`)
+                return false;
+            }
+
             this.preload = true;
 
             formReset();
@@ -308,7 +267,7 @@ const app = new Vue({
                 .then(response => {
                     if (response.status === 201) {
                         $('#janelaEnviarEmail').modal('hide');
-                        mostraSucesso('Envio do email concluído com sucesso!');
+                        this.mostraSucesso('Envio do e-mail concluído com sucesso!');
                     }
                     this.preload = false;
                 })
@@ -337,6 +296,7 @@ const app = new Vue({
         },
         carregou(dados) {
             this.lista = dados.items;
+            this.email_padrao = dados.email_padrao;
             this.cliente_id = dados.usuario_cliente_id;
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;

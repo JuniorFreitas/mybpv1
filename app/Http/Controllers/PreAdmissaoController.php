@@ -6,6 +6,7 @@ use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
+use App\Models\Sistema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -49,13 +50,30 @@ class PreAdmissaoController extends Controller
     {
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereDocumentosEntregue(true);
-        })->with(
-            'Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf',
+        })->with(['Curriculo' => function ($model) {
+            $model->select(['id', 'nome', 'cpf', 'email', 'nascimento', 'rg', 'orgao_expeditor', 'logradouro', 'complemento', 'bairro', 'municipio', 'uf'])
+                ->withCount([
+                    'FotoTres',
+                    'AnexosCpfRg',
+                    'ComprovanteEnd',
+                    'CtpsFrente',
+                    'CtpsVerso',
+                    'Antecedentes',
+                    'TituloEleitor',
+                    'CertificadoReservista',
+                    'PisRescisao',
+                    'CertificadoEscolaridade',
+                    'ContaBanco',
+                    'CartaSindicato',
+                    'CarteiraVacina',
+                    'RgcpfFilho',
+                    'CartaoVacinaFilho',
+                    'DeclaracaoEscolarFilho']);
+        }])->with(
             'Cliente:id,nome,razao_social,nome_fantasia',
             'VagaSelecionada:id,nome',
             'Admissao:feedback_id,data_admissao,funcao,cargo,status',
         );
-
         $filtroPeriodo = $request->filtroPeriodo == 'true';
 
         if ($filtroPeriodo) {
@@ -99,7 +117,7 @@ class PreAdmissaoController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['items' => $resultado->items(), 'usuario_cliente_id' => auth()->user()->cliente_id]
+            'dados' => ['items' => $resultado->items(), 'usuario_cliente_id' => auth()->user()->cliente_id, 'email_padrao' => Sistema::EMAILPADRAO]
         ]);
     }
 
@@ -111,13 +129,41 @@ class PreAdmissaoController extends Controller
     public function enviarEmail(Request $request)
     {
         $dados = $request->input();
+
+        if ($dados['email'] == Sistema::EMAILPADRAO) {
+            return response()->json([
+                'msg' => 'O e-mail não pode ser ' . Sistema::EMAILPADRAO
+            ], 400);
+        }
+
+        $dadosValidados = \Validator::make($dados, [
+            'email' => 'required|email:rfc,dns',
+        ]);
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao Atualizar Email',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
         try {
             DB::beginTransaction();
             $feedback = FeedbackCurriculo::whereId($dados['id'])->first();
             $feedback['email'] = $dados['email'];
             $curriculo = Curriculo::whereId($dados['curriculo_id'])->with('Pessoa')->first();
-            $curriculo->update(['email' => $dados['email']]);
-            $curriculo->Pessoa->update(['login' => $dados['email']]);
+            $email_atual = $curriculo->email == $dados['email'];
+            $email_padrao = $curriculo->email == Sistema::EMAILPADRAO;
+
+            if (!$email_atual) {
+                $curriculo->update(['email' => $dados['email']]);
+                $curriculo->Pessoa->update(['login' => $dados['email']]);
+            }
+
+            $curriculo->EmailsPreAdmissao()->create([
+                'observacao' => $dados['observacao'],
+                'email_atual' => $email_atual,
+                'email_padrao' => $email_padrao
+            ]);
+
             DB::commit();
             JobEnvioDocumento::dispatch([
                 'nome' => $curriculo->nome,
@@ -127,7 +173,7 @@ class PreAdmissaoController extends Controller
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['msg' => 'Erro ao enviar e-mail', 'erros' => $e->getTraceAsString()], 400);
+            return response()->json(['msg' => 'Erro ao enviar e-mail', 'erros' => $e->getMessage()], 400);
         }
     }
 }

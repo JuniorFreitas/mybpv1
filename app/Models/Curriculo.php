@@ -554,6 +554,11 @@ class Curriculo extends Model
         return $this->hasOne(User::class, 'id', 'id');
     }
 
+    public function EmailsPreAdmissao()
+    {
+        return $this->hasMany(EmailPreAdmissao::class, 'curriculo_id', 'id');
+    }
+
     //Scopo de ClienteID (Empresa)
     protected static function booted()
     {
