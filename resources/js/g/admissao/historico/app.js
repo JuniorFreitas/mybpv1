@@ -3,6 +3,7 @@ import MedidasAdministrativas from "../../../components/admissao/MedidasAdminist
 import FormularioNoventaDias from "../../../components/admissao/historico/FormularioNoventaDias";
 import AvaliacaoAnual from "../../../components/admissao/historico/AvaliacaoAnual";
 import Ferias from "../../../components/admissao/historico/Ferias";
+import Afastamento from "../../../components/admissao/historico/Afastamento";
 import Beneficio from "../../../components/admissao/historico/Beneficio";
 import Cih from "../../../components/admissao/historico/CIH";
 import Promocao from "../../../components/admissao/historico/Promocao";
@@ -19,6 +20,7 @@ const app = new Vue({
         FormularioNoventaDias,
         AvaliacaoAnual,
         Ferias,
+        Afastamento,
         Beneficio,
         Cih,
         Promocao,
@@ -39,20 +41,23 @@ const app = new Vue({
             abrirFormularioNoventa: false,
             abrirAvaliacaoAnual: false,
             abrirFerias: false,
+            abrirAfastamento: false,
             abrirBeneficio: false,
             abrirCih: false,
             abrirPromocao: false,
             abrirMetas: false
         },
         abasDefault: null,
-        
+
         permissoes: [],
 
         form: {
             feedback_id: 0,
             curriculo_id: 0,
             medidas_administrativas: [],
-            medidas_administrativasDelete: []
+            medidas_administrativasDelete: [],
+            afastamento: [],
+            afastamentoDelete: []
         },
 
         formDefault: null,

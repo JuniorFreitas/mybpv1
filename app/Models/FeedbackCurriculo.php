@@ -781,6 +781,11 @@ class FeedbackCurriculo extends Model
         return $this->hasOne(VagaProjetoFeedback::class, 'feedback_id', 'id');
     }
 
+    public function Afastamentos()
+    {
+        return $this->hasMany(Afastamento::class, 'feedback_id', 'id');
+    }
+
     /**/
     //scopeManual
 //    public function scopeEmpresa($query)

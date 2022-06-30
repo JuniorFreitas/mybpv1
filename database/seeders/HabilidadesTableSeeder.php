@@ -73,7 +73,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'entrevista_parecer_teste_pratico_update', 'descricao' => 'Pode alterar um Parecer Teste Prático'];
         $lista[] = ['nome' => 'entrevista_parecer_teste_pratico_delete', 'descricao' => 'Pode apagar um Parecer Teste Prático'];
 
-        //ParecerEntrevista------------------------------
+        //Pa`recerEntrevista------------------------------
         $lista[] = ['nome' => 'entrevista_parecer_entrevista', 'descricao' => 'Acessar rota/menu Parecer Entrevistas Técnicas'];
         $lista[] = ['nome' => 'entrevista_parecer_entrevista_insert', 'descricao' => 'Pode cadastrar um Parecer Entrevista Técnica'];
         $lista[] = ['nome' => 'entrevista_parecer_entrevista_update', 'descricao' => 'Pode alterar um Parecer Entrevista Técnica'];
@@ -237,6 +237,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_historico_aba_ferias', 'descricao' => 'Pode Acessar aba de Ferias no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_promocao', 'descricao' => 'Pode Acessar aba de Promocao no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_metas', 'descricao' => 'Pode Acessar aba de Metas no historico'];
+        $lista[] = ['nome' => 'admissao_historico_aba_afastamento', 'descricao' => 'Pode Acessar aba de Afastamento no historico'];
 
         $lista[] = ['nome' => 'administracao_pesquisaclima', 'descricao' => 'Acessar Pesquisa Clima'];
         $lista[] = ['nome' => 'administracao_pesquisaclima_insert', 'descricao' => 'Acessar Pesquisa Clima Insert'];

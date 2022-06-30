@@ -568,6 +568,18 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
         });
 
+        //Rotas Afastamento Historico
+        Route::group(['as' => 'afastamento-historico.', 'prefix' => 'afastamento-historico'], function () {
+            Route::get('/anexo/{arquivo}', [\App\Http\Controllers\AfastamentoController::class, 'anexoShow'])->name('anexo-show');
+            Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\AfastamentoController::class, 'download'])->name('anexo-download');
+            Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\AfastamentoController::class, 'anexoDelete'])->name('anexo-delete');
+            Route::post('/uploadAnexos', [\App\Http\Controllers\AfastamentoController::class, 'uploadAnexos'])->name('.upload-anexos');
+            Route::post('/', [\App\Http\Controllers\AfastamentoController::class, 'store'])->name('store-afastamento')->middleware('can:admissao_historico_aba_afastamento');
+            Route::get('/{feedback}', [\App\Http\Controllers\AfastamentoController::class, 'show'])->name('show-afastamento')->middleware('can:admissao_historico_aba_afastamento');
+            Route::post('/{feedback}', [\App\Http\Controllers\AfastamentoController::class, 'store'])->name('store-afastamento')->middleware('can:admissao_historico_aba_afastamento');
+            Route::put('/{feedback}', [\App\Http\Controllers\AfastamentoController::class, 'update'])->name('update-afastamento')->middleware('can:admissao_historico_aba_afastamento');
+        });
+
         //Rotas Formulario Noventa Dias
         Route::group(['as' => 'formulario-noventa-dias.', 'prefix' => 'formulario-noventa-dias'], function () {
             Route::post('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'storeFormularioNoventaDias'])->name('storeNoventaDias');

@@ -61,6 +61,12 @@
                            href="#nav-ferias"
                            role="tab" aria-controls="nav-ferias" aria-selected="false">FÉRIAS</a>
                     </li>
+                    <li class="nav-item" v-if="permissoes.afastamento">
+                        <a class="nav-item nav-link" id="nav-afastamento-tab" data-toggle="tab"
+                           @click.prevent="trocaAba('abrirAfastamento')"
+                           href="#nav-afastamento"
+                           role="tab" aria-controls="nav-ferias" aria-selected="false">AFASTAMENTO</a>
+                    </li>
                     <li class="nav-item" v-if="permissoes.beneficio">
                         <a class="nav-item nav-link" id="nav-beneficio-tab" data-toggle="tab"
                            @click.prevent="trocaAba('abrirBeneficio')"
@@ -109,13 +115,18 @@
                     </div>
                     <div class="tab-pane fade show" id="nav-avaliacao-anual" role="tabpanel"
                          aria-labelledby="nav-avaliacao-anual-tab">
-                        <avaliacao-anual v-if="abas.abrirAvaliacaoAnual" v-if="avaliacao_anual" 
+                        <avaliacao-anual v-if="abas.abrirAvaliacaoAnual" v-if="avaliacao_anual"
                                                 :feedback_id="form.feedback_id"></avaliacao-anual>
                     </div>
                     <div class="tab-pane fade show" id="nav-ferias" role="tabpanel"
                          aria-labelledby="nav-ferias-tab">
                         <ferias v-if="abas.abrirFerias && permissoes.ferias"
                         :feedback_id="form.feedback_id" :curriculo_id="form.curriculo_id"></ferias>
+                    </div>
+                    <div class="tab-pane fade show" id="nav-afastamento" role="tabpanel"
+                         aria-labelledby="nav-afastamento-tab">
+                        <afastamento v-if="abas.abrirAfastamento"
+                        :feedback_id="form.feedback_id"></afastamento>
                     </div>
                     <div class="tab-pane fade show" id="nav-beneficio" role="tabpanel"
                          aria-labelledby="nav-beneficio-tab">
@@ -124,7 +135,7 @@
                     </div>
                     <div class="tab-pane fade show" id="nav-cih" role="tabpanel"
                          aria-labelledby="nav-cih-tab">
-                        <cih v-if="abas.abrirCih && permissoes.cih" 
+                        <cih v-if="abas.abrirCih && permissoes.cih"
                         :feedback_id="form.feedback_id"></cih>
                     </div>
                     <div class="tab-pane fade show" id="nav-promocao" role="tabpanel"
@@ -142,7 +153,6 @@
             </div>
         </template>
         <template slot="rodape">
-            {{--               <button class="btn btn-sm btn-default" @click.prevent="salvar"><i class="fa fa-save"></i> Salvar</button>--}}
         </template>
     </modal>
     <fieldset>
