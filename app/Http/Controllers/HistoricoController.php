@@ -92,6 +92,7 @@ class HistoricoController extends Controller
             'metas' => auth()->user()->can('admissao_historico_aba_metas'),
             'beneficio' => auth()->user()->can('cadastro_beneficio'),
             'cih' => auth()->user()->can('admissao_cih'),
+            'afastamento' => auth()->user()->can('admissao_historico_aba_afastamento'),
         ];
         return response()->json([
             'atual' => $resultado->currentPage(),

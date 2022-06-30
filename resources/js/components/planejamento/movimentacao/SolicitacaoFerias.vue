@@ -84,7 +84,7 @@
                             <div class="col-12 col-md-4">
                                 <label>Dias de férias:</label>
                                 <select class="form-control form-control-sm" v-model="form.qnt_dias" :disabled="visualizar">
-                                    <option v-for="cont in listaDiaDeFerias" :value="cont" v-show="cont >= 5">
+                                    <option v-for="cont in qntDias" :value="cont" v-show="cont >= 5">
                                         {{ cont }}
                                     </option>
                                 </select>
@@ -598,46 +598,28 @@ export default {
             return resultado;
         },
         qntDias() {
-            let total = 0;
-
             if (this.form.qnt_faltas <= 5) {
-                total = 30;
-            } else if (this.form.qnt_faltas >= 6 && this.form.qnt_faltas <= 14) {
-                total = 24;
-            } else if (this.form.qnt_faltas >= 15 && this.form.qnt_faltas <= 23) {
-                total = 18;
-            } else if (this.form.qnt_faltas >= 24 && this.form.qnt_faltas <= 32) {
-                total = 12;
-            } else if (this.form.qnt_faltas >= 33) {
-                total = 0;
-            } else {
-                total = 0;
+                return 30;
             }
-            return total;
+            if (this.form.qnt_faltas >= 6 && this.form.qnt_faltas <= 14) {
+                return 24;
+            }
+            if (this.form.qnt_faltas >= 15 && this.form.qnt_faltas <= 23) {
+                return 18;
+            }
+            if (this.form.qnt_faltas >= 24 && this.form.qnt_faltas <= 32) {
+                return 12;
+            }
+            if (this.form.qnt_faltas >= 33) {
+                return  0;
+            }
         },
         qntSaldo() {
             this.form.dias_saldo = this.qntDias - this.form.qnt_dias;
 
             return this.form.dias_saldo;
         },
-        listaDiaDeFerias() {
-            let qnt_faltas = this.form.qnt_faltas;
-            if (qnt_faltas < 5) {
-                return 30;
-            }
-            if (qnt_faltas >= 6 && qnt_faltas <= 14) {
-                return 24;
-            }
-            if (qnt_faltas >= 15 && qnt_faltas <= 23) {
-                return 18;
-            }
-            if (qnt_faltas >= 24 && qnt_faltas <= 32) {
-                return 12;
-            }
-            if (qnt_faltas >= 33) {
-                return 0;
-            }
-        },
+
         dataAdmissao() {
             if (this.form.colaborador_id !== "") {
                 axios.post(`${URL_ADMIN}/busca-data-admissao`, {
