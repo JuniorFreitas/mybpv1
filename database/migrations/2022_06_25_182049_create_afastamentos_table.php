@@ -23,9 +23,8 @@ class CreateAfastamentosTable extends Migration
             $table->text('observacao')->nullable();
             $table->timestamps();
 
-
-            $table->foreign('feedback_id')->references('id')->on('feedback_curriculos');
-            $table->foreign('cadastrado_id')->references('id')->on('users');
+            $table->foreign('feedback_id')->references('id')->on('feedback_curriculos')->cascadeOnDelete();
+            $table->foreign('cadastrado_id')->references('id')->on('users')->cascadeOnDelete();
 
         });
     }
