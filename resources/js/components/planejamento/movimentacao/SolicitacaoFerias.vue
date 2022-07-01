@@ -205,7 +205,7 @@
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
 
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-4">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="atualizar()"
                                :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroInicioFerias"
@@ -221,7 +221,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-4">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="atualizar()"
                                :disabled="controle.carregando || controle.dados.filtroPeriodo || controle.dados.filtroInicioFerias"
@@ -237,7 +237,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-4">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="atualizar()"
                                :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroPeriodo"
@@ -253,7 +253,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label>Pesquisar</label>
                         <input type="text"
@@ -264,7 +264,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-2">
                     <div class="form-group">
                         <label>Status</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
@@ -273,6 +273,17 @@
                             <option value="aberto">Aberto</option>
                             <option value="aprovado">Aprovado</option>
                             <option value="reprovado">Reprovado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-2">
+                    <div class="form-group">
+                        <label for="">Exibir</label>
+                        <select class="form-control form-control-sm" @change="atualizar()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.pages">
+                            <option v-for="item in por_pagina" :value="item">{{ item }}</option>
                         </select>
                     </div>
                 </div>
@@ -294,19 +305,11 @@
                     Solicitar
                 </button>
 
-                <form method="post" :action="`movimentacao/ferias-prevista/export`" target="_blank">
-                    <input type="hidden" name="_token" :value="CSRF_token">
-                    <input type="hidden" name="filtroPeriodo" :value="controle.dados.filtroPeriodo">
-                    <input type="hidden" name="periodo" :value="controle.dados.periodo">
-                    <input type="hidden" name="campoBusca" :value="controle.dados.campoBusca">
-                    <input type="hidden" name="campoStatus" :value="controle.dados.campoStatus">
-                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">
-
-                    <button type="submit" class="btn btn-sm btn-primary mr-1" data-toggle="modal"
-                            :disabled="controle.carregando || !controle.dados.filtroPeriodo">
-                        <i class="fa fa-files-pdf"></i> Gerar Excel
-                    </button>
-                </form>
+                <button type="button" class="btn btn-sm btn-primary  mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
+                </button>
 
                 <button type="submit" class="btn btn-sm btn-primary mr-1" v-show="selecionados.length > 0"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
@@ -466,9 +469,11 @@ import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
 import configselect2 from "../../../components/Select2/mixSelec2";
 import Select2 from "../../../components/Select2/Select2";
+import ExportacaoMixin from "../../../mixins/Exportacoes";
+import Utils from "../../../mixins/Utils";
 
 export default {
-    mixins: [configselect2],
+    mixins: [configselect2, ExportacaoMixin, Utils],
     data() {
         return {
             tituloJanela: "Solicitacao de férias",
@@ -476,11 +481,11 @@ export default {
             visualizar: false,
             aprovando: false,
             aprova: false,
-
-            CSRF_token,
+            preloadExportacao: false,
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
             caminho_gestor: `autocomplete/todos-gestores-ativos`,
+            urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/export`,
 
             selecionados: [],
             selecionaTudo: false,
@@ -666,8 +671,10 @@ export default {
             this.form.data_retorno = data_retorno_ptbr;
 
             return data_retorno_ptbr;
+        },
+        por_pagina() {
+            return [20, 50, 100, 150];
         }
-
     },
     methods: {
         padTo2Digits(num) {

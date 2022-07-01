@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\planejamento\movimentacao\feriasPrevistaExport;
+use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovar;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
@@ -283,10 +284,13 @@ class FeriasPrevistaController extends Controller
     {
 
         $resultado = FeriasPrevista::with(
-            'Colaborador.FeedBack.Admissao',
-            'CentroCusto',
-            'UserCadastrou',
-            'QuemAprovou',
+            'Colaborador:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,email,municipio_id,uf_vaga',
+            'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
+            'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao',
+            'Colaborador.FeedBack.VagaSelecionada',
+            'CentroCusto:id,label',
+            'UserCadastrou:id,nome',
+            'QuemAprovou:id,nome',
             'PeriodoAquisitivo',
         );
 
@@ -332,27 +336,7 @@ class FeriasPrevistaController extends Controller
 
         return $resultado->orderByDesc('created_at');
     }
-
-    public function export(Request $request)
-    {
-
-        $periodo = explode(' até ', $request->periodo);
-        $dataInicio = new DataHora($periodo[0]);
-        $dataFim = new DataHora($periodo[1]);
-
-        $resultado = FeriasPrevista::with(
-            'CentroCusto',
-            'QuemAprovou:id,nome',
-            'UserCadastrou:id,nome',
-            'GestorAprovacao:id,nome',
-            'Colaborador', 'RhAprovacao')
-            ->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')
-            ->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59')
-            ->orderByDesc('created_at')->get();
-
-        return \Excel::download(new feriasPrevistaExport($resultado), 'ferias_prevista.xlsx');
-    }
-
+    
     public function buscaDataAdmissao(Request $request)
     {
         $data_admissao = FeedbackCurriculo::whereCurriculoId($request->colaborador_id)
@@ -437,6 +421,60 @@ class FeriasPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
+
+    }
+
+    //Excel
+    public function export(Request $request)
+    {
+
+        $resultado = $this->filtro($request)->get();
+
+        $head = [
+            'Nome',
+            'Cargo',
+            'Data da Admissão',
+            'Centro de Custo',
+            'Período Aquisitivo',
+            'Última Data',
+            'Quantidade de Faltas',
+            'Data Saída',
+            'Data Retorno',
+            'Quantidade de Dias',
+            'Saldo de Dias',
+            'Quem Cadastrou',
+            'Gestor Indicado',
+            'Gestor Aprovação',
+            'Data da Aprovação',
+            'Status',
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = array(
+                $row->Colaborador->nome,
+                $row->Colaborador->FeedBack->VagaSelecionada->nome,
+                $row->Colaborador->FeedBack->Admissao->data_admissao,
+                $row->CentroCusto->label,
+                $row->PeriodoAquisitivo->label,
+                $row->ultima_data,
+                (string)$row->qnt_faltas,
+                $row->data_saida,
+                $row->data_retorno,
+                (string)$row->qnt_dias,
+                (string)$row->dias_saldo,
+                $row->UserCadastrou->nome,
+                $row->GestorAprovacao->nome,
+                $row->QuemAprovou ? $row->QuemAprovou->nome : '',
+                $row->status_aprovacao ? $row->data_aprovacao : '',
+                $row->status_aprovacao,
+            );
+        }
+
+        $nameArquivo = "ferias_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Ferias - Prevista", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }
 }
