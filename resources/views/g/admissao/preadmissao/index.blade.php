@@ -144,7 +144,6 @@
                 <fieldset>
                     <legend>CARTÃO VACINA (ATÉ 6 ANOS)</legend>
                     <upload label="Selecionar anexo(s)"
-
                             :leitura="true"
                             :model="form.cartao_vacina_filho"
                             :model-delete="form.cartao_vacina_filhoDel" :url="urlAnexoUpload"
@@ -171,7 +170,9 @@
         <template slot="conteudo">
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preload">
-                <div class="alert alert-warning">Observação: Ao trocar o e-mail, implicará no e-mail de acesso ao Sistema.</div>
+                <div class="alert alert-warning">Observação: Ao trocar o e-mail, implicará no e-mail de acesso ao
+                    Sistema.
+                </div>
                 <fieldset>
                     <legend>Envio de E-mail</legend>
                     <div class="col-12">
@@ -179,15 +180,16 @@
                             <label>E-mail</label>
                             <input type="text" class="form-control form-control-sm validacampo"
                                    v-model="formEmail.email"
-                                   autocomplete="mybp" @keyup.prevent="validaEmailVazio($event.target)" blur.prevent="validaEmailVazio($event.target)">
+                                   autocomplete="mybp" @keyup.prevent="validaEmailVazio($event.target)"
+                                   blur.prevent="validaEmailVazio($event.target)">
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="form-group">
                             <label>Observação</label>
                             <textarea cols="3" rows="5" maxlength="255" class="form-control form-control-sm"
-                                   v-model="formEmail.observacao"
-                                   autocomplete="mybp"></textarea>
+                                      v-model="formEmail.observacao"
+                                      autocomplete="mybp"></textarea>
                         </div>
                     </div>
                 </fieldset>
@@ -307,7 +309,7 @@
                     <th>CPF</th>
                     <th class="text-center" v-if="cliente_id === 1">Cliente</th>
                     <th class="text-center">Vaga</th>
-{{--                    <th class="text-center">Qnt Anexos</th>--}}
+                    <th class="text-center">Qnt Anexos</th>
                     <th class="text-center"></th>
                 </tr>
                 </thead>
@@ -330,9 +332,16 @@
                     <td class="text-center">
                         @{{resultado.vaga_selecionada.nome}}
                     </td>
-{{--                    <td class="text-center">--}}
-{{--                        @{{resultado.vaga_selecionada.nome}} de 16--}}
-{{--                    </td>--}}
+                    <td class="text-center">
+                        @{{ resultado.curriculo.anexos_cpf_rg_count + resultado.curriculo.antecedentes_count +
+                        resultado.curriculo.carta_sindicato_count + resultado.curriculo.cartao_vacina_filho_count +
+                        resultado.curriculo.carteira_vacina_count + resultado.curriculo.certificado_escolaridade_count +
+                        resultado.curriculo.certificado_reservista_count + resultado.curriculo.comprovante_end_count +
+                        resultado.curriculo.conta_banco_count + resultado.curriculo.ctps_frente_count +
+                        resultado.curriculo.ctps_verso_count + resultado.curriculo.declaracao_escolar_filho_count +
+                        resultado.curriculo.foto_tres_count + resultado.curriculo.pis_rescisao_count +
+                        resultado.curriculo.rgcpf_filho_count + resultado.curriculo.titulo_eleitor_count }} anexo(s)
+                    </td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-primary" title="Visuzalizar"
                                 @click.prevent="formVisualizar(resultado.id)"

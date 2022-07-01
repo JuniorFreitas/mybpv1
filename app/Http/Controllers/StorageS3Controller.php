@@ -40,7 +40,6 @@ class StorageS3Controller extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-
         $path = Arquivo::buscaPath($arquivo);
         if ($path == false) {
             return response("", 404);
