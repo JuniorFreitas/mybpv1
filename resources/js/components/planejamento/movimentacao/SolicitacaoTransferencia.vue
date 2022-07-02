@@ -169,7 +169,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Pesquisar</label>
                         <input type="text"
@@ -180,7 +180,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Status</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
@@ -193,21 +193,37 @@
                     </div>
                 </div>
 
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <label for="">Exibir</label>
+                        <select class="form-control form-control-sm" @change="atualizar()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.pages">
+                            <option v-for="item in por_pagina" :value="item">{{ item }}</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="col-12"></div>
             </form>
 
-            <div class="col-12 col-md-12" style="margin-left: -11px">
-                <button type="button" class="btn btn-sm btn-success mb-2" :disabled="controle.carregando"
+            <div class="col-12 col-md-9">
+                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
                         @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
 
-                <button type="button" class="btn btn-sm btn-primary mb-2" data-toggle="modal"
+                <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
                         :disabled="controle.carregando"
                         :data-target="`#${hash}`"
                         @click.prevent="formNovo">
                     Solicitar
+                </button>
+                <button type="button" class="btn btn-sm btn-primary  mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                 </button>
 
                 <button type="submit" class="btn btn-sm btn-primary mr-1" v-show="selecionados.length > 0"
@@ -218,19 +234,6 @@
                     Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
                 </button>
 
-                <form method="post" :action="`movimentacao/transferencia-prevista/exportaExcel`" target="_blank">
-                    <input type="hidden" name="_token" :value="CSRF_token">
-                    <input type="hidden" name="filtroPeriodo" :value="controle.dados.filtroPeriodo">
-                    <input type="hidden" name="periodo" :value="controle.dados.periodo">
-                    <input type="hidden" name="campoBusca" :value="controle.dados.campoBusca">
-                    <input type="hidden" name="campoStatus" :value="controle.dados.campoStatus">
-                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">
-
-                    <button type="submit" class="btn btn-sm btn-primary" data-toggle="modal"
-                            :disabled="controle.carregando || !controle.dados.filtroPeriodo">
-                        <i class="fa fa-files-pdf"></i> Gerar Excel
-                    </button>
-                </form>
             </div>
         </fieldset>
 
@@ -367,8 +370,12 @@
 <script>
 import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
+import ExportacaoMixin from "../../../mixins/Exportacoes";
+import Utils from "../../../mixins/Utils";
 
 export default {
+    mixins: [ExportacaoMixin, Utils],
+
     components: {
         colaborador,
         gestoraprovacao,
@@ -385,6 +392,9 @@ export default {
             visualizar: false,
             aprovando: false,
             aprovar_por_gestor: false,
+            preloadExportacao: false,
+
+            urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/export`,
 
             CSRF_token,
 
@@ -474,6 +484,9 @@ export default {
             this.selecionaTudo = resultado
             return resultado
         },
+        por_pagina() {
+            return [20, 50, 100, 150];
+        }
     },
     methods: {
         selecionaTodos() {

@@ -324,6 +324,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
                 Route::post('demissao-prevista/atualizar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::post('demissao-prevista/export', [\App\Http\Controllers\DemissaoPrevistaController::class, 'export'])->name('demissao-prevista.excel');
                 Route::resource('demissao-prevista', \App\Http\Controllers\DemissaoPrevistaController::class, ['parameters' => ['demissao-prevista' => 'demissao_prevista']]);
             });
 
@@ -340,6 +341,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('admissoes-prevista/atualizacao-status', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizacaoStatus'])->name('admissoes-prevista.atualizacaoStatus');
                 Route::post('admissoes-prevista/atualizar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('admissoes-prevista/{admissoesPrevista}/aprovar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::post('admissoes-prevista/export', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'export'])->name('admissoes-prevista.excel');
                 Route::resource('admissoes-prevista', \App\Http\Controllers\AdmissoesPrevistaController::class, ['parameters' => ['admissoes-prevista' => 'admissoes_prevista']]);
             });
 
@@ -347,6 +349,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('valor-extra-prevista/atualizacao-status', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'atualizacaoStatus'])->name('valor-extra-prevista.atualizacaoStatus');
                 Route::post('valor-extra-prevista/atualizar', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('valor-extra-prevista/{valorExtraPrevista}/aprovar', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::post('valor-extra-prevista/export', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'export'])->name('valor-extra-prevista.excel');
                 Route::resource('valor-extra-prevista', \App\Http\Controllers\ValorExtraPrevistaController::class, ['parameters' => ['valor-extra-prevista' => 'valor_extra_prevista']]);
             });
 
@@ -354,6 +357,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('muda-cargo-prevista/atualizacao-status', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizacaoStatus'])->name('muda-cargo-prevista.atualizacaoStatus');
                 Route::post('muda-cargo-prevista/atualizar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('muda-cargo-prevista/{mudaCargoPrevista}/aprovar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::post('muda-cargo-prevista/export', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'export'])->name('muda-cargo-prevista.excel');
                 Route::resource('muda-cargo-prevista', \App\Http\Controllers\MudaCargoPrevistaController::class, ['parameters' => ['muda-cargo-prevista' => 'muda_cargo_prevista']]);
             });
 
@@ -361,14 +365,15 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('intermitente-fixo-prevista/atualizacao-status', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizacaoStatus'])->name('intermitente-fixo-prevista.atualizacaoStatus');
                 Route::post('intermitente-fixo-prevista/atualizar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('intermitente-fixo-prevista/{intermitenteFixoPrevista}/aprovar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::post('intermitente-fixo-prevista/export', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'export'])->name('intermitente-fixo-prevista.excel');
                 Route::resource('intermitente-fixo-prevista', \App\Http\Controllers\IntermitenteFixoPrevistaController::class, ['parameters' => ['intermitente-fixo-prevista' => 'intermitente_fixo_prevista']]);
             });
 
             Route::group(['as' => 'solicitacao_transferencia.'], function () {
                 Route::post('transferencia-prevista/atualizacao-status', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizacaoStatus'])->name('transferencia-prevista.atualizacaoStatus');
-//                Route::post('transferencia-prevista/exportaExcel', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'exportaExcel'])->name('exportaExcel');
                 Route::post('transferencia-prevista/atualizar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::post('transferencia-prevista/export', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'export'])->name('transferencia-prevista.excel');
                 Route::resource('transferencia-prevista', \App\Http\Controllers\TransferenciaPrevistaController::class, ['parameters' => ['transferencia-prevista' => 'transferencia_prevista']]);
             });
 

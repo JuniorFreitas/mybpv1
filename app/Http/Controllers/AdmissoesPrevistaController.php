@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovar;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovarRH;
 use App\Models\AdmissoesPrevista;
@@ -12,26 +13,6 @@ use MasterTag\DataHora;
 
 class AdmissoesPrevistaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -71,17 +52,6 @@ class AdmissoesPrevistaController extends Controller
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\AdmissoesPrevista $admissoesPrevista
-     * @return \Illuminate\Http\Response
-     */
-    public function show(AdmissoesPrevista $admissoesPrevista)
-    {
-        //
     }
 
     /**
@@ -141,17 +111,6 @@ class AdmissoesPrevistaController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\AdmissoesPrevista $admissoesPrevista
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(AdmissoesPrevista $admissoesPrevista)
-    {
-        //
-    }
-
     public function aprovar(Request $request, AdmissoesPrevista $admissoesPrevista)
     {
         $this->authorize('privilegio__aprovar_por_gestor');
@@ -207,6 +166,52 @@ class AdmissoesPrevistaController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $periodo = AdmissoesPrevista::all();
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'periodo' => $periodo,
+                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+            ]
+        ]);
+
+    }
+
+    public function atualizacaoStatus(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            foreach ($request->selecionados[0] as $selecionado) {
+
+                $dados = AdmissoesPrevista::find($selecionado);
+
+                $dados->update([
+                    'user_aprovacao_id' => auth()->id(),
+                    'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                    'obs_aprovacao' => $request->obs_aprovacao,
+                    'status_aprovacao' => $request->status_aprovacao,
+                ]);
+
+                DB::commit();
+            }
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar solicitação em massa:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+    }
+
+    public function filtro(Request $request)
+    {
         $resultado = AdmissoesPrevista::with(
             'Cargo',
             'CentroCusto',
@@ -238,43 +243,52 @@ class AdmissoesPrevistaController extends Controller
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        return $resultado->orderByDesc('created_at');
 
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items(),
-                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
-            ]
-        ]);
     }
 
-    public function atualizacaoStatus(Request $request)
+    //Excel
+    public function export(Request $request)
     {
-        try {
-            DB::beginTransaction();
 
-            foreach ($request->selecionados[0] as $selecionado) {
+        $resultado = $this->filtro($request)->get();
+        $head = [
+            "Quem Solicitou",
+            "Cargo",
+            "Data da Solicitação",
+            "Centro de Custo",
+            "Tipo de Contrato",
+            "Data da Admissão",
+            "Observação",
+            "Salário",
+            "Gestor Aprovação",
+            "Quem Aprovou/Reprovou",
+            "Data da Aprovação/Reprovação",
+            "Status"
+        ];
 
-                $dados = AdmissoesPrevista::find($selecionado);
+        $rows = [];
 
-                $dados->update([
-                    'user_aprovacao_id' => auth()->id(),
-                    'data_aprovacao' => (new DataHora())->dataHoraInsert(),
-                    'obs_aprovacao' => $request->obs_aprovacao,
-                    'status_aprovacao' => $request->status_aprovacao,
-                ]);
-
-                DB::commit();
-            }
-            return response()->json([], 201);
-        } catch (\Exception $e) {
-            DB::rollback();
-            $msg = "error ao aprovar solicitação em massa:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-            \Log::debug($msg);
-            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->UserCadastrou->nome,
+                $row->Cargo->nome,
+                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
+                $row->CentroCusto->label,
+                $row->tipo_contrato,
+                (new DataHora($row->data_admissao))->dataCompleta(),
+                $row->obs,
+                $row->salario_format,
+                $row->GestorAprovacao->nome,
+                $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
+                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
+                $row->status_aprovacao ? $row->status_aprovacao : "aberto",
+            ];
         }
+
+        $nameArquivo = "admissao_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Admissão - Prevista", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+
     }
 }

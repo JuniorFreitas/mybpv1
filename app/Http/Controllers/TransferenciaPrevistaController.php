@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ModeloRowsExport;
+use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaAprovar;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaAprovarRH;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaStore;
@@ -13,26 +14,6 @@ use MasterTag\DataHora;
 
 class TransferenciaPrevistaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -70,17 +51,6 @@ class TransferenciaPrevistaController extends Controller
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
     }
 
     /**
@@ -137,17 +107,6 @@ class TransferenciaPrevistaController extends Controller
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\TransferenciaPrevista $transferenciaPrevista
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 
     public function aprovar(Request $request, TransferenciaPrevista $transferenciaPrevista)
@@ -257,51 +216,47 @@ class TransferenciaPrevistaController extends Controller
         return $resultado->orderByDesc('created_at');
     }
 
-    public function exportaExcel(Request $request)
+    public function export(Request $request)
     {
         $resultado = $this->filtro($request)->get();
 
         $head = [
-            "ID",
-            "QUEM SOLICITOU",
-            "SOLICITAÇÃO",
-            "EMPRESA",
-            "COLABORADOR",
-            "CENTRO DE CUSTO ORIGEM",
-            "CENTRO DE CUSTO DESTINO",
-            "DATA TRANSFERENCIA",
-            "GESTOR APROVAÇÃO",
-            "OBSERVAÇÃO",
-
-            "STATUS",
-            "QUEM APROVOU/REPROVOU",
-            "DATA DA APROVAÇÃO/REPROVAÇÃO",
-            'OBSERVAÇÃO APROVAÇÃO/REPROVAÇÃO',
+            "Quem Solicitou",
+            "Data da Solicitação",
+            "Colaborador",
+            "Centro de Custo Origem",
+            "Centro de Custo Destino",
+            "Data da Tranferência",
+            "Gestor Aprovação",
+            "Observação",
+            "Status",
+            "Quem Aprovou/Reprovou",
+            "Data da Aprovação/Reprovação",
+            'Observação Aprovação/Reprovação',
         ];
 
         $rows = [];
 
         foreach ($resultado as $row) {
             $rows[] = [
-                $row->id,
                 $row->UserCadastrou->nome,
                 (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->Cliente ? $row->Cliente->razao_social : $row->Cliente->nome,
                 $row->Colaborador->nome,
                 $row->CentroCustoOrigem->label,
                 $row->CentroCustoDestino->label,
                 (new DataHora($row->data_transferencia))->dataCompleta(),
                 $row->GestorAprovacao->nome,
-                $row->observacao,
-
+                $row->obs,
                 $row->status_aprovacao ? $row->status_aprovacao : "aberto",
                 $row->QuemAprovou ? $row->QuemAprovou->nome : "aguardando",
-                (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5),
+                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
                 $row->obs_aprovacao,
             ];
         }
 
-        return \Excel::download(new ModeloRowsExport($head, $rows), 'Transferência - ' . (new DataHora())->nomeUnico() . '.xlsx');
+        $nameArquivo = "tranferencia_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Transferência - Prevista", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }
     public function atualizacaoStatus(Request $request)
