@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ModeloRowsExport;
+use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovar;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovarRH;
 use App\Models\IntermitenteFixoPrevista;
@@ -12,26 +13,6 @@ use MasterTag\DataHora;
 
 class IntermitenteFixoPrevistaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -74,17 +55,6 @@ class IntermitenteFixoPrevistaController extends Controller
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\IntermitenteFixoPrevista  $intermitenteFixoPrevista
-     * @return \Illuminate\Http\Response
-     */
-    public function show(IntermitenteFixoPrevista $intermitenteFixoPrevista)
-    {
-        //
     }
 
     /**
@@ -155,18 +125,6 @@ class IntermitenteFixoPrevistaController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\IntermitenteFixoPrevista  $intermitenteFixoPrevista
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(IntermitenteFixoPrevista $intermitenteFixoPrevista)
-    {
-        //
-    }
-
-
     public function aprovar(Request $request, IntermitenteFixoPrevista $intermitenteFixoPrevista)
     {
         $this->authorize('privilegio_aprovar_por_gestor');
@@ -221,6 +179,23 @@ class IntermitenteFixoPrevistaController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $periodo = IntermitenteFixoPrevista::all();
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'periodo' => $periodo,
+                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
         $resultado = IntermitenteFixoPrevista::with(
             'CentroCusto',
             'CargoAnterior',
@@ -253,70 +228,55 @@ class IntermitenteFixoPrevistaController extends Controller
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items(),
-                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
-            ]
-        ]);
+        return $resultado->orderByDesc('created_at');
     }
-
-    public function exportaExcel(Request $request)
+    public function export(Request $request)
     {
         $resultado = $this->filtro($request)->get();
 
         $head = [
-            "ID",
-            "QUEM SOLICITOU",
-            "SOLICITAÇÃO",
-            "EMPRESA",
-            "CENTRO DE CUSTO",
-            "COLABORADOR",
-            "CARGO ANTERIOR",
-            "SALÁRIO ANTERIOR",
-            "NOVO CARGO",
-            "SALÁRIO NOVO",
-            "DATA DA MODIFICAÇÃO",
-            "GESTOR APROVAÇÃO",
-            "MOTIVOS",
-
-            "STATUS",
-            "QUEM APROVOU/REPROVOU",
-            "DATA DA APROVAÇÃO/REPROVAÇÃO",
-            'OBSERVAÇÃO APROVAÇÃO/REPROVAÇÃO',
+            "Quem Solicitou",
+            "Data da Solicitação",
+            "Centro de Custo",
+            "Colaborador",
+            "Cargo Anterior",
+            "Salário Anterior",
+            "Cargo Novo",
+            "Salário Novo",
+            "data da Modificação",
+            "Gestor Aprovação",
+            "Motivos",
+            "Status",
+            "Quem Aprovou/Reprovou",
+            "Data da Aprovação/Reprovação",
+            'Observação Aprovação/Reprovação',
         ];
 
         $rows = [];
 
         foreach ($resultado as $row) {
             $rows[] = [
-                $row->id,
                 $row->UserCadastrou->nome,
                 (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->Cliente ? $row->Cliente->razao_social : $row->Cliente->nome,
                 $row->CentroCusto->label,
                 $row->Colaborador->nome,
                 $row->CargoAnterior->nome,
                 $row->salario_anterior_format,
                 $row->NovoCargo->nome,
                 $row->novo_salario_format,
-                (new DataHora($row->data_modificacao))->dataCompleta(),
+                $row->data_modificacao ? (new DataHora($row->data_modificacao))->dataCompleta() : '',
                 $row->GestorAprovacao->nome,
-                $row->observacao,
-
+                $row->motivos,
                 $row->status_aprovacao ? $row->status_aprovacao : "aberto",
-                $row->QuemAprovou ? $row->QuemAprovou->nome : "aguardando",
-                (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5),
+                $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
+                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
                 $row->obs_aprovacao,
             ];
         }
 
-        return \Excel::download(new ModeloRowsExport($head, $rows), 'Mudança Intermitente para Fixo - ' . (new DataHora())->nomeUnico() . '.xlsx');
+        $nameArquivo = "intermitente_fixo_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Intermitente Fixo - Prevista", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }
 

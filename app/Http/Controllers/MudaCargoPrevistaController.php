@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ModeloRowsExport;
+use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovar;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovarRH;
 use App\Models\MudaCargoPrevista;
@@ -12,26 +13,6 @@ use MasterTag\DataHora;
 
 class MudaCargoPrevistaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -73,17 +54,6 @@ class MudaCargoPrevistaController extends Controller
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\MudaCargoPrevista $mudaCargoPrevista
-     * @return \Illuminate\Http\Response
-     */
-    public function show(MudaCargoPrevista $mudaCargoPrevista)
-    {
-        //
     }
 
     /**
@@ -218,6 +188,23 @@ class MudaCargoPrevistaController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $periodo = MudaCargoPrevista::all();
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'periodo' => $periodo,
+                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
         $resultado = MudaCargoPrevista::with(
             'CentroCusto',
             'CargoAnterior',
@@ -250,51 +237,36 @@ class MudaCargoPrevistaController extends Controller
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items(),
-                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
-            ]
-        ]);
+        return $resultado->orderByDesc('created_at');
     }
 
-    public function exportaExcel(Request $request)
+    public function export(Request $request)
     {
         $resultado = $this->filtro($request)->get();
 
         $head = [
-            "ID",
-            "QUEM SOLICITOU",
-            "SOLICITAÇÃO",
-            "EMPRESA",
-            "CENTRO DE CUSTO",
-            "COLABORADOR",
-            "CARGO ANTERIOR",
-            "SALÁRIO ANTERIOR",
-            "CARGO NOVO",
-            "SALÁRIO NOVO",
-            "GESTOR APROVAÇÃO",
-            "OBSERVAÇÃO",
-
-            "STATUS",
-            "QUEM APROVOU/REPROVOU",
-            "DATA DA APROVAÇÃO/REPROVAÇÃO",
-            'OBSERVAÇÃO APROVAÇÃO/REPROVAÇÃO',
+            "Quem Solicitou",
+            "Data da Solicitação",
+            "Centro de Custo",
+            "Colaborador",
+            "Cargo Anterior",
+            "Salário Anterior",
+            "Cargo Novo",
+            "Salário Novo",
+            "Gestor Aprovação",
+            "Observação",
+            "Status",
+            "Quem Aprovou/Reprovou",
+            "Data da Aprovação/Reprovação",
+            'Observação Aprovação/Reprovação',
         ];
 
         $rows = [];
 
         foreach ($resultado as $row) {
             $rows[] = [
-                $row->id,
                 $row->UserCadastrou->nome,
                 (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->Cliente ? $row->Cliente->razao_social : $row->Cliente->nome,
                 $row->CentroCusto->label,
                 $row->Colaborador->nome,
                 $row->CargoAnterior->nome,
@@ -302,17 +274,17 @@ class MudaCargoPrevistaController extends Controller
                 $row->NovoCargo->nome,
                 $row->novo_salario_format,
                 $row->GestorAprovacao->nome,
-                $row->observacao,
-
+                $row->obs,
                 $row->status_aprovacao ? $row->status_aprovacao : "aberto",
                 $row->QuemAprovou ? $row->QuemAprovou->nome : "aguardando",
-                (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5),
+                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
                 $row->obs_aprovacao,
             ];
         }
 
-        return \Excel::download(new ModeloRowsExport($head, $rows), 'Mudança de Cargo - ' . (new DataHora())->nomeUnico() . '.xlsx');
-
+        $nameArquivo = "muda_cargo_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Muda Cargo - Prevista", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
     public function atualizacaoStatus(Request $request)
     {

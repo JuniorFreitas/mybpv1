@@ -165,7 +165,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Pesquisar</label>
                         <input type="text"
@@ -176,7 +176,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Status</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
@@ -185,6 +185,17 @@
                             <option value="aberto">Aberto</option>
                             <option value="aprovado">Aprovado</option>
                             <option value="reprovado">Reprovado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <label for="">Exibir</label>
+                        <select class="form-control form-control-sm" @change="atualizar()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.pages">
+                            <option v-for="item in por_pagina" :value="item">{{ item }}</option>
                         </select>
                     </div>
                 </div>
@@ -203,6 +214,12 @@
                             @click.prevent="formNovo">
                         Solicitar
                     </button>
+                    <button type="button" class="btn btn-sm btn-primary  mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
+                    </button>
+
                     <button type="submit" class="btn btn-sm btn-primary mr-1" v-show="selecionados.length > 0"
                             :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="selecionados.length === 0"
@@ -345,8 +362,12 @@
 
 import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
+import ExportacaoMixin from "../../../mixins/Exportacoes";
+import Utils from "../../../mixins/Utils";
+
 
 export default {
+    mixins: [ExportacaoMixin, Utils],
     components: {
         colaborador,
         gestoraprovacao,
@@ -364,6 +385,9 @@ export default {
             aprovando: false,
             aprovar_por_gestor: false,
             URL_ADMIN,
+            preloadExportacao: false,
+
+            urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/export`,
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
@@ -454,6 +478,9 @@ export default {
             this.selecionaTudo = resultado
             return resultado
         },
+        por_pagina() {
+            return [20, 50, 100, 150];
+        }
     },
     methods: {
         selecionaTodos() {

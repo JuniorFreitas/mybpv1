@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ModeloRowsExport;
+use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovar;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaStore;
@@ -15,26 +16,6 @@ use PDF;
 
 class DemissaoPrevistaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -73,17 +54,6 @@ class DemissaoPrevistaController extends Controller
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\DemissaoPrevista $demissaoPrevista
-     * @return \Illuminate\Http\Response
-     */
-    public function show(DemissaoPrevista $demissaoPrevista)
-    {
-        //
     }
 
     /**
@@ -142,34 +112,44 @@ class DemissaoPrevistaController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\DemissaoPrevista $demissaoPrevista
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(DemissaoPrevista $demissaoPrevista)
+    public function atualizar(Request $request)
     {
-        //
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $periodo = DemissaoPrevista::all();
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'periodo' => $periodo,
+                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+            ]
+        ]);
+
     }
 
-    public function atualizar(Request $request)
+    public function filtro(Request $request)
     {
         $resultado = DemissaoPrevista::with(
             'CentroCusto',
             'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo', 'GestorAprovacao:id,nome','UserAprovacao:id,nome');
+            'Colaborador:id,nome,login,tipo,ativo',
+            'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
+            'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao',
+            'Colaborador.FeedBack.VagaSelecionada',
+            'GestorAprovacao:id,nome','UserAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-
-            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
         }
-
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Colaborador', function ($q) use ($request) {
@@ -187,19 +167,8 @@ class DemissaoPrevistaController extends Controller
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items(),
-                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
-            ]
-        ]);
+        return $resultado->orderByDesc('created_at');
     }
-
 
     public function aprovar(Request $request, DemissaoPrevista $demissaoPrevista)
     {
@@ -254,51 +223,50 @@ class DemissaoPrevistaController extends Controller
 
     }
 
-    public function exportaExcel(Request $request)
+    //Excel
+    public function export(Request $request)
     {
+
         $resultado = $this->filtro($request)->get();
-
         $head = [
-            "ID",
-            "QUEM SOLICITOU",
-            "SOLICITAÇÃO",
-            "EMPRESA",
-            "CENTRO DE CUSTO",
-            "COLABORADOR",
-            "DATA DEMISSÃO",
-            "TIPO DE AVISO",
-            "GESTOR APROVAÇÃO",
-            "OBSERVAÇÃO",
-
-            "STATUS",
-            "QUEM APROVOU/REPROVOU",
-            "DATA DA APROVAÇÃO/REPROVAÇÃO",
-            'OBSERVAÇÃO APROVAÇÃO/REPROVAÇÃO',
+            "Quem Solicitou",
+            "Data da Solicitação",
+            "Centro de Custo",
+            "Colaborador",
+            "Cargo",
+            "Data Demissão",
+            "Tipo de Aviso",
+            "Gestor Aprovação",
+            "Observação",
+            "Status",
+            "Quem Aprovou/Reprovou",
+            "Data da Aprovação/Reprovação",
+            'Observação Aprovação/Reprovação',
         ];
 
         $rows = [];
 
         foreach ($resultado as $row) {
             $rows[] = [
-                $row->id,
                 $row->UserCadastrou->nome,
                 (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->Cliente ? $row->Cliente->razao_social : $row->Cliente->nome,
                 $row->CentroCusto->label,
                 $row->Colaborador->nome,
+                $row->Colaborador->FeedBack->VagaSelecionada->nome,
                 (new DataHora($row->data_demissao))->dataCompleta(),
                 $row->tipo_aviso,
                 $row->GestorAprovacao->nome,
-                $row->observacao,
-
+                $row->obs,
                 $row->status_aprovacao ? $row->status_aprovacao : "aberto",
-                $row->QuemAprovou ? $row->QuemAprovou->nome : "aguardando",
-                (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5),
+                $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
+                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
                 $row->obs_aprovacao,
             ];
         }
 
-        return \Excel::download(new ModeloRowsExport($head, $rows), 'Demissão Previstas - ' . (new DataHora())->nomeUnico() . '.xlsx');
+        $nameArquivo = "demissao_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Demissão - Prevista", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }
 
