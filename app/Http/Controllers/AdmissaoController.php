@@ -449,15 +449,8 @@ class AdmissaoController extends Controller
                     }
                 }
 
-
                 // 4- Atualiza ou cria o FeedbackCurriculo
-//                $candidato->FeedBack ? $candidato->FeedBack->update($dadosFeedback) : $candidato->FeedBack()->create($dadosFeedback);
-
-                if($candidato->FeedBack){
-                    $feedback = $candidato->FeedBack->update($dadosFeedback);
-                }else{
-                    $feedback = $candidato->FeedBack()->create($dadosFeedback);
-                }
+                $feedback = $candidato->FeedBack ? $candidato->FeedBack->update($dadosFeedback) : $candidato->FeedBack()->create($dadosFeedback);
 
                 $feedback->ParecerRh ? $feedback->ParecerRh->update($dadosParecerRh) : $feedback->ParecerRh()->create($dadosParecerRh);
                 $feedback->ParecerRota ? $feedback->ParecerRota->update($dadosParecerRota) : $feedback->ParecerRota()->create($dadosParecerRota);
@@ -636,15 +629,13 @@ class AdmissaoController extends Controller
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
-//            $msg = "error ADMISSAO AVULSA STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-            $msg = $e->getTrace();
-//            \Log::debug($msg);
-//            \Log::debug($e->getTraceAsString());
-//            \Log::info("-------DADOS-------");
-//            Sistema::telegram(print_r($dados, true));
-//            \Log::info("-------FIM DE DADOS-------");
-            return response()->json(['msg' => $msg], 400);
-//            return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
+            $msg = "error ADMISSAO AVULSA STORE: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            \Log::debug($e->getTraceAsString());
+            \Log::info("-------DADOS-------");
+            Sistema::telegram(print_r($dados, true));
+            \Log::info("-------FIM DE DADOS-------");
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
 
         }
 
