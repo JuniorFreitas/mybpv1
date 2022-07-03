@@ -4,6 +4,7 @@ namespace App\Models;
 
 use DB;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 use MasterTag\GExtenso;
 
@@ -94,6 +95,7 @@ class Sistema
                 if ($cpf[$c] != $d) {
                     return response()->json([
                         'msg' => 'CPF Inválido',
+                        'status' => 'error'
                     ], 400);
                 }
             }
@@ -268,16 +270,17 @@ class Sistema
         return $data->dataCompletaExt();
     }
 
-    public static function valorPorExtenso($valor=0,$moeda=TRUE,$genero="M") {
+    public static function valorPorExtenso($valor = 0, $moeda = TRUE, $genero = "M")
+    {
         // deixar o numero como string 1.200,00, como 120000
-        $valor=str_replace(".","",$valor);
-        $valor=str_replace(',',"",$valor);
-        if($valor==0.00){
+        $valor = str_replace(".", "", $valor);
+        $valor = str_replace(',', "", $valor);
+        if ($valor == 0.00) {
             return "zero";
         }
 
-        if($moeda){ // Moeda é real, reais , centavo, centavos
-            return str_replace( "um centavos","um centavo",  GExtenso::moeda($valor,2)  );
+        if ($moeda) { // Moeda é real, reais , centavo, centavos
+            return str_replace("um centavos", "um centavo", GExtenso::moeda($valor, 2));
         } else {
             // se for apenas numero
             if ($genero == "M") { // Genero masculino
@@ -586,21 +589,21 @@ class Sistema
                 echo "Sincronizando $Empresa->nome...\n";
 
                 $admissoes = DB::table('feedback_curriculos as FC')
-                ->select(['A.id', 'A.data_aso'])
-                ->join('admissoes as A', 'A.feedback_id', '=' , 'FC.id')
-                ->where('FC.empresa_id', $Empresa->id)
-                ->whereNotNull('A.data_aso')
-                ->get();
+                    ->select(['A.id', 'A.data_aso'])
+                    ->join('admissoes as A', 'A.feedback_id', '=', 'FC.id')
+                    ->where('FC.empresa_id', $Empresa->id)
+                    ->whereNotNull('A.data_aso')
+                    ->get();
 
                 foreach ($admissoes as $admissao) {
-                 $aso = AdmissaoAso::withoutGlobalScopes()->create([
-                    'empresa_id' => $Empresa->id,
-                    'admissao_id' => $admissao->id,
-                    'user_alterou_id'=> 1,
-                    'data_aso' => $admissao->data_aso,
-                    'ativo' => 1
+                    $aso = AdmissaoAso::withoutGlobalScopes()->create([
+                        'empresa_id' => $Empresa->id,
+                        'admissao_id' => $admissao->id,
+                        'user_alterou_id' => 1,
+                        'data_aso' => $admissao->data_aso,
+                        'ativo' => 1
                     ]);
-                echo $aso->data_aso."Criado\n";
+                    echo $aso->data_aso . "Criado\n";
                 }
             }
             echo "Fim de Sincronização...\n";
@@ -624,7 +627,7 @@ class Sistema
                 if (\App\Models\Papel::withoutGlobalScopes()->whereNome($nome_grupo)->count() == 0) {
                     echo "Criando Grupo Clinica Exame para $Empresa->nome...\n";
                     $grupoClinica = \App\Models\Papel::withoutGlobalScopes()->create(['nome' => "$nome_grupo", 'descricao' => 'Grupo para clinicas de exame', 'empresa_id' => $Empresa->id, 'email' => 'dev@mybp.com.br', 'ativo' => true]);
-                    $habilidades_id = Habilidade::where('nome', 'like', 'acesso_clinica%')->where('nome','alterar-senha')->pluck('id');
+                    $habilidades_id = Habilidade::where('nome', 'like', 'acesso_clinica%')->where('nome', 'alterar-senha')->pluck('id');
                     $grupoClinica->habilidades()->attach($habilidades_id);
                 } else {
                     echo "Grupo Clinica Exame ja existe na $Empresa->nome...\n";
@@ -636,6 +639,61 @@ class Sistema
             DB::rollBack();
             echo $e->getMessage() . ' - ' . $e->getLine() . ' - ' . $e->getFile();
         }
+    }
+
+
+    public static function validaRuleCPF($cpf)
+    {
+        // Converte em somente número todos os digitos
+        $cpf = str_pad(preg_replace('/[^0-9]/i', '', $cpf), 11, '0', STR_PAD_LEFT);
+        // Verifica se nenhuma das sequências abaixo foi digitada, caso seja, retorna falso
+        if (strlen($cpf) != 11 || $cpf == '00000000000' || $cpf == '11111111111' || $cpf == '22222222222' || $cpf == '33333333333' || $cpf == '44444444444' || $cpf == '55555555555' || $cpf == '66666666666' || $cpf == '77777777777' || $cpf == '88888888888' || $cpf == '99999999999') {
+            return false;
+        } else {   // Calcula os números para verificar se o CPF é verdadeiro
+            for ($t = 9; $t < 11; $t++) {
+                for ($d = 0, $c = 0; $c < $t; $c++) {
+                    $d += $cpf[$c] * (($t + 1) - $c);
+                }
+                $d = ((10 * $d) % 11) % 10;
+                if ($cpf[$c] != $d) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public static function verificaRuleCpfCadastrado($cpf, $empresa_id)
+    {
+        $cpf = self::transformCpfCnpj($cpf);
+        if (self::validaRuleCPF($cpf)) {
+            $user = User::select(['id', 'nome', 'empresa_id'])->where('tipo', '!=', User::EMPRESA)
+                ->whereEmpresaId($empresa_id)->whereHas('Curriculo', function ($q) use ($cpf) {
+                    $q->select(['id', 'nome'])->withoutGlobalScopes()->whereCpf($cpf);
+                })->first();
+
+            $curriculo = $user->Curriculo()->withoutGlobalScopes()->first();
+
+            if ($curriculo) {
+                return (object)["msg" => "CPF ja cadastrado", "error" => true];
+            }
+        }
+//        return true;
+
+    }
+
+    /**
+     * @param $empresa_id
+     * @return \Illuminate\Validation\Rules\Unique
+     */
+    public static function RuleCpfUnique($cpf, $empresa_id)
+    {
+        return Rule::unique('curriculos')->where('cpf', $cpf)->where(function ($query) use ($empresa_id) {
+            $query->join('users', function ($join) use ($empresa_id) {
+                $join->on('users.id', '=', 'curriculos.id')
+                    ->where('users.empresa_id', '=', $empresa_id);
+            });
+        });
     }
 
 }

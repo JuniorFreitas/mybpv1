@@ -18,8 +18,12 @@ use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use App\Models\VagasAbertas;
+use App\Rules\CpfValidoEmpresaRules;
+use App\Rules\VagaAbertaEmpresaRules;
+use App\Rules\VerificaCpfEmpresaRules;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Mail;
 use MasterTag\DataHora;
 
@@ -103,16 +107,40 @@ class VagaAbertaController extends Controller
             ], 400);
         }
 
-        $curriculo = Curriculo::withoutGlobalScopes()->whereCpf($cpf);
+        $user = User::select(['id', 'nome'])->where('tipo', '!=', User::EMPRESA)
+            ->whereEmpresaId($request->empresa_id)->whereHas('Curriculo', function ($q) use ($cpf) {
+                $q->withoutGlobalScopes()->whereCpf($cpf);
+            })->first();
+
         $escolaridades = Escolaridade::get();
 
-        if ($curriculo->count() > 0) {
-            $dataNascimento = Sistema::dataTransform($request->nascimento);
-            $nascimento = new DataHora($dataNascimento);
-            $curriculo = $curriculo->whereNascimento($nascimento->dataInsert());
+        if (!$user) {
+            return response()->json([
+                'possuiCadastro' => false,
+                'escolaridades' => $escolaridades,
+                'success' => true
+            ]);
+        }
 
-            if ($curriculo->count() > 0) {
-                $curriculo = $curriculo->first()->load('Qualificacoes', 'Experiencias', 'Telefones');
+        $dataNascimento = Sistema::dataTransform($request->nascimento);
+        $nascimento = new DataHora($dataNascimento);
+
+        $curriculo = $user->Curriculo()
+            ->withoutGlobalScopes()
+            ->select([
+                'id', 'cpf', 'rg', 'rg_data_emissao', 'naturalidade', 'orgao_expeditor', 'carteira_trabalho',
+                'nome', 'cnh', 'nascimento', 'logradouro', 'end_numero', 'complemento', 'bairro', 'municipio',
+                'uf', 'cep', 'email', 'formacao', 'formacao_instituicao', 'formacao_curso', 'formacao_status',
+                'vaga_pretendida', 'uf_vaga', 'municipio_id', 'pcd', 'cid', 'viajar', 'filiacao_pai', 'filiacao_mae',
+                'disponibilidade_sabado', 'disponibilidade_domingo', 'sexo'
+            ])->first();
+
+
+
+        if ($curriculo) {
+            $cpfNascimentoValido = $curriculo->nascimento == $nascimento->dataCompleta();
+            if ($cpfNascimentoValido) {
+                $curriculo = $curriculo->load('Qualificacoes', 'Experiencias', 'Telefones');
                 $curriculo->temqualificacao = $curriculo->Qualificacoes()->count() > 0 ? true : false;
                 $curriculo->temexperiencia = $curriculo->Experiencias()->count() > 0 ? true : false;
 
@@ -130,37 +158,31 @@ class VagaAbertaController extends Controller
                     'curriculo' => $curriculo,
                     'possuiCadastro' => true,
                     'escolaridades' => $escolaridades
-                ], 200);
-            } else {
-                return response()->json(['msg' => 'CPF encontrado, porém data de nascimento não confere',
-                    'success' => false
-                ], 400);
+                ]);
             }
-        } else {
-            return response()->json([
-                'possuiCadastro' => false,
-                'escolaridades' => $escolaridades,
-                'success' => true
-            ], 200);
+            return response()->json(['msg' => 'CPF encontrado, porém data de nascimento não confere',
+                'success' => false
+            ], 400);
         }
+
+        return response()->json([
+            'possuiCadastro' => false,
+            'escolaridades' => $escolaridades,
+            'success' => true
+        ]);
     }
 
     public function atualizar(Request $request)
     {
-        $vaga = VagasAbertas::whereEmpresaId($request->empresa_id)->whereId($request->vaga_aberta_id)->whereAtivo(true)->with('Vaga', 'Municipio')->first();
-
+        $vaga = VagasAbertas::withoutGlobalScopes()
+            ->whereEmpresaId($request->empresa_id)
+            ->whereId($request->vaga_aberta_id)
+            ->whereAtivo(true)
+            ->with(['Vaga' => function ($q) {
+                $q->withoutGlobalScopes();
+            }, 'Municipio'])
+            ->first();
         return response()->json(['dados' => $vaga], 200);
-    }
-
-
-    public function buscaCpf(Request $request)
-    {
-        $cpf = Sistema::transformCpfCnpj($request->cpf);
-        if (!Sistema::validaCPF($cpf)) {
-            return response()->json(['msg' => 'CPF inválido'], 400);
-        }
-        $curriculo = Curriculo::whereCpf($cpf)->get();
-        return response()->json($curriculo);
     }
 
     /**
@@ -181,15 +203,23 @@ class VagaAbertaController extends Controller
      */
     public function store(Request $request)
     {
-//        $this->authorize('funcionarios_insert');
         $dados = $request->input();
 
+        $cpf = Sistema::transformCpfCnpj($request->cpf_padrao);
+        $dados['cpf'] = $cpf;
+
+        $user = User::whereHas('Curriculo', function ($q) use ($cpf) {
+            $q->withoutGlobalScopes()->whereCpf($cpf);
+        })->whereEmpresaId($dados['empresa_id']);
+
+        $editando = $user->count() > 0;
+
         $dados['lido'] = false;
-        $dados['pcd'] = $dados['pcd'] == 'true' ? true : false;
-        $dados['viajar'] = $dados['viajar'] == 'true' ? true : false;
-        $dados['disponibilidade_sabado'] = $dados['disponibilidade_sabado'] == 'true' ? true : false;
-        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true' ? true : false;
-        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true' ? true : false;
+//        $dados['pcd'] = $dados['pcd'];
+//        $dados['viajar'] = $dados['viajar'] == 'true';
+//        $dados['disponibilidade_sabado'] = $dados['disponibilidade_sabado'] == 'true';
+//        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
+//        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
         $dados['email'] = mb_strtolower($dados['email']);
         $vaga_aberta = VagasAbertas::whereId($dados['vaga_aberta_id'])->with('Municipio')->first();
 
@@ -199,7 +229,13 @@ class VagaAbertaController extends Controller
 
         $arrayValidacao = [
             'nome' => 'required|min:3',
-//            'cpf' => 'required|min:14|unique:curriculos,cpf',
+            'cpf' => ['required', 'min:14',
+                new CpfValidoEmpresaRules($dados['empresa_id']),
+                new VerificaCpfEmpresaRules($dados['empresa_id'], $editando)
+            ],
+
+            'vaga_aberta_id' => ['required', new VagaAbertaEmpresaRules($dados['empresa_id'])],
+
             'nascimento' => 'required|min:10',
             'email' => 'required|email:rfc,dns',
             'cep' => 'required|min:9',
@@ -215,39 +251,36 @@ class VagaAbertaController extends Controller
             'pcd' => 'required',
             'disponibilidade_sabado' => 'required',
             'disponibilidade_domingo' => 'required',
-//            'viajar' => 'required',
 
+            'telefones' => ["required", "array", "min:1"],
             'telefones.*.numero' => 'required|min:14',
 
         ];
 
         $arrayQualificacao = [];
-        if ($dados['temqualificacao'] == 'true' && isset($dados['qualificacoes'])) {
+        if ($dados['temqualificacao'] && isset($dados['qualificacoes'])) {
             $arrayQualificacao = [
                 'qualificacoes.*.nome' => 'required',
                 'qualificacoes.*.instituicao' => 'required',
                 'qualificacoes.*.mes_conclusao' => 'required',
                 'qualificacoes.*.ano_conclusao' => 'required',
             ];
-        } else {
-            $dados['temqualificacao'] = 'false';
         }
 
         $arrayExperiencia = [];
-        if ($dados['temexperiencia'] == 'true' && isset($dados['experiencias'])) {
+        if ($dados['temexperiencia'] && isset($dados['experiencias'])) {
             $arrayExperiencia = [
                 'experiencias.*.empresa' => 'required',
                 'experiencias.*.cargo' => 'required',
                 'experiencias.*.principais_atv' => 'required',
                 'experiencias.*.data_inicio' => 'required',
             ];
-        } else {
-            $dados['temexperiencia'] = 'false';
         }
 
         $arrayNovo = array_merge($arrayValidacao, $arrayQualificacao, $arrayExperiencia);
 
         $dadosValidados = \Validator::make($dados, $arrayNovo);
+
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -260,18 +293,7 @@ class VagaAbertaController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = User::whereHas('Curriculo', function ($q) use ($dados) {
-                $q->withoutGlobalScopes()->whereCpf($dados['cpf_padrao']);
-            });
-
-            if ($user->count() == 0) {
-                $cpf = Sistema::transformCpfCnpj($request->cpf_padrao);
-                if (!Sistema::validaCPF($cpf)) {
-                    return response()->json(['msg' => 'CPF inválido'], 400);
-                }
-
-                $dados['cpf'] = $cpf;
-
+            if ($user->count() == 0 && !$editando) {
                 $userObj = [
                     'nome' => $dados['nome'],
                     'login' => $dados['email'],
@@ -284,23 +306,24 @@ class VagaAbertaController extends Controller
                 ];
 
                 $usuario = $user->create($userObj);
-                $userCurriculo = $usuario->Curriculo()->create($dados);
+                $usuario->Curriculo()->create($dados);
 
                 if (!isset($dados['telefones'])) {
                     return response()->json([
                         'msg' => 'É Necessário Informar pelo menos Um número de telefone',
                         'erros' => $dadosValidados->errors()
                     ], 400);
-                } else {
-                    foreach ($dados['telefones'] as $linha) {
-                        if (isset($linha['id']) && $linha['id'] == 0) {
-                            $linha['id'] = null;
-                            $linha['principal'] = $linha['principal'] == 'true' ? true : false;
-                            $linha['curriculo_id'] = $usuario->id;
-                            TelefoneCurriculo::create($linha);
-                        }
+                }
+
+                foreach ($dados['telefones'] as $linha) {
+                    if (isset($linha['id']) && $linha['id'] == 0) {
+                        $linha['id'] = null;
+                        $linha['principal'] = $linha['principal'] == 'true' ? true : false;
+                        $linha['curriculo_id'] = $usuario->id;
+                        TelefoneCurriculo::create($linha);
                     }
                 }
+
                 if ($dados['temqualificacao'] == 'true') {
                     foreach ($dados['qualificacoes'] as $linha) {
                         $linha['curriculo_id'] = $usuario->id;
@@ -316,16 +339,10 @@ class VagaAbertaController extends Controller
                     }
                 }
             } else {
-                $curriculo = Curriculo::withoutGlobalScopes()->whereCpf($dados['cpf_padrao'])->first();
+                $curriculo = Curriculo::withoutGlobalScopes()->find($user->first()->id);
                 $atualizacao = ['curriculo_id' => $curriculo->id];
                 CurriculoAtualizacao::create($atualizacao);
 
-                if (!isset($dados['telefones'])) {
-                    return response()->json([
-                        'msg' => 'É Necessário Informar pelo menos Um número de telefone',
-                        'erros' => $dadosValidados->errors()
-                    ], 400);
-                }
                 if (isset($dados['telefonesDelete'])) {
                     foreach ($dados['telefonesDelete'] as $index) {
                         if ($index > 0) {
@@ -335,7 +352,7 @@ class VagaAbertaController extends Controller
                 }
 
                 foreach ($dados['telefones'] as $linha) {
-                    $linha['principal'] = $linha['principal'] == 'true' ? true : false;
+                    $linha['principal'] = $linha['principal'] == 'true';
                     if ($linha['id'] == 0) {
                         $telPrincipal = $curriculo->Telefones()->create($linha)->id;
                         if ($linha['principal']) {
@@ -356,14 +373,15 @@ class VagaAbertaController extends Controller
                                 $curriculo->Qualificacoes()->find($index)->delete();
                             }
                         }
-                    }
-                    foreach ($dados['qualificacoes'] as $linha) {
-                        if (isset($linha['id'])) {
-                            $curriculo->Qualificacoes()->find($linha['id'])->update($linha);
-                        } else {
+                    } else {
+                        foreach ($dados['qualificacoes'] as $linha) {
+                            if (isset($linha['id'])) {
+                                $curriculo->Qualificacoes()->find($linha['id'])->update($linha);
+                            }
                             $curriculo->Qualificacoes()->create($linha);
                         }
                     }
+
                 } else {
                     if (isset($dados['qualificacoesDelete'])) {
                         foreach ($dados['qualificacoesDelete'] as $index) {
@@ -381,14 +399,15 @@ class VagaAbertaController extends Controller
                                 $curriculo->Experiencias()->find($index)->delete();
                             }
                         }
-                    }
-                    foreach ($dados['experiencias'] as $linha) {
-                        if (isset($linha['id'])) {
-                            $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
-                            $curriculo->Experiencias()->find($linha['id'])->update($linha);
-                        } else {
-                            $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
-                            $curriculo->Experiencias()->create($linha);
+                    } else {
+                        foreach ($dados['experiencias'] as $linha) {
+                            if (isset($linha['id'])) {
+                                $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
+                                $curriculo->Experiencias()->find($linha['id'])->update($linha);
+                            } else {
+                                $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
+                                $curriculo->Experiencias()->create($linha);
+                            }
                         }
                     }
                 } else {
@@ -417,14 +436,14 @@ class VagaAbertaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage(). " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id']." CPF:".$dados['cpf_padrao'];
+            return $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'] . " CPF:" . $dados['cpf_padrao'];
             \Log::debug($msg);
             \Log::debug($e->getTraceAsString());
             \Log::info("-------DADOS-------");
             \Log::alert($dados);
             \Log::info("-------FIM DE DADOS-------");
 
-            if($e->getLine() == 297){
+            if ($e->getLine() == 297) {
                 return response()->json(['msg' => 'Remova os telefones adicione novamente, caso o erro persistir atualize a página!'], 400);
             }
 
