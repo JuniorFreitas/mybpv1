@@ -82,6 +82,7 @@
                                 <thead>
                                 <tr>
                                     {{--<th>Cód.</th>--}}
+                                    <th>nome</th>
                                     <th>Descrição</th>
                                     <th>
                                         <a class="btn btn-sm btn-success" href="javascript://"
@@ -98,6 +99,7 @@
                                 <tbody>
 
                                 <tr v-for="habilidade in listaDeHabilidades">
+                                    <td>@{{habilidade.nome}}</td>
                                     <td>@{{habilidade.descricao}}</td>
                                     <td>
                                         <a class="btn btn-sm btn-block btn-success" href="javascript://"
