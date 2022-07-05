@@ -397,7 +397,7 @@ class RecrutamentoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = Curriculo::select(
+        $resultado = Curriculo::select([
             'id',
             'cpf',
             'rg',
@@ -415,7 +415,7 @@ class RecrutamentoController extends Controller
             'municipio_id',
             'lido',
             'created_at',
-        )->with('VagaAberta.VagaSelecionada', 'FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
+        ])->with('VagaAberta.VagaSelecionada', 'FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
 
 
 //        $this->authorize('clientes');
