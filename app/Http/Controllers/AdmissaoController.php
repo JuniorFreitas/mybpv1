@@ -453,11 +453,11 @@ class AdmissaoController extends Controller
 
                 if ($candidato->FeedBack) {
                     $candidato->FeedBack->update($dadosFeedback);
+                    $feedback = $candidato->FeedBack;
                 } else {
-                    $candidato->FeedBack()->create($dadosFeedback);
+                    $dadosFeedback['curriculo_id'] = $candidato->id;
+                    $feedback = FeedbackCurriculo::create($dadosFeedback);
                 }
-
-                $feedback = $candidato->FeedBack;
 
                 !is_null($feedback->parecerRh) ? $feedback->parecerRh->update($dadosParecerRh) : $feedback->parecerRh()->create($dadosParecerRh);
                 !is_null($feedback->parecerRota) ? $feedback->parecerRota->update($dadosParecerRota) : $feedback->parecerRota()->create($dadosParecerRota);
@@ -642,8 +642,8 @@ class AdmissaoController extends Controller
             \Log::info("-------DADOS-------");
             Sistema::telegram(print_r($dados, true));
             \Log::info("-------FIM DE DADOS-------");
-            return response()->json($e->getTrace(), 400);
-//            return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
+//            return response()->json($e->getTrace(), 400);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
 
         }
 
