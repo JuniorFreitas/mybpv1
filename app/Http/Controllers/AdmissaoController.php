@@ -252,10 +252,10 @@ class AdmissaoController extends Controller
                     }
                 }
 
-                $feedback->ParecerRh()->create($dadosParecerRh);
-                $feedback->ParecerRota()->create($dadosParecerRota);
-                $feedback->ParecerTecnica()->create($dadosParecerTecnica);
-                $feedback->ParecerTeste()->create($dadosParecerTeste);
+                $feedback->parecerRh()->create($dadosParecerRh);
+                $feedback->parecerRota()->create($dadosParecerRota);
+                $feedback->parecerTecnica()->create($dadosParecerTecnica);
+                $feedback->parecerTeste()->create($dadosParecerTeste);
                 $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
@@ -450,13 +450,20 @@ class AdmissaoController extends Controller
                 }
 
                 // 4- Atualiza ou cria o FeedbackCurriculo
-                $feedback = $candidato->FeedBack ? $candidato->FeedBack->update($dadosFeedback) : $candidato->FeedBack()->create($dadosFeedback);
 
-                $feedback->ParecerRh ? $feedback->ParecerRh->update($dadosParecerRh) : $feedback->ParecerRh()->create($dadosParecerRh);
-                $feedback->ParecerRota ? $feedback->ParecerRota->update($dadosParecerRota) : $feedback->ParecerRota()->create($dadosParecerRota);
-                $feedback->ParecerTecnica ? $feedback->ParecerTecnica->update($dadosParecerTecnica) : $feedback->ParecerTecnica()->create($dadosParecerTecnica);
-                $feedback->ParecerTeste ? $feedback->ParecerTeste->update($dadosParecerTeste) : $feedback->ParecerTeste()->create($dadosParecerTeste);
-                $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+                if ($candidato->FeedBack) {
+                    $candidato->FeedBack->update($dadosFeedback);
+                    $feedback = $candidato->FeedBack;
+                } else {
+                    $dadosFeedback['curriculo_id'] = $candidato->id;
+                    $feedback = FeedbackCurriculo::create($dadosFeedback);
+                }
+
+                !is_null($feedback->parecerRh) ? $feedback->parecerRh->update($dadosParecerRh) : $feedback->parecerRh()->create($dadosParecerRh);
+                !is_null($feedback->parecerRota) ? $feedback->parecerRota->update($dadosParecerRota) : $feedback->parecerRota()->create($dadosParecerRota);
+                !is_null($feedback->parecerTecnica) ? $feedback->parecerTecnica->update($dadosParecerTecnica) : $feedback->parecerTecnica()->create($dadosParecerTecnica);
+                !is_null($feedback->parecerTeste) ? $feedback->parecerTeste->update($dadosParecerTeste) : $feedback->parecerTeste()->create($dadosParecerTeste);
+                !is_null($feedback->ResultadoIntegrado) ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
                 //Logica de Vagas
                 if ($feedback->vaga_projeto_id) {
@@ -635,6 +642,7 @@ class AdmissaoController extends Controller
             \Log::info("-------DADOS-------");
             Sistema::telegram(print_r($dados, true));
             \Log::info("-------FIM DE DADOS-------");
+//            return response()->json($e->getTrace(), 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
 
         }
@@ -1603,6 +1611,7 @@ class AdmissaoController extends Controller
             $q->whereCpf($cpf);
         });
 
+
         // Se o cara ja possui cadastro na Admissão
         if ($admissao->count() > 0) {
             return response()->json([
@@ -1614,6 +1623,7 @@ class AdmissaoController extends Controller
             //cpf no recrutamento ainda = 010.368.413-16
 
             $curriculo = Curriculo::whereCpf($cpf);
+
             if ($curriculo->count() > 0) {
                 $curriculo = $curriculo->first();
 
@@ -1667,8 +1677,8 @@ class AdmissaoController extends Controller
                 }
 
 
-                if ($curriculo->FeedBack && $curriculo->FeedBack->ParecerRota) {
-                    $parecerRota = $curriculo->FeedBack->ParecerRota;
+                if ($curriculo->FeedBack && $curriculo->FeedBack->parecerRota) {
+                    $parecerRota = $curriculo->FeedBack->parecerRota;
                 } else {
                     $parecerRota = new \stdClass();
                     $parecerRota->bairro_rota = '';
@@ -1676,8 +1686,8 @@ class AdmissaoController extends Controller
                     $parecerRota->ponto_referencia_residencia = '';
                 }
 
-                if ($curriculo->FeedBack && $curriculo->FeedBack->ParecerTeste) {
-                    $parecerTeste = $curriculo->FeedBack->ParecerTeste;
+                if ($curriculo->FeedBack && $curriculo->FeedBack->parecerTeste) {
+                    $parecerTeste = $curriculo->FeedBack->parecerTeste;
                 } else {
                     $parecerTeste = new \stdClass();
                     $parecerTeste->qual_teste = '';
