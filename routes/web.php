@@ -435,7 +435,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         //Parecer Entrevista Técnica
         Route::group(['as' => 'parecer_entrevista_tecnica.'], function () {
-            Route::get('parecer-entrevista-tecnica/export', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel')->middleware('can:entrevista_parecer_entrevista');
+            Route::post('parecer-entrevista-tecnica/export', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel')->middleware('can:entrevista_parecer_entrevista');
             Route::post('parecer-entrevista-tecnica/atualizar', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_entrevista');
             Route::post('parecer-entrevista-tecnica/ficha_pdf', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'getFichaPdf'])->name('parecer_entrevista_tecnica.getFichaPdf')->middleware('can:entrevista_parecer_entrevista');
             Route::resource('parecer-entrevista-tecnica', \App\Http\Controllers\ParecerEntrevistaTecnicaController::class, ['parameters' => ['parecer-entrevista-tecnica' => 'entrevista_tecnica']])->middleware('can:entrevista_parecer_entrevista');
