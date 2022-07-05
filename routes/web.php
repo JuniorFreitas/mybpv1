@@ -427,7 +427,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         //Parecer Rota Transporte
         Route::group(['as' => 'parecer_rota_transporte.'], function () {
-            Route::get('parecer-rota/export', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel')->middleware('can:entrevista_parecer_rota');
+            Route::post('parecer-rota/export', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel')->middleware('can:entrevista_parecer_rota');
             Route::post('parecer-rota/atualizar', [\App\Http\Controllers\ParecerRotaController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_rota');
             Route::post('parecer-rota/ficha_pdf', [\App\Http\Controllers\ParecerRotaController::class, 'getFichaPdf'])->name('parecer_rota_transporte.getFichaPdf')->middleware('can:entrevista_parecer_rota');
             Route::resource('parecer-rota', \App\Http\Controllers\ParecerRotaController::class, ['parameters' => ['parecer-rota' => 'parecer_rota']])->middleware('can:entrevista_parecer_rota');
