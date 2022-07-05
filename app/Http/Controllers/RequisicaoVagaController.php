@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobExportaExcel;
 use App\Jobs\RequisicaoVaga\JobRequisicaoVagaAprovar;
 use App\Models\Arquivo;
 use App\Models\RequisicaoVaga;
@@ -192,10 +193,28 @@ class RequisicaoVagaController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $periodo = RequisicaoVaga::all();
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'periodo' => $periodo,
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
         $resultado = RequisicaoVaga::with(
             'CentroCusto',
             'Cargo',
-            'Area');
+            'Area','UserCadastrou:id,nome',
+            'UserAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
         if ($filtroPeriodo) {
@@ -215,19 +234,47 @@ class RequisicaoVagaController extends Controller
             $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
             $resultado->whereStatusAprovacao($status);
         }
+        return $resultado->orderByDesc('created_at');
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items(),
-            ]
-        ]);
     }
 
+    public function export(Request $request)
+    {
+        $resultado = $this->filtro($request)->get();
+        $head = [
+            "Quem Solicitou",
+            "Cargo",
+            "Data da Solicitação",
+            "Centro de Custo",
+            "Tipo de Contrato",
+            "Prioridade",
+            "Data do Inicio",
+            "Quem Aprovou/Reprovou",
+            "Data da Aprovação/Reprovação",
+            "Status"
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->solicitante,
+                $row->Cargo->nome,
+                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
+                $row->CentroCusto->label,
+                $row->tipo_contratacao,
+                $row->prioridade,
+                $row->previsao_inicio ? $row->previsao_inicio : "Imediata",
+                $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
+                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : "aguardando",
+                $row->status_aprovacao ? $row->status_aprovacao : "aberto",
+            ];
+        }
+
+        $nameArquivo = "requisicao_vaga" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Requisição - Vaga", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+    }
     // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {

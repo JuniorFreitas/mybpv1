@@ -1,9 +1,11 @@
 import endereco from "../../../components/Endereco"
 import telefone from "../../../components/Telefones"
 import datepicker from "../../../components/DatePicker"
+import ExportacaoMixin from "../../../mixins/Exportacoes"
 
 const app = new Vue({
-        el: '#app',
+    mixins: [ExportacaoMixin],
+    el: '#app',
         components: {
             endereco,
             datepicker,
@@ -15,6 +17,9 @@ const app = new Vue({
             editando: false,
             apagado: false,
             permite_envio_whatsapp: null,
+            preloadExportacao: false,
+
+            urlExportacao: `${URL_ADMIN}/curriculos/recrutamentos/export`,
 
             empresa: 0,
 

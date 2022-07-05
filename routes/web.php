@@ -314,6 +314,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'requisicao_vagas.'], function () {
             Route::put('requisicao-vaga/{requisicaoVaga}/aprovar', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovar'])->name('aprovar')->middleware('can:planejamento_requisicao_vaga');
             Route::post('requisicao-vaga/atualizar', [\App\Http\Controllers\RequisicaoVagaController::class, 'atualizar'])->name('atualizar')->middleware('can:planejamento_requisicao_vaga');
+            Route::post('requisicao-vaga/export', [\App\Http\Controllers\RequisicaoVagaController::class, 'export'])->name('requisicao-vaga.excel')->middleware('can:planejamento_requisicao_vaga');
             Route::resource('requisicao-vaga', \App\Http\Controllers\RequisicaoVagaController::class)->middleware('can:planejamento_requisicao_vaga');
         });
 
@@ -396,7 +397,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         // Recrutamento
         Route::group(['as' => 'recrutamento.'], function () {
             //Recrutamento colocar depois Middleware
-            Route::get('recrutamentos/export', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel')->middleware('can:curriculos_recrutamento');
+            Route::post('recrutamentos/export', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel')->middleware('can:curriculos_recrutamento');
             //Lido
             Route::put('recrutamentos/{curriculo}/lido', [\App\Http\Controllers\RecrutamentoController::class, 'marcaLido'])->name('recrutamentos.marcaLido')->middleware('can:curriculos_recrutamento');
             Route::post('recrutamentos/search', [\App\Http\Controllers\RecrutamentoController::class, 'searchCliente'])->name('recrutamentos.search')->middleware('can:curriculos_recrutamento');
