@@ -565,10 +565,11 @@
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-                {{--                <button :disabled="controle.carregando" href="{{\App\Models\Sistema::UrlServidor}}/recrutamentos/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
-                {{--                   class="btn btn-sm btn-primary"><i--}}
-                {{--                        class="fas fa-file-excel"></i>--}}
-                {{--                    Exportar Excel</button>--}}
+                <button type="button" class="btn btn-sm btn-primary  mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
+                </button>
             </div>
         </form>
     </fieldset>
