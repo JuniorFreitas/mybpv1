@@ -165,6 +165,21 @@ class RequisicaoVaga extends Model
     {
         return $this->hasOne(TipoContratacao::class, 'requisicao_vaga_id', 'id');
     }
+    public function UserCadastrou()
+    {
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
+    public function GestorAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_id');
+    }
+
+
+    public function UserAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
 
     //Scopo de ClienteID (Empresa)
 //    protected static function booted()

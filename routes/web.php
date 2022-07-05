@@ -314,6 +314,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'requisicao_vagas.'], function () {
             Route::put('requisicao-vaga/{requisicaoVaga}/aprovar', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovar'])->name('aprovar')->middleware('can:planejamento_requisicao_vaga');
             Route::post('requisicao-vaga/atualizar', [\App\Http\Controllers\RequisicaoVagaController::class, 'atualizar'])->name('atualizar')->middleware('can:planejamento_requisicao_vaga');
+            Route::post('requisicao-vaga/export', [\App\Http\Controllers\RequisicaoVagaController::class, 'export'])->name('requisicao-vaga.excel')->middleware('can:planejamento_requisicao_vaga');
             Route::resource('requisicao-vaga', \App\Http\Controllers\RequisicaoVagaController::class)->middleware('can:planejamento_requisicao_vaga');
         });
 
@@ -396,7 +397,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         // Recrutamento
         Route::group(['as' => 'recrutamento.'], function () {
             //Recrutamento colocar depois Middleware
-            Route::get('recrutamentos/export', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel')->middleware('can:curriculos_recrutamento');
+            Route::post('recrutamentos/export', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel')->middleware('can:curriculos_recrutamento');
             //Lido
             Route::put('recrutamentos/{curriculo}/lido', [\App\Http\Controllers\RecrutamentoController::class, 'marcaLido'])->name('recrutamentos.marcaLido')->middleware('can:curriculos_recrutamento');
             Route::post('recrutamentos/search', [\App\Http\Controllers\RecrutamentoController::class, 'searchCliente'])->name('recrutamentos.search')->middleware('can:curriculos_recrutamento');
@@ -426,7 +427,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         //Parecer Rota Transporte
         Route::group(['as' => 'parecer_rota_transporte.'], function () {
-            Route::get('parecer-rota/export', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel')->middleware('can:entrevista_parecer_rota');
+            Route::post('parecer-rota/export', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel')->middleware('can:entrevista_parecer_rota');
             Route::post('parecer-rota/atualizar', [\App\Http\Controllers\ParecerRotaController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_rota');
             Route::post('parecer-rota/ficha_pdf', [\App\Http\Controllers\ParecerRotaController::class, 'getFichaPdf'])->name('parecer_rota_transporte.getFichaPdf')->middleware('can:entrevista_parecer_rota');
             Route::resource('parecer-rota', \App\Http\Controllers\ParecerRotaController::class, ['parameters' => ['parecer-rota' => 'parecer_rota']])->middleware('can:entrevista_parecer_rota');
@@ -434,7 +435,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         //Parecer Entrevista Técnica
         Route::group(['as' => 'parecer_entrevista_tecnica.'], function () {
-            Route::get('parecer-entrevista-tecnica/export', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel')->middleware('can:entrevista_parecer_entrevista');
+            Route::post('parecer-entrevista-tecnica/export', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel')->middleware('can:entrevista_parecer_entrevista');
             Route::post('parecer-entrevista-tecnica/atualizar', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_entrevista');
             Route::post('parecer-entrevista-tecnica/ficha_pdf', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'getFichaPdf'])->name('parecer_entrevista_tecnica.getFichaPdf')->middleware('can:entrevista_parecer_entrevista');
             Route::resource('parecer-entrevista-tecnica', \App\Http\Controllers\ParecerEntrevistaTecnicaController::class, ['parameters' => ['parecer-entrevista-tecnica' => 'entrevista_tecnica']])->middleware('can:entrevista_parecer_entrevista');

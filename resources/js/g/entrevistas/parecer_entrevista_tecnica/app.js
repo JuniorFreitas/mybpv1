@@ -3,8 +3,11 @@ import datepicker from '../../../components/DatePicker'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto';
 import Editor from '@tinymce/tinymce-vue';
 import configTinyMCE from '../../../components/configEntrevistaTinyMCE';
+import ExportacaoMixin from "../../../mixins/Exportacoes";
 
 const app = new Vue({
+    mixins: [ExportacaoMixin],
+
     el: '#app',
     components: {
         endereco,
@@ -22,7 +25,9 @@ const app = new Vue({
         cadastrando: false,
         atualizado: false,
         visualizar: false,
+        preloadExportacao: false,
 
+        urlExportacao: `${URL_ADMIN}/entrevistas/parecer-entrevista-tecnica/export`,
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
         todos_municipios: `autocomplete/todos-municipios`,

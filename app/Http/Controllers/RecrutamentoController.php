@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
 use App\Exports\CurriculoExport;
+use App\Jobs\JobExportaExcel;
 use App\Mail\DesclassificacaoMail;
 use App\Mail\ProvaMail;
 use App\Mail\ProximaEtapaMail;
@@ -395,9 +396,41 @@ class RecrutamentoController extends Controller
 
     }
 
+    public function marcaLido(Curriculo $curriculo)
+    {
+
+        if (!$curriculo->lido) {
+            $curriculo->lido = !$curriculo->lido;
+            $curriculo->usuario_lido = auth()->id();
+            $curriculo->datalido = (new DataHora())->dataHoraInsert();
+            $curriculo->save();
+            $curriculo->refresh();
+            return response()->json(['lido' => $curriculo->lido], 201);
+        }
+    }
+
     public function atualizar(Request $request)
     {
-        $resultado = Curriculo::select([
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+
+        $permite_envio_whatsapp = !empty($permite_envio_whatsapp) ? $permite_envio_whatsapp->envia_whatsapp : false;
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'items' => $resultado->items(),
+                'permite_envio_whatsapp' => $permite_envio_whatsapp,
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
+        $resultado = Curriculo::select(
             'id',
             'cpf',
             'rg',
@@ -415,38 +448,14 @@ class RecrutamentoController extends Controller
             'municipio_id',
             'lido',
             'created_at',
-        ])->with('VagaAberta.VagaSelecionada', 'FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
+        )->with('VagaAberta.VagaSelecionada', 'FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
 
-
-//        $this->authorize('clientes');
-//        $resultado = Curriculo::select(
-//            'id',
-//            'cpf',
-//            'rg',
-//            'orgao_expeditor',
-//            'nome',
-//            'nascimento',
-//            'logradouro',
-//            'complemento',
-//            'bairro',
-//            'municipio',
-//            'email',
-//            'vaga_pretendida',
-//            'pcd',
-//            'uf_vaga',
-//            'municipio_id',
-//            'lido',
-//            'created_at',
-//        )->with('Vaga', 'FeedBack')->doesntHave('parecerRh');
-
-//        Curriculo::wherePcd(null)->update(['pcd' => false]);
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
             $dataInicio = new DataHora($periodo[0], ' 00:00:00');
             $dataFim = new DataHora($periodo[1], ' 23:59:59');
-//            $resultado->whereBetween('created_at', [$dataInicio->dataInsert(), $dataFim->dataInsert()]);
 
             $resultado->where('updated_at', '>=', $dataInicio->dataInsert())->where('updated_at', '<=', $dataFim->dataInsert());
         }
@@ -478,38 +487,48 @@ class RecrutamentoController extends Controller
             $resultado->wherePcd($campoPcd);
         }
 
-        $resultado = $resultado->orderBy('created_at', 'desc')->paginate($request->pages);
+        return $resultado->orderByDesc('created_at');
 
-        $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-
-        $permite_envio_whatsapp = !empty($permite_envio_whatsapp) ? $permite_envio_whatsapp->envia_whatsapp : false;
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'items' => $resultado->items(),
-                'permite_envio_whatsapp' => $permite_envio_whatsapp,
-            ]
-        ]);
     }
 
-    public function marcaLido(Curriculo $curriculo)
+    public function export(Request $request)
     {
+        $resultado = $this->filtro($request)->get();
 
-        if (!$curriculo->lido) {
-            $curriculo->lido = !$curriculo->lido;
-            $curriculo->usuario_lido = auth()->id();
-            $curriculo->datalido = (new DataHora())->dataHoraInsert();
-            $curriculo->save();
-            $curriculo->refresh();
-            return response()->json(['lido' => $curriculo->lido], 201);
+        $head = [
+            "Nome",
+            "CPF",
+            "Nascimento",
+            "PCD",
+            "Data Cadastro",
+            "E-mail",
+            "Endereço",
+            "Bairro",
+            "Municipio",
+            "Estado",
+            "Vaga"
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->nome,
+                $row->cpf,
+                $row->nascimento,
+                $row->pcd == false ? "Não" : "Sim",
+                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
+                $row->email,
+                $row->logradouro,
+                $row->bairro,
+                $row->VagaAberta->Municipio->nome,
+                $row->VagaAberta->Municipio->uf,
+                $row->VagaAberta->VagaSelecionada->nome,
+            ];
         }
-    }
 
-    public function export()
-    {
-        return Excel::download(new CurriculoExport, 'curriculos.xlsx');
+        $nameArquivo = "recrutamento" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Recrutamento", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 }

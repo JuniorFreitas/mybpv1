@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\Entrevistas\parecerTecnicaExport;
+use App\Jobs\JobExportaExcel;
 use App\Models\FeedbackCurriculo;
 use App\Models\ParecerEntrevistaTecnica;
 use Illuminate\Http\Request;
@@ -154,6 +155,23 @@ class ParecerEntrevistaTecnicaController extends Controller
 
     public function atualizar(Request $request)
     {
+
+        $resultado = $this->filtro($request)->paginate($request->pages);
+        $periodo = ParecerEntrevistaTecnica::all();
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'periodo' => $periodo,
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
         $resultado = FeedbackCurriculo::with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social',
@@ -207,56 +225,53 @@ class ParecerEntrevistaTecnicaController extends Controller
                 $query->wherePcd($campoPcd);
             });
         }
+        return $resultado->orderByDesc('created_at');
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items()
-            ]
-        ]);
     }
 
     public function export(Request $request)
     {
-        $resultado = FeedbackCurriculo::whereInteresse(true)
-            ->whereIn('selecionado', ['sim', 'standby'])
-            ->has('parecerTecnica');
+        $resultado = $this->filtro($request)->get();
+        $head = [
+            "Nome",
+            "Vaga",
+            "PCD",
+            "Parecer RH Nota",
+            "Observação",
+            "E-mail",
+            "Bairro",
+            "CEP",
+            "Endereço",
+            "municipio",
+            "Estado",
+            "Complemento"
+        ];
 
-        if ($request->selecionados) {
-            $resultado->whereIn('id', $request->selecionados);
-        } else {
-            if ($request->filled('campoCliente')) {
-                $resultado->whereClienteId($request->campoCliente);
-            }
+        $rows = [];
 
-            if ($request->filled('campoVaga')) {
-                $resultado->whereHas('VagaAberta', function ($query) use ($request) {
-                    $query->whereId($request->campoVaga);
-                });
-            }
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->Curriculo->nome,
+                $row->vaga_aberta_municipio,
+                $row->Curriculo->pcd = false ? "SIM":"NÂO",
+                $row->parecerRh->nota,
+                $row->obs,
+                $row->Curriculo->email,
+                $row->Curriculo->bairro,
+                $row->Curriculo->cep,
+                $row->Curriculo->logradouro,
+                $row->Curriculo->municipio,
+                $row->Curriculo->uf,
+                $row->Curriculo->complemento,
 
-            if ($request->filled('campoUf')) {
-                $resultado->whereHas('Curriculo', function ($q) use ($request) {
-                    $q->whereUfVaga($request->campoUf);
-                });
-            }
-
-            if ($request->filled('campoPcd')) {
-                $campoPcd = $request->campoPcd == 'true' ? true : false;
-                $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
-                    $query->wherePcd($campoPcd);
-                });
-            }
+            ];
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->get();
-
-        return Excel::download(new parecerTecnicaExport($resultado), 'parecer_tecnica' . (new DataHora())->nomeUnico() . '.xlsx');
+        $nameArquivo = "parecer_entrevista_tecnica" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Parecer - Entrevista - Tecnica", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
+
 
     public function getFichaPdf(Request $request)
     {
