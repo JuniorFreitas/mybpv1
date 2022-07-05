@@ -47,13 +47,11 @@ class UserController extends Controller
     {
         $this->authorize('usuario_usuarios_insert');
         $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['login'] = strtolower(trim($dados['login']));
-
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
-            'login' => 'unique:users,login',
+            'login' => 'required|email:rfc,dns',
             'grupo_id' => 'required|numeric',
             'tipo' => 'required',
             'ativo' => 'required|boolean',
@@ -127,7 +125,7 @@ class UserController extends Controller
         // Validacao para ajax sem dar erro de HTTP (402)
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
-//            'login' => 'unique:users,login,' . $usuario->id,
+            'login' => 'required|email:rfc,dns',
             'grupo_id' => 'required|numeric',
             'ativo' => 'required|boolean',
             'tipo' => 'required',
@@ -144,7 +142,7 @@ class UserController extends Controller
                     foreach ($dados['user_recebe_email'] as $index => $email) {
                         $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
                     }
-                }else if (count($usuario->UserRecebeEmail) < count($dados['user_recebe_email'])){
+                } else if (count($usuario->UserRecebeEmail) < count($dados['user_recebe_email'])) {
                     foreach ($dados['user_recebe_email'] as $index => $email) {
                         $usuario->UserRecebeEmail()->detach($index);
                         $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
@@ -227,14 +225,14 @@ class UserController extends Controller
         $this->authorize('usuario_usuarios');
         $porPagina = $request->get('porPagina');
 
-        if (auth()->user()->empresa_id === 104) {
+        $resultado = User::with('Papel:id,nome')
+            ->whereIn('tipo', User::TIPOS_USUARIOS_COMUNS)
+            ->where('empresa_id', auth()->user()->empresa_id);
+
+        if (auth()->user()->empresa_id === User::MYBP_EMPRESA_ID) {
             $resultado = User::with('Papel:id,nome', 'Empresa')
                 ->where('tipo', '!=', 'Pessoa')
                 ->where('tipo', '!=', 'Empresa');
-        } else {
-            $resultado = User::with('Papel:id,nome')
-                ->whereIn('tipo', User::TIPOS_USUARIOS_COMUNS)
-                ->where('empresa_id', auth()->user()->empresa_id);
         }
 
         if ($request->filled('campoBusca')) {
@@ -243,6 +241,7 @@ class UserController extends Controller
         }
 
         $empresa = auth()->user()->empresa_id;
+
 
         $tipo_email = TipoRecebeEmail::all();
 
@@ -255,7 +254,7 @@ class UserController extends Controller
 
         $resultado = $resultado->orderBy('nome')->paginate($porPagina);
 
-        $lista_tipos = auth()->user()->empresa_id == 104 ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
+        $lista_tipos = auth()->user()->empresa_id == User::MYBP_EMPRESA_ID ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
 
         return response()->json([
             'atual' => $resultado->currentPage(),

@@ -1,4 +1,4 @@
-@if(auth()->user()->empresa_id === 104)
+@if(auth()->user()->empresa_id === \App\Models\User::MYBP_EMPRESA_ID)
 <table class="table" style="width: 100%; border-bottom: 2px #0f4c60 double">
     <thead>
     <tr>

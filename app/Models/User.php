@@ -229,7 +229,8 @@ class User extends Authenticatable
     ];
 
     private $listaDeHabilidade = [];
-    public const BPSE = 1; // Empresa BPSE
+    public const BPSE = 104; // Empresa BPSE
+    public const MYBP_EMPRESA_ID = 100; // Empresa MYBP_EMPRESA_ID
     public const SUPORTE = "Suporte";
     public const ADMINISTRADOR = "Administrador";
     public const FUNCIONARIO = "Funcionario";
