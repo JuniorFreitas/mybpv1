@@ -550,7 +550,7 @@ class Sistema
     public static function listaEmpresas()
     {
         return \DB::table('users')->whereAtivo(true)
-//            ->whereNotIn('empresa_id', [104])
+//            ->whereNotIn('empresa_id', [User::MYBP_EMPRESA_ID])
             ->whereTemp(false)->selectRaw('DISTINCT empresa_id')
             ->get(['empresa_id'])->pluck('empresa_id')->toArray();
     }

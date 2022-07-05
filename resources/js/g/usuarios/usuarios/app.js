@@ -55,7 +55,7 @@ const app = new Vue({
             this.tituloJanela = "Cadastrando usuário";
             formReset();
             this.form = _.cloneDeep(this.formDefault) //copia
-            if (this.empresa_id !== 104){
+            if (this.empresa_id !== 100){
                 this.form.empresa_id = this.empresa_id;
             }
         },
@@ -84,7 +84,7 @@ const app = new Vue({
             this.form = _.cloneDeep(this.formDefault) //copia
 
             this.selecionaEmpresa(this.empresa_id);
-            if (this.empresa_id !== 104){
+            if (this.empresa_id !== 100){
                 this.form.empresa_id = this.empresa_id;
             }
 

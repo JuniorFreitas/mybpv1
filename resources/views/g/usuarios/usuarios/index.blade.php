@@ -29,7 +29,7 @@
                            onblur="validaEmail(this)">
                 </div>
 
-                <div class="form-group" v-if="empresa_id === 104">
+                <div class="form-group" v-if="empresa_id === {{\App\Models\User::MYBP_EMPRESA_ID}}">
                     <label>Empresa</label>
                     <select class="form-control form-control-sm" v-model="form.empresa_id"
                             onchange="valida_campo_vazio(this,1)"
@@ -40,7 +40,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group" v-if="grupoempresa || empresa_id === 104">
+                <div class="form-group" v-if="grupoempresa || empresa_id === {{\App\Models\User::MYBP_EMPRESA_ID}}">
                     <label>Grupo</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_id"
                             onchange="valida_campo_vazio(this,1)"

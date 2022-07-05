@@ -164,13 +164,13 @@ class AutoCompletesController extends Controller
         } else {
             return User::whereEmpresaId(auth()->user()->empresa_id)
                 ->whereNotIn('id', [auth()->user()->empresa_id])
-                ->orWhereIn('id', [1, 2, 3])
+                ->orWhereIn('id', [1, 2])
                 ->whereAtivo(true)
                 ->where('nome', 'like', '%' . $busca . '%')
                 ->take($quantidade)
                 ->get()
                 ->map(function ($item) {
-                    $item->label = $item->empresa_id == 104 ? $item->nome . ' - MyBP' : $item->nome;
+                    $item->label = $item->empresa_id == User::MYBP_EMPRESA_ID ? $item->nome . ' - MyBP' : $item->nome;
                     return $item;
                 });
         }
