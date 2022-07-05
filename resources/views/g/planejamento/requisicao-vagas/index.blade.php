@@ -16,20 +16,6 @@
                 <fieldset>
                     <legend>Informações</legend>
                     <div class="row">
-                        {{--                        <div class="col-12 col-md-4" v-if="cliente_id === 0">--}}
-                        {{--                            <div class="form-group">--}}
-                        {{--                                <label for="">Selecione um cliente</label>--}}
-                        {{--                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete" :disabled="visualizar"--}}
-                        {{--                                              :valido="form.cliente_id !== ''"--}}
-                        {{--                                              v-model="form.autocomplete_label_cliente_modal"--}}
-                        {{--                                              :id="`cliente_modal_${hash}`"--}}
-                        {{--                                              placeholder="Digite o nome cliente"--}}
-                        {{--                                              @onblur="resetaCampoClienteModal"--}}
-                        {{--                                             @onselect="selecionaClienteModal"></autocomplete>--}}
-                        {{--                            </div>--}}
-                        {{--                        </div>--}}
-
-
                         <div class="col-12"></div>
 
                         <div class="col-12 col-md-4">
@@ -442,6 +428,11 @@
                         data-target="#janelaCadastrar"
                         @click.prevent="formNovo">
                     Solicitar
+                </button>
+                <button type="button" class="btn btn-sm btn-primary  mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                 </button>
             </div>
         </form>
