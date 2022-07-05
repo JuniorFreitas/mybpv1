@@ -510,17 +510,12 @@
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
-                <form target="_blank"
-                      action="{{route('parecer_rota_transporte.excel')}}"
-                      method="get">
-                    @csrf
-                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
-                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">
-                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">
-                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">
-                    <input type="hidden" name="campoRota" :value="controle.dados.campoRota">
-                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
-                </form>
+                <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
+                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                </button>
             </div>
         </div>
 
