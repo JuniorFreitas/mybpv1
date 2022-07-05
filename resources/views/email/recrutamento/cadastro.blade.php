@@ -142,11 +142,28 @@
             <td valign="top">
                 <p style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555; text-align: center">
 
-                    Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Sua inscrição para vaga
-                    <strong>{{$vagaAberta->titulo}} - {{$vagaAberta->Municipio->nome}}/{{$vagaAberta->Municipio->uf}}</strong> foi concluída com sucesso! <br><br>
-                    Fique atento ao seu e-mail para receber comunicação das próximas etapas do processo! <br><br>
-                    Sucesso e esperamos vê-lo(a) em breve! <br><br>
-                    Abraços <br><br>
+                    @if($dados['empresa_id'] == 5581)
+                        Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Recebemos seu cadastro para a vaga
+                        <strong>{{$vagaAberta->titulo}} - {{$vagaAberta->Municipio->nome}}
+                            /{{$vagaAberta->Municipio->uf}}</strong>.
+                        <br> Para encaminhamento a empresa responsável, seu cadastro deverá esta validado, para isso,
+                        cobramos uma
+                        taxa de 20 reais com validade de 3 meses dos nossos serviços, o comprovante deverá ser enviado
+                        no número (99 9 8136-6280). <br>
+                        Obs.: caso seu cadastro estiver validado, favor desconsiderar. <br>
+                        Após isso, basta ficar atento ao seu e-mail para receber comunicação das próximas etapas do
+                        processo!<br>
+                        Sucesso e esperamos vê-lo(a) em breve!<br>
+                        Abraços!
+                    @else
+                        Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Sua inscrição para vaga
+                        <strong>{{$vagaAberta->titulo}} - {{$vagaAberta->Municipio->nome}}
+                            /{{$vagaAberta->Municipio->uf}}</strong> foi concluída com sucesso! <br><br>
+                        Fique atento ao seu e-mail para receber comunicação das próximas etapas do processo! <br><br>
+                        Sucesso e esperamos vê-lo(a) em breve! <br><br>
+                        Abraços <br><br>
+                    @endif
+
 
                     <br><br>
                 </p>
