@@ -396,7 +396,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         // Recrutamento
         Route::group(['as' => 'recrutamento.'], function () {
             //Recrutamento colocar depois Middleware
-            Route::get('recrutamentos/export', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel')->middleware('can:curriculos_recrutamento');
+            Route::post('recrutamentos/export', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel')->middleware('can:curriculos_recrutamento');
             //Lido
             Route::put('recrutamentos/{curriculo}/lido', [\App\Http\Controllers\RecrutamentoController::class, 'marcaLido'])->name('recrutamentos.marcaLido')->middleware('can:curriculos_recrutamento');
             Route::post('recrutamentos/search', [\App\Http\Controllers\RecrutamentoController::class, 'searchCliente'])->name('recrutamentos.search')->middleware('can:curriculos_recrutamento');
