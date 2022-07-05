@@ -452,11 +452,12 @@ class AdmissaoController extends Controller
                 // 4- Atualiza ou cria o FeedbackCurriculo
                 $feedback = $candidato->FeedBack ? $candidato->FeedBack->update($dadosFeedback) : $candidato->FeedBack()->create($dadosFeedback);
 
-                $feedback->ParecerRh ? $feedback->ParecerRh->update($dadosParecerRh) : $feedback->ParecerRh()->create($dadosParecerRh);
-                $feedback->ParecerRota ? $feedback->ParecerRota->update($dadosParecerRota) : $feedback->ParecerRota()->create($dadosParecerRota);
-                $feedback->ParecerTecnica ? $feedback->ParecerTecnica->update($dadosParecerTecnica) : $feedback->ParecerTecnica()->create($dadosParecerTecnica);
-                $feedback->ParecerTeste ? $feedback->ParecerTeste->update($dadosParecerTeste) : $feedback->ParecerTeste()->create($dadosParecerTeste);
-                $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                !is_null($feedback->ParecerRh) ? $feedback->ParecerRh->update($dadosParecerRh) : $feedback->ParecerRh()->create($dadosParecerRh);
+                !is_null($feedback->ParecerRota) ? $feedback->ParecerRota->update($dadosParecerRota) : $feedback->ParecerRota()->create($dadosParecerRota);
+                !is_null($feedback->ParecerTecnica) ? $feedback->ParecerTecnica->update($dadosParecerTecnica) : $feedback->ParecerTecnica()->create($dadosParecerTecnica);
+                !is_null($feedback->ParecerTeste) ? $feedback->ParecerTeste->update($dadosParecerTeste) : $feedback->ParecerTeste()->create($dadosParecerTeste);
+                !is_null($feedback->ResultadoIntegrado) ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
                 //Logica de Vagas
                 if ($feedback->vaga_projeto_id) {
