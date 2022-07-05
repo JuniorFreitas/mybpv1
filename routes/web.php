@@ -314,6 +314,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'requisicao_vagas.'], function () {
             Route::put('requisicao-vaga/{requisicaoVaga}/aprovar', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovar'])->name('aprovar')->middleware('can:planejamento_requisicao_vaga');
             Route::post('requisicao-vaga/atualizar', [\App\Http\Controllers\RequisicaoVagaController::class, 'atualizar'])->name('atualizar')->middleware('can:planejamento_requisicao_vaga');
+            Route::post('requisicao-vaga/export', [\App\Http\Controllers\RequisicaoVagaController::class, 'export'])->name('requisicao-vaga.excel')->middleware('can:planejamento_requisicao_vaga');
             Route::resource('requisicao-vaga', \App\Http\Controllers\RequisicaoVagaController::class)->middleware('can:planejamento_requisicao_vaga');
         });
 
