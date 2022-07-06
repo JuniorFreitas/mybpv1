@@ -17,6 +17,9 @@ use App\Models\User;
 use App\Models\UsuarioConta;
 use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
+use App\Rules\CpfValidoEmpresaRules;
+use App\Rules\VagaAbertaEmpresaRules;
+use App\Rules\VerificaCpfEmpresaRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -1751,4 +1754,101 @@ class AdmissaoController extends Controller
         }
 
     }
+
+
+    public function import(Request $request)
+    {
+        $arquivo = storage_path('app/public/import-csv.csv');
+        $file = fopen($arquivo, 'r');
+        $empresa_id = auth()->user()->empresa_id;
+
+        $vaga_aberta_id = 10;
+        $vaga_aberta = VagasAbertas::find($vaga_aberta_id);
+
+        $i = 0;
+        $collect =  collect();
+        while (($line = fgetcsv($file,1000,";")) !== false) {
+            if ($i > 0) {
+                $collect->push([
+                    "curriculo" => [
+                        'cpf' => $line[0],
+                        "nome" => $line[1],
+                        "email" => $line[2],
+                        "nascimento" => $line[6],
+                        "rg" => $line[4],
+                        "rg_emissao" => $line[4],
+                        "pai" => $line[4],
+                        "mae" => $line[4],
+                        "pcd" => $line[9],
+                        "cid" => $line[10],
+                        'vaga_aberta_id' => 67
+                    ],
+                    "endereco" => [
+                        "cep" => $line[11],
+                        "logradouro" => $line[12],
+                        "numero" => $line[13],
+                        "complemento" => $line[14],
+                        "bairro" => $line[15],
+                        "municipio" => $line[16],
+                        "uf" => $line[17],
+                    ],
+                    "telefone" => [
+                        "whatsapp" => $line[18],
+                        "numero" => $line[19],
+                    ],
+                ]);
+            }
+            $i++;
+        }
+
+        $filtrado = $collect->filter(function ($item) {
+            return $item['curriculo']['cpf'] != '';
+        })->unique('curriculo.cpf');
+
+        $dadosValidados = \Validator::make($filtrado->toArray(), [
+            '*.curriculo.cpf' => ['required', 'min:14',
+                'regex:/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/',
+                new CpfValidoEmpresaRules($empresa_id),
+                new VerificaCpfEmpresaRules($empresa_id, true)
+            ],
+            '*.curriculo.nome' => 'required|max:255',
+            '*.curriculo.email' => 'required|email:rfc,dns',
+            '*.curriculo.nascimento' => 'required|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+            '*.curriculo.rg' => 'required',
+            '*.curriculo.rg_emissao' => 'required|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+            '*.curriculo.pai' => 'max:255',
+            '*.curriculo.mae' => 'required|max:255',
+            '*.curriculo.pcd' => 'required|in:sim,não',
+            '*.curriculo.cid' => 'required_if:*.curriculo.pcd,sim',
+            '*.curriculo.vaga_aberta_id' => ['required', new VagaAbertaEmpresaRules($empresa_id)],
+            '*.endereco.cep' => 'required|min:9|regex:/^\d{5}-\d{3}$/',
+            '*.endereco.logradouro' => 'required|max:255',
+            '*.endereco.numero' => 'max:10',
+            '*.endereco.complemento' => 'max:255',
+            '*.endereco.bairro' => 'required|max:255',
+            '*.endereco.municipio' => 'required|max:255',
+            '*.endereco.uf' => 'required|max:2|regex:/^[A-Z]{2}$/',
+            '*.telefone.whatsapp' => 'required|in:sim,não',
+            '*.telefone.numero' => 'required|max:15|',
+        ]);
+
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao fazer importação',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+
+        };
+
+        try{
+            foreach ($filtrado as $item){
+                //fazer a criacão ou update
+            }
+        }catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
+    }
+
+
 }
