@@ -1,9 +1,11 @@
 import endereco from '../../../components/Endereco'
 import datepicker from '../../../components/DatePicker'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto';
-
+import ExportacaoMixin from "../../../mixins/Exportacoes";
 
 const app = new Vue({
+    mixins: [ExportacaoMixin],
+
     el: '#app',
     components: {
         endereco,
@@ -19,7 +21,9 @@ const app = new Vue({
         cadastrando: false,
         atualizado: false,
         visualizar: false,
+        preloadExportacao: false,
 
+        urlExportacao: `${URL_ADMIN}/entrevistas/parecer-teste-pratico/export`,
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
         todos_municipios: `autocomplete/todos-municipios`,
