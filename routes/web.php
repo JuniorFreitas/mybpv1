@@ -574,7 +574,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::post('admissao/atualizar', [\App\Http\Controllers\AdmissaoController::class, 'atualizar'])->name('admissao.atualizar')->middleware('can:admissao_processo'); // manter essa rota antes do resource
         Route::get('admissao/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao_processo'); // manter essa rota antes do resource
 
-
+        Route::get('admissao/import', [\App\Http\Controllers\AdmissaoController::class, 'import'])->name('admissao.import');
         Route::resource('admissao', \App\Http\Controllers\AdmissaoController::class)->middleware('can:admissao_processo');
     });
 
