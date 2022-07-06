@@ -168,7 +168,7 @@
                            v-model="controle.dados.campoBusca">
                 </div>
             </div>
-            <div class="col-12 col-sm-6">
+            <div class="col-12 col-sm-4">
                 <div class="form-group">
                     <label>Por cargo</label>
                     <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
@@ -178,6 +178,18 @@
                     </select>
                 </div>
             </div>
+
+            <div class="col-12 col-sm-2" v-if="permissoes.filtrar_demitido">
+                <div class="form-group">
+                    <label>Por Demitido</label>
+                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                            v-model="controle.dados.campoDemitido">
+                        <option :value="true">Sim</option>
+                        <option :value="false">Não</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="col-12 col-md-2">
                 <label>Exibir</label>
                 <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"

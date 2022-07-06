@@ -73,7 +73,8 @@ const app = new Vue({
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
                 pages: 20,
                 campoBusca: "",
-                campoCargo: ""
+                campoCargo: "",
+                campoDemitido: false
             }
         }
     },
