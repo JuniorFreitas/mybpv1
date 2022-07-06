@@ -55,9 +55,15 @@ class HistoricoController extends Controller
 //            $q->with('Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
 //        }])->whereIn('status', ['ADMITIDO']);
 
-        $resultado = FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
+        $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO']);
         })->with('Admissao', 'Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
+
+        if($request->campoDemitido){
+            $resultado->Demitidos();
+        }else{
+            $resultado->Admitidos();
+        }
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($q) use ($request) {
                 $q->where('nome', 'like', '%' . $request->campoBusca . '%');
@@ -93,6 +99,7 @@ class HistoricoController extends Controller
             'beneficio' => auth()->user()->can('cadastro_beneficio'),
             'cih' => auth()->user()->can('admissao_cih'),
             'afastamento' => auth()->user()->can('admissao_historico_aba_afastamento'),
+            'filtrar_demitido' => auth()->user()->can('admissao_historico_filtrar_demitido'),
         ];
         return response()->json([
             'atual' => $resultado->currentPage(),

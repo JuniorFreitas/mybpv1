@@ -800,6 +800,11 @@ class FeedbackCurriculo extends Model
         return $query->whereDoesntHave('Demissao');
     }
 
+    public function scopeDemitidos($query)
+    {
+        return $query->has('Demissao');
+    }
+
     //Scopo de ClienteID (Empresa)
     protected static function booted()
     {

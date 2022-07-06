@@ -443,7 +443,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         //Parecer Entrevista Técnica
         Route::group(['as' => 'parecer_teste_pratico.'], function () {
-            Route::get('parecer-teste-pratico/export', [\App\Http\Controllers\ParecerTestePraticoController::class, 'export'])->name('parecer_teste_pratico.excel')->middleware('can:entrevista_parecer_teste_pratico');
+            Route::post('parecer-teste-pratico/export', [\App\Http\Controllers\ParecerTestePraticoController::class, 'export'])->name('parecer_teste_pratico.excel')->middleware('can:entrevista_parecer_teste_pratico');
             Route::post('parecer-teste-pratico/atualizar', [\App\Http\Controllers\ParecerTestePraticoController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_teste_pratico');
             Route::post('parecer-teste-pratico/ficha_pdf', [\App\Http\Controllers\ParecerTestePraticoController::class, 'getFichaPdf'])->name('parecer_teste_pratico.getFichaPdf')->middleware('can:entrevista_parecer_teste_pratico');
             Route::resource('parecer-teste-pratico', \App\Http\Controllers\ParecerTestePraticoController::class)->middleware('can:entrevista_parecer_teste_pratico');
