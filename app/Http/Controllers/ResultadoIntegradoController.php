@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Classes\ZapNotificacao;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Jobs\Entrevista\ResultadoIntegrado\JobEncaminhamentoExame;
+use App\Jobs\JobExportaExcel;
 use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Cliente;
 use App\Models\EmpresaExame;
@@ -12,6 +13,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Pcmso;
 use App\Models\ResultadoIntegrado;
 use App\Models\SimuladoVaga;
+use App\Models\Sistema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Log;
@@ -293,7 +295,9 @@ class ResultadoIntegradoController extends Controller
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
-                return $e->getMessage() . ' - ' . $e->getLine();
+                \Log::info("-------DADOS-------");
+                Sistema::telegram(print_r($dados, true));
+                \Log::info("-------FIM DE DADOS-------");
                 Log::debug("erro update RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
@@ -314,6 +318,22 @@ class ResultadoIntegradoController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+        $periodo = FeedbackCurriculo::all();
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'periodo' => $periodo
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
         $resultado = FeedbackCurriculo::with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social,area_id',
@@ -322,9 +342,6 @@ class ResultadoIntegradoController extends Controller
             'TelPrincipal',
             'ResultadoIntegrado')
             ->has('parecerRh')
-//            ->has('parecerTecnica')
-//            ->has('parecerRota')
-//            ->has('parecerTeste')
             ->whereIn('selecionado', ['sim', 'standby'])->whereInteresse(true);
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
@@ -367,20 +384,47 @@ class ResultadoIntegradoController extends Controller
             });
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        return $resultado->orderByDesc('created_at');
 
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items(),
-                'listaPcmso' => Pcmso::get()
-            ]
-        ]);
     }
 
+    public function export(Request $request)
+    {
+        $resultado = $this->filtro($request)->get();
+        $head = [
+            "Nome",
+            "Vaga",
+            "PCD",
+            "Parecer RH Nota",
+            "Observação",
+            "E-mail",
+            "Responsavel Encaminhamento",
+            "Data do Encaminhamento Documento",
+            "Data do Encaminhamento Treinamento",
+            "Data do Encaminhamento Exame",
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->Curriculo->nome,
+                $row->vaga_aberta_municipio,
+                $row->Curriculo->pcd = false ? "SIM":"NÂO",
+                $row->parecerRh->nota,
+                $row->obs,
+                $row->Curriculo->email,
+                $row->ResultadoIntegrado ? $row->ResultadoIntegrado->responsavel_envio : "",
+                $row->ResultadoIntegrado ? $row->ResultadoIntegrado->created_at : "",
+                $row->ResultadoIntegrado ? $row->ResultadoIntegrado->encaminhado_treinamento_data : "",
+                $row->ResultadoIntegrado ? $row->ResultadoIntegrado->encaminhado_exame_data : "",
+            ];
+        }
+
+        $nameArquivo = "resultado_integrado" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Resultado - Integrado", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+    }
     public function getFichaPdf(Request $request, FeedbackCurriculo $feedback)
     {
         $dados = $feedback;

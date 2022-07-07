@@ -469,7 +469,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'resultado-integrado.'], function () {
             Route::get('resultado-integrado/ficha/{feedback}', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getFichaPdf'])->name('resultado_integrado.getFichapdf')->middleware('can:entrevista_resultado_integrado');
 
-            Route::get('resultado-integrado/export', [\App\Http\Controllers\ResultadoIntegradoController::class, 'export'])->name('resultado_integrado.excel')->middleware('can:entrevista_resultado_integrado');
+            Route::post('resultado-integrado/export', [\App\Http\Controllers\ResultadoIntegradoController::class, 'export'])->name('resultado_integrado.excel')->middleware('can:entrevista_resultado_integrado');
             Route::post('resultado-integrado/atualizar', [\App\Http\Controllers\ResultadoIntegradoController::class, 'atualizar'])->name('resultado_integrado.atualizar')->middleware('can:entrevista_resultado_integrado');
 //            Route::get('resultado-integrado/ficha/{resultado}', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getFichaPdf'])->name('resultado_integrado.getFichapdf')->middleware('can:entrevista_resultado_integrado');
             Route::resource('resultado-integrado', \App\Http\Controllers\ResultadoIntegradoController::class)->middleware('can:entrevista_resultado_integrado');
