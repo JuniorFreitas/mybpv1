@@ -2,8 +2,11 @@ import endereco from "../../../components/Endereco";
 import datepicker from "../../../components/DatePicker";
 import DadosPessoais from "../../../components/entrevistas/DadosPessoaisTexto";
 import FormRh from "../../../components/entrevistas/FormParecerRh";
+import ExportacaoMixin from "../../../mixins/Exportacoes";
 
 const app = new Vue({
+    mixins: [ExportacaoMixin],
+
     el: "#app",
     components: {
         endereco,
@@ -20,7 +23,9 @@ const app = new Vue({
         cadastrando: false,
         atualizado: false,
         visualizar: false,
+        preloadExportacao: false,
 
+        urlExportacao: `${URL_ADMIN}/entrevistas/parecer_rh/export`,
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
         todos_municipios: `autocomplete/todos-municipios`,
@@ -262,40 +267,6 @@ const app = new Vue({
         }, 200);
     },
     methods: {
-        exportaExcel() {
-            this.preloadExportacao = true;
-
-            axios.post(`${URL_ADMIN}/entrevistas/parecer_rh/export`, {
-                selecionados: this.selecionados,
-                campoBusca: this.controle.dados.campoBusca,
-                campoVaga: this.controle.dados.campoVaga,
-                campoCliente: this.controle.dados.campoCliente,
-                campoFiltro: this.controle.dados.campoFiltro,
-                campoUf: this.controle.dados.campoUf,
-                campoRh: this.controle.dados.campoRh,
-                campoFinalRh: this.controle.dados.campoFinalRh,
-                campoRota: this.controle.dados.campoRota,
-                campoTecnica: this.controle.dados.campoTecnica,
-                campoTeste: this.controle.dados.campoTeste,
-                campoPcd: this.controle.dados.campoPcd,
-                campoCPF: this.controle.dados.campoCPF,
-                // campoStatus:this.controle.dados.campoStatus ,
-                entrevista_rh: this.controle.dados.entrevista_rh,
-                entrevista_rh_nota: this.controle.dados.entrevista_rh_nota,
-
-                cliente_custom: this.controle.dados.cliente_custom,
-                parecer_individual: this.controle.dados.parecer_individual,
-                filtroPeriodo: this.controle.dados.filtroPeriodo,
-                periodo: this.controle.dados.periodo
-
-            }).then(({ data }) => {
-                mostraSucesso(data.msg);
-                this.preloadExportacao = false;
-            }).catch(erro => {
-                mostraErro(erro);
-                this.preloadExportacao = false;
-            });
-        },
         /***Campos de Filtros ****/
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
