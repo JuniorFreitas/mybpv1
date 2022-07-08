@@ -273,6 +273,10 @@ export default {
         });
         this.form.pcmso_id = !this.form.pcmso_id ? "" : this.form.pcmso_id;
         this.form.empresa_exame_id = !this.form.empresa_exame_id ? "" : this.form.empresa_exame_id;
+        this.form.envia_email_documentos = false;
+        this.form.envia_whatsapp_documentos = false;
+        this.form.envia_email_exame = false;
+        this.form.envia_whatsapp_exame = false;
     }
 };
 </script>

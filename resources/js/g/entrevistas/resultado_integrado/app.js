@@ -3,8 +3,11 @@ import datepicker from "../../../components/DatePicker";
 import DadosPessoais from "../../../components/entrevistas/DadosPessoaisTexto";
 import FormRh from "../../../components/entrevistas/FormParecerRh";
 import FormResultadoIntegrado from "../../../components/entrevistas/FormResultadoIntegrado";
+import ExportacaoMixin from "../../../mixins/Exportacoes";
 
 const app = new Vue({
+    mixins: [ExportacaoMixin],
+
     el: "#app",
     components: {
         endereco,
@@ -22,6 +25,9 @@ const app = new Vue({
         cadastrando: false,
         atualizado: false,
         visualizar: false,
+        preloadExportacao: false,
+
+        urlExportacao: `${URL_ADMIN}/entrevistas/resultado-integrado/export`,
 
         hash: `mastertag_${parseInt(Math.random() * 999999)}`,
 
