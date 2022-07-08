@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\admissao\apontamento\cihExport;
+use App\Jobs\JobExportaExcel;
 use App\Models\AreaEtiqueta;
 use App\Models\Arquivo;
 use App\Models\Cih;
@@ -187,23 +188,62 @@ class CihController extends Controller
         //
     }
 
+    public function atualizarHistorico($feedback)
+    {
+
+        $resultado = Cih::whereFeedbackId($feedback)->with('Tag', 'Area',
+            'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+            'ResponsavelLancamento:id,nome',
+            'ResponsavelAprovacao:id,nome'
+        );
+
+        $data = new DataHora();
+        $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
+
+        return response()->json([
+            'itens' => $resultado->get(),
+            'cliente_id' => auth()->user()->cliente_id,
+            'intervalo' => $intervalo,
+            //'listaClientes' => $clientes,
+            'hoje' => (new DataHora())->dataCompleta()
+        ]);
+    }
 
     public function atualizar(Request $request)
+    {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $periodo = Cih::all();
+        $tags = CihTag::orderBy('label')->whereAtivo(true)->get();
+        $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
+        $data = new DataHora();
+        $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
+        $clientes = Cliente::whereAtivo(true)->get();
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'tags' => $tags,
+                'periodo' => $periodo,
+                'cliente_id' => auth()->user()->cliente_id,
+                'intervalo' => $intervalo,
+                'areas' => $areas,
+                'listaClientes' => $clientes,
+                'hoje' => (new DataHora())->dataCompleta()
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
     {
         $resultado = Cih::with('Tag', 'Area',
             'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome'
         );
-
-
-        $tags = CihTag::orderBy('label')->whereAtivo(true)->get();
-        $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
-
-        $data = new DataHora();
-        $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
-
-        $clientes = Cliente::whereAtivo(true)->get();
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Colaborador.Curriculo', function ($q) use ($request) {
@@ -227,46 +267,46 @@ class CihController extends Controller
             });
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        return $resultado->orderByDesc('created_at');
 
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items(),
-                'tags' => $tags,
-                'cliente_id' => auth()->user()->cliente_id,
-                'intervalo' => $intervalo,
-                'areas' => $areas,
-                'listaClientes' => $clientes,
-                'hoje' => (new DataHora())->dataCompleta()
-            ]
-        ]);
     }
-
-
-    public function atualizarHistorico($feedback)
+    public function export(Request $request)
     {
 
-        $resultado = Cih::whereFeedbackId($feedback)->with('Tag', 'Area',
-            'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'ResponsavelLancamento:id,nome',
-            'ResponsavelAprovacao:id,nome'
-        );
+        $resultado = $this->filtro($request)->get();
+        $head = [
+            "Colaborador",
+            "Área",
+            "Data Ocorrência",
+            "Ocorrência",
+            "Responsável Lançamento",
+            "Ação",
+            "Obs Lançamento",
+            "Status",
+            "Data Status",
+            "Responsável Status"
+        ];
 
-        $data = new DataHora();
-        $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
+        $rows = [];
 
-        //$clientes = Clientes::whereAtivo(true)->get();
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->Colaborador->Curriculo->nome,
+                $row->Area->label,
+                $row->data_lancamento ? $row->data_lancamento : '',
+                $row->Tag->label,
+                $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                $row->Tag->label,
+                $row->obs_lancamento ? $row->obs_lancamento : '',
+                $row->status ? $row->status : "aguardando",
+                $row->data_aprovacao ? $row->data_aprovacao : '',
+                $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+            ];
+        }
 
-        return response()->json([
-            'itens' => $resultado->get(),
-            'cliente_id' => auth()->user()->cliente_id,
-            'intervalo' => $intervalo,
-            //'listaClientes' => $clientes,
-            'hoje' => (new DataHora())->dataCompleta()
-        ]);
+        $nameArquivo = "admissao_cih" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Admissão - CIH", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
     public function relatorioPdf(Request $request)
@@ -287,41 +327,11 @@ class CihController extends Controller
         $dados = $dados->orderBy('data_aprovacao')->get();
 
         $empresa = User::whereId(auth()->user()->empresa_id)->first();
-
+        return view('pdf.admissao.apontamento.cih', compact('dados', 'empresa', 'dataInicio', 'dataFim'));
         $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('dados', 'empresa', 'dataInicio', 'dataFim'));
         $pdf->setPaper('A4', 'landscape');
 
         return $pdf->stream("relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf");
-    }
-
-    public function relatorioExcel(Request $request)
-    {
-
-        $intervalo = explode(' até ', $request->intervalo);
-        $dataInicio = (new DataHora($intervalo[0] . ' 00:00:00'))->dataHoraInsert();
-        $dataFim = (new DataHora($intervalo[1] . ' 23:59:59'))->dataHoraInsert();
-
-
-        $dados = Cih::with('Tag',
-            'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia',
-            'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'ResponsavelLancamento:id,nome',
-            'ResponsavelAprovacao:id,nome'
-        )->where('data_aprovacao', '>=', $dataInicio)
-            ->where('data_aprovacao', '<=', $dataFim)
-            ->whereIn('status', ['aprovado', 'reprovado']);
-
-        if (auth()->user()->cliente_id == 1) {
-            $dados->whereClienteId($request->cliente_relatorio);
-            $cliente = Cliente::find($request->cliente_relatorio);
-        } else {
-            $dados->whereClienteId(auth()->user()->cliente_id);
-            $cliente = Cliente::find(auth()->user()->cliente_id);
-        }
-
-        $dados = $dados->orderBy('data_aprovacao')->get();
-
-        return Excel::download(new cihExport($dados), 'cih_' . (new DataHora())->nomeUnico() . '.xlsx');
     }
 
     // Anexos-------------------------------------------------

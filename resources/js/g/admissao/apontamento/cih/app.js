@@ -1,8 +1,11 @@
 import autocomplete from '../../../../components/AutoComplete';
 import DatePicker from "../../../../components/DatePicker";
 import Upload from "../../../../components/Upload";
+import ExportacaoMixin from "../../../../mixins/Exportacoes";
 
 const app = new Vue({
+    mixins: [ExportacaoMixin],
+
     el: '#app',
     components: {
         autocomplete,
@@ -16,9 +19,13 @@ const app = new Vue({
         leitura: false,
         apagado: false,
         aprovando: false,
+        preloadExportacao: false,
 
         colaborador_ativo: `autocomplete/colaboradorCih`,
         todos_municipios: `autocomplete/todos-municipios`,
+
+        urlExportacao: `${URL_ADMIN}/apontamento/cih/export`,
+        selecionados: [],
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
         cliente_id: 0,
@@ -80,6 +87,29 @@ const app = new Vue({
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.atualizar();
+    },
+    computed: {
+        tudoMarcado() {
+            let totalItens = this.comTeste.length;
+            let totalEncontrado = 0;
+
+            if (totalItens === 0) {
+                return false;
+            }
+
+            this.comTeste.forEach(item => {
+                let id = item.curriculo_id;
+                if (this.selecionados.indexOf(id) >= 0) {
+                    totalEncontrado++;
+                    //faz nada
+                } else {
+                    return false;
+                }
+            });
+            let resultado = totalItens === totalEncontrado;
+            this.selecionaTudo = resultado;
+            return resultado;
+        }
     },
     methods: {
         selecionaColaborador(obj) {
@@ -186,6 +216,25 @@ const app = new Vue({
                 error => (this.preloadAjax = false)
             );
 
+        },
+        selecionaTodos() {
+            this.selecionaTudo = !this.selecionaTudo;
+            if (this.selecionaTudo) {
+                this.comTeste.map(item => {
+                    let id = item.id;
+                    if (this.selecionados.indexOf(id) === -1) {
+                        this.selecionados.push(id)
+                    }
+                });
+            } else {
+                this.comTeste.map(item => {
+                    let id = item.id;
+                    let index = this.selecionados.indexOf(id);
+                    if (index >= 0) {
+                        this.selecionados.splice(index, 1)
+                    }
+                });
+            }
         },
 
         alterar() {
