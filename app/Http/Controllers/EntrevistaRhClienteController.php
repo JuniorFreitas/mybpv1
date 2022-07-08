@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\Entrevistas\entrevistaRhExport;
 use App\Exports\Entrevistas\parecerRhExport;
+use App\Jobs\JobExportaExcel;
 use App\Models\Curriculo;
 use App\Models\EntrevistaRh;
 use App\Models\FeedbackCurriculo;
@@ -199,6 +200,22 @@ class EntrevistaRhClienteController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $periodo = FeedbackCurriculo::all();
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'periodo' => $periodo
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
         $resultado = FeedbackCurriculo::whereInteresse(true)
             ->whereIn('selecionado', ['sim', 'standby'])
             ->with(
@@ -259,253 +276,111 @@ class EntrevistaRhClienteController extends Controller
         //Se for id 35 ou campo cliente preenchido e que seja igual a 35
 //        if (auth()->user()->Cliente->area_id > 1 || auth()->user()->cliente_id == 1) {
 
-            $resultado->whereStatus('classificado')
-                ->whereIn('selecionado', ['sim', 'standby'])
-                ->whereInteresse(true);
+        $resultado->whereStatus('classificado')
+            ->whereIn('selecionado', ['sim', 'standby'])
+            ->whereInteresse(true);
 
 
-            if ($request->filled('campoRh')) {
-                if ($request->campoRh == '0') {
-                    $resultado->whereHas('parecerRH.entrevistaRh', function ($q) {
-                        $q->where('nota', 0);
-                    });
-                }
-                if ($request->campoRh == '1-5') {
-                    $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                        $q->where('nota', '>=', 1)->where('nota', '<=', 5);
-                    });
-                }
-                if ($request->campoRh == '5-7') {
-                    $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                        $q->where('nota', '>=', 5)->where('nota', '<=', 7);
-                    });
-                }
-                if ($request->campoRh == '8-10') {
-                    $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                        $q->where('nota', '>=', 8)->where('nota', '<=', 10);
-                    });
-                }
+        if ($request->filled('campoRh')) {
+            if ($request->campoRh == '0') {
+                $resultado->whereHas('parecerRH.entrevistaRh', function ($q) {
+                    $q->where('nota', 0);
+                });
+            }
+            if ($request->campoRh == '1-5') {
+                $resultado->whereHas('parecerRH.individualRh', function ($q) {
+                    $q->where('nota', '>=', 1)->where('nota', '<=', 5);
+                });
+            }
+            if ($request->campoRh == '5-7') {
+                $resultado->whereHas('parecerRH.individualRh', function ($q) {
+                    $q->where('nota', '>=', 5)->where('nota', '<=', 7);
+                });
+            }
+            if ($request->campoRh == '8-10') {
+                $resultado->whereHas('parecerRH.individualRh', function ($q) {
+                    $q->where('nota', '>=', 8)->where('nota', '<=', 10);
+                });
+            }
+        }
+
+        if ($request->filled('parecer_individual')) {
+            if ($request->parecer_individual == 'entrevistado') {
+                $resultado->has('parecerRH.individualRh');
+            }
+            if ($request->parecer_individual == 'nao_entrevistado') {
+                $resultado->whereDoesntHave('parecerRH.individualRh');
             }
 
-            if ($request->filled('parecer_individual')) {
-                if ($request->parecer_individual == 'entrevistado') {
-                    $resultado->has('parecerRH.individualRh');
-                }
-                if ($request->parecer_individual == 'nao_entrevistado') {
-                    $resultado->whereDoesntHave('parecerRH.individualRh');
-                }
-
-                if ($request->parecer_individual != 'entrevistado' && $request->parecer_individual != 'nao_entrevistado') {
-                    $resultado->whereHas('parecerRH.individualRh', function ($q) use ($request) {
-                        $q->whereParecer($request->parecer_individual);
-                    });
-                }
+            if ($request->parecer_individual != 'entrevistado' && $request->parecer_individual != 'nao_entrevistado') {
+                $resultado->whereHas('parecerRH.individualRh', function ($q) use ($request) {
+                    $q->whereParecer($request->parecer_individual);
+                });
             }
+        }
 //        } else {
-            // Se não for 35 (55 solucoes)
+        // Se não for 35 (55 solucoes)
 
-            $resultado->with(
-                'parecerTecnica:feedback_id,nota',
-                'parecerRota:feedback_id,tem_rota',
-                'parecerTeste:feedback_id,nota_teste');
+        $resultado->with(
+            'parecerTecnica:feedback_id,nota',
+            'parecerRota:feedback_id,tem_rota',
+            'parecerTeste:feedback_id,nota_teste');
 
 
-            if ($request->filled('campoPcd')) {
-                $campoPcd = $request->campoPcd == 'true' ? true : false;
-                $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
-                    $query->wherePcd($campoPcd);
-                });
-            }
+        if ($request->filled('campoPcd')) {
+            $campoPcd = $request->campoPcd == 'true' ? true : false;
+            $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
+                $query->wherePcd($campoPcd);
+            });
+        }
 
-            if ($request->filled('campoRh')) {
-                if ($request->campoRh == 'realizado') {
-                    $resultado->has('parecerRh');
-                } else {
-                    $resultado->whereHas('parecerRH', function ($q) use ($request) {
-                        $q->whereNota($request->campoRh);
-                    });
-                }
-            }
-
-            if ($request->filled('campoFinalRh')) {
+        if ($request->filled('campoRh')) {
+            if ($request->campoRh == 'realizado') {
+                $resultado->has('parecerRh');
+            } else {
                 $resultado->whereHas('parecerRH', function ($q) use ($request) {
-                    $q->whereParecerFinalUm($request->campoFinalRh);
+                    $q->whereNota($request->campoRh);
                 });
             }
+        }
+
+        if ($request->filled('campoFinalRh')) {
+            $resultado->whereHas('parecerRH', function ($q) use ($request) {
+                $q->whereParecerFinalUm($request->campoFinalRh);
+            });
+        }
 //        }
+        return $resultado->orderByDesc('created_at');
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items()
-            ]
-        ]);
     }
 
     public function export(Request $request)
     {
-        $resultado = FeedbackCurriculo::whereInteresse(true)
-            ->whereIn('selecionado', ['sim', 'standby'])
-            ->has('parecerRh');
+        $resultado = $this->filtro($request)->get();
 
-        if ($request->selecionados) {
-            $resultado->whereIn('id', $request->selecionados);
-            $resultado = $resultado->get();
-            //Criar um que pega tudo
-            if ($request->campoCliente == 35 || auth()->user()->cliente_id === 35) {
-                return Excel::download(new entrevistaRhExport($resultado), 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx');
-            }
-            return Excel::download(new parecerRhExport($resultado), 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx');
-        } else {
-            $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
-            if ($filtroPeriodo) {
-                $periodo = explode(' até ', $request->periodo);
-                $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-                $dataFim = new DataHora($periodo[1], ' 23:59:59');
-                $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
-                    $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
-                });
-            }
+        $head = [
+            "Nome",
+            "Cargo",
+            "CPF",
+            "Parecer Nota",
+            "Teste Prático Nota",
+        ];
 
-            if ($request->filled('campoCliente')) {
-                $resultado->whereClienteId($request->campoCliente);
-            }
+        $rows = [];
 
-            if ($request->filled('campoBusca')) {
-                $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                    $query->where('nome', 'like', '%' . $request->campoBusca . '%')
-                        ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
-                        ->orWhere('id', $request->campoBusca);
-                });
-            }
-
-            if ($request->filled('campoCPF')) {
-                $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                    $query->whereCpf($request->campoBusca);
-                });
-            }
-
-            if ($request->filled('campoVaga')) {
-                $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
-                    $query->whereId($request->campoVaga);
-                });
-            }
-
-            if ($request->filled('campoUf')) {
-                $resultado->whereHas('Curriculo', function ($q) use ($request) {
-                    $q->whereUfVaga($request->campoUf);
-                });
-            }
-
-            //Se for id 35 ou campo cliente preenchido e que seja igual a 35
-            if ($request->campoCliente == 35 || auth()->user()->cliente_id === 35) {
-                $resultado->whereStatus('classificado')
-                    ->whereIn('selecionado', ['sim', 'standby'])
-                    ->whereInteresse(true)->has('parecerRh.individualRh');
-
-                if ($request->filled('campoRh')) {
-                    if ($request->campoRh == '0') {
-                        $resultado->whereHas('parecerRH.entrevistaRh', function ($q) {
-                            $q->where('nota', 0);
-                        });
-                    }
-                    if ($request->campoRh == '1-5') {
-                        $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                            $q->where('nota', '>=', 1)->where('nota', '<=', 5);
-                        });
-                    }
-                    if ($request->campoRh == '5-7') {
-                        $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                            $q->where('nota', '>=', 5)->where('nota', '<=', 7);
-                        });
-                    }
-                    if ($request->campoRh == '8-10') {
-                        $resultado->whereHas('parecerRH.individualRh', function ($q) {
-                            $q->where('nota', '>=', 8)->where('nota', '<=', 10);
-                        });
-                    }
-                }
-
-                if ($request->filled('parecer_individual')) {
-                    if ($request->parecer_individual == 'entrevistado') {
-                        $resultado->has('parecerRH.individualRh');
-                    }
-                    if ($request->parecer_individual == 'nao_entrevistado') {
-                        $resultado->whereDoesntHave('parecerRH.individualRh');
-                    }
-
-                    if ($request->parecer_individual != 'entrevistado' && $request->parecer_individual != 'nao_entrevistado') {
-                        $resultado->whereHas('parecerRH.individualRh', function ($q) use ($request) {
-                            $q->whereParecer($request->parecer_individual);
-                        });
-                    }
-                }
-
-                $resultado = $resultado->get();
-                return Excel::download(new entrevistaRhExport($resultado), 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx');
-            } else {
-                $resultado->with(
-                    'parecerTecnica:feedback_id,nota',
-                    'parecerRota:feedback_id,tem_rota',
-                    'parecerTeste:feedback_id,nota_teste');
-
-                if ($request->filled('campoRota')) {
-                    $campoRota = $request->campoRota == 'true' ? true : false;
-                    if ($request->campoRota == 'realizado') {
-                        $resultado->has('parecerRota');
-                    } else {
-                        $resultado->whereHas('parecerRota', function ($q) use ($campoRota) {
-                            $q->whereTemRota($campoRota);
-                        });
-                    }
-                }
-
-                if ($request->filled('campoTeste')) {
-                    if ($request->campoRota == 'realizado') {
-                        $resultado->has('parecerTeste');
-                    } else {
-                        $resultado->whereHas('parecerTeste', function ($q) use ($request) {
-                            $q->whereNotaTeste($request->campoTeste);
-                        });
-                    }
-                }
-
-                if ($request->filled('campoTecnica')) {
-                    $resultado->has('parecerTecnica');
-                }
-
-                if ($request->filled('campoPcd')) {
-                    $campoPcd = $request->campoPcd == 'true' ? true : false;
-                    $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
-                        $query->wherePcd($campoPcd);
-                    });
-                }
-
-                if ($request->filled('campoRh')) {
-                    if ($request->campoRh == 'realizado') {
-                        $resultado->has('parecerRh');
-                    } else {
-                        $resultado->whereHas('parecerRH', function ($q) use ($request) {
-                            $q->whereNota($request->campoRh);
-                        });
-                    }
-                }
-
-                if ($request->filled('campoFinalRh')) {
-                    $resultado->whereHas('parecerRH', function ($q) use ($request) {
-                        $q->whereParecerFinalUm($request->campoFinalRh);
-                    });
-                }
-
-                $resultado = $resultado->get();
-                return Excel::download(new parecerRhExport($resultado), 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx');
-            }
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->Curriculo->nome,
+                $row->vaga_aberta_municipio,
+                $row->Curriculo->cpf,
+                $row->parecerRh ? $row->parecerRh->nota : "sem nota",
+                $row->parecerTeste ? $row->parecerTeste->nota_teste : "sem nota",
+            ];
         }
 
+        $nameArquivo = "entrevista_rh" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Entrevista - RH", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
     public function curriculoPdf(Curriculo $recrutamento)

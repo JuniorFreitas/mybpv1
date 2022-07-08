@@ -282,36 +282,12 @@
                         :disabled="selecionados.length === 0" @click.prevent="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
-                <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"
+                <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
+                <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
                                                                            v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
                 </button>
-{{--                <form target="_blank"--}}
-{{--                      action="{{ route('parecerrh.excel') }}"--}}
-{{--                      --}}{{--                      action="{{ \App\Models\Sistema::UrlServidor }}/parecer_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
-{{--                      method="get">--}}
-{{--                    @csrf--}}
-{{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
-
-{{--                    <input type="hidden" name="campoVaga" :value="controle.dados.campoVaga">--}}
-{{--                    <input type="hidden" name="campoCliente" :value="controle.dados.campoCliente">--}}
-{{--                    <input type="hidden" name="campoUf" :value="controle.dados.campoUf">--}}
-{{--                    <input type="hidden" name="campoRh" :value="controle.dados.campoRh">--}}
-{{--                    <input type="hidden" name="campoFinalRh" :value="controle.dados.campoFinalRh">--}}
-{{--                    <input type="hidden" name="campoRota" :value="controle.dados.campoRota">--}}
-{{--                    <input type="hidden" name="campoTecnica" :value="controle.dados.campoTecnica">--}}
-{{--                    <input type="hidden" name="campoTeste" :value="controle.dados.campoTeste">--}}
-
-{{--                    <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">--}}
-
-{{--                    <button type="submit" class="btn btn-sm btn-primary mb-1"--}}
-{{--                            :disabled="(selecionados.length === 0  && controle.dados.campoCliente === '' ||  lista.length===0 ) || controle.carregando">--}}
-{{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
-{{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
-{{--                    </button>--}}
-{{--                </form>--}}
             </div>
         </div>
 
