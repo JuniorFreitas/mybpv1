@@ -479,6 +479,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
     //Controle de Exames
     Route::group(['as' => 'controle_exames.'], function () {
+        Route::get('/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoShow'])->name('anexo-show');
+        Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'download'])->name('anexo-download');
+        Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoDelete'])->name('anexo-delete');
+        Route::post('/uploadAnexos', [\App\Http\Controllers\ControleExameController::class, 'uploadAnexos'])->name('.upload-anexos');
         Route::post('controle-exames/ficha-encaminhamento/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
         Route::get('controle-exames/carregaResposta', [\App\Http\Controllers\ControleExameController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('controle-exames/resultado/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getResultado'])->name('getResultado');

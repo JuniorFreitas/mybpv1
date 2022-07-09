@@ -1,11 +1,14 @@
 import Dados from '../../components/entrevistas/DadosPessoaisTexto'
 import Formulario from '../../components/FormularioDefault'
+import Upload from "../../components/Upload";
 
 const app = new Vue({
+
     el: '#app',
     components: {
         Formulario,
-        Dados
+        Dados,
+        Upload
     },
     data: {
         tituloJanela: 'Controle de Exames',
@@ -44,7 +47,11 @@ const app = new Vue({
                     trabalho_altura: '',
                     espacao_confinado: '',
                     observacoes: ''
-                }
+                },
+                tipo: '',
+                anexos: [],
+                anexosDel: [],
+                cadastrando: true,
             },
             formDefault: null
         },
@@ -67,6 +74,9 @@ const app = new Vue({
         AUTENTICADO,
         estados: ESTADOS,
         todos_municipios: `autocomplete/todos-municipios`,
+
+        url_anexo: `${URL_ADMIN}/uploadAnexos`,
+        anexoUploadAndamento: false,
 
         urlPaginacao: `${URL_ADMIN}/controle-exames/atualizar`,
         exibicao: EXIBICAO,
@@ -219,11 +229,25 @@ const app = new Vue({
             }
         },
 
-        async formResultado(id) {
+        formResultado(id) {
             this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault)
             this.abasesmt.form.exame_funcionario_id = id;
-            this.abasesmt.tituloJanela = `Resultado do exame de ${form.curriculo.nome}`
+            this.abasesmt.tituloJanela = `Resultado do exame de ${this.dados.nome}`;
             // this.preload = true
+            axios.get(`${URL_ADMIN}/controle-exames/resultado/${id}`)
+                .then(response => {
+                    let data = response.data;
+                    console.log(data);
+                    this.abasesmt.form.cadastrando = false;
+                    if (data != '') {
+                        this.abasesmt.form = data;
+                    }else{
+                        this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault);
+                        this.abasesmt.form.exame_funcionario_id = id;
+
+                    }
+                }).catch(error => {
+            });
 
         },
 
@@ -238,22 +262,9 @@ const app = new Vue({
 
             const URL = `${URL_ADMIN}/controle-exames/salvaResultado`
 
-            await axios.post(URL, this.abasesmt.form).then(res => {
-                let data = res.data
-                mostraSucesso('', 'Exame cadastrado com sucesso!')
-                $('#validaSesmt').modal('hide')
-                this.$refs.componente.buscar()
-                this.abasesmt.preload = false
-            }).catch(error => this.abasesmt.preload = false)
-
-            /*if (this.cadastrando) {
-                await axios.post(URL, {
-                    formulario_id: this.formulario_id,
-                    feedback_id: this.form.feedback_id,
-                    empresa_exame_id: this.form.empresa_exame_id,
-                    respostas: this.form.respostas,
-                    tipo: 'store'
-                }).then(res => {
+            if (this.abasesmt.form.cadastrando) {
+                this.abasesmt.form.tipo = 'criar';
+                await axios.post(URL, this.abasesmt.form).then(res => {
                     let data = res.data
                     mostraSucesso('', 'Exame cadastrado com sucesso!')
                     $('#janelaParecerEntrevista').modal('hide')
@@ -261,19 +272,15 @@ const app = new Vue({
                     this.preload = false
                 }).catch(error => this.preload = false)
             } else {
-                await axios.put(URL, {
-                    id: this.form.id,
-                    empresa_exame_id: this.form.empresa_exame_id,
-                    respostas: this.form.respostas,
-                    tipo: 'update'
-                }).then(res => {
+                this.abasesmt.form.tipo = 'editar';
+                await axios.put(URL, this.abasesmt.form).then(res => {
                     let data = res.data
                     mostraSucesso('', 'Exame atualizado com sucesso!')
                     $('#janelaParecerEntrevista').modal('hide')
                     this.$refs.componente.buscar()
                     this.preload = false
                 }).catch(error => this.preload = false)
-            }*/
+            }
         },
 
         usuarioAutenticado() {

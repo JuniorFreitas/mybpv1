@@ -7,37 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 
-/**
- * App\Models\Examesesmt
- *
- * @property int $id
- * @property int $exame_funcionario_id
- * @property int $empresa_id
- * @property bool $exame_realizado
- * @property array $resultado
- * @property mixed $data_realizacao
- * @property mixed $data_vencimento
- * @property bool $vencido
- * @property int $user_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User|null $Empresa
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt query()
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereDataRealizacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereDataVencimento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereEmpresaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereExameFuncionarioId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereExameRealizado($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereResultado($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereVencido($value)
- * @mixin \Eloquent
- */
 class Examesesmt extends Model
 {
     use HasFactory;
@@ -59,8 +28,8 @@ class Examesesmt extends Model
         'empresa_id' => 'int',
         'exame_realizado' => 'boolean',
         'resultado' => 'json',
-        'data_realizacao' => 'date:d/m/Y',
-        'data_vencimento' => 'date:d/m/Y',
+        'data_realizacao' => 'string',
+        'data_vencimento' => 'string',
         'vencido' => 'boolean',
         'user_id' => 'int',
     ];
@@ -72,6 +41,14 @@ class Examesesmt extends Model
         $this->attributes['data_realizacao'] = $data->dataInsert();
     }
 
+    public function getDataRealizacaoAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($this->attributes['data_realizacao']);
+            return $data->dataCompleta();
+        }
+    }
+
     //Modificador ->data_vencimento
     public function setDataVencimentoAttribute($value)
     {
@@ -79,9 +56,22 @@ class Examesesmt extends Model
         $this->attributes['data_vencimento'] = $data->dataInsert();
     }
 
+    public function getDataVencimentoAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($this->attributes['data_vencimento']);
+            return $data->dataCompleta();
+        }
+    }
+
     public function Empresa()
     {
         return $this->hasOne(User::class, 'id', 'empresa_id');
+    }
+
+    public function Anexos()
+    {
+        return $this->belongsToMany(Arquivo::class, 'controle_exame_anexos', 'exames_id', 'arquivo_id');
     }
 
     protected static function booted()

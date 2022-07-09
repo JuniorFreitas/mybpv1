@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ControleExames\FichaClinicaMail;
 use App\Mail\ControleExames\FichaColaboradorMail;
+use App\Models\Arquivo;
 use App\Models\Curriculo;
 use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
@@ -118,85 +119,55 @@ class ControleExameController extends Controller
 
     public function getResultado(Request $request, $exame)
     {
+//        $feedback->load(['Afastamentos' => function($query){
+//            $query->with('Anexos')->orderBy('id', 'desc');
+//        }]);
 
+        $Examesesmt =  Examesesmt::whereExameFuncionarioId($exame)->with('Anexos')->first();
+        if($Examesesmt){
+            $Examesesmt->cadastrando = false;
+            return $Examesesmt;
+        }
+        return '';
     }
-
 
     public function salvaResultado(Request $request)
     {
-
         $dados = $request->input();
         try {
             \DB::beginTransaction();
 
-            $dados['data_vencimento'] = (new DataHora($dados['data_realizacao']))->addAno(1);
-            $dados['vencido'] = false;
-            Examesesmt::create($dados);
+            unset($dados['cadastrando']);
+            if ($dados['tipo'] == 'criar') {
+                $dados['data_vencimento'] = (new DataHora($dados['data_realizacao']))->addAno(1);
+                $dados['vencido'] = false;
 
-            \DB::commit();
-            return response()->json("");
-
-            if ($request->tipo == 'store') {
-
-                /*
-                $exame = ExameFuncionario::create([
-                    'feedback_id' => $request->feedback_id,
-                    'empresa_exame_id' => $request->empresa_exame_id,
-                    'formulario_id' => $request->formulario_id,
-                    'respostas' => $request->respostas,
-                    'token' => $token
-                ]);
-
-                $empExame = EmpresaExame::find($request->empresa_exame_id);
-                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_24']['valor'])->label;
-                $colaborador = FeedbackCurriculo::select('curriculo_id', 'id')->find($request->feedback_id);
-
-                $dtEmailClinica = [
-                    'clinica' => $empExame->nome,
-                    'email' => trim(mb_strtolower($empExame->dados['email'])),
-                    'assunto' => "Encaminhamento de Exame {$tipoExame} colaborador {$colaborador->Curriculo->nome}",
-                    'colaborador' => $colaborador->Curriculo->nome,
-                    'colaborador_email' => $colaborador->Curriculo->email,
-                    'idade' => $colaborador->Curriculo->idade,
-                    'tipoExame' => $tipoExame,
-                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
-                ];
-
-                \Mail::send(new FichaClinicaMail($dtEmailClinica));
-
-                $dtEmailColaborador = [
-                    'clinica' => $empExame,
-//                    'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
-                    'email' => trim(mb_strtolower('atendimento@mybp.com.br')),
-                    'assunto' => "Encaminhamento de Exame {$tipoExame}",
-                    'colaborador' => $colaborador->Curriculo->nome,
-                    'tipoExame' => $tipoExame,
-                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
-                ];
-
-                \Mail::send(new FichaColaboradorMail($dtEmailColaborador));
-
+                unset($dados['tipo']);
+                unset($dados['anexos']);
+                unset($dados['anexosDel']);
+                Examesesmt::create($dados);
                 \DB::commit();
-                return response()->json("");*/
+                return response()->json("");
             } else {
                 \DB::beginTransaction();
-                ExameFuncionario::find($request->id)->update([
-                    'respostas' => $request->respostas
-                ]);
+                unset($dados['tipo']);
+                Examesesmt::whereId($request->id)->update($dados);
                 \DB::commit();
                 return response()->json("Editou", 201);
             }
         } catch (\ErrorException $e) {
-            $msg = "Erro ao Encaminhar para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-            \Log::debug($msg);
             \DB::rollback();
-            return response()->json(['msg' => 'Houve um erro ao encaminhar!'], 400);
+            $msg = "Erro ao $request->tipo para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            return $msg;
+            \Log::debug($msg);
+
+            return response()->json(['msg' => 'Houve um erro ao '.$request->tipo.' !' ], 400);
         }
     }
 
     public function atualizar(Request $request)
     {
-        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q){
+        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoExame(true);
         })->select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id'])->with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
@@ -238,12 +209,31 @@ class ControleExameController extends Controller
         }
 
         $tipoexame = $request->tipo_exame;
+        return view('pdf.controle-exames.ficha', compact('exame'));
         $pdf = PDF::loadView('pdf.controle-exames.ficha', compact('exame'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("Exame {$tipoexame} " . Str::slug($exame->Feedback->Curriculo->nome) . ".pdf");
     }
 
-    public function exportExcel()
+    // Anexos-------------------------------------------------
+    public function uploadAnexos(Request $request)
     {
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_CONTROLE_EXAMES);
+    }
+
+    public function anexoShow(Request $request, $arquivo)
+    {
+        return Arquivo::anexoShow(Arquivo::DISCO_CONTROLE_EXAMES, $arquivo);
+    }
+
+    public function anexoDelete(Request $request, $arquivo)
+    {
+        return Arquivo::anexoDelete(Arquivo::DISCO_CONTROLE_EXAMES, $arquivo);
+    }
+
+//anexo ou foto
+    public function download(Request $request, $arquivo)
+    {
+        return Arquivo::anexoDownload(Arquivo::DISCO_CONTROLE_EXAMES, $arquivo);
     }
 }

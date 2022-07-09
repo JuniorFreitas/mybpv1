@@ -23,9 +23,10 @@
                         <div class="col-12 col-md-6">
                             <label for="">DATA DO EXAME:
                             </label>
-                            <datepicker
-                                max="{{ (new \MasterTag\DataHora())->dataCompleta() }}" v-model='abasesmt.form.data_realizacao'
-                                onblur="valida_data_vazio(this)"></datepicker>
+                            <input type="text" class="form-control" v-model="abasesmt.form.data_realizacao">
+{{--                            <datepicker--}}
+{{--                                v-model='abasesmt.form.data_realizacao'--}}
+{{--                                onblur="valida_data_vazio(this)"></datepicker>--}}
                         </div>
 
                         <div class="col-12 col-md-6">
@@ -101,6 +102,18 @@
                                 <textarea class='form-control' cols='30' rows='5' v-model='abasesmt.form.resultado.observacoes'>
                                 </textarea>
                             </div>
+                        </div>
+
+                        <div class="col-12">
+                            <fieldset>
+                                <legend>Anexo</legend>
+                                <upload :model="abasesmt.form.anexos"
+                                        :model-delete="abasesmt.form.anexosDel"
+                                        :url="url_anexo"
+                                        label="Selecionar"
+                                        @onProgresso="anexoUploadAndamento=true"
+                                        @onFinalizado="anexoUploadAndamento=false"></upload>
+                            </fieldset>
                         </div>
 
                     </template>
@@ -602,13 +615,6 @@
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-
-                {{--                <button class="btn btn-sm btn-danger mb-1 mr-1"--}}
-                {{--                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"--}}
-                {{--                        :disabled="selecionados.length === 0" @click.prevent="selecionados = []">--}}
-                {{--                    <i class="fa fa-times"></i> Limpar seleção--}}
-                {{--                </button>--}}
-
             </div>
         </div>
 
@@ -624,12 +630,9 @@
             <tr class="bg-default">
                 <th>ID</th>
                 <th>Nome</th>
+                <th>Cargo</th>
                 <th>
-                    {{--                    <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy--}}
-                    {{--                                                data-toggle="modal"--}}
-                    {{--                                                data-target="#filtroColunas">--}}
-                    {{--                        <i class="bx bxs-filter-alt" aria-hidden="true"></i>--}}
-                    {{--                    </button>--}}
+
                 </th>
             </tr>
             </thead>
@@ -637,6 +640,7 @@
             <tr style="background: white !important; border-bottom: none">
                 <td>@{{ colaborador.id }}</td>
                 <td>@{{ colaborador.curriculo.nome }}</td>
+                <td>@{{ colaborador.vaga_selecionada.nome }}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-primary mb-2" content="Encaminhar/historico" v-tippy
                             v-show="!colaborador.resultado_integrado"

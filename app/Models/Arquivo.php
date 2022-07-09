@@ -180,6 +180,7 @@ class Arquivo extends Model
     public const DISCO_EXCEL = 'disco-excel';
     public const DISCO_EXAMES = 'disco-exames';
     public const DISCO_AFASTAMENTO = 'disco-afastamento';
+    public const DISCO_CONTROLE_EXAMES = 'disco-controle-exames';
 
     /**
      * @return string
@@ -225,6 +226,8 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-exames.urlShow') . "/{$this->file}";
             case self::DISCO_AFASTAMENTO:
                 return config('filesystems.disks.disco-afastamento.urlShow') . "/{$this->file}";
+            case self::DISCO_CONTROLE_EXAMES:
+                return config('filesystems.disks.disco-controle-exames.urlShow') . "/{$this->file}";
             default:
                 return "";
         }
@@ -274,6 +277,8 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-exames.urlThumb') . "/{$this->thumb}";
             case self::DISCO_AFASTAMENTO:
                 return config('filesystems.disks.disco-afastamento.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_CONTROLE_EXAMES:
+                return config('filesystems.disks.disco-controle-exames.urlThumb') . "/{$this->thumb}";
             default:
                 return "";
         }
@@ -323,6 +328,8 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-exames.urlDownload') . "/{$this->file}";
             case self::DISCO_AFASTAMENTO:
                 return config('filesystems.disks.disco-afastamento.urlDownload') . "/{$this->file}";
+            case self::DISCO_CONTROLE_EXAMES:
+                return config('filesystems.disks.disco-controle-exames.urlDownload') . "/{$this->file}";
             default:
                 return "";
         }
@@ -372,6 +379,8 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-exames.urlDelete') . "/{$this->file}";
             case self::DISCO_AFASTAMENTO:
                 return config('filesystems.disks.disco-afastamento.urlDelete') . "/{$this->file}";
+            case self::DISCO_CONTROLE_EXAMES:
+                return config('filesystems.disks.disco-controle-exames.urlDelete') . "/{$this->file}";
             default:
                 return "";
         }
