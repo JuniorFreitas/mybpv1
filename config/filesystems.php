@@ -227,11 +227,23 @@ return [
 
         'disco-afastamento' => array_merge($default,
             [
-                'urlDelete' => env('APP_URL') . '/g/historico/afastamento/anexo',
+                'urlDelete' => env('APP_URL') . '/g/historico/afastamento-historico/anexo',
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-afastamento') : 'arquivos/disco-afastamento',
                 'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/historico/afastamento-historico/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
                 'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/historico/afastamento-historico/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
                 'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/historico/afastamento-historico/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
+
+                'visibility' => 'public',
+            ]
+        ),
+
+        'disco-controle-exames-resultado' => array_merge($default,
+            [
+                'urlDelete' => env('APP_URL') . '/g/controle-exames-resultado/anexo',
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/controle-exames-resultado') : 'arquivos/disco-controle-exames-resultado',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/controle-exames-resultado/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames-resultado',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/controle-exames-resultado/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames-resultado',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/controle-exames-resultado/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames-resultado',
 
                 'visibility' => 'public',
             ]

@@ -479,10 +479,16 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
     //Controle de Exames
     Route::group(['as' => 'controle_exames.'], function () {
+        Route::get('controle-exames-resultado/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoShow'])->name('anexo-show');
+        Route::get('controle-exames-resultado/anexoDownload/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'download'])->name('anexo-download');
+        Route::delete('controle-exames-resultado/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoDelete'])->name('anexo-delete');
+        Route::post('controle-exames-resultado/uploadAnexos', [\App\Http\Controllers\ControleExameController::class, 'uploadAnexos'])->name('.upload-anexos');
+
         Route::post('controle-exames/ficha-encaminhamento/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
         Route::get('controle-exames/carregaResposta', [\App\Http\Controllers\ControleExameController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('controle-exames/resultado/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getResultado'])->name('getResultado');
-        Route::match(['post', 'put'], 'controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');
+        Route::post( 'controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');
+        Route::put( 'controle-exames/salvaResultado/{resultado}', [\App\Http\Controllers\ControleExameController::class, 'updateResultado'])->name('updateResultado');
         Route::match(['post', 'put'], 'controle-exames/salvaUpdate', [\App\Http\Controllers\ControleExameController::class, 'salvaUpdate'])->name('salvaUpdate');
         Route::post('controle-exames/atualizar', [\App\Http\Controllers\ControleExameController::class, 'atualizar'])->name('atualizar');
         Route::get('controle-exames', [\App\Http\Controllers\ControleExameController::class, 'index'])->name('index');

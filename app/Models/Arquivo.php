@@ -180,6 +180,7 @@ class Arquivo extends Model
     public const DISCO_EXCEL = 'disco-excel';
     public const DISCO_EXAMES = 'disco-exames';
     public const DISCO_AFASTAMENTO = 'disco-afastamento';
+    public const DISCO_CONTROLE_EXAMES_RESULTADO = 'disco-controle-exames-resultado';
 
     /**
      * @return string
@@ -225,6 +226,8 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-exames.urlShow') . "/{$this->file}";
             case self::DISCO_AFASTAMENTO:
                 return config('filesystems.disks.disco-afastamento.urlShow') . "/{$this->file}";
+            case self::DISCO_CONTROLE_EXAMES_RESULTADO:
+                return config('filesystems.disks.disco-controle-exames-resultado.urlShow') . "/{$this->file}";
             default:
                 return "";
         }
@@ -274,6 +277,8 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-exames.urlThumb') . "/{$this->thumb}";
             case self::DISCO_AFASTAMENTO:
                 return config('filesystems.disks.disco-afastamento.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_CONTROLE_EXAMES_RESULTADO:
+                return config('filesystems.disks.disco-controle-exames-resultado.urlThumb') . "/{$this->thumb}";
             default:
                 return "";
         }
@@ -323,6 +328,8 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-exames.urlDownload') . "/{$this->file}";
             case self::DISCO_AFASTAMENTO:
                 return config('filesystems.disks.disco-afastamento.urlDownload') . "/{$this->file}";
+            case self::DISCO_CONTROLE_EXAMES_RESULTADO:
+                return config('filesystems.disks.disco-controle-exames-resultado.urlDownload') . "/{$this->file}";
             default:
                 return "";
         }
@@ -372,6 +379,8 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-exames.urlDelete') . "/{$this->file}";
             case self::DISCO_AFASTAMENTO:
                 return config('filesystems.disks.disco-afastamento.urlDelete') . "/{$this->file}";
+            case self::DISCO_CONTROLE_EXAMES_RESULTADO:
+                return config('filesystems.disks.disco-controle-exames-resultado.urlDelete') . "/{$this->file}";
             default:
                 return "";
         }
@@ -791,6 +800,14 @@ class Arquivo extends Model
             return response("", 404);
         }
         return response("", 404);
+    }
+
+    public static function apagaAnexo($id_anexo)
+    {
+        $arquivo = self::find($id_anexo);
+        if ($arquivo) {
+            $arquivo->excluir();
+        }
     }
 
 }
