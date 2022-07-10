@@ -38,7 +38,7 @@
             </form>
 
             <form method="post" target="_blank" v-show="tipoRelatorio === 'excel'"
-                  action="{{ route('g.admissao.cih.relatorioExcel') }}">
+                  action="{{ route('g.admissao.cih.export') }}">
                 @csrf
                 <input type="hidden" name="cliente_relatorio" :value="cliente_relatorio">
                 <input type="hidden" name="intervalo" :value="datarelatorio">
@@ -265,11 +265,11 @@
                         @click="tituloJanela = `Gerar Relatório em PDF`; tipoRelatorio = 'pdf'">
                     <i class="fa fa-files-pdf"></i> Gerar PDF
                 </button>
-
-                <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" :disabled="controle.carregando"
-                        data-target="#janelaRelatorio"
-                        @click="tituloJanela = `Gerar Excel`; tipoRelatorio = 'excel'">
-                    <i class="fa fa-files-pdf"></i> Gerar Excel
+                <button type="button" class="btn btn-sm btn-primary mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
+                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
                 </button>
             </div>
         </form>

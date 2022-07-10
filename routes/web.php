@@ -504,7 +504,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::delete('cih/anexo/{arquivo}', [\App\Http\Controllers\CihController::class, 'anexoDelete'])->name('cih.anexo-delete');
 
             Route::post('cih/gerapdf', [\App\Http\Controllers\CihController::class, 'relatorioPdf'])->name('relatorioPdf'); // manter essa rota antes do resource
-            Route::post('cih/geraexcel', [\App\Http\Controllers\CihController::class, 'relatorioExcel'])->name('relatorioExcel'); // manter essa rota antes do resource
+            Route::post('cih/export', [\App\Http\Controllers\CihController::class, 'export'])->name('export'); // manter essa rota antes do resource
             Route::post('cih/atualizar', [\App\Http\Controllers\CihController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::put('cih/aprovar/{cih}', [\App\Http\Controllers\CihController::class, 'aprovar'])->name('aprovar'); // manter essa rota antes do resource
             Route::resource('cih', \App\Http\Controllers\CihController::class)->middleware('can:admissao_cih');
