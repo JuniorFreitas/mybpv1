@@ -163,7 +163,18 @@ class ControleExameController extends Controller
 
         try {
             \DB::beginTransaction();
-            Examesesmt::create($dados);
+            $Examesesmt = Examesesmt::create($dados);
+            foreach ($dados['anexos'] as $item) {
+                $Examesesmt->Anexos()->attach($item['id']);
+                $Examesesmt->Anexos()->where('id', $item['id'])
+                    ->where('temporario', true)
+                    ->where('chave', $item['chave'])
+                    ->update([
+                        'temporario' => false,
+                        'chave' => '',
+                        'nome' => $item['nome']
+                    ]);
+            }
             \DB::commit();
             return response()->json([]);
 
@@ -186,7 +197,7 @@ class ControleExameController extends Controller
                 'data_realizacao' => 'required_if:exame_realizado,1|date_format:d/m/Y',
                 'resultado.result' => 'required_if:exame_realizado,1|in:Apto,Apto com Restrição,Inapto',
                 'resultado.pendencias' => 'required_if:exame_realizado,1|in:Sim,Não',
-                'resultado.pendencias_quais' => 'required_if:exame_realizado,1|required_if:resultado.pendencias,Sim',
+                'resultado.pendencias_quais' => 'required_if:resultado.pendencias,Sim',
                 'resultado.aprovado' => 'required_if:exame_realizado,1',
                 'resultado.trabalho_altura' => 'required_if:exame_realizado,1|in:Sim,Não,Não se aplica',
                 'resultado.observacao' => 'max:500',
@@ -202,6 +213,26 @@ class ControleExameController extends Controller
         try {
             \DB::beginTransaction();
             $resultado->update($dados);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    Arquivo::apagaAnexo($id_anexo);
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->nome = $anexo['nome'];
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $resultado->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+
             \DB::commit();
             return response()->json([], 201);
         } catch (\ErrorException $e) {
@@ -267,22 +298,22 @@ class ControleExameController extends Controller
     // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {
-        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_CONTROLE_EXAMES);
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENSPDF, Arquivo::DISCO_CONTROLE_EXAMES_RESULTADO);
     }
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow(Arquivo::DISCO_CONTROLE_EXAMES, $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_CONTROLE_EXAMES_RESULTADO, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete(Arquivo::DISCO_CONTROLE_EXAMES, $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_CONTROLE_EXAMES_RESULTADO, $arquivo);
     }
 
 //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload(Arquivo::DISCO_CONTROLE_EXAMES, $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_CONTROLE_EXAMES_RESULTADO, $arquivo);
     }
 }

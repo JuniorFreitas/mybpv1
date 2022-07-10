@@ -227,7 +227,7 @@ return [
 
         'disco-afastamento' => array_merge($default,
             [
-                'urlDelete' => env('APP_URL') . '/g/entrevista/controle_exames/anexo',
+                'urlDelete' => env('APP_URL') . '/g/historico/afastamento-historico/anexo',
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-afastamento') : 'arquivos/disco-afastamento',
                 'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/historico/afastamento-historico/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
                 'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/historico/afastamento-historico/anexo" : env('AWS_URL') . '/arquivos/disco-afastamento',
@@ -237,13 +237,13 @@ return [
             ]
         ),
 
-        'disco-controle-exames' => array_merge($default,
+        'disco-controle-exames-resultado' => array_merge($default,
             [
-                'urlDelete' => env('APP_URL') . '/g/entrevista/controle_exames/anexo',
-                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-controle-exames') : 'arquivos/disco-controle-exames',
-                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/entrevista/controle_exames/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames',
-                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/entrevista/controle_exames/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames',
-                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/entrevista/controle_exames/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames',
+                'urlDelete' => env('APP_URL') . '/g/controle-exames-resultado/anexo',
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/controle-exames-resultado') : 'arquivos/disco-controle-exames-resultado',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/controle-exames-resultado/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames-resultado',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/controle-exames-resultado/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames-resultado',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/controle-exames-resultado/anexo" : env('AWS_URL') . '/arquivos/disco-controle-exames-resultado',
 
                 'visibility' => 'public',
             ]

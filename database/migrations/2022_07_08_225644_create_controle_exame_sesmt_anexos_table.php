@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateControleExameAnexosTable extends Migration
+class CreateControleExameSesmtAnexosTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateControleExameAnexosTable extends Migration
      */
     public function up()
     {
-        Schema::create('controle_exame_anexos', function (Blueprint $table) {
+        Schema::create('controle_exame_sesmt_anexos', function (Blueprint $table) {
             $table->unsignedInteger('arquivo_id');
-            $table->unsignedBigInteger('exames_id');
+            $table->unsignedBigInteger('examesesmt_id');
             $table->foreign('arquivo_id')->references('id')->on('arquivos')->onUpdate('RESTRICT')->onDelete('CASCADE');
-            $table->foreign('exames_id')->references('id')->on('exames')->onUpdate('CASCADE')->onDelete('CASCADE');
+            $table->foreign('examesesmt_id')->references('id')->on('examesesmts')->onUpdate('CASCADE')->onDelete('CASCADE');
         });
     }
 

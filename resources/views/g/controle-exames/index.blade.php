@@ -11,9 +11,12 @@
                     <div class="col-12 col-md-6">
                         <div class="form-group">
                             <label for="">EXAME REALIZADO?</label>
-                            <select class="form-control" onblur='valida_campo_vazio(this,1)'
-                                    onchange='valida_campo_vazio(this,1)' v-model='abasesmt.form.exame_realizado'>
-                                <option value="">Selecione...</option>
+                            <select class="form-control validacampo" v-model='abasesmt.form.exame_realizado'
+                                    @keyup.prevent="valida_campo_vazio($event.target,1)"
+                                    @blur.prevent="valida_campo_vazio($event.target,1)"
+                                    @change="limpaformResultado()"
+                            >
+                                <option :value="null">Selecione...</option>
                                 <option :value="true">Sim</option>
                                 <option :value="false">Não</option>
                             </select>
@@ -24,18 +27,19 @@
                         <div class="col-12 col-md-6">
                             <label for="">DATA DO EXAME:
                             </label>
-                            <input type="text" class="form-control" v-model="abasesmt.form.data_realizacao">
-                            {{--                            <datepicker--}}
-                            {{--                                v-model='abasesmt.form.data_realizacao'--}}
-                            {{--                                onblur="valida_data_vazio(this)"></datepicker>--}}
+                            <input type="text" class="form-control validacampo" v-model="abasesmt.form.data_realizacao"
+                                   v-mascara:data
+                                   @keyup.prevent="valida_data_vazio($event.target)"
+                                   @blur.prevent="valida_data_vazio($event.target)">
                         </div>
 
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="">RESULTADO DO EXAME</label>
-                                <select class="form-control" onblur='valida_campo_vazio(this,1)'
-                                        onchange='valida_campo_vazio(this,1)' v-model='abasesmt.form.resultado.result'>
-                                    <option value="">Selecione ...</option>
+                                <select class="form-control validacampo" v-model="abasesmt.form.resultado.result"
+                                        @keyup.prevent="valida_campo_vazio($event.target,1)"
+                                        @blur.prevent="valida_campo_vazio($event.target,1)">
+                                    <option :value="null">Selecione ...</option>
                                     <option value="Apto">Apto</option>
                                     <option value="Apto com Restrição">Apto com Restrição</option>
                                     <option value="Inapto">Inapto</option>
@@ -46,10 +50,11 @@
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="">Há pendencias</label>
-                                <select class="form-control" onblur='valida_campo_vazio(this,1)'
-                                        onchange='valida_campo_vazio(this,1)'
-                                        v-model='abasesmt.form.resultado.pendencias'>
-                                    <option value="">Selecione ...</option>
+                                <select class="form-control validacampo" v-model="abasesmt.form.resultado.pendencias"
+                                        @keyup.prevent="valida_campo_vazio($event.target,1)"
+                                        @blur.prevent="valida_campo_vazio($event.target,1)"
+                                >
+                                    <option :value="null">Selecione ...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
                                 </select>
@@ -59,19 +64,22 @@
                         <div class="col-12 col-md-6" v-if='abasesmt.form.resultado.pendencias === "Sim" '>
                             <div class="form-group">
                                 <label for="">Quais</label>
-                                <input type='text' class="form-control" onblur='valida_campo_vazio(this,1)'
-                                       v-model='abasesmt.form.resultado.pendencias_quais'>
+                                <input type="text" class="form-control validacampo" v-model="abasesmt.form.resultado.pendencias_quais"
+                                       @keyup.prevent="valida_campo_vazio($event.target,1)"
+                                       @blur.prevent="valida_campo_vazio($event.target,1)"
+                                >
                             </div>
                         </div>
-
 
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="">Aprovado</label>
-                                <select class="form-control" onblur='valida_campo_vazio(this,1)'
-                                        onchange='valida_campo_vazio(this,1)'
-                                        v-model='abasesmt.form.resultado.aprovado'>
-                                    <option value="">Selecione ...</option>
+                                <select class="form-control validacampo"
+                                        v-model="abasesmt.form.resultado.aprovado"
+                                        @keyup.prevent="valida_campo_vazio($event.target,1)"
+                                        @blur.prevent="valida_campo_vazio($event.target,1)"
+                                >
+                                    <option :value="null">Selecione ...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
                                 </select>
@@ -81,10 +89,12 @@
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="">APTO TRABALHO EM ALTURA?</label>
-                                <select class="form-control" onblur='valida_campo_vazio(this,1)'
-                                        onchange='valida_campo_vazio(this,1)'
-                                        v-model='abasesmt.form.resultado.trabalho_altura'>
-                                    <option value="">Selecione ...</option>
+                                <select class="form-control validacampo"
+                                        v-model="abasesmt.form.resultado.trabalho_altura"
+                                        @keyup.prevent="valida_campo_vazio($event.target,1)"
+                                        @blur.prevent="valida_campo_vazio($event.target,1)"
+                                >
+                                    <option :value="null">Selecione ...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
                                     <option value="Não se aplica">Não se aplica</option>
@@ -95,10 +105,12 @@
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="">APTO TRABALHO EM ESPACO CONFINADO?</label>
-                                <select class="form-control" onblur='valida_campo_vazio(this,1)'
-                                        onchange='valida_campo_vazio(this,1)'
-                                        v-model='abasesmt.form.resultado.espacao_confinado'>
-                                    <option value="">Selecione ...</option>
+                                <select class="form-control validacampo"
+                                        v-model="abasesmt.form.resultado.espacao_confinado"
+                                        @keyup.prevent="valida_campo_vazio($event.target,1)"
+                                        @blur.prevent="valida_campo_vazio($event.target,1)"
+                                >
+                                    <option :value="null">Selecione ...</option>
                                     <option value="Sim">Sim</option>
                                     <option value="Não">Não</option>
                                     <option value="Não se aplica">Não se aplica</option>

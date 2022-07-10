@@ -1,15 +1,16 @@
 import Dados from "../../components/entrevistas/DadosPessoaisTexto";
 import Formulario from "../../components/FormularioDefault";
 import Upload from "../../components/Upload";
+import validacoes from "../../mixins/Validacoes";
 
 const app = new Vue({
-
     el: "#app",
     components: {
         Formulario,
         Dados,
         Upload
     },
+    mixins: [validacoes],
     data: {
         tituloJanela: "Controle de Exames",
         preload: false,
@@ -37,15 +38,15 @@ const app = new Vue({
             preload: false,
             form: {
                 exame_funcionario_id: "",
-                exame_realizado: "",
+                exame_realizado: null,
                 data_realizacao: "",
                 resultado: {
-                    result: "",
-                    pendencias: "",
+                    result: null,
+                    pendencias: null,
                     pendencias_quais: "",
-                    aprovado: "",
-                    trabalho_altura: "",
-                    espacao_confinado: "",
+                    aprovado: null,
+                    trabalho_altura: null,
+                    espacao_confinado: null,
                     observacoes: ""
                 },
                 tipo: "",
@@ -75,7 +76,7 @@ const app = new Vue({
         estados: ESTADOS,
         todos_municipios: `autocomplete/todos-municipios`,
 
-        url_anexo: `${URL_ADMIN}/uploadAnexos`,
+        url_anexo: `${URL_ADMIN}/controle-exames-resultado/uploadAnexos`,
         anexoUploadAndamento: false,
 
         urlPaginacao: `${URL_ADMIN}/controle-exames/atualizar`,
@@ -240,21 +241,13 @@ const app = new Vue({
                     this.abasesmt.form = data !== "" ? data : _.cloneDeep(this.abasesmt.formDefault);
                     this.abasesmt.form.exame_funcionario_id = id;
                     this.abasesmt.preload = false;
+                    this.abasesmt.form.anexosDel = [];
                 }).catch(error => {
             });
 
         },
 
-        async salvarResultado() {
-            $("#validaSesmt :input:visible").trigger("blur");
-            if ($("#validaSesmt :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
-            }
-            this.abasesmt.preload = true;
-            const URL = `${URL_ADMIN}/controle-exames/salvaResultado`;
-            this.abasesmt.preload = true;
-
+        limpaformResultado() {
             if (this.abasesmt.form.exame_realizado === false) {
                 let id = this.abasesmt.form.id ? this.abasesmt.form.id : 0;
                 let exame_funcionario_id = this.abasesmt.form.exame_funcionario_id;
@@ -263,23 +256,26 @@ const app = new Vue({
                 this.abasesmt.form.exame_realizado = false;
                 this.abasesmt.form.id = id;
             }
+        },
 
-            if (this.abasesmt.form.id === 0) {
-                await axios.post(URL, this.abasesmt.form).then(res => {
-                    let data = res.data;
-                    mostraSucesso("", "Exame cadastrado com sucesso!");
-                    $("#validaSesmt").modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
-                    this.abasesmt.preload = false;
-                }).catch(error => {
-                    this.preload = false;
-                    this.abasesmt.preload = false;
-                });
-            } else {
-                await axios.put(`${URL}/${this.abasesmt.form.id}`, this.abasesmt.form)
-                    .then(res => {
-                        mostraSucesso("", "Exame atualizado com sucesso!");
+        salvarResultado() {
+            this.validaBlur();
+
+            $("#validaSesmt :input:visible").trigger("blur");
+            if ($("#validaSesmt :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os campos marcados");
+                return false;
+            }
+
+            this.$nextTick(() => {
+                this.abasesmt.preload = true;
+                const URL = `${URL_ADMIN}/controle-exames/salvaResultado`;
+                this.abasesmt.preload = true;
+
+                if (this.abasesmt.form.id === 0) {
+                    axios.post(URL, this.abasesmt.form).then(res => {
+                        let data = res.data;
+                        mostraSucesso("", "Exame cadastrado com sucesso!");
                         $("#validaSesmt").modal("hide");
                         this.$refs.componente.buscar();
                         this.preload = false;
@@ -288,7 +284,20 @@ const app = new Vue({
                         this.preload = false;
                         this.abasesmt.preload = false;
                     });
-            }
+                } else {
+                    axios.put(`${URL}/${this.abasesmt.form.id}`, this.abasesmt.form)
+                        .then(res => {
+                            mostraSucesso("", "Exame atualizado com sucesso!");
+                            $("#validaSesmt").modal("hide");
+                            this.$refs.componente.buscar();
+                            this.preload = false;
+                            this.abasesmt.preload = false;
+                        }).catch(error => {
+                            this.preload = false;
+                            this.abasesmt.preload = false;
+                        });
+                }
+            });
         },
 
         usuarioAutenticado() {

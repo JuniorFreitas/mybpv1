@@ -71,7 +71,7 @@ class Examesesmt extends Model
 
     public function Anexos()
     {
-        return $this->belongsToMany(Arquivo::class, 'controle_exame_anexos', 'exames_id', 'arquivo_id');
+        return $this->belongsToMany(Arquivo::class, 'controle_exame_sesmt_anexos', 'examesesmt_id', 'arquivo_id');
     }
 
     protected static function booted()
