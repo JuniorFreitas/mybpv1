@@ -123,8 +123,8 @@ class ControleExameController extends Controller
 //            $query->with('Anexos')->orderBy('id', 'desc');
 //        }]);
 
-        $Examesesmt =  Examesesmt::whereExameFuncionarioId($exame)->with('Anexos')->first();
-        if($Examesesmt){
+        $Examesesmt = Examesesmt::whereExameFuncionarioId($exame)->with('Anexos')->first();
+        if ($Examesesmt) {
             $Examesesmt->cadastrando = false;
             return $Examesesmt;
         }
@@ -134,36 +134,85 @@ class ControleExameController extends Controller
     public function salvaResultado(Request $request)
     {
         $dados = $request->input();
+
+        unset($dados['id']);
+
+        $dados['data_vencimento'] = (new DataHora($dados['data_realizacao']))->addAno(1);
+        $dados['vencido'] = false;
+
+        $dadosValidados = \Validator::make($dados, []);
+
+        if ($dados['exame_realizado']) {
+            $dadosValidados = \Validator::make($dados, [
+                'data_realizacao' => 'required_if:exame_realizado,1|date_format:d/m/Y',
+                'resultado.result' => 'required_if:exame_realizado,1|in:Apto,Apto com Restrição,Inapto',
+                'resultado.pendencias' => 'required_if:exame_realizado,1|in:Sim,Não',
+                'resultado.pendencias_quais' => 'required_if:exame_realizado,1|required_if:resultado.pendencias,Sim',
+                'resultado.aprovado' => 'required_if:exame_realizado,1',
+                'resultado.trabalho_altura' => 'required_if:exame_realizado,1|in:Sim,Não,Não se aplica',
+                'resultado.observacao' => 'max:500',
+            ]);
+        }
+
+        if ($dadosValidados->fails()) {
+            return response()->json([
+                'msg' => 'Erro ao atualizar o resultado',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+
         try {
             \DB::beginTransaction();
+            Examesesmt::create($dados);
+            \DB::commit();
+            return response()->json([]);
 
-            unset($dados['cadastrando']);
-            if ($dados['tipo'] == 'criar') {
-                $dados['data_vencimento'] = (new DataHora($dados['data_realizacao']))->addAno(1);
-                $dados['vencido'] = false;
-
-                unset($dados['tipo']);
-                unset($dados['anexos']);
-                unset($dados['anexosDel']);
-                Examesesmt::create($dados);
-                \DB::commit();
-                return response()->json("");
-            } else {
-                \DB::beginTransaction();
-                unset($dados['tipo']);
-                Examesesmt::whereId($request->id)->update($dados);
-                \DB::commit();
-                return response()->json("Editou", 201);
-            }
         } catch (\ErrorException $e) {
             \DB::rollback();
-            $msg = "Erro ao $request->tipo para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-            return $msg;
+            $msg = "Erro ao Cadastrar Resultado para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
-
-            return response()->json(['msg' => 'Houve um erro ao '.$request->tipo.' !' ], 400);
+            return response()->json(['msg' => 'Houve um erro ao Cadastrar o Resultado do exame'], 400);
         }
     }
+
+    public function updateResultado(Request $request, Examesesmt $resultado)
+    {
+        $dados = $request->input();
+
+        $dadosValidados = \Validator::make($dados, []);
+
+        if ($dados['exame_realizado']) {
+            $dadosValidados = \Validator::make($dados, [
+                'data_realizacao' => 'required_if:exame_realizado,1|date_format:d/m/Y',
+                'resultado.result' => 'required_if:exame_realizado,1|in:Apto,Apto com Restrição,Inapto',
+                'resultado.pendencias' => 'required_if:exame_realizado,1|in:Sim,Não',
+                'resultado.pendencias_quais' => 'required_if:exame_realizado,1|required_if:resultado.pendencias,Sim',
+                'resultado.aprovado' => 'required_if:exame_realizado,1',
+                'resultado.trabalho_altura' => 'required_if:exame_realizado,1|in:Sim,Não,Não se aplica',
+                'resultado.observacao' => 'max:500',
+            ]);
+        }
+
+        if ($dadosValidados->fails()) {
+            return response()->json([
+                'msg' => 'Erro ao atualizar o resultado',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+        try {
+            \DB::beginTransaction();
+            $resultado->update($dados);
+            \DB::commit();
+            return response()->json([], 201);
+        } catch (\ErrorException $e) {
+            \DB::rollback();
+            $msg = "Erro ao Atualizar o resultado do exame para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json($msg, 400);
+            return response()->json(['msg' => 'Houve um erro ao atualizar o resultado do exame!'], 400);
+        }
+    }
+
 
     public function atualizar(Request $request)
     {
@@ -209,7 +258,7 @@ class ControleExameController extends Controller
         }
 
         $tipoexame = $request->tipo_exame;
-        return view('pdf.controle-exames.ficha', compact('exame'));
+//        return view('pdf.controle-exames.ficha', compact('exame'));
         $pdf = PDF::loadView('pdf.controle-exames.ficha', compact('exame'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("Exame {$tipoexame} " . Str::slug($exame->Feedback->Curriculo->nome) . ".pdf");
