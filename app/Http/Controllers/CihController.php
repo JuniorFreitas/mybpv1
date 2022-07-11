@@ -12,7 +12,6 @@ use App\Models\Cliente;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 use MasterTag\DataHora;
 use PDF;
 
@@ -50,12 +49,31 @@ class CihController extends Controller
         $dados = $request->input();
         $dados['user_lancamento_id'] = auth()->id();
         $dados['data_lancamento'] = (new DataHora($dados['data_lancamento'] . ' ' . date('H:m:s')))->dataHoraInsert();
-        $dados['outra_tag'] = $dados['tag_id'] == 0 ? $dados['outra_tag'] : null;
+        $dados['outra_tag'] = $dados['tag_id'] == 0 ? $dados['outra_tag'] : 0;
         $dados['outra_area'] = $dados['area_id'] == 0 ? $dados['outra_area'] : null;
 
         $dadosValidados = \Validator::make($dados, [
             'tag_id' => 'required',
-            'feedback_id' => 'required'
+            'outra_tag' => [
+                function ($attribute, $value, $fail) use ($dados) {
+                    if ($dados['tag_id'] == 0 && $value == '') {
+                        $fail('O campo especifique deve ser preenchido.');
+                    }
+                }],
+            'feedback_id' => 'required_if:varios_colaboradores,0',
+            'colaboradores_avulso' => [
+                function ($attribute, $value, $fail) use ($dados) {
+                    if ($dados['varios_colaboradores'] == 1 && $value == '') {
+                        $fail('Preencha o campo informando os colaboradores.');
+                    }
+                }],
+            'acao' => 'required',
+            'anexos' => [function ($attribute, $value, $fail) use ($dados) {
+                $CihTag = CihTag::where('id', $dados['tag_id'])->first();
+                if ($CihTag && $CihTag->anexos_obrigatorios && count($value) == 0) {
+                    $fail('É necessário anexar o(s) arquivo(s) obrigatório(s) para a tipo selecionado.');
+                }
+            }]
         ]);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -63,43 +81,47 @@ class CihController extends Controller
                 'msg' => 'Erro ao Salvar Informações',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $dados['tag_id'] = $dados['tag_id'] > 0 ? $dados['tag_id'] : null;
-                $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
-                $dados['empresa_id'] =
-                $cih = Cih::create($dados);
+        }
 
-                if (isset($dados['anexosDel'])) {
-                    foreach ($dados['anexosDel'] as $id_anexo) {
-                        $arquivo = Arquivo::find($id_anexo);
-                        $arquivo->excluir();
-                    }
-                }
-
-                // inseri uma nova foto de anexo
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $cih->Anexos()->attach($arquivo->id);
-                        }
-                    }
-                }
-
-                DB::commit();
-                return response()->json([$cih->load('Anexos')], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE CIH:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-//                return response()->json(['msg' => $msg], 400);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        try {
+            DB::beginTransaction();
+            $dados['tag_id'] = $dados['tag_id'] > 0 ? $dados['tag_id'] : null;
+            $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
+            $dados['empresa_id'] = auth()->user()->empresa_id;
+            if ($dados['varios_colaboradores']){
+                unset($dados['feedback_id']);
             }
+
+            $cih = Cih::create($dados);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            // inseri uma nova foto de anexo
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $cih->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+
+            DB::commit();
+            return response()->json([$cih->load('Anexos')], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE CIH:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+//                return response()->json(['msg' => $msg], 400);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -122,8 +144,11 @@ class CihController extends Controller
      */
     public function edit(Cih $cih)
     {
-        $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaAberta->VagaSelecionada->nome} - {$cih->Colaborador->VagaAberta->Municipio->uf}";
-        $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
+        if ($cih->feedback_id){
+            $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaAberta->VagaSelecionada->nome} - {$cih->Colaborador->VagaAberta->Municipio->uf}";
+            $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
+        }
+
         $cih->tag_id = is_null($cih->tag_id) ? 0 : $cih->tag_id;
         $cih->area_id = is_null($cih->area_id) ? 0 : $cih->area_id;
         $cih->status_aprovacao = $cih->status;
@@ -156,7 +181,7 @@ class CihController extends Controller
         $this->authorize('admissao_cih_aprovar');
         $dados = $request->input();
         $dados['user_aprovacao_id'] = auth()->id();
-        $dados['status'] = $dados['status_aprovacao'];
+        $dados['status'] = $dados['status'];
         $dados['data_aprovacao'] = (new DataHora())->dataHoraInsert();
 
         try {
@@ -239,7 +264,7 @@ class CihController extends Controller
 
     public function filtro(Request $request)
     {
-        $resultado = Cih::with('Tag', 'Area',
+        $resultado = Cih::with('Tag:id,label', 'Area',
             'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome'
@@ -270,6 +295,7 @@ class CihController extends Controller
         return $resultado->orderByDesc('created_at');
 
     }
+
     public function export(Request $request)
     {
 

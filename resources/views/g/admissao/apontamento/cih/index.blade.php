@@ -8,17 +8,6 @@
 
     <modal id="janelaRelatorio" :titulo="tituloJanela" :fechar="!preloadAjax" size="g">
         <template slot="conteudo">
-            <fieldset v-if="cliente_id == 1">
-                <legend>Selecione o Cliente</legend>
-                <div class="form-group">
-                    <select class="form-control" v-model="cliente_relatorio" onblur="valida_campo_vazio(this,1)"
-                            onchange="valida_campo_vazio(this,1)">
-                        <option value="">Selecione</option>
-                        <option v-for="item in listaClientes" :value="item.id">@{{ item.razao_social }}</option>
-                    </select>
-                </div>
-            </fieldset>
-
             <fieldset>
                 <legend>Escolha o período</legend>
                 <div class="form-group">
@@ -113,9 +102,28 @@
                             </div>
                         </div>
 
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label>Colaborador </label>
+                                <label>Para vários colaboradores</label>
+                                <select :disabled="aprovando" v-model="form.varios_colaboradores" onblur="valida_campo_vazio(this,1)"
+                                        onchange="valida_campo_vazio(this,1)" class="form-control">
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12" v-if="form.varios_colaboradores">
+                            <div class="form-group">
+                                <label>Informe os colaboradores</label>
+                                <textarea class="form-control validacampo" :disabled="aprovando" v-model="form.colaboradores_avulso"
+                                          cols="5" rows="5"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-12" v-if="!form.varios_colaboradores">
+                            <div class="form-group">
+                                <label>Colaborador</label>
                                 <autocomplete :caminho="colaborador_ativo"
                                               :formsm="false"
                                               :valido="form.feedback_id !== ''"
@@ -174,7 +182,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Status</label>
-                                <select :disabled="form.data_aprovacao" v-model="form.status_aprovacao"
+                                <select :disabled="form.data_aprovacao" v-model="form.status"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)" class="form-control">
                                     <option value="">Selecione...</option>
@@ -188,7 +196,7 @@
             </form>
         </template>
         <template slot="rodape">
-            <div v-if="form.status === 'aberto'">
+            <div v-if="form.status !== ''">
                 <button type="button" class="btn btn-sm btn-primary" v-show="aprovando && !atualizado && !preloadAjax"
                         @click="aprovar">
                     <i class="fa fa-save"></i> Salvar
@@ -300,6 +308,7 @@
                 <tr class="bg-default">
                     <th class="text-center">ID</th>
                     <th>Colaborador</th>
+                    <th>Tipo</th>
                     <th class="text-center">Data Ocorrência</th>
                     <th class="text-center">Lançamento</th>
                     <th class="text-center">Aprovação</th>
@@ -314,13 +323,12 @@
                     <td class="text-center">
                         @{{item.id}}
                     </td>
-
-                    <td v-if="cliente_id === 1">
-                        @{{item.cliente.nome_fantasia}}
+                    <td>
+                        @{{item.varios_colaboradores ? 'Varios colaboradores' :item.colaborador.curriculo.nome}}
                     </td>
 
-                    <td>
-                        @{{item.colaborador.curriculo.nome}}
+                    <td class="text-center">
+                         @{{item.tag ? item.tag.label : item.outra_tag}}
                     </td>
 
                     <td class="text-center">
