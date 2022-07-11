@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,9 +26,20 @@ use Illuminate\Database\Eloquent\Model;
  */
 class CihTag extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
 
     protected $table = 'cih_tags';
-    protected $fillable = ['label','ativo'];
-    protected $casts = ['label' => 'string','ativo' => 'boolean'];
+    protected $fillable = [
+        'empresa_id',
+        'label',
+        'ativo',
+        'anexo_obrigatorio'
+    ];
+    protected $casts = [
+        'id' => 'int',
+        'empresa_id' => 'int',
+        'label' => 'string',
+        'ativo' => 'boolean',
+        'anexo_obrigatorio' => 'boolean'
+    ];
 }
