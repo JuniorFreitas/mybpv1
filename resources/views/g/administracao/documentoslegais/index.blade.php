@@ -246,7 +246,7 @@
 
                             <fieldset>
                                 <legend class="text-uppercase">
-                                    <span>Serviços Contratados</span>
+                                    <span>Documentos Gerenciaveis</span>
                                 </legend>
                                 <div class="row">
                                     <div class="col-12 col-sm-6 col-md-6 col-lg-6">
