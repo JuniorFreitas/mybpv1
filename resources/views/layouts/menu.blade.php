@@ -132,7 +132,7 @@
                     </a>
                 </li>
             @endcan
-            @can('cadastro_cadastro_treinamento_industria')
+            @can('cadastro_treinamento_industria')
                 <li>
                     <a href="{{route('g.treinamentoindustria.treinamentoindustria.index')}}" key="treinamentoindustria">
                         Treinamentos Indústria
