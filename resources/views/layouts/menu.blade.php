@@ -49,7 +49,13 @@
                     </a>
                 </li>
             @endcan
-
+            @can('administracao_clientes')
+                <li>
+                    <a href="{{route('g.administracao.documentoslegais.documentoslegais.index')}}" key="clientes">
+                        Documentos Legais
+                    </a>
+                </li>
+            @endcan
             @can('administracao_atareuniao')
                 <li>
                     <a href="{{route('g.administracao.atareuniao.atareuniao.index')}}" key="atareuniao">

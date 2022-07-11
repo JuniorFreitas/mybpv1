@@ -56,6 +56,7 @@ mix.js("resources/js/app.js", "public/js")
     .js("resources/js/g/configuracoes/bairros/app.js", "public/js/g/bairros/")
     //administracao
     .js("resources/js/g/administracao/clientes/app.js", "public/js/g/clientes/")
+    .js("resources/js/g/administracao/documentoslegais/app.js", "public/js/g/documentoslegais/")
     .js("resources/js/g/administracao/fornecedores/app.js", "public/js/g/fornecedores/")
     .js("resources/js/g/administracao/atareuniao/app.js", "public/js/g/atareuniao/")
     .js("resources/js/g/administracao/pesquisaclima/app.js", "public/js/g/pesquisaclima/")

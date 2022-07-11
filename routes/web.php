@@ -163,6 +163,24 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::resource('clientes', \App\Http\Controllers\ClientesController::class)->middleware('can:administracao_clientes');
         });
 
+        Route::group(['as' => 'documentoslegais.'], function () {
+            // Anexos
+            Route::post('documentoslegais/uploadAnexos', [\App\Http\Controllers\DocumentosLegaisController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:administracao_clientes');
+            Route::get('documentoslegais/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisController::class, 'anexoShow'])->name('anexo-show')->middleware('can:administracao_clientes');
+            Route::get('documentoslegais/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosLegaisController::class, 'download'])->name('anexo-download')->middleware('can:administracao_clientes');
+            Route::delete('documentoslegais/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:administracao_clientes');
+
+//            Route::get('clientes/export', [\App\Http\Controllers\DocumentosLegaisController::class,'export'])->name('excel')->middleware('can:administracao_clientes');
+            Route::get('documentoslegais/buscar-cnpj', [\App\Http\Controllers\DocumentosLegaisController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:administracao_clientes');
+            Route::get('documentoslegais/buscar-cpf', [\App\Http\Controllers\DocumentosLegaisController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_clientes');
+
+            Route::get('documentoslegais/{cliente}/pdf', [\App\Http\Controllers\DocumentosLegaisController::class, 'getFichaPdf'])->name('getFichapdf');
+            Route::put('documentoslegais/{cliente}/ativa-desativa', [\App\Http\Controllers\DocumentosLegaisController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_clientes');
+            Route::post('documentoslegais/search', [\App\Http\Controllers\DocumentosLegaisController::class, 'searchCliente'])->name('search')->middleware('can:administracao_clientes');
+            Route::post('documentoslegais/atualizar', [\App\Http\Controllers\DocumentosLegaisController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_clientes');
+            Route::resource('documentoslegais', \App\Http\Controllers\DocumentosLegaisController::class)->middleware('can:administracao_clientes');
+        });
+
         // Fornecedores
         Route::group(['as' => 'fornecedor.'], function () {
             // Anexos Fornecedor
