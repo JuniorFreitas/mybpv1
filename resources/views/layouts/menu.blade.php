@@ -90,7 +90,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','cadastro_vagas','cadastro_vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','cadastro_beneficio','cadastro_areaetiqueta','cadastro_centrocusto','cadastro_empresa_temporaria'))
+@if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','cadastro_vagas','cadastro_vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','cadastro_beneficio','cadastro_areaetiqueta','cadastro_centrocusto','cadastro_empresa_temporaria', 'cadastro_tipos_cih'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bx-briefcase-alt-2"></i>
@@ -192,6 +192,13 @@
                 <li>
                     <a href="{{route('g.centrocusto.centrocusto.index')}}" key="centrocusto">
                         Centro de Custos
+                    </a>
+                </li>
+            @endcan
+            @can('cadastro_tipos_cih')
+                <li>
+                    <a href="{{route('g.tipocih.tipoCihIndex')}}" key="tipocih">
+                        Tipos CIH
                     </a>
                 </li>
             @endcan

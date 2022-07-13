@@ -1443,7 +1443,6 @@ class AdmissaoController extends Controller
     public function getFichaPdf(FeedbackCurriculo $feedback)
     {
         $dados = $feedback->load('ResultadoIntegrado');
-
         $pdf = PDF::loadView('pdf.admissao.ficha', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("ficha_admissao_" . ($dados->Curriculo->nome) . ".pdf");
@@ -1500,7 +1499,6 @@ class AdmissaoController extends Controller
             "Data Encaminhado para Exame",
             "Encaminhado para treinamento",
             "Data Encaminhado para Treinamento",
-            "Contrato",
             "Função",
             "Cargo",
             "Salário R$",
@@ -1518,6 +1516,16 @@ class AdmissaoController extends Controller
             "Data 3260",
             "Número Crachá",
             "Data do ASO",
+            "PIS",
+            "CTPS",
+            "CTPS Série",
+            "CTPS Data Emissão",
+            "Título de Eleitor",
+            "Título de Eleitor Sessão",
+            "Título de Eleitor Zona",
+            "Banco",
+            "Agência",
+            "Conta",
             "Status Carteira de Treinamento e Etiqueta",
             "Status",
             "Data da Admissão",
@@ -1571,7 +1579,6 @@ class AdmissaoController extends Controller
                 $row->ResultadoIntegrado->encaminhado_exame ? (new \MasterTag\DataHora($row->ResultadoIntegrado->encaminhado_exame_data))->dataCompleta() : '',
                 $row->ResultadoIntegrado->encaminhado_treinamento ? 'Sim' : 'Não',
                 $row->ResultadoIntegrado->encaminhado_treinamento ? (new \MasterTag\DataHora($row->ResultadoIntegrado->encaminhado_treinamento_data))->dataCompleta() : '',
-                $row->Admissao ? $row->Admissao->contrato ?: "" : "",
                 $row->Admissao ? $row->Admissao->funcao ?: "" : "",
                 $row->Admissao ? $row->Admissao->cargo ?: "" : "",
                 $row->Admissao ? $row->Admissao->salario ?: "" : "",
@@ -1589,6 +1596,16 @@ class AdmissaoController extends Controller
                 $row->Admissao ? $row->Admissao->data_trinta_dois_sessenta ?: "" : "",
                 $row->Admissao ? $row->Admissao->numero_cracha ?: "" : "",
                 $row->Admissao ? $row->Admissao->UltimoAsoAtivo ? $row->Admissao->UltimoAsoAtivo->data_aso : "" : "",
+                $row->Admissao ? $row->Admissao->pis ?: "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_numero : "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_serie : "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_data_emissao : "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_numero : "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_sessao : "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_zona : "" : "",
+                $row->BancoConta ? $row->BancoConta->banco : "",
+                $row->BancoConta ? $row->BancoConta->agencia : "",
+                $row->BancoConta ? $row->BancoConta->conta : "",
                 $row->Admissao ? $row->Admissao->status_carteira_treinamento ?: "" : "",
                 $row->Admissao ? $row->Admissao->status ?: "" : "",
                 $row->Admissao ? $row->Admissao->data_admissao ?: "" : "",

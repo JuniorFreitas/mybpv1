@@ -12,6 +12,7 @@ use App\Models\Cliente;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 use PDF;
 
@@ -88,7 +89,7 @@ class CihController extends Controller
             $dados['tag_id'] = $dados['tag_id'] > 0 ? $dados['tag_id'] : null;
             $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
             $dados['empresa_id'] = auth()->user()->empresa_id;
-            if ($dados['varios_colaboradores']){
+            if ($dados['varios_colaboradores']) {
                 unset($dados['feedback_id']);
             }
 
@@ -126,17 +127,6 @@ class CihController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\Cih $cih
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Cih $cih)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\Cih $cih
@@ -144,7 +134,7 @@ class CihController extends Controller
      */
     public function edit(Cih $cih)
     {
-        if ($cih->feedback_id){
+        if ($cih->feedback_id) {
             $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaAberta->VagaSelecionada->nome} - {$cih->Colaborador->VagaAberta->Municipio->uf}";
             $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
         }
@@ -155,18 +145,6 @@ class CihController extends Controller
 
 
         return $cih->load('Anexos', 'Tag', 'Area');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Cih $cih
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Cih $cih)
-    {
-        //
     }
 
     /**
@@ -200,17 +178,6 @@ class CihController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\Cih $cih
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Cih $cih)
-    {
-        //
     }
 
     public function atualizarHistorico($feedback)
@@ -333,6 +300,113 @@ class CihController extends Controller
         $nameArquivo = "admissao_cih" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
         JobExportaExcel::dispatch(auth()->id(), "Admissão - CIH", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+    }
+
+    public function tipoCihIndex(Request $request)
+    {
+        return view('g.cadastros.tipocih.index');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     */
+    public function tipoCihStore(Request $request)
+    {
+        $dados = $request->input();
+
+        $regra = Rule::unique('cih_tags')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereLabel($dados['label']);
+        });
+
+        $dadosValidados = \Validator::make($dados, [
+            'label' => ['required', $regra]
+        ]);
+
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao criar novo tipo cih',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            CihTag::create($dados);
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE TIPO CIH:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+    }
+
+    public function tipoCihEdit(CihTag $tipocih)
+    {
+        return $tipocih;
+    }
+
+    public function tipoCihUpdate(Request $request, CihTag $tipocih)
+    {
+        $dados = $request->input();
+
+        $regra = Rule::unique('cih_tags')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereLabel($dados['label']);
+        })->ignore($tipocih->id);
+
+        $dadosValidados = \Validator::make($dados, [
+            'label' => ['required', $regra]
+        ]);
+
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao atualizar novo tipo cih',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $tipocih->update($dados);
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE TIPO CIH:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+    }
+
+    public function tipoCihAtualizar(Request $request)
+    {
+        $this->authorize('cadastro_centrocusto');
+        $porPagina = $request->get('porPagina');
+        $resultado = CihTag::orderBy('id');
+
+        if ($request->filled('campoBusca')) {
+            $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
+        }
+
+        $resultado = $resultado->paginate($porPagina);
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'items' => $resultado->items(),
+            ]
+        ], 200);
     }
 
     public function relatorioPdf(Request $request)
