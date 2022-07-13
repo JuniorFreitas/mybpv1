@@ -104,7 +104,7 @@
         <tr>
             <td>
                 <p style="line-height: 15pt; font-size: 8.5pt; text-transform: uppercase; text-align: justify">
-                    Contrato: <strong>{{ $dados->Admissao->contrato ?? 'Não informado' }}</strong> | Função:
+                    Função:
                     <strong>{{ $dados->Admissao->funcao ?? 'Não informado' }}</strong> | Cargo: <strong>{{ $dados->VagaAberta->VagaSelecionada->nome }}</strong> | Salário R$: <strong>{{ $dados->Admissao->salario ?? 'Não informado'}}</strong> <br>
                     Documento: <strong>{{ $dados->Admissao->documento ?? 'Não informado'}}</strong> | Documento Portaria: <strong>{{ $dados->Admissao->documento_portaria ?? 'Não informado' }}</strong> |
                     Tipo de admissão: <strong>{{ $dados->Admissao->tipo_admissao ?? 'Não informado' }}</strong> |
@@ -119,7 +119,8 @@
                     Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong>  |
                     Número Crachá: <strong>{{ $dados->Admissao->numero_cracha ?? 'Não informado' }}</strong> |
                     Data do ASO: <strong>{{ $dados->Admissao->UltimoAsoAtivo->data_aso ?? 'Não informado' }}</strong> <br>
-                    CTPS: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
+                    PIS: <strong>{{$dados->Admissao->pis ?? 'Não informado'}}</strong>
+                    | CTPS: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
                     | CTPS Série: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
                     | CTPS Data Emissão: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
                     <br>
@@ -142,6 +143,11 @@
             </td>
         </tr>
     </table>
+{{--    <div class="f12" style="line-height: 26pt;text-align: center">--}}
+{{--        <br><br>--}}
+{{--        <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">--}}
+{{--        {{$dados->Curriculo->nome}}--}}
+{{--    </div>--}}
     <br>
     @include('layouts.rodapePdf')
 

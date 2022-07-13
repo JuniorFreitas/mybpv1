@@ -325,6 +325,14 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('centrocusto/atualizar', [\App\Http\Controllers\CentroCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_centrocusto');
             Route::resource('centrocusto', \App\Http\Controllers\CentroCustoController::class)->middleware('can:cadastro_centrocusto');
         });
+
+        Route::group(['as' => 'tipocih.'], function () {
+            Route::post('tipocih/atualizar', [\App\Http\Controllers\CihController::class, 'tipoCihAtualizar'])->name('tipocih.tipoCihAtualizar');
+            Route::get('tipocih/{tipocih}', [\App\Http\Controllers\CihController::class, 'tipoCihEdit'])->name('tipoCihEdit');
+            Route::put('tipocih/{tipocih}', [\App\Http\Controllers\CihController::class, 'tipoCihUpdate'])->name('tipoCihUpdate');
+            Route::post('tipocih', [\App\Http\Controllers\CihController::class, 'tipoCihStore'])->name('tipoCihStore');
+            Route::get('tipocih', [\App\Http\Controllers\CihController::class, 'tipoCihIndex'])->name('tipoCihIndex');
+        });
     });
 
     //Planejamento

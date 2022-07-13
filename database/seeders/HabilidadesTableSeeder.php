@@ -204,6 +204,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_cih_lancar', 'descricao' => 'Pode lançar uma ocorrencia CIH'];
         $lista[] = ['nome' => 'admissao_cih_aprovar', 'descricao' => 'Pode aprovar uma ocorrencia CIH'];
 
+
         $lista[] = ['nome' => 'admissao_historico', 'descricao' => 'Acessar menu Historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_medidas_administrativas', 'descricao' => 'Pode ver o Componente Medidas Administrativa'];
 
@@ -294,6 +295,8 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_provas', 'descricao' => 'Acessar Cadastro Provas'];
         $lista[] = ['nome' => 'cadastro_provas_insert', 'descricao' => 'Inseri Cadastro Provas Insert'];
         $lista[] = ['nome' => 'cadastro_provas_update', 'descricao' => 'Atualiza Cadastro Provas Update'];
+
+        $lista[] = ['nome' => 'cadastro_tipos_cih', 'descricao' => 'Pode cadastrar um tipo de CIH'];
 
         $lista[] = ['nome' => 'administracao_aniversariantes', 'descricao' => 'Acessar Aniversariantes'];
         $lista[] = ['nome' => 'administracao_aniversariantes_enviar', 'descricao' => 'Enviar Email Para os Aniversariantes'];

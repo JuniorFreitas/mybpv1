@@ -61,7 +61,7 @@ const app = new Vue({
             anexosDel: []
         },
 
-        url_anexo: `${URL_ADMIN}/storage/uploadAnexos`,
+        url_anexo: `${URL_ADMIN}/apontamento/cih/uploadAnexos`,
         anexoUploadAndamento: false,
 
         formDefault: null,
