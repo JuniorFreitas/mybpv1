@@ -509,7 +509,7 @@ class RecrutamentoController extends Controller
                 'municipio_id',
                 'lido',
                 'created_at']
-        )->limit(20)->get();
+        )->get();
 
         $head = [
             "Nome",
