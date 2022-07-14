@@ -19,7 +19,7 @@
                     <strong>{{ $dados->Curriculo->PCD ? 'Sim' : 'Não' }}</strong>
                     | CNH: <strong>{{ $dados->ParecerRh->cnh ? $dados->ParecerRh->cnh_tipo : 'Não possui' }}</strong>
                     <br>
-                    RG: <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
+                    CPF: <strong>{{ $dados->Curriculo->cpf ?? 'Não informado' }}</strong> | RG: <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
                     | RG Data Emissão:
                     <strong>{{ $dados->Curriculo->rg_data_emissao ?? 'Não informado' }}</strong>
                     | Naturalidade:
