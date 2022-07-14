@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
-use App\Exports\CurriculoExport;
 use App\Jobs\JobExportaExcel;
 use App\Mail\DesclassificacaoMail;
 use App\Mail\ProvaMail;
@@ -11,7 +10,6 @@ use App\Mail\ProximaEtapaMail;
 use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\Curriculo;
-use App\Models\NotificacaoWhats;
 use App\Models\SimuladoVaga;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
@@ -211,7 +209,7 @@ class RecrutamentoController extends Controller
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
                                 'empresa' => $empresa->razao_social,
-                                'logo' => env('AWS_URL')."/public/email_" . $empresa->apelido . ".jpg",
+                                'logo' => env('AWS_URL') . "/public/email_" . $empresa->apelido . ".jpg",
                                 'vaga_selecionada' => $vaga_aberta->titulo . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
                                 'local_entrevista' => $dados['local_entrevista'],
                                 'data_entrevista' => $dados['data_entrevista'],
@@ -306,7 +304,7 @@ class RecrutamentoController extends Controller
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
                                 'empresa' => $empresa->razao_social,
-                                'logo' => env('AWS_URL')."/public/email_" . $empresa->apelido . ".jpg",
+                                'logo' => env('AWS_URL') . "/public/email_" . $empresa->apelido . ".jpg",
                                 'vaga_selecionada' => $vaga_aberta->titulo . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
                                 'local_entrevista' => $dados['local_entrevista'],
                                 'data_entrevista' => $dados['data_entrevista'],
@@ -411,7 +409,7 @@ class RecrutamentoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = $this->filtro($request)->paginate($request->pages);
+        $resultado = $this->filtro($request)->paginate(500);
 
         $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
 
@@ -431,23 +429,23 @@ class RecrutamentoController extends Controller
     public function filtro(Request $request)
     {
         $resultado = Curriculo::select(
-            'id',
-            'cpf',
-            'rg',
-            'orgao_expeditor',
-            'nome',
-            'nascimento',
-            'logradouro',
-            'complemento',
-            'bairro',
-            'municipio',
-            'email',
-            'vaga_pretendida',
-            'pcd',
-            'uf_vaga',
-            'municipio_id',
-            'lido',
-            'created_at',
+            ['id',
+                'cpf',
+                'rg',
+                'orgao_expeditor',
+                'nome',
+                'nascimento',
+                'logradouro',
+                'complemento',
+                'bairro',
+                'municipio',
+                'email',
+                'vaga_pretendida',
+                'pcd',
+                'uf_vaga',
+                'municipio_id',
+                'lido',
+                'created_at']
         )->with('VagaAberta.VagaSelecionada', 'FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
 
 
@@ -493,37 +491,57 @@ class RecrutamentoController extends Controller
 
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
+        $resultado = $this->filtro($request)->select(
+            ['id',
+                'cpf',
+                'rg',
+                'orgao_expeditor',
+                'nome',
+                'nascimento',
+                'logradouro',
+                'complemento',
+                'bairro',
+                'municipio',
+                'email',
+                'vaga_pretendida',
+                'pcd',
+                'uf_vaga',
+                'municipio_id',
+                'lido',
+                'created_at']
+        )->limit(20)->get();
 
         $head = [
             "Nome",
             "CPF",
             "Nascimento",
             "PCD",
-            "Data Cadastro",
+            "CNH",
             "E-mail",
             "Endereço",
-            "Bairro",
-            "Municipio",
-            "Estado",
-            "Vaga"
+            "Vaga",
+            "Telefones",
+            "Data Cadastro",
         ];
 
         $rows = [];
 
         foreach ($resultado as $row) {
+            $telefones = "";
+            foreach ($row->Telefones as $tel) {
+                $telefones .= $tel->numero . " ($tel->tipoText) | ";
+            }
             $rows[] = [
                 $row->nome,
                 $row->cpf,
                 $row->nascimento,
-                $row->pcd == false ? "Não" : "Sim",
+                !$row->pcd ? "Não" : "Sim - {$row->cid}",
+                $row->cnh ?: "",
+                mb_strtolower($row->email),
+                $row->endereco_completo,
+                $row->VagaAberta->VagaSelecionada->nome . " - " . $row->VagaAberta->Municipio->nome . " - " . $row->VagaAberta->Municipio->uf,
+                substr($telefones, 0, -3),
                 (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->email,
-                $row->logradouro,
-                $row->bairro,
-                $row->VagaAberta->Municipio->nome,
-                $row->VagaAberta->Municipio->uf,
-                $row->VagaAberta->VagaSelecionada->nome,
             ];
         }
 
