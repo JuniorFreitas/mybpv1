@@ -26,10 +26,10 @@ class TreinamentoController extends Controller
         $treinamentos = Treinamento::select(['id', 'feedback_id', 'tipo'])
             ->whereHas('FeedbackCurriculo', function ($q) use ($empresa_id) {
                 $q->Admitidos()->whereEmpresaId($empresa_id);
-            })->whereHas('Vencimentos', function ($q) use ($dataInicio,$dataFim) {
+            })->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
                 $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataInsert())
                     ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataInsert());
-            })->with(['Vencimentos' => function ($q) use ($dataInicio,$dataFim) {
+            })->with(['Vencimentos' => function ($q) use ($dataInicio, $dataFim) {
                 $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataInsert())
                     ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataInsert());
             }, 'FeedbackCurriculo:id,empresa_id,vaga_id,curriculo_id',
@@ -67,30 +67,28 @@ class TreinamentoController extends Controller
     {
         $medidas = $this->show($request);
         $head = [
-            'label',
-            'descricao',
-            'data_vencimento',
-            'data_treinamento',
-            'dias_vencer',
             'nome',
             'cargo',
             'tipo',
-            'treinamentos'
+            'treinamento',
+            'data_treinamento',
+            'data_vencimento',
+            'dias_vencer',
         ];
         $rows = [];
 
         foreach ($medidas as $row) {
-            $rows[] = array(
-                $row['label'],
-                $row['descricao'],
-                $row['data_vencimento'],
-                $row['data_treinamento'],
-                $row['dias_vencer'],
-                $row['nome'],
-                $row['cargo'],
-                $row['tipo'],
-                $row['treinamentos']
-            );
+            foreach ($row['treinamentos'] as $treinamento) {
+                $rows[] = [
+                    $row['nome'],
+                    $row['cargo'],
+                    $row['tipo'],
+                    $treinamento['label'],
+                    $treinamento['data_treinamento'],
+                    $treinamento['data_vencimento'],
+                    $treinamento['dias_vencer']
+                ];
+            }
         }
 
         $nameArquivo = "vencimento_treinamento" . \Str::slug('Vencimento Treinamento') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
