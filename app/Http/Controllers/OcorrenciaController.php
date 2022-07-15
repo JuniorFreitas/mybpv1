@@ -137,55 +137,54 @@ class OcorrenciaController extends Controller
                 'msg' => 'Erro ao Cadastrar',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                Ocorrencia::find($dados['ocorrencia_id'])->update([
-                    'quem_atualizou' => auth()->id(),
-                    'status' => 'andamento',
-                ]);
+        }
+        try {
+            DB::beginTransaction();
+            Ocorrencia::find($dados['ocorrencia_id'])->update([
+                'quem_atualizou' => auth()->id(),
+                'status' => 'andamento',
+            ]);
 
-                $dados['resposta'] = html_entity_decode($dados['resposta']);
-                $dados['resposta'] = strip_tags($dados['resposta'], "<p><a><strong><i><ul><li><ol><table><tbody><tr><td>"); // permitir apenas essas tags
+            $dados['resposta'] = html_entity_decode($dados['resposta']);
+            $dados['resposta'] = strip_tags($dados['resposta'], "<p><a><strong><i><ul><li><ol><table><tbody><tr><td>"); // permitir apenas essas tags
 
-                $resposta = RespostaOcorrencia::create($dados);
-                if ($request->filled('anexos')) {
-                    foreach ($dados['anexos'] as $item) {
-                        $resposta->Anexos()->attach($item['id']);
-                        $resposta->Anexos()->where('id', $item['id'])
-                            ->where('temporario', true)
-                            ->where('chave', $item['chave'])
-                            ->update([
-                                'temporario' => false,
-                                'chave' => '',
-                                'nome' => $item['nome']
-                            ]); // tira dos temporarioorarios
-                    }
+            $resposta = RespostaOcorrencia::create($dados);
+            if ($request->filled('anexos')) {
+                foreach ($dados['anexos'] as $item) {
+                    $resposta->Anexos()->attach($item['id']);
+                    $resposta->Anexos()->where('id', $item['id'])
+                        ->where('temporario', true)
+                        ->where('chave', $item['chave'])
+                        ->update([
+                            'temporario' => false,
+                            'chave' => '',
+                            'nome' => $item['nome']
+                        ]); // tira dos temporarioorarios
                 }
-                DB::commit();
-
-                $ocorrencia = Ocorrencia::find($dados['ocorrencia_id']);
-                $IDCRIADOROcorrencia = $ocorrencia->quem_criou;
-                $IDMENCIONADOOcorrencia = $ocorrencia->usuario_id;
-
-                $usuarioRespostaId = $resposta->user_id;
-
-                if ($usuarioRespostaId != $IDCRIADOROcorrencia) {
-                    $userPara = User::find($IDCRIADOROcorrencia);
-                }
-                if ($usuarioRespostaId != $IDMENCIONADOOcorrencia) {
-                    $userPara = User::find($IDMENCIONADOOcorrencia);
-                }
-                $ocorrencia->resposta_user = User::find($resposta->user_id)->nome;
-                JobOcorrenciaNovaMensagem::dispatch($ocorrencia, $userPara);
-
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error NOVA MENSAGEM EM OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+            DB::commit();
+
+            $ocorrencia = Ocorrencia::find($dados['ocorrencia_id']);
+            $IDCRIADOROcorrencia = $ocorrencia->quem_criou;
+            $IDMENCIONADOOcorrencia = $ocorrencia->usuario_id;
+
+            $usuarioRespostaId = $resposta->user_id;
+
+            if ($usuarioRespostaId != $IDCRIADOROcorrencia) {
+                $userPara = User::find($IDCRIADOROcorrencia);
+            }
+            if ($usuarioRespostaId != $IDMENCIONADOOcorrencia) {
+                $userPara = User::find($IDMENCIONADOOcorrencia);
+            }
+            $ocorrencia->resposta_user = User::find($resposta->user_id)->nome;
+            JobOcorrenciaNovaMensagem::dispatch($ocorrencia, $userPara);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error NOVA MENSAGEM EM OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -309,8 +308,8 @@ class OcorrenciaController extends Controller
 
     public function listaSetoresTags(Request $request)
     {
-        $setores = OcorrenciaSetor::get();
-        $tags = Tag::get();
+        $setores = OcorrenciaSetor::orderBy('nome')->get();
+        $tags = Tag::orderBy('nome')->get();
         return response()->json(['setores' => $setores, 'tags' => $tags], 200);
     }
 
