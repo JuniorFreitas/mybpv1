@@ -855,6 +855,7 @@ export default {
                     $("#janelaFormTag").modal("hide");
                     mostraSucesso("", "Tag cadastrada com sucesso");
                     this.cadastrado = true;
+                    this.listaSetoresTags();
                     this.$refs.componente.buscar();
                     this.preloadTag = false;
                 })
@@ -884,6 +885,7 @@ export default {
                         $("#janelaFormSetor").modal("hide");
                         mostraSucesso("", "Setor cadastrado com sucesso");
                         this.cadastrado = true;
+                        this.listaSetoresTags();
                         this.$refs.componente.buscar();
                         this.preloadSetor = false;
                     } else {
