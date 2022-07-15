@@ -238,7 +238,7 @@ class User extends Authenticatable
     public const GESTOR = "Gestor";
     public const CANDIDATO = "Candidato";
     public const CLINICA_EXAME = "ClinicaExame";
-
+    public const LISTA_SUPORTE = [1, 54831];
 
     public const TIPOS_USUARIOS_GERENCIAIS = [
         self::SUPORTE,
