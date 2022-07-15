@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
@@ -71,7 +72,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Ocorrencia extends Model
 {
-    use LogsActivity;
+    use LogsActivity, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'ocorrencias';
@@ -92,6 +93,7 @@ class Ocorrencia extends Model
     protected $fillable = [
         'id',
         'cliente_id',
+        'empresa_id',
         'usuario_id',
         'setor_id',
         'assunto',
@@ -108,6 +110,7 @@ class Ocorrencia extends Model
         'id' => 'int',
         'setor_id' => 'int',
         'cliente_id' => 'int',
+        'empresa_id' => 'int',
         'usuario_id' => 'int',
         'assunto' => 'string',
         'quem_criou' => 'int',

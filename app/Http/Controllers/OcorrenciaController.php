@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Ocorrencias\JobOcorrenciaFinaliza;
+use App\Jobs\Ocorrencias\JobOcorrenciaNovaMensagem;
+use App\Jobs\Ocorrencias\JobOcorrenciaStore;
 use App\Models\Arquivo;
 use App\Models\Ocorrencia;
 use App\Models\OcorrenciaSetor;
 use App\Models\RespostaOcorrencia;
 use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
+use mysql_xdevapi\Exception;
 
 class OcorrenciaController extends Controller
 {
@@ -53,7 +59,12 @@ class OcorrenciaController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'assunto' => 'required|min:2',
-                'setor_id' => 'required',
+                'setor_id' => ['required', function ($attribute, $value, $fail) {
+                    $setor = OcorrenciaSetor::whereId($value)->whereEmpresaId(auth()->user()->empresa_id)->count();
+                    if ($setor == 0) {
+                        $fail('Setor não cadastrado.');
+                    }
+                }],
                 'tipo' => 'required',
                 'resposta' => 'required',
             ]
@@ -63,53 +74,57 @@ class OcorrenciaController extends Controller
                 'msg' => 'Erro ao Cadastrar',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                //Se o tipo for Anotação
-                if ($dados['tipo'] == 'anotacao') {
-                    $dados['status'] = 'finalizado';
-                    $dados['quem_finalizou'] = auth()->id();
-                    $dados['datahora_finalizou'] = (new DataHora())->dataHoraInsert();
-                } else {
-                    $dados['status'] = 'novo';
-                }
-
-                $ocorrencia = Ocorrencia::create($dados);
-                $dados['ocorrencia_id'] = $ocorrencia->id;
-                $dados['user_id'] = auth()->id();
-
-                $dados['resposta'] = html_entity_decode($dados['resposta']);
-                $dados['resposta'] = strip_tags($dados['resposta'], "<p><a><strong><i><ul><li><ol><table><tbody><tr><td>"); // permitir apenas essas tags
-                $resposta = RespostaOcorrencia::create($dados);
-                $dados['resposta_id'] = $resposta->id;
-
-                $ocorrencia->Tags()->attach($dados['tag_id']);
-
-                if ($request->filled('anexos')) {
-                    foreach ($dados['anexos'] as $item) {
-                        $resposta->Anexos()->attach($item['id']);
-                        $resposta->Anexos()->where('id', $item['id'])
-                            ->where('temporario', true)
-                            ->where('chave', $item['chave'])
-                            ->update([
-                                'temporario' => false,
-                                'chave' => '',
-                                'nome' => $item['nome']
-                            ]); // tira dos temporarioorarios
-
-                    }
-                }
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
         }
+        try {
+            DB::beginTransaction();
+            //Se o tipo for Anotação
+            if ($dados['tipo'] == 'anotacao') {
+                $dados['status'] = 'finalizado';
+                $dados['quem_finalizou'] = auth()->id();
+                $dados['datahora_finalizou'] = (new DataHora())->dataHoraInsert();
+            } else {
+                $dados['status'] = 'novo';
+            }
 
+            $ocorrencia = Ocorrencia::create($dados);
+
+            $dados['ocorrencia_id'] = $ocorrencia->id;
+            $dados['user_id'] = auth()->id();
+
+            $dados['resposta'] = html_entity_decode($dados['resposta']);
+            $dados['resposta'] = strip_tags($dados['resposta'], "<p><a><strong><i><ul><li><ol><table><tbody><tr><td>"); // permitir apenas essas tags
+            $resposta = RespostaOcorrencia::create($dados);
+            $dados['resposta_id'] = $resposta->id;
+
+            $ocorrencia->Tags()->attach($dados['tag_id']);
+
+            if ($request->filled('anexos')) {
+                foreach ($dados['anexos'] as $item) {
+                    $resposta->Anexos()->attach($item['id']);
+                    $resposta->Anexos()->where('id', $item['id'])
+                        ->where('temporario', true)
+                        ->where('chave', $item['chave'])
+                        ->update([
+                            'temporario' => false,
+                            'chave' => '',
+                            'nome' => $item['nome']
+                        ]); // tira dos temporarioorarios
+
+                }
+            }
+
+            DB::commit();
+
+            $userPara = User::find($dados['usuario_id']);
+            JobOcorrenciaStore::dispatch($ocorrencia, $userPara);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
     }
 
     public function novaMensagem(Request $request)
@@ -148,6 +163,22 @@ class OcorrenciaController extends Controller
                     }
                 }
                 DB::commit();
+
+                $ocorrencia = Ocorrencia::find($dados['ocorrencia_id']);
+                $IDCRIADOROcorrencia = $ocorrencia->quem_criou;
+                $IDMENCIONADOOcorrencia = $ocorrencia->usuario_id;
+
+                $usuarioRespostaId = $resposta->user_id;
+
+                if ($usuarioRespostaId != $IDCRIADOROcorrencia) {
+                    $userPara = User::find($IDCRIADOROcorrencia);
+                }
+                if ($usuarioRespostaId != $IDMENCIONADOOcorrencia) {
+                    $userPara = User::find($IDMENCIONADOOcorrencia);
+                }
+                $ocorrencia->resposta_user = User::find($resposta->user_id)->nome;
+                JobOcorrenciaNovaMensagem::dispatch($ocorrencia, $userPara);
+
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 DB::rollback();
@@ -161,21 +192,74 @@ class OcorrenciaController extends Controller
     public function mudarSetor(Request $request)
     {
         $dados = $request->input();
-        Ocorrencia::find($dados['ocorrencia_id'])->update([
-            'setor_id' => $dados['setor_id']
-        ]);
-        return response()->json([], 201);
+        $dadosValidados = \Validator::make($dados,
+            [
+                'setor_id' => ['required', function ($attribute, $value, $fail) {
+                    $setor = OcorrenciaSetor::whereId($value)->whereEmpresaId(auth()->user()->empresa_id)->count();
+                    if ($setor == 0) {
+                        $fail('Setor não cadastrado.');
+                    }
+                }]
+            ]
+        );
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao Mudar Setor',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+        try {
+            DB::beginTransaction();
+            Ocorrencia::find($dados['ocorrencia_id'])->update([
+                'setor_id' => $dados['setor_id']
+            ]);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (Exception  $e) {
+            DB::rollback();
+            $msg = "error mudar Setor OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
     }
 
     public function finalizar(Request $request)
     {
         $dados = $request->input();
-        Ocorrencia::find($dados['ocorrencia_id'])->update([
-            'status' => 'finalizado',
-            'quem_finalizou' => auth()->id(),
-            'datahora_finalizou' => (new DataHora())->dataHoraInsert(),
-        ]);
-        return response()->json([], 201);
+        try {
+            DB::beginTransaction();
+            Ocorrencia::find($dados['ocorrencia_id'])->update([
+                'status' => 'finalizado',
+                'quem_finalizou' => auth()->id(),
+                'datahora_finalizou' => (new DataHora())->dataHoraInsert(),
+            ]);
+            DB::commit();
+
+            $ocorrencia = Ocorrencia::find($dados['ocorrencia_id']);
+
+            $IDCRIADOROcorrencia = $ocorrencia->quem_criou;
+            $IDMENCIONADOOcorrencia = $ocorrencia->usuario_id;
+
+            $ID_quem_finalizou = $ocorrencia->quem_finalizou;
+
+            if ($ID_quem_finalizou != $IDCRIADOROcorrencia) {
+                $userPara = User::find($IDCRIADOROcorrencia);
+            }
+            if ($ID_quem_finalizou != $IDMENCIONADOOcorrencia) {
+                $userPara = User::find($IDMENCIONADOOcorrencia);
+            }
+
+            JobOcorrenciaFinaliza::dispatch($ocorrencia, $userPara);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error Finalizar OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
     }
 
     /**
@@ -332,9 +416,13 @@ class OcorrenciaController extends Controller
     {
         $this->authorize('ocorrencia');
         $dados = $request->input();
+        $regra = Rule::unique('tags')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereNome($dados['nome']);
+        });
         $dadosValidados = \Validator::make($dados,
             [
-                'nome' => 'required|min:1',
+                'nome' => ['required', $regra],
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -342,19 +430,32 @@ class OcorrenciaController extends Controller
                 'msg' => 'Erro ao Cadastrar',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            Tag::create($dados);
-            return response()->json([], 201);
         }
+        try {
+            DB::beginTransaction();
+            Tag::create($dados);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error cadastrar TAG OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
     }
 
     public function cadastroSetor(Request $request)
     {
         $this->authorize('ocorrencia');
         $dados['nome'] = $request->input('nome');
+        $regra = Rule::unique('ocorrencias_setores')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereNome($dados['nome']);
+        });
         $dadosValidados = \Validator::make($dados,
             [
-                'nome' => 'required|min:1',
+                'nome' => ['required', $regra],
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -362,10 +463,19 @@ class OcorrenciaController extends Controller
                 'msg' => 'Erro ao Cadastrar',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            OcorrenciaSetor::create($dados);
-            return response()->json([], 201);
         }
+        try {
+            DB::beginTransaction();
+            OcorrenciaSetor::create($dados);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error cadastrar Setor OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
     }
 
 }

@@ -154,17 +154,10 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
 
         $busca = $request->query('busca');
-        if ($busca === '*') {
-            return User::whereAtivo(true)
-                ->get()
-                ->map(function ($item) {
-                    $item->label = $item->nome;
-                    return $item;
-                });
-        } else {
+
             return User::whereEmpresaId(auth()->user()->empresa_id)
                 ->whereNotIn('id', [auth()->user()->empresa_id])
-                ->orWhereIn('id', [1, 2])
+//                ->orWhereIn('id', User::LISTA_SUPORTE)
                 ->whereAtivo(true)
                 ->where('nome', 'like', '%' . $busca . '%')
                 ->take($quantidade)
@@ -175,7 +168,6 @@ class AutoCompletesController extends Controller
                 });
         }
 
-    }
 
     public function colaboradores(Request $request)
     {
