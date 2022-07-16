@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaVencimento;
@@ -343,6 +344,39 @@ class PosAdmissaoController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
+        $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
+        $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
+        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissao')->first();
+        $formulario->load('Setores.Alternativas');
+
+        $ids_form = array();
+        foreach ($formulario->Setores as $f) {
+            foreach ($f->alternativas as $a) {
+                $ids_form[$a->id] = false;
+            }
+        }
+
+        $formulario_vazio = collect($ids_form);
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => ['items' => $resultado->items(),
+                'motivos_rescisoes' => $motivosRescisoes,
+                'tipos_rescisoes' => $tipoRescisoes,
+                'classificacoes_rescisoes' => $classificacoesRescisoes,
+                'formulario' => $formulario,
+                'form_limpo' => $formulario_vazio
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
         $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);
         })->with('Admissao.AreaEtiqueta', 'Curriculo', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
@@ -370,37 +404,50 @@ class PosAdmissaoController extends Controller
             $resultado->whereAvaliacao($request->campoFeedback);
         }
 
-        $resultado = $resultado->orderByDesc('updated_at')->paginate($request->pages);
+        return $resultado->orderByDesc('updated_at');
 
-        $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
-        $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
-        $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
-        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissao')->first();
-        $formulario->load('Setores.Alternativas');
+    }
 
+    public function export(Request $request)
+    {
+        $resultado = $this->filtro($request)->get();
 
+        $head = [
+            'ID',
+            'Nome',
+            'CPF',
+            'Área',
+            'Cargo',
+            'Data Admissão',
+            'Data Demissão',
+            'Status',
+            'Data Entrevista',
+            'Empresa',
+            'Salario'
+        ];
 
-        $ids_form = array();
-        foreach ($formulario->Setores as $f) {
-            foreach ($f->alternativas as $a) {
-                $ids_form[$a->id] = false;
-            }
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->Admissao->id,
+                $row->Curriculo->nome,
+                $row->Curriculo->cpf,
+                $row->Admissao->AreaEtiqueta->label,
+                $row->Admissao->cargo,
+                (new DataHora($row->data_admissao))->dataCompleta() . ' ' . substr((new DataHora($row->data_admissao))->horaCompleta(), 0, 5),
+                (new DataHora($row->data_desmobilizacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_desmobilizacao))->horaCompleta(), 0, 5),
+                $row->Admissao->status,
+                $row->data_entrevista,
+                $row->Empresa->nome_fantasia,
+                $row->Admissao->salario,
+
+            ];
         }
 
-        $formulario_vazio = collect($ids_form);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => ['items' => $resultado->items(),
-                'motivos_rescisoes' => $motivosRescisoes,
-                'tipos_rescisoes' => $tipoRescisoes,
-                'classificacoes_rescisoes' => $classificacoesRescisoes,
-                'formulario' => $formulario,
-                'form_limpo' => $formulario_vazio
-            ]
-        ]);
+        $nameArquivo = "posadmissao" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "PosAdmissao", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
     public function entrevistar(Request $request)
