@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\carteiraEtiquetaExport;
+use App\Jobs\JobExportaExcel;
 use App\Models\ExameTreinamento;
 use App\Models\FeedbackCurriculo;
 use App\Models\Pivot\TreinamentoVencimento;
@@ -280,6 +281,42 @@ class TreinamentoController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        $itens = collect($resultado->items());
+        $vencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get();
+
+        $vencimentos->transform(function ($i) {
+            $i->fez_treinamento = false;
+            return $i;
+        });
+
+        $itens->transform(function ($item) {
+            if ($item->Treinamento) {
+                $item->nr_33 = $item->Treinamento->Vencimentos->where('label', 'NR33')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'NR33')->first()->pivot : null;
+                $item->nr_35 = $item->Treinamento->Vencimentos->where('label', 'NR35')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'NR35')->first()->pivot : null;
+                $item->ebtv = $item->Treinamento->Vencimentos->where('label', 'EBTV')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'EBTV')->first()->pivot : null;
+            } else {
+                $item->nr_33 = null;
+                $item->nr_35 = null;
+                $item->ebtv = null;
+            }
+            return $item;
+        });
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $itens,
+                'vencimentos' => $vencimentos
+            ]
+        ]);
+    }
+
+    public function filtro(Request $request)
+    {
         $this->authorize('treinamento_carteira-etiquetas');
 
         $resultado = FeedbackCurriculo::Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
@@ -292,13 +329,6 @@ class TreinamentoController extends Controller
             'Treinamento.Vencimentos',
             'Treinamento.QuemCadastrou'
         );
-
-        $vencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get();
-
-        $vencimentos->transform(function ($i) {
-            $i->fez_treinamento = false;
-            return $i;
-        });
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
@@ -445,34 +475,55 @@ class TreinamentoController extends Controller
             });
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
-
-        $itens = collect($resultado->items());
-
-        $itens->transform(function ($item) {
-            if ($item->Treinamento) {
-                $item->nr_33 = $item->Treinamento->Vencimentos->where('label', 'NR33')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'NR33')->first()->pivot : null;
-                $item->nr_35 = $item->Treinamento->Vencimentos->where('label', 'NR35')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'NR35')->first()->pivot : null;
-                $item->ebtv = $item->Treinamento->Vencimentos->where('label', 'EBTV')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'EBTV')->first()->pivot : null;
-            } else {
-                $item->nr_33 = null;
-                $item->nr_35 = null;
-                $item->ebtv = null;
-            }
-            return $item;
-        });
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $itens,
-                'vencimentos' => $vencimentos
-            ]
-        ]);
+        return $resultado->orderByDesc('created_at');
     }
 
+    public function export(Request $request)
+    {
+        $resultado = $this->filtro($request)->get();
+        $head = [
+            "Nome",
+            "Vaga",
+            "Cargo",
+            "Área",
+            "Foto 3x4",
+            "NR-33",
+            "NR-35",
+            "EBTV",
+            "Ultima Atualização",
+            "Quem Atualizou",
+            "Data Admissão",
+            "PCD",
+            "Status",
+            "Tipo"
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->Curriculo->nome,
+                $row->VagaSelecionada->nome,
+                $row->Admissao->funcao,
+                $row->Admissao->AreaEtiqueta->label,
+                $row->Curriculo->foto_tres ? "Sim" : "Não",
+                $row->nr_33 != null ? "Sim" : "Não",
+                $row->nr_35 != null ? "Sim" : "Não",
+                $row->ebtv != null ? "Sim" : "Não",
+                $row->Treinamento ? $row->Treinamento->created_at : "",
+                $row->Treinamento ? $row->Treinamento->QuemCadastrou->nome : "",
+                $row->Admissao->data_admissao,
+                $row->Curriculo->pcd != false ? "SIM":"NÂO",
+                $row->Admissao->status,
+                $row->Treinamento ? $row->Treinamento->tipo : "",
+
+            ];
+        }
+
+        $nameArquivo = "carteira_etiqueta" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Carteira - Etiqueta", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+    }
 
     public function carteiraPdf(Request $request)
     {
@@ -518,160 +569,6 @@ class TreinamentoController extends Controller
 
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
 //        return view('pdf.treinamento.carteira.individualEmail', compact('treinamento'));
-    }
-
-    //Excel
-    public function export(Request $request)
-    {
-        $resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true);
-
-        if ($request->selecionados) {
-            $resultado = $resultado->whereIn('curriculo_id', $request->selecionados);
-        } else {
-
-            if ($request->filled('campoVaga')) {
-                $resultado->whereHas('Feedback.VagaSelecionada', function ($query) use ($request) {
-                    $query->whereId($request->campoVaga);
-                });
-            }
-
-
-            if ($request->filled('campoCliente')) {
-                $resultado->whereClienteId($request->campoCliente);
-//                $resultado->whereHas('Feedback', function ($q) use ($request) {
-//                    $q->whereClienteId(auth()->user()->cliente_id == User::BPSE ? $request->campoCliente : auth()->user()->cliente_id);
-//                });
-            }
-
-
-            if ($request->filled('campoUf')) {
-                $resultado->whereHas('Feedback.Curriculo', function ($q) use ($request) {
-                    $q->whereUfVaga($request->campoUf);
-                });
-            }
-
-            if ($request->filled('campoArea')) {
-                $resultado->whereHas('Admissao', function ($q) use ($request) {
-                    $q->whereAreaEtiquetaId($request->campoArea);
-                });
-            }
-
-            if ($request->filled('campoCargo')) {
-                $resultado->whereHas('Admissao', function ($query) use ($request) {
-                    $query->where('cargo', 'like', '%' . $request->campoCargo . '%');
-                });
-            }
-
-            if ($request->filled('campo_treinados')) {
-
-                if ($request->campo_treinados == 'true') {
-                    $resultado->has('Treinamento');
-                }
-                if ($request->campo_treinados == 'false') {
-                    $resultado->whereDoesntHave('Treinamento');
-                }
-
-            }
-
-            if ($request->filled('campoNr_trinta_tres')) {
-
-                if ($request->campoNr_trinta_tres == 'true') {
-                    $resultado->whereHas('Treinamento.Vencimentos', function ($query) use ($request) {
-                        $query->whereId(7);
-                    });
-                }
-                if ($request->campoNr_trinta_tres == 'false') {
-                    $resultado->doesntHave('Treinamento')->whereHas('Admissao', function ($query) use ($request) {
-                        $query->where('nr_trinta_tres', '!=', 'NÃO SE APLICA');
-                    });
-                }
-                if ($request->campoNr_trinta_tres == 'NÃO SE APLICA') {
-                    $resultado->whereHas('Admissao', function ($query) use ($request) {
-                        $query->where('nr_trinta_tres', $request->campoNr_trinta_tres);
-                    });
-                }
-            }
-
-            if ($request->filled('campoNr_trinta_cinco')) {
-
-                if ($request->campoNr_trinta_cinco == 'true') {
-                    $resultado->whereHas('Treinamento.Vencimentos', function ($query) use ($request) {
-                        $query->whereId(6);
-                    });
-                }
-                if ($request->campoNr_trinta_cinco == 'false') {
-                    $resultado->doesntHave('Treinamento')->whereHas('Admissao', function ($query) use ($request) {
-                        $query->where('nr_trinta_cinco', '!=', 'NÃO SE APLICA');
-                    });
-                }
-                if ($request->campoNr_trinta_cinco == 'NÃO SE APLICA') {
-                    $resultado->whereHas('Admissao', function ($query) use ($request) {
-                        $query->where('nr_trinta_cinco', $request->campoNr_trinta_cinco);
-                    });
-                }
-            }
-
-            if ($request->filled('campoNr_ebtv')) {
-
-                if ($request->campoNr_ebtv == 'true') {
-                    $resultado->whereHas('Treinamento.Vencimentos', function ($query) use ($request) {
-                        $query->whereId(1);
-                    });
-                }
-                if ($request->campoNr_ebtv == 'false') {
-                    $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) use ($request) {
-                        $query->where('id', '<>', 1);
-                    });
-                }
-
-            }
-
-            if ($request->filled('campoAdmitido')) {
-                if ($request->campoAdmitido == 'true') {
-                    $resultado->whereHas('Admissao', function ($q) {
-                        $q->whereStatus('ADMITIDO');
-                    });
-                }
-                if ($request->campoAdmitido == 'false') {
-                    $resultado->whereDoesntHave('Admissao');
-                }
-            }
-
-            if ($request->filled('campoCracha')) {
-                if ($request->campoCracha == 'true') {
-                    $resultado->whereHas('Admissao', function ($q) {
-                        $q->whereNotNull('numero_cracha');
-                    });
-                }
-                if ($request->campoCracha == 'false') {
-                    $resultado->whereDoesntHave('Admissao', function ($query) use ($request) {
-                        $query->whereNull('numero_cracha');
-                    });
-                }
-            }
-
-            if ($request->filled('campoFoto')) {
-                if ($request->campoFoto == 'true') {
-                    $resultado->has('FotoTres');
-                }
-                if ($request->campoFoto == 'false') {
-                    $resultado->whereDoesntHave('FotoTres');
-                }
-            }
-
-
-            if ($request->filled('campoPcd')) {
-                $campoPcd = $request->campoPcd == 'true' ? true : false;
-                $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
-                    $query->wherePcd($campoPcd);
-                });
-            }
-        }
-        $resultado = $resultado->orderByDesc('created_at')->get();
-
-//        return view('excel.treinamento.exportExcel', compact('data'));
-
-        return Excel::download(new carteiraEtiquetaExport($resultado), 'treinamentos' . (new DataHora())->nomeUnico() . '.xlsx');
     }
 
     public function treinamentoProximoVencimento(Request $request)
