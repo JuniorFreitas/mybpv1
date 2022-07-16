@@ -394,22 +394,27 @@
                 </div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
+                    <button type="button" class="btn btn-sm btn-success mb-1 mr-1" :disabled="controle.carregando"
                             @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>Atualizar
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
+                    <button type="button" class="btn btn-sm btn-primary mb-1 mr-1" data-toggle="modal"
                             :disabled="controle.carregando"
                             data-target="#janelaCadastrar"
                             @click="formNovo()">
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-secondary" :disabled="controle.carregando"
+                    <button type="button" class="btn btn-sm btn-secondary mb-1 mr-1" :disabled="controle.carregando"
                             @click="formNovoTipo"
                             data-toggle="modal"
                             data-target="#janelaFormTipo">
                         <i class="fa fa-plus"></i> Cadastrar Tipo
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+                            @click.prevent="exportaExcel()"
+                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">
+                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                     </button>
                 </div>
             </form>
@@ -517,8 +522,11 @@
 import DatePicker from "../../DatePicker";
 import autocomplete from "../../AutoComplete";
 import Upload from "../../Upload";
+import ExportacaoMixin from "../../../mixins/Exportacoes";
 
 export default {
+    mixins: [ExportacaoMixin],
+
     components: {
         autocomplete,
         DatePicker,
@@ -544,7 +552,9 @@ export default {
             encerrado: false,
             preloadTipo: false,
             preloadProrrogacao: false,
+            preloadExportacao: false,
 
+            urlExportacao: `${URL_ADMIN}/apontamento/intermitente/export`,
             urlPaginacao: `${URL_ADMIN}/apontamento/intermitente/atualizar`,
 
             colaborador_ativo: `autocomplete/colaboradorIntermitente`,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobExportaExcel;
 use App\Models\AreaEtiqueta;
 use App\Models\Arquivo;
 use App\Models\Cliente;
@@ -296,18 +297,7 @@ class IntermitenteController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = Intermitente::with('Tipo',
-            'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia',
-            'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'ResponsavelLancamento:id,nome',
-            'ResponsavelAprovacao:id,nome'
-        );
-
-        if (auth()->user()->cliente_id != User::BPSE) {
-            $resultado->whereClienteId(auth()->user()->cliente_id);
-        }
-
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        $resultado = $this->filtro($request)->paginate($request->pages);
 
         $tipos = IntermitenteTipo::orderBy('label')->whereAtivo(true)->get();
         $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
@@ -317,7 +307,6 @@ class IntermitenteController extends Controller
         $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
 
         $clientes = Cliente::whereAtivo(true)->get();
-
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -332,6 +321,70 @@ class IntermitenteController extends Controller
                 'hoje' => (new DataHora())->dataCompleta()
             ]
         ]);
+    }
+
+    public function filtro(Request $request)
+    {
+        $resultado = Intermitente::with('Tipo',
+            'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia',
+            'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+            'ResponsavelLancamento:id,nome',
+            'ResponsavelAprovacao:id,nome'
+        );
+
+        if (auth()->user()->cliente_id != User::BPSE) {
+            $resultado->whereClienteId(auth()->user()->cliente_id);
+        }
+
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Colaborador.Curriculo', function ($query) use ($request) {
+                $query->where('nome', 'like', '%' . $request->campoBusca . '%');
+            });
+        }
+
+        return $resultado->orderByDesc('created_at');
+
+    }
+
+    public function export(Request $request)
+    {
+        $resultado = $this->filtro($request)->get();
+
+        $head = [
+            'Nome',
+            'Responsavel lançamento',
+            'Data lançamento',
+            'Responsavel aprovacao',
+            'Data aprovação',
+            'Status',
+            'Tipo',
+            'Ação',
+            'Área',
+            'Devolve API',
+            'Devolve grachá'
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->Colaborador->Curriculo->nome,
+                $row->ResponsavelLancamento->nome,
+                (new DataHora($row->data_lancamento))->dataCompleta() . ' ' . substr((new DataHora($row->data_lancamento))->horaCompleta(), 0, 5),
+                $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : "",
+                (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5),
+                $row->status,
+                $row->Tipo->label,
+                $row->acao,
+                $row->area_id,
+                $row->devolve_epi ? $row->devolve_epi = true ? "SIM":"NÂO" : "",
+                $row->devolve_cracha ? $row->devolve_cracha = true ? "SIM":"NÂO" : ""
+            ];
+        }
+
+        $nameArquivo = "intermitente" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Intermitente", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
     //anexos-----------------------------------------------
