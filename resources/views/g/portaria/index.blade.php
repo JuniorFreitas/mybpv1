@@ -246,7 +246,7 @@
         </div>
         <div class="col-12">
             <div class="row mt-2">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-2" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm btn-success mr-1 mb-1" :disabled="controle.carregando"
                         :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
@@ -255,31 +255,25 @@
                 <form target="_blank" :action="`{{route('g.portaria.pdf')}}`" method="post">
                     @csrf
                     <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
-                    <button type="submit" class="btn btn-sm btn-primary mr-1 mb-2"
+                    <button type="submit" class="btn btn-sm btn-primary mr-1 mb-1"
                             :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="selecionados.length === 0">
                         Imprimir <span class="badge badge-light">@{{ selecionados.length }}</span>
                     </button>
                 </form>
 
-                <button class="btn btn-sm btn-danger mr-1 mb-2"
+                <button class="btn btn-sm btn-danger mr-1 mb-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
 
-{{--                <form target="_blank"--}}
-{{--                      action="{{ route('portaria.excel') }}"--}}
-{{--                      method="post">--}}
-{{--                    @csrf--}}
-{{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
-{{--                    <input type="hidden" name="vaga_id" :value="controle.dados.campoVaga">--}}
-{{--                    <input type="hidden" name="cliente_id" :value="controle.dados.campoCliente">--}}
-{{--                    <button type="submit" class="btn btn-sm btn-primary mb-2"--}}
-{{--                            :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">--}}
-{{--                        <i class="fas fa-file-excel"></i> Exportar Excel--}}
-{{--                    </button>--}}
-{{--                </form>--}}
+                <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
+                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                </button>
             </div>
         </div>
 

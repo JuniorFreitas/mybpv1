@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\treinamentoExport;
+use App\Jobs\JobExportaExcel;
 use App\Models\Arquivo;
 use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
@@ -21,7 +22,7 @@ class PortariaController extends Controller
     public function edit($resultado)
     {
         $resultado = ResultadoIntegrado::whereFeedbackId($resultado)->first();
-        $resultado->load('Feedback.Curriculo.FotoTres','Feedback.Admissao');
+        $resultado->load('Feedback.Curriculo.FotoTres', 'Feedback.Admissao');
 
         $resultado->funcao = $resultado->Admissao ? $resultado->Admissao->funcao : '';
         $resultado->Feedback->Curriculo->foto_tresDel = [];
@@ -36,7 +37,7 @@ class PortariaController extends Controller
 
     }
 
-    public function update(Request $request,FeedbackCurriculo $resultado)
+    public function update(Request $request, FeedbackCurriculo $resultado)
     {
         $this->authorize('treinamento_portaria_insert');
 
@@ -94,8 +95,22 @@ class PortariaController extends Controller
 
     public function atualizar(Request $request)
     {
+        $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado',function ($q){
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items()
+            ]
+        ]);
+
+    }
+
+    public function filtro(Request $request)
+    {
+        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoTreinamento(true);
         })->with(
             'Curriculo.FotoTres:id',
@@ -128,17 +143,44 @@ class PortariaController extends Controller
             });
         }
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        return $resultado->orderByDesc('created_at');
 
-        $itens = collect($resultado->items());
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => ['itens' => $itens]
-        ]);
     }
+
+    public function export(Request $request)
+    {
+        $resultado = $this->filtro($request)->get();
+        $head = [
+            'ID',
+            'Nome',
+            'CPF',
+            'RG/Eminente',
+            'Filiação',
+            'Vaga',
+            'Função',
+            'Endereço'
+        ];
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            $rows[] = [
+                $row->Admissao->id,
+                $row->Curriculo->nome,
+                $row->Curriculo->cpf,
+                $row->Curriculo->rg .' '. $row->Curriculo->orgao_expeditor,
+                'Mãe: '.$row->Curriculo->filiacao_mae .' - Pai: '.$row->Curriculo->filiacao_pai,
+                $row->VagaSelecionada->nome,
+                $row->Admissao->funcao,
+                $row->Curriculo->endereco_completo,
+            ];
+        }
+
+        $nameArquivo = "portaria" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Portaria", $head, $rows, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+    }
+
 
     public function pdf(Request $request)
     {
@@ -147,38 +189,4 @@ class PortariaController extends Controller
         return view('pdf.portaria.ficha', compact('feedbacks'));
     }
 
-    //Excel
-    public function export(Request $request)
-    {
-        $this->authorize('treinamento_portaria');
-//        $curriculo = ResultadoIntegrado::whereEncaminhadoTreinamento(true)->orderBy('curriculo_id');
-//
-//        if ($request->selecionados) {
-//            $curriculo = $curriculo->whereIn('curriculo_id', $request->selecionados);
-//        } else {
-//
-//            if ($request->filled('campoCliente')) {
-//                $curriculo->whereHas('Feedback', function ($q) use ($request) {
-//                    $q->whereClienteId(auth()->user()->cliente_id == User::BPSE ? $request->campoCliente : auth()->user()->cliente_id);
-//                });
-//            }
-//
-//            if ($request->filled('vaga_id')) {
-//                $curriculo->whereHas('Feedback', function ($query) use ($request) {
-//                    $query->whereVagaId($request->vaga_id);
-//                });
-//            }
-//
-//            if ($request->filled('uf')) {
-//                $curriculo->whereHas('Feedback.Curriculo', function ($q) use ($request) {
-//                    $q->whereUfVaga($request->uf);
-//                });
-//            }
-//        }
-//
-//        $curriculo = $curriculo->get();
-//
-//
-//        return Excel::download(new treinamentoExport($curriculo), 'portaria.xlsx');
-    }
 }
