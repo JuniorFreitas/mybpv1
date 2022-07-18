@@ -1,6 +1,9 @@
 import datepicker from "../../components/DatePicker";
+import ExportacaoMixin from "../../mixins/Exportacoes";
 
 const app = new Vue({
+    mixins: [ExportacaoMixin],
+
     el: "#app",
     components: {
         datepicker
@@ -20,6 +23,9 @@ const app = new Vue({
         desmobilizacao: false,
         entrevista: false,
         extensaoDocumento: null,
+        preloadExportacao: false,
+
+        urlExportacao: `${URL_ADMIN}/posadmissao/export`,
 
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
         todos_municipios: `autocomplete/todos-municipios`,
