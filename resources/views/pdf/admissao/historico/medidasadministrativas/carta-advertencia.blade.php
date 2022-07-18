@@ -20,7 +20,7 @@
     </p>
     <br>
     <div class="f12" style="line-height: 22pt;text-align: justify">
-        O Senhor trabalhando nesta empresa desde {{$medida->Feedback->Admissao->data_admissao}}, esta sendo advertido no
+        O Senhor trabalhando nesta empresa desde {{$medida->Feedback->Admissao->data_admissao}}, esta sendo {{$medida->TipoMedida}} no
         dia {{$medida->data_solicitacao}}, em virtude de <strong>{{$medida->definicao}}</strong>
         ({{$medida->motivo}}) @if($medida->tipo != 'Advertência Escrita')
             com retorno no dia ({{$medida->data_retorno}})

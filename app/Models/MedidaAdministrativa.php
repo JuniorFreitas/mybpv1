@@ -122,6 +122,19 @@ class MedidaAdministrativa extends Model
         'MAU PROCEDIMENTO',
     ];
 
+    public function getTipoMedidaAttribute($value)
+    {
+        switch ($this->attributes['tipo']) {
+            case 'Re-orientação':
+                return 'reorientado';
+            case 'Advertência Verbal':
+            case 'Advertência Escrita':
+                return 'advertido';
+            default:
+                return 'suspenso';
+        }
+    }
+
     public function getDataSolicitacaoAttribute($value)
     {
         if ($value) {
