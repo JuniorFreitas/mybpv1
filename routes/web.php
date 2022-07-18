@@ -701,6 +701,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         //Enviar para Revisao
         Route::post('treinamento/enviar-carteira', [\App\Http\Controllers\TreinamentoController::class, 'enviarCarteiraEmail']);
         Route::post('treinamento/carteiras', [\App\Http\Controllers\TreinamentoController::class, 'carteiraPdf'])->name('carteiraPdf');
+        Route::post('treinamento/export', [\App\Http\Controllers\TreinamentoController::class,'export'])->name('excel');
         Route::post('treinamento/atualizar', [\App\Http\Controllers\TreinamentoController::class, 'atualizar'])->name('atualizar');
 
         Route::get('treinamento/vencimentos', [\App\Http\Controllers\TreinamentoController::class, 'vencimentos'])->name('vencimentos');
