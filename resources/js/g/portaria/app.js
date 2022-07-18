@@ -1,9 +1,12 @@
 import endereco from "../../components/Endereco";
 import upload from "../../components/Upload";
 import telefone from "../../components/Telefones";
+import ExportacaoMixin from "../../mixins/Exportacoes";
 
 
 const app = new Vue({
+    mixins: [ExportacaoMixin],
+
     el: "#app",
     components: {
         endereco,
@@ -14,6 +17,9 @@ const app = new Vue({
         tituloJanela: "Curriculo",
 
         anexoUploadAndamento: false,
+        preloadExportacao: false,
+
+        urlExportacao: `${URL_ADMIN}/portaria/export`,
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
         todos_municipios: `autocomplete/todos-municipios`,
 

@@ -715,6 +715,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::group(['as' => 'portaria.'], function () {
         Route::post('portaria/atualizar', [\App\Http\Controllers\PortariaController::class, 'atualizar'])->name('atualizar');
         Route::post('portaria/pdf', [\App\Http\Controllers\PortariaController::class, 'pdf'])->name('pdf');
+        Route::post('portaria/export', [\App\Http\Controllers\PortariaController::class, 'export'])->name('export');
         Route::get('portaria/{resultado}', [\App\Http\Controllers\PortariaController::class, 'edit'])->name('edit');
         Route::put('portaria/{resultado}', [\App\Http\Controllers\PortariaController::class, 'update'])->name('update');
         Route::get('portaria', [\App\Http\Controllers\PortariaController::class, 'index'])->name('index')->middleware('can:treinamento_portaria');
