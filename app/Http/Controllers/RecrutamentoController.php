@@ -446,7 +446,7 @@ class RecrutamentoController extends Controller
                 'municipio_id',
                 'lido',
                 'created_at']
-        )->with('VagaAberta.VagaSelecionada', 'FeedBack.parecerRh')->doesntHave('FeedBack.parecerRh');
+        )->with('VagaAberta.VagaSelecionada')->doesntHave('FeedBack.parecerRh');
 
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
