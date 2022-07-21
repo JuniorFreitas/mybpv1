@@ -124,7 +124,7 @@ class PosAdmissaoController extends Controller
                 if ($dataFinal < 0 && $dataInicial < 0) {
                     $dados['termino_previsto'] = '';
                 }
-            }else{
+            } else {
                 $dados['termino_previsto'] = '';
             }
         }
@@ -433,7 +433,7 @@ class PosAdmissaoController extends Controller
                 $row->Admissao->id,
                 $row->Curriculo->nome,
                 $row->Curriculo->cpf,
-                $row->Admissao->AreaEtiqueta->label,
+                $row->Admissao->area_etiqueta_id ? $row->Admissao->AreaEtiqueta->label : '',
                 $row->Admissao->cargo,
                 (new DataHora($row->data_admissao))->dataCompleta() . ' ' . substr((new DataHora($row->data_admissao))->horaCompleta(), 0, 5),
                 (new DataHora($row->data_desmobilizacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_desmobilizacao))->horaCompleta(), 0, 5),

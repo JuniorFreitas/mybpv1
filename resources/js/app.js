@@ -4,18 +4,18 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-require('./bootstrap');
+require("./bootstrap");
 //Componentes Globais
-require('./Globals');
+require("./Globals");
 
-window.toastr = require('toastr');
+window.toastr = require("toastr");
 toastr.options.closeButton = true;
-window.moment = require('moment');
-moment.locale('pt-BR');
+window.moment = require("moment");
+moment.locale("pt-BR");
 
-require('bootstrap-daterangepicker');
+require("bootstrap-daterangepicker");
 
-window.Vue = require('vue');
+window.Vue = require("vue");
 
 import VueTippy, { TippyComponent } from "vue-tippy";
 // import configuracoes from './mixins/Configuracoes';
@@ -38,18 +38,16 @@ Vue.use(VueTippy, {
 });
 
 Vue.component("tippy", TippyComponent).default;
-Vue.component('preload', require('./components/preload').default);
-Vue.component('btn-atualiza', require('./components/btnAtualiza').default);
-Vue.component('controle-paginacao', require('./components/ControlePaginacao').default);
-Vue.component('datepicker', require('./components/DatePicker').default);
-Vue.component('modal', require('./components/Modal').default);
-Vue.component('autocomplete', require('./components/AutoComplete').default);
-Vue.component('bt-ativo', require('./components/AtivoInativo').default);
-Vue.component('barra-top', require('./components/layout/BarraTop').default);
+Vue.component("preload", require("./components/preload").default);
+Vue.component("btn-atualiza", require("./components/btnAtualiza").default);
+Vue.component("controle-paginacao", require("./components/ControlePaginacao").default);
+Vue.component("datepicker", require("./components/DatePicker").default);
+Vue.component("modal", require("./components/Modal").default);
+Vue.component("autocomplete", require("./components/AutoComplete").default);
+Vue.component("bt-ativo", require("./components/AtivoInativo").default);
+Vue.component("barra-top", require("./components/layout/BarraTop").default);
 //
 //
 // //Diretivas globais
-require('./diretivas/mascaras');
-require('./diretivas/popover');
-
-
+require("./diretivas/mascaras");
+require("./diretivas/popover");
