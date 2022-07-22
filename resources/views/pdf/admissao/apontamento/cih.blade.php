@@ -23,20 +23,20 @@
             <td class="text-center">Responsável Aprovação</td>
         </tr>
         <?php $cont = 1; ?>
-        @foreach($dados as $cih)
+        @foreach($rows as $cih)
             <tr class="linha">
                 <td class="text-center">{{ $cont }}</td>
-                <td class="text-center">{{ $cih->Colaborador->Curriculo->nome }}</td>
-                <td class="text-center">{{$cih->Area ? $cih->Area->label : $cih->outra_area}}</td>
-                <td class="text-center">{{$cih->data_aprovacao}}</td>
-                <td class="text-center" style="text-transform: uppercase">{{ $cih->Tag ? $cih->Tag->label : $cih->outra_tag }}</td>
-                <td class="text-center" style="text-transform: uppercase">{{ $cih->ResponsavelLancamento->nome }}</td>
-                <td class="text-center" style="text-transform: uppercase">{{ $cih->acao }}</td>
+                <td class="text-center">{{ $cih['colaborador'] }}</td>
+                <td class="text-center">{{$cih['area'] }}</td>
+                <td class="text-center">{{$cih['data_aprovacao']}}</td>
+                <td class="text-center" style="text-transform: uppercase">{{ $cih['tag'] }}</td>
+                <td class="text-center" style="text-transform: uppercase">{{ $cih['responsavel_lancamento'] }}</td>
+                <td class="text-center" style="text-transform: uppercase">{{ $cih['acao'] }}</td>
                 <td class="text-center" style="text-transform: uppercase">
-                    {{ $cih->status }}<br>
-                    {{ $cih->data_aprovacao }}
+                    {{ $cih['status'] }}<br>
+                    {{ $cih['data_aprovacao'] }}
                 </td>
-                <td class="text-center" style="text-transform: uppercase">{{ $cih->ResponsavelAprovacao->nome }}</td>
+                <td class="text-center" style="text-transform: uppercase">{{ $cih['responsavel_aprovacao'] }}</td>
             </tr>
             <?php $cont++; ?>
         @endforeach

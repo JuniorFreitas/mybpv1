@@ -283,7 +283,7 @@ class CihController extends Controller
 
         foreach ($resultado as $row) {
             if ($row->varios_colaboradores) {
-                $colaboradoresAvulsos = explode('\n', $row->colaboradores_avulsos);
+                $colaboradoresAvulsos = explode("\n", $row->colaboradores_avulso);
                 foreach ($colaboradoresAvulsos as $colaborador) {
                     $rows[] = [
                         $colaborador,
@@ -291,7 +291,7 @@ class CihController extends Controller
                         $row->data_lancamento ?: '',
                         $row->Tag->label,
                         $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                        $row->Tag->label,
+                        $row->acao,
                         $row->obs_lancamento ?: '',
                         $row->status ?: "aguardando",
                         $row->data_aprovacao ?: '',
@@ -305,7 +305,7 @@ class CihController extends Controller
                     $row->data_lancamento ?: '',
                     $row->Tag->label,
                     $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                    $row->Tag->label,
+                    $row->acao,
                     $row->obs_lancamento ?: '',
                     $row->status ?: "aguardando",
                     $row->data_aprovacao ?: '',
@@ -442,10 +442,45 @@ class CihController extends Controller
             ->where('data_aprovacao', '<=', $dataFim)
             ->whereStatus('aprovado');
 
-        $dados = $dados->orderBy('data_aprovacao')->get();
+        $resultado = $dados->orderBy('data_aprovacao')->get();
+
+        $rows = [];
+
+        foreach ($resultado as $row) {
+            if ($row->varios_colaboradores) {
+                $colaboradoresAvulsos = explode("\n", $row->colaboradores_avulso);
+                foreach ($colaboradoresAvulsos as $colaborador) {
+                    $rows[] = [
+                        'colaborador' => $colaborador,
+                        'area' => $row->area_id ? $row->Area->label : $row->outra_area,
+                        'data_ocorrencia' => $row->data_lancamento ?: '',
+                        'tag' => $row->Tag->label,
+                        'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                        'acao' => $row->acao,
+                        'status'=>$row->status ?: "aguardando",
+                        'data_aprovacao' => $row->data_aprovacao ?: '',
+                        'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                    ];
+                }
+            } else {
+                $rows[] = [
+                    'colaborador' => $row->Colaborador->Curriculo->nome,
+                    'area' => $row->area_id ? $row->Area->label : $row->outra_area,
+                    'data_ocorrencia' => $row->data_lancamento ?: '',
+                    'tag' => $row->Tag->label,
+                    'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                    'acao' => $row->acao,
+                    'status'=>$row->status ?: "aguardando",
+                    'data_aprovacao' => $row->data_aprovacao ?: '',
+                    'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                ];
+            }
+
+        }
+
 
         $empresa = User::whereId(auth()->user()->empresa_id)->first();
-        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('dados', 'empresa', 'dataInicio', 'dataFim'));
+        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim'));
         $pdf->setPaper('A4', 'landscape');
 
         return $pdf->stream("relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf");
