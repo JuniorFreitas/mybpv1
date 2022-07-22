@@ -265,7 +265,6 @@ class CihController extends Controller
 
     public function export(Request $request)
     {
-
         $resultado = $this->filtro($request)->get();
         $head = [
             "Colaborador",
@@ -283,18 +282,37 @@ class CihController extends Controller
         $rows = [];
 
         foreach ($resultado as $row) {
-            $rows[] = [
-                $row->Colaborador->Curriculo->nome,
-                $row->area_id ? $row->Area->label : $row->outra_area,
-                $row->data_lancamento ?: '',
-                $row->Tag->label,
-                $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                $row->Tag->label,
-                $row->obs_lancamento ?: '',
-                $row->status ?: "aguardando",
-                $row->data_aprovacao ?: '',
-                $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
-            ];
+            if ($row->varios_colaboradores) {
+                $colaboradoresAvulsos = explode('\n', $row->colaboradores_avulsos);
+                foreach ($colaboradoresAvulsos as $colaborador) {
+                    $rows[] = [
+                        $colaborador,
+                        $row->area_id ? $row->Area->label : $row->outra_area,
+                        $row->data_lancamento ?: '',
+                        $row->Tag->label,
+                        $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                        $row->Tag->label,
+                        $row->obs_lancamento ?: '',
+                        $row->status ?: "aguardando",
+                        $row->data_aprovacao ?: '',
+                        $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                    ];
+                }
+            } else {
+                $rows[] = [
+                    $row->Colaborador->Curriculo->nome,
+                    $row->area_id ? $row->Area->label : $row->outra_area,
+                    $row->data_lancamento ?: '',
+                    $row->Tag->label,
+                    $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                    $row->Tag->label,
+                    $row->obs_lancamento ?: '',
+                    $row->status ?: "aguardando",
+                    $row->data_aprovacao ?: '',
+                    $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                ];
+            }
+
         }
 
         $nameArquivo = "admissao_cih" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
