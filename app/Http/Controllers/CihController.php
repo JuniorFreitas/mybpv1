@@ -285,14 +285,14 @@ class CihController extends Controller
         foreach ($resultado as $row) {
             $rows[] = [
                 $row->Colaborador->Curriculo->nome,
-                $row->Area->label,
-                $row->data_lancamento ? $row->data_lancamento : '',
+                $row->area_id ? $row->Area->label : $row->outra_area,
+                $row->data_lancamento ?: '',
                 $row->Tag->label,
                 $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
                 $row->Tag->label,
-                $row->obs_lancamento ? $row->obs_lancamento : '',
-                $row->status ? $row->status : "aguardando",
-                $row->data_aprovacao ? $row->data_aprovacao : '',
+                $row->obs_lancamento ?: '',
+                $row->status ?: "aguardando",
+                $row->data_aprovacao ?: '',
                 $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
             ];
         }
@@ -427,7 +427,6 @@ class CihController extends Controller
         $dados = $dados->orderBy('data_aprovacao')->get();
 
         $empresa = User::whereId(auth()->user()->empresa_id)->first();
-        return view('pdf.admissao.apontamento.cih', compact('dados', 'empresa', 'dataInicio', 'dataFim'));
         $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('dados', 'empresa', 'dataInicio', 'dataFim'));
         $pdf->setPaper('A4', 'landscape');
 
