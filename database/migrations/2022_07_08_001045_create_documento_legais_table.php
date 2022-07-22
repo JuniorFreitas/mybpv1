@@ -15,9 +15,12 @@ class CreateDocumentoLegaisTable extends Migration
     {
         Schema::create('documento_legais', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('empresa_id');
             $table->json('dados_cadastrais');
-//            $table->
+            $table->boolean('ativo')->default(true);
             $table->timestamps();
+
+            $table->foreign('empresa_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }
 

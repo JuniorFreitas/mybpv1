@@ -12,7 +12,7 @@ const app = new Vue({
         upload
     },
     data: {
-        tituloJanela: 'Cadastrando Cliente',
+        tituloJanela: 'Cadastrando Documento Legais',
         preloadAjax: false,
         editando: false,
         apagado: false,
@@ -25,78 +25,59 @@ const app = new Vue({
         menuHabilidades: true,
 
         form: {
-            tipo_cliente: '',
-            cnpj: '',
-            cpf: '',
-            nome: '',
-            tipo: 'Pessoa Jurídica',
-            razao_social: '',
-            nome_fantasia: '',
-            area_id: '',
-            ramo: '',
-            cep: '',
-            logradouro: '',
-            numero: '',
-            complemento: '',
-            bairro: '',
-            municipio: '',
-            uf: '',
-            contato: '',
-            como_conheceu: '',
-            como_conheceu_outro: '',
-            email: '',
-            aniversario: '',
+            dados_cadastrais: {
+                cnpj: '',
+                cpf: '',
+                nome: '',
+                tipo: 'Pessoa Jurídica',
+                razao_social: '',
+                nome_fantasia: '',
+                area_id: '',
+                ramo: '',
+                cep: '',
+                logradouro: '',
+                numero: '',
+                complemento: '',
+                bairro: '',
+                municipio: '',
+                uf: '',
+                responsavel: '',
+                email: '',
+
+                tel_principal: '',
+
+                anexosDel: [],
+                anexosProspectDel: [],
+
+                logo: [],
+                logoDel: [],
+
+                telefones: [{
+                    tipo: 'comercial',
+                    pais: 55,
+                    numero: '',
+                    ramal: '',
+                    detalhe: '',
+                }],
+                telefonesDelete: [],
+
+            },
+            tipo_documento: '',
             ativo: '',
-
-            politica_ehs: '',
-            missao: '',
-            visao: '',
-            valores: '',
-            politica_gq: '',
-            apelido: '',
-            tel_principal: '',
-
             servicos_cliente: [],
             servicos_clienteDelete: [],
 
             servicos_prospect: [],
             servicos_prospectDelete: [],
-
-            anexosDel: [],
-            anexosProspectDel: [],
-
-            logo: [],
-            logoDel: [],
-
-            mascote: [],
-            mascoteDel: [],
-
-            telefones: [{
-                tipo: 'comercial',
-                pais: 55,
-                numero: '',
-                ramal: '',
-                detalhe: '',
-            }],
-            telefonesDelete: [],
-
-            cliente_config: {
-                id: '',
-                verifica_mes_vencimento: '',
-                envia_whatsapp: '',
-                vencimento_aso: '',
-            },
-
-            listaDeHabilidades: '',
         },
 
-        urlAnexoUpload: `${URL_ADMIN}/administracao/clientes/uploadAnexos`,
+        urlAnexoUpload: `${URL_ADMIN}/administracao/documentoslegais/uploadAnexos`,
         anexoUploadAndamento: false,
 
-        urlLogoUpload: `${URL_ADMIN}/administracao/clientes/uploadLogo`,
+        urlLogoUpload: `${URL_ADMIN}/administracao/documentoslegais/uploadLogo`,
         logoUploadAndamento: false,
 
-        urlMascoteUpload: `${URL_ADMIN}/administracao/clientes/uploadMascote`,
+        urlMascoteUpload: `${URL_ADMIN}/administracao/documentoslegais/uploadMascote`,
         mascoteUploadAndamento: false,
 
         formDefault: null,
@@ -188,7 +169,7 @@ const app = new Vue({
             this.atualizado = false;
             this.editando = false;
 
-            this.tituloJanela = "Cadastrando Cliente";
+            this.tituloJanela = "Cadastrando Documento Legais";
 
             formReset();
             setupCampo();
@@ -210,13 +191,9 @@ const app = new Vue({
                 return false;
             }
 
-            if (this.form.telefones.length === 0) {
-                mostraErro('', 'Por favor insira um Telefone');
-                return false;
-            }
             this.form.listaDeHabilidades = this.listaDeHabilidades;
             this.preloadAjax = true;
-            axios.post(`${URL_ADMIN}/administracao/clientes`, this.form)
+            axios.post(`${URL_ADMIN}/administracao/documentoslegais`, this.form)
                 .then(response => {
                     if (response.status === 201) {
                         this.preloadAjax = false;
@@ -229,14 +206,14 @@ const app = new Vue({
             this.cadastrado = false;
             this.atualizado = false;
             this.editando = false;
-            this.tituloJanela = "Alterando Cliente";
+            this.tituloJanela = "Alterando Documento Legais";
             this.preloadAjax = true;
             formReset();
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.leitura = true;
 
-            axios.get(`${URL_ADMIN}/administracao/clientes/${id}/editar`)
+            axios.get(`${URL_ADMIN}/administracao/documentoslegais/${id}/editar`)
                 .then(response => {
                     Object.assign(this.form, response.data.cliente);
                     this.editando = true;
@@ -248,7 +225,6 @@ const app = new Vue({
                             'vencimento_aso': '',
                         }
                     }
-                    this.form.como_conheceu = !this.form.como_conheceu ? '' : this.form.como_conheceu;
 
                     this.listaDeHabilidades = response.data.listaDeHabilidades;
                     this.todosMenu = response.data.todosMenu;
@@ -290,7 +266,7 @@ const app = new Vue({
             this.form.listaDeHabilidades = this.listaDeHabilidades;
             this.preloadAjax = true;
 
-            axios.put(`${URL_ADMIN}/administracao/clientes/${this.form.id}`, this.form).then(response => {
+            axios.put(`${URL_ADMIN}/administracao/documentoslegais/${this.form.id}`, this.form).then(response => {
                 this.preloadAjax = false;
                 this.atualizado = true;
                 this.atualizar();
@@ -302,7 +278,7 @@ const app = new Vue({
             this.form._method = 'DELETE';
             this.preloadAjax = true;
 
-            axios.delete(`${URL_ADMIN}/administracao/clientes/${this.form.id}`, this.form)
+            axios.delete(`${URL_ADMIN}/administracao/documentoslegais/${this.form.id}`, this.form)
                 .then(response => {
                     this.preloadAjax = false;
                     this.apagado = true;
@@ -336,14 +312,14 @@ const app = new Vue({
 
         verificaCpf() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/clientes/buscar-cpf?cpf=${this.form.cpf}`)
+                axios.get(`${URL_ADMIN}/administracao/documentoslegais/buscar-cpf?cpf=${this.form.cpf}`)
                     .then(response => {
                     });
             }
         },
         verificaCnpj() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/clientes/buscar-cnpj?cnpj=${this.form.cnpj}`)
+                axios.get(`${URL_ADMIN}/administracao/documentoslegais/buscar-cnpj?cnpj=${this.form.cnpj}`)
                     .then(response => {
                     });
             }

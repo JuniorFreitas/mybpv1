@@ -13,9 +13,11 @@
             <h1 style="text-align: center; font-size: 19px">
                 {{auth()->user()->DadosEmpresa->razao_social}}
             </h1><br>
-            <p style="font-size: 8pt; text-align: center; margin-top: -10px ">
-                CNPJ: {{auth()->user()->DadosEmpresa->cnpj}}
-            </p>
+            @if(auth()->user()->DadosEmpresa->id != 55801)
+                <p style="font-size: 8pt; text-align: center; margin-top: -10px ">
+                    CNPJ: {{auth()->user()->DadosEmpresa->cnpj}}
+                </p>
+            @endif
             <br>
         </th>
         <th style="font-size: 17pt; font-weight: normal !important; padding-left: 10px; width: 60px">

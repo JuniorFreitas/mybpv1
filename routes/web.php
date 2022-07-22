@@ -165,6 +165,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         Route::group(['as' => 'documentoslegais.'], function () {
             // Anexos
+            // ####### DEVE CRIAR A HABILIDADE PARA DOCUMENTOS LEGAIS #########
             Route::post('documentoslegais/uploadAnexos', [\App\Http\Controllers\DocumentosLegaisController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:administracao_clientes');
             Route::get('documentoslegais/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisController::class, 'anexoShow'])->name('anexo-show')->middleware('can:administracao_clientes');
             Route::get('documentoslegais/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosLegaisController::class, 'download'])->name('anexo-download')->middleware('can:administracao_clientes');
