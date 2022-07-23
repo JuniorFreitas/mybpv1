@@ -87,6 +87,13 @@ const app = new Vue({
             }
         }
     },
+    filters: {
+        capitalize(value) {
+            if (!value) return "";
+            value = value.toString();
+            return value.charAt(0).toUpperCase() + value.slice(1);
+        }
+    },
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
         this.atualizar();
@@ -294,7 +301,6 @@ const app = new Vue({
 
             this.form._method = "PUT";
             this.preloadAjax = true;
-            this.form.status = "aprovado";
 
             axios.put(`${URL_ADMIN}/apontamento/cih/aprovar/${this.form.id}`, this.form).then(response => {
                 $("#janelaCadastrar").modal("hide");

@@ -105,7 +105,8 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Para vários colaboradores</label>
-                                <select :disabled="aprovando" v-model="form.varios_colaboradores" onblur="valida_campo_vazio(this,1)"
+                                <select :disabled="aprovando" v-model="form.varios_colaboradores"
+                                        onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)" class="form-control">
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -116,7 +117,8 @@
                         <div class="col-12" v-if="form.varios_colaboradores">
                             <div class="form-group">
                                 <label>Informe os colaboradores</label>
-                                <textarea class="form-control validacampo" :disabled="aprovando" v-model="form.colaboradores_avulso"
+                                <textarea class="form-control validacampo" :disabled="aprovando"
+                                          v-model="form.colaboradores_avulso"
                                           cols="5" rows="5"></textarea>
                             </div>
                         </div>
@@ -132,7 +134,7 @@
                                               :disabled="aprovando"
                                               :id="`colaborador_${hash}`"
                                               @onblur="resetaCampoColaborador"
-                                             @onselect="selecionaColaborador"></autocomplete>
+                                              @onselect="selecionaColaborador"></autocomplete>
                             </div>
                         </div>
 
@@ -218,7 +220,8 @@
                     <input type="text"
                            placeholder="Buscar por nome"
                            autocomplete="off"
-                           class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoBusca">
+                           class="form-control form-control-sm" :disabled="controle.carregando"
+                           v-model="controle.dados.campoBusca">
                 </div>
             </div>
 
@@ -317,9 +320,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="item in lista" :class="
-                                item.status === 'aberto' ? 'table-warning' : item.status === 'reprovado' ? 'table-danger' : item.status === 'aprovado' ? 'table-success' : null
-                ">
+                <tr v-for="item in lista" :class="{
+                    'table-warning': item.status.includes('aberto'),
+                    'table-danger': item.status.includes('reprovado'),
+                    'table-success': item.status.includes('aprovado'),
+                }">
                     <td class="text-center">
                         @{{item.id}}
                     </td>
@@ -328,11 +333,11 @@
                     </td>
 
                     <td class="text-center">
-                         @{{item.tag ? item.tag.label : item.outra_tag}}
+                        @{{item.tag ? item.tag.label : item.outra_tag}}
                     </td>
 
                     <td class="text-center">
-                         @{{item.data_lancamento}}
+                        @{{item.data_lancamento}}
                     </td>
 
                     <td class="text-center">
@@ -340,19 +345,20 @@
                         em @{{item.created_at}}
                     </td>
                     <td class="text-center">
-                        <span v-if="item.status === 'aprovado'">
-                            Aprovado por @{{item.responsavel_aprovacao.nome}} <br>
+                        <span v-if="item.status.includes('aprovado') || item.status.includes('reprovado')">
+                            @{{ item.status | capitalize() }} por @{{item.responsavel_aprovacao.nome}} <br>
                             em @{{item.updated_at}}
                         </span>
                     </td>
 
                     <td class="text-center">
-                        @{{item.status}}
+                        @{{item.status | capitalize() }}
                     </td>
 
                     <td class="text-center">
                         @can('admissao_cih_aprovar')
-                            <a v-show="item.status === 'aberto'" href="javascript://" class="btn btn-sm btn-primary"
+                            <a v-show="item.status.includes('aberto')" href="javascript://"
+                               class="btn btn-sm btn-primary"
                                content="Visualizar"
                                v-tippy
                                @click.prevent="formAprovar(item.id)"
@@ -362,7 +368,8 @@
                             </a>
                         @endcan
 
-                        <a v-show="item.status === 'aprovado' || item.status === 'reprovado'" href="javascript://"
+                        <a v-show="item.status.includes('aprovado') || item.status.includes('reprovado')"
+                           href="javascript://"
                            class="btn btn-sm btn-primary"
                            content="Visualizar"
                            v-tippy
