@@ -62,16 +62,17 @@ class DocumentosLegaisController extends Controller
         $dados['dados_cadastrais']['email'] = trim(mb_strtolower($dados['dados_cadastrais']['email']));
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
-
         $arrayValidacao = [
             'dados_cadastrais.nome' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && strlen($value) <= 3) {
-                    $fail('Preencha o campo informando nome.');
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && strlen($value) <= 2) {
+                    $mensagem = strlen($value) <= 2 ? 'O campo nome deve conter no minimo três caracteres ':'Preencha o campo informando nome. ';
+                    $fail($mensagem);
                 }
             }],
             'dados_cadastrais.cpf' => [function ($attribute, $value, $fail) use ($dados) {
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && new CpfValidoEmpresaRules(auth()->user()->empresa_id)) {
-                    $fail('Preencha o campo informando CPF.');
+
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !Sistema::validaRuleCPF($value)) {
+                    $fail('Informe um CPF válido.');
                 }
                 $verificaCpf = DocumentoLegais::whereJsonContains('dados_cadastrais->cpf', $value)->first();
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && $verificaCpf) {
@@ -165,24 +166,6 @@ class DocumentosLegaisController extends Controller
 //                    }
 //                }
 //
-//                if (isset($linha['mascote'])) {
-//                    foreach ($linha['mascote'] as $index => $anexo) {
-//                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-//                        if ($anexo['chave'] == null) {
-//                            Arquivo::whereId($anexo['id'])->update([
-//                                'nome' => $anexo['nome'],
-//                            ]);
-//                        } else {
-//                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-//                            if ($arquivo) {
-//                                $arquivo->temporario = false;
-//                                $arquivo->chave = '';
-//                                $arquivo->save();
-//                                $cliente->Mascote()->attach($arquivo->id);
-//                            }
-//                        }
-//                    }
-//                }
 //
 //                if (isset($dados['cliente_config'])) {
 //                    $dados['cliente_config']['envia_whatsapp'] = $dados['cliente_config']['envia_whatsapp'] == 'true' ? true : false;
@@ -196,24 +179,7 @@ class DocumentosLegaisController extends Controller
 //
 //                }
 //
-//                $dados_papel = [
-//                    'empresa_id' => $cliente->id,
-//                    'nome' => $dados['tipo'] == Cliente::TIPO_PESSOA_JURIDICA ? $dados['razao_social'] . ' - MASTER' : $dados['nome'] . ' - MASTER',
-//                    'descricao' => 'MASTER',
-//                    'email' => $dados['email'],
-//                    'ativo' => true,
-//                    'master' => true
-//                ];
-//
-//                $papel = Papel::create($dados_papel);
-//
-//                $habilidades = collect($request->listaDeHabilidades)->filter(function ($habilidade) {
-//                    if ($habilidade['acesso'] == 'true') {
-//                        return $habilidade;
-//                    }
-//                })->pluck('id');
-//
-//                $papel->habilidades()->attach($habilidades);
+
 
             DB::commit();
             return response()->json([], 201);
@@ -228,17 +194,97 @@ class DocumentosLegaisController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\Cliente $clientes
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Cliente $clientes)
+    public function storeEmpresa(Request $request)
     {
-        //
+        $this->authorize('administracao_clientes_insert');
+        $dados = $request->input();
+        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+
+        $arrayValidacao = [
+            'documentos_empresa.*.observacao' => [function ($attribute, $value, $fail) use ($dados) {
+                if ( strlen($value) <= 3) {
+                    $fail('Informe uma observação maior que 3 caracteres.');
+                }
+            }],
+            'documentos_empresa.*.tipo_descricao' => [function ($attribute, $value, $fail) use ($dados) {
+                if ( strlen($value) <= 3) {
+                    $fail('Informe uma descrição maior que 3 caracteres.');
+                }
+            }],
+        ];
+        $dadosValidados = \Validator::make($dados, $arrayValidacao);
+
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao cadastrar Documento Legais',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+        die();
+        try {
+            DB::beginTransaction();
+            DocumentoLegais::create($dados);
+            DB::commit();
+
+
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $msg = "error STORE DOCUMENTOS EMPRESA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json([
+                'msg' => $msg,
+            ], 400);
+        }
+
     }
 
+    public function storeSSMA(Request $request)
+    {
+        $this->authorize('administracao_clientes_insert');
+        $dados = $request->input();
+        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+
+        $arrayValidacao = [
+            'documentos_ssma.*.observacao' => [function ($attribute, $value, $fail) use ($dados) {
+                if ( strlen($value) <= 3) {
+                    $fail('Informe uma observação maior que 3 caracteres.');
+                }
+            }],
+            'documentos_ssma.*.tipo_descricao' => [function ($attribute, $value, $fail) use ($dados) {
+                if ( strlen($value) <= 3) {
+                    $fail('Informe uma descrição maior que 3 caracteres.');
+                }
+            }],
+        ];
+        $dadosValidados = \Validator::make($dados, $arrayValidacao);
+
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao cadastrar Documento Legais',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+        die();
+        try {
+            DB::beginTransaction();
+            DocumentoLegais::create($dados);
+            DB::commit();
+
+
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $msg = "error STORE DOCUMENTOS SSMA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json([
+                'msg' => $msg,
+            ], 400);
+        }
+
+    }
     /**
      * Show the form for editing the specified resource.
      *
@@ -284,288 +330,168 @@ class DocumentosLegaisController extends Controller
      * @param \App\Models\Cliente $cliente
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, Cliente $cliente)
+    public function update(Request $request, DocumentoLegais $documentoLegais)
     {
         $this->authorize('administracao_clientes_insert');
         $dados = $request->input();
+        $dados['dados_cadastrais']['email'] = trim(mb_strtolower($dados['dados_cadastrais']['email']));
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
-        if ($dados['tipo'] == Cliente::TIPO_PESSOA_JURIDICA) {
-            $validar = [
-                'cnpj' => 'required|min:18|unique:clientes,cnpj,' . $cliente->id,
-                'razao_social' => 'required|min:2',
-            ];
-        } else {
-            $validar = [
-                'cpf' => 'required|min:14|unique:clientes,cpf,' . $cliente->id,
-                'nome' => 'required|min:2',
-            ];
-        }
+        $arrayValidacao = [
+            'dados_cadastrais.nome' => [function ($attribute, $value, $fail) use ($dados) {
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && strlen($value) <= 2) {
+                    $mensagem = strlen($value) <= 2 ? 'O campo nome deve conter no minimo três caracteres ':'Preencha o campo informando nome. ';
+                    $fail($mensagem);
+                }
+            }],
+            'dados_cadastrais.cpf' => [function ($attribute, $value, $fail) use ($dados) {
 
-        $validaComum = [
-            'area_id' => 'required',
-            'contato' => 'required',
-            'aniversario' => 'required',
-            'uf' => 'required|min:2',
-            'logradouro' => 'required|min:3',
-            'bairro' => 'required|min:3',
-            'municipio' => 'required|min:3',
-            'email' => 'required|email',
-            'ativo' => 'required',
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !Sistema::validaRuleCPF($value)) {
+                    $fail('Informe um CPF válido.');
+                }
+                $verificaCpf = DocumentoLegais::whereJsonContains('dados_cadastrais->cpf', $value)->first();
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && $verificaCpf) {
+                    $fail('CPF já cadastrado');
+                }
+            }],
+            'dados_cadastrais.razao_social' => [function ($attribute, $value, $fail) use ($dados) {
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 3) {
+                    $fail('Preencha o campo informando razão social.');
+                }
+            }],
+            'dados_cadastrais.nome_fantasia' => [function ($attribute, $value, $fail) use ($dados) {
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 3) {
+                    $fail('Preencha o campo informando nome fantasia.');
+                }
+            }],
+            'dados_cadastrais.cnpj' => [function ($attribute, $value, $fail) use ($dados) {
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 14) {
+                    $fail('Preencha o campo informando CNPJ.');
+                }
+                $verificaCnpj = DocumentoLegais::whereJsonContains('dados_cadastrais->cnpj', $value)->first();
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && $verificaCnpj) {
+                    $fail('CNPJ já cadastrado');
+                }
+            }],
+            'dados_cadastrais.email' => 'required|email:rfc,dns',
+            'dados_cadastrais.telefones' => ["required", "array", "min:1"],
+            'dados_cadastrais.telefones.*.numero' => 'required|min:14',
+            'dados_cadastrais.cep' => 'required|min:9',
+            'dados_cadastrais.logradouro' => 'required',
+            'dados_cadastrais.bairro' => 'required',
+            'dados_cadastrais.municipio' => 'required',
+            'dados_cadastrais.uf' => 'required|min:2',
+            'dados_cadastrais.ramo' => 'required',
         ];
 
-        array_merge($validar, $validaComum);
-
-        $dadosValidados = \Validator::make($dados, $validar);
+        $dadosValidados = \Validator::make($dados, $arrayValidacao);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
-                'msg' => 'Erro ao atualizar Cliente',
+                'msg' => 'Erro ao cadastrar Documento Legais',
                 'erros' => $dadosValidados->errors()
             ], 400);
+        }
 
-        } else {
-            try {
+        try {
+            DB::beginTransaction();
+            DocumentoLegais::create($dados);
+
                 DB::beginTransaction();
 
-                $cliente->update($dados);
-
-
-                if (isset($dados['telefonesDelete'])) {
-                    foreach ($dados['telefonesDelete'] as $telefonesDelete) {
-                        $cliente->Telefones()->find($telefonesDelete)->delete();
-                    }
-                }
-                if (isset($dados['telefones'])) {
-                    foreach ($dados['telefones'] as $linha) {
-                        if (isset($linha['id'])) {
-                            $cliente->Telefones()->find($linha['id'])->update($linha);
-                        } else {
-                            $cliente->Telefones()->create($linha);
-                        }
-                    }
-                }
-
-                if (isset($dados['logoDel'])) {
-                    foreach ($dados['logoDel'] as $id) {
-                        $cliente->Logo()->find($id)->delete();
-                    }
-                }
-
-
-                if (isset($dados['logo'])) {
-                    foreach ($dados['logo'] as $index => $anexo) {
-                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                        if ($anexo['chave'] == null) {
-                            Arquivo::whereId($anexo['id'])->update([
-                                'nome' => $anexo['nome'],
-                            ]);
-                        } else {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $cliente->Logo()->attach($arquivo->id);
-                            }
-                        }
-                    }
-                }
-
-
-                if (isset($dados['mascoteDel'])) {
-                    foreach ($dados['mascoteDel'] as $id) {
-                        $cliente->Mascote()->find($id)->delete();
-                    }
-                }
-
-
-                if (isset($dados['mascote'])) {
-                    foreach ($dados['mascote'] as $index => $anexo) {
-                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                        if ($anexo['chave'] == null) {
-                            Arquivo::whereId($anexo['id'])->update([
-                                'nome' => $anexo['nome'],
-                            ]);
-                        } else {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $cliente->Mascote()->attach($arquivo->id);
-                            }
-                        }
-                    }
-                }
-
-
-                if (isset($dados['servicos_clienteDelete'])) {
-                    foreach ($dados['servicos_clienteDelete'] as $id) {
-                        $cliente->ServicosCliente()->find($id)->delete();
-                    }
-                }
-
-                if (isset($dados['servicos_prospectDelete'])) {
-                    foreach ($dados['servicos_prospectDelete'] as $id) {
-                        $cliente->ServicosProspect()->find($id)->delete();
-                    }
-                }
-
-                // Se Tem Serviço Cliente
-                if (isset($dados['servicos_cliente'])) {
-
-                    foreach ($dados['servicos_cliente'] as $linha) {
-                        $linha['ativo'] = $linha['ativo'] == 'true' ? true : false;
-
-                        if (isset($linha['anexosDel'])) {
-                            foreach ($linha['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-
-                        if (isset($linha['id'])) {
-                            $cliente->ServicosCliente()->find($linha['id'])->update($linha);
-                            foreach ($linha['anexos'] as $index => $anexo) {
-                                //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                if ($anexo['chave'] == null) {
-                                    Arquivo::whereId($anexo['id'])->update([
-                                        'nome' => $anexo['nome'],
-                                    ]);
-                                } else {
-                                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                    if ($arquivo) {
-                                        $arquivo->temporario = false;
-                                        $arquivo->chave = '';
-                                        $arquivo->save();
-                                        $cliente->ServicosCliente()->find($linha['id'])->Anexos()->attach($arquivo->id);
-                                    }
-                                }
-                            }
-                        } else {
-                            $servico = $cliente->ServicosCliente()->create($linha);
-                            if (isset($linha['anexos'])) {
-                                foreach ($linha['anexos'] as $index => $anexo) {
-                                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                    if ($anexo['chave'] == null) {
-                                        Arquivo::whereId($anexo['id'])->update([
-                                            'nome' => $anexo['nome'],
-                                        ]);
-                                    } else {
-                                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                        if ($arquivo) {
-                                            $arquivo->temporario = false;
-                                            $arquivo->chave = '';
-                                            $arquivo->save();
-
-                                            $servico->Anexos()->attach($arquivo->id);
-
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-
-                if (isset($dados['servicos_prospect'])) {
-                    foreach ($dados['servicos_prospect'] as $linha) {
-
-                        if (isset($linha['anexosDel'])) {
-                            foreach ($linha['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-
-                        if (isset($linha['id'])) {
-
-                            $cliente->ServicosProspect()->find($linha['id'])->update($linha);
-                            if (isset($linha['anexos'])) {
-                                foreach ($linha['anexos'] as $index => $anexo) {
-                                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                    if ($anexo['chave'] == null) {
-                                        Arquivo::whereId($anexo['id'])->update([
-                                            'nome' => $anexo['nome'],
-                                        ]);
-                                    } else {
-                                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                        if ($arquivo) {
-                                            $arquivo->temporario = false;
-                                            $arquivo->chave = '';
-                                            $arquivo->save();
-                                            $cliente->ServicosProspect()->find($linha['id'])->Anexos()->attach($arquivo->id);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            $servico = $cliente->ServicosProspect()->create($linha);
-                            if (isset($linha['anexos'])) {
-                                foreach ($linha['anexos'] as $index => $anexo) {
-                                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                    if ($anexo['chave'] == null) {
-                                        Arquivo::whereId($anexo['id'])->update([
-                                            'nome' => $anexo['nome'],
-                                        ]);
-                                    } else {
-                                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                        if ($arquivo) {
-                                            $arquivo->temporario = false;
-                                            $arquivo->chave = '';
-                                            $arquivo->save();
-                                            $servico->Anexos()->attach($arquivo->id);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
-                    $config = ClienteConfig::find($dados['cliente_config']['id']);
-                    $config->update([
-                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
-                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
-                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-                    ]);
-                } else {
-                    $dadosClienteConfig = [
-                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
-                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
-                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-                        'cliente_id' => $cliente->id
-                    ];
-                    ClienteConfig::create($dadosClienteConfig);
-                }
-
-                $verificaTrue = $dados['listaDeHabilidades'];
-                $verificaFalse = $dados['listaDeHabilidades'];
-
-                $habilidades = collect($verificaTrue)->filter(function ($habilidade) {
-                    if ($habilidade['acesso'] == true) {
-                        return $habilidade;
-                    }
-                })->pluck('id');
-
-                $cliente->Papel->habilidades()->sync($habilidades);
-
-                $todosPapeis = Papel::whereEmpresaId($cliente->id)->where('master', false)->with('habilidades')->get();
-
-                $habilidadesRetiradas = collect($verificaFalse)->filter(function ($habilidade) {
-                    if ($habilidade['acesso'] == false) {
-                        return $habilidade;
-                    }
-                })->pluck('id');
-
-                foreach ($todosPapeis as $papel) {
-                    $papel->habilidades()->detach($habilidadesRetiradas);
-                }
+                $documentoLegais->update($dados);
+//
+//                if (isset($dados['logoDel'])) {
+//                    foreach ($dados['logoDel'] as $id) {
+//                        $cliente->Logo()->find($id)->delete();
+//                    }
+//                }
+//
+//
+//                if (isset($dados['logo'])) {
+//                    foreach ($dados['logo'] as $index => $anexo) {
+//                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+//                        if ($anexo['chave'] == null) {
+//                            Arquivo::whereId($anexo['id'])->update([
+//                                'nome' => $anexo['nome'],
+//                            ]);
+//                        } else {
+//                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+//                            if ($arquivo) {
+//                                $arquivo->temporario = false;
+//                                $arquivo->chave = '';
+//                                $arquivo->save();
+//                                $cliente->Logo()->attach($arquivo->id);
+//                            }
+//                        }
+//                    }
+//                }
+//
+//
+//                if (isset($dados['mascoteDel'])) {
+//                    foreach ($dados['mascoteDel'] as $id) {
+//                        $cliente->Mascote()->find($id)->delete();
+//                    }
+//                }
+//
+//
+//                if (isset($dados['mascote'])) {
+//                    foreach ($dados['mascote'] as $index => $anexo) {
+//                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+//                        if ($anexo['chave'] == null) {
+//                            Arquivo::whereId($anexo['id'])->update([
+//                                'nome' => $anexo['nome'],
+//                            ]);
+//                        } else {
+//                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+//                            if ($arquivo) {
+//                                $arquivo->temporario = false;
+//                                $arquivo->chave = '';
+//                                $arquivo->save();
+//                                $cliente->Mascote()->attach($arquivo->id);
+//                            }
+//                        }
+//                    }
+//                }
+//                if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
+//                    $config = ClienteConfig::find($dados['cliente_config']['id']);
+//                    $config->update([
+//                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+//                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+//                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
+//                    ]);
+//                } else {
+//                    $dadosClienteConfig = [
+//                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+//                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+//                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
+//                        'cliente_id' => $cliente->id
+//                    ];
+//                    ClienteConfig::create($dadosClienteConfig);
+//                }
+//
+//                $verificaTrue = $dados['listaDeHabilidades'];
+//                $verificaFalse = $dados['listaDeHabilidades'];
+//
+//                $habilidades = collect($verificaTrue)->filter(function ($habilidade) {
+//                    if ($habilidade['acesso'] == true) {
+//                        return $habilidade;
+//                    }
+//                })->pluck('id');
+//
+//                $cliente->Papel->habilidades()->sync($habilidades);
+//
+//                $todosPapeis = Papel::whereEmpresaId($cliente->id)->where('master', false)->with('habilidades')->get();
+//
+//                $habilidadesRetiradas = collect($verificaFalse)->filter(function ($habilidade) {
+//                    if ($habilidade['acesso'] == false) {
+//                        return $habilidade;
+//                    }
+//                })->pluck('id');
+//
+//                foreach ($todosPapeis as $papel) {
+//                    $papel->habilidades()->detach($habilidadesRetiradas);
+//                }
 
                 DB::commit();
                 return response()->json([], 201);
@@ -573,15 +499,13 @@ class DocumentosLegaisController extends Controller
             } catch (\Exception $e) {
 
                 DB::rollBack();
-                $msg = "error STORE CLIENTES:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                $msg = "error UPDATE DOCUMENTOS EMPRESA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
                 return response()->json([
                     'msg' => $msg,
                 ], 400);
             }
         }
-
-    }
 
     /**
      * Remove the specified resource from storage.
@@ -590,15 +514,16 @@ class DocumentosLegaisController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function destroy(Cliente $cliente)
+    public function destroy(DocumentoLegais $documentoLegais)
     {
         $this->authorize('administracao_clientes_delete');
-        $cliente->delete();
+        $documentoLegais->delete();
     }
 
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
+        $areas = Area::all();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -606,6 +531,7 @@ class DocumentosLegaisController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
+                'areas' => $areas
             ]
         ]);
     }

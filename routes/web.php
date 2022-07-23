@@ -179,6 +179,9 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::put('documentoslegais/{cliente}/ativa-desativa', [\App\Http\Controllers\DocumentosLegaisController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_clientes');
             Route::post('documentoslegais/search', [\App\Http\Controllers\DocumentosLegaisController::class, 'searchCliente'])->name('search')->middleware('can:administracao_clientes');
             Route::post('documentoslegais/atualizar', [\App\Http\Controllers\DocumentosLegaisController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_clientes');
+
+            Route::post('documentoslegais/storeempresa', [\App\Http\Controllers\DocumentosLegaisController::class,'storeEmpresa'])->name('storeEmpresa')->middleware('can:administracao_clientes');
+            Route::post('documentoslegais/storessma', [\App\Http\Controllers\DocumentosLegaisController::class,'storeSSMA'])->name('storeSSMA')->middleware('can:administracao_clientes');
             Route::resource('documentoslegais', \App\Http\Controllers\DocumentosLegaisController::class)->middleware('can:administracao_clientes');
         });
 

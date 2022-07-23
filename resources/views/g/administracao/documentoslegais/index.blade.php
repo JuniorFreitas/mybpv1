@@ -93,7 +93,7 @@
                                             <input type="text" id="cnpj" class="form-control" placeholder="CNPJ"
                                                    v-model="form.dados_cadastrais.cnpj" :disabled="editando"
                                                    autocomplete="off"
-                                                   {{--                                                   onblur="valida_cnpj_vazio(this)" @blur="verificaCnpj"--}}
+                                                   onblur="valida_cnpj_vazio(this)" @blur="verificaCnpj"
                                                    v-mascara:cnpj>
                                         </div>
 
@@ -252,15 +252,14 @@
 
                                             <div class="col-12 col-sm-4">
                                                 <div class="form-group">
-                                                    <label>Data Início</label>
-                                                    <datepicker posicao="up" v-model="obj.data_inicio"></datepicker>
+                                                    <datepicker label="Data Início" posicao="up"
+                                                                v-model="obj.data_inicio"></datepicker>
                                                 </div>
                                             </div>
 
                                             <div class="col-12 col-sm-4">
                                                 <div class="form-group">
-                                                    <label>Data Vencimento</label>
-                                                    <datepicker posicao="up"
+                                                    <datepicker label="Data Vencimento" posicao="up"
                                                                 v-model="obj.data_encerramento"></datepicker>
                                                 </div>
                                             </div>
@@ -270,7 +269,8 @@
                                             <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="form-group">
                                                     <label>Tipo de documento</label>
-                                                    <input type="text" class="form-control">
+                                                    <input type="text" class="form-control"
+                                                           v-model="obj.tipo_descricao">
                                                     {{--                                                    <select v-model="obj.servico_id" class="form-control"--}}
                                                     {{--                                                            onblur="valida_campo_vazio(this,1)">--}}
                                                     {{--                                                        <option value="">Selecione ...</option>--}}
@@ -285,7 +285,7 @@
                                             <div class="col-12">
                                                 <div class="form-group">
                                                     <label>Observação</label>
-                                                    <textarea class="form-control" v-model="obj.escopo" rows="3"
+                                                    <textarea class="form-control" v-model="obj.observacao" rows="3"
                                                               cols="3"></textarea>
                                                 </div>
                                             </div>
@@ -330,15 +330,15 @@
                                             {{--                                                </div>--}}
                                             {{--                                            </div>--}}
 
-                                            {{--                                            <div class="col-12 col-sm-6 col-lg-4">--}}
-                                            {{--                                                <div class="form-group">--}}
-                                            {{--                                                    <label>Ativo</label>--}}
-                                            {{--                                                    <select v-model="obj.ativo" class="form-control">--}}
-                                            {{--                                                        <option :value="true">SIM</option>--}}
-                                            {{--                                                        <option :value="false">NÃO</option>--}}
-                                            {{--                                                    </select>--}}
-                                            {{--                                                </div>--}}
-                                            {{--                                            </div>--}}
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="form-group">
+                                                    <label>Ativo</label>
+                                                    <select v-model="obj.ativo" class="form-control">
+                                                        <option :value="true">SIM</option>
+                                                        <option :value="false">NÃO</option>
+                                                    </select>
+                                                </div>
+                                            </div>
 
                                             <div class="col-12 mb-3">
                                                 <button class="btn btn-sm btn-danger"
@@ -355,6 +355,7 @@
 
                                     </div>
                                 </div>
+
                             </fieldset>
 
                         </div>
@@ -381,15 +382,14 @@
 
                                             <div class="col-12 col-sm-4">
                                                 <div class="form-group">
-                                                    <label>Data Início</label>
-                                                    <datepicker posicao="up" v-model="obj.data_inicio"></datepicker>
+                                                    <datepicker label="Data Início" posicao="up"
+                                                                v-model="obj.data_inicio"></datepicker>
                                                 </div>
                                             </div>
 
                                             <div class="col-12 col-sm-4">
                                                 <div class="form-group">
-                                                    <label>Data Vencimento</label>
-                                                    <datepicker posicao="up"
+                                                    <datepicker label="Data Vencimento" posicao="up"
                                                                 v-model="obj.data_encerramento"></datepicker>
                                                 </div>
                                             </div>
@@ -399,7 +399,8 @@
                                             <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="form-group">
                                                     <label>Tipo de documento</label>
-                                                    <input type="text" class="form-control">
+                                                    <input type="text" class="form-control"
+                                                           v-model="obj.tipo_descricao">
                                                     {{--                                                    <select v-model="obj.servico_id" class="form-control"--}}
                                                     {{--                                                            onblur="valida_campo_vazio(this,1)">--}}
                                                     {{--                                                        <option value="">Selecione ...</option>--}}
@@ -414,7 +415,7 @@
                                             <div class="col-12">
                                                 <div class="form-group">
                                                     <label>Observação</label>
-                                                    <textarea class="form-control" v-model="obj.escopo" rows="3"
+                                                    <textarea class="form-control" v-model="obj.observacao" rows="3"
                                                               cols="3"></textarea>
                                                 </div>
                                             </div>
@@ -459,15 +460,15 @@
                                             {{--                                                </div>--}}
                                             {{--                                            </div>--}}
 
-                                            {{--                                            <div class="col-12 col-sm-6 col-lg-4">--}}
-                                            {{--                                                <div class="form-group">--}}
-                                            {{--                                                    <label>Ativo</label>--}}
-                                            {{--                                                    <select v-model="obj.ativo" class="form-control">--}}
-                                            {{--                                                        <option :value="true">SIM</option>--}}
-                                            {{--                                                        <option :value="false">NÃO</option>--}}
-                                            {{--                                                    </select>--}}
-                                            {{--                                                </div>--}}
-                                            {{--                                            </div>--}}
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="form-group">
+                                                    <label>Ativo</label>
+                                                    <select v-model="obj.ativo" class="form-control">
+                                                        <option :value="true">SIM</option>
+                                                        <option :value="false">NÃO</option>
+                                                    </select>
+                                                </div>
+                                            </div>
 
                                             <div class="col-12 mb-3">
                                                 <button class="btn btn-sm btn-danger"
@@ -495,20 +496,23 @@
                     <ul class="nav nav-tabs bg-light" id="tabslist" role="tablist"
                         style="border-bottom: 1px solid #653232">
                         <li class="nav-item">
-                            <a class="nav-item nav-link" id="nav-servicos-tab" data-toggle="tab" href="#nav-servicos"
-                               role="tab" aria-controls="nav-servicos" aria-selected="false">DOCUMENTO LEGAIS</a>
+                            <a class="nav-item nav-link active" id="nav-documento-empresa-tab" data-toggle="tab"
+                               href="#nav-documento-empresa"
+                               role="tab" aria-controls="nav-documento-empresa" aria-selected="false">DOCUMENTO
+                                LEGAIS</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-item nav-link" id="nav-config-tab" data-toggle="tab" href="#nav-config"
-                               role="tab" aria-controls="nav-config" aria-selected="false">CONFIGURAÇÕES</a>
+                            <a class="nav-item nav-link" id="nav-config-empresa-tab" data-toggle="tab"
+                               href="#nav-config-empresa"
+                               role="tab" aria-controls="nav-config-empresa" aria-selected="false">CONFIGURAÇÕES</a>
                         </li>
                     </ul>
 
                     <div class="tab-content py-3 p-2">
 
-                        <div v-if="form.tipo_documento === 'Documentos Empresa'" class="tab-pane  show active"
-                             id="nav-servicos"
-                             role="tabpanel" aria-labelledby="nav-servicos-tab">
+                        <div v-if="form.tipo_documento === 'Documentos Empresa'" class="tab-pane show active"
+                             id="nav-documento-empresa"
+                             role="tabpanel" aria-labelledby="nav-documento-empresa-tab">
 
                             <fieldset>
                                 <legend class="text-uppercase">
@@ -517,28 +521,28 @@
                                 <div class="row">
                                     <div class="col-12 col-sm-6 col-md-6 col-lg-6">
                                         <button class="btn btn-sm btn-secondary mb-2"
-                                                @click="addLIServicoCliente($event.target)">
+                                                @click="addLIDocumentoEmpresa($event.target)">
                                             <span class="fas fa-plus" aria-hidden="true"></span>
                                             Adicionar Documentos
                                         </button>
                                     </div>
 
-                                    <div class="col-12" v-if="form.servicos_cliente.length>0"
-                                         v-for="(obj, index) in form.servicos_cliente" :key="obj.id">
+                                    <div class="col-12" v-if="form.documentos_empresa.length>0"
+                                         v-for="(obj, index) in form.documentos_empresa" :key="obj.id">
                                         <div class="row py-3">
 
                                             <div class="col-12 col-sm-4">
                                                 <div class="form-group">
-                                                    <label>Data Início</label>
-                                                    <datepicker posicao="up" v-model="obj.data_inicio"></datepicker>
+                                                    <datepicker label="Data Iníco" posicao="up"
+                                                                v-model="obj.data_inicio" default=""></datepicker>
                                                 </div>
                                             </div>
 
                                             <div class="col-12 col-sm-4">
                                                 <div class="form-group">
-                                                    <label>Data Vencimento</label>
-                                                    <datepicker posicao="up"
-                                                                v-model="obj.data_encerramento"></datepicker>
+
+                                                    <datepicker label="Data Vencimento" posicao="up"
+                                                                v-model="obj.data_encerramento" default=""></datepicker>
                                                 </div>
                                             </div>
 
@@ -547,7 +551,8 @@
                                             <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="form-group">
                                                     <label>Tipo de documento</label>
-                                                    <input type="text" class="form-control">
+                                                    <input type="text" class="form-control"
+                                                           v-model="obj.tipo_descricao">
                                                     {{--                                                    <select v-model="obj.servico_id" class="form-control"--}}
                                                     {{--                                                            onblur="valida_campo_vazio(this,1)">--}}
                                                     {{--                                                        <option value="">Selecione ...</option>--}}
@@ -562,7 +567,7 @@
                                             <div class="col-12">
                                                 <div class="form-group">
                                                     <label>Observação</label>
-                                                    <textarea class="form-control" v-model="obj.escopo" rows="3"
+                                                    <textarea class="form-control" v-model="obj.observacao" rows="3"
                                                               cols="3"></textarea>
                                                 </div>
                                             </div>
@@ -607,15 +612,15 @@
                                             {{--                                                </div>--}}
                                             {{--                                            </div>--}}
 
-                                            {{--                                            <div class="col-12 col-sm-6 col-lg-4">--}}
-                                            {{--                                                <div class="form-group">--}}
-                                            {{--                                                    <label>Ativo</label>--}}
-                                            {{--                                                    <select v-model="obj.ativo" class="form-control">--}}
-                                            {{--                                                        <option :value="true">SIM</option>--}}
-                                            {{--                                                        <option :value="false">NÃO</option>--}}
-                                            {{--                                                    </select>--}}
-                                            {{--                                                </div>--}}
-                                            {{--                                            </div>--}}
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="form-group">
+                                                    <label>Ativo</label>
+                                                    <select v-model="obj.ativo" class="form-control">
+                                                        <option :value="true">SIM</option>
+                                                        <option :value="false">NÃO</option>
+                                                    </select>
+                                                </div>
+                                            </div>
 
                                             <div class="col-12 mb-3">
                                                 <button class="btn btn-sm btn-danger"
@@ -636,8 +641,8 @@
 
                         </div>
 
-                        <div class="tab-pane fade" id="nav-config"
-                             role="tabpanel" aria-labelledby="nav-config-tab">
+                        <div class="tab-pane fade" id="nav-config-empresa"
+                             role="tabpanel" aria-labelledby="nav-config-empresa-tab">
                             <fieldset>
                                 <legend class="text-uppercase">
                                     <span>Configurações Gerais</span>
@@ -646,26 +651,27 @@
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <div class="form-group">
                                             <label>Notificar Vencimento E-mail</label>
-                                            {{--                                            <select v-model="form.cliente_config.verifica_mes_vencimento"--}}
-                                            {{--                                                    class="form-control"--}}
-                                            {{--                                                    onblur="valida_campo_vazio(this,1)">--}}
-                                            {{--                                                <option value="">Selecione ...</option>--}}
-                                            {{--                                                <option value="1">30 dias</option>--}}
-                                            {{--                                                <option value="2">60 dias</option>--}}
-                                            {{--                                                <option value="3">90 dias</option>--}}
-                                            {{--                                                <option value="4">120 dias</option>--}}
-                                            {{--                                            </select>--}}
+                                            <select v-model="form.documento_empresa_config.verifica_mes_vencimento"
+                                                    class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option value="1">30 dias</option>
+                                                <option value="2">60 dias</option>
+                                                <option value="3">90 dias</option>
+                                                <option value="4">120 dias</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <div class="form-group">
                                             <label>Envia notificação no whatsapp</label>
-                                            {{--                                            <select v-model="form.cliente_config.envia_whatsapp" class="form-control"--}}
-                                            {{--                                                    onblur="valida_campo_vazio(this,1)">--}}
-                                            {{--                                                <option value="">Selecione ...</option>--}}
-                                            {{--                                                <option :value="true">Sim</option>--}}
-                                            {{--                                                <option :value="false">Não</option>--}}
-                                            {{--                                            </select>--}}
+                                            <select v-model="form.documento_empresa_config.envia_whatsapp"
+                                                    class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option :value="true">Sim</option>
+                                                <option :value="false">Não</option>
+                                            </select>
                                         </div>
                                     </div>
 
@@ -675,30 +681,26 @@
                     </div>
                 </div>
 
-
-
-
-
-
-
                 <div v-if="form.tipo_documento !== '' && form.tipo_documento === 'Documentos SSMA'">
                     <ul class="nav nav-tabs bg-light" id="tabslist" role="tablist"
                         style="border-bottom: 1px solid #653232">
                         <li class="nav-item">
-                            <a class="nav-item nav-link" id="nav-servicos-tab" data-toggle="tab" href="#nav-servicos"
-                               role="tab" aria-controls="nav-servicos" aria-selected="false">DOCUMENTO LEGAIS</a>
+                            <a class="nav-item nav-link active" id="nav-documento-ssma-tab" data-toggle="tab"
+                               href="#nav-documento-ssma"
+                               role="tab" aria-controls="nav-documento-ssma" aria-selected="false">DOCUMENTO LEGAIS</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-item nav-link" id="nav-config-tab" data-toggle="tab" href="#nav-config"
-                               role="tab" aria-controls="nav-config" aria-selected="false">CONFIGURAÇÕES</a>
+                            <a class="nav-item nav-link" id="nav-config-ssma-tab" data-toggle="tab"
+                               href="#nav-config-ssma"
+                               role="tab" aria-controls="nav-config-ssma" aria-selected="false">CONFIGURAÇÕES</a>
                         </li>
                     </ul>
 
                     <div class="tab-content py-3 p-2">
 
                         <div v-if="form.tipo_documento === 'Documentos SSMA'" class="tab-pane  show active"
-                             id="nav-servicos"
-                             role="tabpanel" aria-labelledby="nav-servicos-tab">
+                             id="nav-documento-ssma"
+                             role="tabpanel" aria-labelledby="nav-documento-ssma-tab">
 
                             <fieldset>
                                 <legend class="text-uppercase">
@@ -707,27 +709,26 @@
                                 <div class="row">
                                     <div class="col-12 col-sm-6 col-md-6 col-lg-6">
                                         <button class="btn btn-sm btn-secondary mb-2"
-                                                @click="addLIServicoCliente($event.target)">
+                                                @click="addLIDocumentoSsma($event.target)">
                                             <span class="fas fa-plus" aria-hidden="true"></span>
                                             Adicionar Documentos
                                         </button>
                                     </div>
 
-                                    <div class="col-12" v-if="form.servicos_cliente.length>0"
-                                         v-for="(obj, index) in form.servicos_cliente" :key="obj.id">
+                                    <div class="col-12" v-if="form.documentos_ssma.length>0"
+                                         v-for="(obj, index) in form.documentos_ssma" :key="obj.id">
                                         <div class="row py-3">
 
                                             <div class="col-12 col-sm-4">
                                                 <div class="form-group">
-                                                    <label>Data Início</label>
-                                                    <datepicker posicao="up" v-model="obj.data_inicio"></datepicker>
+                                                    <datepicker label="Data Início" posicao="up"
+                                                                v-model="obj.data_inicio"></datepicker>
                                                 </div>
                                             </div>
 
                                             <div class="col-12 col-sm-4">
                                                 <div class="form-group">
-                                                    <label>Data Vencimento</label>
-                                                    <datepicker posicao="up"
+                                                    <datepicker label="Data Vencimento" posicao="up"
                                                                 v-model="obj.data_encerramento"></datepicker>
                                                 </div>
                                             </div>
@@ -737,7 +738,8 @@
                                             <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="form-group">
                                                     <label>Tipo de documento</label>
-                                                    <input type="text" class="form-control">
+                                                    <input type="text" class="form-control"
+                                                           v-model="obj.tipo_descricao">
                                                     {{--                                                    <select v-model="obj.servico_id" class="form-control"--}}
                                                     {{--                                                            onblur="valida_campo_vazio(this,1)">--}}
                                                     {{--                                                        <option value="">Selecione ...</option>--}}
@@ -752,7 +754,7 @@
                                             <div class="col-12">
                                                 <div class="form-group">
                                                     <label>Observação</label>
-                                                    <textarea class="form-control" v-model="obj.escopo" rows="3"
+                                                    <textarea class="form-control" v-model="obj.observacao" rows="3"
                                                               cols="3"></textarea>
                                                 </div>
                                             </div>
@@ -797,15 +799,15 @@
                                             {{--                                                </div>--}}
                                             {{--                                            </div>--}}
 
-                                            {{--                                            <div class="col-12 col-sm-6 col-lg-4">--}}
-                                            {{--                                                <div class="form-group">--}}
-                                            {{--                                                    <label>Ativo</label>--}}
-                                            {{--                                                    <select v-model="obj.ativo" class="form-control">--}}
-                                            {{--                                                        <option :value="true">SIM</option>--}}
-                                            {{--                                                        <option :value="false">NÃO</option>--}}
-                                            {{--                                                    </select>--}}
-                                            {{--                                                </div>--}}
-                                            {{--                                            </div>--}}
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="form-group">
+                                                    <label>Ativo</label>
+                                                    <select v-model="obj.ativo" class="form-control">
+                                                        <option :value="true">SIM</option>
+                                                        <option :value="false">NÃO</option>
+                                                    </select>
+                                                </div>
+                                            </div>
 
                                             <div class="col-12 mb-3">
                                                 <button class="btn btn-sm btn-danger"
@@ -826,8 +828,8 @@
 
                         </div>
 
-                        <div class="tab-pane fade" id="nav-config"
-                             role="tabpanel" aria-labelledby="nav-config-tab">
+                        <div class="tab-pane fade" id="nav-config-ssma"
+                             role="tabpanel" aria-labelledby="nav-config-ssma-tab">
                             <fieldset>
                                 <legend class="text-uppercase">
                                     <span>Configurações Gerais</span>
@@ -836,26 +838,27 @@
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <div class="form-group">
                                             <label>Notificar Vencimento E-mail</label>
-                                            {{--                                            <select v-model="form.cliente_config.verifica_mes_vencimento"--}}
-                                            {{--                                                    class="form-control"--}}
-                                            {{--                                                    onblur="valida_campo_vazio(this,1)">--}}
-                                            {{--                                                <option value="">Selecione ...</option>--}}
-                                            {{--                                                <option value="1">30 dias</option>--}}
-                                            {{--                                                <option value="2">60 dias</option>--}}
-                                            {{--                                                <option value="3">90 dias</option>--}}
-                                            {{--                                                <option value="4">120 dias</option>--}}
-                                            {{--                                            </select>--}}
+                                            <select v-model="form.documento_empresa_config.verifica_mes_vencimento"
+                                                    class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option value="1">30 dias</option>
+                                                <option value="2">60 dias</option>
+                                                <option value="3">90 dias</option>
+                                                <option value="4">120 dias</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <div class="form-group">
                                             <label>Envia notificação no whatsapp</label>
-                                            {{--                                            <select v-model="form.cliente_config.envia_whatsapp" class="form-control"--}}
-                                            {{--                                                    onblur="valida_campo_vazio(this,1)">--}}
-                                            {{--                                                <option value="">Selecione ...</option>--}}
-                                            {{--                                                <option :value="true">Sim</option>--}}
-                                            {{--                                                <option :value="false">Não</option>--}}
-                                            {{--                                            </select>--}}
+                                            <select v-model="form.documento_empresa_config.envia_whatsapp"
+                                                    class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option :value="true">Sim</option>
+                                                <option :value="false">Não</option>
+                                            </select>
                                         </div>
                                     </div>
 
@@ -864,9 +867,6 @@
                         </div>
                     </div>
                 </div>
-
-
-
 
 
             </form>
@@ -882,13 +882,13 @@
             </button>
         </template>
     </modal>
-    <modal id="janelaConfirmar" titulo="Apagar clientes">
+    <modal id="janelaConfirmar" titulo="Apagar documento empresa">
         <template slot="conteudo">
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
-                <h4><i class="icon fa fa-check"></i>Cliente apagado com sucesso!</h4>
+                <h4><i class="icon fa fa-check"></i>Documento apagado com sucesso!</h4>
             </div>
-            <h4 v-show="!apagado">Tem certeza que deseja apagar este cliente?</h4>
+            <h4 v-show="!apagado">Tem certeza que deseja apagar este documento?</h4>
         </template>
         <template slot="rodape">
             <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>

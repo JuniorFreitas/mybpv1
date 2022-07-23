@@ -64,6 +64,18 @@ const app = new Vue({
             },
             tipo_documento: '',
             ativo: '',
+            documento_empresa_config: {
+                id: '',
+                verifica_mes_vencimento: '',
+                envia_whatsapp: '',
+            },
+
+            documentos_empresa: [],
+            documentos_empresaDelete: [],
+
+            documentos_ssma: [],
+            documentos_ssmaDelete: [],
+
             servicos_cliente: [],
             servicos_clienteDelete: [],
 
@@ -121,15 +133,59 @@ const app = new Vue({
                 }
             });
         },
+        addLIDocumentoEmpresa() {
+            const obj = {};
+            obj.nova = true;
+            obj.documento_empresa_id = '';
+            obj.data_inicio = moment().format('L');
+            obj.data_encerramento = moment().add(6, 'months').format('L');
+            obj.observacao = '';
+            obj.tipo_descricao = '';
+            obj.status = 'Iniciado';
+            obj.ativo = true;
+
+            obj.anexos = [];
+            obj.anexosDel = [];
+            this.form.documentos_empresa.unshift(obj);
+        },
+        removerLIDocumentoEmpresa(index) {
+            if (this.editando) {
+                this.form.documentos_empresaDelete.push(this.form.documentos_empresa[index].id);
+            }
+            this.form.documentos_empresa.splice(index, 1);
+        },
+
+        addLIDocumentoSsma() {
+            const obj = {};
+            obj.nova = true;
+            obj.documento_empresa_id = '';
+            obj.data_inicio = moment().format('L');
+            obj.data_encerramento = moment().add(6, 'months').format('L');
+            obj.observacao = '';
+            obj.tipo_descricao = '';
+            obj.status = 'Iniciado';
+            obj.ativo = true;
+
+            obj.anexos = [];
+            obj.anexosDel = [];
+            this.form.documentos_ssma.unshift(obj);
+        },
+        removerLIDocumentoSsma(index) {
+            if (this.editando) {
+                this.form.documentos_ssmaDelete.push(this.form.documentos_ssma[index].id);
+            }
+            this.form.documentos_ssma.splice(index, 1);
+        },
+
         addLIServicoCliente() {
             const obj = {};
             obj.nova = true;
             obj.servico_id = '';
             obj.data_inicio = moment().format('L');
             obj.data_encerramento = moment().add(6, 'months').format('L');
-            obj.escopo = '';
+            obj.observacao = '';
             obj.valor = '0.00';
-            obj.tipo_faturamento = 'Único';
+            obj.tipo_descricao = '';
             obj.status = 'Iniciado';
             obj.feedback = '';
             obj.tipo_contrato = 'FIXO';
@@ -150,7 +206,7 @@ const app = new Vue({
             obj.nova = true;
             obj.servico_id = '';
             obj.data_envio_proposta = moment().format('L');
-            obj.escopo = '';
+            obj.observacao = '';
             obj.status = 'Iniciado';
             obj.feedback = '';
             obj.anexos = [];
@@ -192,7 +248,21 @@ const app = new Vue({
             }
 
             this.form.listaDeHabilidades = this.listaDeHabilidades;
+
+            if(this.form.tipo_documento === 'Contrato'){
+                this.cadastrarContrato();
+            }
+            if(this.form.tipo_documento === 'Documentos Empresa'){
+                this.cadastrarDocEmpresa();
+            }
+            if(this.form.tipo_documento === 'Documentos SSMA'){
+                this.cadastrarDocSSMA();
+            }
+        },
+
+        cadastrarContrato(){
             this.preloadAjax = true;
+
             axios.post(`${URL_ADMIN}/administracao/documentoslegais`, this.form)
                 .then(response => {
                     if (response.status === 201) {
@@ -202,6 +272,32 @@ const app = new Vue({
                     }
                 }).catch(error => (this.preloadAjax = false));
         },
+        cadastrarDocEmpresa(){
+            this.preloadAjax = true;
+
+            axios.post(`${URL_ADMIN}/administracao/documentoslegais/storeempresa`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.preloadAjax = false;
+                        this.cadastrado = true;
+                        this.atualizar();
+                    }
+                }).catch(error => (this.preloadAjax = false));
+        },
+
+        cadastrarDocSSMA(){
+            this.preloadAjax = true;
+
+            axios.post(`${URL_ADMIN}/administracao/documentoslegais/storessma`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.preloadAjax = false;
+                        this.cadastrado = true;
+                        this.atualizar();
+                    }
+                }).catch(error => (this.preloadAjax = false));
+        },
+
         formAlterar(id) {
             this.cadastrado = false;
             this.atualizado = false;
@@ -215,14 +311,13 @@ const app = new Vue({
 
             axios.get(`${URL_ADMIN}/administracao/documentoslegais/${id}/editar`)
                 .then(response => {
-                    Object.assign(this.form, response.data.cliente);
+                    Object.assign(this.form, response.data.documento_empresa_config);
                     this.editando = true;
                     this.preloadAjax = false;
-                    if (!response.data.cliente.cliente_config) {
-                        this.form.cliente_config = {
+                    if (!response.data.documento_empresa_config) {
+                        this.form.documento_empresa_config = {
                             'verifica_mes_vencimento': '',
                             'envia_whatsapp': '',
-                            'vencimento_aso': '',
                         }
                     }
 
@@ -312,14 +407,14 @@ const app = new Vue({
 
         verificaCpf() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/documentoslegais/buscar-cpf?cpf=${this.form.cpf}`)
+                axios.get(`${URL_ADMIN}/administracao/documentoslegais/buscar-cpf?cpf=${this.form.dados_cadastrais.cpf}`)
                     .then(response => {
                     });
             }
         },
         verificaCnpj() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/documentoslegais/buscar-cnpj?cnpj=${this.form.cnpj}`)
+                axios.get(`${URL_ADMIN}/administracao/documentoslegais/buscar-cnpj?cnpj=${this.form.dados_cadastrais.cnpj}`)
                     .then(response => {
                     });
             }
