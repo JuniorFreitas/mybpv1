@@ -7,10 +7,13 @@ const Exportacao = {
     methods: {
         exportaExcel() {
             this.preloadExportacao = true;
-            axios.post(`${this.urlExportacao}`, 
+            mostraSucesso("Estamos gerando seu arquivo excel, assim que finalizado você será notificado.");
+            setTimeout(() => {
+                this.preloadExportacao = false;
+            }, 500);
+            axios.post(`${this.urlExportacao}`,
             this.paramsExport
             ).then(({ data }) => {
-                mostraSucesso(data.msg);
                 this.preloadExportacao = false;
             }).catch(erro => {
                 mostraErro(erro);

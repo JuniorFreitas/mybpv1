@@ -211,4 +211,8 @@ class Cih extends Model
     {
         return $this->hasOne(User::class, 'id', 'empresa_id');
     }
+
+    public function CihFeedbacks(){
+        return $this->belongsToMany(FeedbackCurriculo::class, 'cih_feedback', 'feedback_id', 'cih_id');
+    }
 }

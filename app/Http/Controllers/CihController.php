@@ -9,6 +9,7 @@ use App\Models\Arquivo;
 use App\Models\Cih;
 use App\Models\CihTag;
 use App\Models\Cliente;
+use App\Models\FeedbackCurriculo;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -134,6 +135,12 @@ class CihController extends Controller
      */
     public function edit(Cih $cih)
     {
+
+//        return $cih->load(
+//            'CihFeedbacks:id,curriculo_id,vagas_abertas_id',
+//            'CihFeedbacks.Curriculo:id,nome,nascimento,rg',
+//            'Anexos','Tag','Area'
+//        );
         if ($cih->feedback_id) {
             $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaAberta->VagaSelecionada->nome} - {$cih->Colaborador->VagaAberta->Municipio->uf}";
             $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
@@ -144,7 +151,7 @@ class CihController extends Controller
         $cih->status_aprovacao = $cih->status;
 
 
-        return $cih->load('Anexos', 'Tag', 'Area');
+        return $cih->load('Anexos', 'Tag', 'Area', 'CihFeedbacks');
     }
 
     /**
@@ -159,7 +166,6 @@ class CihController extends Controller
         $this->authorize('admissao_cih_aprovar');
         $dados = $request->input();
         $dados['user_aprovacao_id'] = auth()->id();
-        $dados['status'] = $dados['status'];
         $dados['data_aprovacao'] = (new DataHora())->dataHoraInsert();
 
         try {
@@ -182,23 +188,16 @@ class CihController extends Controller
 
     public function atualizarHistorico($feedback)
     {
-
-        $resultado = Cih::whereFeedbackId($feedback)->with('Tag', 'Area',
-            'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'ResponsavelLancamento:id,nome',
-            'ResponsavelAprovacao:id,nome'
-        );
-
-        $data = new DataHora();
-        $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
-
-        return response()->json([
-            'itens' => $resultado->get(),
-            'cliente_id' => auth()->user()->cliente_id,
-            'intervalo' => $intervalo,
-            //'listaClientes' => $clientes,
-            'hoje' => (new DataHora())->dataCompleta()
+        $feedback_id = \Crypt::decrypt($feedback);
+        $resultado = FeedbackCurriculo::select(['id', 'vagas_abertas_id'])->find($feedback_id)->load([
+            'Cih.Tag',
+            'Cih.Area',
+            'Cih.Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+            'Cih.ResponsavelLancamento:id,nome',
+            'Cih.ResponsavelAprovacao:id,nome'
         ]);
+
+        return response()->json($resultado);
     }
 
     public function atualizar(Request $request)
@@ -210,7 +209,6 @@ class CihController extends Controller
         $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
         $data = new DataHora();
         $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
-        $clientes = Cliente::whereAtivo(true)->get();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -220,10 +218,12 @@ class CihController extends Controller
                 'itens' => $resultado->items(),
                 'tags' => $tags,
                 'periodo' => $periodo,
-                'cliente_id' => auth()->user()->cliente_id,
                 'intervalo' => $intervalo,
+                'permissoes' => [
+                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
+                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
+                ],
                 'areas' => $areas,
-                'listaClientes' => $clientes,
                 'hoje' => (new DataHora())->dataCompleta()
             ]
         ]);
@@ -236,6 +236,14 @@ class CihController extends Controller
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome'
         );
+
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        if ($filtroPeriodo) {
+            $periodo = explode(' até ', $request->periodo);
+            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
+            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $resultado->where('data_lancamento', '>=', $dataInicio->dataInsert())->where('data_lancamento', '<=', $dataFim->dataInsert());
+        }
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Colaborador.Curriculo', function ($q) use ($request) {
@@ -318,6 +326,9 @@ class CihController extends Controller
         $nameArquivo = "admissao_cih" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
         JobExportaExcel::dispatch(auth()->id(), "Admissão - CIH", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+//        Rafael Mendes Nascimento
+//José Domingos Campos Junior
+//Alexandre Manoel de Oliveira
     }
 
     public function tipoCihIndex(Request $request)
@@ -429,20 +440,17 @@ class CihController extends Controller
 
     public function relatorioPdf(Request $request)
     {
-        $intervalo = explode(' até ', $request->intervalo);
-        $dataInicio = (new DataHora($intervalo[0] . ' 00:00:00'))->dataHoraInsert();
-        $dataFim = (new DataHora($intervalo[1] . ' 23:59:59'))->dataHoraInsert();
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        $dataInicio = "";
+        $dataFim = "";
+        if ($filtroPeriodo){
+            $intervalo = explode(' até ', $request->periodo);
+            $dataInicio = (new DataHora($intervalo[0] . ' 00:00:00'))->dataHoraInsert();
+            $dataFim = (new DataHora($intervalo[1] . ' 23:59:59'))->dataHoraInsert();
+        }
 
+        $resultado = $this->filtro($request)->orderBy('data_aprovacao')->get();
 
-        $dados = Cih::with('Tag', 'Empresa',
-            'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'ResponsavelLancamento:id,nome',
-            'ResponsavelAprovacao:id,nome'
-        )->where('data_aprovacao', '>=', $dataInicio)
-            ->where('data_aprovacao', '<=', $dataFim)
-            ->whereStatus('aprovado');
-
-        $resultado = $dados->orderBy('data_aprovacao')->get();
 
         $rows = [];
 
@@ -457,7 +465,7 @@ class CihController extends Controller
                         'tag' => $row->Tag->label,
                         'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
                         'acao' => $row->acao,
-                        'status'=>$row->status ?: "aguardando",
+                        'status' => $row->status ?: "aguardando",
                         'data_aprovacao' => $row->data_aprovacao ?: '',
                         'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
                     ];
@@ -470,7 +478,7 @@ class CihController extends Controller
                     'tag' => $row->Tag->label,
                     'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
                     'acao' => $row->acao,
-                    'status'=>$row->status ?: "aguardando",
+                    'status' => $row->status ?: "aguardando",
                     'data_aprovacao' => $row->data_aprovacao ?: '',
                     'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
                 ];
@@ -480,7 +488,8 @@ class CihController extends Controller
 
 
         $empresa = User::whereId(auth()->user()->empresa_id)->first();
-        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim'));
+        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim','filtroPeriodo'));
+//        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim'));
         $pdf->setPaper('A4', 'landscape');
 
         return $pdf->stream("relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf");

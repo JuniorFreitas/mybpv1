@@ -1,7 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+Route::get('/cih', function () {
+    $cihs = DB::table('cihs')->select(['id','feedback_id'])->whereNotNull('feedback_id')->get();
+    foreach ($cihs as $cih) {
+        DB::table('cih_feedback')->insert([
+            'feedback_id' => $cih->feedback_id,
+            'cih_id' => $cih->id,
+        ]);
+    }
+    return 'ok';
+});
 Route::redirect('/', 'g/login');
 
 Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
