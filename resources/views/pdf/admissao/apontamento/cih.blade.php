@@ -28,7 +28,7 @@
                 <td class="text-center">{{ $cont }}</td>
                 <td class="text-center">{{ $cih['colaborador'] }}</td>
                 <td class="text-center">{{$cih['area'] }}</td>
-                <td class="text-center">{{$cih['data_aprovacao']}}</td>
+                <td class="text-center">{{$cih['data_ocorrencia']}}</td>
                 <td class="text-center" style="text-transform: uppercase">{{ $cih['tag'] }}</td>
                 <td class="text-center" style="text-transform: uppercase">{{ $cih['responsavel_lancamento'] }}</td>
                 <td class="text-center" style="text-transform: uppercase">{{ $cih['acao'] }}</td>
