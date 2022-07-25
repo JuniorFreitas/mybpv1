@@ -264,7 +264,12 @@ class FeedbackCurriculo extends Model
         'empresa_id' => 'int',
     ];
 
-    protected $appends = ['vaga_aberta_municipio'];
+    protected $appends = ['vaga_aberta_municipio', 'fc_token'];
+
+    public function getFCTokenAttribute()
+    {
+        return \Crypt::encrypt($this->id);
+    }
 
     protected function serializeDate(DateTimeInterface $date)
     {
@@ -784,6 +789,11 @@ class FeedbackCurriculo extends Model
     public function Afastamentos()
     {
         return $this->hasMany(Afastamento::class, 'feedback_id', 'id');
+    }
+
+    public function Cih()
+    {
+        return $this->belongsToMany(Cih::class, 'cih_feedback', 'feedback_id', 'cih_id');
     }
 
     /**/

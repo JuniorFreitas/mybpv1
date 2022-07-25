@@ -21,7 +21,7 @@
                                 <div class="form-group">
                                     <label>Tipo</label>
                                     <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
-                                    :disabled="aprovando" v-for="item in lista"  v-model="item.tag.label">
+                                           :disabled="aprovando" v-for="item in lista" v-model="item.tag.label">
                                 </div>
                             </div>
 
@@ -148,7 +148,6 @@
                         <thead>
                         <tr class="bg-default">
                             <th class="text-center">ID</th>
-                            <th v-if="cliente_id == 1">Cliente</th>
                             <th>Colaborador</th>
                             <th class="text-center">Lançamento</th>
                             <th class="text-center">Aprovação</th>
@@ -157,34 +156,33 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="item in lista" :class="
-                                item.status === 'aberto' ? 'table-warning' : item.status === 'reprovado' ? 'table-danger' : item.status === 'aprovado' ? 'table-success' : null
-                ">
+                        <tr v-for="item in lista" :class="{
+                            'table-warning': item.status.includes('aberto'),
+                            'table-danger': item.status.includes('reprovado'),
+                            'table-success': item.status.includes('aprovado'),
+                        }">
                             <td class="text-center">
-                                {{item.id}}
-                            </td>
-
-                            <td v-if="cliente_id === 1">
-                                {{item.cliente.nome_fantasia}}
+                                {{ item.id }}
                             </td>
 
                             <td>
-                                {{item.colaborador.curriculo.nome}}
+                                {{ item.colaborador.curriculo.nome }}
                             </td>
 
                             <td class="text-center">
-                                Lançado por {{item.responsavel_lancamento.nome}} <br>
-                                em {{item.data_lancamento}}
-                            </td>
-                            <td class="text-center">
-                        <span v-if="item.status === 'aprovado'">
-                            Aprovado por {{item.responsavel_aprovacao.nome}} <br>
-                            em {{item.data_aprovacao}}
-                        </span>
+                                Lançado por {{ item.responsavel_lancamento.nome }} <br>
+                                em {{ item.data_lancamento }}
                             </td>
 
                             <td class="text-center">
-                                {{item.status}}
+                                <span v-if="item.status.includes('aprovado') || item.status.includes('reprovado')">
+                                    {{ item.status | capitalize() }} por {{item.responsavel_aprovacao.nome}} <br>
+                                    em {{item.updated_at}}
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+                                {{item.status | capitalize() }}
                             </td>
 
                             <td class="text-center">
@@ -208,159 +206,159 @@
 </template>
 
 <script>
-    import autocomplete from '../../AutoComplete';
-    import DatePicker from "../../DatePicker";
-    import Upload from "../../Upload";
+import autocomplete from "../../AutoComplete";
+import DatePicker from "../../DatePicker";
+import Upload from "../../Upload";
 
-    export default {
-        props: {
-            feedback_id: {
-                type: Number,
-                required: true
+export default {
+    props: {
+        fc_token: {
+            type: String,
+            required: true
+        },
+        model: {
+            type: Array
+        },
+        hash: {
+            type: String,
+            default: `mastertag_${parseInt((Math.random() * 999999))}`
+        }
+    },
+    data() {
+        return {
+            tituloJanela: "Cadastrando CIH",
+            preloadAjax: false,
+            editando: false,
+            leitura: false,
+            apagado: false,
+            aprovando: false,
+            preload: false,
+            URL_ADMIN,
+
+            colaborador_ativo: `autocomplete/colaboradorCih`,
+            todos_municipios: `autocomplete/todos-municipios`,
+
+            //hash: `mastertag_${parseInt((Math.random() * 999999))}`,
+            cliente_id: 0,
+
+            hoje: "",
+            //feedback_id: '',
+
+
+            form: {
+                tag_id: "",
+                outra_tag: "",
+                feedback_id: "",
+                autocomplete_label_colaborador: "",
+                autocomplete_label_colaborador_anterior: "",
+                cliente_id: "",
+                area_id: "",
+                outra_area: "",
+                acao: "",
+                user_lancamento_id: "",
+                obs_lancamento: "",
+                data_lancamento: "",
+                user_aprovacao_id: "",
+                obs_aprovacao: "",
+                data_aprovacao: "",
+                status: "",
+                status_aprovacao: "",
+                anexos: [],
+                anexosDel: []
             },
-            model: {
-                type: Array,
-            },
-            hash: {
-                type: String,
-                default: `mastertag_${parseInt((Math.random() * 999999))}`
+
+            url_anexo: `${URL_ADMIN}/storage/uploadAnexos`,
+            anexoUploadAndamento: false,
+
+            formDefault: null,
+
+            campoNome: null,
+
+            cadastrado: false,
+            atualizado: false,
+
+            lista: [],
+            listaTags: [],
+            listaAreas: [],
+            listaClientes: []
+        };
+    },
+    mounted() {
+        this.formDefault = _.cloneDeep(this.form); //copia
+        this.atualizar();
+    },
+    filters: {
+        capitalize(value) {
+            if (!value) return "";
+            value = value.toString();
+            return value.charAt(0).toUpperCase() + value.slice(1);
+        }
+    },
+    components: {
+        autocomplete,
+        DatePicker,
+        Upload
+    },
+    methods: {
+        selecionaColaborador(obj) {
+            this.form.feedback_id = obj.id;
+            this.form.cliente_id = obj.cliente_id;
+            this.form.autocomplete_label_colaborador = obj.label;
+            this.form.autocomplete_label_colaborador_anterior = obj.label;
+        },
+        resetaCampoColaborador() {
+            if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
+                this.form.autocomplete_label_colaborador_anterior = "";
+                this.form.autocomplete_label_colaborador = "";
+                this.form.feedback_id = "";
+                this.form.cliente_id = "";
+
+                setTimeout(() => {
+                    if (this.form.feedback_id === "") {
+                        valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
+                        // $('#janelaCadastrar #' + this.hash).focus().trigger('blur');
+                        $(`#janelaCadastrar #colaborador_${this.hash}`).focus().trigger("blur");
+                        mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
+                    }
+                }, 100);
             }
         },
-        data() {
-            return {
-                tituloJanela: 'Cadastrando CIH',
-                preloadAjax: false,
-                editando: false,
-                leitura: false,
-                apagado: false,
-                aprovando: false,
-                preload: false,
-                URL_ADMIN,
 
-                colaborador_ativo: `autocomplete/colaboradorCih`,
-                todos_municipios: `autocomplete/todos-municipios`,
-
-                //hash: `mastertag_${parseInt((Math.random() * 999999))}`,
-                cliente_id: 0,
-
-                hoje: '',
-                //feedback_id: '',
+        formAprovar(id) {
+            this.cadastrado = false;
+            this.atualizado = false;
+            this.editando = false;
+            this.aprovando = true;
+            this.tituloJanela = `Aprovando CIH #${id}`;
+            this.preloadAjax = true;
+            formReset();
 
 
-                form: {
-                    tag_id: '',
-                    outra_tag: '',
-                    feedback_id: '',
-                    autocomplete_label_colaborador: '',
-                    autocomplete_label_colaborador_anterior: '',
-                    cliente_id: '',
-                    area_id: '',
-                    outra_area: '',
-                    acao: '',
-                    user_lancamento_id: '',
-                    obs_lancamento: '',
-                    data_lancamento: '',
-                    user_aprovacao_id: '',
-                    obs_aprovacao: '',
-                    data_aprovacao: '',
-                    status: '',
-                    status_aprovacao: '',
-                    anexos: [],
-                    anexosDel: [],
-                },
+            this.form = _.cloneDeep(this.formDefault); //copia
+            this.leitura = true;
 
-                url_anexo: `${URL_ADMIN}/storage/uploadAnexos`,
-                anexoUploadAndamento: false,
+            axios.get(`${URL_ADMIN}/apontamento/cih/${id}/editar`)
+                .then(response => {
+                    Object.assign(this.form, response.data);
+                    this.editando = true;
+                    this.preloadAjax = false;
+                    setupCampo();
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
 
-                formDefault: null,
-
-                campoNome: null,
-
-                cadastrado: false,
-                atualizado: false,
-
-                lista: [],
-                listaTags: [],
-                listaAreas: [],
-                listaClientes: [],
-            }
         },
-        mounted() {
-            this.formDefault = _.cloneDeep(this.form) //copia
-            this.atualizar();
-        },
-        components: {
-            autocomplete,
-            DatePicker,
-            Upload
-        },
-        methods: {
-            selecionaColaborador(obj) {
-                this.form.feedback_id = obj.id;
-                this.form.cliente_id = obj.cliente_id;
-                this.form.autocomplete_label_colaborador = obj.label;
-                this.form.autocomplete_label_colaborador_anterior = obj.label;
-            },
-            resetaCampoColaborador() {
-                if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
-                    this.form.autocomplete_label_colaborador_anterior = '';
-                    this.form.autocomplete_label_colaborador = '';
-                    this.form.feedback_id = '';
-                    this.form.cliente_id = '';
 
-                    setTimeout(() => {
-                        if (this.form.feedback_id === '') {
-                            valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                            // $('#janelaCadastrar #' + this.hash).focus().trigger('blur');
-                            $(`#janelaCadastrar #colaborador_${this.hash}`).focus().trigger('blur');
-                            mostraErro('Erro', 'O Campo Vaga não pode ficar vazio');
-                        }
-                    }, 100);
-                }
-            },
-
-            formAprovar(id) {
-                this.cadastrado = false;
-                this.atualizado = false;
-                this.editando = false;
-                this.aprovando = true;
-                this.tituloJanela = `Aprovando CIH #${id}`;
-                this.preloadAjax = true;
-                formReset();
-
-
-                this.form = _.cloneDeep(this.formDefault) //copia
-                this.leitura = true;
-
-                axios.get(`${URL_ADMIN}/apontamento/cih/${id}/editar`)
-                    .then(response => {
-                        Object.assign(this.form, response.data);
-                        this.editando = true;
-                        this.preloadAjax = false;
-                        setupCampo();
-                    }).catch(
-                    error => (this.preloadAjax = false)
-                );
-
-            },
-
-            atualizar() {
-                this.preload = true;
-                axios.get(`${URL_ADMIN}/historico/cih/${this.feedback_id}`).then(res => {
-                    let data = res.data;
-                    Object.assign(this.form, data);
-                    this.lista = data.itens;
-                    this.listaTags = data.tags;
-                    this.listaAreas = data.areas;
-                    this.cliente_id = data.cliente_id;
-                    this.datarelatorio = data.intervalo;
-                    this.hoje = data.hoje;
-                    this.listaClientes = data.listaClientes;
-                    this.preload = false;
-                })
-            }
+        atualizar() {
+            this.preload = true;
+            axios.get(`${URL_ADMIN}/historico/cih/${this.fc_token}`).then(res => {
+                let data = res.data;
+                this.lista = data.cih;
+                this.preload = false;
+            });
         }
     }
+};
 
 </script>
 

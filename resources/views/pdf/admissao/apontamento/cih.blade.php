@@ -4,9 +4,12 @@
     @include('layouts.cabecalioEmpresa')
 @endsection
 @section('conteudo')
-    <h5 class="text-center text-uppercase" style="margin-top: 30px">{{$empresa->nome}} <br> REGISTRO DE
-        JUSTIFICATIVA DE PONTO - PERÍODO {{(new \MasterTag\DataHora($dataInicio))->dataCompleta()}}
-        à {{(new \MasterTag\DataHora($dataFim))->dataCompleta()}} <br>
+    <h5 class="text-center text-uppercase" style="margin-top: 30px">
+        {{$empresa->nome}} <br> REGISTRO DE JUSTIFICATIVA DE PONTO
+        @if($filtroPeriodo)
+            - PERÍODO {{(new \MasterTag\DataHora($dataInicio))->dataCompleta()}}
+            à {{(new \MasterTag\DataHora($dataFim))->dataCompleta()}} <br>
+        @endif
     </h5>
 
     <table width="100%" border="0" class="tabela" style="margin-top: 30px">
