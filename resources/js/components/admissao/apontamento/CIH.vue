@@ -103,22 +103,22 @@
                                 </div>
                             </div>
 
-                            <div class="col-12" v-if="form.varios_colaboradores">
-                                <div class="form-group">
-                                    <label>Informe os colaboradores</label>
-                                    <textarea
-                                        class="form-control validacampo"
-                                        :disabled="aprovando"
-                                        v-model="form.colaboradores_avulso"
-                                        cols="5"
-                                        rows="5"
-                                    ></textarea>
-                                </div>
-                            </div>
+<!--                            <div class="col-12" v-if="form.varios_colaboradores">-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>Informe os colaboradores</label>-->
+<!--                                    <textarea-->
+<!--                                        class="form-control validacampo"-->
+<!--                                        :disabled="aprovando"-->
+<!--                                        v-model="form.colaboradores_avulso"-->
+<!--                                        cols="5"-->
+<!--                                        rows="5"-->
+<!--                                    ></textarea>-->
+<!--                                </div>-->
+<!--                            </div>-->
 
-                            <div class="col-12" v-if="!form.varios_colaboradores">
+                            <div class="col-12">
                                 <div class="form-group">
-                                    <label>Colaborador</label>
+                                    <label>Informe os Colaboradores</label>
                                     <autocomplete
                                         :caminho="colaborador_ativo"
                                         :formsm="false"
@@ -127,9 +127,31 @@
                                         placeholder="Selecione um(a) colaborador(a)"
                                         :disabled="aprovando"
                                         :id="`colaborador_${hash}`"
-                                        @onblur="resetaCampoColaborador"
                                         @onselect="selecionaColaborador"
                                     ></autocomplete>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-condensed bg-white"
+                                           v-if="form.colaboradores.length">
+                                        <thead>
+                                        <tr class="bg-default">
+                                            <th class="text-center">Nome</th>
+                                            <th class="text-center">Remover</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="(colaborador, index) in form.colaboradores">
+                                            <td class="text-center">{{colaborador.curriculo.nome}}</td>
+                                            <td class="text-center">
+                                                <a href="javascript://" class="btn btn-sm btn-danger"
+                                                   @click.prevent="removerLIColaborador(index)">
+                                                    <i class="fa fa-times" aria-hidden="true"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 
@@ -497,6 +519,8 @@ export default {
                 tag_id: "",
                 outra_tag: "",
                 feedback_id: "",
+                colaboradores: [],
+                colaboradoresDelete: [],
                 autocomplete_label_colaborador: "",
                 autocomplete_label_colaborador_anterior: "",
                 cliente_id: "",
@@ -596,11 +620,34 @@ export default {
                 });
             }
         },
+        removerLIColaborador(index) {
+            if (!this.form.colaboradores[index].novo) {
+                this.form.colaboradoresDelete.push(this.form.colaboradores[index].id);
+            }
+            this.form.colaboradores.splice(index, 1);
+        },
         selecionaColaborador(obj) {
-            this.form.feedback_id = obj.id;
-            this.form.cliente_id = obj.cliente_id;
-            this.form.autocomplete_label_colaborador = obj.label;
-            this.form.autocomplete_label_colaborador_anterior = obj.label;
+            // this.form.feedback_id = obj.id;
+            // this.form.cliente_id = obj.cliente_id;
+            // this.form.autocomplete_label_colaborador = obj.label;
+            // this.form.autocomplete_label_colaborador_anterior = obj.label;
+
+            const colaborador = {};
+
+            Object.assign(colaborador, obj);
+            colaborador.novo = true;
+
+
+            let atual = this.form.colaboradores.findIndex(val => val.id === colaborador.id);
+
+            if (atual < 0) {//Se não existir ainda no array
+                this.form.colaboradores.push(colaborador);
+            } else {
+                mostraErro("", `O colaborador(a) ${colaborador.nome} já está na lista.`);
+                this.form.autocomplete_label_colaborador = "";
+                return false;
+            }
+            this.form.autocomplete_label_colaborador = "";
         },
         resetaCampoColaborador() {
             if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
