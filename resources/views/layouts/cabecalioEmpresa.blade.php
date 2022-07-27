@@ -14,7 +14,9 @@
                 {{auth()->user()->DadosEmpresa->razao_social}}
             </h1><br>
             <p style="font-size: 8pt; text-align: center; margin-top: -10px ">
-                CNPJ: {{auth()->user()->DadosEmpresa->cnpj}}
+                @if($dados['empresa_id'] != 5581)
+                    CNPJ: {{auth()->user()->DadosEmpresa->cnpj}}
+                @endif
             </p>
             <br>
         </th>
