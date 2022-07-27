@@ -136,22 +136,18 @@ class CihController extends Controller
     public function edit(Cih $cih)
     {
 
-//        return $cih->load(
-//            'CihFeedbacks:id,curriculo_id,vagas_abertas_id',
-//            'CihFeedbacks.Curriculo:id,nome,nascimento,rg',
-//            'Anexos','Tag','Area'
-//        );
-        if ($cih->feedback_id) {
-            $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaAberta->VagaSelecionada->nome} - {$cih->Colaborador->VagaAberta->Municipio->uf}";
-            $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
-        }
 
+//        if ($cih->feedback_id) {
+//            $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaAberta->VagaSelecionada->nome} - {$cih->Colaborador->VagaAberta->Municipio->uf}";
+//            $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
+//        }
+//
         $cih->tag_id = is_null($cih->tag_id) ? 0 : $cih->tag_id;
         $cih->area_id = is_null($cih->area_id) ? 0 : $cih->area_id;
         $cih->status_aprovacao = $cih->status;
 
 
-        return $cih->load('Anexos', 'Tag', 'Area', 'CihFeedbacks');
+        return $cih->load('Anexos', 'Tag', 'Area', 'Colaboradores');
     }
 
     /**
@@ -443,7 +439,7 @@ class CihController extends Controller
         $filtroPeriodo = $request->filtroPeriodo == 'true';
         $dataInicio = "";
         $dataFim = "";
-        if ($filtroPeriodo){
+        if ($filtroPeriodo) {
             $intervalo = explode(' até ', $request->periodo);
             $dataInicio = (new DataHora($intervalo[0] . ' 00:00:00'))->dataHoraInsert();
             $dataFim = (new DataHora($intervalo[1] . ' 23:59:59'))->dataHoraInsert();
@@ -488,7 +484,7 @@ class CihController extends Controller
 
 
         $empresa = User::whereId(auth()->user()->empresa_id)->first();
-        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim','filtroPeriodo'));
+        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim', 'filtroPeriodo'));
 //        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim'));
         $pdf->setPaper('A4', 'landscape');
 
