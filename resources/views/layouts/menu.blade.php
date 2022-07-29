@@ -51,9 +51,26 @@
             @endcan
             @can('administracao_clientes')
                 <li>
-                    <a href="{{route('g.administracao.documentoslegais.documentoslegais.index')}}" key="clientes">
-                        Documentos Legais
-                    </a>
+                    <a href="javascript://" class="has-arrow waves-effect">
+                        Documentos Legais</a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li>
+                            <a href="{{route('g.administracao.documentoslegais.contrato.contrato.index')}}" key="contrato">
+                            Contrato
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{route('g.administracao.documentoslegais.empresa.empresa.index')}}" key="documentoempresa">
+                            Documentos Empresa
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{route('g.administracao.documentoslegais.ssma.ssma.index')}}" key="documentossma">
+                            Documentos SSMA
+                            </a>
+                        </li>
+
+                    </ul>
                 </li>
             @endcan
             @can('administracao_atareuniao')

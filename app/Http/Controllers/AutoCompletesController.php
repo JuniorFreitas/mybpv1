@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Models\DocumentoContratos;
 use App\Models\FeedbackCurriculo;
 use App\Models\Municipio;
 use App\Models\User;
@@ -330,6 +331,33 @@ class AutoCompletesController extends Controller
             ->get()
             ->map(function ($item) {
                 $item->label = $item->nome;
+                return $item;
+            });
+    }
+
+    public function documentosLegaisContrato(Request $request)
+    {
+        $busca = $request->query('busca');
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+        $quantidade = $request->query('rows');
+
+        $busca = $request->query('busca');
+
+        $contratos = DocumentoContratos::select([
+            'id',
+            'dados_cadastrais->razao_social as razao_social',
+            'dados_cadastrais->nome as nome',
+            'dados_cadastrais->tipo as tipo'
+        ]);
+
+        return $contratos->where('dados_cadastrais->razao_social', 'like', '%' . $busca . '%')
+            ->orWhere('dados_cadastrais->nome', 'like', '%' . $busca . '%')
+            ->take($quantidade)
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->tipo == DocumentoContratos::TIPO_PESSOA_FISICA ? $item->nome : $item->razao_social;
                 return $item;
             });
     }

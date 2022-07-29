@@ -249,6 +249,18 @@ return [
             ]
         ),
 
+        'disco-cliente' => array_merge($default,
+            [
+                'urlDelete' => env('APP_URL') . '/g/administracao/documentoslegais/documentoempresa/anexo',
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-documento-empresa') : 'arquivos/disco-documento-empresa',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-documento-empresa',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-documento-empresa',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/storage/anexo" : env('AWS_URL') . '/arquivos/disco-documento-empresa',
+
+                'visibility' => 'public',
+            ]
+        ),
+
         'public' => array_merge($default,
             [
                 'root' => storage_path('app/public'),

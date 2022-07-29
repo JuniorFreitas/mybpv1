@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 
-class DocumentoLegais extends Model
+class DocumentoContratos extends Model
 {
     use HasFactory, TenantTrait;
 
@@ -21,7 +21,7 @@ class DocumentoLegais extends Model
         $activity->descricao = "";
     }
 
-    protected $table = 'documento_legais';
+    protected $table = 'documento_contratos';
 
     protected $fillable = [
         'dados_cadastrais',
@@ -38,6 +38,8 @@ class DocumentoLegais extends Model
     public const TIPO_DOCUMENTOS_CONTRATO = 'Documentos Contrato';
     public const TIPO_DOCUMENTOS_EMPRESA = 'Documentos Empresa';
     public const TIPO_DOCUMENTOS_SSMA = 'Documentos SSMA';
+    public const TIPO_PESSOA_JURIDICA = 'Pessoa Jurídica';
+    public const TIPO_PESSOA_FISICA = 'Pessoa Física';
 
     public function getDadosCadastraisAttribute($value)
     {
@@ -61,19 +63,14 @@ class DocumentoLegais extends Model
         return $endereco_completo;
     }
 
-    public function ServicosCliente()
-    {
-        return $this->hasMany(ServicosCliente::class, 'cliente_id', 'id')->orderByDesc('id');
-    }
-
-    public function ServicosProspect()
-    {
-        return $this->hasMany(ServicosProspects::class, 'cliente_id', 'id');
-    }
-
     public function Logo()
     {
         return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id');
+    }
+
+    public function Empresa()
+    {
+        return $this->hasOne(Cliente::class, 'id', 'empresa_id');
     }
 
 }

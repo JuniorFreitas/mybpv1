@@ -9,7 +9,9 @@ use App\Models\Area;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\ClienteConfig;
-use App\Models\DocumentoLegais;
+use App\Models\DocumentoEmpresa;
+use App\Models\DocumentoContratos;
+use App\Models\DocumentoSsma;
 use App\Models\FeriasPrevista;
 use App\Models\Habilidade;
 use App\Models\Papel;
@@ -26,8 +28,7 @@ use Mail;
 use MasterTag\DataHora;
 use PDF;
 
-
-class DocumentosLegaisController extends Controller
+class DocumentosLegaisContratoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -36,17 +37,7 @@ class DocumentosLegaisController extends Controller
      */
     public function index()
     {
-        return view('g.administracao.documentoslegais.index');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return view('g.administracao.documentoslegais.contrato.index');
     }
 
     /**
@@ -65,7 +56,7 @@ class DocumentosLegaisController extends Controller
         $arrayValidacao = [
             'dados_cadastrais.nome' => [function ($attribute, $value, $fail) use ($dados) {
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && strlen($value) <= 2) {
-                    $mensagem = strlen($value) <= 2 ? 'O campo nome deve conter no minimo três caracteres ':'Preencha o campo informando nome. ';
+                    $mensagem = strlen($value) <= 2 ? 'O campo nome deve conter no minimo três caracteres ' : 'Preencha o campo informando nome. ';
                     $fail($mensagem);
                 }
             }],
@@ -74,7 +65,7 @@ class DocumentosLegaisController extends Controller
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !Sistema::validaRuleCPF($value)) {
                     $fail('Informe um CPF válido.');
                 }
-                $verificaCpf = DocumentoLegais::whereJsonContains('dados_cadastrais->cpf', $value)->first();
+                $verificaCpf = DocumentoContratos::whereJsonContains('dados_cadastrais->cpf', $value)->first();
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && $verificaCpf) {
                     $fail('CPF já cadastrado');
                 }
@@ -93,7 +84,7 @@ class DocumentosLegaisController extends Controller
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 14) {
                     $fail('Preencha o campo informando CNPJ.');
                 }
-                $verificaCnpj = DocumentoLegais::whereJsonContains('dados_cadastrais->cnpj', $value)->first();
+                $verificaCnpj = DocumentoContratos::whereJsonContains('dados_cadastrais->cnpj', $value)->first();
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && $verificaCnpj) {
                     $fail('CNPJ já cadastrado');
                 }
@@ -113,14 +104,14 @@ class DocumentosLegaisController extends Controller
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
-                'msg' => 'Erro ao cadastrar Documento Legais',
+                'msg' => 'Erro ao cadastrar Documento Contrato',
                 'erros' => $dadosValidados->errors()
             ], 400);
         }
 
         try {
             DB::beginTransaction();
-            DocumentoLegais::create($dados);
+            DocumentoContratos::create($dados);
 
 //                // Se tem Documento legais
 //                if (isset($dados['servicos_cliente'])) {
@@ -165,8 +156,6 @@ class DocumentosLegaisController extends Controller
 //                        }
 //                    }
 //                }
-//
-//
 //                if (isset($dados['cliente_config'])) {
 //                    $dados['cliente_config']['envia_whatsapp'] = $dados['cliente_config']['envia_whatsapp'] == 'true' ? true : false;
 //                    $dadosClienteConfig = [
@@ -194,143 +183,30 @@ class DocumentosLegaisController extends Controller
         }
     }
 
-    public function storeEmpresa(Request $request)
-    {
-        $this->authorize('administracao_clientes_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-
-        $arrayValidacao = [
-            'documentos_empresa.*.observacao' => [function ($attribute, $value, $fail) use ($dados) {
-                if ( strlen($value) <= 3) {
-                    $fail('Informe uma observação maior que 3 caracteres.');
-                }
-            }],
-            'documentos_empresa.*.tipo_descricao' => [function ($attribute, $value, $fail) use ($dados) {
-                if ( strlen($value) <= 3) {
-                    $fail('Informe uma descrição maior que 3 caracteres.');
-                }
-            }],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Documento Legais',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
-        die();
-        try {
-            DB::beginTransaction();
-            DocumentoLegais::create($dados);
-            DB::commit();
-
-
-            return response()->json([], 201);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $msg = "error STORE DOCUMENTOS EMPRESA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-            \Log::debug($msg);
-            return response()->json([
-                'msg' => $msg,
-            ], 400);
-        }
-
-    }
-
-    public function storeSSMA(Request $request)
-    {
-        $this->authorize('administracao_clientes_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-
-        $arrayValidacao = [
-            'documentos_ssma.*.observacao' => [function ($attribute, $value, $fail) use ($dados) {
-                if ( strlen($value) <= 3) {
-                    $fail('Informe uma observação maior que 3 caracteres.');
-                }
-            }],
-            'documentos_ssma.*.tipo_descricao' => [function ($attribute, $value, $fail) use ($dados) {
-                if ( strlen($value) <= 3) {
-                    $fail('Informe uma descrição maior que 3 caracteres.');
-                }
-            }],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Documento Legais',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
-        die();
-        try {
-            DB::beginTransaction();
-            DocumentoLegais::create($dados);
-            DB::commit();
-
-
-            return response()->json([], 201);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $msg = "error STORE DOCUMENTOS SSMA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-            \Log::debug($msg);
-            return response()->json([
-                'msg' => $msg,
-            ], 400);
-        }
-
-    }
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\Cliente $cliente
-     * @return \Illuminate\Http\JsonResponse
+     * @param DocumentoContratos $contrato
+     * @return DocumentoContratos
      */
-    public function edit(Cliente $cliente)
+    public function edit(DocumentoContratos $contrato)
     {
-        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote', 'ClienteConfig', 'Papel.habilidades');
-        $cliente->areas_etiquetas_del = [];
-        $cliente->ServicosCliente->transform(function ($item) {
-            $item->anexosDel = [];
-            return $item;
-        });
-        $cliente->ServicosProspect->transform(function ($item) {
+        $contrato = $contrato->load('Logo', 'EmpresaConfig');
+        $contrato->ServicosCliente->transform(function ($item) {
             $item->anexosDel = [];
             return $item;
         });
 
-        $listaDeHabilidades = Habilidade::orderBy('nome', 'asc')->get()->map(function ($habilidade) {
-            $habilidade->caracter = substr_count($habilidade->nome, '_');
-            $habilidade->acesso = false;
-            $habilidade->menu = strstr($habilidade->nome, "_", true) == false ? $habilidade->nome : strstr($habilidade->nome, "_", true);
-            if ($habilidade->caracter >= 2) {
-                $habilidade->submenu = strstr($habilidade->nome, "_", false) == false ? $habilidade->nome : substr(strstr($habilidade->nome, "_", false), 1);
-            }
-            return $habilidade;
-        });
+        return $contrato;
 
-        $todosMenu = array_unique(array_column($listaDeHabilidades->toArray(), 'menu'));
-
-        return response()->json([
-            'cliente' => $cliente,
-            'listaDeHabilidades' => $listaDeHabilidades,
-            'todosMenu' => $todosMenu
-        ]);
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Cliente $cliente
+     * @param Request $request
+     * @param DocumentoContratos $contrato
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
-    public function update(Request $request, DocumentoLegais $documentoLegais)
+    public function update(Request $request, DocumentoContratos $contrato)
     {
         $this->authorize('administracao_clientes_insert');
         $dados = $request->input();
@@ -340,7 +216,7 @@ class DocumentosLegaisController extends Controller
         $arrayValidacao = [
             'dados_cadastrais.nome' => [function ($attribute, $value, $fail) use ($dados) {
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && strlen($value) <= 2) {
-                    $mensagem = strlen($value) <= 2 ? 'O campo nome deve conter no minimo três caracteres ':'Preencha o campo informando nome. ';
+                    $mensagem = strlen($value) <= 2 ? 'O campo nome deve conter no minimo três caracteres ' : 'Preencha o campo informando nome. ';
                     $fail($mensagem);
                 }
             }],
@@ -349,7 +225,7 @@ class DocumentosLegaisController extends Controller
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !Sistema::validaRuleCPF($value)) {
                     $fail('Informe um CPF válido.');
                 }
-                $verificaCpf = DocumentoLegais::whereJsonContains('dados_cadastrais->cpf', $value)->first();
+                $verificaCpf = DocumentoContratos::whereJsonContains('dados_cadastrais->cpf', $value)->first();
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && $verificaCpf) {
                     $fail('CPF já cadastrado');
                 }
@@ -368,7 +244,7 @@ class DocumentosLegaisController extends Controller
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 14) {
                     $fail('Preencha o campo informando CNPJ.');
                 }
-                $verificaCnpj = DocumentoLegais::whereJsonContains('dados_cadastrais->cnpj', $value)->first();
+                $verificaCnpj = DocumentoContratos::whereJsonContains('dados_cadastrais->cnpj', $value)->first();
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && $verificaCnpj) {
                     $fail('CNPJ já cadastrado');
                 }
@@ -395,11 +271,11 @@ class DocumentosLegaisController extends Controller
 
         try {
             DB::beginTransaction();
-            DocumentoLegais::create($dados);
+            DocumentoContratos::create($dados);
 
-                DB::beginTransaction();
+            DB::beginTransaction();
 
-                $documentoLegais->update($dados);
+            $contrato->update($dados);
 //
 //                if (isset($dados['logoDel'])) {
 //                    foreach ($dados['logoDel'] as $id) {
@@ -433,26 +309,6 @@ class DocumentosLegaisController extends Controller
 //                        $cliente->Mascote()->find($id)->delete();
 //                    }
 //                }
-//
-//
-//                if (isset($dados['mascote'])) {
-//                    foreach ($dados['mascote'] as $index => $anexo) {
-//                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-//                        if ($anexo['chave'] == null) {
-//                            Arquivo::whereId($anexo['id'])->update([
-//                                'nome' => $anexo['nome'],
-//                            ]);
-//                        } else {
-//                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-//                            if ($arquivo) {
-//                                $arquivo->temporario = false;
-//                                $arquivo->chave = '';
-//                                $arquivo->save();
-//                                $cliente->Mascote()->attach($arquivo->id);
-//                            }
-//                        }
-//                    }
-//                }
 //                if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
 //                    $config = ClienteConfig::find($dados['cliente_config']['id']);
 //                    $config->update([
@@ -469,55 +325,18 @@ class DocumentosLegaisController extends Controller
 //                    ];
 //                    ClienteConfig::create($dadosClienteConfig);
 //                }
-//
-//                $verificaTrue = $dados['listaDeHabilidades'];
-//                $verificaFalse = $dados['listaDeHabilidades'];
-//
-//                $habilidades = collect($verificaTrue)->filter(function ($habilidade) {
-//                    if ($habilidade['acesso'] == true) {
-//                        return $habilidade;
-//                    }
-//                })->pluck('id');
-//
-//                $cliente->Papel->habilidades()->sync($habilidades);
-//
-//                $todosPapeis = Papel::whereEmpresaId($cliente->id)->where('master', false)->with('habilidades')->get();
-//
-//                $habilidadesRetiradas = collect($verificaFalse)->filter(function ($habilidade) {
-//                    if ($habilidade['acesso'] == false) {
-//                        return $habilidade;
-//                    }
-//                })->pluck('id');
-//
-//                foreach ($todosPapeis as $papel) {
-//                    $papel->habilidades()->detach($habilidadesRetiradas);
-//                }
+            DB::commit();
+            return response()->json([], 201);
 
-                DB::commit();
-                return response()->json([], 201);
+        } catch (\Exception $e) {
 
-            } catch (\Exception $e) {
-
-                DB::rollBack();
-                $msg = "error UPDATE DOCUMENTOS EMPRESA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json([
-                    'msg' => $msg,
-                ], 400);
-            }
+            DB::rollBack();
+            $msg = "error UPDATE DOCUMENTOS EMPRESA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json([
+                'msg' => $msg,
+            ], 400);
         }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\Cliente $clientes
-     * @return \Illuminate\Http\Response
-     */
-
-    public function destroy(DocumentoLegais $documentoLegais)
-    {
-        $this->authorize('administracao_clientes_delete');
-        $documentoLegais->delete();
     }
 
     public function atualizar(Request $request)
@@ -538,7 +357,7 @@ class DocumentosLegaisController extends Controller
 
     public function filtro(Request $request)
     {
-        $resultado = DocumentoLegais::orderByDesc('id');
+        $resultado = DocumentoContratos::orderByDesc('id');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
@@ -563,20 +382,13 @@ class DocumentosLegaisController extends Controller
         return $resultado;
     }
 
-    public function ativaDesativa(Cliente $cliente)
+    public function ativaDesativa(DocumentoContratos $contrato)
     {
-        $cliente->ativo = !$cliente->ativo;
-        $cliente->save();
-        $cliente->refresh();
+        $contrato->ativo = !$contrato->ativo;
+        $contrato->save();
+        $contrato->refresh();
 
-        $users = User::whereEmpresaId($cliente->id)->get();
-        foreach ($users as $user) {
-            $user['ativo'] = $cliente->ativo;
-            $user->save();
-            $user->refresh();
-        }
-
-        return response()->json(['ativo' => $cliente->ativo], 201);
+        return response()->json(['ativo' => $contrato->ativo], 201);
     }
 
     public function buscaCNPJ(Request $request)
@@ -643,27 +455,6 @@ class DocumentosLegaisController extends Controller
 
     //foto
     public function logoDownload(Request $request, $arquivo)
-    {
-        return Arquivo::anexoDownload(Arquivo::DISCO_CLIENTE, $arquivo);
-    }
-
-    // Mascote-------------------------------------------------
-    public function uploadMascote(Request $request)
-    {
-        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_CLIENTE);
-    }
-
-    public function mascoteShow(Request $request, $arquivo)
-    {
-        return Arquivo::anexoShow(Arquivo::DISCO_CLIENTE, $arquivo);
-    }
-
-    public function mascoteDelete(Request $request, $arquivo)
-    {
-        return Arquivo::anexoDelete(Arquivo::DISCO_CLIENTE, $arquivo);
-    }
-
-    public function mascoteDownload(Request $request, $arquivo)
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_CLIENTE, $arquivo);
     }

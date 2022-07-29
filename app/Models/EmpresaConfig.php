@@ -85,4 +85,5 @@ class EmpresaConfig extends Model
     public function Empresa(){
         return $this->hasOne(User::class,'id','empresa_id');
     }
+
 }

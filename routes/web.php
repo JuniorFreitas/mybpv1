@@ -109,6 +109,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 //        Route::get('colaboradorIntermitente/{cliente_id}', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitenteCliente'])->name('colaboradorIntermitenteCliente');
 
         Route::get('funcionarios', [\App\Http\Controllers\AutoCompletesController::class, 'funcionarios'])->name('funcionarios');
+        Route::get('documentos-contratos', [\App\Http\Controllers\AutoCompletesController::class, 'documentosLegaisContrato'])->name('documentosLegaisContrato');
 
         //        Route::post('/treinamento/buscaCPF', 'TreinamentoEventoController@buscaCPF')->name('treinamento_sgi.buscaCPF');
     });
@@ -163,26 +164,58 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::resource('clientes', \App\Http\Controllers\ClientesController::class)->middleware('can:administracao_clientes');
         });
 
-        Route::group(['as' => 'documentoslegais.'], function () {
-            // Anexos
+        Route::group(['as' => 'documentoslegais.', 'prefix' => 'documentoslegais'], function () {
             // ####### DEVE CRIAR A HABILIDADE PARA DOCUMENTOS LEGAIS #########
-            Route::post('documentoslegais/uploadAnexos', [\App\Http\Controllers\DocumentosLegaisController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:administracao_clientes');
-            Route::get('documentoslegais/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisController::class, 'anexoShow'])->name('anexo-show')->middleware('can:administracao_clientes');
-            Route::get('documentoslegais/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosLegaisController::class, 'download'])->name('anexo-download')->middleware('can:administracao_clientes');
-            Route::delete('documentoslegais/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:administracao_clientes');
 
-//            Route::get('clientes/export', [\App\Http\Controllers\DocumentosLegaisController::class,'export'])->name('excel')->middleware('can:administracao_clientes');
-            Route::get('documentoslegais/buscar-cnpj', [\App\Http\Controllers\DocumentosLegaisController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:administracao_clientes');
-            Route::get('documentoslegais/buscar-cpf', [\App\Http\Controllers\DocumentosLegaisController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_clientes');
+//            Route::resource('documentoslegais', \App\Http\Controllers\DocumentosLegaisController::class, ['parameters' => ['documentoslegais' => 'documentoslegais']])->middleware('can:administracao_clientes');
+            Route::group(['as' => 'contrato.'], function () {
+                Route::post('contrato/uploadAnexos', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:administracao_clientes');
+                Route::get('contrato/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'anexoShow'])->name('anexo-show')->middleware('can:administracao_clientes');
+                Route::get('contrato/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'download'])->name('anexo-download')->middleware('can:administracao_clientes');
+                Route::delete('contrato/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:administracao_clientes');
+//            Route::get('clientes/export', [\App\Http\Controllers\\App\Http\Controllers\DocumentosLegaisContratoController::class,'export'])->name('excel')->middleware('can:administracao_clientes');
+                Route::get('contrato/buscar-cnpj', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:administracao_clientes');
+                Route::get('contrato/buscar-cpf', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_clientes');
 
-            Route::get('documentoslegais/{cliente}/pdf', [\App\Http\Controllers\DocumentosLegaisController::class, 'getFichaPdf'])->name('getFichapdf');
-            Route::put('documentoslegais/{cliente}/ativa-desativa', [\App\Http\Controllers\DocumentosLegaisController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_clientes');
-            Route::post('documentoslegais/search', [\App\Http\Controllers\DocumentosLegaisController::class, 'searchCliente'])->name('search')->middleware('can:administracao_clientes');
-            Route::post('documentoslegais/atualizar', [\App\Http\Controllers\DocumentosLegaisController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_clientes');
+                Route::get('contrato/{contrato}/pdf', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'getFichaPdf'])->name('getFichapdf');
+                Route::put('contrato/{contrato}/ativa-desativa', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_clientes');
+                Route::post('contrato/search', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'searchCliente'])->name('search')->middleware('can:administracao_clientes');
+                Route::post('contrato/atualizar', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_clientes');
+                Route::resource('contrato', \App\Http\Controllers\DocumentosLegaisContratoController::class)->middleware('can:administracao_clientes');
 
-            Route::post('documentoslegais/storeempresa', [\App\Http\Controllers\DocumentosLegaisController::class,'storeEmpresa'])->name('storeEmpresa')->middleware('can:administracao_clientes');
-            Route::post('documentoslegais/storessma', [\App\Http\Controllers\DocumentosLegaisController::class,'storeSSMA'])->name('storeSSMA')->middleware('can:administracao_clientes');
-            Route::resource('documentoslegais', \App\Http\Controllers\DocumentosLegaisController::class)->middleware('can:administracao_clientes');
+            });
+
+            Route::group(['as' => 'empresa.'], function () {
+                Route::post('empresa/uploadAnexos', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:administracao_clientes');
+                Route::get('empresa/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'anexoShow'])->name('anexo-show')->middleware('can:administracao_clientes');
+                Route::get('empresa/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'download'])->name('anexo-download')->middleware('can:administracao_clientes');
+                Route::delete('empresa/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:administracao_clientes');
+//            Route::get('clientes/export', [\App\Http\Controllers\\App\Http\Controllers\\App\Http\Controllers\DocumentosLegaisEmpresaController::class,'export'])->name('excel')->middleware('can:administracao_clientes');
+                Route::get('empresa/buscar-cnpj', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:administracao_clientes');
+                Route::get('empresa/buscar-cpf', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_clientes');
+
+                Route::get('empresa/{empresa}/pdf', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'getFichaPdf'])->name('getFichapdf');
+                Route::put('empresa/{empresa}/ativa-desativa', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_clientes');
+                Route::post('empresa/search', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'searchCliente'])->name('search')->middleware('can:administracao_clientes');
+                Route::post('empresa/atualizar', [\App\Http\Controllers\DocumentosLegaisEmpresaController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_clientes');
+                Route::resource('empresa', \App\Http\Controllers\DocumentosLegaisEmpresaController::class)->middleware('can:administracao_clientes');
+            });
+
+            Route::group(['as' => 'ssma.'], function () {
+                Route::post('ssma/uploadAnexos', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:administracao_clientes');
+                Route::get('ssma/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'anexoShow'])->name('anexo-show')->middleware('can:administracao_clientes');
+                Route::get('ssma/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'download'])->name('anexo-download')->middleware('can:administracao_clientes');
+                Route::delete('ssma/anexo/{arquivo}', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:administracao_clientes');
+//            Route::get('clientes/export', [\App\Http\Controllers\\App\Http\Controllers\\App\Http\Controllers\\App\Http\Controllers\DocumentosLegaisSsmaController::class,'export'])->name('excel')->middleware('can:administracao_clientes');
+                Route::get('ssma/buscar-cnpj', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:administracao_clientes');
+                Route::get('ssma/buscar-cpf', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_clientes');
+
+                Route::get('ssma/{ssma}/pdf', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'getFichaPdf'])->name('getFichapdf');
+                Route::put('ssma/{ssma}/ativa-desativa', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_clientes');
+                Route::post('ssma/search', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'searchCliente'])->name('search')->middleware('can:administracao_clientes');
+                Route::post('ssma/atualizar', [\App\Http\Controllers\DocumentosLegaisSsmaController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_clientes');
+                Route::resource('ssma', \App\Http\Controllers\DocumentosLegaisSsmaController::class)->middleware('can:administracao_clientes');
+            });
         });
 
         // Fornecedores
