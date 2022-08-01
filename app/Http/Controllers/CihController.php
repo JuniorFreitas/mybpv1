@@ -53,6 +53,7 @@ class CihController extends Controller
         $dados['data_lancamento'] = (new DataHora($dados['data_lancamento'] . ' ' . date('H:m:s')))->dataHoraInsert();
         $dados['outra_tag'] = $dados['tag_id'] == 0 ? $dados['outra_tag'] : 0;
         $dados['outra_area'] = $dados['area_id'] == 0 ? $dados['outra_area'] : null;
+        $dados['varios_colaboradores'] = count($dados['colaboradores']) > 1;
 
         $dadosValidados = \Validator::make($dados, [
             'tag_id' => 'required',
@@ -62,13 +63,14 @@ class CihController extends Controller
                         $fail('O campo especifique deve ser preenchido.');
                     }
                 }],
-            'feedback_id' => 'required_if:varios_colaboradores,0',
-            'colaboradores_avulso' => [
-                function ($attribute, $value, $fail) use ($dados) {
-                    if ($dados['varios_colaboradores'] == 1 && $value == '') {
-                        $fail('Preencha o campo informando os colaboradores.');
-                    }
-                }],
+            'colaboradores' => 'required|array|min:1',
+//            'feedback_id' => 'required_if:varios_colaboradores,0',
+//            'colaboradores_avulso' => [
+//                function ($attribute, $value, $fail) use ($dados) {
+//                    if ($dados['varios_colaboradores'] == 1 && $value == '') {
+//                        $fail('Preencha o campo informando os colaboradores.');
+//                    }
+//                }],
             'acao' => 'required',
             'anexos' => [function ($attribute, $value, $fail) use ($dados) {
                 $CihTag = CihTag::where('id', $dados['tag_id'])->first();
@@ -90,11 +92,12 @@ class CihController extends Controller
             $dados['tag_id'] = $dados['tag_id'] > 0 ? $dados['tag_id'] : null;
             $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
             $dados['empresa_id'] = auth()->user()->empresa_id;
-            if ($dados['varios_colaboradores']) {
-                unset($dados['feedback_id']);
-            }
 
             $cih = Cih::create($dados);
+
+            foreach ($dados['colaboradores'] as $colaborador) {
+                $cih->Colaboradores()->attach($colaborador['id']);
+            }
 
             if (isset($dados['anexosDel'])) {
                 foreach ($dados['anexosDel'] as $id_anexo) {
@@ -128,34 +131,25 @@ class CihController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\Cih $cih
-     * @return \Illuminate\Http\Response
+     * @param Cih $cih
+     * @return Cih
      */
     public function edit(Cih $cih)
     {
 
-
-//        if ($cih->feedback_id) {
-//            $cih->autocomplete_label_colaborador = "{$cih->Colaborador->Curriculo->nome} - {$cih->Colaborador->VagaAberta->VagaSelecionada->nome} - {$cih->Colaborador->VagaAberta->Municipio->uf}";
-//            $cih->autocomplete_label_colaborador_anterior = $cih->autocomplete_label_colaborador;
-//        }
-//
         $cih->tag_id = is_null($cih->tag_id) ? 0 : $cih->tag_id;
         $cih->area_id = is_null($cih->area_id) ? 0 : $cih->area_id;
         $cih->status_aprovacao = $cih->status;
 
-
-        return $cih->load('Anexos', 'Tag', 'Area', 'Colaboradores');
+        return $cih->load('Anexos', 'Tag', 'Area', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome');
     }
 
     /**
-     * Aprovar the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Cih $cih
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param Cih $cih
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
     public function aprovar(Request $request, Cih $cih)
     {
@@ -182,13 +176,17 @@ class CihController extends Controller
         }
     }
 
+    /**
+     * @param $feedback
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function atualizarHistorico($feedback)
     {
         $feedback_id = \Crypt::decrypt($feedback);
         $resultado = FeedbackCurriculo::select(['id', 'vagas_abertas_id'])->find($feedback_id)->load([
             'Cih.Tag',
             'Cih.Area',
-            'Cih.Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+            'Cih.Colaboradores.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
             'Cih.ResponsavelLancamento:id,nome',
             'Cih.ResponsavelAprovacao:id,nome'
         ]);
@@ -196,11 +194,15 @@ class CihController extends Controller
         return response()->json($resultado);
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = Cih::all();
+        $periodo = Cih::get();
         $tags = CihTag::orderBy('label')->whereAtivo(true)->get();
         $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
         $data = new DataHora();
@@ -225,10 +227,14 @@ class CihController extends Controller
         ]);
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function filtro(Request $request)
     {
         $resultado = Cih::with('Tag:id,label', 'Area',
-            'Colaborador.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+            'Colaboradores',
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome'
         );
@@ -267,11 +273,16 @@ class CihController extends Controller
 
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function export(Request $request)
     {
         $resultado = $this->filtro($request)->get();
         $head = [
             "Colaborador",
+            "Cargo",
             "Área",
             "Data Ocorrência",
             "Ocorrência",
@@ -286,57 +297,41 @@ class CihController extends Controller
         $rows = [];
 
         foreach ($resultado as $row) {
-            if ($row->varios_colaboradores) {
-                $colaboradoresAvulsos = explode("\n", $row->colaboradores_avulso);
-                foreach ($colaboradoresAvulsos as $colaborador) {
-                    $rows[] = [
-                        $colaborador,
-                        $row->area_id ? $row->Area->label : $row->outra_area,
-                        $row->data_lancamento ?: '',
-                        $row->Tag->label,
-                        $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                        $row->acao,
-                        $row->obs_lancamento ?: '',
-                        $row->status ?: "aguardando",
-                        $row->data_aprovacao ?: '',
-                        $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
-                    ];
-                }
-            } else {
+            foreach ($row->colaboradores as $colaborador) {
                 $rows[] = [
-                    $row->Colaborador->Curriculo->nome,
-                    $row->area_id ? $row->Area->label : $row->outra_area,
-                    $row->data_lancamento ?: '',
-                    $row->Tag->label,
-                    $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                    $row->acao,
-                    $row->obs_lancamento ?: '',
-                    $row->status ?: "aguardando",
-                    $row->data_aprovacao ?: '',
-                    $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                    'colaborador' => $colaborador->Curriculo->nome,
+                    'cargo' => $colaborador->VagaAberta->Vaga->nome,
+                    'area' => $row->area_id ? $row->Area->label : $row->outra_area,
+                    'data_ocorrencia' => $row->data_lancamento ?: '',
+                    'tag' => $row->Tag ? $row->Tag->label : $row->outro_tipol,
+                    'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                    'acao' => $row->acao,
+                    'status' => $row->status ?: "aguardando",
+                    'data_aprovacao' => $row->data_aprovacao ?: '',
+                    'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
                 ];
             }
-
         }
+
 
         $nameArquivo = "admissao_cih" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
         JobExportaExcel::dispatch(auth()->id(), "Admissão - CIH", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-//        Rafael Mendes Nascimento
-//José Domingos Campos Junior
-//Alexandre Manoel de Oliveira
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
     public function tipoCihIndex(Request $request)
     {
         return view('g.cadastros.tipocih.index');
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Throwable
      */
     public function tipoCihStore(Request $request)
     {
@@ -373,11 +368,21 @@ class CihController extends Controller
         }
     }
 
+    /**
+     * @param CihTag $tipocih
+     * @return CihTag
+     */
     public function tipoCihEdit(CihTag $tipocih)
     {
         return $tipocih;
     }
 
+    /**
+     * @param Request $request
+     * @param CihTag $tipocih
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Throwable
+     */
     public function tipoCihUpdate(Request $request, CihTag $tipocih)
     {
         $dados = $request->input();
@@ -413,6 +418,11 @@ class CihController extends Controller
         }
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function tipoCihAtualizar(Request $request)
     {
         $this->authorize('cadastro_centrocusto');
@@ -434,6 +444,10 @@ class CihController extends Controller
         ], 200);
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function relatorioPdf(Request $request)
     {
         $filtroPeriodo = $request->filtroPeriodo == 'true';
@@ -447,31 +461,16 @@ class CihController extends Controller
 
         $resultado = $this->filtro($request)->orderBy('data_aprovacao')->get();
 
-
         $rows = [];
 
         foreach ($resultado as $row) {
-            if ($row->varios_colaboradores) {
-                $colaboradoresAvulsos = explode("\n", $row->colaboradores_avulso);
-                foreach ($colaboradoresAvulsos as $colaborador) {
-                    $rows[] = [
-                        'colaborador' => $colaborador,
-                        'area' => $row->area_id ? $row->Area->label : $row->outra_area,
-                        'data_ocorrencia' => $row->data_lancamento ?: '',
-                        'tag' => $row->Tag->label,
-                        'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                        'acao' => $row->acao,
-                        'status' => $row->status ?: "aguardando",
-                        'data_aprovacao' => $row->data_aprovacao ?: '',
-                        'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
-                    ];
-                }
-            } else {
+            foreach ($row->colaboradores as $colaborador) {
                 $rows[] = [
-                    'colaborador' => $row->Colaborador->Curriculo->nome,
+                    'colaborador' => $colaborador->Curriculo->nome,
+                    'cargo' => $colaborador->VagaAberta->Vaga->nome,
                     'area' => $row->area_id ? $row->Area->label : $row->outra_area,
                     'data_ocorrencia' => $row->data_lancamento ?: '',
-                    'tag' => $row->Tag->label,
+                    'tag' => $row->Tag ? $row->Tag->label : $row->outro_tipo,
                     'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
                     'acao' => $row->acao,
                     'status' => $row->status ?: "aguardando",
@@ -479,13 +478,10 @@ class CihController extends Controller
                     'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
                 ];
             }
-
         }
-
 
         $empresa = User::whereId(auth()->user()->empresa_id)->first();
         $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim', 'filtroPeriodo'));
-//        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim'));
         $pdf->setPaper('A4', 'landscape');
 
         return $pdf->stream("relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf");

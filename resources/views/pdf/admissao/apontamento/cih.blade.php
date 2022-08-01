@@ -17,6 +17,7 @@
         <tr class="topo">
             <td class="text-center">N</td>
             <td class="text-center">Colaborador</td>
+            <td class="text-center">Cargo</td>
             <td class="text-center">Área</td>
             <td class="text-center">Data ocorrência</td>
             <td class="text-center">Ocorrência</td>
@@ -30,6 +31,7 @@
             <tr class="linha">
                 <td class="text-center">{{ $cont }}</td>
                 <td class="text-center">{{ $cih['colaborador'] }}</td>
+                <td class="text-center">{{ $cih['cargo'] }}</td>
                 <td class="text-center">{{$cih['area'] }}</td>
                 <td class="text-center">{{$cih['data_aprovacao']}}</td>
                 <td class="text-center" style="text-transform: uppercase">{{ $cih['tag'] }}</td>
