@@ -288,7 +288,6 @@ class CihController extends Controller
             "Ocorrência",
             "Responsável Lançamento",
             "Ação",
-            "Obs Lançamento",
             "Status",
             "Data Status",
             "Responsável Status"
