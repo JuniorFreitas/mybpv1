@@ -92,33 +92,9 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Para vários colaboradores</label>
-                                    <select :disabled="aprovando" v-model="form.varios_colaboradores"
-                                            class="form-control">
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
-                                </div>
-                            </div>
-
-<!--                            <div class="col-12" v-if="form.varios_colaboradores">-->
-<!--                                <div class="form-group">-->
-<!--                                    <label>Informe os colaboradores</label>-->
-<!--                                    <textarea-->
-<!--                                        class="form-control validacampo"-->
-<!--                                        :disabled="aprovando"-->
-<!--                                        v-model="form.colaboradores_avulso"-->
-<!--                                        cols="5"-->
-<!--                                        rows="5"-->
-<!--                                    ></textarea>-->
-<!--                                </div>-->
-<!--                            </div>-->
-
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label>Informe os Colaboradores</label>
+                                    <label>Colaborador(es)</label>
                                     <autocomplete
                                         :caminho="colaborador_ativo"
                                         :formsm="false"
@@ -128,6 +104,7 @@
                                         :disabled="aprovando"
                                         :id="`colaborador_${hash}`"
                                         @onselect="selecionaColaborador"
+                                        v-if="!editando"
                                     ></autocomplete>
                                 </div>
 
@@ -136,14 +113,16 @@
                                            v-if="form.colaboradores.length">
                                         <thead>
                                         <tr class="bg-default">
-                                            <th class="text-center">Nome</th>
-                                            <th class="text-center">Remover</th>
+                                            <th class="text-center" width="50%">Nome</th>
+                                            <th class="text-center" width="40%">Cargo</th>
+                                            <th class="text-center" v-if="!editando">Remover</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         <tr v-for="(colaborador, index) in form.colaboradores">
-                                            <td class="text-center">{{colaborador.curriculo.nome}}</td>
-                                            <td class="text-center">
+                                            <td class="text-center">{{ colaborador.curriculo.nome }}</td>
+                                            <td class="text-center">{{ colaborador.vaga_aberta.vaga.nome }}</td>
+                                            <td class="text-center" v-if="!editando">
                                                 <a href="javascript://" class="btn btn-sm btn-danger"
                                                    @click.prevent="removerLIColaborador(index)">
                                                     <i class="fa fa-times" aria-hidden="true"></i>
@@ -211,9 +190,9 @@
                                     <select
                                         :disabled="form.data_aprovacao"
                                         v-model="form.status"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        class="form-control"
+                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                        @change.prevent="valida_campo_vazio($event.target, 1)"
+                                        class="form-control validacampo"
                                     >
                                         <option value="">Selecione...</option>
                                         <option value="aprovado">Aprovar</option>
@@ -226,16 +205,15 @@
                 </form>
             </template>
             <template slot="rodape">
-                <div v-if="form.status !== ''">
-                    <button type="button" class="btn btn-sm btn-primary"
-                            v-show="aprovando && !atualizado && !preloadAjax" @click="aprovar">
-                        <i class="fa fa-save"></i> Salvar
-                    </button>
-                    <button type="button" class="btn btn-sm btn-primary"
-                            v-show="!aprovando && !cadastrado && !preloadAjax" @click="cadastrar">
-                        <i class="fa fa-save"></i> Lançar
-                    </button>
-                </div>
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="aprovando && !leitura && form.status !== '' && !atualizado && !preloadAjax"
+                        @click="aprovar">
+                    <i class="fa fa-save"></i> Salvar
+                </button>
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="!aprovando && !cadastrado && !preloadAjax" @click="cadastrar">
+                    <i class="fa fa-save"></i> Lançar
+                </button>
             </template>
         </modal>
 
@@ -336,7 +314,9 @@
                         <input type="hidden" name="campoStatus" :value="controle.dados.campoStatus">
                         <input type="hidden" name="campoTags" :value="controle.dados.campoTags">
                         <input type="hidden" name="campoAreas" :value="controle.dados.campoAreas">
-                        <button class="btn btn-sm btn-primary" :disabled="controle.carregando"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
+                        <button class="btn btn-sm btn-primary" :disabled="controle.carregando"><i
+                            class="fas fa-file-pdf"></i> Gerar PDF
+                        </button>
                     </form>
 
                     <button
@@ -394,7 +374,8 @@
                             }"
                     >
                         <td class="text-center" v-text="item.id"></td>
-                        <td>{{ item.varios_colaboradores ? "Varios colaboradores" : item.colaborador.curriculo.nome }}
+                        <td>{{ item.varios_colaboradores ? "Varios colaboradores" : item.colaboradores[0].curriculo.nome
+                            }}
                         </td>
                         <td class="text-center">
                             {{ item.tag ? item.tag.label : item.outra_tag }}
@@ -417,9 +398,9 @@
                                 v-show="item.status.includes('aberto')"
                                 href="javascript://"
                                 class="btn btn-sm btn-primary"
-                                content="Visualizar"
+                                content="Aprovar/Reprovar"
                                 v-tippy
-                                @click.prevent="formAprovar(item.id)"
+                                @click.prevent="formAprovar(item.id); leitura = false"
                                 data-toggle="modal"
                                 data-target="#janelaCadastrar"
                             >
@@ -432,7 +413,7 @@
                                 class="btn btn-sm btn-primary"
                                 content="Visualizar"
                                 v-tippy
-                                @click.prevent="formAprovar(item.id)"
+                                @click.prevent="formAprovar(item.id); leitura = true"
                                 data-toggle="modal"
                                 data-target="#janelaCadastrar"
                             >
@@ -687,10 +668,8 @@ export default {
                     this.mostraErro("", "Existem campos obrigatórios não preenchidos");
                     return false;
                 }
-                if (!this.form.varios_colaboradores && this.form.feedback_id === "") {
-                    valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                    $(`#janelaCadastrar #colaborador_${this.hash}`).focus().trigger("blur");
-                    this.mostraErro("", "Selecione o colaborador");
+                if (!this.form.colaboradores) {
+                    this.mostraErro("", "Adcione o colaborador");
                     return false;
                 }
 

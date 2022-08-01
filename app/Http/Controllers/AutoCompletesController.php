@@ -206,7 +206,7 @@ class AutoCompletesController extends Controller
             $q->where('nome', 'like', '%' . $busca . '%');
         })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - {$item->VagaAberta->Municipio->nome} - {$item->VagaAberta->Municipio->uf}";
+                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->Vaga->nome}";
                 return $item;
             });
     }
