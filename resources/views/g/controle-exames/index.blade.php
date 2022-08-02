@@ -64,7 +64,8 @@
                         <div class="col-12 col-md-6" v-if='abasesmt.form.resultado.pendencias === "Sim" '>
                             <div class="form-group">
                                 <label for="">Quais</label>
-                                <input type="text" class="form-control validacampo" v-model="abasesmt.form.resultado.pendencias_quais"
+                                <input type="text" class="form-control validacampo"
+                                       v-model="abasesmt.form.resultado.pendencias_quais"
                                        @keyup.prevent="valida_campo_vazio($event.target,1)"
                                        @blur.prevent="valida_campo_vazio($event.target,1)"
                                 >
@@ -179,11 +180,13 @@
                     <li class="nav-item">
                         <a class="nav-item nav-link active" id="nav-encaminhar-tab" data-toggle="tab"
                            href="#nav-encaminhar"
+                           @click.prevent ="nav = 'encaminhar'"
                            role="tab" aria-controls="nav-encaminhar" aria-selected="false">ENCAMINHAR</a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-item nav-link" id="nav-encaminhados-tab" data-toggle="tab"
+                           @click.prevent ="nav = 'encaminhados'"
                            href="#nav-encaminhados"
                            role="tab" aria-controls="nav-encaminhados" aria-selected="true">ENCAMINHADOS</a>
                     </li>
@@ -191,6 +194,7 @@
                     <li class="nav-item">
                         <a class="nav-item nav-link" id="nav-sesmt-tab" data-toggle="tab"
                            href="#nav-sesmt"
+                           @click.prevent ="nav = 'validacao_sesmt'"
                            role="tab" aria-controls="nav-sesmt" aria-selected="true">VALIDAÇÃO SESMT</a>
                     </li>
 
@@ -563,7 +567,8 @@
         </template>
         <template slot="rodape">
             <div v-show="!visualizar">
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado  && !preload"
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="!cadastrado & nav === 'encaminhar'  && !preload"
                         @click.prevent="salvarUpdate">
                     <i class="fa fa-save"></i>
                     <span v-show='cadastrando'>Salvar</span>

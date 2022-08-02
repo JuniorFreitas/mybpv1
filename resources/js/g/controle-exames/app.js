@@ -21,6 +21,8 @@ const app = new Vue({
         atualizado: false,
         visualizar: false,
 
+        nav: 'encaminhar',
+
         hash: `mastertag_${parseInt(Math.random() * 999999)}`,
 
         resposta_id: 0,
@@ -37,6 +39,7 @@ const app = new Vue({
             tituloJanela: "Resultado",
             preload: false,
             form: {
+                id: 0,
                 exame_funcionario_id: "",
                 exame_realizado: null,
                 data_realizacao: "",
@@ -137,6 +140,7 @@ const app = new Vue({
             await axios.get(`${URL_ADMIN}/formulario/buscaFormulario/${this.tipo}`)
                 .then(response => {
                     this.form.formulario = response.data;
+                    this.formulario_id = response.data.id;
                 }).catch(error => {
                 });
         },
@@ -149,6 +153,7 @@ const app = new Vue({
         async formEncaminhar(obj) {
             this.dados.nome = obj.curriculo.nome;
             this.dados.cargo = obj.vaga_selecionada.nome;
+            this.nav = 'encaminhar';
 
             this.form = _.cloneDeep(this.formDefault);
             this.form.feedback_id = obj.id;
@@ -251,10 +256,13 @@ const app = new Vue({
             if (this.abasesmt.form.exame_realizado === false) {
                 let id = this.abasesmt.form.id ? this.abasesmt.form.id : 0;
                 let exame_funcionario_id = this.abasesmt.form.exame_funcionario_id;
+                // let anexos = this.abasesmt.form.anexos;
+                // let anexosDel = this.abasesmt.form.anexosDel;
                 this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault);
                 this.abasesmt.form.exame_funcionario_id = exame_funcionario_id;
                 this.abasesmt.form.exame_realizado = false;
                 this.abasesmt.form.id = id;
+                // this.abasesmt.form.anexosDel = anexos ;
             }
         },
 
