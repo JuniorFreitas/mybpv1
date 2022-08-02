@@ -39,10 +39,12 @@ class ControleExameController extends Controller
                     'QuemEncaminhou:id,nome',
                 )
                 ->with('Formulario.Setores.Alternativas.Opcoes')
-                ->orderBy('created_at')->get();
+                ->orderByDesc('created_at')->get();
 
             $resposta->transform(function ($item) {
-                $item->tipo_exame = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->nome;
+                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
+                $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_'.$tipoOrdem]['valor'])->label;
+                $item->resultado = Examesesmt::whereExameFuncionarioId($item->id)->first();
                 return $item;
             });
 
@@ -71,7 +73,8 @@ class ControleExameController extends Controller
                 ]);
 
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
-                $tipoExame = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->nome;
+                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
+                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_'.$tipoOrdem]['valor'])->label;;
                 $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id'])->find($request->feedback_id);
 
                 $dtEmailClinica = [

@@ -233,6 +233,7 @@ const app = new Vue({
                     this.preload = false;
                 }).catch(error => this.preload = false);
             }
+
         },
 
         formResultado(id) {
@@ -285,6 +286,7 @@ const app = new Vue({
                         let data = res.data;
                         mostraSucesso("", "Exame cadastrado com sucesso!");
                         $("#validaSesmt").modal("hide");
+                        this.carregaFormularioResposta();
                         this.$refs.componente.buscar();
                         this.preload = false;
                         this.abasesmt.preload = false;
@@ -297,6 +299,7 @@ const app = new Vue({
                         .then(res => {
                             mostraSucesso("", "Exame atualizado com sucesso!");
                             $("#validaSesmt").modal("hide");
+                            this.carregaFormularioResposta();
                             this.$refs.componente.buscar();
                             this.preload = false;
                             this.abasesmt.preload = false;

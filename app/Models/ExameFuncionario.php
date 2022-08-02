@@ -91,6 +91,7 @@ class ExameFuncionario extends Model
         return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
     }
 
+
 //    public function Colaborador()
 //    {
 //        return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id')->with('Curriculo');
