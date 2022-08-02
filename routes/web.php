@@ -1091,6 +1091,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
     // Clinica Exame
     Route::group(['as' => 'acesso-clinica.'], function () {
+        Route::post('acesso-clinica/atualizar', [\App\Http\Controllers\Clinica\ControleExamesController::class, 'atualizar'])->name('atualizar')->middleware('can:acesso_clinica');
         Route::resource('acesso-clinica', \App\Http\Controllers\Clinica\ControleExamesController::class)->middleware('can:acesso_clinica');
     });
 

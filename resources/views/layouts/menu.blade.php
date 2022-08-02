@@ -714,14 +714,14 @@
 @endif
 
 {{--Menu CLinica--}}
-@if(\App\Models\Sistema::permitirLinks('controle_exame_acesso_clinica'))
+@if(\App\Models\Sistema::permitirLinks('acesso_clinica'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="fas fa-notes-medical" style="font-size: 16px;"></i>
             <span>Controle de exames</span>
         </a>
         <ul class="sub-menu" aria-expanded="false">
-            @can('controle_exame_acesso_clinica')
+            @can('acesso_clinica')
                 <li>
                     <a href="{{route('g.acesso-clinica.acesso-clinica.index')}}" key="acesso-clinica-colaboradores">
                         Colaboradores

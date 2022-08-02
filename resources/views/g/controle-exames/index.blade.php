@@ -610,7 +610,10 @@
         </template>
     </modal>
 
-
+    <preload class="text-center" v-if="controle.carregando"></preload>
+    <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
+        <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+    </div>
     <fieldset>
         <legend>Filtro</legend>
         <form @submit.prevent="$refs.componente.buscar()">
