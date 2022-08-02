@@ -163,18 +163,18 @@
         <template slot="conteudo">
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
-                <fieldset>
-                    <legend class="text-uppercase">Dados Pessoais</legend>
-                    <div class="row">
-                        <div class="col-12">
-                            <p>
-                                Nome: <strong>@{{ dados.nome }}</strong> <br>
-                                <br>
-                                Cargo: <strong>@{{ dados.cargo }}</strong> <br>
-                            </p>
-                        </div>
-                    </div>
-                </fieldset>
+{{--                <fieldset>--}}
+{{--                    <legend class="text-uppercase">Dados Pessoais</legend>--}}
+{{--                    <div class="row">--}}
+{{--                        <div class="col-12">--}}
+{{--                            <p>--}}
+{{--                                Nome: <strong>@{{ dados.nome }}</strong> <br>--}}
+{{--                                <br>--}}
+{{--                                Cargo: <strong>@{{ dados.cargo }}</strong> <br>--}}
+{{--                            </p>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </fieldset>--}}
 
 
                 <div class="tab-content py-3 p-2">
@@ -197,12 +197,12 @@
                                     </thead>
                                     <tbody>
                                     <tr style="background: white !important; border-bottom: none"
-                                        v-for="item in historico"
+                                        v-for="item in lista"
                                         :key="item.id"
                                     >
                                         <td>@{{ item.id }}</td>
                                         <td>@{{ item.tipo_exame }}</td>
-                                        <td>@{{ item.empresa_exame.nome }}</td>
+                                        <td>@{{ item.feedback.curriculo.nome }}</td>
                                         <td>
                                             @{{ item.quem_encaminhou.nome }}<br>em @{{ item.created_at }}
                                         </td>
@@ -302,7 +302,7 @@
             <thead>
             <tr class="bg-default">
                 <th>COD</th>
-                <th>Empresa</th>
+{{--                <th>Empresa</th>--}}
                 <th>Nome</th>
                 <th>Cargo</th>
                 <th>
@@ -313,8 +313,10 @@
             <tbody v-for="colaborador in lista">
             <tr style="background: white !important; border-bottom: none">
                 <td>@{{ colaborador.id }}</td>
-                <td></td>
-                <td><strong>@{{ colaborador.curriculo.nome }}</strong> <br> @{{ colaborador.vaga_selecionada.nome }}</td>
+{{--                <td></td>--}}
+                <td><strong>@{{ colaborador.feedback.curriculo.nome }}</strong>
+                    <br> @{{ colaborador.feedback.vaga_selecionada.nome }}
+                </td>
                 <td></td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-primary mb-2" content="Historico" v-tippy

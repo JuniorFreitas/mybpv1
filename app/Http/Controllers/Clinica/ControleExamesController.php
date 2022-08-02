@@ -35,8 +35,9 @@ class ControleExamesController extends Controller
     {
         $resultado = ExameFuncionario::whereEmpresaId(auth()->user()->empresa_id)
             ->with(['Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+                'Feedback.VagaSelecionada',
                 'QuemEncaminhou:id,nome'])
-            ->whereEmpresaExameId(auth()->user()->EmpresaExame->id)
+            ->whereEmpresaExameId(auth()->user()->EmpresaExame->id)->orderByDesc('created_at')
         ;
 //        $EmpresaExameId = auth()->user()->EmpresaExame->id;
 //        $resultado = FeedbackCurriculo::select(['curriculo_id', 'id', 'vaga_id', 'vagas_abertas_id', 'telefone_id', 'empresa_id'])
