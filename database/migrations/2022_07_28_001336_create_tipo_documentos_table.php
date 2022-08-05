@@ -16,6 +16,7 @@ class CreateTipoDocumentosTable extends Migration
         Schema::create('tipo_documentos', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
+            $table->string('tipo')->comment('pode ser empresa, ssma...');
             $table->boolean('ativo')->default(true);
             $table->unsignedBigInteger('empresa_id');
 

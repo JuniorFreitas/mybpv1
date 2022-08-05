@@ -63,9 +63,9 @@ class DocumentoContratos extends Model
         return $endereco_completo;
     }
 
-    public function Logo()
+    public function Anexo()
     {
-        return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id');
+        return $this->belongsToMany(Arquivo::class, 'documento_legais_contratos_anexos', 'id', 'arquivo_id');
     }
 
     public function Empresa()

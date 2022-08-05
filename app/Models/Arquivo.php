@@ -181,7 +181,9 @@ class Arquivo extends Model
     public const DISCO_EXAMES = 'disco-exames';
     public const DISCO_AFASTAMENTO = 'disco-afastamento';
     public const DISCO_CONTROLE_EXAMES_RESULTADO = 'disco-controle-exames-resultado';
+    public const DISCO_DOCUMENTO_CONTRATO = 'disco-documento-contrato';
     public const DISCO_DOCUMENTO_EMPRESA = 'disco-documento-empresa';
+    public const DISCO_DOCUMENTO_SSMA = 'disco-documento-ssma';
 
     /**
      * @return string
@@ -229,8 +231,12 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-afastamento.urlShow') . "/{$this->file}";
             case self::DISCO_CONTROLE_EXAMES_RESULTADO:
                 return config('filesystems.disks.disco-controle-exames-resultado.urlShow') . "/{$this->file}";
+            case self::DISCO_DOCUMENTO_CONTRATO:
+                return config('filesystems.disks.disco-documento-contrato.urlShow') . "/{$this->file}";
             case self::DISCO_DOCUMENTO_EMPRESA:
                 return config('filesystems.disks.disco-documento-empresa.urlShow') . "/{$this->file}";
+            case self::DISCO_DOCUMENTO_SSMA:
+                return config('filesystems.disks.disco-documento-ssma.urlShow') . "/{$this->file}";
             default:
                 return "";
         }
@@ -282,8 +288,12 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-afastamento.urlThumb') . "/{$this->thumb}";
             case self::DISCO_CONTROLE_EXAMES_RESULTADO:
                 return config('filesystems.disks.disco-controle-exames-resultado.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_DOCUMENTO_CONTRATO:
+                return config('filesystems.disks.disco-documento-contrato.urlThumb') . "/{$this->thumb}";
             case self::DISCO_DOCUMENTO_EMPRESA:
                 return config('filesystems.disks.disco-documento-empresa.urlThumb') . "/{$this->thumb}";
+            case self::DISCO_DOCUMENTO_SSMA:
+                return config('filesystems.disks.disco-documento-ssma.urlThumb') . "/{$this->thumb}";
             default:
                 return "";
         }
@@ -335,8 +345,12 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-afastamento.urlDownload') . "/{$this->file}";
             case self::DISCO_CONTROLE_EXAMES_RESULTADO:
                 return config('filesystems.disks.disco-controle-exames-resultado.urlDownload') . "/{$this->file}";
+            case self::DISCO_DOCUMENTO_CONTRATO:
+                return config('filesystems.disks.disco-documento-contrato.urlDownload') . "/{$this->file}";
             case self::DISCO_DOCUMENTO_EMPRESA:
                 return config('filesystems.disks.disco-documento-empresa.urlDownload') . "/{$this->file}";
+            case self::DISCO_DOCUMENTO_SSMA:
+                return config('filesystems.disks.disco-documento-ssma.urlDownload') . "/{$this->file}";
             default:
                 return "";
         }
@@ -388,8 +402,12 @@ class Arquivo extends Model
                 return config('filesystems.disks.disco-afastamento.urlDelete') . "/{$this->file}";
             case self::DISCO_CONTROLE_EXAMES_RESULTADO:
                 return config('filesystems.disks.disco-controle-exames-resultado.urlDelete') . "/{$this->file}";
+            case self::DISCO_DOCUMENTO_CONTRATO:
+                return config('filesystems.disks.disco-documento-contrato.urlDelete') . "/{$this->file}";
             case self::DISCO_DOCUMENTO_EMPRESA:
                 return config('filesystems.disks.disco-documento-empresa.urlDelete') . "/{$this->file}";
+            case self::DISCO_DOCUMENTO_SSMA:
+                return config('filesystems.disks.disco-documento-ssma.urlDelete') . "/{$this->file}";
             default:
                 return "";
         }

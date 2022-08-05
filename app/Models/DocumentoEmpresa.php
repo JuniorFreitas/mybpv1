@@ -39,13 +39,18 @@ class DocumentoEmpresa extends Model
         'ativo' => 'boolean'
     ];
 
-    public function Logo()
+    public function Anexo()
     {
-        return $this->belongsToMany(Arquivo::class, 'empresa_logotipo', 'cliente_id', 'arquivo_id');
+        return $this->belongsToMany(Arquivo::class, 'documento_legais_empresas_anexos', 'id', 'arquivo_id');
     }
 
-    public function EmpresaConfig()
+    public function Empresa()
     {
-        return$this->hasMany(EmpresaConfig::class, 'empresa_id','documento_empresas.id');
+        return $this->hasOne(Cliente::class, 'id', 'empresa_id');
+    }
+
+    public function Contrato()
+    {
+        return $this->hasOne(DocumentoContratos::class, 'id', 'contrato_id');
     }
 }

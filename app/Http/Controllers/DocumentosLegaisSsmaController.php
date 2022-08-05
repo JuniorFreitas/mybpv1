@@ -17,6 +17,7 @@ use App\Models\Habilidade;
 use App\Models\Papel;
 use App\Models\Servico;
 use App\Models\Sistema;
+use App\Models\TipoDocumento;
 use App\Models\User;
 use App\Rules\CpfValidoEmpresaRules;
 use App\Rules\VerificaCpfEmpresaRules;
@@ -49,19 +50,29 @@ class DocumentosLegaisSsmaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('administracao_clientes_insert');
+        $this->authorize('administracao_documentos_legais_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $arrayValidacao = [
-            'documentos_ssma.*.observacao' => [function ($attribute, $value, $fail) use ($dados) {
+            'documentos_ssma.observacao' => [function ($attribute, $value, $fail) use ($dados) {
                 if (strlen($value) <= 3) {
                     $fail('Informe uma observação maior que 3 caracteres.');
                 }
             }],
-            'documentos_ssma.*.tipo_descricao' => [function ($attribute, $value, $fail) use ($dados) {
-                if (strlen($value) <= 3) {
-                    $fail('Informe um tipo de documento maior que 3 caracteres.');
+            'documentos_ssma.tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
+                $tipo_ssma = $dados['tipo_ssma'] ? 'ssma' : 'contrato';
+                $tipoDocumento = TipoDocumento::whereTipo($tipo_ssma)->first();
+                if(!$tipoDocumento){
+                    $fail('Verificar o tipo de documento');
+                }
+            }],
+            'documentos_ssma.data_inicio' => [function ($attribute, $value, $fail) use ($dados) {
+
+                $datainicio = $dados['documentos_ssma']['data_inicio'];
+                $dataencerramento = $dados['documentos_ssma']['data_encerramento'];
+                if ($datainicio > $dataencerramento) {
+                    $fail('Data inicio incorreta.');
                 }
             }],
         ];
@@ -99,7 +110,7 @@ class DocumentosLegaisSsmaController extends Controller
     public function edit(DocumentoSsma $ssma)
     {
         $ssma = $ssma->load('Anexo');
-        $ssma->ServicosCliente->transform(function ($item) {
+        $ssma->Anexo->transform(function ($item) {
             $item->anexosDel = [];
             return $item;
         });
@@ -118,7 +129,7 @@ class DocumentosLegaisSsmaController extends Controller
     public function update(Request $request, DocumentoSsma $ssma)
     {
 
-        $this->authorize('administracao_clientes_insert');
+        $this->authorize('administracao_documentos_legais_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -128,9 +139,19 @@ class DocumentosLegaisSsmaController extends Controller
                     $fail('Informe uma observação maior que 3 caracteres.');
                 }
             }],
-            'documentos_ssma.*.tipo_descricao' => [function ($attribute, $value, $fail) use ($dados) {
-                if (strlen($value) <= 3) {
-                    $fail('Informe um tipo de documento maior que 3 caracteres.');
+            'documentos_ssma.tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
+                $tipo_ssma = $dados['tipo_ssma'] ? 'ssma' : 'contrato';
+                $tipoDocumento = TipoDocumento::whereTipo($tipo_ssma)->first();
+                if(!$tipoDocumento){
+                    $fail('Verificar o tipo de documento');
+                }
+            }],
+            'documentos_ssma.data_inicio' => [function ($attribute, $value, $fail) use ($dados) {
+
+                $datainicio = $dados['documentos_ssma']['data_inicio'];
+                $dataencerramento = $dados['documentos_ssma']['data_encerramento'];
+                if ($datainicio > $dataencerramento) {
+                    $fail('Data inicio incorreta.');
                 }
             }],
         ];
@@ -145,67 +166,16 @@ class DocumentosLegaisSsmaController extends Controller
 
         try {
             DB::beginTransaction();
-            DocumentoSsma::create($dados);
-
-            DB::beginTransaction();
 
             $ssma->update($dados);
-//
-//                if (isset($dados['logoDel'])) {
-//                    foreach ($dados['logoDel'] as $id) {
-//                        $cliente->Logo()->find($id)->delete();
-//                    }
-//                }
-//
-//
-//                if (isset($dados['logo'])) {
-//                    foreach ($dados['logo'] as $index => $anexo) {
-//                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-//                        if ($anexo['chave'] == null) {
-//                            Arquivo::whereId($anexo['id'])->update([
-//                                'nome' => $anexo['nome'],
-//                            ]);
-//                        } else {
-//                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-//                            if ($arquivo) {
-//                                $arquivo->temporario = false;
-//                                $arquivo->chave = '';
-//                                $arquivo->save();
-//                                $cliente->Logo()->attach($arquivo->id);
-//                            }
-//                        }
-//                    }
-//                }
-//
-//
-//                if (isset($dados['mascoteDel'])) {
-//                    foreach ($dados['mascoteDel'] as $id) {
-//                        $cliente->Mascote()->find($id)->delete();
-//                    }
-//                }
-//                if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
-//                    $config = ClienteConfig::find($dados['cliente_config']['id']);
-//                    $config->update([
-//                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
-//                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
-//                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-//                    ]);
-//                } else {
-//                    $dadosClienteConfig = [
-//                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
-//                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
-//                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-//                        'cliente_id' => $cliente->id
-//                    ];
-//                    ClienteConfig::create($dadosClienteConfig);
-//                }
+
             DB::commit();
             return response()->json([], 201);
 
         } catch (\Exception $e) {
 
             DB::rollBack();
-            $msg = "error UPDATE DOCUMENTOS EMPRESA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            $msg = "error UPDATE DOCUMENTOS SSMA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
             return response()->json([
                 'msg' => $msg,
@@ -222,15 +192,19 @@ class DocumentosLegaisSsmaController extends Controller
             'dados_cadastrais->nome as nome',
             'dados_cadastrais->tipo as tipo'
         ])
-            ->whereAtivo(true)
-            ->get();
+        ->whereAtivo(true)
+        ->get();
+
+        $tiposDocumentos = TipoDocumento::orderBy('nome')->get();
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'contratos' => $contratos,
+                'lista_contratos' => $contratos,
+                'tipos_documentos' => $tiposDocumentos,
                 'tipo_pessoa_fisica' => DocumentoContratos::TIPO_PESSOA_FISICA
             ]
         ]);
@@ -239,6 +213,7 @@ class DocumentosLegaisSsmaController extends Controller
     public function filtro(Request $request)
     {
         $resultado = DocumentoSsma::with('Empresa','Contrato')
+//            ->whereAtivo(true)
             ->orderByDesc('id');
 
         if ($request->filled('campoBusca')) {
@@ -289,60 +264,29 @@ class DocumentosLegaisSsmaController extends Controller
 
     public function uploadAnexos(Request $request)
     {
-        return Arquivo::uploadAnexos($request, [
-            Arquivo::MIME_JPEG,
-            Arquivo::MIME_JPG,
-            Arquivo::MIME_PNG,
-            Arquivo::MIME_PDF,
-            Arquivo::MIME_DOC,
-            Arquivo::MIME_DOCX,
-            Arquivo::MIME_PPS,
-            Arquivo::MIME_PPSX,
-            Arquivo::MIME_PPT,
-            Arquivo::MIME_PPTX,
-            Arquivo::MIME_XLS,
-            Arquivo::MIME_XLSX,
-            Arquivo::MIME_ZIP,
-            Arquivo::MIME_RAR,
-        ], Arquivo::DISCO_CLIENTE);
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENSPDF, Arquivo::DISCO_DOCUMENTO_SSMA);
     }
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow(Arquivo::DISCO_CLIENTE, $arquivo);
+        return Arquivo::anexoShow(Arquivo::DISCO_DOCUMENTO_SSMA, $arquivo);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete(Arquivo::DISCO_CLIENTE, $arquivo);
+        return Arquivo::anexoDelete(Arquivo::DISCO_DOCUMENTO_SSMA, $arquivo);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::download(Arquivo::DISCO_CLIENTE, $arquivo);
-    }
-
-    // Logo-------------------------------------------------
-    public function uploadLogo(Request $request)
-    {
-        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_CLIENTE);
-    }
-
-    public function logoShow(Request $request, $arquivo)
-    {
-        return Arquivo::anexoShow(Arquivo::DISCO_CLIENTE, $arquivo);
-    }
-
-    public function logoDelete(Request $request, $arquivo)
-    {
-        return Arquivo::anexoDelete(Arquivo::DISCO_CLIENTE, $arquivo);
+        return Arquivo::download(Arquivo::DISCO_DOCUMENTO_SSMA, $arquivo);
     }
 
     //foto
     public function logoDownload(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload(Arquivo::DISCO_CLIENTE, $arquivo);
+        return Arquivo::anexoDownload(Arquivo::DISCO_DOCUMENTO_SSMA, $arquivo);
     }
 
     //PDF

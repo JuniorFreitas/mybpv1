@@ -28,7 +28,7 @@
     </li>
 @endif--}}
 
-@if(\App\Models\Sistema::permitirLinks('administracao_clientes','administracao_fornecedores','administracao_atareuniao','administracao_pesquisaclima','administracao_planejamentodiario','administracao_aniversariantes'))
+@if(\App\Models\Sistema::permitirLinks('administracao_clientes','administracao_fornecedores','administracao_atareuniao','administracao_pesquisaclima','administracao_planejamentodiario','administracao_aniversariantes', 'administracao_documentos_legais'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bxs-book-content"></i>
@@ -49,7 +49,7 @@
                     </a>
                 </li>
             @endcan
-            @can('administracao_clientes')
+            @can('administracao_documentos_legais')
                 <li>
                     <a href="javascript://" class="has-arrow waves-effect">
                         Documentos Legais</a>
@@ -69,7 +69,11 @@
                             Documentos SSMA
                             </a>
                         </li>
-
+                        <li>
+                            <a href="{{route('g.administracao.documentoslegais.tipodocumento.tipodocumento.index')}}" key="tipodocumento">
+                                Tipos Documentos
+                            </a>
+                        </li>
                     </ul>
                 </li>
             @endcan

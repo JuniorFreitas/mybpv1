@@ -214,8 +214,8 @@
                                             </button>
                                         </div>
 
-                                        <div class="col-12" v-if="form.servicos_contrato.length>0"
-                                             v-for="(obj, index) in form.servicos_contrato" :key="obj.id">
+                                        <div class="col-12" v-if="form.dados_cadastrais.servicos_contrato.length>0"
+                                             v-for="(obj, index) in form.dados_cadastrais.servicos_contrato" :key="obj.id">
                                             <div class="row py-3">
 
                                                 <div class="col-12 col-sm-4">
@@ -303,10 +303,7 @@
                                                     <div class="form-group">
                                                         <label>Tipo Contrato</label>
                                                         <select v-model="obj.tipo_contrato" class="form-control">
-<!--                                                            <option-->
-<!--                                                                value="{{\App\Models\ServicosCliente::TIPO_CONTRATO_FIXO}}">{{\App\Models\ServicosCliente::TIPO_CONTRATO_FIXO}}</option>-->
-<!--                                                            <option-->
-<!--                                                                value="{{\App\Models\ServicosCliente::TIPO_CONTRATO_SPOT}}">{{\App\Models\ServicosCliente::TIPO_CONTRATO_SPOT}}</option>-->
+
                                                         </select>
                                                     </div>
                                                 </div>
@@ -523,9 +520,6 @@ export default {
 
                     tel_principal: '',
 
-                    anexosDel: [],
-                    anexosProspectDel: [],
-
                     logo: [],
                     logoDel: [],
 
@@ -538,17 +532,18 @@ export default {
                     }],
                     telefonesDelete: [],
 
+                    servicos_contrato: [],
+                    servicos_contratoDelete: [],
                 },
                 ativo: '',
 
-                servicos_contrato: [],
-                servicos_contratoDelete: [],
+
 
             },
             formDefault: null,
 
             urlAnexoUpload: `${URL_ADMIN}/administracao/documentoslegais/contrato/uploadAnexos`,
-            urlLogoUpload: `${URL_ADMIN}/administracao/documentoslegais/contrato/logoAnexos`,
+            urlLogoUpload: `${URL_ADMIN}/administracao/documentoslegais/contrato/uploadLogo`,
             rotapaginacao: `${URL_ADMIN}/administracao/documentoslegais/contrato/atualizar`,
             anexoUploadAndamento: false,
 
@@ -597,13 +592,13 @@ export default {
 
             obj.anexos = [];
             obj.anexosDel = [];
-            this.form.servicos_contrato.unshift(obj);
+            this.form.dados_cadastrais.servicos_contrato.unshift(obj);
         },
         removerLIServicoContrato(index) {
             if (this.editando) {
-                this.form.servicos_contratoDelete.push(this.form.servicos_contrato[index].id);
+                this.form.dados_cadastrais.servicos_contratoDelete.push(this.form.dados_cadastrais.servicos_contrato[index].id);
             }
-            this.form.servicos_contrato.splice(index, 1);
+            this.form.dados_cadastrais.servicos_contrato.splice(index, 1);
         },
 
         formNovo() {
@@ -668,11 +663,9 @@ export default {
         alterar() {
             this.validaBlur();
             this.$nextTick(() => {
+                formReset();
+
                 $("#janelaCadastrar :input:enabled").trigger("blur");
-                if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                    this.mostraErro("", "Existem campos obrigatórios não preenchidos");
-                    return false;
-                }
 
                 if (this.form.telefones.length === 0) {
                     mostraErro('', 'Por favor insira um Telefone');

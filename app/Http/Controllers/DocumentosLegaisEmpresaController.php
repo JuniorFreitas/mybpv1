@@ -17,6 +17,7 @@ use App\Models\Habilidade;
 use App\Models\Papel;
 use App\Models\Servico;
 use App\Models\Sistema;
+use App\Models\TipoDocumento;
 use App\Models\User;
 use App\Rules\CpfValidoEmpresaRules;
 use App\Rules\VerificaCpfEmpresaRules;
@@ -50,7 +51,7 @@ class DocumentosLegaisEmpresaController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('administracao_clientes_insert');
+        $this->authorize('administracao_documentos_legais_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
@@ -60,9 +61,18 @@ class DocumentosLegaisEmpresaController extends Controller
                     $fail('Informe uma observação maior que 3 caracteres.');
                 }
             }],
-            'documentos_empresa.*.tipo_descricao' => [function ($attribute, $value, $fail) use ($dados) {
-                if (strlen($value) <= 3) {
-                    $fail('Informe uma descrição maior que 3 caracteres.');
+            'documentos_empresa.tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
+                $tipo_empresa = $dados['tipo_empresa'] ? 'empresa' : 'contrato';
+                $tipoDocumento = TipoDocumento::whereTipo($tipo_empresa)->first();
+                if(!$tipoDocumento){
+                    $fail('Verificar o tipo de documento');
+                }
+            }],
+            'documentos_empresa.data_inicio' => [function ($attribute, $value, $fail) use ($dados) {
+                $datainicio = $dados['documentos_empresa']['data_inicio'];
+                $dataencerramento = $dados['documentos_empresa']['data_encerramento'];
+                if ($datainicio > $dataencerramento) {
+                    $fail('Data inicio incorreta.');
                 }
             }],
         ];
@@ -100,8 +110,8 @@ class DocumentosLegaisEmpresaController extends Controller
      */
     public function edit(DocumentoEmpresa $empresa)
     {
-        $empresa = $empresa->load('Logo', 'EmpresaConfig');
-        $empresa->ServicosCliente->transform(function ($item) {
+        $empresa = $empresa->load('Anexo');
+        $empresa->Anexo->transform(function ($item) {
             $item->anexosDel = [];
             return $item;
         });
@@ -119,21 +129,32 @@ class DocumentosLegaisEmpresaController extends Controller
      */
     public function update(Request $request, DocumentoEmpresa $empresa)
     {
-        $this->authorize('administracao_clientes_insert');
+        $this->authorize('administracao_documentos_legais_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $arrayValidacao = [
-            'documentos_empresa.*.observacao' => [function ($attribute, $value, $fail) use ($dados) {
+            'documentos_empresa.observacao' => [function ($attribute, $value, $fail) use ($dados) {
                 if (strlen($value) <= 3) {
                     $fail('Informe uma observação maior que 3 caracteres.');
                 }
             }],
-            'documentos_empresa.*.tipo_descricao' => [function ($attribute, $value, $fail) use ($dados) {
-                if (strlen($value) <= 3) {
-                    $fail('Informe uma descrição maior que 3 caracteres.');
+            'documentos_empresa.tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
+                $tipo_empresa = $dados['tipo_empresa'] ? 'empresa' : 'contrato';
+                $tipoDocumento = TipoDocumento::whereTipo($tipo_empresa)->first();
+                if(!$tipoDocumento){
+                    $fail('Verificar o tipo de documento');
                 }
             }],
+            'documentos_empresa.data_inicio' => [function ($attribute, $value, $fail) use ($dados) {
+
+            $datainicio = $dados['documentos_empresa']['data_inicio'];
+            $dataencerramento = $dados['documentos_empresa']['data_encerramento'];
+            if ($datainicio > $dataencerramento) {
+                    $fail('Data inicio incorreta.');
+                }
+            }],
+
         ];
         $dadosValidados = \Validator::make($dados, $arrayValidacao);
 
@@ -143,63 +164,11 @@ class DocumentosLegaisEmpresaController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
         }
-
         try {
-            DB::beginTransaction();
-            DocumentoEmpresa::create($dados);
-
             DB::beginTransaction();
 
             $empresa->update($dados);
-//
-//                if (isset($dados['logoDel'])) {
-//                    foreach ($dados['logoDel'] as $id) {
-//                        $cliente->Logo()->find($id)->delete();
-//                    }
-//                }
-//
-//
-//                if (isset($dados['logo'])) {
-//                    foreach ($dados['logo'] as $index => $anexo) {
-//                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-//                        if ($anexo['chave'] == null) {
-//                            Arquivo::whereId($anexo['id'])->update([
-//                                'nome' => $anexo['nome'],
-//                            ]);
-//                        } else {
-//                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-//                            if ($arquivo) {
-//                                $arquivo->temporario = false;
-//                                $arquivo->chave = '';
-//                                $arquivo->save();
-//                                $cliente->Logo()->attach($arquivo->id);
-//                            }
-//                        }
-//                    }
-//                }
-//
-//
-//                if (isset($dados['mascoteDel'])) {
-//                    foreach ($dados['mascoteDel'] as $id) {
-//                        $cliente->Mascote()->find($id)->delete();
-//                    }
-//                }
-//                if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
-//                    $config = ClienteConfig::find($dados['cliente_config']['id']);
-//                    $config->update([
-//                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
-//                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
-//                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-//                    ]);
-//                } else {
-//                    $dadosClienteConfig = [
-//                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
-//                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
-//                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-//                        'cliente_id' => $cliente->id
-//                    ];
-//                    ClienteConfig::create($dadosClienteConfig);
-//                }
+
             DB::commit();
             return response()->json([], 201);
 
@@ -226,6 +195,8 @@ class DocumentosLegaisEmpresaController extends Controller
         ->whereAtivo(true)
         ->get();
 
+        $tiposDocumentos = TipoDocumento::orderBy('nome')->get();
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -233,14 +204,17 @@ class DocumentosLegaisEmpresaController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'lista_contratos' => $contratos,
-                'tipo_pessoa_fisica' => DocumentoContratos::TIPO_PESSOA_FISICA,
+                'tipos_documentos' => $tiposDocumentos,
+                'tipo_pessoa_fisica' => DocumentoContratos::TIPO_PESSOA_FISICA
             ]
         ]);
     }
 
     public function filtro(Request $request)
     {
-        $resultado = DocumentoEmpresa::orderByDesc('id');
+        $resultado = DocumentoEmpresa::with('Empresa', 'Contrato')
+//        ->whereAtivo(true)
+        ->orderByDesc('id');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
@@ -278,34 +252,9 @@ class DocumentosLegaisEmpresaController extends Controller
         return response()->json(['ativo' => $empresa->ativo], 201);
     }
 
-    public function buscaCNPJ(Request $request)
-    {
-        return Sistema::verificaCnpjCadastrado(Cliente::class, $request->cnpj);
-    }
-
-    public function buscaCPF(Request $request)
-    {
-        return Sistema::verificaCpfCadastrado(Cliente::class, $request->cpf);
-    }
-
     public function uploadAnexos(Request $request)
     {
-        return Arquivo::uploadAnexos($request, [
-            Arquivo::MIME_JPEG,
-            Arquivo::MIME_JPG,
-            Arquivo::MIME_PNG,
-            Arquivo::MIME_PDF,
-            Arquivo::MIME_DOC,
-            Arquivo::MIME_DOCX,
-            Arquivo::MIME_PPS,
-            Arquivo::MIME_PPSX,
-            Arquivo::MIME_PPT,
-            Arquivo::MIME_PPTX,
-            Arquivo::MIME_XLS,
-            Arquivo::MIME_XLSX,
-            Arquivo::MIME_ZIP,
-            Arquivo::MIME_RAR,
-        ], Arquivo::DISCO_DOCUMENTO_EMPRESA);
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENSPDF, Arquivo::DISCO_DOCUMENTO_EMPRESA);
     }
 
     public function anexoShow(Request $request, $arquivo)

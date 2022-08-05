@@ -41,6 +41,12 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'administracao_clientes_update', 'descricao' => 'Pode alterar um cliente'];
         $lista[] = ['nome' => 'administracao_clientes_delete', 'descricao' => 'Pode apagar um cliente'];
 
+        //Documentos Legais------------------------------
+        $lista[] = ['nome' => 'administracao_documentos_legais', 'descricao' => 'Acessar rota/menu documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_insert', 'descricao' => 'Pode cadastrar um documento legal'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_update', 'descricao' => 'Pode alterar um documento legal'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_delete', 'descricao' => 'Pode apagar um documento legal'];
+
         //Curriculos Recrutamento------------------------------
         $lista[] = ['nome' => 'curriculos_recrutamento', 'descricao' => 'Acessar rota/menu curriculos recrutamento'];
         $lista[] = ['nome' => 'curriculos_recrutamento_insert', 'descricao' => 'Pode cadastrar um curriculo recrutamento'];

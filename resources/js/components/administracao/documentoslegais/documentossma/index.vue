@@ -20,7 +20,7 @@
                                     <label>Selecione o Tipo</label>
                                     <select class="form-control validacampo" v-model="form.tipo_ssma"
                                             :disabled="editando"
-                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)" @change="form.documentos_ssma.tipo_descricao = ''">
                                         <option value="">Selecione ...</option>
                                         <option :value="true">SSMA</option>
                                         <option :value="false">Contrato</option>
@@ -71,29 +71,21 @@
                                             <span>Documentos Gerenciaveis</span>
                                         </legend>
                                         <div class="row">
-                                            <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                                                <button class="btn btn-sm btn-secondary mb-2"
-                                                        @click="addLIDocumentoSsma($event.target)">
-                                                    <span class="fas fa-plus" aria-hidden="true"></span>
-                                                    Adicionar Documentos
-                                                </button>
-                                            </div>
 
-                                            <div class="col-12" v-if="form.documentos_ssma.length>0"
-                                                 v-for="(obj, index) in form.documentos_ssma" :key="obj.id">
+                                            <div class="col-12">
                                                 <div class="row py-3">
 
                                                     <div class="col-12 col-sm-4">
                                                         <div class="form-group">
                                                             <datepicker label="Data Início" posicao="up"
-                                                                        v-model="obj.data_inicio"></datepicker>
+                                                                        v-model="form.documentos_ssma.data_inicio"></datepicker>
                                                         </div>
                                                     </div>
 
                                                     <div class="col-12 col-sm-4">
                                                         <div class="form-group">
                                                             <datepicker label="Data Vencimento" posicao="up"
-                                                                        v-model="obj.data_encerramento"></datepicker>
+                                                                        v-model="form.documentos_ssma.data_encerramento"></datepicker>
                                                         </div>
                                                     </div>
 
@@ -102,16 +94,9 @@
                                                     <div class="col-12 col-sm-6 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Tipo de documento</label>
-                                                            <input type="text" class="form-control validacampo"
-                                                                   v-model="obj.tipo_descricao"
-                                                                   @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">
-<!--                                                            <select v-model="obj.servico_id" class="form-control"-->
-<!--                                                                    onblur="valida_campo_vazio(this,1)">-->
-<!--                                                                <option value="">Selecione ...</option>-->
-<!--                                                                <option v-for="item in listaServicos" :value="item.id">-->
-<!--                                                                    @{{ item.titulo }}-->
-<!--                                                                </option>-->
-<!--                                                            </select>-->
+                                                            <select v-model="form.documentos_ssma.tipo_id" class="form-control">
+                                                                <option v-for="item in listaDocumentosFiltrados" :value="item.id" v-text="item.nome"></option>
+                                                            </select>
                                                         </div>
                                                     </div>
 
@@ -119,7 +104,7 @@
                                                     <div class="col-12">
                                                         <div class="form-group">
                                                             <label>Observação</label>
-                                                            <textarea class="form-control validacampo" v-model="obj.observacao"
+                                                            <textarea class="form-control validacampo" v-model="form.documentos_ssma.observacao"
                                                                       rows="3"
                                                                       cols="3"
                                                                       @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)"></textarea>
@@ -132,8 +117,8 @@
                                                             <legend>ANEXO(S)</legend>
                                                             <div class="row">
                                                                 <div class="col-12">
-                                                                    <upload :model="obj.anexos"
-                                                                            :model-delete="obj.anexosDel"
+                                                                    <upload :model="form.documentos_ssma.anexos"
+                                                                            :model-delete="form.documentos_ssma.anexosDel"
                                                                             :url="urlAnexoUpload"
                                                                             label="Selecionar Arquivo(s)"
                                                                             @onProgresso="anexoUploadAndamento=true"
@@ -146,7 +131,7 @@
                                                     <div class="col-12 col-sm-6 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Status</label>
-                                                            <select v-model="obj.status" class="form-control">
+                                                            <select v-model="form.documentos_ssma.status" class="form-control">
                                                                 <option value="Iniciado">INICIADO</option>
                                                                 <option value="Concluido">CONCLUIDO</option>
                                                                 <option value="Não iniciado">NÃO INICIADO</option>
@@ -157,20 +142,11 @@
                                                     <div class="col-12 col-sm-6 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Ativo</label>
-                                                            <select v-model="obj.ativo" class="form-control">
+                                                            <select v-model="form.documentos_ssma.ativo" class="form-control">
                                                                 <option :value="true">SIM</option>
                                                                 <option :value="false">NÃO</option>
                                                             </select>
                                                         </div>
-                                                    </div>
-
-                                                    <div class="col-12 mb-3">
-                                                        <button class="btn btn-sm btn-danger"
-                                                                @click="removerLIServicoCliente(index)"
-                                                                v-show="obj.nova">
-                                                            <i
-                                                                class="fa fa-trash"></i> Remover
-                                                        </button>
                                                     </div>
 
                                                     <hr style="margin-top: 0; margin-bottom: 0; border: 0; width: 97%; border-top: 1px dashed rgba(0, 0, 0, 0.3);">
@@ -194,7 +170,7 @@
                                                 <div class="form-group">
                                                     <label>Notificar Vencimento E-mail</label>
                                                     <select
-                                                        v-model="form.documento_empresa_config.verifica_mes_vencimento"
+                                                        v-model="form.documentos_ssma.verifica_mes_vencimento"
                                                         class="form-control validacampo"
                                                         @keyup.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
                                                         <option value="">Selecione ...</option>
@@ -208,7 +184,7 @@
                                             <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="form-group">
                                                     <label>Envia notificação no whatsapp</label>
-                                                    <select v-model="form.documento_empresa_config.envia_whatsapp"
+                                                    <select v-model="form.documentos_ssma.envia_whatsapp"
                                                             class="form-control validacampo"
                                                             @keyup.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
                                                         <option value="">Selecione ...</option>
@@ -295,6 +271,9 @@
                     <tr class="bg-default">
                         <th>ID</th>
                         <th>Documento</th>
+                        <th>Referente</th>
+                        <th>Data Inicio</th>
+                        <th>Data Encerramento</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -305,8 +284,20 @@
                             {{ item.id }}
                         </td>
 
+                        <td data-label="Documento">
+                            {{ item.documentos_ssma.tipo_descricao}}
+                        </td>
+
                         <td data-label="TipoDescricao">
-                            {{ item.contrato_id ? item.contrato : item.empresa.razao_social }}
+                            {{ item.contrato_id ? item.contrato.dados_cadastrais.nome ? item.contrato.dados_cadastrais.nome : item.contrato.dados_cadastrais.razao_social : item.empresa.razao_social }}
+                        </td>
+
+                        <td data-label="DataInicio">
+                            {{ item.documentos_ssma.data_inicio }}
+                        </td>
+
+                        <td data-label="DataFim">
+                            {{ item.documentos_ssma.data_encerramento }}
                         </td>
 
                         <td data-label="Status">
@@ -366,24 +357,32 @@ export default {
             preloadAjax: false,
             editando: false,
             apagado: false,
+            tipo_pessoa_fisica: '',
 
             form: {
                 tipo_ssma: '',
                 contrato_id: '',
-                documentos_ssma: [],
-                ativo: '',
-                anexos: [],
-                anexosDel: [],
-
-                documento_empresa_config: {
+                documentos_ssma: {
+                    servico_id: '',
+                    data_inicio: moment().format('L'),
+                    data_encerramento: moment().add(6, 'months').format('L'),
+                    observacao: '',
+                    tipo_descricao: '',
+                    tipo_id: '',
+                    status: 'Iniciado',
+                    ativo: true,
                     id: '',
                     verifica_mes_vencimento: '',
                     envia_whatsapp: '',
+                    anexos: [],
+                    anexosDel: [],
                 },
+                ativo: '',
 
                 documentos_empresaDelete: [],
 
             },
+            lista_tipos_documentos: [],
             formDefault: null,
 
             urlAnexoUpload: `${URL_ADMIN}/administracao/documentoslegais/ssma/uploadAnexos`,
@@ -413,31 +412,16 @@ export default {
         this.atualizar();
 
     },
-    methods: {
-        addLIDocumentoSsma() {
-            const obj = {};
-            obj.nova = true;
-            obj.contrato_id = '';
-            obj.data_inicio = moment().format('L');
-            obj.data_encerramento = moment().add(6, 'months').format('L');
-            obj.observacao = '';
-            obj.tipo_descricao = '';
-            obj.status = 'Iniciado';
-            obj.ativo = true;
+    computed:{
+        listaDocumentosFiltrados(){
+            return _.filter(this.lista_tipos_documentos, { tipo: this.form.tipo_ssma ? 'ssma' : 'contrato'} )
+        }
+    },
 
-            obj.anexos = [];
-            obj.anexosDel = [];
-            this.form.documentos_ssma.unshift(obj);
-        },
-        removerLIDocumentoSsma(index) {
-            if (this.editando) {
-                this.form.documentos_empresaDelete.push(this.form.documentos_ssma[index].id);
-            }
-            this.form.documentos_ssma.splice(index, 1);
-        },
+    methods: {
 
         formNovo() {
-            this.tituloJanela = "Cadastrando Documento Empresa";
+            this.tituloJanela = "Cadastrando Documento SSMA";
 
             this.cadastrado = false;
             this.atualizado = false;
@@ -460,6 +444,7 @@ export default {
                     return false;
                 }
                 this.preloadAjax = true;
+                this.form.documentos_ssma.tipo_descricao = _.filter(this.lista_tipos_documentos, {id:this.form.documentos_ssma.tipo_id})[0].nome;
 
                 axios.post(`${URL_ADMIN}/administracao/documentoslegais/ssma`, this.form)
                     .then(response => {
@@ -497,18 +482,12 @@ export default {
         alterar() {
             this.validaBlur();
             this.$nextTick(() => {
-                $("#janelaCadastrar :input:enabled").trigger("blur");
-                if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                    this.mostraErro("", "Existem campos obrigatórios não preenchidos");
-                    return false;
-                }
+                formReset();
 
-                if (this.form.telefones.length === 0) {
-                    mostraErro('', 'Por favor insira um Telefone');
-                    return false;
-                }
+                $("#janelaCadastrar :input:enabled").trigger("blur");
 
                 this.preloadAjax = true;
+                this.form.documentos_ssma.tipo_descricao = _.filter(this.lista_tipos_documentos, {id:this.form.documentos_ssma.tipo_id})[0].nome;
 
                 axios.put(`${URL_ADMIN}/administracao/documentoslegais/ssma/${this.form.id}`, this.form).then(response => {
                     this.atualizado = true;
@@ -522,7 +501,9 @@ export default {
 
         carregou(dados) {
             this.lista = dados.itens;
+            this.tipo_pessoa_fisica = dados.tipo_pessoa_fisica;
             this.listaContratos = dados.lista_contratos;
+            this.lista_tipos_documentos = dados.tipos_documentos;
             this.controle.carregando = false;
 
         },

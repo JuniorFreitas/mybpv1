@@ -41,7 +41,8 @@ class DocumentoSsma extends Model
 
     public function Anexo()
     {
-        return $this->belongsToMany(Arquivo::class, 'empresa_logotipo', 'cliente_id', 'arquivo_id');
+        return $this->belongsToMany(Arquivo::class, 'documento_legais_ssmas_anexos', 'id', 'arquivo_id');
+
     }
 
     public function Empresa()

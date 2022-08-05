@@ -23,7 +23,7 @@ class CreateDocumentoSsmasTable extends Migration
             $table->timestamps();
 
             $table->foreign('empresa_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('contrato_id')->references('id')->on('documento_legais')->cascadeOnDelete();
+            $table->foreign('contrato_id')->references('id')->on('documento_contratos')->cascadeOnDelete();
 
         });
     }

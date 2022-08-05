@@ -26,12 +26,14 @@ class TipoDocumento extends Model
     protected $fillable = [
         'nome',
         'empresa_id',
+        'tipo',
         'ativo'
     ];
 
     protected $casts = [
         'nome' => 'string',
         'empresa_id' => 'int',
+        'tipo' => 'string',
         'ativo' => 'boolean'
     ];
 }
