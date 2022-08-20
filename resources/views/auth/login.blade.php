@@ -71,7 +71,7 @@
     </style>
 </head>
 <body class="my-login-page"
-      style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
+      style="background: url(https://bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
     {{--      style="background: url({{assets('imagens/bg-business.jpg')}});"--}}
 >
 <div id="app" v-cloak class="container-fluid">
@@ -170,9 +170,9 @@
                                 </form>
 
                                 <div class="py-3 d-flex justify-content-center">
-                                    <img src="https://site.bpse.com.br/img/logo_procem.png" alt=""
+                                    <img src="https://bpse.com.br/img/logo_procem.png" alt=""
                                          class=" " style="height: 130px">
-                                    <img src="https://site.bpse.com.br/img/selo_gptw.png" alt="" class=" "
+                                    <img src="https://bpse.com.br/img/selo_gptw.png" alt="" class=" "
                                          style="height: 130px">
                                 </div>
 

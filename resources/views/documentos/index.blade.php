@@ -67,7 +67,7 @@
 <div id="app" v-cloak>
 
     <div class="container-fluid"
-         style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
+         style="background: url(https://bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
          v-if="!autenticado">
         <div class="container">
             <div class="row">
@@ -101,9 +101,9 @@
 
 
                                     <div class="py-3 d-flex justify-content-center">
-                                        <img src="https://site.bpse.com.br/img/logo_procem.png" alt=""
+                                        <img src="https://bpse.com.br/img/logo_procem.png" alt=""
                                              class=" " style="height: 130px">
-                                        <img src="https://site.bpse.com.br/img/selo_gptw.png" alt="" class=" "
+                                        <img src="https://bpse.com.br/img/selo_gptw.png" alt="" class=" "
                                              style="height: 130px">
                                     </div>
 
@@ -144,9 +144,9 @@
         <div class="row py-3 bg-primary">
             <div class="col-12">
                 <div class="py-3 d-flex justify-content-center">
-                    <img src="https://site.bpse.com.br/img/logo_procem.png" alt=""
+                    <img src="https://bpse.com.br/img/logo_procem.png" alt=""
                          class=" " style="height: 100px">
-                    <img src="https://site.bpse.com.br/img/selo_gptw.png" alt="" class=" "
+                    <img src="https://bpse.com.br/img/selo_gptw.png" alt="" class=" "
                          style="height: 100px">
                 </div>
             </div>

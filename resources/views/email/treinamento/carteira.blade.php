@@ -80,7 +80,7 @@
 <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
     <tr style="background:#072433; padding-top: 15px; padding-bottom: 15px;">
         <td align="middle" style="padding: 21px">
-            <img src="http://site.bpse.com.br/img/logo.png" alt=""> <br>
+            <img src="https://bpse.com.br/img/logo.png" alt=""> <br>
         </td>
     </tr>
 </table>

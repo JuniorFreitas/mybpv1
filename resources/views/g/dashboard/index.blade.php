@@ -338,7 +338,7 @@
                 @if(auth()->user()->DadosEmpresa)
                     <div class="col-xl-5 col-lg-6 mt-3">
                         <div class="card card-stats mb-4 mb-xl-0 text-white"
-                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                             style="background: url(https://bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
@@ -355,7 +355,7 @@
                 @if(auth()->user()->DadosEmpresa)
                     <div class="col-xl-5 col-lg-6 mt-3">
                         <div class="card card-stats mb-4 mb-xl-0 text-white"
-                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                             style="background: url(https://bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
@@ -372,7 +372,7 @@
                 @if(auth()->user()->DadosEmpresa)
                     <div class="col-xl-5 col-lg-6 mt-3">
                         <div class="card card-stats mb-4 mb-xl-0 text-white"
-                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                             style="background: url(https://bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
@@ -397,7 +397,7 @@
                 @if(auth()->user()->DadosEmpresa)
                     <div class="col-xl-5 col-lg-6 mt-3">
                         <div class="card card-stats mb-4 mb-xl-0 text-white"
-                             style="background: url(https://site.bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
+                             style="background: url(https://bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover; min-height: 350px">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
