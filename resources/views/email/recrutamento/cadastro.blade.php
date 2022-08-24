@@ -142,7 +142,7 @@
             <td valign="top">
                 <p style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555; text-align: center">
 
-                    @if($dados['empresa_id'] == 5581)
+                    @if($dados['empresa_id'] == 55081)
                         Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Sua inscrição para vaga
                         <strong>{{$vagaAberta->titulo}} - {{$vagaAberta->Municipio->nome}}
                             /{{$vagaAberta->Municipio->uf}}</strong> foi recebida!.
@@ -150,7 +150,9 @@
                         é de 3 meses para candidatar-se nas oportunidades de seu interesse. <br>
                         Caso de dúvidas ou verificação de cadastro, acesso o WhatsApp abaixo: <br>
                         (99) 9 8143-2875
-                        <br>
+                        <br><br>
+                        Pix do cadastro:  08.439.321/0001-07
+                        <br><br>
                         Caso esteja com a validade "em dias", favor desconsiderar o informativo acima!
                         <br><br>
                         Sucesso e esperamos vê-lo(a) em breve!
