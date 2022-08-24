@@ -157,7 +157,7 @@
                         <br><br>
                         Sucesso e esperamos vê-lo(a) em breve!
                         <br>
-                        Abraços
+                        Abraços virtuais.
                     @else
                         Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Sua inscrição para vaga
                         <strong>{{$vagaAberta->titulo}} - {{$vagaAberta->Municipio->nome}}
@@ -177,7 +177,7 @@
                                 {{$empresa->razao_social}}
                             </strong>
                         </div>
-                        <img src="https://sgi.bpse.com.br/imagens/icons/location.png"
+                        <img src="https://bpse.com.br/imagens/icons/location.png"
                              alt="Endereço" height="22px"> {{$empresa->endereco_completo}}<br>
 
                     </div>

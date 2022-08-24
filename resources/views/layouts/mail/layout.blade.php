@@ -127,7 +127,7 @@
                                     <br>
                                 </strong>
                             </div>
-                            <img src="https://sgi.bpse.com.br/imagens/icons/location.png"
+                            <img src="https://bpse.com.br/imagens/icons/location.png"
                                  alt="Endereço" height="22px"> {{$empresa->endereco_completo}}<br>
 
                         </div>

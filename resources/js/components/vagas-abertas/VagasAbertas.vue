@@ -87,7 +87,7 @@
                                 dessa forma por e-mail.
                             </p>
                             <br>
-                            <img src="https://sgi.bpse.com.br/imagens/bepinhas/branca_2.png" alt="bepinha"
+                            <img src="https://bpse.com.br/imagens/bepinhas/branca_2.png" alt="bepinha"
                                  class="img-fluid mx-auto d-flex">
                         </div>
                         <div class="alert alert-success alert-dismissible" v-show="atualizado">
@@ -101,7 +101,7 @@
                                 dessa forma por e-mail.
                             </p>
                             <br>
-                            <img src="https://sgi.bpse.com.br/imagens/bepinhas/branca_2.png" alt="bepinha"
+                            <img src="https://bpse.com.br/imagens/bepinhas/branca_2.png" alt="bepinha"
                                  class="img-fluid mx-auto d-flex">
                         </div>
 
