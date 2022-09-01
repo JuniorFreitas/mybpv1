@@ -701,4 +701,43 @@ class Sistema
         });
     }
 
+
+    /**
+     * @param $cpf
+     * @return string
+     */
+    public static function mascaraCpf($cpf)
+    {
+        $sonumero = preg_replace("/[^0-9]/", "", $cpf);
+        return substr($sonumero, 0, 3) . '.' . substr($sonumero, 3, 3) . '.' . substr($sonumero, 6, 3) . '-' . substr($sonumero, 9, 2);
+    }
+
+    /**
+     * @param $cpf
+     * @return string
+     */
+    public static function mascaraCep($cep)
+    {
+        $sonumero = preg_replace("/[^0-9]/", "", $cep);
+        return substr($sonumero, 0, 5) . '-' . substr($sonumero, 5, 3);
+    }
+
+    /**
+     * @param $telefone
+     * @return mixed|string
+     */
+    public static function mascaraTelefone($telefone)
+    {
+        $formatedPhone = preg_replace('/[^0-9]/', '', $telefone);
+        $matches = [];
+        preg_match('/^([0-9]{2})([0-9]{4,5})([0-9]{4})$/', $formatedPhone, $matches);
+        if ($matches) {
+            $primeiro = strlen($matches[2]) == 5 ? substr($matches[2],0,1).' '.substr($matches[2],1,4): $matches[2];
+            return '('.$matches[1].') '.$primeiro.'-'.$matches[3];
+        }
+
+        return $telefone;
+    }
+
+
 }

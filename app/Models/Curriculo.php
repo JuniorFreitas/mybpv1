@@ -383,7 +383,6 @@ class Curriculo extends Model
         return $this->hasOne(User::class, 'id', 'id');
     }
 
-
     public function Experiencias()
     {
         return $this->hasMany(CurriculoExperiencia::class, 'curriculo_id', 'id');

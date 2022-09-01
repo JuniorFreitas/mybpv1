@@ -84,6 +84,18 @@ class TelefoneCurriculo extends Model
     public static $COMERCIAL = "comercial";
     public static $WHATS = "whatsapp";
 
+    const TIPO_RESIDENCIAL = "residencial";
+    const TIPO_CELULAR = "celular";
+    const TIPO_COMERCIAL = "comercial";
+    const TIPO_WHATS = "whatsapp";
+
+    const TIPOS = [
+        self::TIPO_RESIDENCIAL,
+        self::TIPO_CELULAR,
+        self::TIPO_COMERCIAL,
+        self::TIPO_WHATS,
+    ];
+
     protected $appends = ['tipoText', 'sonumero'];
 
     public function Formatado()
