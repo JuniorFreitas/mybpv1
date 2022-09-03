@@ -614,9 +614,14 @@ class Sistema
         }
     }
 
-    public static function grupoClinicaExame()
+    public static function grupoClinicaExame($empresa_id)
     {
-        $Empresas = \App\Models\User::select('id', 'nome', 'empresa_id')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
+        $Empresas = \App\Models\User::select('id', 'nome', 'empresa_id')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true);
+        if ($empresa_id == 0) {
+            $Empresas = $Empresas->get();
+        }else{
+            $Empresas = $Empresas->whereId($empresa_id)->get();
+        }
 
         try {
             echo "Iniciando...\n";
