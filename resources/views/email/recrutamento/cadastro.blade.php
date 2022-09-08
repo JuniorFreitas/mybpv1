@@ -142,7 +142,7 @@
             <td valign="top">
                 <p style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555; text-align: center">
 
-                    @if($dados['empresa_id'] == 55081)
+                    @if($dados['empresa_id'] == '55081')
                         Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Sua inscrição para vaga
                         <strong>{{$vagaAberta->titulo}} - {{$vagaAberta->Municipio->nome}}
                             /{{$vagaAberta->Municipio->uf}}</strong> foi recebida!.
@@ -177,8 +177,9 @@
                                 {{$empresa->razao_social}}
                             </strong>
                         </div>
-                        <img src="https://bpse.com.br/imagens/icons/location.png"
-                             alt="Endereço" height="22px"> {{$empresa->endereco_completo}}<br>
+{{--                        <img src="https://bpse.com.br/imagens/icons/location.png"--}}
+{{--                             alt="Endereço" height="22px"> --}}
+                        {{$empresa->endereco_completo}}<br>
 
                     </div>
                     <br><br>
