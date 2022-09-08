@@ -1766,7 +1766,7 @@ class AdmissaoController extends Controller
         ini_set('max_execution_time', '-1');
 
         $import = new Admissaoimport;
-        \Excel::import($import, storage_path('app/public/modelo_importacao_ok.xlsx'));
+        \Excel::import($import, storage_path('app/public/modelo_importacao_ok_v.xlsx'));
 
         $empresa_id = auth()->user()->empresa_id;
 
@@ -1836,7 +1836,9 @@ class AdmissaoController extends Controller
                     ]
                 ]
             ];
-        });
+        })->filter(function ($item) {
+            return $item['curriculo']['cpf'] != '';
+        })->unique('curriculo.cpf');
 
 
         if ($dados->count() == 0) {
@@ -1847,8 +1849,6 @@ class AdmissaoController extends Controller
         }
 
         $dados = $dados->toArray();
-
-//        return $dados;
 
         $dadosValidados = \Validator::make($dados, [
             '*.curriculo.cpf' => ['required', 'min:14',
