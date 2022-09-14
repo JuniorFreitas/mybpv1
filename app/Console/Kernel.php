@@ -3,7 +3,7 @@
 namespace App\Console;
 
 use App\Jobs\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoJob;
-use App\Jobs\Admissao\Processo\VencimentoAsoJob;
+use App\Jobs\Admissao\Processo\ImportJob;
 use App\Jobs\controle_ponto\VerificaJornadasJob;
 use App\Jobs\JobDeletaExportacaoExcel;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaVencimento;
@@ -43,7 +43,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(new VerificaSaidaFeriasJob)->monthly();
         $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily();
         $schedule->call(new JobDeletaExportacaoExcel)->daily();
-        $schedule->call(new VencimentoAsoJob)->daily();
+        $schedule->call(new ImportJob)->daily();
     }
 
     /**

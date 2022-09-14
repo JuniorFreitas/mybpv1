@@ -178,8 +178,10 @@ class Curriculo extends Model
         $activity->descricao = "";
     }
 
+    public $incrementing = false;
     protected $table = 'curriculos';
     protected $fillable = [
+        "id",
         "cpf",
         "rg",
         'rg_data_emissao',
@@ -187,7 +189,9 @@ class Curriculo extends Model
         "orgao_expeditor",
         "carteira_trabalho",
         "nome",
+        "estado_civil",
         "cnh",
+        "cnh_vencimento",
         "nascimento",
         "logradouro",
         "end_numero",
@@ -225,7 +229,9 @@ class Curriculo extends Model
         "orgao_expeditor" => "string",
         "carteira_trabalho" => "string",
         "nome" => "string",
+        "estado_civil" => "string",
         "cnh" => "string",
+        "cnh_vencimento" => "string",
         "nascimento" => "string",
         "logradouro" => "string",
         "complemento" => "string",
@@ -336,6 +342,28 @@ class Curriculo extends Model
     {
         $data = new DataHora($value);
         $this->attributes['nascimento'] = $data->dataInsert();
+    }
+
+    //Acessor ->nascimento
+    public function getCnhVencimentoAttribute($value)
+    {
+        if(!is_null($this->attributes['cnh_vencimento'])){
+            $data = new DataHora($this->attributes['cnh_vencimento']);
+            return $data->dataCompleta();
+        }else{
+            return null;
+        }
+    }
+
+    //Modificador ->nascimento
+    public function setCnhVencimentoAttribute($value)
+    {
+        if(!is_null($value)){
+            $data = new DataHora($value);
+            $this->attributes['cnh_vencimento'] = $data->dataInsert();
+        }else{
+            $this->attributes['cnh_vencimento'] =  null;
+        }
     }
 
     //Acessor ->rg_data_emissao
