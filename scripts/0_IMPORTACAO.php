@@ -144,11 +144,11 @@ try {
 
         if ($usuario->count() == 0) {
 //            \Log::info("Iniciando criação do Colaborador - " . $item['curriculo']['nome']);
-            echo "Iniciando criação do Colaborador - " . $item['curriculo']['nome'];
+            echo "Iniciando criação do Colaborador - " . $item['curriculo']['nome']."  \n";
             $usuario = User::create($dadosUser);
         } else {
 //            \Log::info("Iniciando atualizaçaão do Colaborador - " .$item['curriculo']['nome']);
-            echo "Iniciando atualizaçaão do Colaborador - " . $item['curriculo']['nome'];
+            echo "Iniciando atualizaçaão do Colaborador - " . $item['curriculo']['nome']."  \n";
             $usuario = $usuario->first();
             $usuario->update($dadosUser);
         }
