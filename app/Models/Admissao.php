@@ -866,7 +866,7 @@ class Admissao extends Model
             $dadosAdmissao['prazo_experiencia'] = null;
 
             $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
-            if ($dadosAdmissao['tipo_admissao'] == Admissao::TIPO_ADMISSAO_INTERMITENTE) {
+            if ($tipo_admissao == Admissao::TIPO_ADMISSAO_INTERMITENTE) {
                 isset($avaliacao) ? $avaliacao->delete() : null;
             }
 

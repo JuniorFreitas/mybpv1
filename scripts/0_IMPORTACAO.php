@@ -32,7 +32,7 @@ $import = new Admissaoimport;
 $empresa_id = 40568;
 
 $user_id = 50393;
-Auth::loginUsingId($user_id);
+
 
 $dados = $import->dados->map(function ($line) {
     return [
@@ -122,10 +122,11 @@ try {
     $count = 0;
     DB::beginTransaction();
     foreach ($dados as $item) {
-        $count++;
-        if (($count % 10) == 0) {
-            sleep(5);
-        }
+        Auth::loginUsingId($user_id);
+//        $count++;
+//        if (($count % 10) == 0) {
+//            sleep(5);
+//        }
         $usuario = User::where('empresa_id', $empresa_id)->whereHas('Curriculo', function ($q) use ($item) {
             $q->where('cpf', $item['curriculo']['cpf']);
         });
@@ -283,5 +284,7 @@ try {
 } catch (\Exception $e) {
     DB::rollback();
     \Log::error($e->getMessage() . ' - ' . $e->getLine());
-    return response()->json(['error' => $e->getMessage() . ' - ' . $e->getLine()], 500);
+
+    echo $e->getMessage() . ' - ' . $e->getLine()."\n";
+//    return response()->json(['error' => $e->getMessage() . ' - ' . $e->getLine()], 500);
 }
