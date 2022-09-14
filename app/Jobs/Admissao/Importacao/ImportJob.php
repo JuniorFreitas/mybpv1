@@ -26,7 +26,7 @@ class ImportJob implements ShouldQueue
     private $dados;
     private $empresa_id;
     private $user;
-
+    public $timeout = 0;
 
     public function __construct($user, $dados, $empresa_id)
     {
