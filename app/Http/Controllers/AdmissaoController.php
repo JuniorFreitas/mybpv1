@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\Admissaoimport;
+use App\Jobs\Admissao\Importacao\ImportJob;
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
 use App\Models\AdmissaoAso;
@@ -1766,9 +1767,10 @@ class AdmissaoController extends Controller
         ini_set('max_execution_time', '-1');
 
         $import = new Admissaoimport;
-        \Excel::import($import, storage_path('app/public/modelo_importacao_ok_v.xlsx'));
+        \Excel::import($import, storage_path('app/public/modelo_importacao_14.09.xlsx'));
 
-        $empresa_id = auth()->user()->empresa_id;
+//        $empresa_id = auth()->user()->empresa_id;
+        $empresa_id = $request->query('empresa_id');
 
         $dados = $import->dados->map(function ($line) {
             return [
@@ -1783,7 +1785,7 @@ class AdmissaoController extends Controller
                     "rg" => (string)preg_replace("/[^0-9]/", "", $line['rg']),
                     "rg_data_emissao" => $line['rg_emissao'] ? Date::excelToDateTimeObject($line['rg_emissao'])->format('d/m/Y') : null,
                     "nascimento" => $line['nascimento'] ? Date::excelToDateTimeObject($line['rg_emissao'])->format('d/m/Y') : null,
-                    "sexo" => (string)$line['sexo'],
+                    "sexo" => ucwords($line['sexo']),
                     "filiacao_pai" => (string)$line['pai'],
                     "filiacao_mae" => (string)$line['mae'],
                     "pcd" => mb_strtolower(trim($line['pcd'])) == "sim",
@@ -1805,6 +1807,7 @@ class AdmissaoController extends Controller
                 ],
                 "admissao" => [
                     "area_etiqueta_id" => $line['cod_area'],
+                    "centro_custo_id" => $line['centro_custo'],
                     "data_entrega_area" => $line['data_entrega_area'] ? Date::excelToDateTimeObject($line['data_entrega_area'])->format('d/m/Y') : null,
                     "salario" => number_format(floatval($line['salario']), 2, ',', '.'),
                     "pis" => (string)$line['pis'],
@@ -1815,6 +1818,7 @@ class AdmissaoController extends Controller
                     "titulo_eleitor_sessao" => (string)$line['titulo_eleitor_sessao'],
                     "titulo_eleitor_zona" => (string)$line['titulo_eleitor_zona'],
                     "tipo_admissao" => mb_strtoupper($line['tipo_admissao']),
+                    "data_admissao" => Date::excelToDateTimeObject($line['data_admissao'])->format('d/m/Y'),
                     "data_aso" => Date::excelToDateTimeObject($line['data_aso'])->format('d/m/Y'),
                     "admissao_encerramento" => $line['admissao_encerramento'] ? Date::excelToDateTimeObject($line['admissao_encerramento'])->format('d/m/Y') : null,
                     "prazo_experiencia" => ucfirst(trim($line['prazo_experiencia'])),
@@ -1840,7 +1844,6 @@ class AdmissaoController extends Controller
             return $item['curriculo']['cpf'] != '';
         })->unique('curriculo.cpf');
 
-
         if ($dados->count() == 0) {
             return response()->json([
                 'msg' => 'Nenhum registro encontrado',
@@ -1848,8 +1851,16 @@ class AdmissaoController extends Controller
             ], 400);
         }
 
+
         $dados = $dados->toArray();
 
+//         $teste = collect($dados)->split(1000);
+//
+//        return $teste[0]->toArray();
+        ImportJob::dispatch(auth()->user(), $dados, $empresa_id);
+
+        return response()->json(['msg' => 'Enviado para Fila'], 201);
+        /*
         $dadosValidados = \Validator::make($dados, [
             '*.curriculo.cpf' => ['required', 'min:14',
                 'regex:/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/',
@@ -1859,10 +1870,8 @@ class AdmissaoController extends Controller
             '*.curriculo.nome' => 'required|max:255',
             '*.curriculo.email' => 'email:rfc,dns',
             '*.curriculo.nascimento' => 'required|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            '*.curriculo.rg' => 'required|max:200',
-            '*.curriculo.rg_data_emissao' => ['required', 'max:10',
-                'regex:/^\d{2}\/\d{2}\/\d{4}$/',
-            ],
+            '*.curriculo.rg' => 'nullable|max:200',
+            '*.curriculo.rg_data_emissao' => 'nullable|max:10|regex:/^\d{2}\/\d{2}\/\d{4}$/',
             '*.curriculo.filiacao_pai' => 'max:255',
             '*.curriculo.filiacao_mae' => 'required|max:255',
             '*.curriculo.pcd' => 'required|boolean',
@@ -1888,6 +1897,7 @@ class AdmissaoController extends Controller
             '*.admissao.titulo_eleitor_sessao' => 'nullable|max:200',
             '*.admissao.titulo_eleitor_zona' => 'nullable|max:200',
             '*.admissao.data_aso' => 'required|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+            '*.admissao.data_admissao' => 'required|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
             '*.admissao.tipo_admissao' => "required|in:" . implode(",", Admissao::TODOS_TIPOS_ADMISSAO),
             '*.admissao.admissao_encerramento' => [
                 function ($attribute, $value, $fail) use ($dados) {
@@ -1920,12 +1930,162 @@ class AdmissaoController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
         }
+        */
 
-        echo "Sucesso!" . (new DataHora())->dataHoraInsert();
+//        $teste = collect($dados)->split(1000);
+//
+//        try {
+//            DB::beginTransaction();
+//            foreach ($teste[0]->toArray() as $item) {
+//                //fazer a criacão ou update
+//
+//                //Cria ou atualiza usuario
+//
+//                $usuario = User::whereEmpresaId($empresa_id)->whereHas('Curriculo', function ($q) use ($item) {
+//                    $q->where('cpf', $item['curriculo']['cpf']);
+//                });
+//
+//
+//                $dadosUser = [
+//                    'nome' => $item['curriculo']['nome'],
+//                    'login' => $item['curriculo']['email'],
+//                    'password' => Sistema::SenhaCpf($item['curriculo']['cpf']),
+//                    'tipo' => User::FUNCIONARIO,
+//                    'ativo' => true,
+//                    'temp' => false,
+//                    'termos' => false,
+//                    'empresa_id' => $empresa_id
+//                ];
+//
+//                if (!$usuario->first()) {
+//                    $usuario = User::create($dadosUser);
+//                } else {
+//                    $usuario = $usuario->first();
+//                    $usuario->update($dadosUser);
+//                }
+//
+//                //Cria ou atualiza os dados bancarios
+//                $dadosConta = [
+//                    'banco' => $item['admissao']['banco']['nome'],
+//                    'agencia' => $item['admissao']['banco']['agencia'],
+//                    'conta' => $item['admissao']['banco']['conta'],
+//                    'pix' => $item['admissao']['banco']['pix'],
+//                    'tipochavepix' => $item['admissao']['banco']['pix_tipo_chave'],
+//                    'chavepix' => $item['admissao']['banco']['pix_chave'],
+//                ];
+//
+//                $usuario->BancoConta ? $usuario->BancoConta->update($dadosConta) : $usuario->BancoConta()->create($dadosConta);
+//
+//                //Cria ou atualiza o Curriculo
+//                $dadosCurriculo = [
+//                    'id' => $usuario->id,
+//                    'cpf' => $item['curriculo']['cpf'],
+//                    'nome' => $item['curriculo']['nome'],
+//                    'cnh' => $item['curriculo']['cnh'],
+//                    'email' => $item['curriculo']['email'],
+//                    'nascimento' => $item['curriculo']['nascimento'],
+//                    'naturalidade' => $item['curriculo']['naturalidade'],
+//                    'logradouro' => $item['curriculo']['endereco']['logradouro'],
+//                    'end_numero' => $item['curriculo']['endereco']['numero'],
+//                    'complemento' => $item['curriculo']['endereco']['complemento'],
+//                    'bairro' => $item['curriculo']['endereco']['bairro'],
+//                    'municipio' => $item['curriculo']['endereco']['municipio'],
+//                    'uf' => $item['curriculo']['endereco']['uf'],
+//                    'cep' => $item['curriculo']['endereco']['cep'],
+//                    'uf_vaga' => VagasAbertas::find($item['curriculo']['vaga_pretendida'])->Municipio->uf,
+//                    'municipio_id' => VagasAbertas::find($item['curriculo']['vaga_pretendida'])->Municipio->id,
+//                    'rg' => $item['curriculo']['rg'],
+//                    'rg_data_emissao' => $item['curriculo']['rg_data_emissao'],
+//                    'filiacao_pai' => $item['curriculo']['filiacao_pai'],
+//                    'filiacao_mae' => $item['curriculo']['filiacao_mae'],
+//                    'sexo' => $item['curriculo']['sexo'],
+//                    'pcd' => $item['curriculo']['pcd'],
+//                    'cid' => $item['curriculo']['cid'],
+//                    'vaga_pretendida' => $item['curriculo']['vaga_pretendida']
+//                ];
+//
+//                $usuario->Curriculo ? $usuario->Curriculo->update($dadosCurriculo) : $usuario->Curriculo()->create($dadosCurriculo);
+//
+//                //Cria ou atualiza o Telefone
+//                $dadosTel = [
+//                    'tipo' => $item['curriculo']['telefone']['whatsapp'],
+//                    'pais' => "55",
+//                    'numero' => $item['curriculo']['telefone']['numero'],
+//                    'principal' => true,
+//                ];
+//                $telefone_id = $usuario->Curriculo->Telefones()->updateOrCreate($dadosTel)->id;
+//
+//                //Cria ou atualiza o Feedback
+//                $usuario->Curriculo->Feedback()->updateOrCreate([
+//                    'curriculo_id' => $usuario->id,
+//                    'selecionado' => 'sim',
+//                    'vaga_id' => $item['curriculo']['vaga_pretendida'],
+//                    'cliente_id' => $empresa_id,
+//                    'empresa_id' => $empresa_id,
+//                    'interesse' => true,
+//                    'contato_realizado' => true,
+//                    'telefone_id' => $telefone_id,
+//                    'vagas_abertas_id' => $item['curriculo']['vaga_pretendida']
+//                ]);
+//
+//                //Criações de entrevistas
+//                $usuario->Curriculo->Feedback->parecerRh()->updateOrCreate(['nota' => 9]);
+//                $usuario->Curriculo->Feedback->parecerRota()->updateOrCreate([]);
+//                $usuario->Curriculo->Feedback->parecerTecnica()->updateOrCreate([]);
+//                $usuario->Curriculo->Feedback->parecerTeste()->updateOrCreate([]);
+//                $usuario->Curriculo->Feedback->individualRh()->updateOrCreate([]);
+//                $usuario->Curriculo->Feedback->gestorRh()->updateOrCreate([]);
+//                $usuario->Curriculo->Feedback->entrevistaRh()->updateOrCreate([]);
+//
+//                //Criações de resultado integrado
+//                $usuario->Curriculo->Feedback->ResultadoIntegrado()->updateOrCreate([
+//                    'responsavel_envio' => 'importacao',
+//                    'documentos_entregue' => false,
+//                    'encaminhado_exame' => (bool)$item['admissao']['encaminhado_exame'],
+//                    'encaminhado_exame_data' => $item['admissao']['encaminhado_exame_data'],
+//                    'encaminhado_treinamento' => (bool)$item['admissao']['encaminhado_treinamento'],
+//                    'encaminhado_treinamento_data' => $item['admissao']['encaminhado_treinamento_data'],
+//                ]);
+//
+//                //Criações de admissao
+//                $usuario->Curriculo->Feedback->Admissao()->updateOrCreate([
+//                    'area_etiqueta_id' => $item['admissao']['area_etiqueta_id'],
+//                    'data_entrega_area' => $item['admissao']['data_entrega_area'],
+//                    'data_admissao' => $item['admissao']['data_admissao'],
+//                    'cargo' => VagasAbertas::find($item['curriculo']['vaga_pretendida'])->Vaga->nome,
+//                    'funcao' => VagasAbertas::find($item['curriculo']['vaga_pretendida'])->Vaga->nome,
+//                    'status' => Admissao::STATUS_ADMISSAO_ADMITIDO,
+//                    'salario' => $item['admissao']['salario'],
+//                    'pis' => $item['admissao']['pis'],
+//                    'tipo_admissao' => $item['admissao']['tipo_admissao'],
+//                    'prazo_experiencia' => $item['admissao']['prazo_experiencia'],
+//                    'data_encerramento' => $item['admissao']['admissao_encerramento'],
+//                    'usuario_id' => auth()->user()->id,
+//                ]);
+//
+//                Admissao::tipoAdmissaoAvalNoventaCriarAtualizar($usuario->Curriculo->Feedback->id, $item['admissao']['tipo_admissao'], $item['admissao']['prazo_experiencia'], $item['admissao']['data_admissao'], $item['admissao']['admissao_encerramento']);
+//                AdmissaoAso::criarAtualizar($usuario->Curriculo->Feedback->Admissao->id, $empresa_id, $item['admissao']['data_aso']);
+//
+//                //DadosAdmissoes
+//                $usuario->Curriculo->Feedback->Admissao->DadosAdmissoes()->updateOrCreate([
+//                    'ctps_numero' => $item['admissao']['ctps_numero'],
+//                    'ctps_serie' => $item['admissao']['ctps_serie'],
+//                    'ctps_data_emissao' => $item['admissao']['ctps_data_emissao'],
+//                    'titulo_eleitor_numero' => $item['admissao']['titulo_eleitor_numero'],
+//                    'titulo_eleitor_sessao' => $item['admissao']['titulo_eleitor_sessao'],
+//                    'titulo_eleitor_zona' => $item['admissao']['titulo_eleitor_zona'],
+//                ]);
+//            }
+//            DB::commit();
+//            return response()->json(['msg' => 'Importação realizada com sucesso'], 201);
+//        } catch (\Exception $e) {
+//            DB::rollback();
+//            return response()->json(['error' => $e->getMessage() . ' - ' . $e->getLine()], 500);
+//        }
+
 
         die;
 
-//        00:27
         $arquivo = storage_path('app/public/teste.csv');
         $file = fopen($arquivo, 'r');
         $empresa_id = auth()->user()->empresa_id;
@@ -2043,119 +2203,6 @@ class AdmissaoController extends Controller
             ], 400);
         }
 
-        try {
-            foreach ($filtrado as $item) {
-                //fazer a criacão ou update
-                DB::beginTransaction();
-                //Cria ou atualiza usuario
-
-//                $usuario = User::whereEmpresaId($empresa_id)->whereHas('Curriculo',function($q) use($item){
-//                    $q->where('cpf',$item['curriculo']['cpf']);
-//                });
-                $usuario = User::updateOrCreate([
-                    'nome' => $item['curriculo']['nome'],
-                    'login' => $item['curriculo']['email'],
-                    'password' => Sistema::SenhaCpf($item['curriculo']['cpf']),
-                    'tipo' => User::FUNCIONARIO,
-                    'ativo' => true,
-                    'temp' => false,
-                    'termos' => false,
-                    'empresa_id' => $empresa_id
-                ]);
-                //Cria ou atualiza os dados bancarios
-                $usuario->BancoConta()->updateOrCreate([
-                    'banco' => $item['admissao']['banco']['nome'],
-                    'agencia' => $item['admissao']['banco']['agencia'],
-                    'conta' => $item['admissao']['banco']['conta'],
-                    'pix' => $item['admissao']['banco']['pix'],
-                    'tipochavepix' => $item['admissao']['banco']['pix_tipo_chave'],
-                    'chavepix' => $item['admissao']['banco']['pix_chave'],
-                ]);
-                //Cria ou atualiza o Curriculo
-                $usuario->Curriculo()->updateOrCreate([
-                    'id' => $usuario->id,
-                    'cpf' => $item['curriculo']['cpf'],
-                    'nome' => $item['curriculo']['nome'],
-                    'cnh' => $item['curriculo']['cnh'],
-                    'email' => $item['curriculo']['email'],
-                    'nascimento' => $item['curriculo']['nascimento'],
-                    'logradouro' => $item['curriculo']['endereco']['logradouro'],
-                    'end_numero' => $item['curriculo']['endereco']['numero'],
-                    'complemento' => $item['curriculo']['endereco']['complemento'],
-                    'bairro' => $item['curriculo']['endereco']['bairro'],
-                    'municipio' => $item['curriculo']['endereco']['municipio'],
-                    'uf' => $item['curriculo']['endereco']['uf'],
-                    'cep' => $item['curriculo']['endereco']['cep'],
-                    'uf_vaga' => VagasAbertas::find($item['curriculo']['vaga_pretendida'])->Municipio->uf,
-                    'municipio_id' => VagasAbertas::find($item['curriculo']['vaga_pretendida'])->Municipio->id,
-                    'rg' => $item['curriculo']['rg'],
-                    'rg_data_emissao' => $item['curriculo']['rg_data_emissao'],
-                    'filiacao_pai' => $item['curriculo']['filiacao_pai'],
-                    'filiacao_mae' => $item['curriculo']['filiacao_mae'],
-                    'pcd' => $item['curriculo']['pcd'],
-                    'cid' => $item['curriculo']['cid'],
-                    'vaga_pretendida' => $item['curriculo']['vaga_pretendida']
-                ]);
-                //Cria ou atualiza o Telefone
-                $telefone_id = $usuario->Curriculo->Telefones()->updateOrCreate([
-                    'tipo' => $item['curriculo']['telefone']['whatsapp'],
-                    'pais' => "55",
-                    'numero' => $item['curriculo']['telefone']['telefone_numero'],
-                    'principal' => true,
-                ])->id;
-                //Cria ou atualiza o Feedback
-                $usuario->Curriculo->Feedback()->updateOrCreate([
-                    'curriculo_id' => $usuario->id,
-                    'selecionado' => 'sim',
-                    'vaga_id' => $item['curriculo']['vaga_pretendida'],
-                    'cliente_id' => $empresa_id,
-                    'empresa_id' => $empresa_id,
-                    'interesse' => true,
-                    'contato_realizado' => true,
-                    'telefone_id' => $telefone_id,
-                    'vagas_abertas_id' => $item['curriculo']['vaga_pretendida']
-                ]);
-
-                //Criações de entrevistas
-                $usuario->Curriculo->Feedback->parecerRh()->updateOrCreate(['nota' => 9]);
-                $usuario->Curriculo->Feedback->parecerRota()->updateOrCreate([]);
-                $usuario->Curriculo->Feedback->parecerTecnica()->updateOrCreate([]);
-                $usuario->Curriculo->Feedback->parecerTeste()->updateOrCreate([]);
-                $usuario->Curriculo->Feedback->individualRh()->updateOrCreate([]);
-                $usuario->Curriculo->Feedback->gestorRh()->updateOrCreate([]);
-                $usuario->Curriculo->Feedback->entrevistaRh()->updateOrCreate([]);
-
-                //Criações de resultado integrado
-                $usuario->Curriculo->Feedback->ResultadoIntegrado()->updateOrCreate([
-                    'responsavel_envio' => auth()->user()->nome
-                ]);
-
-                //Criações de admissao
-                $usuario->Curriculo->Feedback->Admissao()->updateOrCreate([
-                    'cargo' => VagasAbertas::find($item['curriculo']['vaga_pretendida'])->Vaga->nome,
-                    'funcao' => $item['admissao']['funcao'],
-                    'status' => Admissao::STATUS_ADMISSAO_ADMITIDO,
-                    'salario' => $item['admissao']['salario'],
-                    'pis' => $item['admissao']['pis'],
-                    'tipo_admissao' => $item['admissao']['tipo_admissao'],
-                    'usuario_id' => auth()->user()->id,
-                ]);
-
-                //DadosAdmissoes
-                $usuario->Curriculo->Feedback->Admissao->DadosAdmissoes()->updateOrCreate([
-                    'ctps_numero' => $item['admissao']['ctps_numero'],
-                    'ctps_serie' => $item['admissao']['ctps_serie'],
-                    'ctps_data_emissao' => $item['admissao']['ctps_data_emissao'],
-                    'titulo_eleitor_numero' => $item['admissao']['titulo_eleitor_numero'],
-                    'titulo_eleitor_sessao' => $item['admissao']['titulo_eleitor_sessao'],
-                    'titulo_eleitor_zona' => $item['admissao']['titulo_eleitor_zona'],
-                ]);
-            }
-            DB::commit();
-            return response()->json(['msg' => 'Importação realizada com sucesso'], 201);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
 
     }
 

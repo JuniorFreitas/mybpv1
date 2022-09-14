@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -103,24 +102,55 @@ class AdmissaoAso extends Model
         }
     }
 
-    public function Admissao(){
+    public function Admissao()
+    {
         return $this->hasOne(Admissao::class, 'id', 'admissao_id');
+    }
+
+    /**
+     * Cria ou atualiza Admissao ASO
+     * @param $admissao_id
+     * @param $empresa_id
+     * @param $data_aso
+     * @return void
+     */
+    public static function criarAtualizar($admissao_id, $empresa_id, $data_aso)
+    {
+        $ultimoAso = AdmissaoAso::withoutGlobalScopes()->whereAdmissaoId($admissao_id);
+        $dados = [
+            'admissao_id' => $admissao_id,
+            'data_aso' => (new DataHora($data_aso))->addAno(1),
+            'data_vencimento' => (new DataHora($data_aso))->dataInsert(),
+            'empresa_id' => $empresa_id,
+            'ativo' => true
+        ];
+
+        if ($ultimoAso->count() == 0) {
+            $ultimoAso->create($dados);
+        } else {
+            $ultimoAso->update([
+                'ativo' => false,
+                'user_alterou_id' => auth()->id(),
+            ]);
+
+            $ultimoAso->create($dados);
+        }
     }
 
     protected static function booted()
     {
-       static::creating(function ($model) {
+        static::creating(function ($model) {
             $dataExpiracao = (new DataHora($model->data_aso))->addAno(1);
 
-           $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
-           $model->data_vencimento = (new DataHora($dataExpiracao))->dataInsert();
-       });
+            $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
+            $model->data_vencimento = (new DataHora($dataExpiracao))->dataInsert();
+        });
 
         static::updating(function ($model) {
             $dataExpiracao = (new DataHora($model->data_aso))->addAno(1);
 
             $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
-           $model->data_vencimento = (new DataHora($dataExpiracao))->dataInsert();
+            $model->data_vencimento = (new DataHora($dataExpiracao))->dataInsert();
 
         });
     }
