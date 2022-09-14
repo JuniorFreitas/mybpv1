@@ -1767,7 +1767,7 @@ class AdmissaoController extends Controller
         ini_set('max_execution_time', '-1');
 
         $import = new Admissaoimport;
-        \Excel::import($import, storage_path('app/public/modelo_importacao_14.09.xlsx'));
+        \Excel::import($import, public_path('modelo_importacao_14.09.xlsx'));
 
 //        $empresa_id = auth()->user()->empresa_id;
         $empresa_id = $request->query('empresa_id');
