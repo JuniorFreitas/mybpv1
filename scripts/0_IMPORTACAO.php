@@ -119,9 +119,13 @@ $dados = $dados->toArray();
 try {
 //            $teste = collect($dados)->split(1000);
 //            \Log::info($teste[4]->toArray());
+    $count = 0;
     DB::beginTransaction();
     foreach ($dados as $item) {
-
+        $count++;
+        if (($count % 10) == 0) {
+            sleep(5);
+        }
         $usuario = User::where('empresa_id', $empresa_id)->whereHas('Curriculo', function ($q) use ($item) {
             $q->where('cpf', $item['curriculo']['cpf']);
         });
@@ -139,10 +143,10 @@ try {
 
 
         if ($usuario->count() == 0) {
-            \Log::info("Iniciando criação do Colaborador - " .$item['curriculo']['nome']);
+            \Log::info("Iniciando criação do Colaborador - " . $item['curriculo']['nome']);
             $usuario = User::create($dadosUser);
         } else {
-            \Log::info("Iniciando atualizaçaão do Colaborador - " .$item['curriculo']['nome']);
+//            \Log::info("Iniciando atualizaçaão do Colaborador - " .$item['curriculo']['nome']);
             $usuario = $usuario->first();
             $usuario->update($dadosUser);
         }
@@ -269,7 +273,7 @@ try {
             'titulo_eleitor_sessao' => $item['admissao']['titulo_eleitor_sessao'],
             'titulo_eleitor_zona' => $item['admissao']['titulo_eleitor_zona'],
         ]);
-        \Log::info("Fim Colaborador - ".$curriculo->id.' - '.$curriculo->nome);
+//        \Log::info("Fim Colaborador - ".$curriculo->id.' - '.$curriculo->nome);
     }
     DB::commit();
     \Log::info('Importação realizada com sucesso');
