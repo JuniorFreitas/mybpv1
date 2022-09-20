@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use DB;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 use MasterTag\GExtenso;
@@ -738,6 +737,5 @@ class Sistema
 
         return $telefone;
     }
-
 
 }

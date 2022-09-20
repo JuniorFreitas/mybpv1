@@ -5,8 +5,13 @@ use App\Models\Admissao;
 use App\Models\AdmissaoAso;
 use App\Models\Curriculo;
 use App\Models\Sistema;
+use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use App\Models\VagasAbertas;
+use App\Rules\AreaEmpresaRules;
+use App\Rules\CpfValidoEmpresaRules;
+use App\Rules\VagaAbertaEmpresaRules;
+use App\Rules\VerificaCpfEmpresaRules;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -27,11 +32,11 @@ ini_set('max_execution_time', '-1');
 
 unset($argv[0]);
 $import = new Admissaoimport;
-\Excel::import($import, public_path('modelo_importacao_14.09.xlsx'));
+\Excel::import($import, public_path('modelo_importacao_14.09.22_o.xlsx'));
 
-$empresa_id = 40568;
+$empresa_id = 57861;
 
-$user_id = 50393;
+$user_id = 58050;
 
 
 $dados = $import->dados->map(function ($line) {
@@ -80,8 +85,8 @@ $dados = $import->dados->map(function ($line) {
             "titulo_eleitor_sessao" => (string)$line['titulo_eleitor_sessao'],
             "titulo_eleitor_zona" => (string)$line['titulo_eleitor_zona'],
             "tipo_admissao" => mb_strtoupper($line['tipo_admissao']),
-            "data_admissao" => Date::excelToDateTimeObject($line['data_admissao'])->format('d/m/Y'),
-            "data_aso" => Date::excelToDateTimeObject($line['data_aso'])->format('d/m/Y'),
+            "data_admissao" => Date::excelToDateTimeObject(trim((string)$line['data_admissao']))->format('d/m/Y'),
+            "data_aso" => Date::excelToDateTimeObject(trim((string)$line['data_aso']))->format('d/m/Y'),
             "admissao_encerramento" => $line['admissao_encerramento'] ? Date::excelToDateTimeObject($line['admissao_encerramento'])->format('d/m/Y') : null,
             "prazo_experiencia" => ucfirst(trim($line['prazo_experiencia'])),
             "encaminhado_documento" => mb_strtolower(trim($line['encaminhado_documento'])) == "sim",
@@ -113,20 +118,87 @@ if ($dados->count() == 0) {
     ], 400);
 }
 
-
 $dados = $dados->toArray();
 
+$dadosValidados = \Validator::make($dados, [
+    '*.curriculo.cpf' => ['required',
+        'min:14',
+        'regex:/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/',
+        new CpfValidoEmpresaRules($empresa_id),
+        new VerificaCpfEmpresaRules($empresa_id, true)
+    ],
+    '*.curriculo.nome' => 'required|max:255',
+    '*.curriculo.email' => 'email:rfc,dns',
+    '*.curriculo.nascimento' => 'required|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+    '*.curriculo.rg' => 'nullable|max:200',
+    '*.curriculo.rg_data_emissao' => 'nullable|max:10|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+    '*.curriculo.filiacao_pai' => 'max:255',
+    '*.curriculo.filiacao_mae' => 'required|max:255',
+    '*.curriculo.pcd' => 'required|boolean',
+    '*.curriculo.cid' => 'required_if:*.curriculo.pcd,true',
+    '*.curriculo.vaga_pretendida' => ['required', new VagaAbertaEmpresaRules($empresa_id)],
+    '*.curriculo.endereco.cep' => 'required|min:9',
+    '*.curriculo.endereco.logradouro' => 'required|max:255',
+    '*.curriculo.endereco.numero' => 'nullable|max:10',
+    '*.curriculo.endereco.complemento' => 'nullable|max:255',
+    '*.curriculo.endereco.bairro' => 'required|max:255',
+    '*.curriculo.endereco.municipio' => 'required|max:255',
+    '*.curriculo.endereco.uf' => 'required|max:2|regex:/^[A-Z]{2}$/',
+    '*.curriculo.telefone.whatsapp' => 'required|in:' . implode(",", TelefoneCurriculo::TIPOS),
+    '*.curriculo.telefone.numero' => 'required|max:16',
+    '*.admissao.area_etiqueta_id' => ['required', new AreaEmpresaRules($empresa_id)],
+    '*.admissao.data_entrega_area' => 'nullable|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+    '*.admissao.salario' => 'max:100',
+    '*.admissao.pis' => 'nullable|max:200',
+    '*.admissao.ctps_numero' => 'nullable|max:200',
+    '*.admissao.ctps_serie' => 'nullable|max:200',
+    '*.admissao.ctps_data_emissao' => 'nullable|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+    '*.admissao.titulo_eleitor_numero' => 'nullable|max:200',
+    '*.admissao.titulo_eleitor_sessao' => 'nullable|max:200',
+    '*.admissao.titulo_eleitor_zona' => 'nullable|max:200',
+    '*.admissao.data_aso' => 'required|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+    '*.admissao.data_admissao' => 'required|date_format:d/m/Y|regex:/^\d{2}\/\d{2}\/\d{4}$/',
+    '*.admissao.tipo_admissao' => "required|in:" . implode(",", Admissao::TODOS_TIPOS_ADMISSAO),
+    '*.admissao.admissao_encerramento' => [
+        function ($attribute, $value, $fail) use ($dados) {
+            $i = (int)explode('.', $attribute)[0];
+
+            if (in_array($dados[$i]['admissao']['tipo_admissao'], [Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO, Admissao::TIPO_ADMISSAO_TEMPORARIO])
+                && is_null($value)
+                && preg_match("/^\d{2}\/\d{2}\/\d{4}$/", $value) == 0
+            ) {
+                $fail("O {$attribute} deve ser preenchido com formato da data dd/mm/aaaa");
+            }
+        }],
+    '*.admissao.prazo_experiencia' => [function ($attribute, $value, $fail) use ($dados) {
+        $i = (int)explode('.', $attribute)[0];
+        if ($dados[$i]['admissao']['tipo_admissao'] == Admissao::TIPO_ADMISSAO_FIXO && !in_array($value, Admissao::TODOS_PRAZOS)) {
+            $fail("A linha {$attribute} só pode ser um dos tipos de prazo: " . implode(',', Admissao::TODOS_PRAZOS));
+        }
+    }],
+    '*.admissao.banco.nome' => 'nullable|max:200',
+    '*.admissao.banco.agencia' => 'nullable|max:200',
+    '*.admissao.banco.conta' => 'nullable|max:200',
+    '*.admissao.banco.pix' => 'boolean',
+    '*.admissao.banco.pix_tipo_chave' => 'required_if:*.admissao.banco.pix,true|max:200',
+    '*.admissao.banco.pix_chave' => 'required_if:*.admissao.banco.pix,true|max:200',
+]);
+
+if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+    print_r([
+        'msg' => 'Erro ao fazer importação',
+        'erros' => $dadosValidados->errors()
+    ]);
+    die();
+
+}
+
 try {
-//            $teste = collect($dados)->split(1000);
-//            \Log::info($teste[4]->toArray());
     $count = 0;
     DB::beginTransaction();
     foreach ($dados as $item) {
         Auth::loginUsingId($user_id);
-//        $count++;
-//        if (($count % 10) == 0) {
-//            sleep(5);
-//        }
+
         $usuario = User::where('empresa_id', $empresa_id)->whereHas('Curriculo', function ($q) use ($item) {
             $q->where('cpf', $item['curriculo']['cpf']);
         });
@@ -145,11 +217,10 @@ try {
 
         if ($usuario->count() == 0) {
 //            \Log::info("Iniciando criação do Colaborador - " . $item['curriculo']['nome']);
-            echo "Iniciando criação do Colaborador - " . $item['curriculo']['nome']."  \n";
+            echo "Iniciando criação do Colaborador - " . $item['curriculo']['nome'] . "  \n";
             $usuario = User::create($dadosUser);
         } else {
-//            \Log::info("Iniciando atualizaçaão do Colaborador - " .$item['curriculo']['nome']);
-            echo "Iniciando atualizaçaão do Colaborador - " . $item['curriculo']['nome']."  \n";
+            echo "Iniciando atualizaçaão do Colaborador - " . $item['curriculo']['nome'] . "  \n";
             $usuario = $usuario->first();
             $usuario->update($dadosUser);
         }
@@ -276,15 +347,15 @@ try {
             'titulo_eleitor_sessao' => $item['admissao']['titulo_eleitor_sessao'],
             'titulo_eleitor_zona' => $item['admissao']['titulo_eleitor_zona'],
         ]);
-//        \Log::info("Fim Colaborador - ".$curriculo->id.' - '.$curriculo->nome);
     }
     DB::commit();
-    \Log::info('Importação realizada com sucesso');
+    $empresa = User::find($empresa_id);
+    \Log::info('Importação realizada com sucesso da Empresa '.$empresa->nome );
     return response()->json(['msg' => 'Importação realizada com sucesso'], 201);
 } catch (\Exception $e) {
     DB::rollback();
     \Log::error($e->getMessage() . ' - ' . $e->getLine());
 
-    echo $e->getMessage() . ' - ' . $e->getLine()."\n";
+    echo $e->getMessage() . ' - ' . $e->getLine() . "\n";
 //    return response()->json(['error' => $e->getMessage() . ' - ' . $e->getLine()], 500);
 }

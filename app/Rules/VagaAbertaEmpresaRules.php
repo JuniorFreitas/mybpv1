@@ -34,9 +34,11 @@ class VagaAbertaEmpresaRules implements Rule
             ->where('empresa_id', $this->empresa_id)
             ->where('ativo_sistema', true);
 
+        $vagaAtivaSistema = $vagaAberta->count();
+
         $validaSite = $vagaAberta->where('ativo', true)->count();
 
-        if ($vagaAberta->count() == 0 || ($this->site && $validaSite == 0)) {
+        if ($vagaAtivaSistema == 0 || ($this->site && $validaSite == 0)) {
             $this->error_message = "Vaga não encontrada";
             return false;
         }
