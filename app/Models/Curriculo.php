@@ -6,6 +6,7 @@ use App\Scopes\ScopeEmpresa;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -161,7 +162,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Curriculo extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'curriculo';
@@ -347,10 +348,10 @@ class Curriculo extends Model
     //Acessor ->nascimento
     public function getCnhVencimentoAttribute($value)
     {
-        if(!is_null($this->attributes['cnh_vencimento'])){
+        if (!is_null($this->attributes['cnh_vencimento'])) {
             $data = new DataHora($this->attributes['cnh_vencimento']);
             return $data->dataCompleta();
-        }else{
+        } else {
             return null;
         }
     }
@@ -358,11 +359,11 @@ class Curriculo extends Model
     //Modificador ->nascimento
     public function setCnhVencimentoAttribute($value)
     {
-        if(!is_null($value)){
+        if (!is_null($value)) {
             $data = new DataHora($value);
             $this->attributes['cnh_vencimento'] = $data->dataInsert();
-        }else{
-            $this->attributes['cnh_vencimento'] =  null;
+        } else {
+            $this->attributes['cnh_vencimento'] = null;
         }
     }
 
