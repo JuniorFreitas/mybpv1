@@ -248,7 +248,7 @@ class ControleExameController extends Controller
             \DB::rollback();
             $msg = "Erro ao Atualizar o resultado do exame para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
-            return response()->json($msg, 400);
+//            return response()->json($msg, 400);
             return response()->json(['msg' => 'Houve um erro ao atualizar o resultado do exame!'], 400);
         }
     }
@@ -258,7 +258,7 @@ class ControleExameController extends Controller
     {
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoExame(true);
-        })->select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id'])->with(
+        })->select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id','vagas_abertas_id'])->with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social,area_id',
             'vagaSelecionada',

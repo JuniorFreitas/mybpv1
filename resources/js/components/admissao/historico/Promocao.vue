@@ -15,31 +15,38 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <label>Novo Cargo</label>
-                                <input type="text" v-model="form.novo_cargo" class="form-control"
-                                       onblur="valida_campo_vazio(this,1)">
+                                <input type="text" v-model="form.novo_cargo" class="form-control validacampo"
+                                       @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                       @keyup.prevent="valida_campo_vazio($event.target, 1)"
+                                >
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="form-group">
                                 <label>Salário</label>
-                                <input type="text" v-model="form.novo_salario" class="form-control"
+                                <input type="text" v-model="form.novo_salario" class="form-control validacampo"
                                        v-mascara:dinheiro
-                                       onblur="valida_campo_vazio(this,1)">
+                                       @blur.prevent="valida_dinheiro($event.target)"
+                                       @keyup.prevent="valida_dinheiro($event.target)"
+                                >
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="form-group">
                                 <label>Percentual</label>
-                                <input type="text" v-model="form.percentual" class="form-control"
-                                       onblur="valida_campo_vazio(this,1)">
+                                <input type="text" v-model="form.percentual" v-mascara:pct class="form-control validacampo"
+                                       @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                       @keyup.prevent="valida_campo_vazio($event.target, 1)"
+                                >
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="form-group">
                                 <label>Tipo</label>
-                                <select v-model="form.tipo"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        onblur="valida_campo_vazio(this,1)" class="custom-select">
+                                <select v-model="form.tipo" class="custom-select validacampo"
+                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                        @change.prevent="valida_campo_vazio($event.target, 1)"
+                                >
                                     <option value="">Selecione</option>
                                     <option value="promocao">Promoção</option>
                                     <option value="reajuste">Reajuste</option>
@@ -51,8 +58,9 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <label>Motivo da Promoção</label>
-                                <textarea type="text" rows="3" v-model="form.motivo" class="form-control"
-                                          onblur="valida_campo_vazio(this,1)"></textarea>
+                                <textarea type="text" rows="3" v-model="form.motivo" class="form-control validacampo"
+                                          @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                          @keyup.prevent="valida_campo_vazio($event.target, 1)"></textarea>
                             </div>
                         </div>
                     </div>
@@ -106,8 +114,10 @@
 <script>
 
 import DatePicker from "../../DatePicker";
+import Validacoes from "../../../mixins/Validacoes";
 
 export default {
+    mixins: [Validacoes],
     props: {
         feedback_id: {
             type: Number,
@@ -135,9 +145,9 @@ export default {
             form: {
                 feedback_id: "",
                 novo_cargo: "",
-                novo_salario: "",
+                novo_salario: "0,00",
                 motivo: "",
-                percentual: "",
+                percentual: 0.00,
                 tipo: ""
             },
             formDefault: null
@@ -147,6 +157,7 @@ export default {
         this.atualizar();
         this.formDefault = _.cloneDeep(this.form);
     },
+
     methods: {
         addPromocao() {
             this.form = _.cloneDeep(this.formDefault);
@@ -156,27 +167,30 @@ export default {
             setupCampo();
         },
         salvar() {
-            $(`#janelaPromocao :input:visible`).trigger("blur");
-            if ($(`#janelaPromocao :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os erros.");
-                return false;
-            }
+            this.validaBlur();
+            this.$nextTick(() => {
 
-            this.preloadSalvar = true;
-            //criar
-            axios.post(`${URL_ADMIN}/historico/promocao/${this.feedback_id}`, this.form)
-                .then(response => {
-                    if (response.status === 201) {
-                        this.preloadSalvar = false;
-                        mostraSucesso("Promoção adicionada com sucesso.");
-                        $("#janelaPromocao").modal("hide");
-                        this.form = _.cloneDeep(this.formDefault);
-                        // this.cadastrado = true;
-                        this.atualizar();
-                    }
-                })
-                .catch(error => (this.preloadSalvar = false));
+                $(`#janelaPromocao :input:visible`).trigger("blur");
+                if ($(`#janelaPromocao :input:visible.is-invalid`).length) {
+                    mostraErro("", "Verifique os erros.");
+                    return false;
+                }
 
+                this.preloadSalvar = true;
+                //criar
+                axios.post(`${URL_ADMIN}/historico/promocao/${this.feedback_id}`, this.form)
+                    .then(response => {
+                        if (response.status === 201) {
+                            this.preloadSalvar = false;
+                            mostraSucesso("Promoção adicionada com sucesso.");
+                            $("#janelaPromocao").modal("hide");
+                            this.form = _.cloneDeep(this.formDefault);
+                            // this.cadastrado = true;
+                            this.atualizar();
+                        }
+                    })
+                    .catch(error => (this.preloadSalvar = false));
+            });
         },
         atualizar() {
             this.preload = true;

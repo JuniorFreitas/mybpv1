@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from "moment";
 
 const validacoes = {
     // computed: {
@@ -35,7 +35,7 @@ const validacoes = {
             toastr.success(mensagem, titulo);
         },
         validaBlur() {
-            let el = document.querySelectorAll('.validacampo');
+            let el = document.querySelectorAll(".validacampo");
             for (let [key, input] of Object.entries(el)) {
                 input.focus();
                 input.blur();
@@ -791,7 +791,7 @@ const validacoes = {
             }
         },
         mascaraTelefone() {
-            $(".telefone, .telefone9").each(function (index, element) {
+            $(".telefone, .telefone9").each(function(index, element) {
                 var telefone = $(this).val();
                 telefone = this.replaceAll(telefone, "(", "");
                 telefone = this.replaceAll(telefone, ")", "");
@@ -927,7 +927,34 @@ const validacoes = {
                 }
             }
         },
-    },
+
+        valida_dinheiro(evt) {
+
+            $(evt).siblings("div.invalid-feedback").remove();
+
+            var valor = convertFloat($(evt).val());
+            if (valor === 0.00) {
+
+                $(evt).addClass("is-invalid");
+                if (!$(evt).siblings("div.invalid-feedback").length) {
+                    if ($(evt).siblings("div.input-group-append").length) {
+                        $(evt).siblings("div.input-group-append").after(`<div class="invalid-feedback">O valor não pode ser 0,00</div>`);
+                    } else {
+                        $(evt).after(`<div class="invalid-feedback">O valor não pode ser 0,00</div>`);
+                    }
+                }
+
+
+                if ($(evt).attr("data-toggle")) {
+                    $(evt).attr("data-content", "O valor não pode ser 0,00");
+                }
+                return false;
+            } else {
+                $(evt).removeClass("is-invalid");
+                return true;
+            }
+        }
+    }
 };
 
 export default validacoes;
