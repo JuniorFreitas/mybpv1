@@ -236,7 +236,7 @@
 
                                                 <div class="col-12 col-sm-6 col-lg-4">
                                                     <div class="form-group">
-                                                        <label>Tipo de documento</label>
+                                                        <label>Tipo de serviço</label>
                                                         <input type="text" class="form-control validacampo"
                                                                v-model="obj.tipo_descricao" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">
                                                     </div>
