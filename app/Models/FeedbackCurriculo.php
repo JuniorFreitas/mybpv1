@@ -7,6 +7,7 @@ use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -181,8 +182,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class FeedbackCurriculo extends Model
 {
-    use HasFactory, LogsActivity;
-    use TenantTrait;
+    use HasFactory, LogsActivity, TenantTrait, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'Feedback';
@@ -264,7 +264,12 @@ class FeedbackCurriculo extends Model
         'empresa_id' => 'int',
     ];
 
-    protected $appends = ['vaga_aberta_municipio'];
+    protected $appends = ['vaga_aberta_municipio', 'fc_token'];
+
+    public function getFCTokenAttribute()
+    {
+        return \Crypt::encrypt($this->id);
+    }
 
     protected function serializeDate(DateTimeInterface $date)
     {
@@ -784,6 +789,11 @@ class FeedbackCurriculo extends Model
     public function Afastamentos()
     {
         return $this->hasMany(Afastamento::class, 'feedback_id', 'id');
+    }
+
+    public function Cih()
+    {
+        return $this->belongsToMany(Cih::class, 'cih_feedback', 'feedback_id', 'cih_id');
     }
 
     /**/

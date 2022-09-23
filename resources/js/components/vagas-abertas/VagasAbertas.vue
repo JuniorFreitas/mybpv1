@@ -21,9 +21,9 @@
                                target="_blank">CANDIDATAR-SE</a>
                         </div>
 
-                        <!--                        href="https://api.whatsapp.com/send?text=Vaga aberta no site da BPSE para {{dados_vaga.vaga.nome}} -  {{ dados_vaga.municipio.nome }} - {{ dados_vaga.municipio.uf }} é só acessar https://site.bpse.com.br/vaga-aberta/{{dados_vaga.id}}/{{dados_vaga.Vaga.slug}}"-->
+                        <!--                        href="https://api.whatsapp.com/send?text=Vaga aberta no site da BPSE para {{dados_vaga.vaga.nome}} -  {{ dados_vaga.municipio.nome }} - {{ dados_vaga.municipio.uf }} é só acessar https://bpse.com.br/vaga-aberta/{{dados_vaga.id}}/{{dados_vaga.Vaga.slug}}"-->
                         <!---->
-                        <!--                        href="https://www.facebook.com/sharer/sharer.php?u=https://site.bpse.com.br/vaga-aberta/{{dados_vaga.id}}/"-->
+                        <!--                        href="https://www.facebook.com/sharer/sharer.php?u=https://bpse.com.br/vaga-aberta/{{dados_vaga.id}}/"-->
 
                         <div class="float-md-right">
                             <a class="btn mr-1 mb-2 btn-outline-primary"
@@ -87,7 +87,7 @@
                                 dessa forma por e-mail.
                             </p>
                             <br>
-                            <img src="https://sgi.bpse.com.br/imagens/bepinhas/branca_2.png" alt="bepinha"
+                            <img src="https://bpse.com.br/imagens/bepinhas/branca_2.png" alt="bepinha"
                                  class="img-fluid mx-auto d-flex">
                         </div>
                         <div class="alert alert-success alert-dismissible" v-show="atualizado">
@@ -101,7 +101,7 @@
                                 dessa forma por e-mail.
                             </p>
                             <br>
-                            <img src="https://sgi.bpse.com.br/imagens/bepinhas/branca_2.png" alt="bepinha"
+                            <img src="https://bpse.com.br/imagens/bepinhas/branca_2.png" alt="bepinha"
                                  class="img-fluid mx-auto d-flex">
                         </div>
 

@@ -78,7 +78,11 @@ class ExameFuncionario extends Model
 
     public function EmpresaExame()
     {
-        return $this->hasOne(EmpresaExame::class, 'id', 'empresa_exame_id');
+        return $this->hasOne(EmpresaExame::class, 'empresa_exame_id', 'id');
+    }
+
+    public function Sesmt(){
+        return $this->hasOne(Examesesmt::class, 'id', 'exame_funcionario_id');
     }
 
     public function QuemEncaminhou()
@@ -90,6 +94,7 @@ class ExameFuncionario extends Model
     {
         return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
     }
+
 
 //    public function Colaborador()
 //    {

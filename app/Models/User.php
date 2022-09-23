@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -135,7 +136,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, LogsActivity;
+    use HasApiTokens, HasFactory, Notifiable, LogsActivity, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'user';
@@ -158,7 +159,6 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'id',
         'nome',
         'email',
         'email_verified_at',

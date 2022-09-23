@@ -136,7 +136,7 @@
                     <div class="tab-pane fade show" id="nav-cih" role="tabpanel"
                          aria-labelledby="nav-cih-tab">
                         <cih v-if="abas.abrirCih && permissoes.cih"
-                        :feedback_id="form.feedback_id"></cih>
+                        :fc_token="form.fc_token"></cih>
                     </div>
                     <div class="tab-pane fade show" id="nav-promocao" role="tabpanel"
                          aria-labelledby="nav-promocao-tab">

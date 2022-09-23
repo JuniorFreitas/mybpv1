@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ControleExames\FichaClinicaMail;
 use App\Mail\ControleExames\FichaColaboradorMail;
+use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
 use App\Models\Curriculo;
 use App\Models\EmpresaExame;
@@ -38,10 +39,12 @@ class ControleExameController extends Controller
                     'QuemEncaminhou:id,nome',
                 )
                 ->with('Formulario.Setores.Alternativas.Opcoes')
-                ->orderBy('created_at')->get();
+                ->orderByDesc('created_at')->get();
 
             $resposta->transform(function ($item) {
-                $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_24']['valor'])->label;
+                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
+                $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_'.$tipoOrdem]['valor'])->label;
+                $item->resultado = Examesesmt::whereExameFuncionarioId($item->id)->first();
                 return $item;
             });
 
@@ -56,7 +59,6 @@ class ControleExameController extends Controller
 
     public function salvaUpdate(Request $request)
     {
-
         try {
             \DB::beginTransaction();
             $token = Sistema::uuid();
@@ -71,8 +73,9 @@ class ControleExameController extends Controller
                 ]);
 
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
-                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_24']['valor'])->label;
-                $colaborador = FeedbackCurriculo::select('curriculo_id', 'id')->find($request->feedback_id);
+                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
+                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_'.$tipoOrdem]['valor'])->label;;
+                $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id'])->find($request->feedback_id);
 
                 $dtEmailClinica = [
                     'clinica' => $empExame->nome,
@@ -147,7 +150,7 @@ class ControleExameController extends Controller
                 'data_realizacao' => 'required_if:exame_realizado,1|date_format:d/m/Y',
                 'resultado.result' => 'required_if:exame_realizado,1|in:Apto,Apto com Restrição,Inapto',
                 'resultado.pendencias' => 'required_if:exame_realizado,1|in:Sim,Não',
-                'resultado.pendencias_quais' => 'required_if:exame_realizado,1|required_if:resultado.pendencias,Sim',
+                'resultado.pendencias_quais' => 'required_if:resultado.pendencias,Sim',
                 'resultado.aprovado' => 'required_if:exame_realizado,1',
                 'resultado.trabalho_altura' => 'required_if:exame_realizado,1|in:Sim,Não,Não se aplica',
                 'resultado.observacao' => 'max:500',
@@ -212,26 +215,32 @@ class ControleExameController extends Controller
         }
         try {
             \DB::beginTransaction();
-            $resultado->update($dados);
 
-            if (isset($dados['anexosDel'])) {
-                foreach ($dados['anexosDel'] as $id_anexo) {
+            if ($dados['exame_realizado']) {
+                if (isset($dados['anexosDel'])) {
+                    foreach ($dados['anexosDel'] as $id_anexo) {
+                        Arquivo::apagaAnexo($id_anexo);
+                    }
+                }
+                if (isset($dados['anexos'])) {
+                    foreach ($dados['anexos'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->nome = $anexo['nome'];
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $resultado->Anexos()->attach($arquivo->id);
+                        }
+                    }
+                }
+            } else {
+                foreach ($resultado->Anexos()->pluck('id') as $id_anexo) {
                     Arquivo::apagaAnexo($id_anexo);
                 }
             }
 
-            if (isset($dados['anexos'])) {
-                foreach ($dados['anexos'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->nome = $anexo['nome'];
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $resultado->Anexos()->attach($arquivo->id);
-                    }
-                }
-            }
+            $resultado->update($dados);
 
             \DB::commit();
             return response()->json([], 201);
@@ -239,7 +248,7 @@ class ControleExameController extends Controller
             \DB::rollback();
             $msg = "Erro ao Atualizar o resultado do exame para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
-            return response()->json($msg, 400);
+//            return response()->json($msg, 400);
             return response()->json(['msg' => 'Houve um erro ao atualizar o resultado do exame!'], 400);
         }
     }
@@ -249,7 +258,7 @@ class ControleExameController extends Controller
     {
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoExame(true);
-        })->select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id'])->with(
+        })->select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id','vagas_abertas_id'])->with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social,area_id',
             'vagaSelecionada',

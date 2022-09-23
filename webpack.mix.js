@@ -189,6 +189,7 @@ mix.js("resources/js/app.js", "public/js")
 
     //controle de exames
     .js("resources/js/g/controle-exames/app.js", "public/js/g/controle-exames/")
+    .js("resources/js/g/controle-exames/clinica/app.js", "public/js/g/clinica/controle-exames/")
 
     //Perfil Usuário
     .js("resources/js/g/perfil/app.js", "public/js/g/perfil")

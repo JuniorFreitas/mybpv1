@@ -43,7 +43,7 @@ class PromocaoFeedbackController extends Controller
             'novo_cargo' => 'required',
             'novo_salario' => 'required',
             'motivo' => 'required',
-            'percentual' => 'required',
+            'percentual' => 'required|numeric|gt:0',
             'tipo' => 'required',
         ]);
 

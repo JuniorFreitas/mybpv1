@@ -9,7 +9,7 @@
             <hr style="border:none; border-top: 1px solid #999">
             {{auth()->user()->Empresa->razao_social}}
             <br>
-            @if(auth()->user()->Empresa->id != 55801)
+            @if(auth()->user()->empresa_id != 5581)
                 CNPJ: {{auth()->user()->Empresa->cnpj}}
             @endif
             <br>

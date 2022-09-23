@@ -15,8 +15,8 @@
                 de maneira isolada. Por esse motivo, vamos manter seu cadastro em nosso banco de dados para futuras
                 oportunidades em nossa empesa.<br><br>
 
-                Temos diversas <a href="https://site.bpse.com.br/vagas-abertas">vagas</a>, além desta. Para não perder
-                nenhuma delas, acesse nossa <a href="https://site.bpse.com.br">Plataforma de
+                Temos diversas <a href="https://bpse.com.br/vagas-abertas">vagas</a>, além desta. Para não perder
+                nenhuma delas, acesse nossa <a href="https://bpse.com.br">Plataforma de
                     Recrutamento & Seleção</a> e mantenha o seu cadastro atualizado.<br><br>
 
                 Abraços!<br><br>

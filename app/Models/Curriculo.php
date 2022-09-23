@@ -6,6 +6,7 @@ use App\Scopes\ScopeEmpresa;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -161,7 +162,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Curriculo extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'curriculo';
@@ -178,8 +179,10 @@ class Curriculo extends Model
         $activity->descricao = "";
     }
 
+    public $incrementing = false;
     protected $table = 'curriculos';
     protected $fillable = [
+        "id",
         "cpf",
         "rg",
         'rg_data_emissao',
@@ -187,7 +190,9 @@ class Curriculo extends Model
         "orgao_expeditor",
         "carteira_trabalho",
         "nome",
+        "estado_civil",
         "cnh",
+        "cnh_vencimento",
         "nascimento",
         "logradouro",
         "end_numero",
@@ -225,7 +230,9 @@ class Curriculo extends Model
         "orgao_expeditor" => "string",
         "carteira_trabalho" => "string",
         "nome" => "string",
+        "estado_civil" => "string",
         "cnh" => "string",
+        "cnh_vencimento" => "string",
         "nascimento" => "string",
         "logradouro" => "string",
         "complemento" => "string",
@@ -338,6 +345,28 @@ class Curriculo extends Model
         $this->attributes['nascimento'] = $data->dataInsert();
     }
 
+    //Acessor ->nascimento
+    public function getCnhVencimentoAttribute($value)
+    {
+        if (!is_null($this->attributes['cnh_vencimento'])) {
+            $data = new DataHora($this->attributes['cnh_vencimento']);
+            return $data->dataCompleta();
+        } else {
+            return null;
+        }
+    }
+
+    //Modificador ->nascimento
+    public function setCnhVencimentoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($value);
+            $this->attributes['cnh_vencimento'] = $data->dataInsert();
+        } else {
+            $this->attributes['cnh_vencimento'] = null;
+        }
+    }
+
     //Acessor ->rg_data_emissao
     public function getRgDataEmissaoAttribute($value)
     {
@@ -382,7 +411,6 @@ class Curriculo extends Model
     {
         return $this->hasOne(User::class, 'id', 'id');
     }
-
 
     public function Experiencias()
     {

@@ -142,19 +142,22 @@
             <td valign="top">
                 <p style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555; text-align: center">
 
-                    @if($dados['empresa_id'] == 5581)
-                        Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Recebemos seu cadastro para a vaga
+                    @if($dados['empresa_id'] == '55081')
+                        Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Sua inscrição para vaga
                         <strong>{{$vagaAberta->titulo}} - {{$vagaAberta->Municipio->nome}}
-                            /{{$vagaAberta->Municipio->uf}}</strong>.
-                        <br> Para encaminhamento a empresa responsável, seu cadastro deverá esta validado, para isso,
-                        cobramos uma
-                        taxa de 20 reais com validade de 3 meses dos nossos serviços, o comprovante deverá ser enviado
-                        no número (99 9 8136-6280). <br>
-                        Obs.: caso seu cadastro estiver validado, favor desconsiderar. <br>
-                        Após isso, basta ficar atento ao seu e-mail para receber comunicação das próximas etapas do
-                        processo!<br>
-                        Sucesso e esperamos vê-lo(a) em breve!<br>
-                        Abraços!
+                            /{{$vagaAberta->Municipio->uf}}</strong> foi recebida!.
+                        <br> Reforçarmos que temos uma taxa de cadastro no valor de R$30,00 (Trinta reais), sua validade
+                        é de 3 meses para candidatar-se nas oportunidades de seu interesse. <br>
+                        Caso de dúvidas ou verificação de cadastro, acesso o WhatsApp abaixo: <br>
+                        (99) 9 8143-2875
+                        <br><br>
+                        Pix do cadastro:  08.439.321/0001-07
+                        <br><br>
+                        Caso esteja com a validade "em dias", favor desconsiderar o informativo acima!
+                        <br><br>
+                        Sucesso e esperamos vê-lo(a) em breve!
+                        <br>
+                        Abraços virtuais.
                     @else
                         Olá, <strong>{{$dados['nome']}}</strong> Parabéns! Sua inscrição para vaga
                         <strong>{{$vagaAberta->titulo}} - {{$vagaAberta->Municipio->nome}}
@@ -163,7 +166,6 @@
                         Sucesso e esperamos vê-lo(a) em breve! <br><br>
                         Abraços <br><br>
                     @endif
-
 
                     <br><br>
                 </p>
@@ -175,8 +177,9 @@
                                 {{$empresa->razao_social}}
                             </strong>
                         </div>
-                        <img src="https://sgi.bpse.com.br/imagens/icons/location.png"
-                             alt="Endereço" height="22px"> {{$empresa->endereco_completo}}<br>
+{{--                        <img src="https://bpse.com.br/imagens/icons/location.png"--}}
+{{--                             alt="Endereço" height="22px"> --}}
+                        {{$empresa->endereco_completo}}<br>
 
                     </div>
                     <br><br>

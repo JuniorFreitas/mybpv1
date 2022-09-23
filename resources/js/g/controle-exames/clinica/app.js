@@ -1,12 +1,10 @@
-import Dados from "../../components/entrevistas/DadosPessoaisTexto";
-import Formulario from "../../components/FormularioDefault";
-import Upload from "../../components/Upload";
-import validacoes from "../../mixins/Validacoes";
+import Dados from "../../../components/entrevistas/DadosPessoaisTexto";
+import Upload from "../../../components/Upload";
+import validacoes from "../../../mixins/Validacoes";
 
 const app = new Vue({
     el: "#app",
     components: {
-        Formulario,
         Dados,
         Upload
     },
@@ -82,7 +80,7 @@ const app = new Vue({
         url_anexo: `${URL_ADMIN}/controle-exames-resultado/uploadAnexos`,
         anexoUploadAndamento: false,
 
-        urlPaginacao: `${URL_ADMIN}/controle-exames/atualizar`,
+        urlPaginacao: `${URL_ADMIN}/acesso-clinica/atualizar`,
         exibicao: EXIBICAO,
 
         lista: [],

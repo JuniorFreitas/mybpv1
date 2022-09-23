@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -157,7 +158,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Admissao extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'admissao';
@@ -180,6 +181,7 @@ class Admissao extends Model
     protected $fillable = [
         'feedback_id',
         'formulario_id',
+        'centro_custo_id',
         'funcao',
         'cargo',
         'salario',
@@ -236,6 +238,7 @@ class Admissao extends Model
         'id' => 'int',
         'feedback_id' => 'int',
         'formulario_id' => 'int',
+        'centro_custo_id' => 'int',
         'salario' => 'float',
         'contrato' => 'string',
         'funcao' => 'string',
@@ -792,7 +795,85 @@ class Admissao extends Model
         return ClienteAreaEtiqueta::whereClienteId($cliente_id)->whereAreaEtiquetaId($area_etiqueta_id)->first()->numero_supervisor;
     }
 
-    public function UltimoAsoAtivo(){
+    public function UltimoAsoAtivo()
+    {
         return $this->hasOne(AdmissaoAso::class, 'admissao_id', 'id')->whereAtivo(true);
+    }
+
+    /**
+     * @param $feedback_id
+     * @param $tipo_admissao
+     * @param $prazo_experiencia
+     * @param $data_admissao
+     * @param $data_encerramento
+     * @return void
+     * @throws \Exception
+     */
+    public static function tipoAdmissaoAvalNoventaCriarAtualizar($feedback_id, $tipo_admissao, $prazo_experiencia, $data_admissao = null, $data_encerramento = null)
+    {
+        if ($tipo_admissao === Admissao::TIPO_ADMISSAO_FIXO) {
+            $data = new DataHora($data_admissao);
+            switch ($prazo_experiencia) {
+                case Admissao::TRINTA_MAIS_TRINTA:
+                    $datas['prazo_dez_inicial'] = $data->addDia(20);
+                    $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                    $datas['prazo_dia_inicial'] = $data->addDia(5);
+                    $datas['prazo_dez_final'] = $data->addDia(20);
+                    $datas['prazo_cinco_final'] = $data->addDia(5);
+                    $datas['prazo_dia_final'] = $data->addDia(5);
+                    break;
+                case Admissao::QUARENTAECINCO_MAIS_QUARENTAECINCO:
+                    $datas['prazo_dez_inicial'] = $data->addDia(35);
+                    $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                    $datas['prazo_dia_inicial'] = $data->addDia(5);
+                    $datas['prazo_dez_final'] = $data->addDia(35);
+                    $datas['prazo_cinco_final'] = $data->addDia(5);
+                    $datas['prazo_dia_final'] = $data->addDia(5);
+                    break;
+                case Admissao::TRINTA_MAIS_SESSENTA:
+                    $datas['prazo_dez_inicial'] = $data->addDia(20);
+                    $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                    $datas['prazo_dia_inicial'] = $data->addDia(5);
+                    $datas['prazo_dez_final'] = $data->addDia(50);
+                    $datas['prazo_cinco_final'] = $data->addDia(5);
+                    $datas['prazo_dia_final'] = $data->addDia(5);
+                    break;
+                case Admissao::SESSENTA_MAIS_TRINTA:
+                    $datas['prazo_dez_inicial'] = $data->addDia(50);
+                    $datas['prazo_cinco_inicial'] = $data->addDia(5);
+                    $datas['prazo_dia_inicial'] = $data->addDia(5);
+                    $datas['prazo_dez_final'] = $data->addDia(20);
+                    $datas['prazo_cinco_final'] = $data->addDia(5);
+                    $datas['prazo_dia_final'] = $data->addDia(5);
+                    break;
+            }
+            $dadosAdmissao['data_encerramento'] = null;
+            $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
+
+            $datas['feedback_id'] = $feedback_id;
+            $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+
+        }
+
+        if (in_array($tipo_admissao, [Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO, Admissao::TIPO_ADMISSAO_TEMPORARIO])) {
+            $data = new DataHora($data_encerramento);
+
+            $datas['prazo_dez_inicial'] = $data->subtrairDia(5);
+            $datas['prazo_cinco_inicial'] = $data->subtrairDia(5);
+            $datas['prazo_dia_inicial'] = $data_encerramento;
+            $datas['prazo_dez_final'] = null;
+            $datas['prazo_cinco_final'] = null;
+            $datas['prazo_dia_final'] = null;
+            $dadosAdmissao['prazo_experiencia'] = null;
+
+            $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback_id)->first();
+            if ($tipo_admissao == Admissao::TIPO_ADMISSAO_INTERMITENTE) {
+                isset($avaliacao) ? $avaliacao->delete() : null;
+            }
+
+            $datas['feedback_id'] = $feedback_id;
+            $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
+        }
+
     }
 }

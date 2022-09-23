@@ -7,26 +7,32 @@ use App\Models\NotificacaoWhatsapp;
 
 class ZapNotificacao
 {
-    private $token = 'api-fc3501695a44cf7ca6c4';
-    private $secret = '3540172869';
 
     public $Zap;
 
     public function __construct()
     {
         $this->Zap = (new \ZapMeTeam\Api\ZapMeApi)
-            ->setApi($this->token)
-            ->setSecret($this->secret);
+            ->setApi(env('API_ZAPME'))
+            ->setSecret(env('SECRET_ZAPME'))
+            ->setEndpoint('https://api.zapme.com.br/messages/create');
+    }
+
+    public function requestQRCode()
+    {
+      dd($this->Zap->requestQRCode());
     }
 
     public function enviar(array $dados)
     {
-        if(env('APP_ENV') == 'local'){
-//            $dados['telefone'] = "5598999023762";
-            $dados['telefone'] = "5598981847188";
+        if (env('APP_ENV') == 'local') {
+            $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
+            $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
+
         }
+
         $send = $this->Zap->sendMessage($dados['telefone'], $dados['mensagem'])->getResult();
-        if ($send['result'] == 'success') {
+        if ($send['result'] == 'created') {
             $notificacao = new NotificacaoWhatsapp();
             $notificacao->enviado_id = $dados['enviado_id'];
             $notificacao->user_id = auth()->id();

@@ -4,7 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 
-class VagaAbertaEmpresaRules implements Rule
+class AreaEmpresaRules implements Rule
 {
     /**
      * Create a new rule instance.
@@ -14,10 +14,9 @@ class VagaAbertaEmpresaRules implements Rule
 
     public $error_message;
 
-    public function __construct($empresa_id, $site = false)
+    public function __construct($empresa_id)
     {
         $this->empresa_id = $empresa_id;
-        $this->site = $site;
     }
 
     /**
@@ -29,17 +28,13 @@ class VagaAbertaEmpresaRules implements Rule
      */
     public function passes($attribute, $value)
     {
-        $vagaAberta = \DB::table('vagas_abertas')
+        $area = \DB::table('area_etiquetas')
             ->where('id', $value)
             ->where('empresa_id', $this->empresa_id)
-            ->where('ativo_sistema', true);
+            ->where('ativo', true);
 
-        $vagaAtivaSistema = $vagaAberta->count();
-
-        $validaSite = $vagaAberta->where('ativo', true)->count();
-
-        if ($vagaAtivaSistema == 0 || ($this->site && $validaSite == 0)) {
-            $this->error_message = "Vaga não encontrada";
+        if ($area->count() == 0) {
+            $this->error_message = "Área não encontrada";
             return false;
         }
         return true;

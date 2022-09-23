@@ -5,6 +5,7 @@
     <modal id="validaSesmt" :titulo="abasesmt.tituloJanela" modal-pai='janelaParecerEntrevista' :size="80"
            :fechar="!abasesmt.preload">
         <template slot="conteudo">
+            <preload v-if="abasesmt.preload" label="Aguarde ...."></preload>
             <fieldset v-if="!abasesmt.preload">
                 <legend>Exame</legend>
                 <div class="row">
@@ -64,7 +65,8 @@
                         <div class="col-12 col-md-6" v-if='abasesmt.form.resultado.pendencias === "Sim" '>
                             <div class="form-group">
                                 <label for="">Quais</label>
-                                <input type="text" class="form-control validacampo" v-model="abasesmt.form.resultado.pendencias_quais"
+                                <input type="text" class="form-control validacampo"
+                                       v-model="abasesmt.form.resultado.pendencias_quais"
                                        @keyup.prevent="valida_campo_vazio($event.target,1)"
                                        @blur.prevent="valida_campo_vazio($event.target,1)"
                                 >
@@ -179,11 +181,13 @@
                     <li class="nav-item">
                         <a class="nav-item nav-link active" id="nav-encaminhar-tab" data-toggle="tab"
                            href="#nav-encaminhar"
+                           @click.prevent="nav = 'encaminhar'"
                            role="tab" aria-controls="nav-encaminhar" aria-selected="false">ENCAMINHAR</a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-item nav-link" id="nav-encaminhados-tab" data-toggle="tab"
+                           @click.prevent="nav = 'encaminhados'"
                            href="#nav-encaminhados"
                            role="tab" aria-controls="nav-encaminhados" aria-selected="true">ENCAMINHADOS</a>
                     </li>
@@ -191,6 +195,7 @@
                     <li class="nav-item">
                         <a class="nav-item nav-link" id="nav-sesmt-tab" data-toggle="tab"
                            href="#nav-sesmt"
+                           @click.prevent="nav = 'validacao_sesmt'"
                            role="tab" aria-controls="nav-sesmt" aria-selected="true">VALIDAÇÃO SESMT</a>
                     </li>
 
@@ -527,35 +532,55 @@
                                  v-show="!preload && historico.length===0 && concordo">
                                 <i class="fa fa-exclamation-triangle"></i> Nenhum Encaminhamento Encontrado.
                             </div>
-
-                            <table class="tabela table-striped" v-show="!preload && historico.length > 0 && concordo">
-                                <thead>
-                                <tr class="bg-default">
-                                    <th>CÓD</th>
-                                    <th>Tipo de exame</th>
-                                    <th>Clinica</th>
-                                    <th>Encaminhado Por</th>
-                                    <th>Data do Encaminhamento</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody v-for="item in historico">
-                                <tr style="background: white !important; border-bottom: none">
-                                    <td>@{{ item.id }}</td>
-                                    <td>@{{ item.tipo_exame }}</td>
-                                    <td>@{{ item.empresa_exame.nome }}</td>
-                                    <td>@{{ item.quem_encaminhou.nome }}</td>
-                                    <td>@{{ item.created_at }}</td>
-                                    <td>
-                                        <button type="button" content="Resultado exame" v-tippy
-                                                class="btn btn-sm btn-primary mb-2" data-toggle="modal"
-                                                data-target="#validaSesmt" @click='formResultado(item.id)'>
-                                            <i class="fa fa-search-plus" aria-hidden="true"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                            <div v-show="!preload && historico.length > 0 && concordo">
+                                <div class="col-12 mb-2 mt-2 pt-1 pb-1 border-bottom">
+                                    <p>
+                                        Legenda: <i
+                                            class="fas fa-circle text-success ml-2"></i>
+                                        Aprovado
+                                        <i class="fas fa-circle text-danger ml-2"></i> Reprovado
+                                    </p>
+                                </div>
+                                <table class="tabela table-striped">
+                                    <thead>
+                                    <tr class="bg-default">
+                                        <th>CÓD</th>
+                                        <th>Tipo de exame</th>
+                                        <th>Clinica</th>
+                                        <th>Encaminhado Por</th>
+                                        <th>Aprovado</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr style="background: white !important; border-bottom: none"
+                                        v-for="item in historico"
+                                        :key="item.id"
+                                        :class="{
+                                            'table-danger': item.resultado?.resultado.aprovado === 'Não',
+                                            'table-success': item.resultado?.resultado.aprovado === 'Sim'
+                                        }"
+                                    >
+                                        <td>@{{ item.id }}</td>
+                                        <td>@{{ item.tipo_exame }}</td>
+                                        <td>@{{ item.empresa_exame.nome }}</td>
+                                        <td>
+                                            @{{ item.quem_encaminhou.nome }}<br>em @{{ item.created_at }}
+                                        </td>
+                                        <td>
+                                            @{{ item.resultado ? item.resultado.resultado.aprovado : 'Aguardando' }}
+                                        </td>
+                                        <td>
+                                            <button type="button" content="Resultado exame" v-tippy
+                                                    class="btn btn-sm btn-primary mb-2" data-toggle="modal"
+                                                    data-target="#validaSesmt" @click='formResultado(item.id)'>
+                                                <i class="fa fa-search-plus" aria-hidden="true"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </template>
                     </div>
                 </div>
@@ -563,7 +588,8 @@
         </template>
         <template slot="rodape">
             <div v-show="!visualizar">
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado  && !preload"
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="!cadastrado & nav === 'encaminhar'  && !preload"
                         @click.prevent="salvarUpdate">
                     <i class="fa fa-save"></i>
                     <span v-show='cadastrando'>Salvar</span>
@@ -584,7 +610,10 @@
         </template>
     </modal>
 
-
+    <preload class="text-center" v-if="controle.carregando"></preload>
+    <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
+        <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+    </div>
     <fieldset>
         <legend>Filtro</legend>
         <form @submit.prevent="$refs.componente.buscar()">

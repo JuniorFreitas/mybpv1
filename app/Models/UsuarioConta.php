@@ -56,12 +56,26 @@ class UsuarioConta extends Model
         'chavepix' => 'string',
     ];
 
-    public static function criarAtualizar($id,$array)
+    const TIPO_CPF = 'cpf';
+    const TIPO_CNPJ = 'cnpj';
+    const TIPO_EMAIL = 'email';
+    const TIPO_TELEFONE = 'telefone';
+    const TIPO_ALEATORIA = 'aleatoria';
+
+    const TIPOS_CHAVES = [
+        self::TIPO_CPF,
+        self::TIPO_CNPJ,
+        self::TIPO_EMAIL,
+        self::TIPO_TELEFONE,
+        self::TIPO_ALEATORIA,
+    ];
+
+    public static function criarAtualizar($id, $array)
     {
         $usuarioConta = UsuarioConta::whereUserId($id);
         if ($usuarioConta->count() == 0) {
             $usuarioConta->create($array);
-        }else{
+        } else {
             $usuarioConta->update($array);
         }
     }

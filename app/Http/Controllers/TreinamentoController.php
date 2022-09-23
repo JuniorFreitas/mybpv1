@@ -204,7 +204,12 @@ class TreinamentoController extends Controller
     {
         $treinamento = ResultadoIntegrado::whereFeedbackId($treinamento)->first();
 
-        $treinamento = $treinamento->load('Treinamento', 'Curriculo:id,nome,nascimento,id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor', 'Admissao', 'Feedback.Exame');
+        $treinamento = $treinamento->load(
+            'Treinamento',
+            'Curriculo:id,nome,nascimento,id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
+            'Admissao',
+            'Feedback.Exame'
+        );
 
         if (!is_null($treinamento->Admissao)) {
             $treinamento->nr_trinta_tres = $treinamento->Admissao->nr_trinta_tres == 'NÃO SE APLICA' ? false : true;

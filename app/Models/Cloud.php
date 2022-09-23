@@ -77,7 +77,7 @@ class Cloud extends Model
 
     public function Usuarios()
     {
-        return $this->belongsToMany(User::class, 'user_clouds', 'cloud_id', 'user_id');
+        return $this->belongsToMany(User::class, 'user_clouds', 'cloud_id', 'user_id')->select(['id', 'nome']);
     }
 
 }
