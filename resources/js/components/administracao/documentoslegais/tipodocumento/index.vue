@@ -64,7 +64,7 @@
                             @click="formNovo"
                             data-toggle="modal"
                             data-target="#janelaForm">
-                        <i class="fa fa-plus"></i> Cadastrar Tipo Documento
+                        <i class="fa fa-plus"></i> Cadastrar
                     </button>
                 </div>
             </form>
