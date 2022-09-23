@@ -12,10 +12,15 @@
                             <input class="form-control" type="text" placeholder="Informe o nome"
                                    onblur="valida_campo_vazio(this,1)" v-model="form.nome">
                         </div>
-                        <div class="col-12">
-                            <label>Tipo</label>
-                            <input class="form-control" type="text" placeholder="Informe o nome"
-                                   onblur="valida_campo_vazio(this,1)" v-model="form.tipo">
+                        <div class="col-12 mt-3">
+                            <label>Selecione o Tipo</label>
+                            <select class="form-control validacampo" v-model="form.tipo"
+                                    onchange="valida_campo_vazio(this,1)">
+                                <option value="">Selecione ...</option>
+                                <option value="contrato">Contrato</option>
+                                <option value="empresa">Empresa</option>
+                                <option value="ssma">SSMA</option>
+                            </select>
                         </div>
                         <br><br>
                         <div class="col-12 mt-3">
