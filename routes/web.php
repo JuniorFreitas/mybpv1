@@ -868,6 +868,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::group(['as' => 'usuarios.'], function () {
         //Usuários
         Route::get('usuario/autenticado', [\App\Http\Controllers\UserController::class, 'getUsuario'])->name('getUsuario');
+        Route::put('usuarios/simularUsuario', [\App\Http\Controllers\UserController::class, 'simularUsuario'])->name('simularUsuario');
 
         Route::post('usuarios/atualizar', [\App\Http\Controllers\UserController::class, 'atualizar'])->name('usuarios.atualizar')->middleware('can:usuario_usuarios');
         Route::put('usuarios/{usuario}/ativa-desativa', [\App\Http\Controllers\UserController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:usuario_usuarios');

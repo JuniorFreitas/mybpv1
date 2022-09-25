@@ -1,29 +1,29 @@
 const app = new Vue({
-    el: '#app',
+    el: "#app",
     data: {
-        tituloJanela: 'Cadastrando usuário',
+        tituloJanela: "Cadastrando usuário",
         preloadAjax: false,
         editando: false,
         cadastrado: false,
         atualizado: false,
-        urlAjax: '',
+        urlAjax: "",
         apagado: false,
         grupoempresa: false,
         user_recebe_emailDefault: null,
 
         form: {
-            id: '',
-            nome: '',
-            login: '',
-            grupo_id: '',
-            tipo: '',
-            grupo_cloud_id: '',
-            empresa_id: '',
+            id: "",
+            nome: "",
+            login: "",
+            grupo_id: "",
+            tipo: "",
+            grupo_cloud_id: "",
+            empresa_id: "",
             ativo: true,
             gestor: false,
-            user_recebe_email:[]
+            user_recebe_email: []
         },
-        empresa_id: '',
+        empresa_id: "",
         formDefault: null,
         listaPapeis: [],
         listaCloud: [],
@@ -34,12 +34,15 @@ const app = new Vue({
         controle: {
             carregando: false,
             dados: {
-                campoBusca: ''
-            },
+                campoBusca: "",
+                por_pagina: 50,
+                campoEmpresa: "",
+                campoTipo: ""
+            }
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formDefault = _.cloneDeep(this.form); //copia
         this.atualizar();
         // Object.assign(this.form, this.formDefault);
 
@@ -54,16 +57,16 @@ const app = new Vue({
             this.editando = false;
             this.tituloJanela = "Cadastrando usuário";
             formReset();
-            this.form = _.cloneDeep(this.formDefault) //copia
-            if (this.empresa_id !== 100){
+            this.form = _.cloneDeep(this.formDefault); //copia
+            if (this.empresa_id !== 100) {
                 this.form.empresa_id = this.empresa_id;
             }
         },
 
         cadastrar() {
-            $('#janelaCadastrar :input:visible:enabled').trigger('blur');
-            if ($('#janelaCadastrar :input:visible:enabled.is-invalid').length) {
-                alert('Verificar os erros');
+            $("#janelaCadastrar :input:visible:enabled").trigger("blur");
+            if ($("#janelaCadastrar :input:visible:enabled.is-invalid").length) {
+                alert("Verificar os erros");
                 return false;
             }
 
@@ -81,10 +84,10 @@ const app = new Vue({
 
         formAlterar(id) {
             formReset();
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
 
             this.selecionaEmpresa(this.empresa_id);
-            if (this.empresa_id !== 100){
+            if (this.empresa_id !== 100) {
                 this.form.empresa_id = this.empresa_id;
             }
 
@@ -97,12 +100,12 @@ const app = new Vue({
 
             this.preloadAjax = true;
             formReset();
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault); //copia
 
             axios.get(`${URL_ADMIN}/usuarios/${id}/editar`)
                 .then(response => {
-                    Object.assign(this.form, response.data.usuario)
-                    this.listaPapeis = response.data.papeis
+                    Object.assign(this.form, response.data.usuario);
+                    this.listaPapeis = response.data.papeis;
                     this.listaCloud = response.data.cloud;
                     this.form.user_recebe_email = response.data.formulario_vazio;
                     this.editando = true;
@@ -114,9 +117,9 @@ const app = new Vue({
         },
 
         alterar() {
-            $('#janelaCadastrar :input:visible:enabled').trigger('blur');
-            if ($('#janelaCadastrar :input:visible:enabled.is-invalid').length) {
-                alert('Verificar os erros');
+            $("#janelaCadastrar :input:visible:enabled").trigger("blur");
+            if ($("#janelaCadastrar :input:visible:enabled.is-invalid").length) {
+                alert("Verificar os erros");
                 return false;
             }
 
@@ -133,6 +136,19 @@ const app = new Vue({
             });
         },
 
+        simularUsuario(user_id) {
+
+            this.preloadAjax = true;
+            axios.put(`${URL_ADMIN}/usuarios/simularUsuario`, { user_id: user_id })
+                .then(response => {
+                    if (response.data.simulacao) {
+                        window.location.href = `${URL_ADMIN}/dashboard`;
+                    }
+                }).catch(error => {
+                this.preloadAjax = false;
+            });
+        },
+
         selecionaEmpresa(id) {
             this.grupoempresa = false;
             axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
@@ -143,7 +159,7 @@ const app = new Vue({
                         this.listaCloud = data.cloud;
                         this.grupoempresa = true;
                     }
-                })
+                });
         },
 
         carregou(dados) {
@@ -152,7 +168,7 @@ const app = new Vue({
             this.listaTipoEmail = dados.tipo_email;
             this.user_recebe_emailDefault = dados.formulario_vazio;
             this.lista_tipos = dados.lista_tipos;
-            this.form.user_recebe_email = _.cloneDeep(this.user_recebe_emailDefault)
+            this.form.user_recebe_email = _.cloneDeep(this.user_recebe_emailDefault);
             this.controle.carregando = false;
         },
         carregando() {

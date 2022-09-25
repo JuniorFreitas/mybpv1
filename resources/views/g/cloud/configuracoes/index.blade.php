@@ -43,6 +43,8 @@
                                 <div class="form-group">
                                     <label>Nome</label>
                                     <input type="text" class="form-control form-control-sm" v-model="form.nome"
+                                           :readonly="form.nome === 'Administradores'"
+                                           :disabled="form.nome === 'Administradores'"
                                            placeholder="Nome do grupo"
                                            autocomplete="off" onblur="valida_campo_vazio(this,2)">
                                 </div>
@@ -52,10 +54,12 @@
                                     <label>Descrição</label>
                                     <input type="text" class="form-control  form-control-sm" v-model="form.descricao"
                                            placeholder="Descrição do grupo"
+                                           :readonly="form.nome === 'Administradores'"
+                                           :disabled="form.nome === 'Administradores'"
                                            autocomplete="off" onblur="valida_campo_vazio(this,3)">
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" v-if="form.nome !== 'Administradores'">
                                     <label>Ativo</label>
                                     <select class="form-control  form-control-sm" v-model="form.ativo">
                                         <option :value="true">Sim</option>
@@ -73,7 +77,7 @@
                                         <thead>
                                         <tr class="bg-default">
                                             <th><span class="ml-1">FUNÇÃO</span></th>
-                                            <th class="text-center">
+                                            <th class="text-center" v-if="form.nome !== 'Administradores'">
                                                 <a class="btn btn-sm btn-success" href="javascript://"
                                                    @click.prevent="selecionarTodas" v-if="!form.todasHabilidades">
                                                     <span class="fa fa-ok" aria-hidden="true"></span> Permitir todas
@@ -90,7 +94,7 @@
 
                                         <tr v-for="habilidade in form.habilidades">
                                             <td><span class="ml-1">@{{habilidade.nome}}</span></td>
-                                            <td class="text-center">
+                                            <td class="text-center" v-if="form.nome !== 'Administradores'">
                                                 <a class="btn btn-sm btn-success" href="javascript://"
                                                    @click="verificaHabilitados(habilidade)"
                                                    v-if="habilidade.acesso">
@@ -250,7 +254,7 @@
                            data-target="#janelaCadastrar">
                             <i class="fa fa-edit"></i>
                         </a>
-                        <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"
+                        <a class="btn btn-sm btn-danger btnFormExcluir" v-if="grupo.nome !== 'Administradores'" href="javascript://"
                            @click.prevent="janelaConfirmar(grupo.id)" data-toggle="modal"
                            data-target="#janelaConfirmar">
                             <i class="fa fa-trash" aria-hidden="true"></i>

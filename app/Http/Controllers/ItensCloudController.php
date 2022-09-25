@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Arquivo;
 use App\Models\GrupoCloud;
 use App\Models\ItensCloud;
+use App\Models\Sistema;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,16 +16,15 @@ use MasterTag\DataHora;
 class ItensCloudController extends Controller
 {
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
     public function store(Request $request)
     {
         $this->authorize('cloud_insert');
         $dados = $request->input();
-
 
         $regra = Rule::unique('itens_cloud')->where(function ($query) use ($dados) {
             return $query->whereCloudId($dados['cloud_id'])
@@ -34,10 +34,10 @@ class ItensCloudController extends Controller
                 ->wherePertence($dados['pertence']);
         });
 
-
         $dadosValidados = \Validator::make($dados, [
             'label' => ['required', $regra]
         ]);
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao criar nova pasta',
@@ -61,7 +61,12 @@ class ItensCloudController extends Controller
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 DB::rollBack();
-                return response($e->getMessage(), 400);
+                $msg = "error ITENS CLOUD: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                \Log::debug($msg);
+                \Log::info("-------DADOS-------");
+                Sistema::telegram(print_r($dados, true));
+                \Log::info("-------FIM DE DADOS-------");
+                return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
             }
         }
     }
