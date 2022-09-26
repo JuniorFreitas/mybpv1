@@ -473,8 +473,8 @@
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
                         v-model="controle.dados.campoNr_trinta_tres">
                     <option value="">Sem filtro</option>
-                    <option :value="true">Realizado</option>
-                    <option :value="false">Não Realizado</option>
+                    <option value="Realizado">Realizado</option>
+                    <option value="Não Realizado">Não Realizado</option>
                     <option value="NÃO SE APLICA">Não se aplica</option>
                 </select>
             </div>
@@ -485,8 +485,8 @@
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
                         v-model="controle.dados.campoNr_trinta_cinco">
                     <option value="">Sem filtro</option>
-                    <option :value="true">Realizado</option>
-                    <option :value="false">Não Realizado</option>
+                    <option value="Realizado">Realizado</option>
+                    <option value="Não Realizado">Não Realizado</option>
                     <option value="NÃO SE APLICA">Não se aplica</option>
                 </select>
             </div>
