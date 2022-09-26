@@ -36,4 +36,6 @@ class TipoDocumento extends Model
         'tipo' => 'string',
         'ativo' => 'boolean'
     ];
+
+    public const TIPO_DOCUMENTOS = ['contrato' => 'Contrato', 'empresa' => 'Empresa', 'ssma' => 'SSMA'];
 }

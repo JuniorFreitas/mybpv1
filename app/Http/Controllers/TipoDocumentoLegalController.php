@@ -74,6 +74,8 @@ class TipoDocumentoLegalController extends Controller
                     $fail('Informe uma nome maior que 3 caracteres.');
                 }
             }]
+
+            // TODO: VALIDAÇÃO UNICA POR EMPRESA. EX: NOME:ALVARÁ TIPO:SSMA
         ];
         $dadosValidados = \Validator::make($dados, $arrayValidacao);
 
@@ -117,6 +119,7 @@ class TipoDocumentoLegalController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'items' => $resultado->items(),
+                'tipos_documentos' => TipoDocumento::TIPO_DOCUMENTOS
             ]
         ], 200);
     }

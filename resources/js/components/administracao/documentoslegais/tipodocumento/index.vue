@@ -15,11 +15,9 @@
                         <div class="col-12 mt-3">
                             <label>Selecione o Tipo</label>
                             <select class="form-control validacampo" v-model="form.tipo"
-                                    onchange="valida_campo_vazio(this,1)">
+                                    @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
                                 <option value="">Selecione ...</option>
-                                <option value="contrato">Contrato</option>
-                                <option value="empresa">Empresa</option>
-                                <option value="ssma">SSMA</option>
+                                <option v-for="(label,value) in select_tipo_documentos" :value="value">{{ label }}</option>
                             </select>
                         </div>
                         <br><br>
@@ -77,9 +75,7 @@
 
         <div id="conteudo">
 
-            <p class=" mt-2 text-center" v-if="controle.carregando">
-                <i class="fa fa-spinner fa-pulse"></i> Carregando...
-            </p>
+            <preload class=" mt-2 text-center" v-if="controle.carregando"></preload>
 
             <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
@@ -128,9 +124,11 @@
 import controlePaginacao from '../../../ControlePaginacao';
 import modal from '../../../Modal';
 import editor from '@tinymce/tinymce-vue';
+import Validacoes from '../../../../mixins/Validacoes';
 
 export default {
     name: "tipodocumento",
+    mixins: [Validacoes],
 
     components: {
         modal,
@@ -186,6 +184,8 @@ export default {
             //Paginacao
             lista: [],
 
+            select_tipo_documentos: [],
+
             urlPaginacao: `${URL_ADMIN}/administracao/documentoslegais/tipodocumento/atualizar`,
 
             controle: {
@@ -206,22 +206,25 @@ export default {
             formReset();
         },
         cadastra() {
-            $('#janelaForm :input:visible').trigger('blur');
-            if ($('#janelaForm :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
-            }
-            this.preload = true;
-            axios.post(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento`, this.form)
-                .then((res) => {
-                    $('#janelaForm').modal('hide');
-                    mostraSucesso('', 'Tipo de documento cadastrado com sucesso');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
-                })
-                .catch(error => {
-                    this.preload = false;
-                });
+            this.validaBlur();
+            this.$nextTick(() => {
+                $('#janelaForm :input:visible').trigger('blur');
+                if ($('#janelaForm :input:visible.is-invalid').length) {
+                    mostraErro('', 'Verificar os erros');
+                    return false;
+                }
+                this.preload = true;
+                axios.post(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento`, this.form)
+                    .then((res) => {
+                        $('#janelaForm').modal('hide');
+                        mostraSucesso('', 'Tipo de documento cadastrado com sucesso');
+                        this.$refs.componente.buscar();
+                        this.preload = false;
+                    })
+                    .catch(error => {
+                        this.preload = false;
+                    });
+            });
         },
         alterar(tipodocumento) {
             this.editando = true;
@@ -241,25 +244,30 @@ export default {
 
         },
         alterarForm() {
-            $('#janelaForm :input:visible').trigger('blur');
-            if ($('#janelaForm :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
-            }
-            this.preload = true;
-            axios.put(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento/${this.form.id}`, this.form)
-                .then((res) => {
-                    $('#janelaForm').modal('hide');
-                    mostraSucesso('', 'Tipo de documento Alterado com sucesso');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
-                })
-                .catch(error => {
-                    this.preload = false;
-                });
+            this.validaBlur();
+            this.$nextTick(() => {
+                    $('#janelaForm :input:visible').trigger('blur');
+                if ($('#janelaForm :input:visible.is-invalid').length) {
+                    mostraErro('', 'Verificar os erros');
+                    return false;
+                }
+                this.preload = true;
+                axios.put(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento/${this.form.id}`, this.form)
+                    .then((res) => {
+                        $('#janelaForm').modal('hide');
+                        mostraSucesso('', 'Tipo de documento Alterado com sucesso');
+                        this.$refs.componente.buscar();
+                        this.preload = false;
+                    })
+                    .catch(error => {
+                        this.preload = false;
+                    });
+            });
         },
         carregou(dados) {
             this.lista = dados.items;
+            this.select_tipo_documentos = dados.tipos_documentos;
+            console.log(this.select_tipo_documentos);
             this.controle.carregando = false;
         },
         carregando() {
