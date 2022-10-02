@@ -3,10 +3,8 @@
 namespace App\Console;
 
 use App\Jobs\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoJob;
-use App\Jobs\Admissao\Processo\ImportJob;
 use App\Jobs\controle_ponto\VerificaJornadasJob;
 use App\Jobs\JobDeletaExportacaoExcel;
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaVencimento;
 use App\Jobs\Movimentacao\FeriasPrevista\VerificaSaidaFeriasJob;
 use App\Jobs\Movimentacao\FeriasPrevista\VerificaVencimentoFeriasJob;
 use App\Jobs\Weekly_report\LembreteTarefaJob;
