@@ -1,7 +1,27 @@
 <?php
 
+use App\Classes\ZapNotificacao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+
+Route::middleware('apitoken')->post('envia-whats', function (Request $request) {
+    try {
+        (new ZapNotificacao())->enviar([
+            'enviado_id' => 1,
+            'telefone' => preg_replace('/[^0-9]/', '', $request->telefone),
+            'mensagem' => $request->mensagem,
+            'anexo' => $request->anexo
+        ]);
+        return response()->json([
+            'msg' => __('msg.ENVIADO_FILA'),
+            'status' => __('msg.SUCESSO')
+        ]);
+    } catch (Exception $exception) {
+        Log::error("Error ao enviar o whatsapp " . $exception->getMessage());
+        return response()->json(['msg' => __('msg.HOUVE_UM_ERRO')], 400);
+    }
+});
 
 
 Route::middleware('api')->get('/login', function (Request $request) {
@@ -30,7 +50,7 @@ Route::middleware(['api', 'auth:sanctum', 'usuario.ativo'])->group(function () {
     Route::apiResource('usuarios', \App\Http\Controllers\Api\UsuarioController::class)->middleware('can.sanctum:usuarios');
 });
 
-Route::group(['as' => 'vaga'],function(){
+Route::group(['as' => 'vaga'], function () {
     Route::get('{empresa_slug}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagasAbertasByEmpresa']);
     Route::get('{empresa_slug}/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagaAberta']);
 //    Route::get('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'index']);

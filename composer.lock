@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec1037e2086c933340753903be453336",
+    "content-hash": "b1cbba155a16e66462ada16448ee2328",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -7758,58 +7758,6 @@
                 "source": "https://github.com/webmozarts/assert/tree/1.9.1"
             },
             "time": "2020-07-08T17:02:28+00:00"
-        },
-        {
-            "name": "zapmeteam/api",
-            "version": "1.0.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/zapmeteam/api-sdk.git",
-                "reference": "d393025166328f125a2651aa280463dbe4c3779f"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/zapmeteam/api-sdk/zipball/d393025166328f125a2651aa280463dbe4c3779f",
-                "reference": "d393025166328f125a2651aa280463dbe4c3779f",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-json": "*",
-                "php": "^7.3|^8.0"
-            },
-            "require-dev": {
-                "fakerphp/faker": "^1.16",
-                "phpunit/phpunit": "6.*",
-                "symfony/var-dumper": "^5.3",
-                "vlucas/phpdotenv": "^5.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "ZapMeTeam\\Api\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "ZapMeTeam",
-                    "email": "dev@zapme.com.br"
-                }
-            ],
-            "description": "ZapMe API it's the official client API from ZapMe",
-            "keywords": [
-                "zapme",
-                "zapmeapi"
-            ],
-            "support": {
-                "issues": "https://github.com/zapmeteam/api-sdk/issues",
-                "source": "https://github.com/zapmeteam/api-sdk/tree/1.0.6"
-            },
-            "time": "2021-12-04T01:57:13+00:00"
         }
     ],
     "packages-dev": [
@@ -11634,5 +11582,5 @@
         "php": "^7.3|^8.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.1.0"
 }

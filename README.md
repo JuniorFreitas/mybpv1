@@ -5,11 +5,25 @@
 
 ## METODOS ÚTEIS
 
-````
 ORDENAÇÃO COM JOIN
-
-->select('feedback_curriculos.*')
+````php
+$query->select('feedback_curriculos.*')
 ->join('curriculos', 'curriculos.id', '=', 'feedback_curriculos.curriculo_id')
-->orderBy('curriculos.nome');;
+->orderBy('curriculos.nome');
 ````
 
+Envio de notificação via whatsApp utilizando ZAPME
+
+Para enviar anexo só passar o array com indice anexo com duas posições 'arquivo', 'tipo'
+````php
+(new ZapNotificacao())->enviar([
+    'enviado_id' => 1,
+    'telefone' => "5598999023762",
+    'mensagem' => 'Enviando pdf',
+    'anexo' =>
+        [
+            'arquivo' => \App\Models\Sistema::convertBase2('http://dspace.bc.uepb.edu.br/jspui/bitstream/123456789/855/1/PDF%20-%20Bruna%20Suellen%20Ara%C3%BAjo%20Diniz%20Epaminondas.pdf', true),
+            'tipo' => ZapNotificacao::EXTENSAO_PDF
+        ]
+])
+````

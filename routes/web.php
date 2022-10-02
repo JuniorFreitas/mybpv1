@@ -512,8 +512,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::post('controle-exames/ficha-encaminhamento/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
         Route::get('controle-exames/carregaResposta', [\App\Http\Controllers\ControleExameController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('controle-exames/resultado/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getResultado'])->name('getResultado');
-        Route::post( 'controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');
-        Route::put( 'controle-exames/salvaResultado/{resultado}', [\App\Http\Controllers\ControleExameController::class, 'updateResultado'])->name('updateResultado');
+        Route::post('controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');
+        Route::put('controle-exames/salvaResultado/{resultado}', [\App\Http\Controllers\ControleExameController::class, 'updateResultado'])->name('updateResultado');
         Route::match(['post', 'put'], 'controle-exames/salvaUpdate', [\App\Http\Controllers\ControleExameController::class, 'salvaUpdate'])->name('salvaUpdate');
         Route::post('controle-exames/atualizar', [\App\Http\Controllers\ControleExameController::class, 'atualizar'])->name('atualizar');
         Route::get('controle-exames', [\App\Http\Controllers\ControleExameController::class, 'index'])->name('index');
@@ -700,7 +700,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         //Enviar para Revisao
         Route::post('treinamento/enviar-carteira', [\App\Http\Controllers\TreinamentoController::class, 'enviarCarteiraEmail']);
         Route::post('treinamento/carteiras', [\App\Http\Controllers\TreinamentoController::class, 'carteiraPdf'])->name('carteiraPdf');
-        Route::post('treinamento/export', [\App\Http\Controllers\TreinamentoController::class,'export'])->name('excel');
+        Route::post('treinamento/export', [\App\Http\Controllers\TreinamentoController::class, 'export'])->name('excel');
         Route::post('treinamento/atualizar', [\App\Http\Controllers\TreinamentoController::class, 'atualizar'])->name('atualizar');
 
         Route::get('treinamento/vencimentos', [\App\Http\Controllers\TreinamentoController::class, 'vencimentos'])->name('vencimentos');

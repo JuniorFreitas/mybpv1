@@ -70,5 +70,6 @@ class Kernel extends HttpKernel
 
         'can.sanctum' => \App\Http\Middleware\TemHabilidade::class,
         'usuario.ativo' => \App\Http\Middleware\UsuarioAtivo::class,
+        'apitoken' => \App\Http\Middleware\ApiToken::class,
     ];
 }

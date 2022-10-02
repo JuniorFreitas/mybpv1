@@ -1,0 +1,71 @@
+version: '3'
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - ENABLE_SCHEDULE=false
+      - ENABLE_WORKER=false
+      - ENABLE_HORIZON=true
+      - ENABLE_WEBSOCKETS=false
+      - ENABLE_SUPERVISOR_GUI=true
+      - SUPERVISORD_USER=admin
+      - SUPERVISORD_PASS=secret
+
+    env_file:
+      - .env
+
+    volumes:
+      - .:/usr/share/nginx/html
+      - ./.deploy/storage/app:/usr/share/nginx/html/storage/app
+      - ./.deploy/storage/uploads:/var/www/html/public/media
+      - ./.deploy/storage/logs:/usr/share/nginx/html/storage/logs
+
+    ports:
+      - "8080:80"
+      - "6001:6001"
+      - "9001:9001"
+    networks:
+      - mastertag
+
+  mysql:
+    platform: linux/x86_64
+    image: mysql:5.7
+    container_name: mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - ./.deploy/storage/mysql:/var/lib/mysql
+    networks:
+      - mastertag
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    command: --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./.deploy/storage/redis:/data
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PORT: 6379
+    networks:
+      - mastertag
+
+networks:
+  mastertag:
+    driver: bridge

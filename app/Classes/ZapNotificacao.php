@@ -2,62 +2,70 @@
 
 namespace App\Classes;
 
-use App\Models\NotificacaoWhats;
-use App\Models\NotificacaoWhatsapp;
+use App\Jobs\JobSendNotificacaoWhatsApp;
+use ZapMeSdk\Base as ZapMeSdk;
 
 class ZapNotificacao
 {
 
     public $Zap;
 
+    const TIPO_PDF = 'pdf';
+    const TIPO_IMAGEM = 'imagem';
+
+    const EXTENSAO_IMG = 'jpg';
+    const EXTENSAO_PDF = 'pdf';
+
+    const TIPOS = [
+        self::TIPO_IMAGEM,
+        self::TIPO_PDF,
+    ];
+
     public function __construct()
     {
-        $this->Zap = (new \ZapMeTeam\Api\ZapMeApi)
-            ->setApi(env('API_ZAPME'))
-            ->setSecret(env('SECRET_ZAPME'))
-            ->setEndpoint('https://api.zapme.com.br/messages/create');
+        $this->Zap = (new ZapMeSdk())
+            ->withApi(env('API_ZAPME'))
+            ->withSecret(env('SECRET_ZAPME'));
+    }
+
+    public function status()
+    {
+        return $this->Zap->accountStatus();
     }
 
     public function requestQRCode()
     {
-      dd($this->Zap->requestQRCode());
+        dd($this->Zap->requestQRCode());
     }
 
     public function enviar(array $dados)
     {
-        if (env('APP_ENV') == 'local') {
+        $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
+
+        if ($ambiente != 'prod') {
             $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
             $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
-
         }
 
-        $send = $this->Zap->sendMessage($dados['telefone'], $dados['mensagem'])->getResult();
-        if ($send['result'] == 'created') {
-            $notificacao = new NotificacaoWhatsapp();
-            $notificacao->enviado_id = $dados['enviado_id'];
-            $notificacao->user_id = auth()->id();
-            $notificacao->messageid = intval($send['messageid']);
-            $notificacao->telefone = $dados['telefone'];
-            $notificacao->mensagem = $dados['mensagem'];
-            $notificacao->save();
-        }
+        $upload = isset($dados['anexo']) ? [
+            'file_content' => $dados['anexo']['arquivo'],
+            'file_extension' => $dados['anexo']['tipo'] == self::TIPO_IMAGEM ? self::EXTENSAO_IMG : self::EXTENSAO_PDF
+        ] : [];
 
-        return $send;
+        JobSendNotificacaoWhatsApp::dispatch($dados, $upload);
     }
 
-    public function enviarArquivo($numero, $mensagem, $arquivo)
+    public function send($dados, $upload)
     {
-        $extensao = substr($arquivo, -3);
-        $base64 = base64_encode($arquivo);
+        return $this->Zap->sendMessage($dados['telefone'], $dados['mensagem'], $upload);
+    }
 
-        $send = $this->Zap->sendMessage($numero, $mensagem, [
-            'document' => $base64,
-            'filetype' => $extensao
-        ])->getResult();
-        if ($send['result'] == 'success') {
-            return $send;
-        } else {
-            return $send;
-        }
+    private function convertPngToJpg($path)
+    {
+
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+
+        print_r($data);
     }
 }
