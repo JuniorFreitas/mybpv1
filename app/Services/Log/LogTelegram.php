@@ -9,7 +9,7 @@ class LogTelegram extends TelegramBotHandler
     public function write(array $record): void
     {
         $userAutenticado = "USUÁRIO - Não autenticado";
-        if (auth()) {
+        if (auth()->check()) {
             $userAutenticado = 'USUÁRIO - ' . auth()->user()->nome . ' - Empresa ' . auth()->user()->Empresa->razao_social;
         }
 
