@@ -71,8 +71,11 @@ class DocumentosLegaisEmpresaController extends Controller
             'documentos_empresa.data_inicio' => [function ($attribute, $value, $fail) use ($dados) {
                 $datainicio = $dados['documentos_empresa']['data_inicio'];
                 $dataencerramento = $dados['documentos_empresa']['data_encerramento'];
-                if ($datainicio > $dataencerramento) {
-                    $fail('Data inicio incorreta.');
+
+                $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
+
+                if ($diff_dias <= 0) {
+                    $fail('Data Vencimento precisa ser maior que a Data início');
                 }
             }],
         ];
@@ -147,14 +150,15 @@ class DocumentosLegaisEmpresaController extends Controller
                 }
             }],
             'documentos_empresa.data_inicio' => [function ($attribute, $value, $fail) use ($dados) {
+                $datainicio = $dados['documentos_empresa']['data_inicio'];
+                $dataencerramento = $dados['documentos_empresa']['data_encerramento'];
 
-            $datainicio = $dados['documentos_empresa']['data_inicio'];
-            $dataencerramento = $dados['documentos_empresa']['data_encerramento'];
-            if ($datainicio > $dataencerramento) {
-                    $fail('Data inicio incorreta.');
+                $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
+
+                if ($diff_dias <= 0) {
+                    $fail('Data Vencimento precisa ser maior que a Data início');
                 }
             }],
-
         ];
         $dadosValidados = \Validator::make($dados, $arrayValidacao);
 
@@ -238,6 +242,7 @@ class DocumentosLegaisEmpresaController extends Controller
 
         return $resultado;
     }
+
 
     /**
      * @param DocumentoEmpresa $empresa

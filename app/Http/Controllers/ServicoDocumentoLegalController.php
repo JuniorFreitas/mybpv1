@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TipoDocumento;
+use App\Models\Servico;
 use App\Models\User;
+use App\Rules\TenantUniqueRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-class TipoDocumentoLegalController extends Controller
+class ServicoDocumentoLegalController extends Controller
 {
     public function index(Request $request)
     {
-        return view('g.administracao.documentoslegais.tipodocumento.index');
+        return view('g.administracao.documentoslegais.tiposervico.index');
 
     }
 
@@ -20,24 +21,18 @@ class TipoDocumentoLegalController extends Controller
     {
         $this->authorize('administracao_documentos_legais_insert');
         $dados = $request->input();
-        $nome = $dados['nome'];
-        $tipo = $dados['tipo'];
-
         $arrayValidacao = [
-            'nome' => [
+            'titulo' => [
                 'required',
                 'min:3',
-                Rule::unique('tipo_documentos')->where(function ($query) use($nome,$tipo) {
-                    return $query->where('nome', $nome)
-                        ->where('tipo', $tipo)->where('empresa_id', \Auth::user()->empresa_id);
-                })
-            ]
+                new TenantUniqueRules('servicos', $request->segment(5)),
+            ],
         ];
         $dadosValidados = \Validator::make($dados, $arrayValidacao);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
-                'msg' => 'Erro ao cadastrar Tipo Documento',
+                'msg' => 'Erro ao cadastrar Tipo Serviço',
                 'erros' => $dadosValidados->errors()
             ], 400);
         }
@@ -45,53 +40,47 @@ class TipoDocumentoLegalController extends Controller
         try {
             DB::beginTransaction();
 
-            TipoDocumento::create($dados);
+            Servico::create($dados);
 
             DB::commit();
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "error STORE TIPO DOCUMENTO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            $msg = "error STORE TIPO SERVICO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
-    public function edit(TipoDocumento $tipodocumento)
+    public function edit(Servico $tiposervico)
     {
-        return $tipodocumento;
+        return $tiposervico;
     }
 
-    public function show(TipoDocumento $tipodocumento)
+    public function show(Servico $tiposervico)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        return $tipodocumento;
+        return $tiposervico;
     }
 
-    public function update(Request $request, TipoDocumento $tipodocumento)
+    public function update(Request $request, Servico $tiposervico)
     {
+        $dados = $request->input();
+
         $this->authorize('administracao_documentos_legais_insert');
         $dados = $request->input();
-        $nome = $dados['nome'];
-        $tipo = $dados['tipo'];
-        $id_tipo_documento = $request->segment(5);
         $arrayValidacao = [
-            'nome' => [
+            'titulo' => [
                 'required',
                 'min:3',
-                Rule::unique('tipo_documentos')->where(function ($query) use($nome,$tipo,$id_tipo_documento) {
-                    return $query->where('nome', $nome)
-                                 ->where('tipo', $tipo)
-                                 ->where('empresa_id', \Auth::user()->empresa_id)
-                                 ->where('id','<>', $id_tipo_documento);
-                })
-            ]
+                new TenantUniqueRules('servicos', $request->segment(5)),
+            ],
         ];
         $dadosValidados = \Validator::make($dados, $arrayValidacao);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
-                'msg' => 'Erro ao cadastrar Tipo Documento',
+                'msg' => 'Erro ao cadastrar Tipo Serviço',
                 'erros' => $dadosValidados->errors()
             ], 400);
         }
@@ -99,13 +88,13 @@ class TipoDocumentoLegalController extends Controller
         try {
             DB::beginTransaction();
 
-            $tipodocumento->update($dados);
+            $tiposervico->update($dados);
 
             DB::commit();
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "error STORE TIPO DOCUMENTO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            $msg = "error STORE TIPO SERVICO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
@@ -115,11 +104,10 @@ class TipoDocumentoLegalController extends Controller
     {
         $this->authorize('administracao_documentos_legais');
         $porPagina = $request->get('porPagina');
-        $resultado = TipoDocumento::orderBy('id');
+        $resultado = Servico::orderBy('titulo');
 
         if ($request->filled('campoBusca')) {
-            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('tipo', 'like', '%' . $request->campoBusca . '%');
+            $resultado->where('titulo', 'like', '%' . $request->campoBusca . '%');
         }
 
         $resultado = $resultado->paginate($porPagina);
@@ -128,8 +116,7 @@ class TipoDocumentoLegalController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'items' => $resultado->items(),
-                'tipos_documentos' => TipoDocumento::TIPO_DOCUMENTOS
+                'items' => $resultado->items()
             ]
         ], 200);
     }
@@ -138,11 +125,11 @@ class TipoDocumentoLegalController extends Controller
     {
         $this->authorize('administracao_documentos_legais_insert');
 
-        $tipodocumento = TipoDocumento::find($request->id);
-        $tipodocumento->ativo = !$tipodocumento->ativo;
-        $tipodocumento->save();
-        $tipodocumento->refresh();
-        return response()->json(['ativo' => $tipodocumento->ativo], 201);
+        $tiposervico = Servico::find($request->id);
+        $tiposervico->ativo = !$tiposervico->ativo;
+        $tiposervico->save();
+        $tiposervico->refresh();
+        return response()->json(['ativo' => $tiposervico->ativo], 201);
     }
 
 }

@@ -71,8 +71,11 @@ class DocumentosLegaisSsmaController extends Controller
 
                 $datainicio = $dados['documentos_ssma']['data_inicio'];
                 $dataencerramento = $dados['documentos_ssma']['data_encerramento'];
-                if ($datainicio > $dataencerramento) {
-                    $fail('Data inicio incorreta.');
+
+                $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
+
+                if ($diff_dias <= 0) {
+                    $fail('Data Vencimento precisa ser maior que a Data início');
                 }
             }],
         ];
@@ -150,8 +153,10 @@ class DocumentosLegaisSsmaController extends Controller
 
                 $datainicio = $dados['documentos_ssma']['data_inicio'];
                 $dataencerramento = $dados['documentos_ssma']['data_encerramento'];
-                if ($datainicio > $dataencerramento) {
-                    $fail('Data inicio incorreta.');
+                $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
+
+                if ($diff_dias <= 0) {
+                    $fail('Data Vencimento precisa ser maior que a Data início');
                 }
             }],
         ];

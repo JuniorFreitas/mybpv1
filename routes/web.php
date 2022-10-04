@@ -213,6 +213,18 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::resource('tipodocumento', \App\Http\Controllers\TipoDocumentoLegalController::class)->middleware('can:administracao_documentos_legais');
             });
 
+            Route::group(['as' => 'tiposervico.'], function () {
+                Route::put('tiposervico/{tiposervico}/ativa-desativa', [\App\Http\Controllers\ServicoDocumentoLegalController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_documentos_legais');
+                Route::post('tiposervico/atualizar', [\App\Http\Controllers\ServicoDocumentoLegalController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_documentos_legais');
+                Route::resource('tiposervico', \App\Http\Controllers\ServicoDocumentoLegalController::class)->middleware('can:administracao_documentos_legais');
+            });
+
+            Route::group(['as' => 'formacontrato.'], function () {
+                Route::put('formacontrato/{formacontrato}/ativa-desativa', [\App\Http\Controllers\FormaContratoDocumentoLegalController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_documentos_legais');
+                Route::post('formacontrato/atualizar', [\App\Http\Controllers\FormaContratoDocumentoLegalController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_documentos_legais');
+                Route::resource('formacontrato', \App\Http\Controllers\FormaContratoDocumentoLegalController::class)->middleware('can:administracao_documentos_legais');
+            });
+
         });
 
         // Fornecedores

@@ -24,3 +24,5 @@ supervisord.log
 supervisord.pid
 
 /.deploy/mybpin.pem
+./package-lock.json
+./composer.lock

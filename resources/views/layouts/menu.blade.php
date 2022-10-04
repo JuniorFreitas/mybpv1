@@ -74,6 +74,16 @@
                                 Tipos Documentos
                             </a>
                         </li>
+                        <li>
+                            <a href="{{route('g.administracao.documentoslegais.tiposervico.tiposervico.index')}}" key="tiposervico">
+                                Tipos Serviços
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{route('g.administracao.documentoslegais.formacontrato.formacontrato.index')}}" key="formacontrato">
+                                Formas Contratos
+                            </a>
+                        </li>
                     </ul>
                 </li>
             @endcan

@@ -90,8 +90,6 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-12"></div>
-
                                                     <div class="col-12 col-sm-6 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Tipo de documento</label>

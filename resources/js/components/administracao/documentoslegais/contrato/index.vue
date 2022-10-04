@@ -31,7 +31,7 @@
                             <div class="tab-pane fade show active" id="nav-dados-cadastrais" role="tabpanel"
                                  aria-labelledby="nav-dados-cadastrais-tab">
                                 <fieldset>
-                                    <legend class="text-uppercase">Dados do {{ form.tipo_documento }}</legend>
+                                    <legend class="text-uppercase">Dados do Contratante</legend>
                                     <div class="row">
                                         <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
                                             <div class="form-group">
@@ -234,12 +234,21 @@
 
                                                 <div class="col-12"></div>
 
+<!--                                                <div class="col-12 col-sm-6 col-lg-4">-->
+<!--                                                    <div class="form-group">-->
+<!--                                                        <label>Tipo de serviço</label>-->
+<!--                                                        <input type="text" class="form-control validacampo"-->
+<!--                                                               v-model="obj.tipo_descricao" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">-->
+<!--                                                    </div>-->
+<!--                                                </div>-->
+
                                                 <div class="col-12 col-sm-6 col-lg-4">
-                                                    <div class="form-group">
-                                                        <label>Tipo de serviço</label>
-                                                        <input type="text" class="form-control validacampo"
-                                                               v-model="obj.tipo_descricao" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">
-                                                    </div>
+                                                    <label>Tipo de serviço</label>
+                                                    <select class="form-control validacampo" v-model="obj.select_tipo_servico"
+                                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                        <option value="">Selecione ...</option>
+                                                        <option v-for="item in listaServicos" :value="item.id">{{ item.titulo }}</option>
+                                                    </select>
                                                 </div>
 
                                                 <div class="col-12 col-sm-6 col-lg-4">
@@ -300,12 +309,12 @@
                                                 </div>
 
                                                 <div class="col-12 col-sm-6 col-lg-4">
-                                                    <div class="form-group">
-                                                        <label>Tipo Contrato</label>
-                                                        <select v-model="obj.tipo_contrato" class="form-control">
-
-                                                        </select>
-                                                    </div>
+                                                    <label>Tipo Contrato</label>
+                                                    <select class="form-control validacampo" v-model="obj.tipo_contrato"
+                                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                        <option value="">Selecione ...</option>
+                                                        <option v-for="item in listaFormasContrato" :value="item.id">{{ item.titulo }}</option>
+                                                    </select>
                                                 </div>
 
                                                 <div class="col-12 col-sm-6 col-lg-4">
@@ -554,6 +563,7 @@ export default {
             lista: [],
             listaServicos: [],
             listaAreas: [],
+            listaFormasContrato: [],
 
             controle: {
                 carregando: false,
@@ -583,7 +593,7 @@ export default {
             obj.data_encerramento = moment().add(6, 'months').format('L');
             obj.observacao = '';
             obj.valor = '0.00';
-            obj.tipo_descricao = '';
+            obj.select_tipo_servico = '';
             obj.status = 'Iniciado';
             obj.feedback = '';
             obj.tipo_contrato = 'FIXO';
@@ -625,6 +635,12 @@ export default {
                     this.mostraErro("", "Existem campos obrigatórios não preenchidos");
                     return false;
                 }
+
+                if (this.form.dados_cadastrais.telefones.length === 0) {
+                    mostraErro('', 'Por favor insira um Telefone');
+                    return false;
+                }
+
                 this.preloadAjax = true;
 
                 axios.post(`${URL_ADMIN}/administracao/documentoslegais/contrato`, this.form)
@@ -667,7 +683,7 @@ export default {
 
                 $("#janelaCadastrar :input:enabled").trigger("blur");
 
-                if (this.form.telefones.length === 0) {
+                if (this.form.dados_cadastrais.telefones.length === 0) {
                     mostraErro('', 'Por favor insira um Telefone');
                     return false;
                 }
@@ -701,7 +717,8 @@ export default {
 
         carregou(dados) {
             this.lista = dados.itens;
-            this.listaServicos = dados.servicos;
+            this.listaServicos = dados.tipos_servicos;
+            this.listaFormasContrato = dados.formas_contrato;
             this.listaAreas = dados.areas;
             this.controle.carregando = false;
 

@@ -9,7 +9,7 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * App\Models\Servico
+ * App\Models\FormaContrato
  *
  * @property int $id
  * @property string $titulo
@@ -25,14 +25,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Servico whereTitulo($value)
  * @mixin \Eloquent
  */
-class Servico extends Model
+class FormaContrato extends Model
 {
     use HasFactory, LogsActivity, TenantTrait;
 
     protected static $logFillable = true;
-    protected static $logName = 'servico';
+    protected static $logName = 'documentos_legais_forma_contrato';
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
+
+    protected $table = 'documentos_legais_forma_contrato';
 
     public function getDescriptionForEvent(string $eventName): string
     {

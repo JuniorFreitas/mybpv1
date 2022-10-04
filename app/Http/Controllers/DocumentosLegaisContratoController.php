@@ -13,6 +13,7 @@ use App\Models\DocumentoEmpresa;
 use App\Models\DocumentoContratos;
 use App\Models\DocumentoSsma;
 use App\Models\FeriasPrevista;
+use App\Models\FormaContrato;
 use App\Models\Habilidade;
 use App\Models\Papel;
 use App\Models\Servico;
@@ -221,14 +222,15 @@ class DocumentosLegaisContratoController extends Controller
                     $fail($mensagem);
                 }
             }],
-            'dados_cadastrais.cpf' => [function ($attribute, $value, $fail) use ($dados) {
+            'dados_cadastrais.cpf' => [function ($attribute, $value, $fail) use ($dados, $request) {
 
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !Sistema::validaRuleCPF($value)) {
                     $fail('Informe um CPF válido.');
                 }
-                $verificaCpf = DocumentoContratos::whereJsonContains('dados_cadastrais->cpf', $value)->first();
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && $verificaCpf) {
-                    $fail('CPF já cadastrado');
+
+                $verificaCpf = DocumentoContratos::whereJsonContains('dados_cadastrais->cpf', $value)->where('id', $request->segment(5))->first();
+                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !$verificaCpf) {
+                    $fail('Não é possível alterar um CPF já cadastrado');
                 }
             }],
             'dados_cadastrais.razao_social' => [function ($attribute, $value, $fail) use ($dados) {
@@ -241,13 +243,13 @@ class DocumentosLegaisContratoController extends Controller
                     $fail('Preencha o campo informando nome fantasia.');
                 }
             }],
-            'dados_cadastrais.cnpj' => [function ($attribute, $value, $fail) use ($dados) {
+            'dados_cadastrais.cnpj' => [function ($attribute, $value, $fail) use ($dados, $request) {
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 14) {
                     $fail('Preencha o campo informando CNPJ.');
                 }
-                $verificaCnpj = DocumentoContratos::whereJsonContains('dados_cadastrais->cnpj', $value)->first();
+                $verificaCnpj = DocumentoContratos::whereJsonContains('dados_cadastrais->cnpj', $value)->where('id', $request->segment(5))->first();
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && $verificaCnpj) {
-                    $fail('CNPJ já cadastrado');
+                    $fail('Não é possível alterar um CNPJ já cadastrado');
                 }
             }],
             'dados_cadastrais.email' => 'required|email:rfc,dns',
@@ -294,6 +296,8 @@ class DocumentosLegaisContratoController extends Controller
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
         $areas = Area::all();
         $tiposDocumentos = TipoDocumento::whereTipo('empresa')->orderBy('nome')->get();
+        $tiposServicos = Servico::orderBy('titulo')->get();
+        $formasContrato = FormaContrato::orderBy('titulo')->get();
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -301,6 +305,8 @@ class DocumentosLegaisContratoController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'tipos_documentos' => $tiposDocumentos,
+                'tipos_servicos' => $tiposServicos,
+                'formas_contrato' => $formasContrato,
                 'areas' => $areas
             ]
         ]);

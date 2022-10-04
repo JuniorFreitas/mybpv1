@@ -5,20 +5,12 @@
             <template slot="conteudo">
                 <p class=" mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preload">
-                    <legend>Cadastro Tipo de Documento</legend>
+                    <legend>Cadastro Forma de Contrato</legend>
                     <div class="row">
                         <div class="col-12">
                             <label>Nome</label>
                             <input class="form-control" type="text" placeholder="Informe o nome"
-                                   onblur="valida_campo_vazio(this,1)" v-model="form.nome">
-                        </div>
-                        <div class="col-12 mt-3">
-                            <label>Selecione o Tipo</label>
-                            <select class="form-control validacampo" v-model="form.tipo"
-                                    @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
-                                <option value="">Selecione ...</option>
-                                <option v-for="(label,value) in select_tipo_documentos" :value="value">{{ label }}</option>
-                            </select>
+                                   onblur="valida_campo_vazio(this,1)" v-model="form.titulo">
                         </div>
                         <br><br>
                         <div class="col-12 mt-3">
@@ -86,22 +78,20 @@
                     <thead>
                     <tr class="bg-default">
                         <td class="text-center">Nome</td>
-                        <td class="text-center">Tipo</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Opções</td>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="tipodocumento in lista">
-                        <td class="text-center">{{tipodocumento.nome}}</td>
-                        <td class="text-center">{{tipodocumento.tipo}}</td>
+                    <tr v-for="formacontrato in lista">
+                        <td class="text-center">{{formacontrato.titulo}}</td>
                         <td class="text-center">
-                            <bt-ativo :rota="`administracao/documentoslegais/tipodocumento/${tipodocumento.id}/ativa-desativa`"
-                                      :model="tipodocumento"></bt-ativo>
+                            <bt-ativo :rota="`administracao/documentoslegais/formacontrato/${formacontrato.id}/ativa-desativa`"
+                                      :model="formacontrato"></bt-ativo>
                         </td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-primary"
-                                    @click="alterar(tipodocumento.id)"
+                                    @click="alterar(formacontrato.id)"
                                     data-toggle="modal"
                                     data-target="#janelaForm">
                                 <i class="fa fa-edit"></i>
@@ -127,7 +117,7 @@ import editor from '@tinymce/tinymce-vue';
 import Validacoes from '../../../../mixins/Validacoes';
 
 export default {
-    name: "tipodocumento",
+    name: "formacontrato",
     mixins: [Validacoes],
 
     components: {
@@ -167,7 +157,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela_form: 'Tipo Documento',
+            titulo_janela_form: 'Forma Contrato',
 
             preload: false,
             editando: false,
@@ -175,18 +165,15 @@ export default {
             atualizado: false,
 
             form: {
-                nome: '',
-                ativo: true,
-                tipo: '',
+                titulo: '',
+                ativo: true
             },
             formDefault: null,
 
             //Paginacao
             lista: [],
 
-            select_tipo_documentos: [],
-
-            urlPaginacao: `${URL_ADMIN}/administracao/documentoslegais/tipodocumento/atualizar`,
+            urlPaginacao: `${URL_ADMIN}/administracao/documentoslegais/formacontrato/atualizar`,
 
             controle: {
                 carregando: false,
@@ -198,7 +185,7 @@ export default {
     },
     methods: {
         formNovo() {
-            this.titulo_janela_form = 'Cadastro Tipo Documento';
+            this.titulo_janela_form = 'Cadastro Forma Contrato';
             this.preload = false;
             this.editando = false;
             this.atualizado = false;
@@ -214,10 +201,10 @@ export default {
                     return false;
                 }
                 this.preload = true;
-                axios.post(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento`, this.form)
+                axios.post(`${URL_ADMIN}/administracao/documentoslegais/formacontrato`, this.form)
                     .then((res) => {
                         $('#janelaForm').modal('hide');
-                        mostraSucesso('', 'Tipo de documento cadastrado com sucesso');
+                        mostraSucesso('', 'Forma de contrato cadastrada com sucesso');
                         this.$refs.componente.buscar();
                         this.preload = false;
                     })
@@ -226,14 +213,14 @@ export default {
                     });
             });
         },
-        alterar(tipodocumento) {
+        alterar(formacontrato) {
             this.editando = true;
-            this.titulo_janela_form = "Alterando Tipo de documento";
+            this.titulo_janela_form = "Alterando forma de contrato";
             formReset();
 
             this.form = _.cloneDeep(this.formDefault) //copia
 
-            axios.get(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento/${tipodocumento}`)
+            axios.get(`${URL_ADMIN}/administracao/documentoslegais/formacontrato/${formacontrato}`)
                 .then(response => {
                     Object.assign(this.form, response.data);
                     this.editando = true;
@@ -252,10 +239,10 @@ export default {
                     return false;
                 }
                 this.preload = true;
-                axios.put(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento/${this.form.id}`, this.form)
+                axios.put(`${URL_ADMIN}/administracao/documentoslegais/formacontrato/${this.form.id}`, this.form)
                     .then((res) => {
                         $('#janelaForm').modal('hide');
-                        mostraSucesso('', 'Tipo de documento Alterado com sucesso');
+                        mostraSucesso('', 'Forma de contrato alterada com sucesso');
                         this.$refs.componente.buscar();
                         this.preload = false;
                     })
@@ -265,8 +252,8 @@ export default {
             });
         },
         carregou(dados) {
+            console.log(dados);
             this.lista = dados.items;
-            this.select_tipo_documentos = dados.tipos_documentos;
             this.controle.carregando = false;
         },
         carregando() {
