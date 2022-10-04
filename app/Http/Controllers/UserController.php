@@ -226,6 +226,7 @@ class UserController extends Controller
         $porPagina = $request->get('porPagina');
 
         $resultado = User::with('Papel:id,nome')
+            ->with('Empresa:id,nome_fantasia')
             ->whereIn('tipo', User::TIPOS_USUARIOS_COMUNS)
             ->where('empresa_id', auth()->user()->empresa_id);
 
@@ -238,6 +239,14 @@ class UserController extends Controller
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
                 ->orWhere('id', $request->campoBusca);
+        }
+
+        if ($request->filled('campoEmpresa')) {
+            $resultado->whereEmpresaId($request->campoEmpresa);
+        }
+
+        if ($request->filled('campoTipo')) {
+            $resultado->whereTipo($request->campoTipo);
         }
 
         $empresa = auth()->user()->empresa_id;
@@ -256,6 +265,8 @@ class UserController extends Controller
 
         $lista_tipos = auth()->user()->empresa_id == User::MYBP_EMPRESA_ID ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
 
+        $grupos = $request->filled('campoEmpresa') && auth()->user()->empresa_id === User::MYBP_EMPRESA_ID  ? Papel::whereEmpresaId($request->campoEmpresa)->get() : null;
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -265,7 +276,8 @@ class UserController extends Controller
                 'empresa' => $empresa,
                 'tipo_email' => $tipo_email,
                 'formulario_vazio' => $formulario_vazio,
-                'lista_tipos' => $lista_tipos
+                'lista_tipos' => $lista_tipos,
+                'grupos' => $grupos
             ],
         ]);
 
@@ -384,6 +396,15 @@ class UserController extends Controller
         } else {
             abort(404);
         }
+    }
+
+    public function simularUsuario(Request $request)
+    {
+        if (auth()->user()->grupo_id == 1) {
+            \Auth::loginUsingId($request->user_id);
+            return response()->json(['simulacao' => true], 200);
+        }
+        return response()->json(['simulacao' => false], 400);
     }
 
     public function uploadAnexos(Request $request)

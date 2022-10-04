@@ -2,7 +2,7 @@
     <div class='row'>
         <div class='col-12 col-sm-6'>
             <div class='form-group'>
-                <label>EXAME DE ORDEM</label>
+                <label>EXAME DE ORDEM </label>
                 <select
                     class='form-control'
                     onchange='valida_campo_vazio(this,1)'

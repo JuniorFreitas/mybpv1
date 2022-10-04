@@ -26,8 +26,7 @@
         "maatwebsite/excel": "^3.1",
         "predis/predis": "^1.1",
         "pusher/pusher-php-server": "~3.0",
-        "spatie/laravel-activitylog": "^3.16",
-        "zapmeteam/api": "^1.0"
+        "spatie/laravel-activitylog": "^3.16"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.5",
@@ -53,6 +52,7 @@
         "psr-4": {
             "App\\": "app/",
             "MasterTag\\": "app/Classes/",
+            "ZapMeSdk\\": "app/Services/Zapme",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

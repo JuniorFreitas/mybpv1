@@ -377,12 +377,12 @@ class TreinamentoController extends Controller
         }
 
         if ($request->filled('campoNr_trinta_tres')) {
-            if ($request->campoNr_trinta_tres) {
+            if ($request->campoNr_trinta_tres == 'Realizado') {
                 $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
                     $query->where('label', 'NR33');
                 });
             }
-            if (!$request->campoNr_trinta_tres) {
+            if ($request->campoNr_trinta_tres == 'Não Realizado') {
                 $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
                     $query->where('label', 'NR33');
                 });
@@ -395,12 +395,12 @@ class TreinamentoController extends Controller
         }
 
         if ($request->filled('campoNr_trinta_cinco')) {
-            if ($request->campoNr_trinta_cinco) {
+            if ($request->campoNr_trinta_cinco == 'Realizado') {
                 $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
                     $query->where('label', 'NR35');
                 });
             }
-            if (!$request->campoNr_trinta_cinco) {
+            if (!$request->campoNr_trinta_cinco == 'Não Realizado') {
                 $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
                     $query->where('label', 'NR35');
                 });

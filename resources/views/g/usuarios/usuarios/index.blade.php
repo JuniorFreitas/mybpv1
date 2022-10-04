@@ -113,10 +113,10 @@
     </modal>
     <fieldset>
         <legend>Filtragem por</legend>
+        <form id="formBusca" @keypress.enter="$refs.componente.buscar()" onsubmit="return false;">
+            <div class="row">
 
-        <div class="row">
-            <div class="col-md-4 column">
-                <form id="formBusca" @keypress.enter="$refs.componente.buscar()" onsubmit="return false;">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label>Buscar:</label>
                         <div class="input-group input-group-sm">
@@ -128,9 +128,51 @@
                                    class="form-control form-control-sm">
                         </div>
                     </div>
-                </form>
+                </div>
+                @if(auth()->user()->empresa_id == 100)
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Empresa:</label>
+                            <select class="form-control form-control-sm select-custom"
+                                    v-model="controle.dados.campoEmpresa"
+                                    @change="$refs.componente.buscar()">
+                                <option value="">Selecione...</option>
+                                @foreach(\App\Models\Cliente::select('id','nome_fantasia')->get() as $c)
+                                    <option value="{{$c->id}}">{{$c->nome_fantasia}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                @endif
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Tipo:</label>
+                        <select class="form-control form-control-sm select-custom" v-model="controle.dados.campoTipo"
+                                @change="$refs.componente.buscar()">
+                            <option value="">Selecione...</option>
+                            <option v-for="tip in lista_tipos" :value="tip">
+                                @{{ tip }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Tipo:</label>
+                        <select class="form-control form-control-sm select-custom" v-model="controle.dados.campoTipo"
+                                @change="$refs.componente.buscar()">
+                            <option value="">Selecione...</option>
+                            <option v-for="tip in lista_tipos" :value="tip">
+                                @{{ tip }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
             </div>
-        </div>
+        </form>
         <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar"><i
                 :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
             Atualizar
@@ -153,7 +195,11 @@
                 <thead>
                 <tr class="bg-default">
                     <th>Nome</th>
+                    @if(auth()->user()->empresa_id == 100)
+                        <th>Empresa</th>
+                    @endif
                     <th>Grupo</th>
+                    <th>Tipo</th>
                     <th>Status</th>
                     <th>Ação</th>
                 </tr>
@@ -161,9 +207,16 @@
                 <tbody>
                 <tr v-for="usuario in lista">
                     <td data-label="Nome">@{{usuario.nome}}</td>
+                    @if(auth()->user()->empresa_id == 100)
+                        <td data-label="Nome">@{{usuario.empresa.nome_fantasia}}</td>
+                    @endif
                     <td data-label="Grupo">
                         <span v-if="usuario.papel">@{{usuario.papel.nome}}</span>
                         <span v-else> - </span>
+                    </td>
+
+                    <td data-label="Grupo">
+                        @{{usuario.tipo}}
                     </td>
                     <td data-label="Status">
                         <bt-ativo :rota="`usuarios/${usuario.id}/ativa-desativa`" :model="usuario"></bt-ativo>
@@ -177,13 +230,22 @@
                                 <i class="fa fa-edit" aria-hidden="true"></i>
                             </a>
                         @endcan
+
+                        @if(auth()->user()->grupo_id == 1)
+                            <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
+                               @click.prevent="simularUsuario(usuario.id)">
+                                <i class="fa fa-user"></i>
+                            </a>
+                        @endif
+
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                            url="{{route('g.usuarios.usuarios.atualizar')}}" por-pagina="10" :dados="controle.dados"
+                            url="{{route('g.usuarios.usuarios.atualizar')}}" :por-pagina="controle.dados.por_pagina"
+                            :dados="controle.dados"
                             v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
     </div>
 @stop

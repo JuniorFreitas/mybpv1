@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeClientesEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -47,6 +47,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Beneficio extends Model
 {
+    use TenantTrait;
+
     protected $fillable = [
         'nome',
         'tipobeneficio_id',
