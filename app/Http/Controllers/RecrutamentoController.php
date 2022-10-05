@@ -250,15 +250,11 @@ class RecrutamentoController extends Controller
                                 $mensagem .= "\n\nCuidado para não perder o prazo! Esperamos te ver em breve!\n\n*Equipe RH BPSE* ";
 
                                 if ($telefonePrincipal->tipo == 'whatsapp') {
-                                    $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                    (new ZapNotificacao())->enviar([
                                         'enviado_id' => $curriculo->id,
                                         'telefone' => $telefonePrincipal->sonumero,
-                                        'mensagem' => $mensagem
+                                        'mensagem' => $mensagem,
                                     ]);
-                                    if ($whatsNotificacao['result'] == 'success') {
-                                        $dados['data_envia_whatsapp'] = (new DataHora())->dataHoraInsert();
-                                        $dados['user_envia_whatsapp'] = auth()->id();
-                                    }
                                 }
                             }
                             \Mail::send(new ProvaMail([
@@ -315,15 +311,11 @@ class RecrutamentoController extends Controller
                             $mensagem = "👏🏽👏🏽Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nPara a vaga *{$vaga_aberta->titulo} - {$vaga_aberta->Municipio->nome}/{$vaga_aberta->Municipio->uf}* fique atento as próximas etapas do processo!\n\n📆 Data da entrevista: {$dados['data_entrevista']}\n📍Local da entrevista: {$dados['local_entrevista']}\n\nSucesso e esperamos vê-lo em breve. \n\n*☺️ Um forte abraço da equipe " . $empresa->razao_social . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
                             $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
                             if ($telefonePrincipal->tipo == 'whatsapp') {
-                                $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                (new ZapNotificacao())->enviar([
                                     'enviado_id' => $curriculo->id,
                                     'telefone' => $telefonePrincipal->sonumero,
-                                    'mensagem' => $mensagem
+                                    'mensagem' => $mensagem,
                                 ]);
-                                if ($whatsNotificacao['result'] == 'success') {
-                                    $dados['data_envia_whatsapp'] = (new DataHora())->dataHoraInsert();
-                                    $dados['user_envia_whatsapp'] = auth()->id();
-                                }
                             }
                         }
                     }
@@ -346,15 +338,11 @@ class RecrutamentoController extends Controller
                                 $mensagem .= "\n\nCuidado para não perder o prazo! Esperamos te ver em breve!\n\n*Equipe RH BPSE* ";
 
                                 if ($telefonePrincipal->tipo == 'whatsapp') {
-                                    $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                    (new ZapNotificacao())->enviar([
                                         'enviado_id' => $curriculo->id,
                                         'telefone' => $telefonePrincipal->sonumero,
-                                        'mensagem' => $mensagem
+                                        'mensagem' => $mensagem,
                                     ]);
-                                    if ($whatsNotificacao['result'] == 'success') {
-                                        $dados['data_envia_whatsapp'] = (new DataHora())->dataHoraInsert();
-                                        $dados['user_envia_whatsapp'] = auth()->id();
-                                    }
                                 }
                             }
                             \Mail::send(new ProvaMail([
