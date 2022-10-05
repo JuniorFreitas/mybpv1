@@ -220,15 +220,11 @@ class RecrutamentoController extends Controller
 
                             $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
                             if ($telefonePrincipal->tipo == 'whatsapp') {
-                                $whatsNotificacao = (new ZapNotificacao())->enviar([
+                                (new ZapNotificacao())->enviar([
                                     'enviado_id' => $curriculo->id,
                                     'telefone' => $telefonePrincipal->sonumero,
-                                    'mensagem' => $mensagem
+                                    'mensagem' => $mensagem,
                                 ]);
-                                if ($whatsNotificacao['result'] == 'success') {
-                                    $dados['data_envia_whatsapp'] = (new DataHora())->dataHoraInsert();
-                                    $dados['user_envia_whatsapp'] = auth()->id();
-                                }
                             }
                         }
                     }
