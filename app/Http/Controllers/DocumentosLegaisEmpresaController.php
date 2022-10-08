@@ -259,17 +259,13 @@ class DocumentosLegaisEmpresaController extends Controller
      */
     public function ativaDesativa(DocumentoEmpresa $empresa)
     {
-
-        $empresa->documentos_empresa->tranform(function ($item) {
-            $item->rodrigo = 'funciona';
-            return $item;
-        });
-
-        dd($empresa);
+        $dados = $empresa->documentos_empresa;
+        $dados['ativo'] = !$empresa->documentos_empresa['ativo'];
+        $empresa->documentos_empresa = $dados;
         $empresa->save();
         $empresa->refresh();
 
-        return response()->json(['ativo' => $empresa->documentos_empresa->ativo], 201);
+        return response()->json(['ativo' => $empresa->documentos_empresa['ativo']], 201);
     }
 
     public function uploadAnexos(Request $request)

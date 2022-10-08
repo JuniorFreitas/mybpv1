@@ -441,8 +441,8 @@ export default {
             this.$nextTick(() => {
                 $("#janelaCadastrar :input:enabled").trigger("blur");
 
-                $('#nav-documentoempresa-tab :input:enabled.is-invalid').length > 0 ? $('#nav-documentoempresa-tab').addClass('bg-danger text-white') : $('#nav-documentoempresa-tab').removeClass('bg-danger text-white');
-                $('#nav-config-empresa-tab :input:enabled.is-invalid').length > 0 ? $('#nav-config-empresa-tab').addClass('bg-danger text-white') : $('#nav-config-empresa-tab').removeClass('bg-danger text-white');
+                $('#nav-documentoempresa :input:enabled.is-invalid').length > 0 ? $('#nav-documentoempresa-tab').addClass('bg-danger text-white') : $('#nav-documentoempresa-tab').removeClass('bg-danger text-white');
+                $('#nav-config-empresa :input:enabled.is-invalid').length > 0 ? $('#nav-config-empresa-tab').addClass('bg-danger text-white') : $('#nav-config-empresa-tab').removeClass('bg-danger text-white');
 
                 if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
                     this.mostraErro("", "Existem campos obrigatórios não preenchidos");
