@@ -201,6 +201,14 @@ class DocumentosLegaisEmpresaController extends Controller
 
         $tiposDocumentos = TipoDocumento::orderBy('nome')->get();
 
+        $permissoes = [
+            'insert' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_insert'),
+            'update' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_update'),
+            'delete' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_delete'),
+              'show' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_show'),
+               'pdf' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_pdf'),
+        ];
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -209,7 +217,8 @@ class DocumentosLegaisEmpresaController extends Controller
                 'itens' => $resultado->items(),
                 'lista_contratos' => $contratos,
                 'tipos_documentos' => $tiposDocumentos,
-                'tipo_pessoa_fisica' => DocumentoContratos::TIPO_PESSOA_FISICA
+                'tipo_pessoa_fisica' => DocumentoContratos::TIPO_PESSOA_FISICA,
+                'permissoes' => $permissoes
             ]
         ]);
     }
@@ -250,11 +259,17 @@ class DocumentosLegaisEmpresaController extends Controller
      */
     public function ativaDesativa(DocumentoEmpresa $empresa)
     {
-        $empresa->ativo = !$empresa->ativo;
+
+        $empresa->documentos_empresa->tranform(function ($item) {
+            $item->rodrigo = 'funciona';
+            return $item;
+        });
+
+        dd($empresa);
         $empresa->save();
         $empresa->refresh();
 
-        return response()->json(['ativo' => $empresa->ativo], 201);
+        return response()->json(['ativo' => $empresa->documentos_empresa->ativo], 201);
     }
 
     public function uploadAnexos(Request $request)

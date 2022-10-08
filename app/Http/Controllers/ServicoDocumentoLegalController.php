@@ -110,13 +110,20 @@ class ServicoDocumentoLegalController extends Controller
             $resultado->where('titulo', 'like', '%' . $request->campoBusca . '%');
         }
 
+        $permissoes = [
+            'insert' => auth()->user()->can('administracao_documentos_legais_tipos_servicos_insert'),
+            'update' => auth()->user()->can('administracao_documentos_legais_tipos_servicos_update'),
+            'delete' => auth()->user()->can('administracao_documentos_legais_tipos_servicos_delete')
+        ];
+
         $resultado = $resultado->paginate($porPagina);
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'items' => $resultado->items()
+                'items' => $resultado->items(),
+                'permissoes' => $permissoes
             ]
         ], 200);
     }

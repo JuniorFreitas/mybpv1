@@ -105,7 +105,7 @@
                                             <div class="form-group">
                                                 <label>Área de Atuação</label>
                                                 <select v-model="form.dados_cadastrais.area_id" class="form-control validacampo"
-                                                        @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                        @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                                     <option value="">Selecione</option>
                                                     <option v-for="item in listaAreas" :value="item.id">{{ item.label }}
                                                     </option>
@@ -234,18 +234,10 @@
 
                                                 <div class="col-12"></div>
 
-<!--                                                <div class="col-12 col-sm-6 col-lg-4">-->
-<!--                                                    <div class="form-group">-->
-<!--                                                        <label>Tipo de serviço</label>-->
-<!--                                                        <input type="text" class="form-control validacampo"-->
-<!--                                                               v-model="obj.tipo_descricao" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">-->
-<!--                                                    </div>-->
-<!--                                                </div>-->
-
                                                 <div class="col-12 col-sm-6 col-lg-4">
                                                     <label>Tipo de serviço</label>
                                                     <select class="form-control validacampo" v-model="obj.select_tipo_servico"
-                                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                            @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                                         <option value="">Selecione ...</option>
                                                         <option v-for="item in listaServicos" :value="item.id">{{ item.titulo }}</option>
                                                     </select>
@@ -265,7 +257,9 @@
                                                 <div class="col-12 col-sm-6 col-lg-4">
                                                     <div class="form-group">
                                                         <label>Tipo do Faturamento</label>
-                                                        <select v-model="obj.tipo_faturamento" class="form-control">
+                                                        <select v-model="obj.tipo_faturamento" class="form-control validacampo"
+                                                                @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
+                                                            <option value="">Selecione</option>
                                                             <option value="Único">ÚNICO</option>
                                                             <option value="Por execução">POR EXECUÇÃO</option>
                                                         </select>
@@ -397,7 +391,7 @@
                         Atualizar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" v-if="permissoes.insert"
                             :disabled="controle.carregando"
                             data-target="#janelaCadastrar"
                             @click="formNovo()">
@@ -455,13 +449,13 @@
                         </td>
 
                         <td data-label="Ações">
-                            <a :href="`documentoslegais/${item.id}/pdf`"
+                            <a :href="`documentoslegais/${item.id}/pdf`" v-if="permissoes.pdf"
                                class="btn btn-sm btn-primary mb-1" v-tippy content="Ficha"
                                target="_blank">
                                 <i class="fa fa-file-pdf"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar"
+                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar" v-if="permissoes.update"
                                @click.prevent="formAlterar(item.id)"
                                data-toggle="modal"
                                data-target="#janelaCadastrar">
@@ -523,6 +517,7 @@ export default {
                     complemento: '',
                     bairro: '',
                     municipio: '',
+                    tipo_contrato: '',
                     uf: '',
                     responsavel: '',
                     email: '',
@@ -564,6 +559,7 @@ export default {
             listaServicos: [],
             listaAreas: [],
             listaFormasContrato: [],
+            permissoes: [],
 
             controle: {
                 carregando: false,
@@ -596,7 +592,7 @@ export default {
             obj.select_tipo_servico = '';
             obj.status = 'Iniciado';
             obj.feedback = '';
-            obj.tipo_contrato = 'FIXO';
+            obj.tipo_contrato = '';
             obj.tipo_faturamento = '';
             obj.ativo = true;
 
@@ -631,6 +627,10 @@ export default {
             this.validaBlur();
             this.$nextTick(() => {
                 $("#janelaCadastrar :input:enabled").trigger("blur");
+
+                $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0 ? $('#nav-dados-cadastrais-tab').addClass('bg-danger text-white') : $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
+                $('#nav-service :input:enabled.is-invalid').length > 0 ? $('#nav-service-tab').addClass('bg-danger text-white') : $('#nav-service-tab').removeClass('bg-danger text-white');
+
                 if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
                     this.mostraErro("", "Existem campos obrigatórios não preenchidos");
                     return false;
@@ -668,6 +668,9 @@ export default {
 
             axios.get(`${URL_ADMIN}/administracao/documentoslegais/contrato/${id}/editar`)
                 .then(response => {
+                    let dados = response.data;
+                    dados.dados_cadastrais.area_id = !dados.dados_cadastrais.area_id ? '' : dados.dados_cadastrais.area_id;
+                    dados.select_tipo_servico = !dados.select_tipo_servico ? '' : dados.select_tipo_servico;
                     Object.assign(this.form, response.data);
                     this.preloadAjax = false;
                 }).catch(
@@ -682,6 +685,14 @@ export default {
                 formReset();
 
                 $("#janelaCadastrar :input:enabled").trigger("blur");
+
+                $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0 ? $('#nav-dados-cadastrais-tab').addClass('bg-danger text-white') : $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
+                $('#nav-service :input:enabled.is-invalid').length > 0 ? $('#nav-service-tab').addClass('bg-danger text-white') : $('#nav-service-tab').removeClass('bg-danger text-white');
+
+                if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
+                    this.mostraErro("", "Existem campos obrigatórios não preenchidos");
+                    return false;
+                }
 
                 if (this.form.dados_cadastrais.telefones.length === 0) {
                     mostraErro('', 'Por favor insira um Telefone');
@@ -720,6 +731,7 @@ export default {
             this.listaServicos = dados.tipos_servicos;
             this.listaFormasContrato = dados.formas_contrato;
             this.listaAreas = dados.areas;
+            this.permissoes = dados.permissoes;
             this.controle.carregando = false;
 
         },

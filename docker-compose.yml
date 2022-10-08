@@ -16,7 +16,7 @@ services:
       - ENABLE_WORKER=false
       - ENABLE_HORIZON=true
       - ENABLE_WEBSOCKETS=false
-      - ENABLE_SUPERVISOR_GUI=true
+      - ENABLE_SUPERVISOR_GUI=truea
       - SUPERVISORD_USER=admin
       - SUPERVISORD_PASS=secret
 
@@ -30,11 +30,11 @@ services:
       - ./.deploy/storage/logs:/usr/share/nginx/html/storage/logs
 
     ports:
-      - "8888:80"
+      - "8000:80"
       - "6001:6001"
       - "9001:9001"
     networks:
-      - mastertag
+      - dev
 
 #  mysql:
 #    image: mysql:5.7
@@ -66,5 +66,5 @@ services:
 #      - mastertag
 
 networks:
-  mastertag:
+  dev:
     driver: bridge

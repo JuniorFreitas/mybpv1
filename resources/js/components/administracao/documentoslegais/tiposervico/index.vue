@@ -55,7 +55,7 @@
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary"
+                    <button type="button" class="btn btn-sm btn-secondary" v-if="permissoes.insert"
                             @click="formNovo"
                             data-toggle="modal"
                             data-target="#janelaForm">
@@ -90,7 +90,7 @@
                                       :model="tiposervico"></bt-ativo>
                         </td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-primary"
+                            <button type="button" class="btn btn-sm btn-primary" v-if="permissoes.update"
                                     @click="alterar(tiposervico.id)"
                                     data-toggle="modal"
                                     data-target="#janelaForm">
@@ -172,6 +172,7 @@ export default {
 
             //Paginacao
             lista: [],
+            permissoes: [],
 
             urlPaginacao: `${URL_ADMIN}/administracao/documentoslegais/tiposervico/atualizar`,
 
@@ -253,6 +254,7 @@ export default {
         },
         carregou(dados) {
             this.lista = dados.items;
+            this.permissoes = dados.permissoes;
             this.controle.carregando = false;
         },
         carregando() {

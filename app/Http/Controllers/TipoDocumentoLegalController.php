@@ -123,13 +123,21 @@ class TipoDocumentoLegalController extends Controller
         }
 
         $resultado = $resultado->paginate($porPagina);
+
+        $permissoes = [
+            'insert' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_insert'),
+            'update' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_update'),
+            'delete' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_delete')
+        ];
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'items' => $resultado->items(),
-                'tipos_documentos' => TipoDocumento::TIPO_DOCUMENTOS
+                'tipos_documentos' => TipoDocumento::TIPO_DOCUMENTOS,
+                'permissoes' => $permissoes
             ]
         ], 200);
     }

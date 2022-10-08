@@ -100,6 +100,7 @@ class DocumentosLegaisContratoController extends Controller
             'dados_cadastrais.municipio' => 'required',
             'dados_cadastrais.uf' => 'required|min:2',
             'dados_cadastrais.ramo' => 'required',
+            'dados_cadastrais.area_id' => 'required',
         ];
 
         $dadosValidados = \Validator::make($dados, $arrayValidacao);
@@ -228,10 +229,10 @@ class DocumentosLegaisContratoController extends Controller
                     $fail('Informe um CPF válido.');
                 }
 
-                $verificaCpf = DocumentoContratos::whereJsonContains('dados_cadastrais->cpf', $value)->where('id', $request->segment(5))->first();
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !$verificaCpf) {
-                    $fail('Não é possível alterar um CPF já cadastrado');
-                }
+//                $verificaCpf = DocumentoContratos::whereJsonContains('dados_cadastrais->cpf', $value)->where('id', $request->segment(5))->first();
+//                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Física' && !$verificaCpf) {
+//                    $fail('Não é possível alterar um CPF já cadastrado');
+//                }
             }],
             'dados_cadastrais.razao_social' => [function ($attribute, $value, $fail) use ($dados) {
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 3) {
@@ -247,10 +248,10 @@ class DocumentosLegaisContratoController extends Controller
                 if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && strlen($value) <= 14) {
                     $fail('Preencha o campo informando CNPJ.');
                 }
-                $verificaCnpj = DocumentoContratos::whereJsonContains('dados_cadastrais->cnpj', $value)->where('id', $request->segment(5))->first();
-                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && $verificaCnpj) {
-                    $fail('Não é possível alterar um CNPJ já cadastrado');
-                }
+//                $verificaCnpj = DocumentoContratos::whereJsonContains('dados_cadastrais->cnpj', $value)->where('id', $request->segment(5))->first();
+//                if ($dados['dados_cadastrais']['tipo'] == 'Pessoa Jurídica' && !$verificaCnpj) {
+//                    $fail('Não é possível alterar um CNPJ já cadastrado');
+//                }
             }],
             'dados_cadastrais.email' => 'required|email:rfc,dns',
             'dados_cadastrais.telefones' => ["required", "array", "min:1"],
@@ -261,6 +262,7 @@ class DocumentosLegaisContratoController extends Controller
             'dados_cadastrais.municipio' => 'required',
             'dados_cadastrais.uf' => 'required|min:2',
             'dados_cadastrais.ramo' => 'required',
+            'dados_cadastrais.area_id' => 'required',
         ];
 
         $dadosValidados = \Validator::make($dados, $arrayValidacao);
@@ -298,6 +300,13 @@ class DocumentosLegaisContratoController extends Controller
         $tiposDocumentos = TipoDocumento::whereTipo('empresa')->orderBy('nome')->get();
         $tiposServicos = Servico::orderBy('titulo')->get();
         $formasContrato = FormaContrato::orderBy('titulo')->get();
+        $permissoes = [
+            'insert' => auth()->user()->can('administracao_documentos_legais_contrato_insert'),
+            'update' => auth()->user()->can('administracao_documentos_legais_contrato_update'),
+            'delete' => auth()->user()->can('administracao_documentos_legais_contrato_delete'),
+              'show' => auth()->user()->can('administracao_documentos_legais_contrato_show'),
+               'pdf' => auth()->user()->can('administracao_documentos_legais_contrato_pdf')
+        ];
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -307,7 +316,8 @@ class DocumentosLegaisContratoController extends Controller
                 'tipos_documentos' => $tiposDocumentos,
                 'tipos_servicos' => $tiposServicos,
                 'formas_contrato' => $formasContrato,
-                'areas' => $areas
+                'areas' => $areas,
+                'permissoes' => $permissoes
             ]
         ]);
     }

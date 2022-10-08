@@ -202,6 +202,14 @@ class DocumentosLegaisSsmaController extends Controller
 
         $tiposDocumentos = TipoDocumento::orderBy('nome')->get();
 
+        $permissoes = [
+            'insert' => auth()->user()->can('administracao_documentos_legais_documentos_ssma_insert'),
+            'update' => auth()->user()->can('administracao_documentos_legais_documentos_ssma_update'),
+            'delete' => auth()->user()->can('administracao_documentos_legais_documentos_ssma_delete'),
+              'show' => auth()->user()->can('administracao_documentos_legais_documentos_ssma_show'),
+               'pdf' => auth()->user()->can('administracao_documentos_legais_documentos_ssma_pdf'),
+        ];
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -210,7 +218,8 @@ class DocumentosLegaisSsmaController extends Controller
                 'itens' => $resultado->items(),
                 'lista_contratos' => $contratos,
                 'tipos_documentos' => $tiposDocumentos,
-                'tipo_pessoa_fisica' => DocumentoContratos::TIPO_PESSOA_FISICA
+                'tipo_pessoa_fisica' => DocumentoContratos::TIPO_PESSOA_FISICA,
+                'permissoes' => $permissoes
             ]
         ]);
     }

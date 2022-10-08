@@ -110,13 +110,20 @@ class FormaContratoDocumentoLegalController extends Controller
             $resultado->where('titulo', 'like', '%' . $request->campoBusca . '%');
         }
 
+        $permissoes = [
+            'insert' => auth()->user()->can('administracao_documentos_legais_formas_contratos_insert'),
+            'update' => auth()->user()->can('administracao_documentos_legais_formas_contratos_update'),
+            'delete' => auth()->user()->can('administracao_documentos_legais_formas_contratos_delete')
+        ];
+
         $resultado = $resultado->paginate($porPagina);
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'items' => $resultado->items()
+                'items' => $resultado->items(),
+                'permissoes' => $permissoes
             ]
         ], 200);
     }

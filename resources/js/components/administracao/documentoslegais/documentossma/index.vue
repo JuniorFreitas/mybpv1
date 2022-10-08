@@ -92,7 +92,9 @@
                                                     <div class="col-12 col-sm-12 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Tipo de documento</label>
-                                                            <select v-model="form.documentos_ssma.tipo_id" class="form-control">
+                                                            <select v-model="form.documentos_ssma.tipo_id" class="form-control validacampo"
+                                                                    @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                                <option value="">Selecione ...</option>
                                                                 <option v-for="item in listaDocumentosFiltrados" :value="item.id" v-text="item.nome"></option>
                                                             </select>
                                                         </div>
@@ -245,7 +247,7 @@
                         Atualizar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" v-if="permissoes.insert"
                             :disabled="controle.carregando"
                             data-target="#janelaCadastrar"
                             @click="formNovo()">
@@ -303,13 +305,13 @@
                         </td>
 
                         <td data-label="Ações">
-                            <a :href="`documentoslegais/${item.id}/pdf`"
+                            <a :href="`documentoslegais/${item.id}/pdf`" v-if="permissoes.pdf"
                                class="btn btn-sm btn-primary mb-1" v-tippy content="Ficha"
                                target="_blank">
                                 <i class="fa fa-file-pdf"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar"
+                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar" v-if="permissoes.update"
                                @click.prevent="formAlterar(item.id)"
                                data-toggle="modal"
                                data-target="#janelaCadastrar">
@@ -392,6 +394,7 @@ export default {
 
             lista: [],
             listaContratos: [],
+            permissoes: [],
 
             controle: {
                 carregando: false,
@@ -502,6 +505,7 @@ export default {
             this.listaContratos = dados.lista_contratos;
             this.lista_tipos_documentos = dados.tipos_documentos;
             this.controle.carregando = false;
+            this.permissoes = dados.permissoes;
 
         },
         carregando() {

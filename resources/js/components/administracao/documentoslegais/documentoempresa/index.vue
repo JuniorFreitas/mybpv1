@@ -93,7 +93,9 @@
                                                     <div class="col-12 col-sm-6 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Tipo de documento</label>
-                                                            <select v-model="form.documentos_empresa.tipo_id" class="form-control">
+                                                            <select v-model="form.documentos_empresa.tipo_id" class="form-control validacampo"
+                                                                    @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
+                                                                <option value="">Selecione ...</option>
                                                                 <option v-for="item in listaDocumentosFiltrados" :value="item.id" v-text="item.nome"></option>
                                                             </select>
                                                         </div>
@@ -243,7 +245,7 @@
                         Atualizar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" v-if="permissoes.insert"
                             :disabled="controle.carregando"
                             data-target="#janelaCadastrar"
                             @click="formNovo()">
@@ -297,17 +299,17 @@
 
                         <td data-label="Status">
                             <bt-ativo :rota="`administracao/documentoslegais/empresa/${item.id}/ativa-desativa`"
-                                      :model="item"></bt-ativo>
+                                      :model="item.documentos_empresa"></bt-ativo>
                         </td>
 
                         <td data-label="Ações">
-                            <a :href="`documentoslegais/${item.id}/pdf`"
+                            <a :href="`documentoslegais/${item.id}/pdf`" v-if="permissoes.pdf"
                                class="btn btn-sm btn-primary mb-1" v-tippy content="Ficha"
                                target="_blank">
                                 <i class="fa fa-file-pdf"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar"
+                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar" v-if="permissoes.update"
                                @click.prevent="formAlterar(item.id)"
                                data-toggle="modal"
                                data-target="#janelaCadastrar">
@@ -374,8 +376,6 @@ export default {
                 },
                 ativo: '',
 
-                documentos_empresaDelete: [],
-
             },
             lista_tipos_documentos: [],
             formDefault: null,
@@ -390,6 +390,7 @@ export default {
 
             lista: [],
             listaContratos: [],
+            permissoes: [],
 
 
             controle: {
@@ -439,6 +440,10 @@ export default {
             this.validaBlur();
             this.$nextTick(() => {
                 $("#janelaCadastrar :input:enabled").trigger("blur");
+
+                $('#nav-documentoempresa-tab :input:enabled.is-invalid').length > 0 ? $('#nav-documentoempresa-tab').addClass('bg-danger text-white') : $('#nav-documentoempresa-tab').removeClass('bg-danger text-white');
+                $('#nav-config-empresa-tab :input:enabled.is-invalid').length > 0 ? $('#nav-config-empresa-tab').addClass('bg-danger text-white') : $('#nav-config-empresa-tab').removeClass('bg-danger text-white');
+
                 if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
                     this.mostraErro("", "Existem campos obrigatórios não preenchidos");
                     return false;
@@ -503,6 +508,7 @@ export default {
             this.listaContratos = dados.lista_contratos;
             this.tipo_pessoa_fisica = dados.tipo_pessoa_fisica;
             this.lista_tipos_documentos = dados.tipos_documentos;
+            this.permissoes = dados.permissoes;
             this.controle.carregando = false;
 
         },
