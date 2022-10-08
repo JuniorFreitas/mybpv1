@@ -434,10 +434,10 @@ class Cliente extends Model
         return $this->hasOne(Papel::class, 'empresa_id', 'id')->where('master', true);
     }
 
-    public function EmpresaHabilidades()
-    {
-        return $this->hasMany(EmpresaHabilidade::class, 'empresa_id', 'id');
-    }
+//    public function EmpresaHabilidades()
+//    {
+//        return $this->hasMany(EmpresaHabilidade::class, 'empresa_id', 'id');
+//    }
 
     protected static function booted()
     {

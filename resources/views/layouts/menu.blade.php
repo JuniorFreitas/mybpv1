@@ -90,7 +90,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','cadastro_vagas','cadastro_vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','cadastro_beneficio','cadastro_areaetiqueta','cadastro_centrocusto','cadastro_empresa_temporaria', 'cadastro_tipos_cih'))
+@if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','cadastro_vagas','cadastro_vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','cadastro_beneficio','cadastro_areaetiqueta','cadastro_centrocusto','cadastro_empresa_temporaria'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="bx bx-briefcase-alt-2"></i>
@@ -192,13 +192,6 @@
                 <li>
                     <a href="{{route('g.centrocusto.centrocusto.index')}}" key="centrocusto">
                         Centro de Custos
-                    </a>
-                </li>
-            @endcan
-            @can('cadastro_tipos_cih')
-                <li>
-                    <a href="{{route('g.tipocih.tipoCihIndex')}}" key="tipocih">
-                        Tipos CIH
                     </a>
                 </li>
             @endcan
@@ -389,7 +382,7 @@
     </li>
 @endif
 
-@if(\App\Models\Sistema::permitirLinks('admissao_pre_admissao', 'admissao_cih', 'admissao_processo', 'admissao_historico', 'admissao_pos_admissao'))
+@if(\App\Models\Sistema::permitirLinks('admissao_pre_admissao', 'admissao_cih', 'admissao_processo', 'admissao_historico', 'admissao_pos_admissao','cadastro_tipos_cih'))
     <li>
         <a href="javascript://" class="has-arrow waves-effect"><i class="bx bx-bookmark-plus"></i>
             <span>ADMISSÃO</span>
@@ -414,6 +407,13 @@
                     <a href="javascript://" class="has-arrow waves-effect">
                         APONTAMENTO</a>
                     <ul class="sub-menu" aria-expanded="false">
+                        @can('cadastro_tipos_cih')
+                            <li>
+                                <a href="{{route('g.tipocih.tipoCihIndex')}}" key="tipocih">
+                                    Tipos CIH
+                                </a>
+                            </li>
+                        @endcan
                         <li>
                             <a href="{{ (route('g.admissao.cih.cih.index')) }}">
                                 CIH
@@ -714,7 +714,7 @@
 @endif
 
 {{--Menu CLinica--}}
-@if(\App\Models\Sistema::permitirLinks('acesso_clinica'))
+@if(\App\Models\Sistema::permitirLinks('acesso_clinica') && auth()->user()->tipo == 'ClinicaExame')
     <li>
         <a href="javascript://" class="has-arrow waves-effect">
             <i class="fas fa-notes-medical" style="font-size: 16px;"></i>

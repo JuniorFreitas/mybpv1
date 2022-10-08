@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -88,8 +88,8 @@
     </style>
     @stack('css')
 </head>
-<body style="margin: 0; padding: 0;">
-<div style="margin: 0 auto; padding: 20px">
+<body style="margin: 20px;padding: 0;background: #f5f5f5;">
+<div>
     @php
         if (isset($dados['empresa_id']) && !empty($dados['empresa_id'])){
             $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
@@ -97,7 +97,8 @@
             $empresa = \App\Models\Cliente::withoutGlobalScopes()->find(auth()->user()->empresa_id);
         }
     @endphp
-    <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
+    <table border="0" align="center" cellpadding="0" width="615"
+           style="mso-table-lspace:0;mso-table-rspace:0;background-color:#fff;color:#000;width:615px">
         <tr>
             <td align="middle">
                 @if(isset($empresa) && !empty($empresa))
@@ -110,7 +111,8 @@
         </tr>
     </table>
 
-    <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
+    <table border="0" align="center" cellpadding="0" width="615"
+           style="mso-table-lspace:0;mso-table-rspace:0;background-color:#fff;color:#000;width:615px">
         <tr style="margin-top: 20px;">
             <td valign="top">
                 <div style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555">
@@ -120,30 +122,30 @@
                 @if(isset($empresa) && !empty($empresa))
                     <div style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555">
                         <div
-                            style="background: #f3f3f3; padding: 13px; line-height: 37px; border-radius: 9px; text-align: center">
+                            style="background: #f3f3f3; padding: 13px;line-height: 37px;border-radius: 0px;text-align: center">
                             <div style="text-align: center">
                                 <strong style="text-transform: uppercase; color: #072433">
                                     {{$empresa->razao_social}}
                                     <br>
                                 </strong>
                             </div>
-                            <img src="https://bpse.com.br/imagens/icons/location.png"
-                                 alt="Endereço" height="22px"> {{$empresa->endereco_completo}}<br>
-
+                            {{$empresa->endereco_completo}}<br>
                         </div>
+                        <br>
+                        <span
+                            style="font-size: 11px;color: #696969;margin-left: 22px;">Enviado pelo sistema MyBP.</span><br>
+                        <span style="font-size: 11px;color: #696969;margin-left: 22px;">E-mail automático. Por favor, não responda.</span>
                         <br><br>
-
-                        <span style="font-size: 11px; color: #696969">Enviado pelo sistema MyBP.</span><br>
-                        <span style="font-size: 11px; color: #696969">E-mail automático. Por favor, não responda.</span>
                     </div>
                 @endif
             </td>
         </tr>
     </table>
-    <table border="0" cellpadding="0" width="787" style="margin-top: 15px">
+    <table border="0" align="center" cellpadding="0" width="615"
+           style="mso-table-lspace:0;mso-table-rspace:0;background-color:#fff;color:#000;width:615px">
         <tr style="background-color: #072433; padding-top: 15px; padding-bottom: 15px">
-            <td align="middle" style="padding: 21px">
-                <img src="{{env('AWS_URL')}}/logo_mybp.png" alt="" style="height: 75px"> <br>
+            <td align="middle" style="padding: 7px">
+                <img src="{{env('AWS_URL')}}/logo_mybp.png" alt="" style="height: 40px"> <br>
             </td>
         </tr>
     </table>

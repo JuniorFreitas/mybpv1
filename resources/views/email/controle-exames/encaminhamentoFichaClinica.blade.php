@@ -2,7 +2,7 @@
 @section('titulo', $dados['assunto'])
 @section('conteudo')
 
-    <table border="0" cellpadding="0" width="97%" style="width: 97%;">
+    <table border="0" align="center" cellpadding="0" width="97%" style="width: 100%;padding: 25px;">
         <tr>
             <td style="text-align: justify">
 

@@ -69,6 +69,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\User|null $Usuario
  * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereUsuarioId($value)
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereEmpresaId($value)
  */
 class Ocorrencia extends Model
 {

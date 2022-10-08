@@ -87,6 +87,7 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUltimaData($value)
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  */
 class FeriasPrevista extends Model
 {

@@ -23,6 +23,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CihTag whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CihTag whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @property bool $anexo_obrigatorio
+ * @method static \Illuminate\Database\Eloquent\Builder|CihTag whereAnexoObrigatorio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CihTag whereEmpresaId($value)
  */
 class CihTag extends Model
 {

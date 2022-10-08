@@ -45,6 +45,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $anexos_count
  * @property string|null $data_retorno
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereDataRetorno($value)
+ * @property-read mixed $tipo_medida
  */
 class MedidaAdministrativa extends Model
 {
