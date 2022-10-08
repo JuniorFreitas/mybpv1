@@ -155,6 +155,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao wherePrazoExperiencia($value)
  * @property-read \App\Models\AdmissaoAso|null $UltimoAsoAtivo
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao admitidos()
+ * @property int|null $centro_custo_id
+ * @property string|null $matricula
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @method static \Illuminate\Database\Query\Builder|Admissao onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereMatricula($value)
+ * @method static \Illuminate\Database\Query\Builder|Admissao withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Admissao withoutTrashed()
  */
 class Admissao extends Model
 {

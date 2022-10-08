@@ -62,6 +62,9 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereObsAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereStatusAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUserAprovacaoId($value)
+ * @property-read \App\Models\User|null $GestorAprovacao
+ * @property-read \App\Models\User|null $UserAprovacao
+ * @property-read \App\Models\User|null $UserCadastrou
  */
 class RequisicaoVaga extends Model
 {

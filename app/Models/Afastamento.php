@@ -8,6 +8,38 @@ use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\Afastamento
+ *
+ * @property int $id
+ * @property int $feedback_id
+ * @property int $cadastrado_id
+ * @property string $motivo
+ * @property string $data_inicio
+ * @property string $data_fim
+ * @property string|null $observacao
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $periodo
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereCadastradoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereDataFim($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereDataInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereMotivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Afastamento whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Afastamento extends Model
 {
     use HasFactory, LogsActivity;

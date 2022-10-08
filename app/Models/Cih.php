@@ -66,6 +66,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $empresa_id
  * @property-read \App\Models\User|null $Empresa
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereEmpresaId($value)
+ * @property int|null $gestor_id
+ * @property bool $varios_colaboradores
+ * @property string|null $colaboradores_avulso
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedbackCurriculo[] $CihFeedbacks
+ * @property-read int|null $cih_feedbacks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedbackCurriculo[] $Colaboradores
+ * @property-read int|null $colaboradores_count
+ * @property-read \App\Models\User|null $GestorAprovacao
+ * @method static \Illuminate\Database\Eloquent\Builder|Cih whereColaboradoresAvulso($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cih whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cih whereVariosColaboradores($value)
  */
 class Cih extends Model
 {
@@ -88,6 +99,7 @@ class Cih extends Model
 
     protected $fillable = [
         'tag_id',
+        'gestor_id',
         'outra_tag',
         'feedback_id',
         'cliente_id',
@@ -109,6 +121,7 @@ class Cih extends Model
     protected $casts = [
         'id' => 'int',
         'tag_id' => 'int',
+        'gestor_id' => 'int',
         'outra_tag' => 'string',
         'feedback_id' => 'int',
         'area_id' => 'int',
@@ -187,6 +200,11 @@ class Cih extends Model
         return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
     }
 
+    public function GestorAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_id');
+    }
+
     public function ResponsavelLancamento()
     {
         return $this->hasOne(User::class, 'id', 'user_lancamento_id');
@@ -215,7 +233,7 @@ class Cih extends Model
     public function Colaboradores()
     {
         return $this->belongsToMany(FeedbackCurriculo::class, 'cih_feedback', 'cih_id', 'feedback_id')
-            ->select(['id','curriculo_id','vagas_abertas_id'])->with('Curriculo:id,nome,rg,orgao_expeditor,nascimento','Admissao:id,feedback_id,cargo');
+            ->select(['id', 'curriculo_id', 'vagas_abertas_id'])->with('Curriculo:id,nome,rg,orgao_expeditor,nascimento', 'Admissao:id,feedback_id,cargo');
     }
 
     public function CihFeedbacks()

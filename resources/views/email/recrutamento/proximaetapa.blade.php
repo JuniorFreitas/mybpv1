@@ -101,7 +101,7 @@
         <tr style="margin-top: 20px;">
             <td valign="top">
                 <div style="font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555">
-                    <table border="0" cellpadding="0" width="97%" style="width: 97%;">
+                    <table border="0" align="center" cellpadding="0" width="97%" style="width: 100%;padding: 25px;">
                         <tr>
                             <td style="text-align: justify">
                                 Olá, <strong>{{ $dados['nome'] }}</strong> Parabéns!<br><br>

@@ -179,6 +179,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\VagaProjetoFeedback|null $VagaProjeto
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagaProjetoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo admitidos()
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Afastamento[] $Afastamentos
+ * @property-read int|null $afastamentos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Cih[] $Cih
+ * @property-read int|null $cih_count
+ * @property-read mixed $f_c_token
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo demitidos()
+ * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereDeletedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo withoutTrashed()
  */
 class FeedbackCurriculo extends Model
 {

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exports\admissao\apontamento\cihExport;
+use App\Jobs\Admissao\Apontamento\Cih\JobCihAprovarReprovar;
+use App\Jobs\Admissao\Apontamento\Cih\JobCihStore;
 use App\Jobs\JobExportaExcel;
 use App\Models\AreaEtiqueta;
 use App\Models\Arquivo;
@@ -119,6 +121,24 @@ class CihController extends Controller
                 }
             }
 
+            $gestor = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($dados['gestor_id'])->first();
+
+            $jobDados = [
+                'empresa_id' => auth()->user()->empresa_id,
+                'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
+                'nome_de' => auth()->user()->nome,
+                'email_de' => auth()->user()->login,
+                'nome_para' => $gestor->nome,
+                'email_para' => $gestor->login,
+                'varios_colaboradores' => count($dados['colaboradores']) > 1 ? 'Sim' : 'Não',
+                'tipo' => $dados['tag_id'] != 0 ? CihTag::find($dados['tag_id'])->label : $dados['outra_tag'],
+                'area' => $dados['area_id'] == 0 ? $dados['outra_area'] : AreaEtiqueta::find($dados['area_id'])->label,
+                'data_lancamento' => (new DataHora($dados['data_lancamento']))->dataCompleta(),
+                'cih_id' => $cih->id
+            ];
+
+            JobCihStore::dispatch($jobDados);
+
             DB::commit();
             return response()->json([$cih->load('Anexos')], 201);
         } catch (\Exception $e) {
@@ -140,6 +160,9 @@ class CihController extends Controller
         $cih->tag_id = is_null($cih->tag_id) ? 0 : $cih->tag_id;
         $cih->area_id = is_null($cih->area_id) ? 0 : $cih->area_id;
         $cih->status_aprovacao = $cih->status;
+
+        $cih->autocomplete_label_gestor_modal = $cih->GestorAprovacao ? $cih->GestorAprovacao->nome : '';
+        $cih->autocomplete_label_gestor_modal_anterior = $cih->GestorAprovacao ? $cih->GestorAprovacao->nome : '';
 
         return $cih->load('Anexos', 'Tag', 'Area', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome');
     }
@@ -167,6 +190,22 @@ class CihController extends Controller
                 'status' => $dados['status']
             ]);
             DB::commit();
+
+            $jobDados = [
+                'empresa_id' => auth()->user()->empresa_id,
+                'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
+                'nome_de' => $cih->ResponsavelAprovacao->nome,
+                'email_de' => $cih->ResponsavelAprovacao->login,
+                'nome_para' => $cih->ResponsavelLancamento->nome,
+                'email_para' => $cih->ResponsavelLancamento->login,
+                'tipo' => $cih->tag_id != 0 ? CihTag::find($cih->tag_id)->label : $cih->outra_tag,
+                'area' => $cih->area_id == 0 ? $cih->outra_area : AreaEtiqueta::find($cih->area_id)->label,
+                'status' => ucfirst($cih->status),
+                'cih_id' => $cih->id
+            ];
+
+            JobCihAprovarReprovar::dispatch($jobDados);
+
             return response()->json([$cih], 201);
         } catch (\Exception $e) {
             DB::rollback();
