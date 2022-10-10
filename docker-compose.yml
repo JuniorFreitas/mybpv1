@@ -16,7 +16,7 @@ services:
       - ENABLE_WORKER=false
       - ENABLE_HORIZON=true
       - ENABLE_WEBSOCKETS=false
-      - ENABLE_SUPERVISOR_GUI=truea
+      - ENABLE_SUPERVISOR_GUI=true
       - SUPERVISORD_USER=admin
       - SUPERVISORD_PASS=secret
 
