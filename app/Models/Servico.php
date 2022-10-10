@@ -22,6 +22,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Servico whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Servico whereTitulo($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Servico whereEmpresaId($value)
  */
 class Servico extends Model
 {

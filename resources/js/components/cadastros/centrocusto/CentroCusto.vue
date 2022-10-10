@@ -7,15 +7,19 @@
                 <fieldset v-if="!preload">
                     <legend>Cadastro de Centro de Custo</legend>
                     <div class="row">
-                        <div class="col-12">
+                        <div class="col-12 mb-2">
                             <label>Nome</label>
-                            <input class="form-control" type="text"
+                            <input class="form-control form-control-sm" type="text" placeholder="Informe o nome "
                                    onblur="valida_campo_vazio(this,1)" v-model="form.label">
                         </div>
-                        <div class="col-12">
-                            <div class="switchToggle">
-                                <input type="checkbox" v-model="form.ativo" id="switch">
-                                <label for="switch">Ativo</label>
+
+                        <gestor label="Gestor responsável" :model="form" :verifica="false" :hash="hash"></gestor>
+
+                        <div class="col-12 mt-2">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
+                                <label class="custom-control-label"
+                                       for="ativo">{{ form.ativo ? "Ativo" : "Inativo" }}</label>
                             </div>
                         </div>
                     </div>
@@ -24,7 +28,7 @@
             <template slot="rodape">
                 <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preload"
                         @click="cadastra">
-                    <i class="fa fa-save"></i>Cadastrar
+                    <i class="fa fa-save"></i> Cadastrar
                 </button>
 
                 <button v-show="cadastrado" type="button" class="btn btn-sm btn-primary"
@@ -36,20 +40,31 @@
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-5">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Buscar</span>
-                        </span>
-                            <input type="text"
-                                   placeholder="Buscar por conteudo"
-                                   autocomplete="off"
-                                   class="form-control" :disabled="controle.carregando"
-                                   v-model="controle.dados.campoBusca">
-                        </div>
+                        <label>Buscar</label>
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
+                            <option value="">Todos os Status</option>
+                            <option :value="true">Apenas Ativos</option>
+                            <option :value="false">Apenas Inativos</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="col-12 col-md-12">
                     <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
                             @click="atualizar"><i
@@ -60,7 +75,7 @@
                             @click="formNovo"
                             data-toggle="modal"
                             data-target="#janelaForm">
-                        <i class="fa fa-plus"></i> Cadastrar Centro de Custo
+                        <i class="fa fa-plus"></i> Cadastrar
                     </button>
                 </div>
             </form>
@@ -82,14 +97,17 @@
                     <tr class="bg-default">
                         <td class="text-center">Nº</td>
                         <td class="text-center">Nome</td>
+                        <td class="text-center">Gestor</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Opções</td>
                     </tr>
                     </thead>
                     <tbody>
                     <tr v-for="centrocusto in lista">
-                        <td class="text-center">{{centrocusto.id}}</td>
-                        <td class="text-center">{{centrocusto.label}}</td>
+                        <td class="text-center">{{ centrocusto.id }}</td>
+                        <td class="text-center">{{ centrocusto.label }}</td>
+                        <td class="text-center">{{ centrocusto.gestor ? centrocusto.gestor.nome : "Não informado" }}
+                        </td>
                         <td class="text-center">
                             <bt-ativo :rota="`cadastro/centrocusto/${centrocusto.id}/ativa-desativa`"
                                       :model="centrocusto"></bt-ativo>
@@ -117,6 +135,7 @@
 </template>
 
 <script>
+import gestor from "../../GestorAprovacao";
 import controlePaginacao from '../../ControlePaginacao';
 import modal from '../../Modal';
 import editor from '@tinymce/tinymce-vue';
@@ -126,6 +145,7 @@ export default {
         modal,
         controlePaginacao,
         editor,
+        gestor
     },
     props: {
         qntPag: {
@@ -169,21 +189,23 @@ export default {
             cliente_id: '',
 
             form: {
+                gestor_id: '',
+                autocomplete_label_gestor_modal: '',
+                autocomplete_label_gestor_modal_anterior: '',
                 label: '',
-                empresa_id: '',
                 ativo: true,
             },
             formDefault: null,
 
             //Paginacao
             lista: [],
-            clientes: [],
 
             urlPaginacao: `${URL_ADMIN}/cadastro/centrocusto/atualizar`,
             controle: {
                 carregando: false,
                 dados: {
                     campoBusca: '',
+                    campoStatus: ''
                 },
             },
         }
@@ -222,6 +244,7 @@ export default {
             this.form.cliente_id = this.cliente_id === 0 ? this.form.cliente_id : this.cliente_id;
             this.cadastrado = true;
             this.editando = true;
+            this.preload = true;
             this.titulo_janela_form = "Alterando Centro de Custo";
             formReset();
 
@@ -229,12 +252,13 @@ export default {
 
             axios.get(`${URL_ADMIN}/cadastro/centrocusto/${centrocusto}/editar`)
                 .then(response => {
-                    Object.assign(this.form, response.data);
-                    // this.form.nome = data.nome
+                    let data = response.data;
+                    Object.assign(this.form, data);
                     this.editando = true;
+                    this.preload = false;
                     setupCampo();
                 }).catch(
-                error => (this.preloadAjax = false)
+                error => (this.preload = false)
             );
 
         },
@@ -250,7 +274,6 @@ export default {
                 .then((res) => {
                     $('#janelaForm').modal('hide');
                     mostraSucesso('', 'Centro de Custo Alterado com sucesso');
-                    this.cadastrado = true;
                     this.$refs.componente.buscar();
                     this.preload = false;
                 })

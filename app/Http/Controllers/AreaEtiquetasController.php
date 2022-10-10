@@ -6,6 +6,7 @@ use App\Models\AreaEtiqueta;
 use App\Models\Vaga;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AreaEtiquetasController extends Controller
 {
@@ -30,8 +31,13 @@ class AreaEtiquetasController extends Controller
         $this->authorize('cadastro_areaetiqueta');
         $dados = $request->input();
 
+        $regra = Rule::unique('area_etiquetas')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereLabel($dados['label']);
+        });
+
         $dadosValidados = \Validator::make($dados, [
-            'label' => 'required'
+            'label' => ['required', $regra],
         ]);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -86,9 +92,15 @@ class AreaEtiquetasController extends Controller
         $this->authorize('cadastro_areaetiqueta');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $area = AreaEtiqueta::find($id);
+
+        $regra = Rule::unique('area_etiquetas')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereLabel($dados['label']);
+        })->ignore($area->id);
 
         $dadosValidados = \Validator::make($dados, [
-            'label' => 'required'
+            'label' => ['required', $regra],
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -99,19 +111,19 @@ class AreaEtiquetasController extends Controller
         }
         try {
             DB::beginTransaction();
-            $area = AreaEtiqueta::find($id);
+
             $area->update($dados);
             $clienteArea = DB::table('cliente_area_etiquetas')->where('area_etiqueta_id', $id);
             if ($clienteArea->count() > 0) {
                 $clienteArea->update([
                     'numero_supervisor' => $dados['numero_supervisor'],
                 ]);
-            }else{
-               DB::table('cliente_area_etiquetas')->insert([
-                   'cliente_id' => $area->empresa_id,
-                   'area_etiqueta_id' => $area->id,
-                   'numero_supervisor' => $dados['numero_supervisor'],
-               ]);
+            } else {
+                DB::table('cliente_area_etiquetas')->insert([
+                    'cliente_id' => $area->empresa_id,
+                    'area_etiqueta_id' => $area->id,
+                    'numero_supervisor' => $dados['numero_supervisor'],
+                ]);
             }
 
             DB::commit();
@@ -133,6 +145,11 @@ class AreaEtiquetasController extends Controller
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == 'true';
+            $resultado->whereAtivo($status);
         }
 
         $resultado = $resultado->paginate($porPagina);

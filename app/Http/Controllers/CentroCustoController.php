@@ -6,6 +6,7 @@ use App\Models\CentroCusto;
 use App\Models\Cliente;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CentroCustoController extends Controller
 {
@@ -39,11 +40,17 @@ class CentroCustoController extends Controller
     {
         $this->authorize('cadastro_centrocusto_insert');
         $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados['ativo'] = $dados['ativo'] == 'true';
+
+        $regra = Rule::unique('centro_custos')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereLabel($dados['label']);
+        });
 
         $dadosValidados = \Validator::make($dados, [
-            'label' => 'required'
+            'label' => ['required', $regra]
         ]);
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao atualizar Centro de Custos',
@@ -85,7 +92,9 @@ class CentroCustoController extends Controller
      */
     public function edit($id)
     {
-        $centro = CentroCusto::find($id);
+        $centro = CentroCusto::find($id)->load('Gestor');
+        $centro->autocomplete_label_gestor_modal = $centro->Gestor ? $centro->Gestor->nome : '';
+        $centro->autocomplete_label_gestor_modal_anterior = $centro->Gestor ? $centro->Gestor->nome : '';
         return $centro;
     }
 
@@ -100,11 +109,18 @@ class CentroCustoController extends Controller
     {
         $this->authorize('cadastro_centrocusto_update');
         $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $centro = CentroCusto::find($id);
+        $dados['ativo'] = $dados['ativo'] == 'true';
+
+        $regra = Rule::unique('centro_custos')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereLabel($dados['label']);
+        })->ignore($centro->id);
 
         $dadosValidados = \Validator::make($dados, [
-            'label' => 'required'
+            'label' => ['required', $regra]
         ]);
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao atualizar Centro de Custos',
@@ -114,7 +130,6 @@ class CentroCustoController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-                $centro = CentroCusto::find($id);
                 $centro->update($dados);
                 DB::commit();
                 return response()->json([], 201);
@@ -144,10 +159,15 @@ class CentroCustoController extends Controller
     {
         $this->authorize('cadastro_centrocusto');
         $porPagina = $request->get('porPagina');
-        $resultado = CentroCusto::with('Empresa')->orderBy('id');
+        $resultado = CentroCusto::with('Empresa','Gestor')->orderBy('id');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == 'true';
+            $resultado->whereAtivo($status);
         }
 
         $resultado = $resultado->paginate($porPagina);

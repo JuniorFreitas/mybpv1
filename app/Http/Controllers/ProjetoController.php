@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\VagaProjeto;
 use Illuminate\Http\Request;
 use DB;
+use Illuminate\Validation\Rule;
 
 class ProjetoController extends Controller
 {
@@ -43,8 +44,13 @@ class ProjetoController extends Controller
         $this->authorize('cadastro_projetos_insert');
         $dados = $request->input();
 
+        $regra = Rule::unique('projetos')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereNome($dados['nome']);
+        });
+
         $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required',
+            'nome' => ['required', $regra],
             'qnt_total' => 'required|numeric',
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -122,8 +128,15 @@ class ProjetoController extends Controller
         $this->authorize('cadastro_projetos_update');
         $dados = $request->input();
 
+        $projeto = Projeto::find($id);
+
+        $regra = Rule::unique('projetos')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereNome($dados['nome']);
+        })->ignore($projeto->id);
+
         $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required',
+            'nome' => ['required', $regra],
             'qnt_total' => 'required'
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -135,8 +148,6 @@ class ProjetoController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-
-                $projeto = Projeto::find($id);
 
                 if (isset($dados['vagas_projeto'])) {
                     foreach ($dados['vagas_projeto'] as $vaga_projeto) {

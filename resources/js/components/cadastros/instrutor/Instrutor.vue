@@ -70,18 +70,17 @@
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-5">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Buscar</span>
-                        </span>
-                            <input type="text"
-                                   placeholder="Buscar por conteudo"
-                                   autocomplete="off"
-                                   class="form-control" :disabled="controle.carregando"
-                                   v-model="controle.dados.campoBusca">
-                        </div>
+                        <label>Buscar</label>
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
 

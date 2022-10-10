@@ -97,10 +97,10 @@
             <span>CADASTRO</span>
         </a>
         <ul class="sub-menu" aria-expanded="false">
-            @can('cadastro_instrutor')
+            @can('cadastro_areaetiqueta')
                 <li>
-                    <a href="{{route('g.instrutor.instrutor.index')}}" key="instrutor">
-                        Instrutor
+                    <a href="{{route('g.areas.areas.index')}}" key="areaetiqueta">
+                        Áreas
                     </a>
                 </li>
             @endcan
@@ -111,10 +111,17 @@
                     </a>
                 </li>
             @endcan
-            @can('cadastro_projetos')
+            @can('cadastro_centrocusto')
                 <li>
-                    <a href="{{route('g.projetos.projetos.index')}}" key="projetos">
-                        Projetos
+                    <a href="{{route('g.centrocusto.centrocusto.index')}}" key="centrocusto">
+                        Centro de Custos
+                    </a>
+                </li>
+            @endcan
+            @can('cadastro_beneficio')
+                <li>
+                    <a href="{{route('g.beneficios.beneficios.index')}}" key="beneficios">
+                        Benefícios
                     </a>
                 </li>
             @endcan
@@ -129,6 +136,27 @@
                 <li>
                     <a href="{{route('g.vagas.vagas-abertas.index')}}" key="vagas-abertas">
                         Vagas Abertas
+                    </a>
+                </li>
+            @endcan
+            @can('cadastro_projetos')
+                <li>
+                    <a href="{{route('g.projetos.projetos.index')}}" key="projetos">
+                        Projetos
+                    </a>
+                </li>
+            @endcan
+            @can('cadastro_empresa_exame')
+                <li>
+                    <a href="{{route('g.empresaexame.empresa-exame.index')}}" key="empresaexame">
+                        Exames
+                    </a>
+                </li>
+            @endcan
+            @can('cadastro_instrutor')
+                <li>
+                    <a href="{{route('g.instrutor.instrutor.index')}}" key="instrutor">
+                        Instrutor
                     </a>
                 </li>
             @endcan
@@ -153,13 +181,7 @@
                     </a>
                 </li>
             @endcan
-            @can('cadastro_empresa_exame')
-                <li>
-                    <a href="{{route('g.empresaexame.empresa-exame.index')}}" key="empresaexame">
-                        Empresa Exames
-                    </a>
-                </li>
-            @endcan
+
             @can('cadastro_empresa_temporaria')
                 <li>
                     <a href="{{route('g.empresatemporaria.empresa-temporaria.index')}}" key="empresatemporaria">
@@ -171,27 +193,6 @@
                 <li>
                     <a href="{{route('g.provas.provas.index')}}" key="provas">
                         Provas
-                    </a>
-                </li>
-            @endcan
-            @can('cadastro_beneficio')
-                <li>
-                    <a href="{{route('g.beneficios.beneficios.index')}}" key="beneficios">
-                        Benefícios
-                    </a>
-                </li>
-            @endcan
-            @can('cadastro_areaetiqueta')
-                <li>
-                    <a href="{{route('g.areas.areas.index')}}" key="areaetiqueta">
-                        Áreas
-                    </a>
-                </li>
-            @endcan
-            @can('cadastro_centrocusto')
-                <li>
-                    <a href="{{route('g.centrocusto.centrocusto.index')}}" key="centrocusto">
-                        Centro de Custos
                     </a>
                 </li>
             @endcan
