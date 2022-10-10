@@ -41,6 +41,54 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'administracao_clientes_update', 'descricao' => 'Pode alterar um cliente'];
         $lista[] = ['nome' => 'administracao_clientes_delete', 'descricao' => 'Pode apagar um cliente'];
 
+        //Documentos Legais------------------------------
+        $lista[] = ['nome' => 'administracao_documentos_legais', 'descricao' => 'Acessar rota/menu documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_insert', 'descricao' => 'Pode cadastrar um documento legal'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_update', 'descricao' => 'Pode alterar um documento legal'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_delete', 'descricao' => 'Pode apagar um documento legal'];
+
+        //Documentos Legais Contrato ------------------------------
+        $lista[] = ['nome' => 'administracao_documentos_legais_contrato', 'descricao' => 'Acessar rota/menu contrato de documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_contrato_insert', 'descricao' => 'Pode cadastrar contratos em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_contrato_update', 'descricao' => 'Pode alterar contratos em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_contrato_delete', 'descricao' => 'Pode apagar contratos em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_contrato_show', 'descricao' => 'Pode visualizar contratos em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_contrato_pdf', 'descricao' => 'Exportar contrato em pdf em documentos legais'];
+
+        //Documentos Legais Documentos Empresa ------------------------------
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_empresa', 'descricao' => 'Acessar rota/menu documentos empresa de documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_empresa_insert', 'descricao' => 'Pode cadastrar documentos empresa em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_empresa_update', 'descricao' => 'Pode alterar documentos empresa em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_empresa_delete', 'descricao' => 'Pode apagar documentos empresa em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_empresa_show', 'descricao' => 'Pode visualizar documentos empresa em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_empresa_pdf', 'descricao' => 'Exportar documentos empresa em pdf em documentos legais'];
+
+        //Documentos Legais Documentos SSMA ------------------------------
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_ssma', 'descricao' => 'Acessar rota/menu documentos ssma de documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_ssma_insert', 'descricao' => 'Pode cadastrar documentos ssma em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_ssma_update', 'descricao' => 'Pode alterar documentos ssma em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_ssma_delete', 'descricao' => 'Pode apagar documentos ssma em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_ssma_show', 'descricao' => 'Pode visualizar documentos ssma em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_documentos_ssma_pdf', 'descricao' => 'Exportar documentos ssma em pdf em documentos legais'];
+
+        //Documentos Legais Tipos Documentos ------------------------------
+        $lista[] = ['nome' => 'administracao_documentos_legais_tipos_documentos', 'descricao' => 'Acessar rota/menu tipos documentos de documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_tipos_documentos_insert', 'descricao' => 'Pode cadastrar tipos documentos em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_tipos_documentos_update', 'descricao' => 'Pode alterar tipos documentos em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_tipos_documentos_delete', 'descricao' => 'Pode apagar tipos documentos em documentos legais'];
+
+        //Documentos Legais Tipos Serviços ------------------------------
+        $lista[] = ['nome' => 'administracao_documentos_legais_tipos_servicos', 'descricao' => 'Acessar rota/menu tipos serviços de documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_tipos_servicos_insert', 'descricao' => 'Pode cadastrar tipos serviços em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_tipos_servicos_update', 'descricao' => 'Pode alterar tipos serviços em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_tipos_servicos_delete', 'descricao' => 'Pode apagar tipos serviços em documentos legais'];
+
+        //Documentos Legais Formas Contratos ------------------------------
+        $lista[] = ['nome' => 'administracao_documentos_legais_formas_contratos', 'descricao' => 'Acessar rota/menu formas contratos de documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_formas_contratos_insert', 'descricao' => 'Pode cadastrar formas contratos em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_formas_contratos_update', 'descricao' => 'Pode alterar formas contratos em documentos legais'];
+        $lista[] = ['nome' => 'administracao_documentos_legais_formas_contratos_delete', 'descricao' => 'Pode apagar formas contratos em documentos legais'];
+
         //Curriculos Recrutamento------------------------------
         $lista[] = ['nome' => 'curriculos_recrutamento', 'descricao' => 'Acessar rota/menu curriculos recrutamento'];
         $lista[] = ['nome' => 'curriculos_recrutamento_insert', 'descricao' => 'Pode cadastrar um curriculo recrutamento'];

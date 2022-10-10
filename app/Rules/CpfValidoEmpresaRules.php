@@ -44,6 +44,6 @@ class CpfValidoEmpresaRules implements Rule
      */
     public function message()
     {
-        return $this->error_message;;
+        return $this->error_message;
     }
 }

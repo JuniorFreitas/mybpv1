@@ -249,6 +249,42 @@ return [
             ]
         ),
 
+        'disco-documento-contrato' => array_merge($default,
+            [
+                'urlDelete' => env('APP_URL') . '/g/administracao/documentoslegais/contrato/anexo',
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-documento-contrato') : 'arquivos/disco-documento-contrato',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/contrato/anexo" : env('AWS_URL') . '/arquivos/disco-documento-contrato',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/contrato/anexo" : env('AWS_URL') . '/arquivos/disco-documento-contrato',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/contrato/anexo" : env('AWS_URL') . '/arquivos/disco-documento-contrato',
+
+                'visibility' => 'public',
+            ]
+        ),
+
+        'disco-documento-empresa' => array_merge($default,
+            [
+                'urlDelete' => env('APP_URL') . '/g/administracao/documentoslegais/empresa/anexo',
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-documento-empresa') : 'arquivos/disco-documento-empresa',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/empresa/anexo" : env('AWS_URL') . '/arquivos/disco-documento-empresa',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/empresa/anexo" : env('AWS_URL') . '/arquivos/disco-documento-empresa',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/empresa/anexo" : env('AWS_URL') . '/arquivos/disco-documento-empresa',
+
+                'visibility' => 'public',
+            ]
+        ),
+
+        'disco-documento-ssma' => array_merge($default,
+            [
+                'urlDelete' => env('APP_URL') . '/g/administracao/documentoslegais/ssma/anexo',
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-documento-ssma') : 'arquivos/disco-documento-ssma',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/ssma/anexo" : env('AWS_URL') . '/arquivos/disco-documento-ssma',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/ssma/anexo" : env('AWS_URL') . '/arquivos/disco-documento-ssma',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/administracao/documentoslegais/ssma/anexo" : env('AWS_URL') . '/arquivos/disco-documento-ssma',
+
+                'visibility' => 'public',
+            ]
+        ),
+
         'public' => array_merge($default,
             [
                 'root' => storage_path('app/public'),

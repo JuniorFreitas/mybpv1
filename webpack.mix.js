@@ -56,7 +56,14 @@ mix.js("resources/js/app.js", "public/js")
     .js("resources/js/g/configuracoes/bairros/app.js", "public/js/g/bairros/")
     //administracao
     .js("resources/js/g/administracao/clientes/app.js", "public/js/g/clientes/")
-    .js("resources/js/g/administracao/documentoslegais/app.js", "public/js/g/documentoslegais/")
+
+
+    .js("resources/js/g/administracao/documentoslegais/contrato/app.js", "public/js/g/documentoslegais/contrato/")
+    .js("resources/js/g/administracao/documentoslegais/documentoempresa/app.js", "public/js/g/documentoslegais/documentoempresa/")
+    .js("resources/js/g/administracao/documentoslegais/documentossma/app.js", "public/js/g/documentoslegais/documentossma")
+    .js("resources/js/g/administracao/documentoslegais/tipodocumento/app.js", "public/js/g/documentoslegais/tipodocumento")
+    .js("resources/js/g/administracao/documentoslegais/tiposervico/app.js", "public/js/g/documentoslegais/tiposervico")
+    .js("resources/js/g/administracao/documentoslegais/formacontrato/app.js", "public/js/g/documentoslegais/formacontrato")
     .js("resources/js/g/administracao/fornecedores/app.js", "public/js/g/fornecedores/")
     .js("resources/js/g/administracao/atareuniao/app.js", "public/js/g/atareuniao/")
     .js("resources/js/g/administracao/pesquisaclima/app.js", "public/js/g/pesquisaclima/")
