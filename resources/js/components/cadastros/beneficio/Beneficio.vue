@@ -344,7 +344,6 @@ export default {
             },
             formDefault: null,
 
-
             formTipo: {
                 nome: '',
                 cliente_id: '',

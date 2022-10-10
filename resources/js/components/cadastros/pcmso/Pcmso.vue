@@ -1,6 +1,6 @@
 <template>
-    <div id="componenteTreinamentoIndustria">
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+    <div id="componentePcmso">
+        <modal id="janelaPcmsoCadastrar" :titulo="titulo_janela" :fechar="!preload">
             <template slot="conteudo">
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -10,33 +10,8 @@
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
                                     <label>Nome</label>
-                                    <input v-model="form.label" class="form-control form-control-sm" type="text" placeholder="Informe o Nome"
+                                    <input v-model="form.label" class="form-control form-control-sm" type="text"
                                            onblur="valida_campo_vazio(this,1)">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-12">
-                                <div class="form-group">
-                                    <label>A quem se destina</label>
-                                    <input v-model="form.descricao" class="form-control form-control-sm" type="text" placeholder="Informe para quem se destina"
-                                           onblur="valida_campo_vazio(this,1)">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Prazo de Parada</label>
-                                    <input v-model="form.prazo_parada" class="form-control form-control-sm" type="number">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Prazo Fixo</label>
-                                    <input v-model="form.prazo_fixo" class="form-control form-control-sm" type="number">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Ordem</label>
-                                    <input v-model="form.ordem" class="form-control form-control-sm" type="number">
                                 </div>
                             </div>
                             <div class="col-12 mt-2">
@@ -46,14 +21,13 @@
                                            for="ativo">{{ form.ativo ? "Ativo" : "Inativo" }}</label>
                                 </div>
                             </div>
-
                         </div>
                     </fieldset>
                 </div>
             </template>
             <template slot="rodape">
                 <button type="button" class="btn btn-sm btn-primary" v-show="editando"
-                        @click="alterarformTreinamentoIndustria()">
+                        @click="alterarformPcmso()">
                     Salvar
                 </button>
                 <button type="button" class="btn btn-sm btn-primary" v-show="!editando"
@@ -64,7 +38,7 @@
         </modal>
 
         <!-- Filtro -->
-        <fieldset>
+        <fieldset style="margin: 0px">
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
                 <div class="col-12 col-md-5">
@@ -102,8 +76,8 @@
                     <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"
                             @click="formNovo"
                             data-toggle="modal"
-                            data-target="#janelaCadastrar">
-                        <i class="fa fa-plus"></i> Treinamento Indústria
+                            data-target="#janelaPcmsoCadastrar">
+                        <i class="fa fa-plus"></i> Cadastrar
                     </button>
                 </div>
             </form>
@@ -125,10 +99,6 @@
                     <tr class="bg-default">
                         <td class="text-center">Nº</td>
                         <td class="text-center">Nome</td>
-                        <td class="text-center">A Quem se destina</td>
-                        <td class="text-center">Prazo de Parada</td>
-                        <td class="text-center">Prazo Fixo</td>
-                        <td class="text-center">Ordem</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Ação</td>
                     </tr>
@@ -137,16 +107,10 @@
                     <tr v-for="item in lista">
                         <td class="text-center">{{ item.id }}</td>
                         <td class="text-center">{{ item.label }}</td>
-                        <td class="text-center">{{ item.descricao }}</td>
-                        <td class="text-center">{{ item.prazo_parada }}</td>
-                        <td class="text-center">{{ item.prazo_fixo }}</td>
-                        <td class="text-center">{{ item.ordem }}</td>
-                        <td class="text-center">
-                            <bt-ativo :rota="`cadastro/treinamentoindustria/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
-                        </td>
+                        <td class="text-center">{{ item.ativo === true ? 'Ativo' : 'Inativo' }}</td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-primary mb-1" data-toggle="modal"
-                                    data-target="#janelaCadastrar" @click="alterarTreinamentoIndustria(item.id)">
+                                    data-target="#janelaPcmsoCadastrar" @click="alterarPcmso(item.id)">
                                 <i class="fa fa-edit"></i>
                             </button>
                         </td>
@@ -154,18 +118,13 @@
                     </tbody>
                 </table>
             </div>
-
-
             <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                                 :url="urlPaginacao" :por-pagina="qntPag"
                                 :dados="controle.dados"
                                 v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
-
         </div>
-
     </div>
 </template>
-
 <script>
 import controlePaginacao from '../../ControlePaginacao';
 import modal from '../../Modal';
@@ -207,18 +166,16 @@ export default {
 
             form: {
                 label: '',
-                descricao: '',
-                prazo_parada: 30,
-                prazo_fixo: 30,
-                ordem: 1,
+                cliente_id: '',
                 ativo: true,
             },
 
             formDefault: null,
 
             lista: [],
+            listaClientes: [],
 
-            urlPaginacao: `${URL_ADMIN}/cadastro/treinamentoindustria/atualizar`,
+            urlPaginacao: `${URL_ADMIN}/cadastro/pcmso/atualizar`,
             controle: {
                 carregando: false,
                 dados: {
@@ -231,7 +188,7 @@ export default {
     methods: {
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
-            this.titulo_janela = 'Treinamento Indústria';
+            this.titulo_janela = 'Pcmso';
             this.editando = false;
             this.cadastrado = false;
             this.preload = false;
@@ -240,17 +197,17 @@ export default {
         },
 
         cadastrar() {
-            $('#janelaCadastrar :input:visible').trigger('blur');
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+            $('#janelaPcmsoCadastrar :input:visible').trigger('blur');
+            if ($('#janelaPcmsoCadastrar :input:visible.is-invalid').length) {
                 mostraErro('', 'Verificar os erros');
                 return false;
             }
             this.preload = true;
-            axios.post(`${URL_ADMIN}/cadastro/treinamentoindustria`, this.form)
+            axios.post(`${URL_ADMIN}/cadastro/pcmso`, this.form)
                 .then(res => {
                     if (res.status === 201) {
-                        $('#janelaCadastrar').modal('hide');
-                        mostraSucesso('', 'Treinamento Indústria cadastrado com sucesso');
+                        $('#janelaPcmsoCadastrar').modal('hide');
+                        mostraSucesso('', 'Pcmso cadastrado com sucesso');
                         this.cadastrado = true;
                         this.preload = false;
                         this.atualizar();
@@ -261,38 +218,39 @@ export default {
                     this.preload = false;
                 });
         },
-        alterarTreinamentoIndustria(treinamentoindustria) {
+        alterarPcmso(pcmso) {
             this.cadastrado = false;
             this.editando = true;
-            this.titulo_janela = "Alterando Treinamento Indústria";
+            this.titulo_janela = "Alterando Pcmso";
             formReset();
 
             this.form = _.cloneDeep(this.formDefault) //copia
-
-            axios.get(`${URL_ADMIN}/cadastro/treinamentoindustria/${treinamentoindustria}/editar`)
+            this.preload = true;
+            axios.get(`${URL_ADMIN}/cadastro/pcmso/${pcmso}/editar`)
                 .then(response => {
                     Object.assign(this.form, response.data);
                     this.editando = true;
+                    this.preload = false;
                     setupCampo();
                 }).catch(
                 error => (this.preloadAjax = false)
             );
 
         },
-        alterarformTreinamentoIndustria() {
+        alterarformPcmso() {
             formReset();
-            $('#janelaCadastrar :input:enabled').trigger('blur');
+            $('#janelaPcmsoCadastrar :input:enabled').trigger('blur');
 
-            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+            if ($('#janelaPcmsoCadastrar :input:enabled.is-invalid').length) {
                 mostraErro('', 'Verificar os erros');
                 return false;
             }
 
             this.preload = true;
 
-            axios.put(`${URL_ADMIN}/cadastro/treinamentoindustria/${this.form.id}`, this.form).then(response => {
-                $('#janelaCadastrar').modal('hide');
-                mostraSucesso('', 'Treinamento Indústria atualizado com sucesso');
+            axios.put(`${URL_ADMIN}/cadastro/pcmso/${this.form.id}`, this.form).then(response => {
+                $('#janelaPcmsoCadastrar').modal('hide');
+                mostraSucesso('', 'Pcmso atualizado com sucesso');
                 this.preload = false;
                 this.atualizado = true;
                 this.atualizar();
@@ -301,6 +259,7 @@ export default {
         },
         carregou(dados) {
             this.lista = dados.items;
+            this.listaClientes = dados.clientes;
             this.controle.carregando = false;
         },
         carregando() {

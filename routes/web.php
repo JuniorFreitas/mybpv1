@@ -273,6 +273,14 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::resource('empresa-exame', \App\Http\Controllers\EmpresaExameController::class)->middleware('can:cadastro_empresa_exame');
         });
 
+        //PCMSO
+        Route::group(['as' => 'pcmsos.'], function () {
+            Route::put('pcmso/{pcmso}/ativa-desativa', [\App\Http\Controllers\PcmsoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_empresa_pcmso_update');
+            Route::post('pcmso/atualizar', [\App\Http\Controllers\PcmsoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_empresa_pcmso');
+            Route::resource('pcmso', \App\Http\Controllers\PcmsoController::class)->middleware('can:cadastro_empresa_pcmso');
+        });
+
+
         Route::group(['as' => 'empresatemporaria.'], function () {
             Route::post('empresa-temporaria/atualizar', [\App\Http\Controllers\EmpresaTemporariaController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_empresa_temporaria');
             Route::put('empresa-temporaria/{id}/ativa-desativa', [\App\Http\Controllers\EmpresaTemporariaController::class, 'ativaDesativa'])->name('empresa_temporaria.ativaDesativa')->middleware('can:cadastro_empresa_temporaria');

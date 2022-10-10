@@ -372,6 +372,11 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_empresa_exame_update', 'descricao' => 'Pode alterar empresa_exame'];
         $lista[] = ['nome' => 'cadastro_empresa_exame_delete', 'descricao' => 'Pode apagar feriados'];
 
+        //EXAMES PCMSO------------------------------
+        $lista[] = ['nome' => 'cadastro_empresa_pcmso', 'descricao' => 'Acessar PCMSO'];
+        $lista[] = ['nome' => 'cadastro_empresa_pcmso_insert', 'descricao' => 'Pode cadastrar um PCMSO'];
+        $lista[] = ['nome' => 'cadastro_empresa_pcmso_update', 'descricao' => 'Pode alterar um PCMSO'];
+
         //EMPRESA TEMPORARIA------------------------------
         $lista[] = ['nome' => 'cadastro_empresa_temporaria', 'descricao' => 'Acessar rota/menu empresa_temporaria'];
         $lista[] = ['nome' => 'cadastro_empresa_temporaria_insert', 'descricao' => 'Pode cadastrar empresa_temporaria'];
