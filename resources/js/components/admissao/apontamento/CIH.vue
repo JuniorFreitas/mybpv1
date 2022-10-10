@@ -17,6 +17,7 @@
                                     <date-picker
                                         label=""
                                         :disabled="aprovando"
+                                        formsm
                                         v-model="form.data_lancamento"
                                         style="margin-top: -19px"
                                         :max="hoje"
@@ -32,7 +33,7 @@
                                     <select
                                         :disabled="aprovando"
                                         v-model="form.tag_id"
-                                        class="form-control validacampo"
+                                        class="form-control form-control-sm validacampo"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @change.prevent="valida_campo_vazio($event.target, 1)"
                                     >
@@ -49,7 +50,7 @@
                                     <label>Especifique</label>
                                     <input
                                         type="text"
-                                        class="form-control validacampo"
+                                        class="form-control form-control-sm validacampo"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @change.prevent="valida_campo_vazio($event.target, 1)"
                                         :disabled="aprovando"
@@ -68,7 +69,7 @@
                                         v-model="form.area_id"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @change.prevent="valida_campo_vazio($event.target, 1)"
-                                        class="form-control validacampo"
+                                        class="form-control form-control-sm validacampo"
                                     >
                                         <option value="">Selecione...</option>
                                         <option v-for="item in listaAreas" :value="item.id" :key="item.id"
@@ -83,7 +84,7 @@
                                     <label>Especifique</label>
                                     <input
                                         type="text"
-                                        class="form-control validacampo"
+                                        class="form-control form-control-sm validacampo"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @keyup.prevent="valida_campo_vazio($event.target, 1)"
                                         :disabled="aprovando"
@@ -97,7 +98,7 @@
                                     <label>Colaborador(es)</label>
                                     <autocomplete
                                         :caminho="colaborador_ativo"
-                                        :formsm="false"
+                                        formsm
                                         :valido="form.feedback_id !== ''"
                                         v-model="form.autocomplete_label_colaborador"
                                         placeholder="Selecione um(a) colaborador(a)"
@@ -134,17 +135,20 @@
                                 </div>
                             </div>
 
+                            <gestoraprovacao :model="form" :verifica="aprovando" :hash="hash"></gestoraprovacao>
+
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Ação</label>
-                                    <input
-                                        type="text"
+                                    <textarea
                                         class="form-control"
+                                        rows="3"
                                         :disabled="aprovando"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @keyup.prevent="valida_campo_vazio($event.target, 1)"
                                         v-model="form.acao"
-                                    />
+                                    ></textarea>
+
                                 </div>
                             </div>
 
@@ -154,7 +158,7 @@
                                     <upload
                                         :model="form.anexos"
                                         :model-delete="form.anexosDel"
-                                        :leitura="form.id ? true : false"
+                                        :leitura="!!form.id"
                                         :url="url_anexo"
                                         label="Selecionar"
                                         @onProgresso="anexoUploadAndamento = true"
@@ -374,7 +378,8 @@
                             }"
                     >
                         <td class="text-center" v-text="item.id"></td>
-                        <td>{{ item.varios_colaboradores ? "Varios colaboradores" : item.colaboradores[0].curriculo.nome
+                        <td>{{
+                                item.varios_colaboradores ? "Varios colaboradores" : item.colaboradores[0].curriculo.nome
                             }}
                         </td>
                         <td class="text-center">
@@ -382,12 +387,12 @@
                         </td>
                         <td class="text-center" v-text="item.data_lancamento"></td>
                         <td class="text-center">
-                            Lançado por {{ item.responsavel_lancamento.nome }}<br />
+                            Lançado por {{ item.responsavel_lancamento.nome }}<br/>
                             em {{ item.created_at }}
                         </td>
                         <td class="text-center">
                             <template v-if="item.status.includes('aprovado') || item.status.includes('reprovado')">
-                                {{ item.status | capitalize() }} por {{ item.responsavel_aprovacao.nome }} <br />
+                                {{ item.status | capitalize() }} por {{ item.responsavel_aprovacao.nome }} <br/>
                                 em {{ item.updated_at }}
                             </template>
                         </td>
@@ -440,6 +445,7 @@
     </div>
 </template>
 <script>
+import gestoraprovacao from "../../GestorAprovacao";
 import autocomplete from "../../AutoComplete";
 import DatePicker from "../../DatePicker";
 import Upload from "../../Upload";
@@ -453,7 +459,8 @@ export default {
         autocomplete,
         DatePicker,
         Upload,
-        ControlePaginacao
+        ControlePaginacao,
+        gestoraprovacao
     },
     mixins: [ExportacaoMixin, Validacoes],
     filters: {
@@ -519,7 +526,11 @@ export default {
                 status: "",
                 status_aprovacao: "",
                 anexos: [],
-                anexosDel: []
+                anexosDel: [],
+
+                gestor_id: '',
+                autocomplete_label_gestor_modal: '',
+                autocomplete_label_gestor_modal_anterior: '',
             },
 
             url_anexo: `${URL_ADMIN}/apontamento/cih/uploadAnexos`,

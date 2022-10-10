@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  * @property string $token
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereToken($value)
+ * @property-read \App\Models\Examesesmt|null $Sesmt
  */
 class ExameFuncionario extends Model
 {

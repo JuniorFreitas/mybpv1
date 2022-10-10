@@ -30,17 +30,23 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $empresa_id
  * @property-read \App\Models\User|null $Empresa
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereEmpresaId($value)
+ * @property-read \App\Models\User|null $Gestor
  */
 class CentroCusto extends Model
 {
     use HasFactory, TenantTrait;
 
-    protected $fillable = ['label', 'empresa_id', 'ativo'];
-    protected $casts = ['id' => 'int', 'label' => 'string', 'empresa_id' => 'int', 'ativo' => 'boolean'];
+    protected $fillable = ['gestor_id', 'label', 'empresa_id', 'ativo'];
+    protected $casts = ['id' => 'int', 'gestor_id' => 'int', 'label' => 'string', 'empresa_id' => 'int', 'ativo' => 'boolean'];
 
     public function Empresa()
     {
         return $this->hasOne(User::class, 'id', 'empresa_id');
+    }
+
+    public function Gestor()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_id')->select(['id', 'nome', 'login']);
     }
 
 }

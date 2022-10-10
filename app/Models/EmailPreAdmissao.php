@@ -8,6 +8,34 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\EmailPreAdmissao
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int $curriculo_id
+ * @property int $quem_enviou_id
+ * @property string|null $observacao
+ * @property int $email_atual
+ * @property int $email_padrao
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao query()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereCurriculoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereEmailAtual($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereEmailPadrao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereQuemEnviouId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class EmailPreAdmissao extends Model
 {
     use HasFactory, TenantTrait, LogsActivity;

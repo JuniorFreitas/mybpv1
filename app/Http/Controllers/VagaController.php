@@ -157,7 +157,7 @@ class VagaController extends Controller
                 ->orWhere('id', $request->campoBusca);
         }
         if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == 'true' ? true : false;
+            $status = $request->campoStatus == 'true';
             $resultado->whereAtivo($status);
         }
 

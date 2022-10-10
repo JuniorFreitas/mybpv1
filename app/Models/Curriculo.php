@@ -159,6 +159,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDisponibilidadeDomingo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDisponibilidadeSabado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEndNumero($value)
+ * @property string|null $estado_civil
+ * @property string|null $cnh_vencimento
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmailPreAdmissao[] $EmailsPreAdmissao
+ * @property-read int|null $emails_pre_admissao_count
+ * @method static \Illuminate\Database\Query\Builder|Curriculo onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCnhVencimento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEstadoCivil($value)
+ * @method static \Illuminate\Database\Query\Builder|Curriculo withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Curriculo withoutTrashed()
  */
 class Curriculo extends Model
 {

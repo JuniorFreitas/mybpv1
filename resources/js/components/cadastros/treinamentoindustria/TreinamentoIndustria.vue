@@ -10,44 +10,40 @@
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
                                     <label>Nome</label>
-                                    <input v-model="form.label" class="form-control" type="text"
+                                    <input v-model="form.label" class="form-control form-control-sm" type="text" placeholder="Informe o Nome"
                                            onblur="valida_campo_vazio(this,1)">
                                 </div>
                             </div>
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
-                                    <label>Descricao</label>
-                                    <input v-model="form.descricao" class="form-control" type="text"
+                                    <label>A quem se destina</label>
+                                    <input v-model="form.descricao" class="form-control form-control-sm" type="text" placeholder="Informe para quem se destina"
                                            onblur="valida_campo_vazio(this,1)">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Prazo de Parada</label>
-                                    <input v-model="form.prazo_parada" class="form-control" type="number">
+                                    <input v-model="form.prazo_parada" class="form-control form-control-sm" type="number">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Prazo Fixo</label>
-                                    <input v-model="form.prazo_fixo" class="form-control" type="number">
+                                    <input v-model="form.prazo_fixo" class="form-control form-control-sm" type="number">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Ordem</label>
-                                    <input v-model="form.ordem" class="form-control" type="number">
+                                    <input v-model="form.ordem" class="form-control form-control-sm" type="number">
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Ativo</label>
-                                    <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
-                                            onchange="valida_campo_vazio(this,1)" v-model="form.ativo">
-                                        <option :value="''">Selecione</option>
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
+                            <div class="col-12 mt-2">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
+                                    <label class="custom-control-label"
+                                           for="ativo">{{ form.ativo ? "Ativo" : "Inativo" }}</label>
                                 </div>
                             </div>
 
@@ -71,18 +67,28 @@
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-5">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Buscar</span>
-                        </span>
-                            <input type="text"
-                                   placeholder="Buscar por conteudo"
-                                   autocomplete="off"
-                                   class="form-control" :disabled="controle.carregando"
-                                   v-model="controle.dados.campoBusca">
-                        </div>
+                        <label>Buscar</label>
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
+                            <option value="">Todos os Status</option>
+                            <option :value="true">Apenas Ativos</option>
+                            <option :value="false">Apenas Inativos</option>
+                        </select>
                     </div>
                 </div>
 
@@ -119,7 +125,7 @@
                     <tr class="bg-default">
                         <td class="text-center">Nº</td>
                         <td class="text-center">Nome</td>
-                        <td class="text-center">Descrição</td>
+                        <td class="text-center">A Quem se destina</td>
                         <td class="text-center">Prazo de Parada</td>
                         <td class="text-center">Prazo Fixo</td>
                         <td class="text-center">Ordem</td>
@@ -202,10 +208,10 @@ export default {
             form: {
                 label: '',
                 descricao: '',
-                prazo_parada: '',
-                prazo_fixo: '',
-                ordem: '',
-                ativo: '',
+                prazo_parada: 30,
+                prazo_fixo: 30,
+                ordem: 1,
+                ativo: true,
             },
 
             formDefault: null,
@@ -217,6 +223,7 @@ export default {
                 carregando: false,
                 dados: {
                     campoBusca: '',
+                    campoStatus: ''
                 },
             },
         }

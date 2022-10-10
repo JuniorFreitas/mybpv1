@@ -215,17 +215,19 @@
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
-                        <input type="text"
-                               placeholder="Buscar por conteudo"
-                               autocomplete="off"
-                               class="form-control" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
-
 
                 <div class="col-12 col-md-12">
                     <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"

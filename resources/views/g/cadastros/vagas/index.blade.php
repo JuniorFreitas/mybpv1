@@ -56,7 +56,7 @@
             <div class="col-12 col-md-4">
                 <div class="form-group">
                     <label>Status</label>
-                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" @change="atualizar()">
+                    <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
                         <option value="">Todos os Status</option>
                         <option :value="true">Apenas Ativos</option>
                         <option :value="false">Apenas Inativos</option>
