@@ -120,25 +120,25 @@ class CihController extends Controller
                     }
                 }
             }
+            if ($dados['gestor_id']) {
+                $gestor = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($dados['gestor_id'])->first();
 
-            $gestor = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($dados['gestor_id'])->first();
+                $jobDados = [
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
+                    'nome_de' => auth()->user()->nome,
+                    'email_de' => auth()->user()->login,
+                    'nome_para' => $gestor->nome,
+                    'email_para' => $gestor->login,
+                    'varios_colaboradores' => count($dados['colaboradores']) > 1 ? 'Sim' : 'Não',
+                    'tipo' => $dados['tag_id'] != 0 ? CihTag::find($dados['tag_id'])->label : $dados['outra_tag'],
+                    'area' => $dados['area_id'] == 0 ? $dados['outra_area'] : AreaEtiqueta::find($dados['area_id'])->label,
+                    'data_lancamento' => (new DataHora($dados['data_lancamento']))->dataCompleta(),
+                    'cih_id' => $cih->id
+                ];
 
-            $jobDados = [
-                'empresa_id' => auth()->user()->empresa_id,
-                'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
-                'nome_de' => auth()->user()->nome,
-                'email_de' => auth()->user()->login,
-                'nome_para' => $gestor->nome,
-                'email_para' => $gestor->login,
-                'varios_colaboradores' => count($dados['colaboradores']) > 1 ? 'Sim' : 'Não',
-                'tipo' => $dados['tag_id'] != 0 ? CihTag::find($dados['tag_id'])->label : $dados['outra_tag'],
-                'area' => $dados['area_id'] == 0 ? $dados['outra_area'] : AreaEtiqueta::find($dados['area_id'])->label,
-                'data_lancamento' => (new DataHora($dados['data_lancamento']))->dataCompleta(),
-                'cih_id' => $cih->id
-            ];
-
-            JobCihStore::dispatch($jobDados);
-
+                JobCihStore::dispatch($jobDados);
+            }
             DB::commit();
             return response()->json([$cih->load('Anexos')], 201);
         } catch (\Exception $e) {
