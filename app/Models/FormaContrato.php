@@ -53,4 +53,8 @@ class FormaContrato extends Model
 
     protected $fillable = ['titulo', 'ativo', 'empresa_id'];
     protected $casts = ['id' => 'int', 'titulo' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int'];
+
+    public static function getFormaContrato($id){
+        return self::find($id);
+    }
 }

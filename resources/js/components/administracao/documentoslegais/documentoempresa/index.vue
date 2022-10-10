@@ -19,7 +19,7 @@
                                     <label>Selecione o Tipo</label>
                                     <select class="form-control validacampo" v-model="form.tipo_empresa"
                                             :disabled="editando"
-                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)"  @change="form.documentos_empresa.tipo_descricao = ''">
+                                            @change.prevent="valida_campo_vazio($event.target, 1); form.documentos_empresa.tipo_descricao = ''"  onblur="valida_campo_vazio(this, 1)">
                                         <option value="">Selecione ...</option>
                                         <option :value="true">Empresa</option>
                                         <option :value="false">Contrato</option>
@@ -30,7 +30,7 @@
                                     <label>Selecione o Contrato</label>
                                     <select class="form-control validacampo" v-model="form.contrato_id"
                                             :disabled="editando"
-                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                            @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                         <option value="">Selecione ...</option>
                                         <option :value="item.id" :key="item.id" v-for="item in listaContratos">
                                             {{ item.tipo === tipo_pessoa_fisica ? item.nome : item.razao_social }}
@@ -169,8 +169,9 @@
                                                     <label>Notificar Vencimento E-mail</label>
                                                     <select
                                                         v-model="form.documentos_empresa.verifica_mes_vencimento"
-                                                        class="form-control"
-                                                        onblur="valida_campo_vazio(this,1)">
+                                                        class="form-control validacampo"
+                                                        onblur="valida_campo_vazio(this,1)"
+                                                        @change.prevent="valida_campo_vazio($event.target,1)">
                                                         <option value="">Selecione ...</option>
                                                         <option value="1">30 dias</option>
                                                         <option value="2">60 dias</option>
@@ -180,11 +181,12 @@
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6 col-lg-4">
-                                                <div class="form-group">
+                                                <div class="form-group" v-if="permissoes.whatsapp">
                                                     <label>Envia notificação no whatsapp</label>
                                                     <select v-model="form.documentos_empresa.envia_whatsapp"
-                                                            class="form-control"
-                                                            onblur="valida_campo_vazio(this,1)">
+                                                            class="form-control validacampo"
+                                                            onblur="valida_campo_vazio(this,1)"
+                                                            @change.prevent="valida_campo_vazio($event.target,1)">
                                                         <option value="">Selecione ...</option>
                                                         <option :value="true">Sim</option>
                                                         <option :value="false">Não</option>
@@ -303,8 +305,8 @@
                         </td>
 
                         <td data-label="Ações">
-                            <a :href="`documentoslegais/${item.id}/pdf`" v-if="permissoes.pdf"
-                               class="btn btn-sm btn-primary mb-1" v-tippy content="Ficha"
+                            <a :href="`empresa/${item.id}/pdf`" v-if="permissoes.pdf"
+                               class="btn btn-sm btn-primary mb-1" v-tippy content="PDF"
                                target="_blank">
                                 <i class="fa fa-file-pdf"></i>
                             </a>
@@ -440,7 +442,6 @@ export default {
             this.validaBlur();
             this.$nextTick(() => {
                 $("#janelaCadastrar :input:enabled").trigger("blur");
-
                 $('#nav-documentoempresa :input:enabled.is-invalid').length > 0 ? $('#nav-documentoempresa-tab').addClass('bg-danger text-white') : $('#nav-documentoempresa-tab').removeClass('bg-danger text-white');
                 $('#nav-config-empresa :input:enabled.is-invalid').length > 0 ? $('#nav-config-empresa-tab').addClass('bg-danger text-white') : $('#nav-config-empresa-tab').removeClass('bg-danger text-white');
 
@@ -487,8 +488,15 @@ export default {
         alterar() {
             this.validaBlur();
             this.$nextTick(() => {
-                formReset();
                 $("#janelaCadastrar :input:enabled").trigger("blur");
+
+                $('#nav-documentoempresa :input:enabled.is-invalid').length > 0 ? $('#nav-documentoempresa-tab').addClass('bg-danger text-white') : $('#nav-documentoempresa-tab').removeClass('bg-danger text-white');
+                $('#nav-config-empresa :input:enabled.is-invalid').length > 0 ? $('#nav-config-empresa-tab').addClass('bg-danger text-white') : $('#nav-config-empresa-tab').removeClass('bg-danger text-white');
+
+                if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
+                    this.mostraErro("", "Existem campos obrigatórios não preenchidos");
+                    return false;
+                }
 
                 this.preloadAjax = true;
                 this.form.documentos_empresa.tipo_descricao = _.filter(this.lista_tipos_documentos, {id:this.form.documentos_empresa.tipo_id})[0].nome;
@@ -510,7 +518,6 @@ export default {
             this.lista_tipos_documentos = dados.tipos_documentos;
             this.permissoes = dados.permissoes;
             this.controle.carregando = false;
-
         },
         carregando() {
             this.controle.carregando = true;

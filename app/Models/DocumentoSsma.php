@@ -39,6 +39,11 @@ class DocumentoSsma extends Model
         'ativo' => 'boolean'
     ];
 
+    public function getDocumentosSsmaAttribute($value)
+    {
+        return json_decode($value);
+    }
+
     public function Anexo()
     {
         return $this->belongsToMany(Arquivo::class, 'documento_legais_ssmas_anexos', 'id', 'arquivo_id');

@@ -39,6 +39,11 @@ class DocumentoEmpresa extends Model
         'ativo' => 'boolean'
     ];
 
+    public function getDocumentosEmpresaAttribute($value)
+    {
+        return json_decode($value);
+    }
+
     public function Anexo()
     {
         return $this->belongsToMany(Arquivo::class, 'documento_legais_empresas_anexos', 'id', 'arquivo_id');

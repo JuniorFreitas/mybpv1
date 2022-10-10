@@ -54,7 +54,7 @@
                                                 <label>CNPJ</label>
                                                 <input type="text" id="cnpj" class="form-control validacampo" placeholder="CNPJ"
                                                        v-model="form.dados_cadastrais.cnpj" :disabled="editando"
-                                                       autocomplete="off" @keyup.prevent="valida_cnpj_vazio($event.target)"  @blur.prevent="valida_cnpj_vazio($event.target)"
+                                                       autocomplete="off" @keyup.prevent="valida_cnpj_vazio($event.target)"  onblur="valida_cnpj_vazio(this)"
                                                        v-mascara:cnpj>
                                             </div>
 
@@ -64,7 +64,7 @@
                                                 <input type="text" class="form-control validacampo" placeholder="CPF"
                                                        v-model="form.dados_cadastrais.cpf" :disabled="editando"
                                                        autocomplete="off"
-                                                       @keyup.prevent="validaCpfVazio($event.target)"  @blur.prevent="validaCpfVazio($event.target)" v-mascara:cpf>
+                                                       @keyup.prevent="valida_cpf_vazio($event.target)"  onblur="valida_cpf_vazio(this)" v-mascara:cpf>
                                             </div>
                                         </div>
                                     </div>
@@ -77,7 +77,7 @@
                                                 <input type="text" class="form-control validacampo"
                                                        v-model="form.dados_cadastrais.razao_social"
                                                        placeholder="Razão Social"
-                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">
+                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  onblur="valida_campo_vazio(this, 3)">
                                             </div>
 
                                             <div class="form-group"
@@ -86,7 +86,7 @@
                                                 <input type="text" class="form-control validacampo"
                                                        v-model="form.dados_cadastrais.nome"
                                                        placeholder="Nome do Cliente"
-                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">
+                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  onblur="valida_campo_vazio(this, 3)">
                                             </div>
                                         </div>
 
@@ -97,7 +97,7 @@
                                                 <input type="text" class="form-control validacampo"
                                                        v-model="form.dados_cadastrais.nome_fantasia"
                                                        placeholder="Nome Fantasia"
-                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">
+                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  onblur="valida_campo_vazio(this, 3)">
                                             </div>
                                         </div>
 
@@ -119,7 +119,7 @@
                                                 <input type="text" class="form-control validacampo"
                                                        v-model="form.dados_cadastrais.ramo"
                                                        placeholder="Ramo"
-                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">
+                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  onblur="valida_campo_vazio(this, 3)">
                                             </div>
                                         </div>
                                     </div>
@@ -139,7 +139,7 @@
                                                 <input type="text" class="form-control validacampo"
                                                        placeholder="Nome do Responsável"
                                                        v-model="form.dados_cadastrais.responsavel"
-                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)">
+                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  onblur="valida_campo_vazio(this, 3)">
                                             </div>
                                         </div>
 
@@ -151,7 +151,7 @@
                                                 <label>E-mail</label>
                                                 <input type="text" class="form-control validacampo" id="email" placeholder="E-mail"
                                                        v-model="form.dados_cadastrais.email"
-                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)"
+                                                       autocomplete="off" @keyup.prevent="valida_campo_vazio($event.target, 3)"  onblur="valida_campo_vazio(this, 3)"
                                                        v-mascara:email>
                                             </div>
                                         </div>
@@ -269,8 +269,7 @@
                                                 <div class="col-12">
                                                     <div class="form-group">
                                                         <label>Observação</label>
-                                                        <textarea class="form-control validacampo" v-model="obj.observacao" rows="3"
-                                                                  cols="3" @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)"></textarea>
+                                                        <textarea class="form-control validacampo" v-model="obj.observacao" rows="3" cols="3"></textarea>
                                                     </div>
                                                 </div>
 
@@ -305,7 +304,7 @@
                                                 <div class="col-12 col-sm-6 col-lg-4">
                                                     <label>Tipo Contrato</label>
                                                     <select class="form-control validacampo" v-model="obj.tipo_contrato"
-                                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                            @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                                         <option value="">Selecione ...</option>
                                                         <option v-for="item in listaFormasContrato" :value="item.id">{{ item.titulo }}</option>
                                                     </select>
@@ -449,8 +448,8 @@
                         </td>
 
                         <td data-label="Ações">
-                            <a :href="`documentoslegais/${item.id}/pdf`" v-if="permissoes.pdf"
-                               class="btn btn-sm btn-primary mb-1" v-tippy content="Ficha"
+                            <a :href="`contrato/${item.id}/pdf`" v-if="permissoes.pdf"
+                               class="btn btn-sm btn-primary mb-1" v-tippy content="PDF"
                                target="_blank">
                                 <i class="fa fa-file-pdf"></i>
                             </a>
@@ -615,6 +614,8 @@ export default {
             this.editando = false;
             this.leitura = false;
 
+            $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
+            $('#nav-service-tab').removeClass('bg-danger text-white');
 
             formReset();
             setupCampo();

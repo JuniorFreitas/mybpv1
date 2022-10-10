@@ -20,7 +20,7 @@
                                     <label>Selecione o Tipo</label>
                                     <select class="form-control validacampo" v-model="form.tipo_ssma"
                                             :disabled="editando"
-                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)" @change="form.documentos_ssma.tipo_descricao = ''">
+                                            @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)" @change="form.documentos_ssma.tipo_descricao = ''">
                                         <option value="">Selecione ...</option>
                                         <option :value="true">SSMA</option>
                                         <option :value="false">Contrato</option>
@@ -31,7 +31,7 @@
                                     <label>Selecione o Contrato</label>
                                     <select class="form-control validacampo" v-model="form.contrato_id"
                                             :disabled="editando"
-                                            @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                            @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                         <option value="">Selecione ...</option>
                                         <option :value="item.id" :key="item.id" v-for="item in listaContratos">
                                             {{ item.tipo === tipo_pessoa_fisica ? item.nome : item.razao_social }}
@@ -93,7 +93,7 @@
                                                         <div class="form-group">
                                                             <label>Tipo de documento</label>
                                                             <select v-model="form.documentos_ssma.tipo_id" class="form-control validacampo"
-                                                                    @change.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                                    @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                                                 <option value="">Selecione ...</option>
                                                                 <option v-for="item in listaDocumentosFiltrados" :value="item.id" v-text="item.nome"></option>
                                                             </select>
@@ -103,10 +103,7 @@
                                                     <div class="col-12">
                                                         <div class="form-group">
                                                             <label>Observação</label>
-                                                            <textarea class="form-control validacampo" v-model="form.documentos_ssma.observacao"
-                                                                      rows="3"
-                                                                      cols="3"
-                                                                      @keyup.prevent="valida_campo_vazio($event.target, 3)"  @blur.prevent="valida_campo_vazio($event.target, 3)"></textarea>
+                                                            <textarea class="form-control" v-model="form.documentos_ssma.observacao" rows="3" cols="3"></textarea>
                                                         </div>
                                                     </div>
 
@@ -171,7 +168,7 @@
                                                     <select
                                                         v-model="form.documentos_ssma.verifica_mes_vencimento"
                                                         class="form-control validacampo"
-                                                        @keyup.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                        @keyup.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                                         <option value="">Selecione ...</option>
                                                         <option value="1">30 dias</option>
                                                         <option value="2">60 dias</option>
@@ -181,11 +178,11 @@
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6 col-lg-4">
-                                                <div class="form-group">
+                                                <div class="form-group" v-if="permissoes.whatsapp">
                                                     <label>Envia notificação no whatsapp</label>
                                                     <select v-model="form.documentos_ssma.envia_whatsapp"
                                                             class="form-control validacampo"
-                                                            @keyup.prevent="valida_campo_vazio($event.target, 1)"  @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                                            @keyup.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                                         <option value="">Selecione ...</option>
                                                         <option :value="true">Sim</option>
                                                         <option :value="false">Não</option>
@@ -301,12 +298,12 @@
 
                         <td data-label="Status">
                             <bt-ativo :rota="`administracao/documentoslegais/ssma/${item.id}/ativa-desativa`"
-                                      :model="item"></bt-ativo>
+                                      :model="item.documentos_ssma"></bt-ativo>
                         </td>
 
                         <td data-label="Ações">
-                            <a :href="`documentoslegais/${item.id}/pdf`" v-if="permissoes.pdf"
-                               class="btn btn-sm btn-primary mb-1" v-tippy content="Ficha"
+                            <a :href="`ssma/${item.id}/pdf`" v-if="permissoes.pdf"
+                               class="btn btn-sm btn-primary mb-1" v-tippy content="PDF"
                                target="_blank">
                                 <i class="fa fa-file-pdf"></i>
                             </a>
@@ -439,6 +436,10 @@ export default {
             this.validaBlur();
             this.$nextTick(() => {
                 $("#janelaCadastrar :input:enabled").trigger("blur");
+
+                $('#nav-documentossma :input:enabled.is-invalid').length > 0 ? $('#nav-documentossma-tab').addClass('bg-danger text-white') : $('#nav-documentossma-tab').removeClass('bg-danger text-white');
+                $('#nav-config-ssma :input:enabled.is-invalid').length > 0 ? $('#nav-config-ssma-tab').addClass('bg-danger text-white') : $('#nav-config-ssma-tab').removeClass('bg-danger text-white');
+
                 if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
                     this.mostraErro("", "Existem campos obrigatórios não preenchidos");
                     return false;
@@ -482,9 +483,16 @@ export default {
         alterar() {
             this.validaBlur();
             this.$nextTick(() => {
-                formReset();
 
                 $("#janelaCadastrar :input:enabled").trigger("blur");
+
+                $('#nav-documentossma :input:enabled.is-invalid').length > 0 ? $('#nav-documentossma-tab').addClass('bg-danger text-white') : $('#nav-documentossma-tab').removeClass('bg-danger text-white');
+                $('#nav-config-ssma :input:enabled.is-invalid').length > 0 ? $('#nav-config-ssma-tab').addClass('bg-danger text-white') : $('#nav-config-ssma-tab').removeClass('bg-danger text-white');
+
+                if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
+                    this.mostraErro("", "Existem campos obrigatórios não preenchidos");
+                    return false;
+                }
 
                 this.preloadAjax = true;
                 this.form.documentos_ssma.tipo_descricao = _.filter(this.lista_tipos_documentos, {id:this.form.documentos_ssma.tipo_id})[0].nome;

@@ -47,7 +47,7 @@ class Area extends Model
 
     public $timestamps = false;
 
-//    public function usesTimestamps() : bool{
-//        return false;
-//    }
+    public static function getArea($id){
+        return self::find($id);
+    }
 }

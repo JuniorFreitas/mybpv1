@@ -406,12 +406,12 @@ class DocumentosLegaisContratoController extends Controller
     }
 
     //PDF
-    public function getFichaPdf(Cliente $cliente)
+    public function getContratoPdf(DocumentoContratos $contrato)
     {
-        $dados = $cliente;
-        $pdf = PDF::loadView('pdf.cliente.pdf', compact('dados'));
+        $dados = $contrato;
+        $pdf = PDF::loadView('pdf/administracao/documentoslegais/contrato/contratopdf', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("ficha_cliente_" . STR::slug($dados->tipo == 'Pessoa Jurídica' ? $dados->razao_social : $dados->nome) . ".pdf");
+        return $pdf->stream("contrato" . STR::slug($dados->tipo == 'Pessoa Jurídica' ? $dados->razao_social : $dados->nome) . ".pdf");
     }
 
     public function export()

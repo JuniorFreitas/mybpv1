@@ -63,6 +63,23 @@ class DocumentoContratos extends Model
         return $endereco_completo;
     }
 
+    public static function getEnderecoCompleto($endereco)
+    {
+        $logradouro = $endereco->logradouro;
+        $bairro = $endereco->bairro;
+        $cep = $endereco->cep;
+        $numero = $endereco->numero ? $endereco->numero : 'S/N';
+        $complemento = $endereco->complemento ? $endereco->complemento : '';
+
+        if ($complemento) {
+            $endereco_completo = "{$logradouro}, {$complemento}, {$numero}, {$bairro}, {$cep}, {$endereco->municipio}-{$endereco->uf}";
+        } else {
+            $endereco_completo = "{$logradouro}, {$numero}, {$bairro}, {$cep}, {$endereco->municipio}-{$endereco->uf}";
+        }
+
+        return $endereco_completo;
+    }
+
     public function Anexo()
     {
         return $this->belongsToMany(Arquivo::class, 'documento_legais_contratos_anexos', 'id', 'arquivo_id');
@@ -71,6 +88,10 @@ class DocumentoContratos extends Model
     public function Empresa()
     {
         return $this->hasOne(Cliente::class, 'id', 'empresa_id');
+    }
+
+    public static function getContrato($id){
+        return self::find($id);
     }
 
 }

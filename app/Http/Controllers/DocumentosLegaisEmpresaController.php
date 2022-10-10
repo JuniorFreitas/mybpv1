@@ -137,11 +137,6 @@ class DocumentosLegaisEmpresaController extends Controller
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
         $arrayValidacao = [
-            'documentos_empresa.observacao' => [function ($attribute, $value, $fail) use ($dados) {
-                if (strlen($value) <= 3) {
-                    $fail('Informe uma observação maior que 3 caracteres.');
-                }
-            }],
             'documentos_empresa.tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
                 $tipo_empresa = $dados['tipo_empresa'] ? 'empresa' : 'contrato';
                 $tipoDocumento = TipoDocumento::whereTipo($tipo_empresa)->first();
@@ -201,12 +196,16 @@ class DocumentosLegaisEmpresaController extends Controller
 
         $tiposDocumentos = TipoDocumento::orderBy('nome')->get();
 
+        $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+        $permite_envio_whatsapp = !empty($permite_envio_whatsapp) && $permite_envio_whatsapp->envia_whatsapp;
+
         $permissoes = [
-            'insert' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_insert'),
-            'update' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_update'),
-            'delete' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_delete'),
-              'show' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_show'),
-               'pdf' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_pdf'),
+            'whatsapp' => $permite_envio_whatsapp,
+              'insert' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_insert'),
+              'update' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_update'),
+              'delete' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_delete'),
+                'show' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_show'),
+                 'pdf' => auth()->user()->can('administracao_documentos_legais_documentos_empresa_pdf'),
         ];
 
         return response()->json([
@@ -312,12 +311,13 @@ class DocumentosLegaisEmpresaController extends Controller
     }
 
     //PDF
-    public function getFichaPdf(Cliente $cliente)
+    public function getDocumentoEmpresaPdf(DocumentoEmpresa $documento)
     {
-        $dados = $cliente;
-        $pdf = PDF::loadView('pdf.cliente.pdf', compact('dados'));
+        $dados = $documento;
+//        dd($dados);
+        $pdf = PDF::loadView('pdf/administracao/documentoslegais/documentosempresa/documentosempresapdf', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("ficha_cliente_" . STR::slug($dados->tipo == 'Pessoa Jurídica' ? $dados->razao_social : $dados->nome) . ".pdf");
+        return $pdf->stream("documentos_legais_empresa.pdf");
     }
 
     public function export()

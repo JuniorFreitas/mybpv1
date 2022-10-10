@@ -202,7 +202,11 @@ class DocumentosLegaisSsmaController extends Controller
 
         $tiposDocumentos = TipoDocumento::orderBy('nome')->get();
 
+        $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+        $permite_envio_whatsapp = !empty($permite_envio_whatsapp) && $permite_envio_whatsapp->envia_whatsapp;
+
         $permissoes = [
+            'whatsapp' => $permite_envio_whatsapp,
             'insert' => auth()->user()->can('administracao_documentos_legais_documentos_ssma_insert'),
             'update' => auth()->user()->can('administracao_documentos_legais_documentos_ssma_update'),
             'delete' => auth()->user()->can('administracao_documentos_legais_documentos_ssma_delete'),
@@ -259,11 +263,14 @@ class DocumentosLegaisSsmaController extends Controller
      */
     public function ativaDesativa(DocumentoSsma $ssma)
     {
-        $ssma->ativo = !$ssma->ativo;
+        // TODO: Ajustar Ativa e Desativa
+        $dados = $ssma->documentos_ssma;
+        $dados['ativo'] = !$ssma->documentos_ssma->ativo;
+        $ssma->documentos_ssma = $dados;
         $ssma->save();
         $ssma->refresh();
 
-        return response()->json(['ativo' => $ssma->ativo], 201);
+        return response()->json(['ativo' => $ssma->documentos_ssma->ativo, 201]);
     }
 
     public function buscaCNPJ(Request $request)
@@ -304,12 +311,14 @@ class DocumentosLegaisSsmaController extends Controller
     }
 
     //PDF
-    public function getFichaPdf(Cliente $cliente)
+    public function getDocumentoSsmaPdf(DocumentoSsma $documento)
     {
-        $dados = $cliente;
-        $pdf = PDF::loadView('pdf.cliente.pdf', compact('dados'));
+        $dados = $documento;
+
+//        dd($dados);
+        $pdf = PDF::loadView('pdf/administracao/documentoslegais/documentosssma/documentosssmapdf', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("ficha_cliente_" . STR::slug($dados->tipo == 'Pessoa Jurídica' ? $dados->razao_social : $dados->nome) . ".pdf");
+        return $pdf->stream("documentos_legais_ssma.pdf");
     }
 
     public function export()
