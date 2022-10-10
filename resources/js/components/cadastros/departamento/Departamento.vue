@@ -1,6 +1,6 @@
 <template>
     <div id="componenteDepartamento">
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload">
             <template slot="conteudo">
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -10,19 +10,15 @@
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
                                     <label>Nome</label>
-                                    <input v-model="form.label" class="form-control" type="text"
+                                    <input v-model="form.label" class="form-control form-control-sm" type="text"
                                            onblur="valida_campo_vazio(this,1)">
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Ativo</label>
-                                    <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
-                                            onchange="valida_campo_vazio(this,1)" v-model="form.ativo">
-                                        <option :value="''">Selecione</option>
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
+                            <div class="col-12 mt-2">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
+                                    <label class="custom-control-label"
+                                           for="ativo">{{ form.ativo ? "Ativo" : "Inativo" }}</label>
                                 </div>
                             </div>
                         </div>
@@ -45,18 +41,28 @@
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-5">
                     <div class="form-group">
-                        <div class="input-group">
-                        <span class="input-group-prepend">
-                            <span class="input-group-text">Buscar</span>
-                        </span>
-                            <input type="text"
-                                   placeholder="Buscar por conteudo"
-                                   autocomplete="off"
-                                   class="form-control" :disabled="controle.carregando"
-                                   v-model="controle.dados.campoBusca">
-                        </div>
+                        <label>Buscar</label>
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
+                            <option value="">Todos os Status</option>
+                            <option :value="true">Apenas Ativos</option>
+                            <option :value="false">Apenas Inativos</option>
+                        </select>
                     </div>
                 </div>
 
@@ -161,7 +167,7 @@ export default {
             form: {
                 label: '',
                 cliente_id: '',
-                ativo: '',
+                ativo: true,
             },
 
             formDefault: null,
@@ -174,6 +180,7 @@ export default {
                 carregando: false,
                 dados: {
                     campoBusca: '',
+                    campoStatus: ''
                 },
             },
         }

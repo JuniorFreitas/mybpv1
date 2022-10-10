@@ -1,7 +1,7 @@
 <template>
     <div class="col-12">
         <div class="form-group">
-            <label>Gestor Aprovação</label>
+            <label>{{ label }}</label>
             <autocomplete :caminho="`autocomplete/todos-gestores-ativos/`"
                           :formsm="formsm"
                           :valido="model.gestor_id !== ''"
@@ -24,6 +24,11 @@ export default {
         autocomplete,
     },
     props: {
+        label: {
+            type: String,
+            required: false,
+            default: "Gestor Aprovação"
+        },
         model: {
             type: Object,
             required: true,
@@ -42,6 +47,11 @@ export default {
             default: true,
             required: false,
         },
+        obrigatorio: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         verifica: {
             type: Boolean,
             required: true,
@@ -49,7 +59,7 @@ export default {
     },
     computed: {
         hash() {
-            return `colaborador_${parseInt((Math.random() * 999999))}`;
+            return `gestor_${parseInt((Math.random() * 999999))}`;
         },
     },
     methods: {
@@ -63,13 +73,16 @@ export default {
                 this.model.autocomplete_label_gestor_modal_anterior = '';
                 this.model.autocomplete_label_gestor_modal = '';
                 this.model.gestor_id = '';
-                setTimeout(() => {
-                    if (this.model.gestor_id === '') {
-                        valida_campo_vazio($(`#gestor_${this.model.hash}`), 1);
-                        $(`#${this.model.hash} #gestor_${this.model.hash}`).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Gestor não pode ficar vazio');
-                    }
-                }, 100);
+                if (this.obrigatorio) {
+                    setTimeout(() => {
+                        if (this.model.gestor_id === '') {
+                            valida_campo_vazio($(`#${this.hash}`), 1);
+                            $(`#${this.hash}`).focus().trigger('blur');
+                            mostraErro('Erro', 'O Campo Gestor não pode ficar vazio');
+                        }
+                    }, 100);
+                }
+
             }
         },
     }

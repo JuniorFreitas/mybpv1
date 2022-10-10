@@ -7,6 +7,7 @@ use App\Models\Departamento;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class DepartamentoController extends Controller
 {
@@ -40,9 +41,14 @@ class DepartamentoController extends Controller
     {
         $this->authorize('cadastro_departamento_insert');
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'label' => 'required',
+
+        $regra = Rule::unique('departamentos')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereLabel($dados['label']);
+        });
+
+        $dadosValidados = \Validator::make($dados, [
+            'label' => ['required', $regra],
 //                'empresa_id' => 'required',
                 'ativo' => 'required',
             ]
@@ -101,9 +107,15 @@ class DepartamentoController extends Controller
     public function update(Request $request, $id)
     {
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'label' => 'required',
+        $dep = Departamento::where('id', $id)->first();
+
+        $regra = Rule::unique('departamentos')->where(function ($query) use ($dados) {
+            return $query->whereEmpresaId(auth()->user()->empresa_id)
+                ->whereLabel($dados['label']);
+        })->ignore($dep->id);
+
+        $dadosValidados = \Validator::make($dados, [
+                'label' => ['required', $regra],
 //                'empresa_id' => 'required',
                 'ativo' => 'required',
             ]
@@ -117,9 +129,7 @@ class DepartamentoController extends Controller
             try {
                 DB::beginTransaction();
 
-                $sgi = Departamento::where('id', $id)->first();
-
-                $sgi->update($dados);
+                $dep->update($dados);
 
                 DB::commit();
                 return response()->json([], 201);
@@ -139,6 +149,11 @@ class DepartamentoController extends Controller
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == 'true';
+            $resultado->whereAtivo($status);
         }
 
         $resultado = $resultado->paginate($request->pages);
