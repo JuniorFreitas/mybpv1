@@ -263,14 +263,12 @@ class DocumentosLegaisSsmaController extends Controller
      */
     public function ativaDesativa(DocumentoSsma $ssma)
     {
-        // TODO: Ajustar Ativa e Desativa
-        $dados = $ssma->documentos_ssma;
-        $dados['ativo'] = !$ssma->documentos_ssma->ativo;
+        $dados = json_decode(json_encode($ssma->documentos_ssma),JSON_PRETTY_PRINT);
+        $dados['ativo'] = !$dados['ativo'];
         $ssma->documentos_ssma = $dados;
         $ssma->save();
         $ssma->refresh();
-
-        return response()->json(['ativo' => $ssma->documentos_ssma->ativo, 201]);
+        return response()->json(['ativo' => $ssma->documentos_ssma->ativo], 201);
     }
 
     public function buscaCNPJ(Request $request)

@@ -258,13 +258,13 @@ class DocumentosLegaisEmpresaController extends Controller
      */
     public function ativaDesativa(DocumentoEmpresa $empresa)
     {
-        $dados = $empresa->documentos_empresa;
-        $dados['ativo'] = !$empresa->documentos_empresa['ativo'];
+        $dados = json_decode(json_encode($empresa->documentos_empresa),JSON_PRETTY_PRINT);
+        $dados['ativo'] = !$dados['ativo'];
         $empresa->documentos_empresa = $dados;
         $empresa->save();
         $empresa->refresh();
 
-        return response()->json(['ativo' => $empresa->documentos_empresa['ativo']], 201);
+        return response()->json(['ativo' => $empresa->documentos_empresa->ativo], 201);
     }
 
     public function uploadAnexos(Request $request)
@@ -314,7 +314,6 @@ class DocumentosLegaisEmpresaController extends Controller
     public function getDocumentoEmpresaPdf(DocumentoEmpresa $documento)
     {
         $dados = $documento;
-//        dd($dados);
         $pdf = PDF::loadView('pdf/administracao/documentoslegais/documentosempresa/documentosempresapdf', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("documentos_legais_empresa.pdf");

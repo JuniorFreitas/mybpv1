@@ -231,6 +231,7 @@
                     <div class="form-group">
                         <label>Status</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
+                                :disabled="controle.carregando"
                                 @change="$refs.componente.buscar()">
                             <option value="">Todos os Status</option>
                             <option :value="true">Apenas Ativos</option>

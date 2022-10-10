@@ -20,9 +20,11 @@
                                     <label>Selecione o Tipo</label>
                                     <select class="form-control validacampo" v-model="form.tipo_ssma"
                                             :disabled="editando"
-                                            @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)" @change="form.documentos_ssma.tipo_descricao = ''">
+                                            @change.prevent="valida_campo_vazio($event.target, 1)"
+                                            onblur="valida_campo_vazio(this, 1)"
+                                            @change="form.documentos_ssma.tipo_descricao = ''">
                                         <option value="">Selecione ...</option>
-                                        <option :value="true">SSMA</option>
+                                        <option :value="true">Empresa</option>
                                         <option :value="false">Contrato</option>
                                     </select>
                                 </div>
@@ -31,7 +33,8 @@
                                     <label>Selecione o Contrato</label>
                                     <select class="form-control validacampo" v-model="form.contrato_id"
                                             :disabled="editando"
-                                            @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
+                                            @change.prevent="valida_campo_vazio($event.target, 1)"
+                                            onblur="valida_campo_vazio(this, 1)">
                                         <option value="">Selecione ...</option>
                                         <option :value="item.id" :key="item.id" v-for="item in listaContratos">
                                             {{ item.tipo === tipo_pessoa_fisica ? item.nome : item.razao_social }}
@@ -92,10 +95,13 @@
                                                     <div class="col-12 col-sm-12 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Tipo de documento</label>
-                                                            <select v-model="form.documentos_ssma.tipo_id" class="form-control validacampo"
-                                                                    @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
+                                                            <select v-model="form.documentos_ssma.tipo_id"
+                                                                    class="form-control validacampo"
+                                                                    @change.prevent="valida_campo_vazio($event.target, 1)"
+                                                                    onblur="valida_campo_vazio(this, 1)">
                                                                 <option value="">Selecione ...</option>
-                                                                <option v-for="item in listaDocumentosFiltrados" :value="item.id" v-text="item.nome"></option>
+                                                                <option v-for="item in listaDocumentosFiltrados"
+                                                                        :value="item.id" v-text="item.nome"></option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -103,7 +109,9 @@
                                                     <div class="col-12">
                                                         <div class="form-group">
                                                             <label>Observação</label>
-                                                            <textarea class="form-control" v-model="form.documentos_ssma.observacao" rows="3" cols="3"></textarea>
+                                                            <textarea class="form-control"
+                                                                      v-model="form.documentos_ssma.observacao" rows="3"
+                                                                      cols="3"></textarea>
                                                         </div>
                                                     </div>
 
@@ -127,7 +135,8 @@
                                                     <div class="col-12 col-sm-6 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Status</label>
-                                                            <select v-model="form.documentos_ssma.status" class="form-control">
+                                                            <select v-model="form.documentos_ssma.status"
+                                                                    class="form-control">
                                                                 <option value="Iniciado">INICIADO</option>
                                                                 <option value="Concluido">CONCLUIDO</option>
                                                                 <option value="Não iniciado">NÃO INICIADO</option>
@@ -138,7 +147,8 @@
                                                     <div class="col-12 col-sm-6 col-lg-4">
                                                         <div class="form-group">
                                                             <label>Ativo</label>
-                                                            <select v-model="form.documentos_ssma.ativo" class="form-control">
+                                                            <select v-model="form.documentos_ssma.ativo"
+                                                                    class="form-control">
                                                                 <option :value="true">SIM</option>
                                                                 <option :value="false">NÃO</option>
                                                             </select>
@@ -168,7 +178,8 @@
                                                     <select
                                                         v-model="form.documentos_ssma.verifica_mes_vencimento"
                                                         class="form-control validacampo"
-                                                        @keyup.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
+                                                        @keyup.prevent="valida_campo_vazio($event.target, 1)"
+                                                        onblur="valida_campo_vazio(this, 1)">
                                                         <option value="">Selecione ...</option>
                                                         <option value="1">30 dias</option>
                                                         <option value="2">60 dias</option>
@@ -182,7 +193,8 @@
                                                     <label>Envia notificação no whatsapp</label>
                                                     <select v-model="form.documentos_ssma.envia_whatsapp"
                                                             class="form-control validacampo"
-                                                            @keyup.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
+                                                            @keyup.prevent="valida_campo_vazio($event.target, 1)"
+                                                            onblur="valida_campo_vazio(this, 1)">
                                                         <option value="">Selecione ...</option>
                                                         <option :value="true">Sim</option>
                                                         <option :value="false">Não</option>
@@ -228,6 +240,7 @@
                     <div class="form-group">
                         <label>Status</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
+                                :disabled="controle.carregando"
                                 @change="$refs.componente.buscar()">
                             <option value="">Todos os Status</option>
                             <option :value="true">Apenas Ativos</option>
@@ -281,11 +294,13 @@
                         </td>
 
                         <td data-label="Documento">
-                            {{ item.documentos_ssma.tipo_descricao}}
+                            {{ item.documentos_ssma.tipo_descricao }}
                         </td>
 
                         <td data-label="TipoDescricao">
-                            {{ item.contrato_id ? item.contrato.dados_cadastrais.nome ? item.contrato.dados_cadastrais.nome : item.contrato.dados_cadastrais.razao_social : item.empresa.razao_social }}
+                            {{
+                                item.contrato_id ? item.contrato.dados_cadastrais.nome ? item.contrato.dados_cadastrais.nome : item.contrato.dados_cadastrais.razao_social : item.empresa.razao_social
+                            }}
                         </td>
 
                         <td data-label="DataInicio">
@@ -308,7 +323,8 @@
                                 <i class="fa fa-file-pdf"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar" v-if="permissoes.update"
+                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar"
+                               v-if="permissoes.update"
                                @click.prevent="formAlterar(item.id)"
                                data-toggle="modal"
                                data-target="#janelaCadastrar">
@@ -409,9 +425,9 @@ export default {
         this.atualizar();
 
     },
-    computed:{
-        listaDocumentosFiltrados(){
-            return _.filter(this.lista_tipos_documentos, { tipo: this.form.tipo_ssma ? 'ssma' : 'contrato'} )
+    computed: {
+        listaDocumentosFiltrados() {
+            return _.filter(this.lista_tipos_documentos, {tipo: this.form.tipo_ssma ? 'ssma' : 'contrato'})
         }
     },
 
@@ -445,7 +461,7 @@ export default {
                     return false;
                 }
                 this.preloadAjax = true;
-                this.form.documentos_ssma.tipo_descricao = _.filter(this.lista_tipos_documentos, {id:this.form.documentos_ssma.tipo_id})[0].nome;
+                this.form.documentos_ssma.tipo_descricao = _.filter(this.lista_tipos_documentos, {id: this.form.documentos_ssma.tipo_id})[0].nome;
 
                 axios.post(`${URL_ADMIN}/administracao/documentoslegais/ssma`, this.form)
                     .then(response => {
@@ -495,7 +511,7 @@ export default {
                 }
 
                 this.preloadAjax = true;
-                this.form.documentos_ssma.tipo_descricao = _.filter(this.lista_tipos_documentos, {id:this.form.documentos_ssma.tipo_id})[0].nome;
+                this.form.documentos_ssma.tipo_descricao = _.filter(this.lista_tipos_documentos, {id: this.form.documentos_ssma.tipo_id})[0].nome;
 
                 axios.put(`${URL_ADMIN}/administracao/documentoslegais/ssma/${this.form.id}`, this.form).then(response => {
                     this.atualizado = true;
