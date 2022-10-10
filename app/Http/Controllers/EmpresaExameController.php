@@ -151,7 +151,7 @@ class EmpresaExameController extends Controller
                         'nome' => $dados['nome'],
                         'login' => $dados['dados']['email'],
                         'password' => bcrypt($password),
-                        'tipo' =>  User::CLINICA_EXAME,
+                        'tipo' => User::CLINICA_EXAME,
                         'temp' => false,
                         'grupo_id' => $grupo->id,
                         'cadastrou' => auth()->id(),
@@ -213,7 +213,7 @@ class EmpresaExameController extends Controller
                 'nome' => $empresa->nome,
                 'login' => $empresa->dados['email'],
                 'password' => bcrypt($password),
-                'tipo' =>  User::CLINICA_EXAME,
+                'tipo' => User::CLINICA_EXAME,
                 'grupo_id' => $grupo->id,
                 'temp' => false,
                 'cadastrou' => auth()->id(),
@@ -252,11 +252,18 @@ class EmpresaExameController extends Controller
 
         $resultado = $resultado->paginate($request->pages);
 
+        $permissoes = [
+            'pcmso' => auth()->user()->can('cadastro_empresa_pcmso')
+        ];
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items()]
+            'dados' => [
+                'itens' => $resultado->items(),
+                'permissoes' => $permissoes
+            ]
         ]);
     }
 }

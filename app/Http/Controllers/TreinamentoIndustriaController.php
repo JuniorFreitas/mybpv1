@@ -147,9 +147,13 @@ class TreinamentoIndustriaController extends Controller
     {
         $resultado = Vencimento::whereNotNull('label');
 
-
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = $request->campoStatus == 'true';
+            $resultado->whereAtivo($status);
         }
 
         $resultado = $resultado->paginate($request->pages);
