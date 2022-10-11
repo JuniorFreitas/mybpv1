@@ -391,6 +391,8 @@ class AdmissaoController extends Controller
                 $dados['curriculo']['banco_conta']['user_id'] = $user->id;
                 UsuarioConta::criarAtualizar($user->id, $dados['curriculo']['banco_conta']);
 
+                $data_nascimento = new DataHora($dadosCurriculo['nascimento']);
+
                 $candidato = $user->Curriculo;
                 // 2 - Atualiza as informações na tabela curriculo
                 $candidato->update([
@@ -398,7 +400,7 @@ class AdmissaoController extends Controller
                     'rg' => $dadosCurriculo['rg'],
                     'rg_data_emissao' => $dadosCurriculo['rg_data_emissao'],
                     'naturalidade' => $dadosCurriculo['naturalidade'],
-                    'nascimento' => $dadosCurriculo['nascimento'],
+                    'nascimento' => $data_nascimento->dataInsert(),
                     'pcd' => $dadosCurriculo['pcd'],
                     'cid' => $dadosCurriculo['cid'],
                     'email' => $dadosCurriculo['email'],
@@ -806,6 +808,10 @@ class AdmissaoController extends Controller
 
         $dados['curriculo']['email'] = $dados['curriculo']['email'] == "" ? Sistema::EMAILPADRAO : $dados['curriculo']['email'];
 
+        $data_nascimento = new DataHora($dados['curriculo']['nascimento']);
+
+        $dados['curriculo']['nascimento'] = $data_nascimento->dataInsert();
+
         $dadosValidados = \Validator::make($dados, [
             'curriculo.email' => 'required|email:rfc,dns',
             'admissao.status' => 'required|in:' . implode(',', Admissao::TODOS_STATUS_ADMISSAO),
@@ -879,6 +885,7 @@ class AdmissaoController extends Controller
                     'rg' => $dados['curriculo']['rg'],
                     'rg_data_emissao' => $dados['curriculo']['rg_data_emissao'],
                     'naturalidade' => $dados['curriculo']['naturalidade'],
+                    'nascimento' => $dados['curriculo']['nascimento'],
                     'filiacao_pai' => $dados['curriculo']['filiacao_pai'],
                     'filiacao_mae' => $dados['curriculo']['filiacao_mae'],
                     'pcd' => $dados['curriculo']['pcd'],
