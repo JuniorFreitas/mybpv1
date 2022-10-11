@@ -60,6 +60,7 @@ class JobDeletaExportacaoExcel implements ShouldQueue
                     $discoStorage->delete($exportacao->arquivo);
                 }
             }
+            \Log::info('Removido Exportacoes');
         } catch (\Exception $e) {
             \Log::error($e->getFile() . " - " . $e->getMessage() . " - " . $e->getCode() . ' Deleta Exportacao');
         }
