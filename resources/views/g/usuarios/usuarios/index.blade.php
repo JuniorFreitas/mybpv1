@@ -40,7 +40,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group" v-if="grupoempresa || empresa_id === {{\App\Models\User::MYBP_EMPRESA_ID}}">
+                <div class="form-group" v-if="grupoempresa">
                     <label>Grupo</label>
                     <select class="form-control form-control-sm" v-model="form.grupo_id"
                             onchange="valida_campo_vazio(this,1)"
@@ -135,7 +135,7 @@
                             <label>Empresa:</label>
                             <select class="form-control form-control-sm select-custom"
                                     v-model="controle.dados.campoEmpresa"
-                                    @change="$refs.componente.buscar()">
+                                    @change="buscarGruposEmpresa(controle.dados.campoEmpresa); $refs.componente.buscar()">
                                 <option value="">Selecione...</option>
                                 @foreach(\App\Models\Cliente::select('id','nome_fantasia')->get() as $c)
                                     <option value="{{$c->id}}">{{$c->nome_fantasia}}</option>
@@ -143,20 +143,28 @@
                             </select>
                         </div>
                     </div>
-
+                    <div class="col-md-3" v-if="controle.showCampoGrupo || controle.dados.campoEmpresa != ''">
+                        <div class="form-group">
+                            <label>Grupo:</label>
+                            <select class="form-control form-control-sm" v-model="controle.dados.campoGrupo"
+                                    @change="$refs.componente.buscar()">
+                                <option value="">Selecione...</option>
+                                <option v-for="papel in controle.dados.listaPapeis" :value="papel.id">@{{papel.nome}}</option>
+                            </select>
+                        </div>
+                    </div>
+                @else
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Grupo:</label>
+                            <select class="form-control form-control-sm" v-model="controle.dados.campoGrupo"
+                                    @change="$refs.componente.buscar()">
+                                <option value="">Selecione...</option>
+                                <option v-for="papel in controle.dados.listaPapeis" :value="papel.id">@{{papel.nome}}</option>
+                            </select>
+                        </div>
+                    </div>
                 @endif
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Tipo:</label>
-                        <select class="form-control form-control-sm select-custom" v-model="controle.dados.campoTipo"
-                                @change="$refs.componente.buscar()">
-                            <option value="">Selecione...</option>
-                            <option v-for="tip in lista_tipos" :value="tip">
-                                @{{ tip }}
-                            </option>
-                        </select>
-                    </div>
-                </div>
 
                 <div class="col-md-3">
                     <div class="form-group">
@@ -171,6 +179,17 @@
                     </div>
                 </div>
 
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <select class="form-control form-control-sm" :disabled="controle.carregando"
+                                v-model="controle.dados.campoStatus" @change="$refs.componente.buscar()">
+                            <option value="">Todos os Status</option>
+                            <option :value="true">Apenas Ativos</option>
+                            <option :value="false">Apenas Inativos</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </form>
         <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar"><i

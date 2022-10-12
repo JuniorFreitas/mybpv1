@@ -33,11 +33,15 @@ const app = new Vue({
         dados: {},
         controle: {
             carregando: false,
+            showCampoGrupo: false,
             dados: {
                 campoBusca: "",
                 por_pagina: 50,
                 campoEmpresa: "",
-                campoTipo: ""
+                campoGrupo: "",
+                campoTipo: "",
+                listaPapeis: [],
+                campoStatus: "",
             }
         }
     },
@@ -151,15 +155,35 @@ const app = new Vue({
 
         selecionaEmpresa(id) {
             this.grupoempresa = false;
-            axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
-                .then(response => {
-                    if (response.status === 200) {
-                        let data = response.data;
-                        this.listaPapeis = data.papeis;
-                        this.listaCloud = data.cloud;
-                        this.grupoempresa = true;
-                    }
-                });
+            this.listaPapeis = [];
+            this.form.grupo_id = "";
+            if(id != '' && id != 100){
+                axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
+                    .then(response => {
+                        if (response.status === 200) {
+                            let data = response.data;
+                            this.listaPapeis = data.papeis;
+                            this.listaCloud = data.cloud;
+                            this.grupoempresa = true;
+                        }
+                    });
+            }
+        },
+
+        buscarGruposEmpresa(id) {
+            this.controle.showCampoGrupo = false;
+            this.controle.dados.listaPapeis = [];
+            this.controle.dados.campoGrupo = '';
+            if(id != ''){
+                axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
+                    .then(response => {
+                        if (response.status === 200) {
+                            let data = response.data;
+                            this.controle.dados.listaPapeis = response.data.papeis;
+                            this.controle.showCampoGrupo = true;
+                        }
+                    });
+            }
         },
 
         carregou(dados) {
@@ -168,6 +192,7 @@ const app = new Vue({
             this.listaTipoEmail = dados.tipo_email;
             this.user_recebe_emailDefault = dados.formulario_vazio;
             this.lista_tipos = dados.lista_tipos;
+            this.empresa_id != 100 ? this.controle.dados.listaPapeis = dados.lista_grupos : [];
             this.form.user_recebe_email = _.cloneDeep(this.user_recebe_emailDefault);
             this.controle.carregando = false;
         },
