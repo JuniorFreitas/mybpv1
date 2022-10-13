@@ -8,7 +8,7 @@
     <h5 style="margin-top: 5px; margin-bottom: 5px;">INFORMAÇÕES:</h5>
     <table width="100%" style="border: 1px solid #666666; padding: 8px 17px 15px">
         <tr>
-            <td>
+            <td >
                 <p style="line-height: 17pt; font-size: 8.5pt; text-transform: uppercase">
 
                     Nome: <strong>{{ $dados->Curriculo->nome }}</strong>
@@ -19,7 +19,8 @@
                     <strong>{{ $dados->Curriculo->PCD ? 'Sim' : 'Não' }}</strong>
                     | CNH: <strong>{{ $dados->ParecerRh->cnh ? $dados->ParecerRh->cnh_tipo : 'Não possui' }}</strong>
                     <br>
-                    CPF: <strong>{{ $dados->Curriculo->cpf ?? 'Não informado' }}</strong> | RG: <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
+                    CPF: <strong>{{ $dados->Curriculo->cpf ?? 'Não informado' }}</strong> | RG:
+                    <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
                     | RG Data Emissão:
                     <strong>{{ $dados->Curriculo->rg_data_emissao ?? 'Não informado' }}</strong>
                     | Naturalidade:
@@ -52,7 +53,8 @@
                     Indicado para qual área:
                     <strong>{{ $dados->ParecerTecnica->indicado_area ?? 'Não informado' }}</strong>
                     <br>
-                    Endereço: <strong>{{ $dados->Curriculo->cep }}, {{ $dados->Curriculo->logradouro }}, {{ $dados->Curriculo->bairro }}
+                    Endereço: <strong>{{ $dados->Curriculo->cep }}, {{ $dados->Curriculo->logradouro }}
+                        , {{ $dados->Curriculo->bairro }}
                         , {{ $dados->Curriculo->municipio }}/{{ $dados->Curriculo->uf }}</strong>
                     <br>
                     Bairro Rota:
@@ -81,11 +83,10 @@
                     <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->opera_plat_ponte ?: 'Não Informado' }}</strong>
                 </p>
             </td>
-            <td width="4.5cm" style="border-left: 1px solid #666666;" align="center">
-
+            <td width="4cm" style="border-left: 1px solid #666666;" align="center">
                 @if (count($dados->Curriculo->FotoTres)>0)
                     <img
-                        src="{{ $dados->Curriculo->FotoTres[0]->url }}"
+                        src="{{env('AWS_URL')}}/arquivos/{{  $dados->Curriculo->FotoTres[0]->disco }}/{{ $dados->Curriculo->FotoTres[0]->thumb }}"
                         style="height: 4cm; ">
                 @else
                     <img
@@ -105,8 +106,11 @@
             <td>
                 <p style="line-height: 15pt; font-size: 8.5pt; text-transform: uppercase; text-align: justify">
                     Função:
-                    <strong>{{ $dados->Admissao->funcao ?? 'Não informado' }}</strong> | Cargo: <strong>{{ $dados->VagaAberta->VagaSelecionada->nome }}</strong> | Salário R$: <strong>{{ $dados->Admissao->salario ?? 'Não informado'}}</strong> <br>
-                    Documento: <strong>{{ $dados->Admissao->documento ?? 'Não informado'}}</strong> | Documento Portaria: <strong>{{ $dados->Admissao->documento_portaria ?? 'Não informado' }}</strong> |
+                    <strong>{{ $dados->Admissao->funcao ?? 'Não informado' }}</strong> | Cargo:
+                    <strong>{{ $dados->VagaAberta->VagaSelecionada->nome }}</strong> | Salário R$:
+                    <strong>{{ $dados->Admissao->salario ?? 'Não informado'}}</strong> <br>
+                    Documento: <strong>{{ $dados->Admissao->documento ?? 'Não informado'}}</strong> | Documento
+                    Portaria: <strong>{{ $dados->Admissao->documento_portaria ?? 'Não informado' }}</strong> |
                     Tipo de admissão: <strong>{{ $dados->Admissao->tipo_admissao ?? 'Não informado' }}</strong> |
                     Treinamento: <strong>{{ $dados->Admissao->treinamento ?? 'Não informado' }}</strong> |
                     Tipo de Treinamento: <strong>{{ $dados->Admissao->tipo_treinamento ?? 'Não informado' }}</strong> |
@@ -116,13 +120,17 @@
                     NR 35: <strong>{{ $dados->Admissao->nr_trinta_cinco ?? 'Não informado' }}</strong> |
                     Data NR 35: <strong>{{ $dados->Admissao->data_nr_trinta_cinco ?? 'Não informado' }}</strong> |
                     3260: <strong>{{ $dados->Admissao->trinta_dois_sessenta ?? 'Não informado' }}</strong> |
-                    Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong>  |
+                    Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong> |
                     Número Crachá: <strong>{{ $dados->Admissao->numero_cracha ?? 'Não informado' }}</strong> |
-                    Data do ASO: <strong>{{ $dados->Admissao->UltimoAsoAtivo->data_aso ?? 'Não informado' }}</strong> <br>
+                    Data do ASO: <strong>{{ $dados->Admissao->UltimoAsoAtivo->data_aso ?? 'Não informado' }}</strong>
+                    <br>
                     PIS: <strong>{{$dados->Admissao->pis ?? 'Não informado'}}</strong>
-                    | CTPS: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
-                    | CTPS Série: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
-                    | CTPS Data Emissão: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
+                    | CTPS:
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
+                    | CTPS Série:
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
+                    | CTPS Data Emissão:
+                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
                     <br>
                     Título de Eleitor:
                     <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_numero :'Não Informado'}}</strong>
@@ -143,11 +151,11 @@
             </td>
         </tr>
     </table>
-{{--    <div class="f12" style="line-height: 26pt;text-align: center">--}}
-{{--        <br><br>--}}
-{{--        <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">--}}
-{{--        {{$dados->Curriculo->nome}}--}}
-{{--    </div>--}}
+    <div class="f12" style="line-height: 16pt;text-align: center; font-size: 9pt !important; ">
+        <br><br>
+        <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%; border:none; border-top: 1px solid #333">
+        {{$dados->Curriculo->nome}}
+    </div>
     <br>
     @include('layouts.rodapePdf')
 
