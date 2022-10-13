@@ -245,8 +245,16 @@ class UserController extends Controller
             $resultado->whereEmpresaId($request->campoEmpresa);
         }
 
+        if ($request->filled('campoGrupo')) {
+            $resultado->whereGrupoId($request->campoGrupo);
+        }
+
         if ($request->filled('campoTipo')) {
             $resultado->whereTipo($request->campoTipo);
+        }
+
+        if ($request->filled('campoStatus')) {
+            $resultado->whereAtivo($request->campoStatus);
         }
 
         $empresa = auth()->user()->empresa_id;
@@ -265,7 +273,8 @@ class UserController extends Controller
 
         $lista_tipos = auth()->user()->empresa_id == User::MYBP_EMPRESA_ID ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
 
-        $grupos = $request->filled('campoEmpresa') && auth()->user()->empresa_id === User::MYBP_EMPRESA_ID  ? Papel::whereEmpresaId($request->campoEmpresa)->get() : null;
+        $lista_grupos = Papel::whereEmpresaId(auth()->user()->empresa_id)->where('master', false)
+                                                                         ->where('nome', 'not like', '% - Clinica Exame')->get();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -277,7 +286,7 @@ class UserController extends Controller
                 'tipo_email' => $tipo_email,
                 'formulario_vazio' => $formulario_vazio,
                 'lista_tipos' => $lista_tipos,
-                'grupos' => $grupos
+                'lista_grupos' => $lista_grupos,
             ],
         ]);
 
@@ -285,7 +294,8 @@ class UserController extends Controller
 
     public function buscaGrupoEmpresa($empresa_id)
     {
-        $papeis = Papel::whereEmpresaId($empresa_id)->get();
+        $papeis = Papel::whereEmpresaId($empresa_id)->where('master', false)
+                                                    ->where('nome', 'not like', '% - Clinica Exame')->get();
         $grupo_cloud = GrupoCloud::whereEmpresaId($empresa_id)->get();
 
         return response()->json(['papeis' => $papeis, 'cloud' => $grupo_cloud], 200);
