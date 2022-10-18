@@ -204,7 +204,7 @@ class AdmissaoController extends Controller
                                 $dadosFeedback['telefone_id'] = $telPrincipal;
                             }
                         } else {
-                            $candidato->Telefones->find($linha['id'])->update($linha);
+                            TelefoneCurriculo::find($linha['id'])->update($linha);
                             if ($linha['principal']) {
                                 $dados['telefone_id'] = $linha['id'];
                             }
@@ -213,6 +213,22 @@ class AdmissaoController extends Controller
                 }
 
                 $feedback = $candidato->FeedBack()->create($dadosFeedback);
+
+                if (isset($dadosCurriculo['dependentesDelete'])) {
+                    foreach ($dadosCurriculo['dependentesDelete'] as $id) {
+                        $feedback->Curriculo->Dependentes->find($index)->delete();
+                    }
+                }
+
+                if (isset($dadosCurriculo['dependentes'])) {
+                    foreach ($dadosCurriculo['dependentes'] as $linha) {
+                        if ($linha['nova']) {
+                            $feedback->Curriculo->Dependentes()->create($linha);
+                        } else {
+                            UsuarioDependente::find($linha['id'])->update($linha);
+                        }
+                    }
+                }
 
                 //Logica de Vagas
                 if ($feedback->vaga_projeto_id) {
@@ -471,6 +487,23 @@ class AdmissaoController extends Controller
                     $feedback = FeedbackCurriculo::create($dadosFeedback);
                 }
 
+                // Dependentes
+                if (isset($dadosCurriculo['dependentesDelete'])) {
+                    foreach ($dadosCurriculo['dependentesDelete'] as $id) {
+                        $feedback->Curriculo->Dependentes->find($index)->delete();
+                    }
+                }
+
+                if (isset($dadosCurriculo['dependentes'])) {
+                    foreach ($dadosCurriculo['dependentes'] as $linha) {
+                        if ($linha['nova']) {
+                            $feedback->Curriculo->Dependentes()->create($linha);
+                        } else {
+                            UsuarioDependente::find($linha['id'])->update($linha);
+                        }
+                    }
+                }
+
                 !is_null($feedback->parecerRh) ? $feedback->parecerRh->update($dadosParecerRh) : $feedback->parecerRh()->create($dadosParecerRh);
                 !is_null($feedback->parecerRota) ? $feedback->parecerRota->update($dadosParecerRota) : $feedback->parecerRota()->create($dadosParecerRota);
                 !is_null($feedback->parecerTecnica) ? $feedback->parecerTecnica->update($dadosParecerTecnica) : $feedback->parecerTecnica()->create($dadosParecerTecnica);
@@ -641,9 +674,9 @@ class AdmissaoController extends Controller
                     $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback->id)->first();
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
-
-
             }
+
+
             DB::commit();
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -1103,7 +1136,7 @@ class AdmissaoController extends Controller
                                 $dadosFeedback['telefone_id'] = $telPrincipal->id;
                             }
                         } else {
-                            $feedback->Telefones->find($linha['id'])->update($linha);
+                            TelefoneCurriculo::find($linha['id'])->update($linha);
                             if ($linha['principal']) {
                                 $dados['telefone_id'] = $linha['id'];
                             }
@@ -1120,9 +1153,9 @@ class AdmissaoController extends Controller
                 if (isset($dadosCurriculo['dependentes'])) {
                     foreach ($dadosCurriculo['dependentes'] as $linha) {
                         if ($linha['nova']) {
-                            $feedback->Curriculo->Dependentes->create($linha);
+                            $feedback->Curriculo->Dependentes()->create($linha);
                         } else {
-                            $feedback->Curriculo->Dependentes->find($linha['id'])->update($linha);
+                            UsuarioDependente::find($linha['id'])->update($linha);
                         }
                     }
                 }
