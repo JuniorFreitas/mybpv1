@@ -25,15 +25,6 @@
 
         <div class="col-12 col-sm-6">
             <div class="form-group">
-                <label>Cargo</label>
-                <input type="text" class="form-control" onblur="valida_campo_vazio(this,2)"
-                       :disabled="visualizar || disabled"
-                       v-model="form.cargo">
-            </div>
-        </div>
-
-        <div class="col-12 col-sm-6">
-            <div class="form-group">
                 <label>Salário R$</label>
                 <input type="text" class="form-control" v-mascara:dinheiro :disabled="visualizar || disabled"
                        v-model="form.salario">
@@ -313,7 +304,6 @@ export default {
                 area_etiqueta_id: "",
                 contrato: "",
                 funcao: "",
-                cargo: "",
                 salario: "0,00",
                 status: "",
                 documento: "",
