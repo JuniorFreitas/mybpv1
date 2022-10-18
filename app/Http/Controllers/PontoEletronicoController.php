@@ -281,6 +281,7 @@ class PontoEletronicoController extends Controller {
         $usuario->load('EscalasFuncionario.Jornadas',
         //'EscalasFuncionario.Jornadas.Periodos',
         );
+
         $jornada = null;
         if (isset($usuario->EscalasFuncionario[0])) {
             $jornada = PontoEletronico::getJornadaAtual($usuario->EscalasFuncionario[0]->id);

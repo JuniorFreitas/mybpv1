@@ -183,7 +183,7 @@
                         </div>
                     </th>
                     <th >Nome</th>
-                    <th >Empresa</th>
+{{--                    <th >Empresa</th>--}}
                     <th >Escala</th>
                 </tr>
                 </thead>
@@ -196,7 +196,7 @@
                         </div>
                     </td>
                     <td data-label="nome" >@{{funcionario.nome}}</td>
-                    <td data-label="empresa">@{{funcionario.empresa.nome}}</td>
+{{--                    <td data-label="empresa">@{{funcionario.empresa.nome}}</td>--}}
                     <td data-label="escalametro"><span v-if="funcionario.escalas_funcionario[0]">@{{funcionario.escalas_funcionario[0].descricao}}</span></td>
                 </tr>
                 </tbody>

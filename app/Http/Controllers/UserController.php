@@ -180,7 +180,7 @@ class UserController extends Controller
             $usuario = [
                 'cliente_id' => $cliente->Cliente->id,
                 'area_id' => $cliente->Cliente->area_id,
-                'config_empresa' => auth()->user()->EmpresaConfiguracoes,
+                'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id()
             ];
@@ -190,7 +190,7 @@ class UserController extends Controller
             $usuario = [
                 'cliente_id' => 0,
                 'area_id' => 0,
-                'config_empresa' => auth()->user()->EmpresaConfiguracoes,
+                'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id(),
             ];

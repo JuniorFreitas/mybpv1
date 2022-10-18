@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,7 +41,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EmpresaPerimetro extends Model
 {
-    use HasFactory,LogsActivity;
+    use HasFactory,LogsActivity, TenantTrait;
     protected static $logFillable = true;
     protected static $logName = 'EmpresaPerimetros';
     protected static $logOnlyDirty = true;
@@ -82,15 +83,15 @@ class EmpresaPerimetro extends Model
         return $this->hasOne(User::class,'id','empresa_id');
     }
 
-    protected static function booted() {
-        static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
-
-        static::updating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
-
-        static::addGlobalScope(new ScopeEmpresa());
-    }
+//    protected static function booted() {
+//        static::creating(function ($model) {
+//            $model->empresa_id = auth()->user()->empresa_id;
+//        });
+//
+//        static::updating(function ($model) {
+//            $model->empresa_id = auth()->user()->empresa_id;
+//        });
+//
+//        static::addGlobalScope(new ScopeEmpresa());
+//    }
 }
