@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
 use App\Models\EmpresaConfig;
 use App\Models\FormaPagamento;
 use Illuminate\Http\Request;
@@ -129,7 +130,7 @@ class EmpresaConfigController extends Controller
 
     public function atualizarFuncionarios(Request $request)
     {
-        $resultado = auth()->user()->EmpresaFuncionarios();
+        $resultado = Cliente::whereId(auth()->user()->empresa_id)->first()->Funcionarios();
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->filled('campoBusca')) {

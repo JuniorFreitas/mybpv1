@@ -213,10 +213,10 @@ class EmpresaEscalaController extends Controller {
     public function getPermissoes(Request $request) {
 
         return response()->json([
-            'escalas_insert' => auth()->user()->can('escalas_insert'),
-            'escalas_update' => auth()->user()->can('escalas_update'),
-            'escalas_delete' => auth()->user()->can('escalas_delete'),
-            'escalas_funcionarios' => auth()->user()->can('escalas_funcionarios'),
+            'escalas_insert' => auth()->user()->can('controle_ponto_escalas_insert'),
+            'escalas_update' => auth()->user()->can('controle_ponto_escalas_update'),
+            'escalas_delete' => auth()->user()->can('controle_ponto_escalas_delete'),
+            'escalas_funcionarios' => auth()->user()->can('controle_ponto_escalas_funcionarios'),
             'ocorrencias_jornadas' => OcorrenciaJornada::withoutGlobalScopes()->whereAtivo(true)->whereEmpresaId(null)->whereIn('id',OcorrenciaJornada::Fixas())->get(['id','descricao','trabalhado']),
             'ocorrencia_id_padrao' => OcorrenciaJornada::DIA_TRABALHADO
         ]);

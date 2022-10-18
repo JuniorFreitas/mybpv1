@@ -261,7 +261,7 @@
                                 </div>
                             </th>
                             <th >Nome</th>
-                            <th >Empresa</th>
+{{--                            <th >Empresa</th>--}}
                             <th >Perímetro</th>
                         </tr>
                         </thead>
@@ -274,7 +274,7 @@
                                 </div>
                             </td>
                             <td data-label="nome" >@{{funcionario.nome}}</td>
-                            <td data-label="empresa">@{{funcionario.empresa.nome}}</td>
+{{--                            <td data-label="empresa">@{{funcionario.empresa.nome}}</td>--}}
                             <td data-label="perimetro"><span v-if="funcionario.perimetros_funcionario[0]">@{{funcionario.perimetros_funcionario[0].descricao}}</span></td>
                         </tr>
                         </tbody>

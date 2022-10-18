@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
@@ -33,29 +34,33 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EmpresaConfig extends Model
 {
-    use HasFactory,LogsActivity;
+    use HasFactory, LogsActivity, TenantTrait;
+
     protected static $logFillable = true;
     protected static $logName = 'EmpresaConfiguracao';
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
 
-    public function getDescriptionForEvent(string $eventName): string {
+    public function getDescriptionForEvent(string $eventName): string
+    {
         return $eventName;
     }
 
-    public function tapActivity(Activity $activity, string $eventName) {
+    public function tapActivity(Activity $activity, string $eventName)
+    {
         $activity->descricao = "";
     }
-    public $timestamps=false;
+
+    public $timestamps = false;
     protected $table = 'empresa_configuracoes';
-    protected $primaryKey='empresa_id';
+    protected $primaryKey = 'empresa_id';
     protected $fillable = [
-        //'empresa_id' ,
+        'empresa_id',
         'tipo_frequencia',
-        'tempo_limite_falta' ,
-        'tempo_limite_saida' ,
-        'dia_nova_frequencia' ,
-        'limite_tolerancia' ,
+        'tempo_limite_falta',
+        'tempo_limite_saida',
+        'dia_nova_frequencia',
+        'limite_tolerancia',
     ];
     protected $casts = [
         'empresa_id' => 'int',
@@ -66,24 +71,25 @@ class EmpresaConfig extends Model
         'limite_tolerancia' => 'int',
     ];
 
-    const TIPO_HORA_EXTRA='hora_extra';
-    const TIPO_BANCO_HORAS='banco_horas';
-    const TIPO_HIBRIDO='hibrido';
+    const TIPO_HORA_EXTRA = 'hora_extra';
+    const TIPO_BANCO_HORAS = 'banco_horas';
+    const TIPO_HIBRIDO = 'hibrido';
 
-    protected static function booted() {
-        static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
+//    protected static function booted() {
+//        static::creating(function ($model) {
+//            $model->empresa_id = auth()->user()->empresa_id;
+//        });
+//
+//        static::updating(function ($model) {
+//            $model->empresa_id = auth()->user()->empresa_id;
+//        });
+//
+//        static::addGlobalScope(new ScopeEmpresa());
+//    }
 
-        static::updating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
-
-        static::addGlobalScope(new ScopeEmpresa());
-    }
-
-    public function Empresa(){
-        return $this->hasOne(User::class,'id','empresa_id');
+    public function Empresa()
+    {
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
 }

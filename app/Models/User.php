@@ -470,6 +470,11 @@ class User extends Authenticatable
         return $this->hasOne(ClienteConfig::class, 'cliente_id', 'empresa_id');
     }
 
+    public function EmpresaPontoConfiguracoes()
+    {
+        return $this->hasOne(EmpresaConfig::class,'empresa_id','empresa_id');
+    }
+
     public function EmpresaExame()
     {
         return $this->hasOne(EmpresaExame::class, 'user_id', 'id');
