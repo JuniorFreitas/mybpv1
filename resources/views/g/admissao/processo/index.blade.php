@@ -567,7 +567,7 @@
                         <fieldset>
                             <legend>Admissão</legend>
                             <form-admissao :form="form.admissao"></form-admissao>
-
+                            <dependentes :model="formAvulsa.curriculo.dependentes" :model-delete="formAvulsa.curriculo.dependentesDelete"></dependentes>
                             <dados-bancarios :model="formAvulsa.feedback.banco_conta"></dados-bancarios>
 
                             <div class="col-12">
@@ -1011,6 +1011,10 @@
 
                     <form-admissao :form="form.admissao"
                                    :visualizar="visualizar"></form-admissao>
+
+                    <div class="col-12">
+                        <dependentes :model="form.curriculo.dependentes" :visualizar='visualizar' :model-delete="form.curriculo.dependentesDelete"></dependentes>
+                    </div>
 
                     <div class="col-12">
                         <dados-bancarios :model="form.banco_conta" :visualizar='visualizar'></dados-bancarios>

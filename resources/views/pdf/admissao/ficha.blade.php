@@ -12,75 +12,39 @@
                 <p style="line-height: 17pt; font-size: 8.5pt; text-transform: uppercase">
 
                     Nome: <strong>{{ $dados->Curriculo->nome }}</strong>
-
-                    - Data de Nascimento: <strong>{{ $dados->Curriculo->nascimento }} ({{ $dados->Curriculo->idade }}
-                        anos)</strong><br>
-                    PCD:
-                    <strong>{{ $dados->Curriculo->PCD ? 'Sim' : 'Não' }}</strong>
+                    | Data de Nascimento: <strong>{{ $dados->Curriculo->nascimento }} ({{ $dados->Curriculo->idade }} anos)</strong>
+                    | PCD: <strong>{{ $dados->Curriculo->PCD ? 'Sim' : 'Não' }}</strong>
                     | CNH: <strong>{{ $dados->ParecerRh->cnh ? $dados->ParecerRh->cnh_tipo : 'Não possui' }}</strong>
-                    <br>
-                    CPF: <strong>{{ $dados->Curriculo->cpf ?? 'Não informado' }}</strong> | RG:
-                    <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
-                    | RG Data Emissão:
-                    <strong>{{ $dados->Curriculo->rg_data_emissao ?? 'Não informado' }}</strong>
-                    | Naturalidade:
-                    <strong>{{ $dados->Curriculo->naturalidade ?? 'Não informado' }}</strong>
-                    <br>Mãe:
-                    <strong>{{ $dados->Curriculo->filiacao_mae ?? 'Não informado' }}</strong> | Pai:
-                    <strong>{{ $dados->Curriculo->filiacao_pai ?? 'Não informado' }}</strong> |
-                    <br>
-                    Calça: <strong>{{ $dados->ParecerRh->calca }}</strong> |
-                    Bota: <strong>{{ $dados->ParecerRh->bota }}</strong> | C.
-                    Meia: <strong>{{ $dados->ParecerRh->camisa_meia }}</strong> | C.
-                    Proteção: <strong>{{ $dados->ParecerRh->camisa_protecao }}</strong>
-                    <br> Vaga:
-                    <strong>{{ $dados->VagaAberta->VagaSelecionada->nome  . ' - ' . $dados->VagaAberta->Municipio->uf}}</strong>
-                    <br>
-                    Contato:
-                    <strong>{{ $dados->TelPrincipal ? $dados->TelPrincipal->numero: 'Não informado' }}</strong>
-                    | E-mail: <span
-                        style="text-transform: lowercase"><strong>{{ $dados->Curriculo->email }}</strong></span> |
-                    Ex Funcionário:
-                    <strong>{{ $dados->ParecerRh->ex_funcionario == true ? 'Sim' : 'Não' }}</strong>
-                    <br>
-                    Disponibilidade para turnos 6X2:
-                    <strong>{{ $dados->ParecerRh->turnos_seis_por_dois ? 'Sim' : 'Não' }}</strong> |
+                    | CPF: <strong>{{ $dados->Curriculo->cpf ?? 'Não informado' }}</strong>
+                    | RG: <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
+                    | RG Data Emissão: <strong>{{ $dados->Curriculo->rg_data_emissao ?? 'Não informado' }}</strong>
+                    | Naturalidade: <strong>{{ $dados->Curriculo->naturalidade ?? 'Não informado' }}</strong>
+                    | Mãe: <strong>{{ $dados->Curriculo->filiacao_mae ?? 'Não informado' }}</strong>
+                    | Pai: <strong>{{ $dados->Curriculo->filiacao_pai ?? 'Não informado' }}</strong>
+                    | Calça: <strong>{{ $dados->ParecerRh->calca }}</strong>
+                    | Bota: <strong>{{ $dados->ParecerRh->bota }}</strong>
+                    | C. Meia: <strong>{{ $dados->ParecerRh->camisa_meia }}</strong>
+                    | C. Proteção: <strong>{{ $dados->ParecerRh->camisa_protecao }}</strong>
+                    | Vaga: <strong>{{ $dados->VagaAberta->VagaSelecionada->nome  . ' - ' . $dados->VagaAberta->Municipio->uf}}</strong>
+                    | Contato: <strong>{{ $dados->TelPrincipal ? $dados->TelPrincipal->numero: 'Não informado' }}</strong>
+                    | E-mail: <span style="text-transform: lowercase"><strong>{{ $dados->Curriculo->email }}</strong></span>
+                    | Ex Funcionário: <strong>{{ $dados->ParecerRh->ex_funcionario == true ? 'Sim' : 'Não' }}</strong>
+                    | Disponibilidade para turnos 6X2: <strong>{{ $dados->ParecerRh->turnos_seis_por_dois ? 'Sim' : 'Não' }}</strong>
                     @if ($dados->ParecerRh->indicado)
-                        Indicado por:
-                        <strong>{{ $dados->ParecerRh->indicado_por}}</strong>
-                        |
+                        | Indicado por: <strong>{{ $dados->ParecerRh->indicado_por}}</strong>
                     @endif
-                    Indicado para qual área:
-                    <strong>{{ $dados->ParecerTecnica->indicado_area ?? 'Não informado' }}</strong>
-                    <br>
-                    Endereço: <strong>{{ $dados->Curriculo->cep }}, {{ $dados->Curriculo->logradouro }}
+                    | Indicado para qual área: <strong>{{ $dados->ParecerTecnica->indicado_area ?? 'Não informado' }}</strong>
+                    | Endereço: <strong>{{ $dados->Curriculo->cep }}, {{ $dados->Curriculo->logradouro }}
                         , {{ $dados->Curriculo->bairro }}
                         , {{ $dados->Curriculo->municipio }}/{{ $dados->Curriculo->uf }}</strong>
-                    <br>
-                    Bairro Rota:
-                    <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->bairro_rota : 'Não Informado' }}</strong>
-                    | Ponto
-                    Referência
-                    Rota:
-                    <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_rota : 'Não Informado' }}</strong>
-                    | Ponto
-                    Referência
-                    Bairro:
-                    <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_residencia : 'Não Informado' }}</strong>
-                    <br>
-                    Teste aplicado:
-                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->parecer_final_teste ?: 'Não Informado' }}</strong>
-                    | Resultado Teste Prático:
-                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->parecer_final_teste ?: 'Não Informado' }}</strong>
-                    <br>
-                    Rigger:
-                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->experiencia_cargas_rigger ?: 'Não Informado' }}</strong>
-                    |
-                    Plataforma Movél:
-                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->opera_plat_movel ?: 'Não Informado' }}</strong>
-                    |
-                    Ponte Rolante:
-                    <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->opera_plat_ponte ?: 'Não Informado' }}</strong>
+                    | Bairro Rota: <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->bairro_rota : 'Não Informado' }}</strong>
+                    | Ponto Referência Rota: <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_rota : 'Não Informado' }}</strong>
+                    | Ponto Referência Bairro: <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_residencia : 'Não Informado' }}</strong>
+                    | Teste aplicado: <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->parecer_final_teste ?: 'Não Informado' }}</strong>
+                    | Resultado Teste Prático: <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->parecer_final_teste ?: 'Não Informado' }}</strong>
+                    | Rigger: <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->experiencia_cargas_rigger ?: 'Não Informado' }}</strong>
+                    | Plataforma Movél: <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->opera_plat_movel ?: 'Não Informado' }}</strong>
+                    | Ponte Rolante: <strong>{{ $dados->ParecerTeste && $dados->ParecerTeste->opera_plat_ponte ?: 'Não Informado' }}</strong>
                 </p>
             </td>
             <td width="4cm" style="border-left: 1px solid #666666;" align="center">
@@ -105,52 +69,63 @@
         <tr>
             <td>
                 <p style="line-height: 15pt; font-size: 8.5pt; text-transform: uppercase; text-align: justify">
-                    Função:
-                    <strong>{{ $dados->Admissao->funcao ?? 'Não informado' }}</strong> | Cargo:
-                    <strong>{{ $dados->VagaAberta->VagaSelecionada->nome }}</strong> | Salário R$:
-                    <strong>{{ $dados->Admissao->salario ?? 'Não informado'}}</strong> <br>
-                    Documento: <strong>{{ $dados->Admissao->documento ?? 'Não informado'}}</strong> | Documento
-                    Portaria: <strong>{{ $dados->Admissao->documento_portaria ?? 'Não informado' }}</strong> |
-                    Tipo de admissão: <strong>{{ $dados->Admissao->tipo_admissao ?? 'Não informado' }}</strong> |
-                    Treinamento: <strong>{{ $dados->Admissao->treinamento ?? 'Não informado' }}</strong> |
-                    Tipo de Treinamento: <strong>{{ $dados->Admissao->tipo_treinamento ?? 'Não informado' }}</strong> |
-                    Data Treinamento: <strong>{{ $dados->Admissao->data_treinamento ?? 'Não informado' }}</strong> |
-                    NR 33: <strong>{{ $dados->Admissao->nr_trinta_tres ?? 'Não informado' }}</strong> |
-                    Data NR 33: <strong>{{ $dados->Admissao->data_nr_trinta_tres ?? 'Não informado' }}</strong> |
-                    NR 35: <strong>{{ $dados->Admissao->nr_trinta_cinco ?? 'Não informado' }}</strong> |
-                    Data NR 35: <strong>{{ $dados->Admissao->data_nr_trinta_cinco ?? 'Não informado' }}</strong> |
-                    3260: <strong>{{ $dados->Admissao->trinta_dois_sessenta ?? 'Não informado' }}</strong> |
-                    Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong> |
-                    Número Crachá: <strong>{{ $dados->Admissao->numero_cracha ?? 'Não informado' }}</strong> |
-                    Data do ASO: <strong>{{ $dados->Admissao->UltimoAsoAtivo->data_aso ?? 'Não informado' }}</strong>
-                    <br>
-                    PIS: <strong>{{$dados->Admissao->pis ?? 'Não informado'}}</strong>
-                    | CTPS:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
-                    | CTPS Série:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
-                    | CTPS Data Emissão:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
-                    <br>
-                    Título de Eleitor:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_numero :'Não Informado'}}</strong>
-                    | Título de Eleitor Sessão:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_sessao :'Não Informado'}}</strong>
-                    | Título de Eleitor Zona:
-                    <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_zona :'Não Informado'}}</strong>
-                    <br>
-                    Banco: <strong>{{ $dados->BancoConta ? $dados->BancoConta->banco :'Não Informado'}}</strong> |
-                    Agência: <strong>{{ $dados->BancoConta ? $dados->BancoConta->agencia :'Não Informado'}}</strong> |
-                    Conta: <strong>{{ $dados->BancoConta ? $dados->BancoConta->conta :'Não Informado'}}</strong>
-                    <br>
-                    Status Carteira de Treinamento e Etiqueta:
-                    <strong>{{ $dados->Admissao->status_carteira_treinamento ?? 'Não Informado' }}</strong> <br>
-                    Status: <strong>{{ $dados->Admissao->status ?? 'Não Informado'}}</strong> <br>
-                    Data da Admissão: <strong>{{ $dados->Admissao->data_admissao ?? 'Não Informado'}}</strong> <br>
+                    Função: <strong>{{ $dados->Admissao->funcao ?? 'Não informado' }}</strong>
+                    | Cargo: <strong>{{ $dados->VagaAberta->VagaSelecionada->nome }}</strong>
+                    | Salário R$: <strong>{{ $dados->Admissao->salario ?? 'Não informado'}}</strong>
+                    | Documento: <strong>{{ $dados->Admissao->documento ?? 'Não informado'}}</strong>
+                    | Documento Portaria: <strong>{{ $dados->Admissao->documento_portaria ?? 'Não informado' }}</strong>
+                    | Tipo de admissão: <strong>{{ $dados->Admissao->tipo_admissao ?? 'Não informado' }}</strong>
+                    | Treinamento: <strong>{{ $dados->Admissao->treinamento ?? 'Não informado' }}</strong>
+                    | Tipo de Treinamento: <strong>{{ $dados->Admissao->tipo_treinamento ?? 'Não informado' }}</strong>
+                    | Data Treinamento: <strong>{{ $dados->Admissao->data_treinamento ?? 'Não informado' }}</strong>
+                    | NR 33: <strong>{{ $dados->Admissao->nr_trinta_tres ?? 'Não informado' }}</strong>
+                    | Data NR 33: <strong>{{ $dados->Admissao->data_nr_trinta_tres ?? 'Não informado' }}</strong>
+                    | NR 35: <strong>{{ $dados->Admissao->nr_trinta_cinco ?? 'Não informado' }}</strong>
+                    | Data NR 35: <strong>{{ $dados->Admissao->data_nr_trinta_cinco ?? 'Não informado' }}</strong>
+                    | 3260: <strong>{{ $dados->Admissao->trinta_dois_sessenta ?? 'Não informado' }}</strong>
+                    | Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong>
+                    | Número Crachá: <strong>{{ $dados->Admissao->numero_cracha ?? 'Não informado' }}</strong>
+                    | Data do ASO: <strong>{{ $dados->Admissao->UltimoAsoAtivo->data_aso ?? 'Não informado' }}</strong>
+                    | PIS: <strong>{{$dados->Admissao->pis ?? 'Não informado'}}</strong>
+                    | CTPS: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
+                    | CTPS Série: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
+                    | CTPS Data Emissão: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
+                    | Título de Eleitor: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_numero :'Não Informado'}}</strong>
+                    | Título de Eleitor Sessão: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_sessao :'Não Informado'}}</strong>
+                    | Título de Eleitor Zona: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_zona :'Não Informado'}}</strong>
+                    | Banco: <strong>{{ $dados->BancoConta ? $dados->BancoConta->banco :'Não Informado'}}</strong>
+                    | Agência: <strong>{{ $dados->BancoConta ? $dados->BancoConta->agencia :'Não Informado'}}</strong>
+                    | Conta: <strong>{{ $dados->BancoConta ? $dados->BancoConta->conta :'Não Informado'}}</strong>
+                    | Status Carteira de Treinamento e Etiqueta: <strong>{{ $dados->Admissao->status_carteira_treinamento ?? 'Não Informado' }}</strong>
+                    | Status: <strong>{{ $dados->Admissao->status ?? 'Não Informado'}}</strong>
+                    | Data da Admissão: <strong>{{ $dados->Admissao->data_admissao ?? 'Não Informado'}}</strong>
                 </p>
             </td>
         </tr>
     </table>
+
+    @if(!empty($dados->Curriculo->Dependentes))
+        <br>
+        <h5 style="margin-top: 5px; margin-bottom: 5px;">DEPENDENTES:</h5>
+        {{--    <hr style="border: transparent; background: #666666; height: 1px;margin-bottom: 5px;">--}}
+
+        <table style="border: 1px solid #666666; padding: 8px 17px 15px" width="100%">
+            <tr>
+                <td>
+                    @foreach($dados->Curriculo->Dependentes as $dependentes)
+                        <p style="line-height: 15pt; font-size: 8.5pt; text-transform: uppercase; text-align: justify">
+                            Tipo: <strong>{{ $dependentes->tipo == 'outro' ? $dependentes->outro_tipo : \App\Models\UsuarioDependente::TIPOS_DEPENDENTES[$dependentes->tipo] }}</strong>
+                            | Nome: <strong>{{ $dependentes->nome }}</strong>
+                            | CPF: <strong>{{ $dependentes->cpf ?? 'Não informado'}}</strong>
+                            | Data de Nascimento: <strong>{{ $dependentes->nascimento ?? 'Não informado'}}</strong>
+                        </p>
+                    @endforeach
+                </td>
+            </tr>
+        </table>
+    @endif
+
+
     <div class="f12" style="line-height: 16pt;text-align: center; font-size: 9pt !important; ">
         <br><br>
         <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%; border:none; border-top: 1px solid #333">
