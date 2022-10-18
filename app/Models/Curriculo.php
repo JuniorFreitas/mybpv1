@@ -417,6 +417,11 @@ class Curriculo extends Model
         return $this->hasMany(CurriculoQualificacao::class, 'curriculo_id', 'id');
     }
 
+    public function Dependentes()
+    {
+        return $this->hasMany(UsuarioDependente::class, 'user_id', 'id');
+    }
+
 //   Novo Relacionamento
     public function Pessoa()
     {

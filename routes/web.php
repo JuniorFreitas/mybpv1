@@ -626,6 +626,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::delete('admissao/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoDelete'])->name('admissao.anexo-delete');
 
         Route::get('admissao/listSelects', [\App\Http\Controllers\AdmissaoController::class, 'listSelects'])->name('admissao.listSelects')->middleware('can:admissao_processo'); // manter essa rota antes do resource
+        Route::get('admissao/tipos_dependentes', [\App\Http\Controllers\AdmissaoController::class, 'getTiposDependentes'])->name('admissao.tiposDependentes'); // get tipos de dependentes
         Route::post('admissao/atualizar', [\App\Http\Controllers\AdmissaoController::class, 'atualizar'])->name('admissao.atualizar')->middleware('can:admissao_processo'); // manter essa rota antes do resource
         Route::get('admissao/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao_processo'); // manter essa rota antes do resource
 

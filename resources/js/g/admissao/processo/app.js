@@ -11,6 +11,7 @@ import configselect2 from "../../../components/Select2/mixSelec2";
 import Utils from "../../../mixins/Utils";
 import Validacoes from "../../../mixins/Validacoes";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
+import dependentes from "../../../components/admissao/processo/Dependentes";
 
 const app = new Vue({
     el: "#app",
@@ -24,7 +25,8 @@ const app = new Vue({
         formAdmissao,
         FormResultadoIntegrado,
         DadosBancarios,
-        Select2
+        Select2,
+        dependentes
     },
     data: {
         tituloJanela: "Admissão",
@@ -117,7 +119,10 @@ const app = new Vue({
                     ramal: "",
                     tipo: "whatsapp"
                 }],
-                telefonesDelete: []
+                telefonesDelete: [],
+
+                dependentes: [],
+                dependentesDelete: [],
             },
 
             feedback: {
@@ -187,7 +192,6 @@ const app = new Vue({
                 area_etiqueta_id: "",
                 contrato: "",
                 funcao: "",
-                cargo: "",
                 salario: "0,00",
                 status: "",
                 documento: "",
@@ -289,7 +293,10 @@ const app = new Vue({
                     ramal: "",
                     tipo: "whatsapp"
                 }],
-                telefonesDelete: []
+                telefonesDelete: [],
+
+                dependentes: [],
+                dependentesDelete: [],
             },
 
             certificados_nr: [],
@@ -402,7 +409,6 @@ const app = new Vue({
                 area_etiqueta_id: "",
                 contrato: "",
                 funcao: "",
-                cargo: "",
                 salario: "0,00",
                 status: "",
                 documento: "",
@@ -790,7 +796,6 @@ const app = new Vue({
             this.formAvulsa.admissao = this.form.admissao;
             this.formAvulsa.preload = true;
 
-
             axios.post(`${URL_ADMIN}/admissao`, this.formAvulsa)
                 .then(response => {
                     if (response.status === 201) {
@@ -950,6 +955,7 @@ const app = new Vue({
                 mostraErro("", "Verifique os erros");
                 return false;
             }
+
             this.preload = true;
 
             axios.put(`${URL_ADMIN}/admissao/${this.form.id}`, this.form)

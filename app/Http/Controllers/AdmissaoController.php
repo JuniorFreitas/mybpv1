@@ -17,6 +17,7 @@ use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use App\Models\UsuarioConta;
+use App\Models\UsuarioDependente;
 use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
 use App\Rules\AreaEmpresaRules;
@@ -100,6 +101,7 @@ class AdmissaoController extends Controller
         $dadosParecerTeste['data_horario_realizacao'] = null;
         $dadosParecerTeste['entrevistador'] = auth()->id();
 
+        $dados['admissao']['cargo'] = $vaga->Vaga->nome;
         $dadosAdmissao = $dados['admissao'];
 
         $dadosAdmissao['usuario_id'] = auth()->id();
@@ -799,12 +801,12 @@ class AdmissaoController extends Controller
     {
         $this->authorize('admissao_processo_update');
         $dados = $request->input();
-
+        $dadosCurriculo = $dados['curriculo'];
         $feedback = $admissao;
+        $dadosVagaAberta = VagasAbertas::find($dados['vagas_abertas_id']);
+        $dados['admissao']['cargo'] = $dadosVagaAberta->Vaga->nome;
         $admissaoDados = $dados['admissao'];
         $admissaoDados['feedback_id'] = $feedback->id;
-
-        $dadosVagaAberta = VagasAbertas::find($dados['vagas_abertas_id']);
 
         $dados['curriculo']['email'] = $dados['curriculo']['email'] == "" ? Sistema::EMAILPADRAO : $dados['curriculo']['email'];
 
@@ -1105,6 +1107,22 @@ class AdmissaoController extends Controller
                             if ($linha['principal']) {
                                 $dados['telefone_id'] = $linha['id'];
                             }
+                        }
+                    }
+                }
+
+                if (isset($dadosCurriculo['dependentesDelete'])) {
+                    foreach ($dadosCurriculo['dependentesDelete'] as $id) {
+                        $feedback->Curriculo->Dependentes->find($index)->delete();
+                    }
+                }
+
+                if (isset($dadosCurriculo['dependentes'])) {
+                    foreach ($dadosCurriculo['dependentes'] as $linha) {
+                        if ($linha['nova']) {
+                            $feedback->Curriculo->Dependentes->create($linha);
+                        } else {
+                            $feedback->Curriculo->Dependentes->find($linha['id'])->update($linha);
                         }
                     }
                 }
@@ -1411,9 +1429,13 @@ class AdmissaoController extends Controller
             'admissao_processo_dados_editar' => auth()->user()->can('privilegio_admissao_processo_dados_editar'),
             'status_admissao' => Admissao::TODOS_STATUS_ADMISSAO,
             'tipos_admissao' => Admissao::TODOS_TIPOS_ADMISSAO,
-            'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
+            'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO
         ];
         return Sistema::pg($pg, $dados);
+    }
+
+    public function getTiposDependentes(){
+        return UsuarioDependente::TIPOS_DEPENDENTES;
     }
 
     /**
@@ -1538,6 +1560,7 @@ class AdmissaoController extends Controller
             "Título de Eleitor",
             "Título de Eleitor Sessão",
             "Título de Eleitor Zona",
+            "Dependentes",
             "Banco",
             "Agência",
             "Conta",
@@ -1552,6 +1575,19 @@ class AdmissaoController extends Controller
         $rows = [];
 
         foreach ($resultado as $row) {
+            $dependentes = "";
+
+            foreach ($row->Curriculo->Dependentes as $item){
+                $cpf = $item->cpf ?: "Não informado";
+                $nascimento = $item->nascimento ?: 'Não informado';
+                $dependentes .= "Tipo: ";
+                $dependentes .= $item->tipo == 'outro' ? $item->outro_tipo : \App\Models\UsuarioDependente::TIPOS_DEPENDENTES[$item->tipo];
+                $dependentes .= "\nNome: ". $item->nome;
+                $dependentes .= "\nCPF: ". $cpf;
+                $dependentes .= "\nData de Nascimento: ". $nascimento;
+                $dependentes .= "\n\n";
+            }
+
             $rows[] = array(
                 $row->Curriculo->nome,
                 $row->Curriculo->cpf,
@@ -1618,6 +1654,7 @@ class AdmissaoController extends Controller
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_numero : "" : "",
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_sessao : "" : "",
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_zona : "" : "",
+                $dependentes,
                 $row->BancoConta ? $row->BancoConta->banco : "",
                 $row->BancoConta ? $row->BancoConta->agencia : "",
                 $row->BancoConta ? $row->BancoConta->conta : "",
@@ -1650,14 +1687,15 @@ class AdmissaoController extends Controller
                 'msg' => "Candidato {$admissao->first()->Feedback->Curriculo->id} - {$admissao->first()->Feedback->Curriculo->nome} ja possui cadastro de admissão desde " . DataHora::dataFormatada($admissao->first()->created_at),
             ], 400);
         } else {
-
+            //270.105.033-20
             //cpf virgem = 018.791.043-00
             //cpf no recrutamento ainda = 010.368.413-16
 
             $curriculo = Curriculo::whereCpf($cpf);
 
             if ($curriculo->count() > 0) {
-                $curriculo = $curriculo->first();
+                $curriculo = $curriculo->first()->load('Dependentes');
+                $curriculo->dependentesDelete = [];
 
                 $curriculo->pcd = $curriculo->pcd ?: false;
 
