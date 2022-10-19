@@ -214,12 +214,12 @@ class AdmissaoController extends Controller
 
                 $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
-                if (isset($dadosCurriculo['dependentesDelete'])) {
-                    foreach ($dadosCurriculo['dependentesDelete'] as $id) {
-                        UsuarioDependente::find($id)->delete();
-                    }
-                }
-
+//                if (isset($dadosCurriculo['dependentesDelete'])) {
+//                    foreach ($dadosCurriculo['dependentesDelete'] as $id) {
+//                        UsuarioDependente::find($id)->delete();
+//                    }
+//                }
+//
                 if (isset($dadosCurriculo['dependentes'])) {
                     foreach ($dadosCurriculo['dependentes'] as $linha) {
                         if ($linha['nova']) {
