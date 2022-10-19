@@ -216,7 +216,7 @@ class AdmissaoController extends Controller
 
                 if (isset($dadosCurriculo['dependentesDelete'])) {
                     foreach ($dadosCurriculo['dependentesDelete'] as $id) {
-                        $feedback->Curriculo->Dependentes->find($index)->delete();
+                        $feedback->Curriculo->Dependentes->find($id)->delete();
                     }
                 }
 
@@ -490,7 +490,7 @@ class AdmissaoController extends Controller
                 // Dependentes
                 if (isset($dadosCurriculo['dependentesDelete'])) {
                     foreach ($dadosCurriculo['dependentesDelete'] as $id) {
-                        $feedback->Curriculo->Dependentes->find($index)->delete();
+                        $feedback->Curriculo->Dependentes->find($id)->delete();
                     }
                 }
 
