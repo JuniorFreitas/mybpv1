@@ -216,7 +216,7 @@ class AdmissaoController extends Controller
 
                 if (isset($dadosCurriculo['dependentesDelete'])) {
                     foreach ($dadosCurriculo['dependentesDelete'] as $id) {
-                        $feedback->Curriculo->Dependentes->find($id)->delete();
+                        UsuarioDependente::find($id)->delete();
                     }
                 }
 
