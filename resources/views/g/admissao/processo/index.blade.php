@@ -125,8 +125,8 @@
                                                v-model="formAvulsa.curriculo.nascimento"
                                                placeholder="Ex: 10/10/2010"
                                                v-mascara:data
-                                               autocomplete="mybp" @keyup.prevent="valida_data($event.target)"
-                                               @blur.prevent="valida_data($event.target)">
+                                               autocomplete="mybp" @keyup.prevent="valida_data_vazio($event.target,true)"
+                                               @blur.prevent="valida_data_vazio($event.target,true)">
                                     </div>
                                 </div>
 
@@ -638,8 +638,8 @@
                                        v-model="form.curriculo.nascimento"
                                        placeholder="Ex: 10/10/2010"
                                        v-mascara:data
-                                       autocomplete="mybp" @keyup.prevent="valida_data_vazio($event.target)"
-                                       @blur.prevent="valida_data_vazio($event.target)">
+                                       autocomplete="mybp" @keyup.prevent="valida_data_vazio($event.target,true)"
+                                       @blur.prevent="valida_data_vazio($event.target,true)">
                             </div>
                         </div>
 
@@ -1015,6 +1015,11 @@
                     <div class="col-12">
                         <dependentes :model="form.curriculo.dependentes" :visualizar='visualizar' :model-delete="form.curriculo.dependentesDelete"></dependentes>
                     </div>
+
+{{--                    <div class="col-12">--}}
+{{--                        <ferias-adquiridas :model="form.admissao.ferias_adquiridas" :visualizar='visualizar'--}}
+{{--                                     :model-delete="form.admissao.ferias_adquiridasDelete"></ferias-adquiridas>--}}
+{{--                    </div>--}}
 
                     <div class="col-12">
                         <dados-bancarios :model="form.banco_conta" :visualizar='visualizar'></dados-bancarios>

@@ -495,7 +495,7 @@ const validacoes = {
                 return false;
             }
         },
-        valida_data_vazio(evt) {
+        valida_data_vazio(evt,nascimento=false) {
             $(evt).next("div.invalid-feedback").remove();
 
             let valor = $(evt).val();
@@ -536,6 +536,7 @@ const validacoes = {
                     let ano = +valor.split('/')[2];
                     let data_atual = new Date();
                     let ano_atual = data_atual.getFullYear();
+
                     let valida_ano = nascimento ?  (ano <= (ano_atual) && ano >= (ano_atual-100)) :  (ano <= (ano_atual+100) && ano >= (ano_atual-100))
 
                     if (data.isValid() && valida_ano) {
