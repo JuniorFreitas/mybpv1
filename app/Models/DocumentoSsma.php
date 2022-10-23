@@ -7,6 +7,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 
+/**
+ * App\Models\DocumentoSsma
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int|null $contrato_id
+ * @property bool $tipo_ssma
+ * @property array $documentos_ssma
+ * @property bool $ativo
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexo
+ * @property-read int|null $anexo_count
+ * @property-read \App\Models\DocumentoContratos|null $Contrato
+ * @property-read \App\Models\Cliente|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma query()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereContratoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereDocumentosSsma($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereTipoSsma($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class DocumentoSsma extends Model
 {
     use HasFactory, TenantTrait;

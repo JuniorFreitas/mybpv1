@@ -6,6 +6,30 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 
+/**
+ * App\Models\UsuarioDependente
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property string $tipo
+ * @property string|null $outro_tipo
+ * @property string $nome
+ * @property string|null $cpf
+ * @property mixed|null $nascimento
+ * @property string|null $observacao
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente query()
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereCpf($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereNascimento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereOutroTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereUserId($value)
+ * @mixin \Eloquent
+ */
 class UsuarioDependente extends Model
 {
     use HasFactory;

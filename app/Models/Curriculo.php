@@ -170,6 +170,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEstadoCivil($value)
  * @method static \Illuminate\Database\Query\Builder|Curriculo withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Curriculo withoutTrashed()
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\UsuarioDependente[] $Dependentes
+ * @property-read int|null $dependentes_count
  */
 class Curriculo extends Model
 {

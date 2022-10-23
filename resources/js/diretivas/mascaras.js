@@ -36,6 +36,10 @@ function setMask(tipo, el, mod) {
             $(el).mask("AAA-0000");
             break;
 
+        case "per_aquisitivo":
+            $(el).mask("0000/0000");
+            break;
+
         case "hora":
             $(el).mask("00:00");
             break;
@@ -46,11 +50,11 @@ function setMask(tipo, el, mod) {
             } else {
                 mascara = "####0,0";
             }
-            $(el).mask(mascara, { reverse: true });
+            $(el).mask(mascara, {reverse: true});
             break;
 
         case "peso":
-            $(el).mask("#0.000", { reverse: true });
+            $(el).mask("#0.000", {reverse: true});
             break;
 
 
@@ -137,7 +141,7 @@ function setMask(tipo, el, mod) {
 
 Vue.directive("mascara", {
 
-    inserted: function(el, binding, vnode) {
+    inserted: function (el, binding, vnode) {
         let model = binding.expression ? binding.expression : null;
 
         let VUE = vnode.context;
@@ -170,7 +174,7 @@ Vue.directive("mascara", {
 
             e.target.value = atual;
 
-            let event = new Event("input", { bubbles: true });
+            let event = new Event("input", {bubbles: true});
             el.dispatchEvent(event);
             setMask(argumento, el, mod);
 
@@ -183,7 +187,7 @@ Vue.directive("mascara", {
 
     },
 
-    beforeDestroy: function() {
+    beforeDestroy: function () {
         //console.log('mascaras distruidas');
     }
 

@@ -50,7 +50,10 @@
                         onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
                         v-model="form.documento_portaria">
                     <option value="">Selecione</option>
-                    <option v-for="item in listSelects.todos_status_documentos_portaria" :value="item">{{ item }}</option>
+                    <option v-for="item in listSelects.todos_status_documentos_portaria" :value="item">{{
+                            item
+                        }}
+                    </option>
                 </select>
             </div>
         </div>
@@ -149,7 +152,8 @@
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Data do ASO</label>
-                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                       :disabled="visualizar || disabled"
                        v-model="form.ultimo_aso_ativo.data_aso" v-mascara:data
                        @keyup.prevent="valida_data($event.target)"
                        @blur.prevent="valida_data($event.target)">
@@ -163,7 +167,10 @@
                         onblur="valida_campo(this,1)"
                         v-model="form.status_carteira_treinamento">
                     <option value="">Selecione</option>
-                    <option v-for="item in listSelects.status_carteira_treinamento" :key="item" :value="item">{{ item }}</option>
+                    <option v-for="item in listSelects.status_carteira_treinamento" :key="item" :value="item">{{
+                            item
+                        }}
+                    </option>
                 </select>
             </div>
         </div>
@@ -184,7 +191,8 @@
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Data da Admissão</label>
-                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                       :disabled="visualizar || disabled"
                        v-model="form.data_admissao" v-mascara:data
                        @keyup.prevent="valida_data($event.target)"
                        @blur.prevent="valida_data($event.target)">
@@ -194,7 +202,8 @@
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Data da Entrega na área</label>
-                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                       :disabled="visualizar || disabled"
                        v-model="form.data_entrega_area" v-mascara:data
                        @keyup.prevent="valida_data($event.target)"
                        @blur.prevent="valida_data($event.target)">
@@ -217,7 +226,8 @@
         <div class="col-12 col-sm-6" v-if="form.biometria">
             <div class="form-group">
                 <label>Data Biometria</label>
-                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                       :disabled="visualizar || disabled"
                        v-model="form.data_biometria" v-mascara:data
                        @keyup.prevent="valida_data($event.target)"
                        @blur.prevent="valida_data($event.target)">
@@ -254,7 +264,8 @@
         <div class="col-12 col-sm-6">
             <div class="form-group">
                 <label>Data Emissão CTPS</label>
-                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" :disabled="visualizar || disabled"
+                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                       :disabled="visualizar || disabled"
                        v-model="form.dados_admissoes.ctps_data_emissao" v-mascara:data
                        @keyup.prevent="valida_data($event.target)"
                        @blur.prevent="valida_data($event.target)">
@@ -287,14 +298,24 @@
                        v-model="form.dados_admissoes.titulo_eleitor_zona">
             </div>
         </div>
-
+        <div class="col-12">
+            <ferias-adquiridas :model="form.ferias_adquiridas"
+                               :model-delete="form.ferias_adquiridasDelete"
+                               :visualizar="visualizar"
+            ></ferias-adquiridas>
+        </div>
     </div>
 </template>
 
 <script>
 import Validacoes from "../../../mixins/Validacoes";
+import FeriasAdquiridas from "./FeriasAdquiridas";
+
 export default {
     mixins: [Validacoes],
+    components: {
+        FeriasAdquiridas
+    },
     props: {
         form: {
             type: Object,
@@ -353,6 +374,8 @@ export default {
                 ultimo_aso_ativo: {
                     data_aso: ""
                 },
+                ferias_adquiridas: [],
+                ferias_adquiridasDelete: [],
             }
         },
         visualizar: {

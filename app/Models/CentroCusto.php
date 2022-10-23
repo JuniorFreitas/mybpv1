@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\User|null $Empresa
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereEmpresaId($value)
  * @property-read \App\Models\User|null $Gestor
+ * @property int|null $gestor_id
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereGestorId($value)
  */
 class CentroCusto extends Model
 {

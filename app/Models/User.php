@@ -138,6 +138,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder|User whereDeletedAt($value)
  * @method static \Illuminate\Database\Query\Builder|User withTrashed()
  * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
+ * @property-read \App\Models\EmpresaConfig|null $EmpresaPontoConfiguracoes
  */
 class User extends Authenticatable
 {

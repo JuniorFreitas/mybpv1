@@ -148,7 +148,7 @@ export default {
         },
         remove(index) {
             this.$emit("ondelete", this.lista[index]);
-            if (!this.lista.nova) {
+            if (!this.lista[index].nova) {
                 this.listaDelete.push(this.lista[index].id);
             }
             this.lista.splice(index, 1);
