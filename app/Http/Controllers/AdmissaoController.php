@@ -219,7 +219,7 @@ class AdmissaoController extends Controller
 //                        UsuarioDependente::find($id)->delete();
 //                    }
 //                }
-//
+
                 if (isset($dadosCurriculo['dependentes'])) {
                     foreach ($dadosCurriculo['dependentes'] as $linha) {
                         if ($linha['nova']) {
@@ -291,7 +291,6 @@ class AdmissaoController extends Controller
 
                 if ($feedback->Admissao) {
                     $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
-
                     if (!empty($ultimo_aso_ativo_dados['data_aso'])) {
 
                         $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
@@ -322,6 +321,19 @@ class AdmissaoController extends Controller
                             ]);
                         }
                     }
+
+                    if (isset($dados['admissao']['ferias_adquiridasDelete'])) {
+                        foreach ($dados['admissao']['ferias_adquiridasDelete'] as $id) {
+                            $feedback->Admissao->FeriasAdquiridas->find($id)->delete();
+                        }
+                    }
+
+                    if (isset($dados['admissao']['ferias_adquiridas'])) {
+                        foreach ($dados['admissao']['ferias_adquiridas'] as $linha) {
+                            $feedback->Admissao->FeriasAdquiridasCriaOuAtualiza($linha);
+                        }
+                    }
+
                 } else {
                     $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
                     AdmissaoAso::create([
@@ -599,6 +611,19 @@ class AdmissaoController extends Controller
                             ]);
                         }
                     }
+
+                    if (isset($dados['admissao']['ferias_adquiridasDelete'])) {
+                        foreach ($dados['admissao']['ferias_adquiridasDelete'] as $id) {
+                            $feedback->Admissao->FeriasAdquiridas->find($id)->delete();
+                        }
+                    }
+
+                    if (isset($dados['admissao']['ferias_adquiridas'])) {
+                        foreach ($dados['admissao']['ferias_adquiridas'] as $linha) {
+                            $feedback->Admissao->FeriasAdquiridasCriaOuAtualiza($linha);
+                        }
+                    }
+
                 } else {
                     $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
                     AdmissaoAso::create([
@@ -654,6 +679,7 @@ class AdmissaoController extends Controller
                     $avaliacao ? $avaliacao->update($datas) : AvaliacaoNoventaVencimento::create($datas);
 
                 }
+
                 if (in_array($dadosAdmissao['tipo_admissao'], $tipo_admissao)) {
                     $data = new DataHora($dadosAdmissao['data_encerramento']);
 
@@ -742,6 +768,7 @@ class AdmissaoController extends Controller
 
         $feedback->load(
             'Admissao.DadosAdmissoes',
+            'Admissao.FeriasAdquiridas',
             'Admissao.UltimoAsoAtivo',
             'Curriculo.Formacao',
             'Curriculo.FotoTres',
@@ -777,6 +804,7 @@ class AdmissaoController extends Controller
         $feedback->Curriculo->foto_tres_delete = [];
 
         if (!is_null($feedback->Admissao)) {
+            $feedback->Admissao->ferias_adquiridasDelete = [];
             $feedback->Admissao->documento = $feedback->Admissao->documento ?: '';
             $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: '';
             $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: '';
@@ -994,6 +1022,18 @@ class AdmissaoController extends Controller
 
                 if ($feedback->Admissao) {
                     $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
+
+                    if (isset($dados['admissao']['ferias_adquiridasDelete'])) {
+                        foreach ($dados['admissao']['ferias_adquiridasDelete'] as $id) {
+                            $feedback->Admissao->FeriasAdquiridas->find($id)->delete();
+                        }
+                    }
+
+                    if (isset($dados['admissao']['ferias_adquiridas'])) {
+                        foreach ($dados['admissao']['ferias_adquiridas'] as $linha) {
+                            $feedback->Admissao->FeriasAdquiridasCriaOuAtualiza($linha);
+                        }
+                    }
 
                     if (!empty($ultimo_aso_ativo_dados['data_aso'])) {
 
@@ -1467,7 +1507,8 @@ class AdmissaoController extends Controller
         return Sistema::pg($pg, $dados);
     }
 
-    public function getTiposDependentes(){
+    public function getTiposDependentes()
+    {
         return UsuarioDependente::TIPOS_DEPENDENTES;
     }
 
@@ -1610,14 +1651,14 @@ class AdmissaoController extends Controller
         foreach ($resultado as $row) {
             $dependentes = "";
 
-            foreach ($row->Curriculo->Dependentes as $item){
+            foreach ($row->Curriculo->Dependentes as $item) {
                 $cpf = $item->cpf ?: "Não informado";
                 $nascimento = $item->nascimento ?: 'Não informado';
                 $dependentes .= "Tipo: ";
                 $dependentes .= $item->tipo == 'outro' ? $item->outro_tipo : \App\Models\UsuarioDependente::TIPOS_DEPENDENTES[$item->tipo];
-                $dependentes .= "\nNome: ". $item->nome;
-                $dependentes .= "\nCPF: ". $cpf;
-                $dependentes .= "\nData de Nascimento: ". $nascimento;
+                $dependentes .= "\nNome: " . $item->nome;
+                $dependentes .= "\nCPF: " . $cpf;
+                $dependentes .= "\nData de Nascimento: " . $nascimento;
                 $dependentes .= "\n\n";
             }
 

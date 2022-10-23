@@ -24,6 +24,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Servico whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Servico whereTitulo($value)
  * @mixin \Eloquent
+ * @method static \Illuminate\Database\Eloquent\Builder|FormaContrato whereEmpresaId($value)
  */
 class FormaContrato extends Model
 {

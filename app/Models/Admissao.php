@@ -164,6 +164,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereMatricula($value)
  * @method static \Illuminate\Database\Query\Builder|Admissao withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Admissao withoutTrashed()
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasAdquiridas[] $FeriasAdquiridas
+ * @property-read int|null $ferias_adquiridas_count
  */
 class Admissao extends Model
 {
@@ -776,6 +778,11 @@ class Admissao extends Model
         return $this->hasOne(Demissao::class, 'feedback_id', 'feedback_id');
     }
 
+    public function FeriasAdquiridas()
+    {
+        return $this->hasMany(FeriasAdquiridas::class, 'admissao_id', 'id');
+    }
+
     public function scopeAdmitidos($query)
     {
         return $query->whereDoesntHave('Demissao');
@@ -798,6 +805,14 @@ class Admissao extends Model
             ->withPivot(['quem_classificou']);
     }*/
 
+    public function FeriasAdquiridasCriaOuAtualiza($dados)
+    {
+        if (isset($dados['nova'])) {
+            $this->FeriasAdquiridas()->create($dados);
+        } else {
+            $this->FeriasAdquiridas->find($dados['id'])->update($dados);
+        }
+    }
 
     public static function getNumeroSupervisor($cliente_id, $area_etiqueta_id)
     {
