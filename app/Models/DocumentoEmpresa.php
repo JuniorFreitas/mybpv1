@@ -7,6 +7,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 
+/**
+ * App\Models\DocumentoEmpresa
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int|null $contrato_id
+ * @property bool $tipo_empresa
+ * @property array $documentos_empresa
+ * @property bool $ativo
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexo
+ * @property-read int|null $anexo_count
+ * @property-read \App\Models\DocumentoContratos|null $Contrato
+ * @property-read \App\Models\Cliente|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa query()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereContratoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereDocumentosEmpresa($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereTipoEmpresa($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class DocumentoEmpresa extends Model
 {
     use HasFactory, TenantTrait;

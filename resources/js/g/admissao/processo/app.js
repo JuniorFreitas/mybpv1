@@ -12,6 +12,7 @@ import Utils from "../../../mixins/Utils";
 import Validacoes from "../../../mixins/Validacoes";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
 import dependentes from "../../../components/admissao/processo/Dependentes";
+import FeriasAdquiridas from "../../../components/admissao/processo/FeriasAdquiridas";
 
 const app = new Vue({
     el: "#app",
@@ -26,7 +27,8 @@ const app = new Vue({
         FormResultadoIntegrado,
         DadosBancarios,
         Select2,
-        dependentes
+        dependentes,
+        FeriasAdquiridas
     },
     data: {
         tituloJanela: "Admissão",
@@ -244,7 +246,9 @@ const app = new Vue({
                 camisa_meia: "",
 
                 foto_tres: [],
-                foto_tresDel: []
+                foto_tresDel: [],
+                ferias_adquiridas:[],
+                ferias_adquiridasDelete:[],
             }
         },
 
@@ -459,6 +463,9 @@ const app = new Vue({
                 bota: "",
                 camisa_protecao: "",
                 camisa_meia: "",
+
+                ferias_adquiridas:[],
+                ferias_adquiridasDelete:[],
 
                 foto_tres: [],
                 foto_tresDel: []

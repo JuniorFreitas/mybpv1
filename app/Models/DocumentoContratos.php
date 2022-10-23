@@ -7,6 +7,29 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 
+/**
+ * App\Models\DocumentoContratos
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property array $dados_cadastrais
+ * @property bool $ativo
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexo
+ * @property-read int|null $anexo_count
+ * @property-read \App\Models\Cliente|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos query()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos whereDadosCadastrais($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentoContratos whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class DocumentoContratos extends Model
 {
     use HasFactory, TenantTrait;

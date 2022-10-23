@@ -24,14 +24,14 @@ class FeriasController extends Controller
         $dataFim = new DataHora($periodo[1], ' 23:59:59');
 
         $empresa_id = auth()->user()->empresa_id;
-        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->vencimento_aso];
+        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->verifica_mes_vencimento];
         $periodo_vencimento = preg_replace("/[^0-9]/", "", $periodo_vencimento);
 
         $feriasPrevistas = FeriasPrevista::select([
             'id', 'colaborador_id', 'centro_custo_id', 'data_saida', 'qnt_dias', 'data_retorno', 'dias_saldo', 'status_aprovacao',
             'tem_faltas', 'qnt_faltas', 'periodo_aquisitivo_id', 'periodo_aquisitivo', 'ultima_data', 'user_aprovacao_id', 'data_aprovacao', 'obs_aprovacao', 'gestor_id'
         ])->whereEmpresaId($empresa_id)
-            ->where('status_aprovacao', FeriasPrevista::STATUS_APROVADO)
+            ->whereNull('status_aprovacao')
             ->where('ultima_data', '>=', $dataInicio->dataInsert())
             ->where('ultima_data', '<=', $dataFim->dataInsert())
             ->whereHas('Feedback', function ($q) {
@@ -79,7 +79,7 @@ class FeriasController extends Controller
     public function exportExcel(Request $request)
     {
         $ferias = $this->show($request);
-        
+
         $head = [
             'nome',
             'cargo',

@@ -7,6 +7,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 
+/**
+ * App\Models\TipoDocumento
+ *
+ * @property int $id
+ * @property string $nome
+ * @property string $tipo pode ser empresa, ssma...
+ * @property bool $ativo
+ * @property int $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento query()
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento whereTipo($value)
+ * @mixin \Eloquent
+ */
 class TipoDocumento extends Model
 {
     use HasFactory, TenantTrait;
