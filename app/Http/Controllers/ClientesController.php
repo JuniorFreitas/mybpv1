@@ -307,6 +307,7 @@ class ClientesController extends Controller
         return response()->json([
             'cliente' => $cliente,
             'listaDeHabilidades' => $listaDeHabilidades,
+            'listaModeloCih' => ClienteConfig::MODELO_CIH,
             'todosMenu' => $todosMenu
         ]);
     }
@@ -567,12 +568,14 @@ class ClientesController extends Controller
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                         'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
+                        'modelo_cih' => $dados['cliente_config']['modelo_cih'],
                     ]);
                 } else {
                     $dadosClienteConfig = [
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                         'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
+                        'modelo_cih' => $dados['cliente_config']['modelo_cih'],
                         'cliente_id' => $cliente->id
                     ];
                     ClienteConfig::create($dadosClienteConfig);

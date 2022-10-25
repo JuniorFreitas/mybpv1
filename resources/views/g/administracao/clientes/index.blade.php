@@ -647,6 +647,16 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Modelo CIH</label>
+                                            <select v-model="form.cliente_config.modelo_cih" class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option v-for="(item, key) in listaModeloCih" :value="key" :key="key" v-text="item"></option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </fieldset>
                             <fieldset>
