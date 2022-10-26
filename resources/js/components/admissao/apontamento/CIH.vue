@@ -61,7 +61,7 @@
 
                             <div class="col-12"></div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-6" v-if="this.config_modelo_cih === 'area'">
                                 <div class="form-group">
                                     <label>Área</label>
                                     <select
@@ -90,6 +90,22 @@
                                         :disabled="aprovando"
                                         v-model="form.outra_area"
                                     />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" v-if="this.config_modelo_cih === 'centro_de_custo'">
+                                <div class="form-group">
+                                    <label>Centro de Custo</label>
+                                    <select
+                                        :disabled="aprovando"
+                                        v-model="form.centro_custo_id"
+                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                        @change.prevent="valida_campo_vazio($event.target, 1)"
+                                        class="form-control form-control-sm validacampo"
+                                    >
+                                        <option value="">Selecione...</option>
+                                        <option v-for="item in centros_de_custo" :value="item.id" :key="item.id">{{ item.gestor == null? item.label + ' - Gestor não informado' : item.label + ' - ' + item.gestor.nome }}</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -135,7 +151,7 @@
                                 </div>
                             </div>
 
-                            <gestoraprovacao :model="form" :verifica="aprovando" :hash="hash"></gestoraprovacao>
+                            <gestoraprovacao :model="form" :verifica="aprovando" :hash="hash" v-if="this.config_modelo_cih === 'area'"></gestoraprovacao>
 
                             <div class="col-12">
                                 <div class="form-group">
@@ -279,7 +295,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-4" v-if="this.config_modelo_cih === 'area'">
                     <div class="form-group">
                         <label>Área</label>
                         <select v-model="controle.dados.campoAreas" :disabled="controle.carregando"
@@ -287,6 +303,31 @@
                             <option value="">Todas as áreas</option>
                             <option v-for="item in listaAreas" :value="item.id" :key="item.id"
                                     v-text="item.label"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4" v-if="this.config_modelo_cih === 'centro_de_custo'">
+                    <div class="form-group">
+                        <label>Centros de Custo</label>
+                        <select v-model="controle.dados.campoCentrosDeCusto" :disabled="controle.carregando"
+                                @change="atualizar()" class="form-control form-control-sm">
+                            <option value="">Todas os centros de custo</option>
+                            <option v-for="item in centros_de_custo" :value="item.id" :key="item.id"
+                                    v-text="item.label"></option>
+                        </select>
+                    </div>
+                </div>
+
+<!--                <div class="col-12 col-md-4" v-if="permissoes.admissao_cih_privilegio_adm">-->
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Gestores</label>
+                        <select v-model="controle.dados.campoGestores" :disabled="controle.carregando"
+                                @change="atualizar()" class="form-control form-control-sm">
+                            <option value="">Todas os gestores</option>
+                            <option v-for="item in gestores" :value="item.gestor_aprovacao.id" :key="item.gestor_aprovacao.id"
+                                    v-text="item.gestor_aprovacao.nome"></option>
                         </select>
                     </div>
                 </div>
@@ -500,8 +541,13 @@ export default {
 
             permissoes: {
                 admissao_cih_lancar: false,
-                admissao_cih_aprovar: false
+                admissao_cih_aprovar: false,
+                admissao_cih_privilegio_adm: false
             },
+
+            config_modelo_cih: "",
+            centros_de_custo: [],
+            gestores: [],
 
             form: {
                 tag_id: "",
@@ -513,6 +559,7 @@ export default {
                 autocomplete_label_colaborador_anterior: "",
                 cliente_id: "",
                 area_id: "",
+                centro_custo_id: "",
                 varios_colaboradores: false,
                 colaboradores_avulso: "",
                 outra_area: "",
@@ -555,6 +602,8 @@ export default {
                     campoStatus: "",
                     campoTags: "",
                     campoAreas: "",
+                    campoCentrosDeCusto: "",
+                    campoGestores: "",
                     filtroPeriodo: false,
                     periodo: "",
                     pages: 50
@@ -811,9 +860,13 @@ export default {
             this.lista = dados.itens;
             this.listaTags = dados.tags;
             this.listaAreas = dados.areas;
+            this.centros_de_custo = dados.centros_de_custo;
+            this.gestores = dados.gestores;
+            console.log(this.gestores);
             this.datarelatorio = dados.intervalo;
             this.hoje = dados.hoje;
             this.permissoes = dados.permissoes;
+            this.config_modelo_cih = dados.config_modelo_cih;
             this.controle.carregando = false;
         },
         carregando() {

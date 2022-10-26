@@ -6,6 +6,7 @@ use App\Scopes\ScopeClientesEmpresa;
 use App\Scopes\ScopeEmpresa;
 use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
@@ -45,6 +46,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Cih query()
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereAcao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereAreaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cih whereCentroDeCustoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereDataAprovacao($value)
@@ -77,6 +79,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereColaboradoresAvulso($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereGestorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereVariosColaboradores($value)
+ * @property int|null $centro_custo_id
+ * @property string|null $centro_custo_outro
+ * @property-read \App\Models\CentroCusto|null $CentroDeCusto
+ * @method static \Illuminate\Database\Eloquent\Builder|Cih whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Cih whereCentroCustoOutro($value)
  */
 class Cih extends Model
 {
@@ -86,6 +93,9 @@ class Cih extends Model
     protected static $logName = 'cih';
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
+
+    public const CONFIG_CENTRO_DE_CUSTO = "centro_de_custo";
+    public const CONFI_AREA = "area";
 
     public function getDescriptionForEvent(string $eventName): string
     {
@@ -115,7 +125,8 @@ class Cih extends Model
         'obs_aprovacao',
         'data_aprovacao',
         'status',
-        'empresa_id'
+        'empresa_id',
+        'centro_de_custo_id'
     ];
 
     protected $casts = [
@@ -140,7 +151,21 @@ class Cih extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i\h',
         'updated_at' => 'datetime:d/m/Y à\s H:i\h',
         'empresa_id' => 'int',
+        'centro_de_custo_id'
     ];
+
+    /**
+     * Scope a query para mostrar apenas cihs vinculados ao user autenticado.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeVinculados($query)
+    {
+        return $query->where('gestor_id', auth()->user()->id)
+            ->orWhere('user_lancamento_id', auth()->user()->id)
+            ->orWhere('user_aprovacao_id', auth()->user()->id);
+    }
 
     protected function serializeDate(DateTimeInterface $date)
     {
@@ -213,6 +238,11 @@ class Cih extends Model
     public function Area()
     {
         return $this->hasOne(AreaEtiqueta::class, 'id', 'area_id');
+    }
+
+    public function CentroDeCusto()
+    {
+        return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
     }
 
     public function ResponsavelAprovacao()

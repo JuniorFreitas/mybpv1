@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereEnviaWhatsapp($value)
  * @property int|null $vencimento_aso
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
+ * @property string $modelo_cih
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereModeloCih($value)
  */
 class ClienteConfig extends Model
 {
@@ -34,6 +36,7 @@ class ClienteConfig extends Model
         'verifica_mes_vencimento',
         'cliente_id',
         'vencimento_aso',
+        'modelo_cih'
     ];
 
     protected $casts = [
@@ -41,6 +44,7 @@ class ClienteConfig extends Model
         'verifica_mes_vencimento' => 'int',
         'cliente_id' => 'int',
         'vencimento_aso' => 'int',
+        'modelo_cih'
     ];
 
     public $timestamps = false;
@@ -56,6 +60,10 @@ class ClienteConfig extends Model
     const NOVENTA_DIAS = '90 dias';
     const CENTO_E_VINTE_DIAS = '120 dias';
 
+    const CENTRO_DE_CUSTO = 'centro_de_custo';
+    const AREA = 'area';
+    public const MODELO_CIH = ['centro_de_custo' => 'Centro de Custo', 'area' => 'Área'];
+
 
     const LISTA_VENCIMENTOS = [
         1 => self::TRINTA_DIAS,
@@ -65,5 +73,5 @@ class ClienteConfig extends Model
         4 => self::CENTO_E_VINTE_DIAS,
     ];
 
-    
+
 }

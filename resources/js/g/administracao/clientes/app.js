@@ -20,6 +20,7 @@ const app = new Vue({
         pages: 10,
 
         listaDeHabilidades: [],
+        listaModeloCih: [],
         todosMenu: [],
         todasHabilidades: true,
         menuHabilidades: true,
@@ -85,6 +86,7 @@ const app = new Vue({
                 verifica_mes_vencimento: '',
                 envia_whatsapp: '',
                 vencimento_aso: '',
+                modelo_cih: ''
             },
 
             listaDeHabilidades: '',
@@ -246,8 +248,10 @@ const app = new Vue({
                             'verifica_mes_vencimento': '',
                             'envia_whatsapp': '',
                             'vencimento_aso': '',
+                            'modelo_cih': ''
                         }
                     }
+                    this.listaModeloCih = response.data.listaModeloCih;
                     this.form.como_conheceu = !this.form.como_conheceu ? '' : this.form.como_conheceu;
 
                     this.listaDeHabilidades = response.data.listaDeHabilidades;

@@ -8,9 +8,11 @@ use App\Jobs\Admissao\Apontamento\Cih\JobCihStore;
 use App\Jobs\JobExportaExcel;
 use App\Models\AreaEtiqueta;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
 use App\Models\Cih;
 use App\Models\CihTag;
 use App\Models\Cliente;
+use App\Models\ClienteConfig;
 use App\Models\FeedbackCurriculo;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -90,10 +92,19 @@ class CihController extends Controller
         }
 
         try {
+            $usuario = auth()->user();
+            $modelo_cih_config = $usuario->EmpresaConfiguracoes->modelo_cih;
+
             DB::beginTransaction();
             $dados['tag_id'] = $dados['tag_id'] > 0 ? $dados['tag_id'] : null;
             $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
+            $dados['centro_custo_id'] = $dados['centro_custo_id'] > 0 ? $dados['centro_custo_id'] : null;
             $dados['empresa_id'] = auth()->user()->empresa_id;
+
+            if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+                $centroDeCusto = CentroCusto::find($dados['centro_custo_id']);
+                $dados['gestor_id'] = $centroDeCusto->Gestor  ? $centroDeCusto->Gestor->id : null;
+            }
 
             $cih = Cih::create($dados);
 
@@ -120,28 +131,37 @@ class CihController extends Controller
                     }
                 }
             }
-            if ($dados['gestor_id']) {
-                $gestor = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($dados['gestor_id'])->first();
 
+            if ($dados['gestor_id']) {
                 $jobDados = [
                     'empresa_id' => auth()->user()->empresa_id,
                     'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
                     'nome_de' => auth()->user()->nome,
                     'email_de' => auth()->user()->login,
-                    'nome_para' => $gestor->nome,
-                    'email_para' => $gestor->login,
                     'varios_colaboradores' => count($dados['colaboradores']) > 1 ? 'Sim' : 'Não',
                     'tipo' => $dados['tag_id'] != 0 ? CihTag::find($dados['tag_id'])->label : $dados['outra_tag'],
-                    'area' => $dados['area_id'] == 0 ? $dados['outra_area'] : AreaEtiqueta::find($dados['area_id'])->label,
                     'data_lancamento' => (new DataHora($dados['data_lancamento']))->dataCompleta(),
                     'cih_id' => $cih->id
                 ];
+
+                if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+                    $gestor = $centroDeCusto->Gestor;
+                    $jobDados['centro_de_custo'] = $centroDeCusto->label;
+                }else {
+                    $gestor = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($dados['gestor_id'])->first();
+                    $jobDados['area'] = $dados['area_id'] == 0 ? $dados['outra_area'] : AreaEtiqueta::find($dados['area_id'])->label;
+                }
+
+                $jobDados['nome_para'] = $gestor->nome;
+                $jobDados['email_para'] = $gestor->login;
+
 
                 JobCihStore::dispatch($jobDados);
             }
             DB::commit();
             return response()->json([$cih->load('Anexos')], 201);
         } catch (\Exception $e) {
+            dd($e);
             DB::rollback();
             $msg = "error STORE CIH:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
@@ -163,6 +183,11 @@ class CihController extends Controller
 
         $cih->autocomplete_label_gestor_modal = $cih->GestorAprovacao ? $cih->GestorAprovacao->nome : '';
         $cih->autocomplete_label_gestor_modal_anterior = $cih->GestorAprovacao ? $cih->GestorAprovacao->nome : '';
+
+        $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
+        if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
+            return $cih->load('Anexos', 'Tag', 'CentroDeCusto', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome');
+        }
 
         return $cih->load('Anexos', 'Tag', 'Area', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome');
     }
@@ -199,10 +224,16 @@ class CihController extends Controller
                 'nome_para' => $cih->ResponsavelLancamento->nome,
                 'email_para' => $cih->ResponsavelLancamento->login,
                 'tipo' => $cih->tag_id != 0 ? CihTag::find($cih->tag_id)->label : $cih->outra_tag,
-                'area' => $cih->area_id == 0 ? $cih->outra_area : AreaEtiqueta::find($cih->area_id)->label,
                 'status' => ucfirst($cih->status),
                 'cih_id' => $cih->id
             ];
+
+            $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
+            if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+                $jobDados['centro_de_custo'] = $cih->CentroDeCusto->label;
+            }else{
+                $jobDados['area'] = $cih->area_id == 0 ? $cih->outra_area : AreaEtiqueta::find($cih->area_id)->label;
+            }
 
             JobCihAprovarReprovar::dispatch($jobDados);
 
@@ -244,8 +275,12 @@ class CihController extends Controller
         $periodo = Cih::get();
         $tags = CihTag::orderBy('label')->whereAtivo(true)->get();
         $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
+        $centros_de_custo = CentroCusto::with('Gestor')->orderBy('label')->whereAtivo(true)->get();
+        $gestores = Cih::select('gestor_id')->with('GestorAprovacao')->whereNotNull('gestor_id')->distinct()->get();
         $data = new DataHora();
         $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
+
+        $usuario = auth()->user();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -256,11 +291,15 @@ class CihController extends Controller
                 'tags' => $tags,
                 'periodo' => $periodo,
                 'intervalo' => $intervalo,
+                'config_modelo_cih' => $usuario->EmpresaConfiguracoes->modelo_cih,
                 'permissoes' => [
                     'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
                     'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
+                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
                 ],
                 'areas' => $areas,
+                'gestores' => $gestores,
+                'centros_de_custo' => $usuario->EmpresaConfiguracoes->modelo_cih == ClienteConfig::CENTRO_DE_CUSTO ? $centros_de_custo : '',
                 'hoje' => (new DataHora())->dataCompleta()
             ]
         ]);
@@ -272,11 +311,23 @@ class CihController extends Controller
      */
     public function filtro(Request $request)
     {
-        $resultado = Cih::with('Tag:id,label', 'Area',
-            'Colaboradores',
-            'ResponsavelLancamento:id,nome',
-            'ResponsavelAprovacao:id,nome'
-        );
+        if(auth()->user()->can('admissao_cih_privilegio_adm')){
+            $resultado = Cih::with('Tag:id,label',
+                'Area',
+                'CentroDeCusto',
+                'Colaboradores',
+                'ResponsavelLancamento:id,nome',
+                'ResponsavelAprovacao:id,nome'
+            );
+        }else{
+            $resultado = Cih::vinculados()->with('Tag:id,label',
+                'Area',
+                'CentroDeCusto',
+                'Colaboradores',
+                'ResponsavelLancamento:id,nome',
+                'ResponsavelAprovacao:id,nome'
+            );
+        }
 
         $filtroPeriodo = $request->filtroPeriodo == 'true';
         if ($filtroPeriodo) {
@@ -307,6 +358,16 @@ class CihController extends Controller
                 $q->whereId($request->campoAreas);
             });
         }
+        if ($request->filled('campoCentrosDeCusto')) {
+            $resultado->whereHas('CentroDeCusto', function ($q) use ($request) {
+                $q->whereId($request->campoCentrosDeCusto);
+            });
+        }
+        if ($request->filled('campoGestores')) {
+            $resultado->whereHas('GestorAprovacao', function ($q) use ($request) {
+                $q->whereId($request->campoGestores);
+            });
+        }
 
         return $resultado->orderByDesc('created_at');
 
@@ -332,22 +393,54 @@ class CihController extends Controller
             "Responsável Status"
         ];
 
+        $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
+        if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+            $head = [
+                "Colaborador",
+                "Cargo",
+                "Centro de Custo",
+                "Data Ocorrência",
+                "Ocorrência",
+                "Responsável Lançamento",
+                "Ação",
+                "Status",
+                "Data Status",
+                "Responsável Status"
+            ];
+        }
+
         $rows = [];
 
         foreach ($resultado as $row) {
             foreach ($row->colaboradores as $colaborador) {
-                $rows[] = [
-                    'colaborador' => $colaborador->Curriculo->nome,
-                    'cargo' => $colaborador->VagaAberta->Vaga->nome,
-                    'area' => $row->area_id ? $row->Area->label : $row->outra_area,
-                    'data_ocorrencia' => $row->data_lancamento ?: '',
-                    'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
-                    'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                    'acao' => $row->acao,
-                    'status' => $row->status ?: "aguardando",
-                    'data_aprovacao' => $row->data_aprovacao ?: '',
-                    'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
-                ];
+                $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
+                if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+                    $rows[] = [
+                        'colaborador' => $colaborador->Curriculo->nome,
+                        'cargo' => $colaborador->VagaAberta->Vaga->nome,
+                        'centro_de_custo' => $row->CentroDeCusto->label,
+                        'data_ocorrencia' => $row->data_lancamento ?: '',
+                        'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
+                        'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                        'acao' => $row->acao,
+                        'status' => $row->status ?: "aguardando",
+                        'data_aprovacao' => $row->data_aprovacao ?: '',
+                        'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                    ];
+                }else{
+                    $rows[] = [
+                        'colaborador' => $colaborador->Curriculo->nome,
+                        'cargo' => $colaborador->VagaAberta->Vaga->nome,
+                        'area' => $row->area_id ? $row->Area->label : $row->outra_area,
+                        'data_ocorrencia' => $row->data_lancamento ?: '',
+                        'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
+                        'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                        'acao' => $row->acao,
+                        'status' => $row->status ?: "aguardando",
+                        'data_aprovacao' => $row->data_aprovacao ?: '',
+                        'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                    ];
+                }
             }
         }
 
@@ -501,12 +594,11 @@ class CihController extends Controller
 
         $rows = [];
 
-        foreach ($resultado as $row) {
+        foreach ($resultado as $key => $row) {
             foreach ($row->colaboradores as $colaborador) {
-                $rows[] = [
+                $rows[$key] = [
                     'colaborador' => $colaborador->Curriculo->nome,
                     'cargo' => $colaborador->VagaAberta->Vaga->nome,
-                    'area' => $row->area_id ? $row->Area->label : $row->outra_area,
                     'data_ocorrencia' => $row->data_lancamento ?: '',
                     'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
                     'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
@@ -515,11 +607,20 @@ class CihController extends Controller
                     'data_aprovacao' => $row->data_aprovacao ?: '',
                     'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
                 ];
+
+                $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
+                if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+                    $rows[$key]['centro_de_custo'] = $row->CentroDeCusto->label;
+                }else{
+                    $rows[$key]['area'] = $row->area_id ? $row->Area->label : $row->outra_area;
+                }
             }
         }
 
+//        dd($rows);
+
         $empresa = User::whereId(auth()->user()->empresa_id)->first();
-        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim', 'filtroPeriodo'));
+        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim', 'filtroPeriodo', 'modelo_cih_config'));
         $pdf->setPaper('A4', 'landscape');
 
         return $pdf->stream("relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf");

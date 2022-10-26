@@ -251,6 +251,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_cih', 'descricao' => 'Acessar menu Apontamento - CIH'];
         $lista[] = ['nome' => 'admissao_cih_lancar', 'descricao' => 'Pode lançar uma ocorrencia CIH'];
         $lista[] = ['nome' => 'admissao_cih_aprovar', 'descricao' => 'Pode aprovar uma ocorrencia CIH'];
+        $lista[] = ['nome' => 'admissao_cih_privilegio_adm', 'descricao' => 'Pode visualizar todas as CIH'];
 
 
         $lista[] = ['nome' => 'admissao_historico', 'descricao' => 'Acessar menu Historico'];
