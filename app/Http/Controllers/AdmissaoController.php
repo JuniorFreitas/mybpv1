@@ -214,18 +214,18 @@ class AdmissaoController extends Controller
 
                 $feedback = $candidato->FeedBack()->create($dadosFeedback);
 
-//                if (isset($dadosCurriculo['dependentesDelete'])) {
-//                    foreach ($dadosCurriculo['dependentesDelete'] as $id) {
-//                        UsuarioDependente::find($id)->delete();
-//                    }
-//                }
+                if (isset($dadosCurriculo['dependentesDelete'])) {
+                    foreach ($dadosCurriculo['dependentesDelete'] as $id) {
+                        $feedback->Curriculo->Dependentes->find($id)->delete();
+                    }
+                }
 
                 if (isset($dadosCurriculo['dependentes'])) {
                     foreach ($dadosCurriculo['dependentes'] as $linha) {
-                        if ($linha['nova']) {
+                        if (isset($linha['nova'])) {
                             $feedback->Curriculo->Dependentes()->create($linha);
                         } else {
-                            UsuarioDependente::find($linha['id'])->update($linha);
+                            $feedback->Curriculo->Dependentes->find($linha['id'])->update($linha);
                         }
                     }
                 }
@@ -508,10 +508,10 @@ class AdmissaoController extends Controller
 
                 if (isset($dadosCurriculo['dependentes'])) {
                     foreach ($dadosCurriculo['dependentes'] as $linha) {
-                        if ($linha['nova']) {
+                        if (isset($linha['nova'])) {
                             $feedback->Curriculo->Dependentes()->create($linha);
                         } else {
-                            UsuarioDependente::find($linha['id'])->update($linha);
+                            $feedback->Curriculo->Dependentes->find($linha['id'])->update($linha);
                         }
                     }
                 }
@@ -771,6 +771,7 @@ class AdmissaoController extends Controller
             'Admissao.FeriasAdquiridas',
             'Admissao.UltimoAsoAtivo',
             'Curriculo.Formacao',
+            'Curriculo.Dependentes',
             'Curriculo.FotoTres',
             'Curriculo.Telefones',
             'parecerRh',
@@ -802,6 +803,7 @@ class AdmissaoController extends Controller
 //        }
 
         $feedback->Curriculo->foto_tres_delete = [];
+        $feedback->Curriculo->dependentesDelete = [];
 
         if (!is_null($feedback->Admissao)) {
             $feedback->Admissao->ferias_adquiridasDelete = [];
@@ -1186,16 +1188,16 @@ class AdmissaoController extends Controller
 
                 if (isset($dadosCurriculo['dependentesDelete'])) {
                     foreach ($dadosCurriculo['dependentesDelete'] as $id) {
-                        $feedback->Curriculo->Dependentes->find($index)->delete();
+                        $feedback->Curriculo->Dependentes->find($id)->delete();
                     }
                 }
 
                 if (isset($dadosCurriculo['dependentes'])) {
                     foreach ($dadosCurriculo['dependentes'] as $linha) {
-                        if ($linha['nova']) {
+                        if (isset($linha['nova'])) {
                             $feedback->Curriculo->Dependentes()->create($linha);
                         } else {
-                            UsuarioDependente::find($linha['id'])->update($linha);
+                            $feedback->Curriculo->Dependentes->find($linha['id'])->update($linha);
                         }
                     }
                 }

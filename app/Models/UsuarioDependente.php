@@ -67,13 +67,13 @@ class UsuarioDependente extends Model
     public function getNascimentoAttribute($value)
     {
         $data = new DataHora($this->attributes['nascimento']);
-        return is_null($this->attributes['nascimento']) ?: $data->dataCompleta();
+        return is_null($this->attributes['nascimento']) ? null : $data->dataCompleta();
     }
 
     //Modificador ->nascimento
     public function setNascimentoAttribute($value)
     {
         $data = new DataHora($value);
-        $this->attributes['nascimento'] = is_null($value) ?: $data->dataInsert();
+        $this->attributes['nascimento'] = is_null($value) ? null : $data->dataInsert();
     }
 }
