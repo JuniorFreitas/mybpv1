@@ -381,6 +381,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
 
         Route::group(['as' => 'tipocih.'], function () {
+            Route::put('tipocih/{tipocih}/ativa-desativa', [\App\Http\Controllers\CihController::class, 'ativaDesativa'])->name('ativaDesativa');
             Route::post('tipocih/atualizar', [\App\Http\Controllers\CihController::class, 'tipoCihAtualizar'])->name('tipocih.tipoCihAtualizar');
             Route::get('tipocih/{tipocih}', [\App\Http\Controllers\CihController::class, 'tipoCihEdit'])->name('tipoCihEdit');
             Route::put('tipocih/{tipocih}', [\App\Http\Controllers\CihController::class, 'tipoCihUpdate'])->name('tipoCihUpdate');
