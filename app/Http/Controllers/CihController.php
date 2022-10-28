@@ -305,6 +305,15 @@ class CihController extends Controller
         ]);
     }
 
+    public function ativaDesativa(Request $request)
+    {
+        $cihTipo = CihTag::find($request->id);
+        $cihTipo->ativo = !$cihTipo->ativo;
+        $cihTipo->save();
+        $cihTipo->refresh();
+        return response()->json(['ativo' => $cihTipo->ativo], 201);
+    }
+
     /**
      * @param Request $request
      * @return \Illuminate\Database\Eloquent\Builder
