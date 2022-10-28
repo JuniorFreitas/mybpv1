@@ -473,12 +473,30 @@ class User extends Authenticatable
 
     public function EmpresaPontoConfiguracoes()
     {
-        return $this->hasOne(EmpresaConfig::class,'empresa_id','empresa_id');
+        return $this->hasOne(EmpresaConfig::class, 'empresa_id', 'empresa_id');
     }
 
     public function EmpresaExame()
     {
         return $this->hasOne(EmpresaExame::class, 'user_id', 'id');
+    }
+
+    /**
+     * Sincronizamento de Empresa e Funcionario e Funcionario Empresa
+     * @param $empresa_id
+     * @param $colaborador_id
+     * @return void
+     */
+    public static function SincronizaEmpresaFuncionario($empresa_id, $colaborador_id)
+    {
+        $Empresa = User::select(['id'])->find($empresa_id);
+        $Colaborador = User::find($colaborador_id);
+
+        if ($Empresa->EmpresaFuncionarios()->whereFuncionarioId($Colaborador->id)->first()){
+            $Empresa->EmpresaFuncionarios()->detach($Colaborador->id);
+        }
+        $Empresa->EmpresaFuncionarios()->attach($Colaborador->id);
+        $Colaborador->ClienteFuncionarios()->sync($Empresa->id);
     }
 
     protected static function booted()
