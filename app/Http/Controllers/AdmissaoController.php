@@ -286,6 +286,11 @@ class AdmissaoController extends Controller
 
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
 
+                //Cria Usuario na Empresa
+                if ($dadosAdmissao['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO){
+                    User::SincronizaEmpresaFuncionario($feedback->empresa_id,$feedback->curriculo_id);
+                }
+
                 $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
                 DadosAdmissao::create($tableDadosAdmissao);
 
@@ -573,6 +578,11 @@ class AdmissaoController extends Controller
 //                $feedback_id = $candidato->FeedBack ? $candidato->FeedBack->id : '';
 
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
+                //Cria Usuario na Empresa
+                if ($dadosAdmissao['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO){
+                    User::SincronizaEmpresaFuncionario($feedback->empresa_id,$feedback->curriculo_id);
+                }
+
                 $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
                 DadosAdmissao::create($tableDadosAdmissao);
 
@@ -701,6 +711,7 @@ class AdmissaoController extends Controller
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
             }
+
 
 
             DB::commit();
@@ -1069,6 +1080,10 @@ class AdmissaoController extends Controller
                     }
 
                     $feedback->Admissao->update($admissaoDados);
+                    //Cria Usuario na Empresa
+                    if ($admissaoDados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO){
+                        User::SincronizaEmpresaFuncionario($feedback->empresa_id,$feedback->curriculo_id);
+                    }
                     if (!isset($dadosAdmissao['id'])) {
                         $dadosAdmissao['admissao_id'] = $feedback->Admissao->id;
                         DadosAdmissao::create($dadosAdmissao);
@@ -1078,6 +1093,12 @@ class AdmissaoController extends Controller
                     }
                 } else {
                     $admissao_id = $feedback->Admissao()->create($admissaoDados);
+
+                    //Cria Usuario na Empresa
+                    if ($admissaoDados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO){
+                        User::SincronizaEmpresaFuncionario($feedback->empresa_id,$feedback->curriculo_id);
+                    }
+
                     $dadosAdmissao['admissao_id'] = $admissao_id['id'];
                     DadosAdmissao::create($dadosAdmissao);
 
@@ -1208,15 +1229,15 @@ class AdmissaoController extends Controller
 
             } catch (\Exception $e) {
                 DB::rollback();
-                $msg = "error ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+                $msg = "error ADMISSÃO COMUM:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
                 \Log::debug($e->getTraceAsString());
                 \Log::info("-------DADOS-------");
                 \Log::alert($dados);
                 \Log::info("-------FIM DE DADOS-------");
 
-                return response()->json(['msg' => $e->getMessage()], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+//                return response()->json(['msg' => $e->getMessage()], 400);
+                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
     }
