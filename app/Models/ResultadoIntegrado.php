@@ -136,6 +136,11 @@ class ResultadoIntegrado extends Model
 //        return $data->dataCompleta();
 //    }
 
+    public function getExcessaoAttribute($value)
+    {
+        return is_null($value) ? "" : (bool)$this->attributes['excessao'];
+    }
+
     //Modificador ->documentos_entregue_data
     public function setDocumentosEntregueDataAttribute($value)
     {
