@@ -109,7 +109,7 @@ class Cih extends Model
 
     protected $fillable = [
         'tag_id',
-        'gestor_id',
+        'gestor_id', #esse
         'outra_tag',
         'feedback_id',
         'cliente_id',
@@ -117,11 +117,11 @@ class Cih extends Model
         'outra_area',
         'varios_colaboradores',
         'colaboradores_avulso',
-        'user_lancamento_id',
+        'user_lancamento_id', #esse
         'obs_lancamento',
         'data_lancamento',
         'acao',
-        'user_aprovacao_id',
+        'user_aprovacao_id', #esse
         'obs_aprovacao',
         'data_aprovacao',
         'status',
