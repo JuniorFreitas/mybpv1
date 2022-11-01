@@ -363,7 +363,6 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
 
         //weekly-report
-        //weekly-report
         $lista[] = ['nome' => 'weekly_report', 'descricao' => 'Acessar rota Weekley report'];
         $lista[] = ['nome' => 'weekly_report_quadro_insert', 'descricao' => 'Pode criar um novo quadro no Weekly report'];
         $lista[] = ['nome' => 'weekly_report_quadro_update', 'descricao' => 'Pode alterar um quadro no Weekly report'];
