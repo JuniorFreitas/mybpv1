@@ -783,6 +783,11 @@ class Admissao extends Model
         return $this->hasMany(FeriasAdquiridas::class, 'admissao_id', 'id');
     }
 
+    public function CentroCusto()
+    {
+        return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
+    }
+
     public function scopeAdmitidos($query)
     {
         return $query->whereDoesntHave('Demissao');
