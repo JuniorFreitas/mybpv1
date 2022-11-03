@@ -606,7 +606,12 @@ const validacoes = {
                     return false;
                 } else {
                     let data = moment(valor, "DD/MM/YYYY");
-                    if (data.isValid()) {
+                    let ano = +valor.split('/')[2];
+                    let data_atual = new Date();
+                    let ano_atual = data_atual.getFullYear();
+                    let valida_ano = nascimento ?  (ano <= (ano_atual) && ano >= (ano_atual-100)) :  (ano <= (ano_atual+100) && ano >= (ano_atual-100))
+
+                    if (data.isValid() && valida_ano) {
                         $(evt).removeClass("is-invalid");
                         if (
                             $(evt).next("div.invalid-feedback").length > 0 &&

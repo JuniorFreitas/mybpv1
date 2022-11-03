@@ -648,7 +648,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias'))
+    @if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias','relatorio_centro_de_custo'))
         <li id="relatorios">
             <a href="javascript://" class="has-arrow waves-effect" parent="relatorios">
                 <i class="bx bx-chart"></i>
@@ -699,6 +699,16 @@
                     <li>
                         <a href="{{route('g.relatorios.medidasadministrativas.index')}}" parent="relatorios" key="medidasadministrativas">
                             Medidas Administrativas
+                        </a>
+                    </li>
+                @endcan
+
+            </ul>
+            <ul aria-expanded="false">
+                @can('relatorio_centro_de_custo')
+                    <li>
+                        <a href="{{route('g.relatorios.centrodecusto.index')}}" parent="relatorios" key="centrodecusto">
+                            Centro de Custo
                         </a>
                     </li>
                 @endcan

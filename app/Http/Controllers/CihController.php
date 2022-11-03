@@ -108,6 +108,7 @@ class CihController extends Controller
 
             $cih = Cih::create($dados);
 
+
             foreach ($dados['colaboradores'] as $colaborador) {
                 $cih->Colaboradores()->attach($colaborador['id']);
             }

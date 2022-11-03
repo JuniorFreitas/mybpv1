@@ -51,4 +51,9 @@ class CentroCusto extends Model
         return $this->hasOne(User::class, 'id', 'gestor_id')->select(['id', 'nome', 'login']);
     }
 
+    public function Admissao()
+    {
+        return $this->hasMany(Admissao::class, 'centro_custo_id', 'id');
+    }
+
 }

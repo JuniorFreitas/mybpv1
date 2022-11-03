@@ -919,6 +919,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('vencimento-ferias/export-excel', [\App\Http\Controllers\Relatorios\FeriasController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_ferias');
 
         });
+
+        Route::group(['as' => 'centrodecusto.'], function () {
+            Route::get('centrodecusto', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'index'])->name('index')->middleware('can:relatorio_centro_de_custo');
+            Route::post('centrodecusto/pdf', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'exportPdf'])->name('exportPdf')->middleware('can:relatorio_centro_de_custo');
+            Route::post('centrodecusto/export-excel', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_centro_de_custo');
+            Route::post('centrodecusto/atualizar', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_centro_de_custo');
+        });
     });
 
     // Usuarios
