@@ -8,6 +8,9 @@
         <h3 style="text-transform: uppercase">Listagem Sintética de Funcionários</h3>
     </div>
     <br>
+    @php
+        $total = 0;
+    @endphp
     @foreach($dados as $centro_de_custo)
         @if(count($centro_de_custo['admissao']) > 0)
             <div>
@@ -48,13 +51,25 @@
                             </tr>
                         @endforeach
                         <tr>
-                            <td colspan="6" style="text-align: right; "><strong>Total de Funcionários: </strong>{{ count($centro_de_custo['admissao']) }}</td>
+                            <td colspan="6" style="text-align: right; ">
+                                <strong>Total de Funcionários: </strong>{{ count($centro_de_custo['admissao']) }}
+                                @php
+                                    $total = $total + count($centro_de_custo['admissao']);
+                                @endphp
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         @endif
     @endforeach
+    <div>
+        <table class="dados">
+            <tr>
+                <td class="text-center"><strong>TOTAL DE FUNCIONÁRIOS: {{ $total }}</strong></td>
+            </tr>
+        </table>
+    </div>
     @include('layouts.rodapePdfJob', ['usuario' => $usuario])
 @endsection
 @push('style')

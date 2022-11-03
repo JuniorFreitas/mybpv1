@@ -34,6 +34,12 @@ const app = new Vue({
             return {
                 campoCentrosDeCusto: this.controle.dados.campoCentrosDeCusto
             }
+        },
+
+        total() {
+            return this.lista.reduce((a, b) => {
+                return a + b.admissao.length;
+            }, 0);
         }
     },
     mounted() {

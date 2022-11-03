@@ -47,11 +47,13 @@
 
     <div id="conteudo">
         <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
+            <h3 class="text-center mt-3">Listagem Sintética de Funcionários</h3>
             <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
         </div>
         <div class="table-responsive" v-show="!controle.carregando && lista.length > 0" >
-            <div v-for="centro_de_custo in lista">
-                <h3 class="mt-5">@{{ centro_de_custo.label }}</h3>
+            <h3 class="text-center mt-3 mb-3">Listagem Sintética de Funcionários</h3>
+            <div v-for="centro_de_custo in lista" class="mb-5">
+                <h3>@{{ centro_de_custo.label }}</h3>
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
@@ -92,7 +94,19 @@
                             @{{item ? item.data_admissao : '' }}
                         </td>
                     </tr>
+                    <tr>
+                        <td colspan="6" class="text-right">
+                            <strong>Total de Funcionários: </strong> @{{ centro_de_custo.admissao.length }}
+                        </td>
+                    </tr>
                     </tbody>
+                </table>
+            </div>
+            <div>
+                <table class="tabela">
+                    <tr>
+                        <td class="text-center"><strong>TOTAL DE FUNCIONÁRIOS: @{{ total }}</strong></td>
+                    </tr>
                 </table>
             </div>
         </div>
