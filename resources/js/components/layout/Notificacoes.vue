@@ -133,7 +133,7 @@ export default {
                 res.data.forEach((not) => {
                     this.lista.push(not);
                 });
-                //this.mostrarToast();
+                // this.mostrarToast();
             })
             .catch(error => {
                 mostraErro('','Erro ao carregar novas notificações');
@@ -150,6 +150,12 @@ export default {
                     this.mostrarToast();
                 })
                 .listen('.exportacao_excel', (e) => {
+                    this.lista.push(e);
+                    this.mostrarToast();
+                })
+                .listen('.exportacao_pdf', (e) => {
+                    // console.log(e);
+                    // console.log(this.lista);
                     this.lista.push(e);
                     this.mostrarToast();
                 })

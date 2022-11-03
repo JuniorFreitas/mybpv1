@@ -17,6 +17,7 @@ class NotificacaoEvent implements ShouldBroadcastNow
     const MEMBRO_TAREFA_ADD = 'membro_tarefa_add';
     const MEMBRO_TAREFA_REMOVE = 'membro_tarefa_remove';
     const EXPORTACAO_EXCEL = 'exportacao_excel';
+    const EXPORTACAO_PDF = 'exportacao_pdf';
 
     const TIPO_PADRAO = 'padrao';
 
@@ -72,7 +73,6 @@ class NotificacaoEvent implements ShouldBroadcastNow
                     'visto' => false
                 ]);
                 return $notificacao->toArray();
-                break;
             case self::MEMBRO_TAREFA_REMOVE:
                 $tarefa = $this->dados['tarefa'];
                 $saida = [
@@ -87,7 +87,6 @@ class NotificacaoEvent implements ShouldBroadcastNow
                     'visto' => false
                 ]);
                 return $notificacao->toArray();
-                break;
 
             case self::EXPORTACAO_EXCEL:
                 $saida = [
@@ -102,7 +101,19 @@ class NotificacaoEvent implements ShouldBroadcastNow
                     'visto' => false
                 ]);
                 return $notificacao->toArray();
-                break;
+            case self::EXPORTACAO_PDF:
+                $saida = [
+                    'icone' => 'fas fa-file-pdf',
+                    'titulo' => "Seu pdf {$this->dados['local']} está pronto",
+                    'descricao' => "Verifique na área de downloads",
+                ];
+                $notificacao = Notificacao::create([
+                    'tipo' => $this->tipo,
+                    'payload' => $saida,
+                    'user_id' => $this->dados['user_id'],
+                    'visto' => false
+                ]);
+                return $notificacao->toArray();
         }
     }
 }

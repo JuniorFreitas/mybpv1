@@ -785,6 +785,7 @@ class AdmissaoController extends Controller
             'Curriculo.Dependentes',
             'Curriculo.FotoTres',
             'Curriculo.Telefones',
+            'Curriculo.Dependentes',
             'parecerRh',
             'parecerTecnica',
             'parecerRota',
