@@ -48,7 +48,10 @@ class JobExportaPdf implements ShouldQueue
      */
     public function handle()
     {
-        $pdf = PDF::loadView($this->view, [ 'dados' => $this->model, 'usuario' => $this->usuario])
+        $pdf = PDF::setOptions([
+            'logOutputFile' => storage_path('logs/log.htm'),
+            'tempDir' => storage_path('logs/')
+        ])->loadView($this->view, [ 'dados' => $this->model, 'usuario' => $this->usuario])
                     ->setPaper('A4', 'landscape');
 
         \Storage::disk('disco-exportacao')->put($this->nome_arquivo, $pdf->output());
