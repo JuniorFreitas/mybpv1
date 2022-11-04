@@ -4,7 +4,7 @@
         <th style="font-size: 17pt; font-weight: normal !important; padding-right: 10px; width: 60px">
             @if(!is_null($usuario['logo']))
                 <img
-                    src="{{ $usuario['logo'] }}"
+                    src="{{ \App\Models\Sistema::convertBase($usuario['logo'],true) }}"
                     alt="BPSE" title="BPSE" style="height: 70px; margin-top: 0px;">
                 <br>
             @endif
