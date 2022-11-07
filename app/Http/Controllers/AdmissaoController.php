@@ -287,8 +287,8 @@ class AdmissaoController extends Controller
 
                 $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
-                $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
+                is_null($dados['resultado_integrado']['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
+                is_null($dados['resultado_integrado']['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
 
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dadosResultadoIntegrado, $empresaExame, $tipo_pcmso);
 
@@ -536,8 +536,8 @@ class AdmissaoController extends Controller
                 !is_null($feedback->parecerTeste) ? $feedback->parecerTeste->update($dadosParecerTeste) : $feedback->parecerTeste()->create($dadosParecerTeste);
                 !is_null($feedback->ResultadoIntegrado) ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
-                $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
+                is_null($dados['resultado_integrado']['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
+                is_null($dados['resultado_integrado']['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
 
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dadosResultadoIntegrado, $empresaExame, $tipo_pcmso);
 
@@ -1045,8 +1045,8 @@ class AdmissaoController extends Controller
 
                 $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
-                $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
+                is_null($dados['resultado_integrado']['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
+                is_null($dados['resultado_integrado']['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
 
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dadosResultadoIntegrado, $empresaExame, $tipo_pcmso);
 

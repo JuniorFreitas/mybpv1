@@ -73,8 +73,8 @@ class ResultadoIntegradoController extends Controller
                 \DB::commit();
                 $feedback = FeedbackCurriculo::whereId($dados['feedback_id'])->with('Curriculo')->first();
 
-                $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
-                $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
+                is_null($dados['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
+                is_null($dados['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
 
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dados, $empresaExame, $tipo_pcmso);
 
@@ -178,8 +178,9 @@ class ResultadoIntegradoController extends Controller
                 \DB::beginTransaction();
 
                 $feedback = $resultadoIntegrado->Feedback;
-                $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
-                $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
+
+                is_null($dados['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
+                is_null($dados['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
 
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dados, $empresaExame, $tipo_pcmso);
 

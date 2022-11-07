@@ -278,7 +278,7 @@ class ResultadoIntegrado extends Model
         return $this->hasOne(CertificadoAlumar::class, 'feedback_id', 'feedback_id');
     }
 
-    public static function Notificacao(FeedbackCurriculo $feedback, User $user, $dados, EmpresaExame $empresaExame, $tipo_pcmso){
+    public static function Notificacao(FeedbackCurriculo $feedback, User $user, $dados, $empresaExame, $tipo_pcmso){
         if ($dados['documentos_entregue']) {
             if ($user->EmpresaConfiguracoes->envia_whatsapp) {
                 if ($feedback->TelPrincipal->tipo == 'whatsapp') {
@@ -310,7 +310,7 @@ class ResultadoIntegrado extends Model
         if ($dados['encaminhado_exame']) {
             if ($user->EmpresaConfiguracoes->envia_whatsapp) {
                 if ($feedback->TelPrincipal->tipo == 'whatsapp') {
-                    if ($dados['envia_whatsapp_exame']) {
+                    if ($dados['envia_whatsapp_exame'] && !is_null($empresaExame)) {
                         $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem admissional*, " .
                             "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
                             "🏥 Local do Exame: \n*{$empresaExame->nome}*.\n" .
@@ -329,7 +329,7 @@ class ResultadoIntegrado extends Model
                     }
                 }
             }
-            if ($dados['envia_email_exame']) {
+            if ($dados['envia_email_exame'] && !is_null($tipo_pcmso) && !is_null($empresaExame)) {
                 JobEncaminhamentoExame::dispatch([
                     'colaborador' => $feedback->Curriculo,
                     'cargo' => $feedback->VagaAberta->Vaga->nome,
