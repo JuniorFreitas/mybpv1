@@ -186,7 +186,7 @@ class PapeisController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $resultado->items()
+            'dados' => ['itens' => $resultado->items(), 'empresa_id' => auth()->user()->empresa_id]
         ]);
     }
 

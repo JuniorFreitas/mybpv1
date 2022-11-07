@@ -13,6 +13,19 @@
                 </select>
             </div>
         </div>
+        <div class="col-12 col-sm-6">
+            <div class="form-group">
+                <label>Centro de Custo</label>
+                <select
+                    :disabled="visualizar || disabled"
+                    v-model="form.centro_custo_id"
+                    class="form-control"
+                >
+                    <option value="">Selecione</option>
+                    <option v-for="item in centro_custos" :value="item.id" :key="item.id">{{ item.label }}</option>
+                </select>
+            </div>
+        </div>
 
         <div class="col-12 col-sm-6">
             <div class="form-group">
@@ -323,6 +336,7 @@ export default {
             default: {
                 feedback_id: "",
                 area_etiqueta_id: "",
+                centro_custo_id: "",
                 contrato: "",
                 funcao: "",
                 salario: "0,00",
@@ -392,7 +406,8 @@ export default {
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
             preload: true,
             areasetiquetas: [],
-            listSelects: []
+            listSelects: [],
+            centro_custos: [],
         };
     },
     async created() {
@@ -406,6 +421,13 @@ export default {
             .then(response => {
                 this.listSelects = response.data;
             }).catch(e => console.log(e));
+
+        await axios.post(`${URL_PUBLICO}/centro-custos/`, {'empresa_id': this.form.empresa_id})
+            .then(response => {
+                this.centro_custos = response.data.centro_custos;
+            }).catch(error => {
+                this.preload = false;
+            });
 
         this.preload = false;
     },

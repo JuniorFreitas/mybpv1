@@ -181,6 +181,7 @@ class UserController extends Controller
                 'cliente_id' => $cliente->Cliente->id,
                 'area_id' => $cliente->Cliente->area_id,
                 'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
+                'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id()
             ];

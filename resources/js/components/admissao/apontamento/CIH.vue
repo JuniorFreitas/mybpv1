@@ -351,22 +351,15 @@
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
 
-                    <form method="post" style="display: contents" target="_blank"
-                          :action="urlPdf">
-                        <input type="hidden" name="_token" :value="csrf">
-                        <input type="hidden" name="filtroPeriodo" :value="controle.dados.filtroPeriodo">
-                        <input type="hidden" name="periodo" :value="controle.dados.periodo">
-                        <input type="hidden" name="campoStatus" :value="controle.dados.campoStatus">
-                        <input type="hidden" name="campoTags" :value="controle.dados.campoTags">
-                        <input type="hidden" name="campoAreas" :value="controle.dados.campoAreas">
-                        <button class="btn btn-sm btn-primary" :disabled="controle.carregando"><i
-                            class="fas fa-file-pdf"></i> Gerar PDF
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-primary"
+                            @click.prevent="exportaPdf()"
+                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">
+                        <i class="fas fa-file-pdf"></i> EXPORTAR PDF
+                    </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary mr-1"
+                        class="btn btn-sm btn-primary"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length && !selecionados.length)"
                     >
@@ -640,6 +633,17 @@ export default {
         //     this.selecionaTudo = resultado;
         //     return resultado;
         // }
+        paramsExport() {
+            return {
+                campoCentrosDeCusto: this.controle.dados.campoCentrosDeCusto,
+                campoStatus: this.controle.dados.campoStatus,
+                campoTags: this.controle.dados.campoTags,
+                campoAreas: this.controle.dados.campoAreas,
+                campoGestores: this.controle.dados.campoGestores,
+                filtroPeriodo: this.controle.dados.filtroPeriodo,
+                periodo: this.controle.dados.periodo,
+            }
+        },
     },
     methods: {
         selecionaTodos() {

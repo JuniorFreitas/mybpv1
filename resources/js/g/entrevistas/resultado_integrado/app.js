@@ -397,6 +397,7 @@ const app = new Vue({
                     this.cadastrando = true;
 
                     this.preload = false;
+                    this.preloadForm = false;
                 })
                 .catch(error => {
                     this.preload = false;
@@ -404,37 +405,10 @@ const app = new Vue({
         },
 
         cadastrar() {
-            if (this.form.curriculo.municipio_id === "") {
-                valida_campo_vazio($("#mun_" + this.hash), 1);
-                mostraErro("", "Campo MUNICÍPIO não pode ficar vazio");
-                this.resetaCampoMunicipioModal();
-                return false;
-            }
-
-            if (this.form.vaga_id === "") {
-                valida_campo_vazio($("#vaga_" + this.hash), 1);
-                mostraErro("", "Campo VAGA não pode ficar vazio");
-                this.resetaCampoVagaModal();
-                return false;
-            }
-
-            if (this.form.cliente_id === "") {
-                valida_campo_vazio($("#cliente_" + this.hash), 1);
-                mostraErro("", "Campo EMPRESA não pode ficar vazio");
-                this.resetaCampoClienteModal();
-                return false;
-            }
-
             $("#janelaParecerEntrevista :input:visible").trigger("blur");
             if ($("#janelaParecerEntrevista :input:visible.is-invalid").length) {
                 mostraErro("", "Verifique os campos marcados");
                 return false;
-            }
-            if (this.nr_dez === "sim") {
-                if (this.nr.length === 0) {
-                    mostraErro("", "Por favor insira o Certificado NR 10");
-                    return false;
-                }
             }
 
             this.preload = true;

@@ -1,38 +1,39 @@
 @extends('layouts.pdf')
 @section('title','RELATÓRIO CIH PERÍODO')
 @section('empresa')
-    @include('layouts.cabecalioEmpresa')
+    @include('layouts.cabecalioEmpresaJob')
 @endsection
 @section('conteudo')
     <h5 class="text-center text-uppercase" style="margin-top: 30px">
-        {{$empresa->nome}} <br> REGISTRO DE JUSTIFICATIVA DE PONTO
-        @if($filtroPeriodo)
-            - PERÍODO {{(new \MasterTag\DataHora($dataInicio))->dataCompleta()}}
-            à {{(new \MasterTag\DataHora($dataFim))->dataCompleta()}} <br>
+        {{$usuario['razao_social']}} <br> REGISTRO DE JUSTIFICATIVA DE PONTO
+        @if($dados['filtro_periodo'])
+            - PERÍODO {{(new \MasterTag\DataHora($dados['data_inicio']))->dataCompleta()}}
+            à {{(new \MasterTag\DataHora($dados['data_fim']))->dataCompleta()}} <br>
         @endif
     </h5>
 
-    <table width="100%" border="0" class="tabela" style="margin-top: 30px">
-
-        <tr class="topo">
-            <td class="text-center">N</td>
-            <td class="text-center">Colaborador</td>
-            <td class="text-center">Cargo</td>
-            <td class="text-center">{{ $modelo_cih_config == "area" ? "Área" : "Centro de Custo" }}</td>
-            <td class="text-center">Data ocorrência</td>
-            <td class="text-center">Ocorrência</td>
-            <td class="text-center">Responsável Lançamento</td>
-            <td class="text-center">Ação</td>
-            <td class="text-center">Status</td>
-            <td class="text-center">Responsável Aprovação</td>
-        </tr>
+    <table width="100%" border="0" class="dados" style="margin-top: 30px">
+        <thead>
+            <tr class="bg-default f12">
+                <th class="text-center">N</th>
+                <th class="text-center">Colaborador</th>
+                <th class="text-center">Cargo</th>
+                <th class="text-center">{{ $dados['modelo_cih_config'] == "area" ? "Área" : "Centro de Custo" }}</th>
+                <th class="text-center">Data ocorrência</th>
+                <th class="text-center">Ocorrência</th>
+                <th class="text-center">Responsável Lançamento</th>
+                <th class="text-center">Ação</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Responsável Aprovação</th>
+            </tr>
+        </thead>
         <?php $cont = 1; ?>
-        @foreach($rows as $cih)
-            <tr class="linha">
+        @foreach($dados['rows'] as $cih)
+            <tr>
                 <td class="text-center">{{ $cont }}</td>
                 <td class="text-center">{{ $cih['colaborador'] }}</td>
                 <td class="text-center">{{ $cih['cargo'] }}</td>
-                <td class="text-center">{{ $modelo_cih_config === "area" ? $cih['area'] : $cih['centro_de_custo'] }}</td>
+                <td class="text-center">{{ $dados['modelo_cih_config'] === "area" ? $cih['area'] : $cih['centro_de_custo'] }}</td>
                 <td class="text-center">{{$cih['data_ocorrencia']}}</td>
                 <td class="text-center" style="text-transform: uppercase">{{ $cih['tag'] }}</td>
                 <td class="text-center" style="text-transform: uppercase">{{ $cih['responsavel_lancamento'] }}</td>
@@ -48,7 +49,7 @@
 
     </table>
 
-    @include('layouts.rodapePdf')
+    @include('layouts.rodapePdfJob')
 @endsection
 
 @push('style')
