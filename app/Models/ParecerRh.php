@@ -399,6 +399,12 @@ class ParecerRh extends Model
         return is_null($value) ? "" : $value;
     }
 
+    //Acessor ->datalido
+    public function getBotaAttribute($value)
+    {
+        return is_null($value) ? "" : $value;
+    }
+
     public function setBotaAttribute($value)
     {
         if (!is_null($value)) {
@@ -408,10 +414,19 @@ class ParecerRh extends Model
         }
     }
 
-    //Acessor ->datalido
-    public function getBotaAttribute($value)
+    // Indicado por alguém
+    public function getIndicacaoAttribute($value)
     {
-        return is_null($value) ? "" : $value;
+        return is_null($value) ? false : $value;
+    }
+
+    public function setIndicacaoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $this->attributes['indicacao'] = $value;
+        } else {
+            $this->attributes['indicacao'] = false;
+        }
     }
 
     //Acessor ->datalido

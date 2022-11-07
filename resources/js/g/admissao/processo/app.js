@@ -192,6 +192,7 @@ const app = new Vue({
 
             admissao: {
                 area_etiqueta_id: "",
+                centro_custo_id: "",
                 contrato: "",
                 funcao: "",
                 salario: "0,00",
@@ -411,6 +412,7 @@ const app = new Vue({
             admissao: {
                 feedback_id: "",
                 area_etiqueta_id: "",
+                centro_custo_id: "",
                 contrato: "",
                 funcao: "",
                 salario: "0,00",

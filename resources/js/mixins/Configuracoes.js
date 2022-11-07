@@ -14,7 +14,7 @@ const configuracoes = {
     },
     computed: {
         whatsappLiberado() {
-            return this.authconfiguracao?.config_empresa?.envia_whatsapp
+            return this.authconfiguracao?.empresa_configuracoes?.envia_whatsapp
         }
     }
 };

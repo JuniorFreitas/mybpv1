@@ -6,6 +6,7 @@ use App\Exports\admissao\apontamento\cihExport;
 use App\Jobs\Admissao\Apontamento\Cih\JobCihAprovarReprovar;
 use App\Jobs\Admissao\Apontamento\Cih\JobCihStore;
 use App\Jobs\JobExportaExcel;
+use App\Jobs\JobExportaPdf;
 use App\Models\AreaEtiqueta;
 use App\Models\Arquivo;
 use App\Models\CentroCusto;
@@ -273,7 +274,7 @@ class CihController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = Cih::get();
+//        $periodo = Cih::get();
         $tags = CihTag::orderBy('label')->whereAtivo(true)->get();
         $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
         $centros_de_custo = CentroCusto::with('Gestor')->orderBy('label')->whereAtivo(true)->get();
@@ -290,7 +291,7 @@ class CihController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'tags' => $tags,
-                'periodo' => $periodo,
+//                'periodo' => $periodo,
                 'intervalo' => $intervalo,
                 'config_modelo_cih' => $usuario->EmpresaConfiguracoes->modelo_cih,
                 'permissoes' => [
@@ -587,7 +588,7 @@ class CihController extends Controller
 
     /**
      * @param Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function relatorioPdf(Request $request)
     {
@@ -627,13 +628,30 @@ class CihController extends Controller
             }
         }
 
-//        dd($rows);
+        $dados = [
+            'data_inicio' => $dataInicio,
+            'data_fim' => $dataFim,
+            'filtro_periodo' => $filtroPeriodo,
+            'modelo_cih_config' => $modelo_cih_config,
+            'rows' => $rows];
 
-        $empresa = User::whereId(auth()->user()->empresa_id)->first();
-        $pdf = PDF::loadView('pdf.admissao.apontamento.cih', compact('rows', 'empresa', 'dataInicio', 'dataFim', 'filtroPeriodo', 'modelo_cih_config'));
-        $pdf->setPaper('A4', 'landscape');
 
-        return $pdf->stream("relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf");
+        $view = 'pdf.admissao.apontamento.cih';
+        $nameArquivo = "relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf";
+
+        $usuario['empresa_id'] = auth()->user()->empresa_id;
+        $usuario['id'] = auth()->user()->id;
+        $usuario['nome'] = auth()->user()->nome;
+        $usuario['logo'] = null;
+        $usuario['razao_social'] = auth()->user()->DadosEmpresa->razao_social;
+        $usuario['endereco'] = auth()->user()->Empresa->endereco_completo;
+        $usuario['cnpj'] = auth()->user()->DadosEmpresa->cnpj;
+        if (count(auth()->user()->ClientesLogo) > 0) {
+            $usuario['logo'] = auth()->user()->ClientesLogo[0]->urlThumb;
+        }
+
+        JobExportaPdf::dispatch($usuario, "Relatório - CIH (PDF)", $dados, $nameArquivo, $view);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo pdf, assim que finalizado você será notificado.']);
     }
 
     // Anexos-------------------------------------------------

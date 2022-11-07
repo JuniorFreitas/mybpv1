@@ -97,6 +97,19 @@
             text-align: right;
             /*z-index: 1;*/
         }
+
+        table.dados, table.dados th, table.dados td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            padding: 5px;
+        }
+        .dados{
+            width: 100%;
+        }
+        .f12 {
+            font-size: 12pt;
+        }
     </style>
     @stack('style')
 </head>
