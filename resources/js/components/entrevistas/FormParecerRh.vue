@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div id="formParecerRh">
         <div v-if='!preload'>
             <dados-pessoais :form='form'></dados-pessoais>
 
@@ -2708,6 +2708,12 @@ export default {
             .catch(error => {
                 this.preload = false
             })
+
+            if(this.disabledParecerRh){
+                setTimeout(() => {
+                    $('#formParecerRh select').removeAttr('onblur');
+                },8000)
+            }
     },
 
     components: {

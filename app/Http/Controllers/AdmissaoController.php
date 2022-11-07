@@ -11,7 +11,9 @@ use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaVencimento;
 use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
+use App\Models\EmpresaExame;
 use App\Models\FeedbackCurriculo;
+use App\Models\Pcmso;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
@@ -282,7 +284,14 @@ class AdmissaoController extends Controller
                 $feedback->parecerRota()->create($dadosParecerRota);
                 $feedback->parecerTecnica()->create($dadosParecerTecnica);
                 $feedback->parecerTeste()->create($dadosParecerTeste);
+
                 $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
+                $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
+
+                ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dadosResultadoIntegrado, $empresaExame, $tipo_pcmso);
+
 
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
 
@@ -526,6 +535,11 @@ class AdmissaoController extends Controller
                 !is_null($feedback->parecerTecnica) ? $feedback->parecerTecnica->update($dadosParecerTecnica) : $feedback->parecerTecnica()->create($dadosParecerTecnica);
                 !is_null($feedback->parecerTeste) ? $feedback->parecerTeste->update($dadosParecerTeste) : $feedback->parecerTeste()->create($dadosParecerTeste);
                 !is_null($feedback->ResultadoIntegrado) ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
+                $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
+
+                ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dadosResultadoIntegrado, $empresaExame, $tipo_pcmso);
 
                 //Logica de Vagas
                 if ($feedback->vaga_projeto_id) {
@@ -1030,6 +1044,11 @@ class AdmissaoController extends Controller
                 $dadosResultadoIntegrado = $dados['resultado_integrado'];
 
                 $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
+                $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
+
+                ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dadosResultadoIntegrado, $empresaExame, $tipo_pcmso);
 
                 $dadosAdmissao = $admissaoDados['dados_admissoes'];
                 unset($admissaoDados['dados_admissoes']);

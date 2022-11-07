@@ -2,6 +2,7 @@ const app = new Vue({
     el: '#app',
     data: {
         tituloJanela: '',
+        empresa_id: '',
         preloadAjax: false,
         editando: false,
         id: 0,//id_curso
@@ -16,7 +17,7 @@ const app = new Vue({
             nome: '',
             descricao: '',
             email: '',
-            ativo: '',
+            ativo: true,
             empresa_id: '',
             listaDeHabilidades: '',
         },
@@ -65,6 +66,7 @@ const app = new Vue({
 
             this.form.listaDeHabilidades = this.listaDeHabilidades;
             this.preloadAjax = true;
+            this.form.empresa_id = this.empresa_id;
 
             axios.post(`${URL_ADMIN}/papeis`, this.form)
                 .then(response => {
@@ -123,6 +125,7 @@ const app = new Vue({
 
             this.form.listaDeHabilidades = this.listaDeHabilidades;
             this.preloadAjax = true;
+            this.form.empresa_id = this.empresa_id;
 
             axios.put(`${URL_ADMIN}/papeis/${this.form.id}`, this.form)
                 .then(response => {
@@ -161,7 +164,8 @@ const app = new Vue({
 
         carregou: function (dados) {
 
-            this.lista = dados;
+            this.lista = dados.itens;
+            this.empresa_id = dados.empresa_id;
             this.controle.carregando = false;
 
         },
