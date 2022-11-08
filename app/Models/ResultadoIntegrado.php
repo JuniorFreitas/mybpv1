@@ -278,25 +278,23 @@ class ResultadoIntegrado extends Model
         return $this->hasOne(CertificadoAlumar::class, 'feedback_id', 'feedback_id');
     }
 
-    public static function Notificacao(FeedbackCurriculo $feedback, User $user, $dados, $empresaExame, $tipo_pcmso){
+    public static function Notificacao(FeedbackCurriculo $feedback, User $user, $dados, $empresaExame, $tipo_pcmso)
+    {
+        $telWhatsapp = $feedback->Curriculo->Telefones->where('tipo', 'whatsapp')->where('principal', true)->first();
         if ($dados['documentos_entregue']) {
-            if ($user->EmpresaConfiguracoes->envia_whatsapp) {
-                if ($feedback->TelPrincipal->tipo == 'whatsapp') {
-                    if ($dados['envia_whatsapp_documentos']) {
-                        $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\n👏🏽 Parabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
-                            "Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.\n\n" .
-                            env('APP_URL') . "/documentos\n\n" .
-                            "Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões para que não haja atraso na etapa de documentação, necessária para a continuidade de sua admissão.\n\n" .
-                            "Atenciosamente,\n\n" .
-                            "Equipe " . $user->Empresa->razao_social . "\n\n" .
-                            "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
-                        (new ZapNotificacao())->enviar([
-                            'enviado_id' => $feedback->curriculo_id,
-                            'telefone' => $feedback->TelPrincipal->sonumero,
-                            'mensagem' => $mensagem
-                        ]);
-                    }
-                }
+            if ($user->EmpresaConfiguracoes->envia_whatsapp && $telWhatsapp && $dados['envia_whatsapp_documentos']) {
+                $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\n👏🏽 Parabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
+                    "Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.\n\n" .
+                    env('APP_URL') . "/documentos\n\n" .
+                    "Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões para que não haja atraso na etapa de documentação, necessária para a continuidade de sua admissão.\n\n" .
+                    "Atenciosamente,\n\n" .
+                    "Equipe " . $user->Empresa->razao_social . "\n\n" .
+                    "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+                (new ZapNotificacao())->enviar([
+                    'enviado_id' => $feedback->curriculo_id,
+                    'telefone' => $telWhatsapp->sonumero,
+                    'mensagem' => $mensagem
+                ]);
             }
             if ($dados['envia_email_documentos']) {
                 JobEnvioDocumento::dispatch([
@@ -308,26 +306,22 @@ class ResultadoIntegrado extends Model
         }
 
         if ($dados['encaminhado_exame']) {
-            if ($user->EmpresaConfiguracoes->envia_whatsapp) {
-                if ($feedback->TelPrincipal->tipo == 'whatsapp') {
-                    if ($dados['envia_whatsapp_exame'] && !is_null($empresaExame)) {
-                        $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem admissional*, " .
-                            "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
-                            "🏥 Local do Exame: \n*{$empresaExame->nome}*.\n" .
-                            "📍 Endereço: *{$empresaExame->dados['endereco']['endereco_completo']}*\n" .
-                            "📞 Contato: *{$empresaExame->dados['telefone']}*" .
-                            "\n\n" .
-                            "Atenciosamente,\n\n" .
-                            "Equipe " . $user->Empresa->razao_social . "\n\n" .
-                            "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+            if ($user->EmpresaConfiguracoes->envia_whatsapp && $telWhatsapp && $dados['envia_whatsapp_exame'] && !is_null($empresaExame)) {
+                $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem admissional*, " .
+                    "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
+                    "🏥 Local do Exame: \n*{$empresaExame->nome}*.\n" .
+                    "📍 Endereço: *{$empresaExame->dados['endereco']['endereco_completo']}*\n" .
+                    "📞 Contato: *{$empresaExame->dados['telefone']}*" .
+                    "\n\n" .
+                    "Atenciosamente,\n\n" .
+                    "Equipe " . $user->Empresa->razao_social . "\n\n" .
+                    "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
 
-                        (new ZapNotificacao())->enviar([
-                            'enviado_id' => $feedback->curriculo_id,
-                            'telefone' => $feedback->TelPrincipal->sonumero,
-                            'mensagem' => $mensagem
-                        ]);
-                    }
-                }
+                (new ZapNotificacao())->enviar([
+                    'enviado_id' => $feedback->curriculo_id,
+                    'telefone' => $telWhatsapp->sonumero,
+                    'mensagem' => $mensagem
+                ]);
             }
             if ($dados['envia_email_exame'] && !is_null($tipo_pcmso) && !is_null($empresaExame)) {
                 JobEncaminhamentoExame::dispatch([
