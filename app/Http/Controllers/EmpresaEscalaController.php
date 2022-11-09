@@ -7,6 +7,7 @@ use App\Models\OcorrenciaJornada;
 use App\Models\Sistema;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 
 class EmpresaEscalaController extends Controller {
@@ -251,7 +252,8 @@ class EmpresaEscalaController extends Controller {
 
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados, [
-            'escala_id' => 'required|min:1',
+            'escala_id' => Rule::requiredIf(empty($request->escalasSelecionadas)),
+            'escalasSelecionadas' => Rule::requiredIf(is_null($request->escala_id)),
             'funcionariosSelecionados' => 'required|array|min:1',
         ]);
 
@@ -264,8 +266,8 @@ class EmpresaEscalaController extends Controller {
         } else {
             foreach ($request->funcionariosSelecionados as $funcnionario_id) {
                 $user = User::find($funcnionario_id);
-                if ($request->escala_id > 0) {
-                    $user->EscalasFuncionario()->sync($request->escala_id);
+                if (is_null($request->escala_id) && count($request->escalasSelecionadas)>0) {
+                    $user->EscalasFuncionario()->sync($request->escalasSelecionadas);
                 } else {
                     $user->EscalasFuncionario()->detach();
                 }
@@ -296,12 +298,16 @@ class EmpresaEscalaController extends Controller {
         ]);*/
 
         $resultado = $resultado->paginate($porPagina);
+        $escalasSelecionadas = collect($resultado->items())->transform(function ($item){
+            $item->selecionado = false;
+            return $item;
+        });
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $resultado->items(),
+            'dados' => $escalasSelecionadas,
         ]);
     }
 }
