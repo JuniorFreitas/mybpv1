@@ -49,6 +49,7 @@ const app = new Vue({
         },
         formPerimetroDefault:null,
         listaPerimetros:[],
+        listaPerimetrosDefault:[],
         listaFuncionarios:[],
         paginacaoFuncionarios: {
             carregando: false,
@@ -57,9 +58,11 @@ const app = new Vue({
             },
         },
         todosFuncionariosSelecionados:false,
+
         formPerimetroFuncionarios:{
             funcionariosSelecionados:[],
-            perimetro_id:null,
+            perimetrosSelecionados:[],
+            perimetro_id:0,
             preload:false,
             update:false,
         },
@@ -147,6 +150,7 @@ const app = new Vue({
         },
         carregouPerimetros: function (dados) {
             this.listaPerimetros = dados;
+            this.listaPerimetrosDefault = _.cloneDeep(dados);
             this.paginacaoPerimetros.carregando = false;
             this.formPerimetroFuncionarios.preload = false;
         },
@@ -442,6 +446,20 @@ const app = new Vue({
             }
             this.checarMarcarTodosFuncionarios();
         },
+
+        selecionarPerimetro(perimetro){
+            if(!this.formPerimetroFuncionarios.perimetrosSelecionados.includes(perimetro.id)){
+                this.formPerimetroFuncionarios.perimetrosSelecionados.push(perimetro.id);
+            }else{
+                let index = this.formPerimetroFuncionarios.perimetrosSelecionados.indexOf(perimetro.id);
+                if(index !== -1){
+                    this.formPerimetroFuncionarios.perimetrosSelecionados.splice(index,1);
+                }
+            }
+            this.checarMarcarTodosFuncionarios();
+            this.formPerimetroFuncionarios.perimetrosSelecionados.length === 0 ? this.formPerimetroFuncionarios.perimetro_id = 0 : this.formPerimetroFuncionarios.perimetro_id = null;
+        },
+
         checarMarcarTodosFuncionarios(){
             let quantidade = this.listaFuncionarios.length;
             let marcados = this.listaFuncionarios.filter((funcionario=>this.formPerimetroFuncionarios.funcionariosSelecionados.includes(funcionario.id))).length
@@ -449,7 +467,27 @@ const app = new Vue({
         },
 
         formAssociarPerimetro(){
-            this.formPerimetroFuncionarios.perimetro_id=null;
+            this.listaPerimetros = _.cloneDeep(this.listaPerimetrosDefault);
+            this.formPerimetroFuncionarios.perimetro_id=0;
+            this.formPerimetroFuncionarios.perimetrosSelecionados=[];
+
+            if(this.formPerimetroFuncionarios.funcionariosSelecionados.length === 1){
+                let funcionarioId = this.formPerimetroFuncionarios.funcionariosSelecionados[0];
+                let perimetros = _.filter(this.listaFuncionarios, {'id':funcionarioId})[0].perimetros_funcionario;
+
+                console.log(perimetros);
+
+                this.listaPerimetros.forEach((item) => {
+                    perimetros.forEach((perimetro) => {
+                        if (item.id === perimetro.id){
+                            this.formPerimetroFuncionarios.perimetrosSelecionados.push(perimetro.id);
+                            item.selecionado = true;
+                        }
+                    });
+                });
+                this.formPerimetroFuncionarios.perimetro_id=null;
+            }
+
             this.formPerimetroFuncionarios.update=false;
         },
         assosicarPerimetros(){
@@ -470,7 +508,7 @@ const app = new Vue({
                 this.formPerimetroFuncionarios.funcionariosSelecionados=[];
                 this.todosFuncionariosSelecionados=false;
             }
-        }
+        },
 
 
     }

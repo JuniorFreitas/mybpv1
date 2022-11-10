@@ -40,18 +40,17 @@
                      <i class="fas fa-users fa-2x"></i> selecionado(s) @{{ formEscalaFuncionarios.funcionariosSelecionados.length }} coladorador(es)
                 </h5>
                 <div class="form-group">
-                    <label >Selecione uma escala para associar:</label>
-                    <select class="form-control" v-model="formEscalaFuncionarios.escala_id">
-                        <option :value="null" >Selecione....</option>
-                        <option :value="0" >REMOVER ESCALA DO COLABORADOR</option>
-                        <option v-for="(p,index) in listaEscalas" :key="p.id" :value="p.id" >@{{ p.descricao }}</option>
-                    </select>
+                    <h4>Selecione uma escala para associar:</h4>
+                    <div class="custom-control custom-switch mt-2" v-for="(p,index) in listaEscalas" :key="index">
+                        <input type="checkbox" v-model="p['selecionado']" :value="p.id" :id="index" class="custom-control-input" @click="selecionarEscala(p)">
+                        <label :for="index" class="custom-control-label">@{{ p.descricao }}</label>
+                    </div>
                 </div>
             </div>
 
         </template>
         <template slot="rodape">
-            <button :disabled="listaEscalas.length=== 0 || formEscalaFuncionarios.escala_id===null" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarEscala">
+            <button :disabled="listaEscalas.length=== 0" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarEscala">
                 <i class="fas fa-link"></i> Aplicar
             </button>
         </template>
@@ -197,7 +196,11 @@
                     </td>
                     <td data-label="nome" >@{{funcionario.nome}}</td>
 {{--                    <td data-label="empresa">@{{funcionario.empresa.nome}}</td>--}}
-                    <td data-label="escalametro"><span v-if="funcionario.escalas_funcionario[0]">@{{funcionario.escalas_funcionario[0].descricao}}</span></td>
+                    <td data-label="escalametro">
+                        <span class="badge badge-secondary ml-1 p-1" v-if="funcionario.escalas_funcionario.length" v-for="escalas in funcionario.escalas_funcionario">
+                            @{{escalas.descricao}}
+                        </span>
+                    </td>
                 </tr>
                 </tbody>
             </table>
