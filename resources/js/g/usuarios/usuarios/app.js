@@ -36,6 +36,7 @@ const app = new Vue({
             showCampoGrupo: false,
             dados: {
                 campoBusca: "",
+                campoLogin: "",
                 por_pagina: 50,
                 campoEmpresa: "",
                 campoGrupo: "",
@@ -109,6 +110,14 @@ const app = new Vue({
             axios.get(`${URL_ADMIN}/usuarios/${id}/editar`)
                 .then(response => {
                     Object.assign(this.form, response.data.usuario);
+
+                    if(response.data.usuario.grupo_id == null){
+                        this.form.grupo_id = '';
+                    }
+                    if(response.data.usuario.gestor == null){
+                        this.form.gestor = false;
+                    }
+
                     this.listaPapeis = response.data.papeis;
                     this.listaCloud = response.data.cloud;
                     this.form.user_recebe_email = response.data.formulario_vazio;

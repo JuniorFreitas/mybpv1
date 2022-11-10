@@ -52,7 +52,6 @@ class UserController extends Controller
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
             'login' => 'required|email:rfc,dns',
-            'grupo_id' => 'required|numeric',
             'tipo' => 'required',
             'ativo' => 'required|boolean',
             'empresa_id' => 'required'
@@ -126,7 +125,6 @@ class UserController extends Controller
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required|min:3',
             'login' => 'required|email:rfc,dns',
-            'grupo_id' => 'required|numeric',
             'ativo' => 'required|boolean',
             'tipo' => 'required',
         ]);
@@ -240,6 +238,11 @@ class UserController extends Controller
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
                 ->orWhere('id', $request->campoBusca);
+        }
+
+        if ($request->filled('campoLogin')) {
+            $resultado->where('login', 'like', '%' . $request->campoLogin . '%')
+                ->orWhere('id', $request->campoLogin);
         }
 
         if ($request->filled('campoEmpresa')) {
