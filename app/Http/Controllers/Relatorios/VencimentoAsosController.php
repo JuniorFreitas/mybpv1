@@ -26,12 +26,12 @@ class VencimentoAsosController extends Controller
         $data = new DataHora();
         $data->addDia($periodo_vencimento);
 
-        $AdmissoesAso = AdmissaoAso::whereAtivo(true)->whereEmpresaId($empresa_id)
+       $AdmissoesAso = AdmissaoAso::whereAtivo(true)->whereEmpresaId($empresa_id)
             ->whereHas('Admissao', function ($q) {
                 $q->Admitidos();
             })
             ->select(['id', 'empresa_id', 'admissao_id', 'data_aso', 'data_vencimento'])
-            ->where('data_vencimento', '>=', (new DataHora())->dataInsert())
+//            ->where('data_vencimento', '>=', (new DataHora())->dataInsert())
             ->where('data_vencimento', '<=', $data->dataInsert())
             ->with('Admissao', function ($a) {
                 $a->select(['id', 'feedback_id', 'data_admissao'])
