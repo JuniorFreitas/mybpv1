@@ -291,6 +291,7 @@ class UserController extends Controller
                 'formulario_vazio' => $formulario_vazio,
                 'lista_tipos' => $lista_tipos,
                 'lista_grupos' => $lista_grupos,
+                'tipos_usuarios_gerenciais' => User::TIPOS_USUARIOS_GERENCIAIS,
             ],
         ]);
 

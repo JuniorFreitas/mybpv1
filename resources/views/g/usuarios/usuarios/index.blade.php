@@ -71,7 +71,7 @@
                         <option :value="false">Não</option>
                     </select>
                 </div>
-                <fieldset v-if="form.tipo === 'Administrador' || form.tipo === 'Suporte' || form.tipo === 'Gestor' || form.tipo === 'Funcionario'">
+                <fieldset v-if="tipos_usuarios_gerenciais.includes(form.tipo)">
                     <legend>Tipos de emails que esse usuário pode receber:</legend>
                     <div class="custom-control custom-switch"
                          v-for="(tipo, key) in listaTipoEmail" :key="tipo.id">

@@ -29,6 +29,7 @@ const app = new Vue({
         listaCloud: [],
         listaTipoEmail: [],
         lista_tipos: [],
+        tipos_usuarios_gerenciais: [],
         lista: [],
         dados: {},
         controle: {
@@ -199,6 +200,7 @@ const app = new Vue({
             this.lista = dados.resultado;
             this.empresa_id = dados.empresa;
             this.listaTipoEmail = dados.tipo_email;
+            this.tipos_usuarios_gerenciais = dados.tipos_usuarios_gerenciais;
             this.user_recebe_emailDefault = dados.formulario_vazio;
             this.lista_tipos = dados.lista_tipos;
             this.empresa_id != 100 ? this.controle.dados.listaPapeis = dados.lista_grupos : [];
