@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EmpresaPerimetro;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PerimetroController extends Controller {
     /**
@@ -126,7 +127,8 @@ class PerimetroController extends Controller {
     public function assosicarPerimetro(Request $request) {
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados, [
-            'perimetro_id' => 'required|min:1',
+            'perimetro_id' => Rule::requiredIf(empty($request->perimetrosSelecionados)),
+            'perimetrosSelecionados' => Rule::requiredIf(is_null($request->perimetro_id)),
             'funcionariosSelecionados' => 'required|array|min:1',
         ]);
 
@@ -139,8 +141,8 @@ class PerimetroController extends Controller {
         } else {
             foreach ($request->funcionariosSelecionados as $funcnionario_id) {
                 $user = User::find($funcnionario_id);
-                if ($request->perimetro_id > 0) {
-                    $user->PerimetrosFuncionario()->sync($request->perimetro_id);
+                if (is_null($request->perimetro_id) && count($request->perimetrosSelecionados)>0) {
+                    $user->PerimetrosFuncionario()->sync($request->perimetrosSelecionados);
                 } else {
                     $user->PerimetrosFuncionario()->detach();
                 }
@@ -169,12 +171,16 @@ class PerimetroController extends Controller {
         ]);*/
 
         $resultado = $resultado->paginate($porPagina);
+        $perimetrosSelecionados = collect($resultado->items())->transform(function ($item){
+            $item->selecionado = false;
+            return $item;
+        });
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $resultado->items(),
+            'dados' => $perimetrosSelecionados,
         ]);
     }
 

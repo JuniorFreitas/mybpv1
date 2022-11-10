@@ -54,6 +54,7 @@ const app = new Vue({
         },
         formPerimetroDefault:null,
         listaEscalas:[],
+        listaEscalasDefault:[],
         listaFuncionarios:[],
         paginacaoFuncionarios: {
             carregando: false,
@@ -64,7 +65,8 @@ const app = new Vue({
         todosFuncionariosSelecionados:false,
         formEscalaFuncionarios:{
             funcionariosSelecionados:[],
-            escala_id:null,
+            escalasSelecionadas:[],
+            escala_id:0,
             preload:false,
             update:false,
         },
@@ -125,6 +127,7 @@ const app = new Vue({
         },
         carregouEscalas: function (dados) {
             this.listaEscalas = dados;
+            this.listaEscalasDefault = _.cloneDeep(dados);
             this.paginacaoEscalas.carregando = false;
             //this.formEscalaFuncionarios.preload = false;
         },
@@ -276,8 +279,38 @@ const app = new Vue({
             this.todosFuncionariosSelecionados = quantidade===marcados;
         },
 
+        selecionarEscala(escala){
+            if(!this.formEscalaFuncionarios.escalasSelecionadas.includes(escala.id)){
+                this.formEscalaFuncionarios.escalasSelecionadas.push(escala.id);
+            }else{
+                let index = this.formEscalaFuncionarios.escalasSelecionadas.indexOf(escala.id);
+                if(index !== -1){
+                    this.formEscalaFuncionarios.escalasSelecionadas.splice(index,1);
+                }
+            }
+            this.formEscalaFuncionarios.escalasSelecionadas.length === 0 ? this.formEscalaFuncionarios.escala_id = 0 : this.formEscalaFuncionarios.escala_id = null;
+        },
+
         formAssociarEscala(){
-            this.formEscalaFuncionarios.escala_id=null;
+            this.listaEscalas = _.cloneDeep(this.listaEscalasDefault);
+            this.formEscalaFuncionarios.escala_id=0;
+            this.formEscalaFuncionarios.escalasSelecionadas = [];
+
+            if(this.formEscalaFuncionarios.funcionariosSelecionados.length === 1){
+                let funcionarioId = this.formEscalaFuncionarios.funcionariosSelecionados[0];
+                let escalas = _.filter(this.listaFuncionarios, {'id':funcionarioId})[0].escalas_funcionario;
+
+                this.listaEscalas.forEach((item) => {
+                    escalas.forEach((escala) => {
+                        if (item.id === escala.id){
+                            this.formEscalaFuncionarios.escalasSelecionadas.push(escala.id);
+                            item.selecionado = true;
+                        }
+                    });
+                });
+                this.formEscalaFuncionarios.escala_id=null;
+            }
+
             this.formEscalaFuncionarios.update=false;
         },
         assosicarEscala(){
