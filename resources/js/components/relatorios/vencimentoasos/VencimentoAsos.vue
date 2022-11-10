@@ -18,7 +18,7 @@
                     <th style="text-align: center">Cargo</th>
                     <th style="text-align: center">Data da Admissão</th>
                     <th style="text-align: center">Data de Vencimento</th>
-                    <th style="text-align: center">Dias a Vencer</th>
+                    <th style="text-align: center">Dias</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -28,7 +28,11 @@
                     <td style="text-align: center">{{ vencimento.cargo }}</td>
                     <td style="text-align: center">{{ vencimento.data_admissao }}</td>
                     <td style="text-align: center">{{ vencimento.data_vencimento }}</td>
-                    <td style="text-align: center">{{ vencimento.dias_vencer }}</td>
+                    <td style="text-align: center">
+                        {{ Math.abs(vencimento.dias_vencer) }}
+                        <span class="p-1 badge badge-danger" v-if="vencimento.dias_vencer < 0">VENCIDO</span>
+                        <span class="p-1 badge badge-info" v-else>A VENCER</span>
+                    </td>
 
                 </tr>
                 </tbody>
