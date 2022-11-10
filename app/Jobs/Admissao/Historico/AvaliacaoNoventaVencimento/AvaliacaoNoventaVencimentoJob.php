@@ -64,7 +64,7 @@ class AvaliacaoNoventaVencimentoJob implements ShouldQueue
 
                 $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
                     ->select(['id', 'nome', 'login'])
-                    ->whereIn('tipo', ['Administrador', 'Suporte'])
+                    ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
                     ->whereHas('UserRecebeEmail', function ($q) {
                         $q->where('nome', 'Avaliação 90 Dias');
                         $q->where('ativo', true);
