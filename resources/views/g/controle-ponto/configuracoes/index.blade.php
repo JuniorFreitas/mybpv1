@@ -105,18 +105,34 @@
                      <i class="fas fa-users fa-2x"></i> selecionado(s) @{{ formPerimetroFuncionarios.funcionariosSelecionados.length }} coladorador(es)
                 </h5>
                 <div class="form-group">
-                    <label >Selecione um perímetro para associar:</label>
-                    <select class="form-control" v-model="formPerimetroFuncionarios.perimetro_id">
-                        <option :value="null" >Selecione....</option>
-                        <option :value="0" >REMOVER PERÍMETRO DO COLABORADOR</option>
-                        <option v-for="(p,index) in listaPerimetros" :key="p.id" :value="p.id" >@{{ p.descricao }}</option>
-                    </select>
+                    <h4>Selecione um ou mais perímetros para associar:</h4>
+                    <div class="custom-control custom-switch mt-2" v-for="(p,index) in listaPerimetros" :key="index">
+                        <input type="checkbox" v-model="p['selecionado']" :value="p.id" :id="index" class="custom-control-input" @click="selecionarPerimetro(p)">
+                        <label :for="index" class="custom-control-label">@{{ p.descricao }}</label>
+                    </div>
+
+
+{{--                    <tr class="pointer" v-for="funcionario in listaFuncionarios" @click="selecionarFuncionario(funcionario)">--}}
+{{--                        <td data-label="id" class="text-center" width="10%">--}}
+{{--                            <div class="form-check" v-if="perimetros_funcionarios">--}}
+{{--                                <input type="checkbox" :value="funcionario.id" class="form-check-input" v-model="formPerimetroFuncionarios.funcionariosSelecionados">--}}
+{{--                                <label class="form-check-label" style="visibility: hidden"></label>--}}
+{{--                            </div>--}}
+{{--                        </td>--}}
+{{--                        <td data-label="nome" >@{{funcionario.nome}}</td>--}}
+{{--                        --}}{{--                            <td data-label="empresa">@{{funcionario.empresa.nome}}</td>--}}
+{{--                        <td data-label="perimetro"><span v-if="funcionario.perimetros_funcionario[0]">@{{funcionario.perimetros_funcionario[0].descricao}}</span></td>--}}
+{{--                    </tr>--}}
+
+
+
+
                 </div>
             </div>
 
         </template>
         <template slot="rodape">
-            <button :disabled="listaPerimetros.length=== 0 || formPerimetroFuncionarios.perimetro_id===null" v-if="!formPerimetroFuncionarios.preload && !formPerimetroFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarPerimetros">
+            <button :disabled="listaPerimetros.length === 0" v-if="!formPerimetroFuncionarios.preload && !formPerimetroFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarPerimetros">
                 <i class="fas fa-link"></i> Aplicar
             </button>
         </template>
@@ -275,7 +291,11 @@
                             </td>
                             <td data-label="nome" >@{{funcionario.nome}}</td>
 {{--                            <td data-label="empresa">@{{funcionario.empresa.nome}}</td>--}}
-                            <td data-label="perimetro"><span v-if="funcionario.perimetros_funcionario[0]">@{{funcionario.perimetros_funcionario[0].descricao}}</span></td>
+                            <td data-label="perimetro">
+                                <span class="badge badge-secondary ml-1 p-1" v-if="funcionario.perimetros_funcionario.length" v-for="perimetros in funcionario.perimetros_funcionario">
+                                    @{{perimetros.descricao}}
+                                </span>
+                            </td>
                         </tr>
                         </tbody>
                     </table>

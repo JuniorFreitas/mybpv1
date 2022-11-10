@@ -42,9 +42,7 @@
                 </div>
                 <div class="form-group" v-if="grupoempresa">
                     <label>Grupo</label>
-                    <select class="form-control form-control-sm" v-model="form.grupo_id"
-                            onchange="valida_campo_vazio(this,1)"
-                            onblur="valida_campo_vazio(this,1)">
+                    <select class="form-control form-control-sm" v-model="form.grupo_id">
                         <option value="">Selecione...</option>
                         <option v-for="papel in listaPapeis" :value="papel.id">@{{papel.nome}}</option>
                     </select>
@@ -73,7 +71,7 @@
                         <option :value="false">Não</option>
                     </select>
                 </div>
-                <fieldset v-if="form.tipo === 'Administrador' || form.tipo === 'Suporte'">
+                <fieldset v-if="tipos_usuarios_gerenciais.includes(form.tipo)">
                     <legend>Tipos de emails que esse usuário pode receber:</legend>
                     <div class="custom-control custom-switch"
                          v-for="(tipo, key) in listaTipoEmail" :key="tipo.id">
@@ -125,6 +123,19 @@
                         </span>
                             <input type="text" id="campoBusca" v-model="controle.dados.campoBusca"
                                    placeholder="Nome do usuário" autocomplete="off"
+                                   class="form-control form-control-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>E-mail(login):</label>
+                        <div class="input-group input-group-sm">
+                        <span class="input-group-prepend">
+                            <i class="input-group-text" id="basic-addon1"><i class="fa fa-user"></i></i>
+                        </span>
+                            <input type="text" id="campoLogin" v-model="controle.dados.campoLogin"
+                                   placeholder="E-mail (login) do usuário" autocomplete="off"
                                    class="form-control form-control-sm">
                         </div>
                     </div>
@@ -219,6 +230,7 @@
                     @endif
                     <th>Grupo</th>
                     <th>Tipo</th>
+                    <th>E-MAIL (LOGIN)</th>
                     <th>Status</th>
                     <th>Ação</th>
                 </tr>
@@ -237,6 +249,11 @@
                     <td data-label="Grupo">
                         @{{usuario.tipo}}
                     </td>
+
+                    <td data-label="LOGIN">
+                        @{{usuario.login}}
+                    </td>
+
                     <td data-label="Status">
                         <bt-ativo :rota="`usuarios/${usuario.id}/ativa-desativa`" :model="usuario"></bt-ativo>
                     </td>

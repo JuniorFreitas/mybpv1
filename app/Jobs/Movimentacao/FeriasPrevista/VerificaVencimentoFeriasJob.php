@@ -71,8 +71,8 @@ class VerificaVencimentoFeriasJob implements ShouldQueue
                         }])->get();
 
                     $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                        ->select(['id', 'nome', 'login'])    
-                        ->whereIn('tipo', ['Administrador', 'Suporte'])
+                        ->select(['id', 'nome', 'login'])
+                        ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
                         ->whereHas('UserRecebeEmail', function ($q) {
                             $q->where('nome', 'Vencimento Férias');
                             $q->where('ativo', true);

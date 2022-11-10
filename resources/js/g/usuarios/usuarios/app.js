@@ -29,6 +29,7 @@ const app = new Vue({
         listaCloud: [],
         listaTipoEmail: [],
         lista_tipos: [],
+        tipos_usuarios_gerenciais: [],
         lista: [],
         dados: {},
         controle: {
@@ -36,6 +37,7 @@ const app = new Vue({
             showCampoGrupo: false,
             dados: {
                 campoBusca: "",
+                campoLogin: "",
                 por_pagina: 50,
                 campoEmpresa: "",
                 campoGrupo: "",
@@ -109,6 +111,14 @@ const app = new Vue({
             axios.get(`${URL_ADMIN}/usuarios/${id}/editar`)
                 .then(response => {
                     Object.assign(this.form, response.data.usuario);
+
+                    if(response.data.usuario.grupo_id == null){
+                        this.form.grupo_id = '';
+                    }
+                    if(response.data.usuario.gestor == null){
+                        this.form.gestor = false;
+                    }
+
                     this.listaPapeis = response.data.papeis;
                     this.listaCloud = response.data.cloud;
                     this.form.user_recebe_email = response.data.formulario_vazio;
@@ -190,6 +200,7 @@ const app = new Vue({
             this.lista = dados.resultado;
             this.empresa_id = dados.empresa;
             this.listaTipoEmail = dados.tipo_email;
+            this.tipos_usuarios_gerenciais = dados.tipos_usuarios_gerenciais;
             this.user_recebe_emailDefault = dados.formulario_vazio;
             this.lista_tipos = dados.lista_tipos;
             this.empresa_id != 100 ? this.controle.dados.listaPapeis = dados.lista_grupos : [];

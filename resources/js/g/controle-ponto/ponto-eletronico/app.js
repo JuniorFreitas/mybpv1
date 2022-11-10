@@ -132,6 +132,7 @@ const app = new Vue({
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
             if(this.formPonto.obrigatorio){
+                console.log(this.listaPerimetros);
                 this.listaPerimetros.forEach((p) => {
                     p.circulo = new google.maps.Circle({
                         strokeColor: '#ff0000',
