@@ -647,7 +647,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="col-12 col-sm-6 col-lg-4" v-if="editando">
                                         <div class="form-group">
                                             <label>Modelo CIH</label>
                                             <select v-model="form.cliente_config.modelo_cih" class="form-control"
