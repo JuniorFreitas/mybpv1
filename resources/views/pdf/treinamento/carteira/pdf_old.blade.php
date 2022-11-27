@@ -1,0 +1,720 @@
+@extends('pdf.treinamento.carteira.layout_carteira')
+@section('titulo', 'Carteiras')
+@section('conteudo')
+
+    @if (count($treinamentos) > 1)
+        <div class="a4">
+            <?php $cont = 0; ?>
+            @foreach($treinamentos as $treinamento)
+                <div
+                    style="height: 6.40cm; width: 5.10cm; float:left; margin-right: 3px; margin-top: 10px; margin-bottom: 12px;">
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; height: 0.80cm">
+                        <tbody>
+                        <tr>
+                            <td colspan="3"
+                                style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
+                                @if(count(auth()->user()->ClientesLogo) > 0)
+                                    <img
+                                        src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                        alt="Logo" title="Logo" style="height: 0.6cm">
+                                    <br>
+                                @endif
+                                <br>
+                                <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 0.02cm; border-top:none;">
+                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="border-top:none; ">
+                                Nome: {{ mb_strtoupper($treinamento->FeedbackCurriculo->Curriculo->nome) }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="height: 0.02cm;border-top:none; border-right: none;">
+                                Função: {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->cargo : null) }}
+                            </td>
+
+                            <td style="text-align: center;background: yellow; border-top:none;">ID:</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="height: 0.02cm; border-top:none; border-right: none">
+                                ADM: {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->data_admissao : null) }}
+                            </td>
+                            <td width="44px"
+                                style="text-align: center;background: yellow; background: yellow; border-top:none;">
+                            </td>
+                        </tr>
+
+                    </table>
+
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; height: 4.50cm;">
+                        <tbody>
+                        <tr style="background: #cccccc;">
+                            <td style="width: 2.20cm; height: 0.04cm; font-size: 4pt; border-top:none; border-right: none; text-align: center">
+                                DESCRIÇÃO DOS <br> TREINAMENTOS
+                            </td>
+                            <td style="width: 1.10cm; height: 0.04cm; font-size: 4pt; border-top:none;  text-align: center">
+                                DATA TREINAMENTO
+                            </td>
+                            <td style="width: 1.10cm; height: 0.04cm; font-size: 4pt; border-top:none; border-left: none; text-align: center">
+                                DATA VENCIMENTO
+                            </td>
+                        </tr>
+                        @if (count($treinamento->Vencimentos) <= 11)
+                            @foreach($treinamento->Vencimentos as $vencimento)
+                                <tr>
+                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; text-transform: uppercase">
+                                        {{ $vencimento->label }}
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
+                                        {{ $vencimento->pivot->data_treinamento }}
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; text-align: center">
+                                        {{ $vencimento->pivot->data_vencimento }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @foreach(range(1, 11 - count($treinamento->Vencimentos)) as $r)
+                                <tr>
+                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; color: white">
+                                        _
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center; color: white">
+                                        _
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; color: white; text-align: center">
+                                        _
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            @foreach($treinamento->Vencimentos as $vencimento)
+                                <tr>
+                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none;">
+                                        {{ $vencimento->label }}
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
+                                        {{ $vencimento->pivot->data_treinamento }}
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; text-align: center">
+                                        {{ $vencimento->pivot->data_vencimento }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
+                        <tr>
+                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
+                                <span style="font-family: 'Sacramento', cursive; color: blue">
+                                    {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}
+                                </span>
+                            </td>
+                            <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
+                               <span style="font-family: 'Sacramento', cursive; color: blue">
+                                   {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome : 'Não informado' }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center"
+                                style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; border-right: none; text-align: center;">
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo : 'Não informado' }}
+                            </td>
+                            <td align="center" style="height: 0.02cm; border-top:none; " colspan="2">
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo : 'Não informado' }}
+                            </td>
+                        </tr>
+
+                        <tr style="background: rgb(136,181,223); border-bottom: none !important;">
+                            <td align="center" colspan="3" style="height: 0.02cm; border-top: none">“
+                                Você é responsável pela reciclagem dos TREINAMENTOS ”
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div
+                    style="height: 6.40cm; width: 5.10cm; float:left; margin-right: 5px; margin-top: 10px; margin-bottom: 12px;">
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; height: 5.28cm">
+                        <tbody>
+                        <tr>
+                            <td colspan="3"
+                                style="color: red; height: .90cm; text-align: center; vertical-align: middle;">
+                            <span
+                                style="font-size: 6pt;">
+                                EMERGÊNCIA LIGUE
+                                : 1199 (RAMAL) 0800 727 1199 ou 3301-1199
+                            </span>
+                            </td>
+                        </tr>
+
+                        <tr style="height: 151px; word-break: break-word;">
+                            <td
+                                style="text-align: center; vertical-align: top; border-top:none; padding: 2px 5px 0px 5px;">
+                        <span style="font-size: 4.5pt; line-height: 6.90pt; ">
+                            <br>
+                            <strong>POLITICA DE EHS</strong> <br>
+
+                            {!! $treinamento->FeedbackCurriculo->Empresa->politica_ehs !!}
+                        </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}
+                                : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center; font-weight: bold;">
+                                COR PROIBIDA DO MÊS
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+
+
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; ">
+                        <tbody>
+                        <tr>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                vermelho
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                azul
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                amarelo
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                verde
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; width: 1.80cm; background: #f5f5c5; font-size: 3.5pt; text-align: center; vertical-align: center"
+                                rowspan="4">
+                                Não utilizar <br> ferramenta que esteja <br> com a cor proíbida do <br>
+                                mês
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                JAN
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                FEV
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                MAR
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                ABR
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                MAI
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                JUN
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                JUL
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                AGO
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                SET
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                OUT
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                NOV
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                DEZ
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+
+                <?php $cont++ ?>
+                @if ($cont==8)
+                    <?php $cont = 0; ?>
+                    <div style="page-break-after: always"></div>
+                @endif
+            @endforeach
+
+        </div>
+        <div class="a4">
+            <div style="width: 21cm !important;
+            height: 29.70cm !important; "></div>
+            <?php $cont = 0; ?>
+            @foreach($treinamentos as $treinamento)
+                <div class="etiqueta">
+                    <div class="logo">
+                        @if(count(auth()->user()->ClientesLogo) > 0)
+                            <img
+                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
+                        @endif
+                    </div>
+                    <div class="content">
+                        <div class="boxBlack">
+                            <div class="circuloRed">
+                                <h3 class="tituloPerigo">PERIGO</h3>
+                                <h3 class="tituloDanger">DANGER</h3>
+                            </div>
+                        </div>
+
+                        <h3 class="text-center" style="margin-top: 15px">NÃO USE, MOVA OU
+                            OPERE ENQUANTO ESTA
+                            ETIQUETA ESTIVER
+                            COLOCADA</h3>
+
+                        <h4 class="text-center colorRed">
+                            Do not use, move or operate
+                            while this label is placed
+                        </h4>
+
+                        <h3 class="text-center" style="margin-top: 15px">
+                            QUEM OPERAR O EQUIPAMENTO OU REMOVER A ETIQUETA ESTÁ SUJEITO A DEMISSÃO
+                        </h3>
+
+                        <h4 class="text-center colorRed">
+                            Whoever operate the equipment or remove this label can be dismissed
+                        </h4>
+                    </div>
+                </div>
+
+                <div class="etiqueta">
+                    <div class="logo">
+                        @if(count(auth()->user()->ClientesLogo) > 0)
+                            <img
+                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
+                        @endif
+                        <br>
+                    </div>
+                    <div class="content">
+                        <div class="boxBlack">
+                            <div class="circuloRed">
+                                <h3 class="tituloPerigo">PERIGO</h3>
+                                <h3 class="tituloDanger">DANGER</h3>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                            <div style="width: 45%;">
+                                <h6 class="text-center" style="font-weight: bold;">
+                                    HOMENS TRABALHANDO NÃO OPERE ESTE EQUIPAMENTO
+                                </h6>
+                            </div>
+                            <div style="width: 45%;">
+                                <h6 class="text-center colorRed">
+                                    MEN <br> WORKING DO NOT OPERATE THIS EQUIPMENT
+                                </h6>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: row; justify-content: center;">
+                            <div class="fotoTres">
+                                <img
+                                    src="{{ count($treinamento->FeedbackCurriculo->Curriculo->FotoTres) > 0 ? $treinamento->FeedbackCurriculo->Curriculo->FotoTres[0]->url : asset('sem_foto.png')}}"
+                                    style="max-height: 4cm; max-width: 3cm; border: solid 0.1mm black;" alt="">
+                            </div>
+                        </div>
+
+                        <h5 class="text-center">RAMAL DE EMERGÊNCIA: <span style="font-size: 22px;">1199</span></h5>
+                        <h6 class="text-center colorRed">Extension line for emergency: 1199</h6>
+
+                        <h6 style="margin-top: 5px;">Nome/<span class="colorRed">Name: <span
+                                    style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Curriculo->nome) }}</span></span>
+                        </h6>
+                        <h6 style="margin-top: 5px;">CHAPA/ID<span class="colorRed">Plate/ID: <span
+                                    style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
+                        </h6>
+                        <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}</span></span>
+                        </h6>
+                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
+                                    style="font-size: 6.8pt;">
+                                                                {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->empresa_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}</span></span>
+                        </h6>
+                        <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span
+                                    style="font-size: 6.8pt;">PERMANENTE</span></span>
+                        </h6>
+                    </div>
+                </div>
+                <?php $cont++ ?>
+                @if ($cont==2)
+                    <?php $cont = 0; ?>
+                    <div style="page-break-after: always"></div>
+                @endif
+            @endforeach
+        </div>
+    @else
+        <div class="a4">
+            @foreach($treinamentos as $treinamento)
+
+                <div
+                    style="height: 6.40cm; width: 5.10cm; float:left; margin-right: 3px; margin-top: 10px; margin-bottom: 12px;">
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; height: 0.80cm">
+                        <tbody>
+                        <tr>
+                            <td colspan="3"
+                                style="background: #88B5DF; height: .90cm; text-align: center; vertical-align: bottom;">
+                                @if(count(auth()->user()->ClientesLogo) > 0)
+                                    <img
+                                        src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                        alt="Logo" title="Logo" style="height: 0.6cm">
+                                    <br>
+                                @endif
+                                <br>
+                                <span style="font-size: 6pt;">CARTEIRA DE TREINAMENTOS</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 0.02cm; border-top:none;">
+                                Empresa: {{ $treinamento->FeedbackCurriculo->Empresa->razao_social }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="border-top:none; ">
+                                Nome: {{ mb_strtoupper($treinamento->FeedbackCurriculo->Curriculo->nome) }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="height: 0.02cm;border-top:none; border-right: none;">
+                                Função: {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->cargo : null) }}
+                            </td>
+
+                            <td style="text-align: center;background: yellow; border-top:none;">ID:</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="height: 0.02cm; border-top:none; border-right: none">
+                                ADM: {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->data_admissao : null) }}
+                            </td>
+                            <td width="44px"
+                                style="text-align: center;background: yellow; background: yellow; border-top:none;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}
+                            </td>
+                        </tr>
+
+                    </table>
+
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; height: 4.50cm;">
+                        <tbody>
+                        <tr style="background: #cccccc;">
+                            <td style="width: 2.20cm; height: 0.04cm; font-size: 4pt; border-top:none; border-right: none; text-align: center">
+                                DESCRIÇÃO DOS <br> TREINAMENTOS
+                            </td>
+                            <td style="width: 1.10cm; height: 0.04cm; font-size: 4pt; border-top:none;  text-align: center">
+                                DATA TREINAMENTO
+                            </td>
+                            <td style="width: 1.10cm; height: 0.04cm; font-size: 4pt; border-top:none; border-left: none; text-align: center">
+                                DATA VENCIMENTO
+                            </td>
+                        </tr>
+                        @if (count($treinamento->Vencimentos) <= 11)
+                            @foreach($treinamento->Vencimentos as $vencimento)
+
+                                <tr>
+                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; text-transform: uppercase">
+                                        {{ $vencimento->label }}
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
+                                        {{ $vencimento->pivot->data_treinamento }}
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; text-align: center">
+                                        {{ $vencimento->pivot->data_vencimento }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @foreach(range(1, 11 - count($treinamento->Vencimentos)) as $r)
+                                <tr>
+                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none; color: white">
+                                        _
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center; color: white">
+                                        _
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; color: white; text-align: center">
+                                        _
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            @foreach($treinamento->Vencimentos as $vencimento)
+                                <tr>
+                                    <td style="width: 2.20cm; font-size: 4pt; height: 0.02cm; border-top:none; border-right: none;">
+                                        {{ $vencimento->label }}
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none;  text-align: center">
+                                        {{$vencimento->pivot->data_treinamento}}
+                                    </td>
+                                    <td style="width: 1.10cm; font-size: 4pt; height: 0.02cm; border-top:none; border-left: none; text-align: center">
+                                        {{ $vencimento->pivot->data_vencimento }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
+                        <tr>
+                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
+                                <span style="font-family: 'Sacramento', cursive; color: blue">
+                                    {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}
+                                </span>
+                            </td>
+                            <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
+                               <span style="font-family: 'Sacramento', cursive; color: blue">
+                                   {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome : 'Não informado' }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="center"
+                                style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; border-right: none; text-align: center;">
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo : 'Não informado' }}
+                            </td>
+                            <td align="center" style="height: 0.02cm; border-top:none; " colspan="2">
+                                {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo : 'Não informado' }}
+                            </td>
+                        </tr>
+
+                        <tr style="background: rgb(136,181,223); border-bottom: none !important;">
+                            <td align="center" colspan="3" style="height: 0.02cm; border-top: none">“
+                                Você é responsável pela reciclagem dos TREINAMENTOS ”
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div
+                    style="height: 6.40cm; width: 5.10cm; float:left; margin-right: 5px; margin-top: 10px; margin-bottom: 12px;">
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; height: 5.28cm">
+                        <tbody>
+                        <tr>
+                            <td colspan="3"
+                                style="color: red; height: .90cm; text-align: center; vertical-align: middle;">
+                            <span
+                                style="font-size: 6pt;">
+                                EMERGÊNCIA LIGUE
+                                : 1199 (RAMAL) 0800 727 1199 ou 3301-1199
+                            </span>
+                            </td>
+                        </tr>
+
+                        <tr style="height: 151px; word-break: break-word;">
+                            <td
+                                style="text-align: center; vertical-align: top; border-top:none; padding: 2px 5px 0px 5px;">
+                        <span style="font-size: 4.5pt; line-height: 6.90pt; ">
+                            <br>
+                            <strong>POLITICA DE EHS</strong> <br>
+                            {!! $treinamento->FeedbackCurriculo->Empresa->politica_ehs !!}
+                        </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center">
+                                CONTATO {{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}
+                                : {{$treinamento->FeedbackCurriculo->Empresa->tel_principal}}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm; border-top:none; text-align: center; font-weight: bold;">
+                                COR PROIBIDA DO MÊS
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+
+
+                    <table cellspacing="0" cellpadding="0" style="width: 100%; ">
+                        <tbody>
+                        <tr>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                vermelho
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                azul
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                amarelo
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; border-right: none; font-size: 3.5pt; text-align: center">
+                                verde
+                            </td>
+                            <td style="border-top: none; height: 0.20cm; width: 1.80cm; background: #f5f5c5; font-size: 3.5pt; text-align: center; vertical-align: center"
+                                rowspan="4">
+                                Não utilizar <br> ferramenta que esteja <br> com a cor proíbida do <br>
+                                mês
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                JAN
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                FEV
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                MAR
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                ABR
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                MAI
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                JUN
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                JUL
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                AGO
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: red; color: white; text-align: center">
+                                SET
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: blue; color: white; text-align: center">
+                                OUT
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: yellow; color: black; text-align: center">
+                                NOV
+                            </td>
+                            <td style="height: 0.20cm;font-size: 3.5pt; border-top: none; border-right: none; background: green; color: black; text-align: center">
+                                DEZ
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            @endforeach
+
+            <div class="clearfix"></div>
+            @foreach($treinamentos as $treinamento)
+                <div class="etiqueta">
+                    <div class="logo">
+                        @if(count(auth()->user()->ClientesLogo) > 0)
+                            <img
+                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
+                        @endif
+                        <br>
+                    </div>
+                    <div class="content">
+                        <div class="boxBlack">
+                            <div class="circuloRed">
+                                <h3 class="tituloPerigo">PERIGO</h3>
+                                <h3 class="tituloDanger">DANGER</h3>
+                            </div>
+                        </div>
+
+                        <h3 class="text-center" style="margin-top: 15px">NÃO USE, MOVA OU
+                            OPERE ENQUANTO ESTA
+                            ETIQUETA ESTIVER
+                            COLOCADA</h3>
+
+                        <h4 class="text-center colorRed">
+                            Do not use, move or operate
+                            while this label is placed
+                        </h4>
+
+                        <h3 class="text-center" style="margin-top: 15px">
+                            QUEM OPERAR O EQUIPAMENTO OU REMOVER A ETIQUETA ESTÁ SUJEITO A DEMISSÃO
+                        </h3>
+
+                        <h4 class="text-center colorRed">
+                            Whoever operate the equipment or remove this label can be dismissed
+                        </h4>
+                    </div>
+                </div>
+
+                <div class="etiqueta">
+                    <div class="logo">
+                        @if(count(auth()->user()->ClientesLogo) > 0)
+                            <img
+                                src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                alt="Logo" title="Logo">
+                            <br>
+                        @endif
+                        <br>
+                    </div>
+                    <div class="content">
+                        <div class="boxBlack">
+                            <div class="circuloRed">
+                                <h3 class="tituloPerigo">PERIGO</h3>
+                                <h3 class="tituloDanger">DANGER</h3>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                            <div style="width: 45%;">
+                                <h6 class="text-center" style="font-weight: bold;">
+                                    HOMENS TRABALHANDO NÃO OPERE ESTE EQUIPAMENTO
+                                </h6>
+                            </div>
+                            <div style="width: 45%;">
+                                <h6 class="text-center colorRed">
+                                    MEN <br> WORKING DO NOT OPERATE THIS EQUIPMENT
+                                </h6>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: row; justify-content: center;">
+                            <div class="fotoTres">
+                                <img
+                                    src="{{ count($treinamento->FeedbackCurriculo->Curriculo->FotoTres) > 0 ? $treinamento->FeedbackCurriculo->Curriculo->FotoTres[0]->url : asset('sem_foto.png')}}"
+                                    style="max-height: 4cm; max-width: 3cm; border: solid 0.1mm black;" alt="">
+                            </div>
+                        </div>
+
+                        <h5 class="text-center">RAMAL DE EMERGÊNCIA: <span style="font-size: 22px;">1199</span></h5>
+                        <h6 class="text-center colorRed">Extension line for emergency: 1199</h6>
+
+                        <h6 style="margin-top: 5px;">Nome/<span class="colorRed">Name: <span
+                                    style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Curriculo->nome) }}</span></span>
+                        </h6>
+                        <h6 style="margin-top: 5px;">CHAPA/ID<span class="colorRed">Plate/ID: <span
+                                    style="font-size: 6.8pt;">{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}</span></span>
+                        </h6>
+                        <h6 style="margin-top: 5px;">AREA/EMPRESA/<span class="colorRed">Company: <span
+                                    style="font-size: 6.8pt;">{{ $treinamento->FeedbackCurriculo->Empresa->nome_fantasia }}</span></span>
+                        </h6>
+                        <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
+                                    style="font-size: 6.8pt;">
+                                        {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->empresa_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}
+                                    </span></span>
+                        </h6>
+                        <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span
+                                    style="font-size: 6.8pt;">PERMANENTE</span></span>
+                        </h6>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+@endsection

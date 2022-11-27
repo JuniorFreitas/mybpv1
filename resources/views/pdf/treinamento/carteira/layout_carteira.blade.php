@@ -19,73 +19,79 @@
 
         @page {
             margin: 0cm 0cm;
-            height: 29.70cm;
+            margin-top: 10px;
+        /*    margin-bottom: 1px;*/
+            margin-left: 30px;
+        /*    margin-right: 0px;*/
+        /*    width: 40cm;*/
+        /*    background: #0c5460;*/
+        /*    !*height: 29.70cm;*!*/
         }
 
 
         /** Define now the real margins of every page in the PDF **/
-        body {
-            width: 21cm;
-            height: 29.70cm;
-            margin-top: .5cm;
-            margin-left: .5cm;
-            margin-right: .5cm;
-            margin-bottom: .5cm;
-            font-family: 'Arial', sans-serif;
-            -webkit-print-color-adjust: exact;
-        }
+        /*body {*/
+        /*    width: 21cm;*/
+        /*    height: 29.70cm;*/
+        /*    margin-top: .5cm;*/
+        /*    margin-left: .5cm;*/
+        /*    margin-right: .5cm;*/
+        /*    margin-bottom: .5cm;*/
+        /*    font-family: 'Arial', sans-serif;*/
+        /*    -webkit-print-color-adjust: exact;*/
+        /*}*/
 
-        .a4 {
-            width: 21cm;
-            height: 29.70cm;
-            /*margin-top: .5cm;*/
-            /*margin-left: .5cm;*/
-            /*margin-right: .5cm;*/
-            /*margin-bottom: .5cm;*/
-        }
+        /*.a4 {*/
+        /*    !*width: 21cm;*!*/
+        /*    !*height: 29.70cm;*!*/
+        /*    !*margin-top: .5cm;*!*/
+        /*    !*margin-left: .5cm;*!*/
+        /*    !*margin-right: .5cm;*!*/
+        /*    !*margin-bottom: .5cm;*!*/
+        /*}*/
 
-        tr {
-            font-size: 4.7pt;
-        }
+        /*tr {*/
+        /*    font-size: 4.7pt;*/
+        /*}*/
 
-        td {
-            border: 0.01mm solid black;
-            padding: 0.2mm;
-        }
+        /*td {*/
+        /*    border: 0.01mm solid black;*/
+        /*    padding: 0.2mm;*/
+        /*}*/
 
-        .container {
-            display: flex;
-            background-color: #cdf6eb;
-            margin: 10px auto 30px;
-            max-width: 500px;
-            font-family: sans-serif;
-        }
+        /*.container {*/
+        /*    display: flex;*/
+        /*    background-color: #cdf6eb;*/
+        /*    margin: 10px auto 30px;*/
+        /*    max-width: 500px;*/
+        /*    font-family: sans-serif;*/
+        /*}*/
 
-        .nowrap {
-            flex-wrap: nowrap;
-        }
+        /*.nowrap {*/
+        /*    flex-wrap: nowrap;*/
+        /*}*/
 
-        .wrap {
-            flex-wrap: wrap;
-        }
+        /*.wrap {*/
+        /*    flex-wrap: wrap;*/
+        /*}*/
 
-        .wrap-reverse {
-            flex-wrap: wrap-reverse;
-        }
+        /*.wrap-reverse {*/
+        /*    flex-wrap: wrap-reverse;*/
+        /*}*/
 
-        .container div {
-            background: #028082;
-            margin: 8px 4px;
-            width: 80px;
-            height: 80px;
-            font-size: 1em;
-            color: #fff;
-            /* as proriedades a partir daqui alinham o texto no centro */
-            display: flex;
-            text-align: center;
-            justify-content: center;
-            align-items: center;
-        }
+        /*.container div {*/
+        /*    background: #028082;*/
+        /*    margin: 8px 4px;*/
+        /*    width: 80px;*/
+        /*    height: 80px;*/
+        /*    font-size: 1em;*/
+        /*    color: #fff;*/
+        /*    !* as proriedades a partir daqui alinham o texto no centro *!*/
+        /*    display: flex;*/
+        /*    text-align: center;*/
+        /*    justify-content: center;*/
+        /*    align-items: center;*/
+        /*}*/
 
         h4 {
             margin: 20px 0 0 20px;
@@ -104,6 +110,7 @@
         #printPageButton {
             padding: 5px 13px 5px 13px;
             cursor: pointer;
+            margin-top: 20px;
             margin-left: 20px;
             background-color: #184056;
             color: white;
@@ -126,7 +133,7 @@
             height: 135.39999mm;
             width: 78.400002mm;
             float: left;
-            margin-top: 1cm;
+            margin-top: 10px;
             margin-right: 1cm;
         }
 
