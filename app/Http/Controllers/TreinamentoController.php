@@ -532,6 +532,7 @@ class TreinamentoController extends Controller
 
     public function carteiraPdf(Request $request)
     {
+        //ToDo: Melhoria ajustar query para trazer apenas os dados necessários
         $treinamentos = Treinamento::whereIn('feedback_id', $request->selecionados)->get();
 
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
@@ -559,7 +560,7 @@ class TreinamentoController extends Controller
         } catch (\Exception $e) {
             $msg = "Error ao enviar e-maill de Revisão no Cloud: {$e->getMessage()}, {$e->getFile()}, {$e->getLine()}, {$e->getCode()}, {$e->getTrace()} ";
             \Log::debug($msg);
-            return response()->json(['msg' => $msg], 400);
+//            return response()->json(['msg' => $msg], 400);
             return response()->json(['enviado' => false], 400);
         }
     }
@@ -593,7 +594,7 @@ class TreinamentoController extends Controller
             $dados = ['dados' => $treinamentos->get()];
             try {
                 Mail::send('email.treinamento.vencendo', $dados, function ($m) use ($dados, $data) {
-                    $m->from('naoresponda@mybp.com.br', 'SGIBPSE - E-mail Automatico');
+                    $m->from('naoresponda@mybp.com.br', 'MyBP - E-mail Automatico');
                     $m->subject("Treinamentos Vencidos ou próximo ao vencimento");
                     $m->to(trim(mb_strtolower($data['email'])));
                 });
