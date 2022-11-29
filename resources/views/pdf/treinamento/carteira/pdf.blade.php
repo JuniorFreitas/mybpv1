@@ -12,37 +12,47 @@
             border: 0.1mm black solid;
             margin-right: 2px;
             ">
-                <p class="nome"
-                   style=" font-size: 5pt;  position: relative; top: 1.40cm; left: 1.2cm">
-                    {{ mb_strtoupper($treinamento->FeedbackCurriculo->Curriculo->nome) }}
-                </p>
-                <p class="funcao"
-                   style="font-size: 4.5pt;  position: relative; top: 2cm; left: 1.2cm">
-                    {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->cargo : null) }}
-                </p>
-                <p class="chapa"
-                   style="font-size: 4.5pt;position: relative; top: 1.77cm; left: 3.90cm">
-                    {!!  $treinamento->FeedbackCurriculo->Admissao->numero_cracha ?:"&nbsp" !!}
-                </p>
+                <div
+                    style="background: #d9d9d9;height: 17px;width: 194px;position: relative;top: 42px;font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;left: 40px;border-radius: 6px;padding: 4px;">
+                    <p style="font-weight: bold">Nome:</p>
+                    <p>{{ mb_strtoupper($treinamento->FeedbackCurriculo->Curriculo->nome) }}</p>
+                </div>
 
-                <div style=" position: relative; top: 1.2cm; left: 0.25cm; height: 255px;">
-                    <ul style="list-style: none; position: relative; top: 1.0cm; left: 0.87cm;">
+                <div style="position: relative; display: flex; width: 202px; top: 44px; left: 40px; justify-content: space-between;">
+                    <div style="background: #d9d9d9;height: 16px;width: 95px;font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;border-radius: 3px;padding: 3px;">
+                        <p style="font-weight: bold">Função:</p>
+                        <p>{{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->cargo : null) }}</p>
+                    </div>
+
+                    <div style="background: #d9d9d9;height: 16px;width: 92px;font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;border-radius: 3px;padding: 3px;margin-left: 2px;">
+                        <p style="font-weight: bold">Chapa:</p>
+                        <p>{!!  $treinamento->FeedbackCurriculo->Admissao->numero_cracha ?:"&nbsp" !!}</p>
+                    </div>
+                </div>
+                <div style="
+                background: white;height: 9px;width: 196px;position: relative;top: 47.5px;font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;font-weight: bold;display: flex;justify-content: space-between;left: 42px;">
+                    <p style="width: 120px; text-align: center;">Treinamentos</p>
+                    <p style="width: 65px; text-align: center;">Data</p>
+                    <p style="width: 51px; text-align: center;">Reciclagem</p>
+                </div>
+                <div style=" position: relative; top: 20px; left: 0.25cm; height: 215px;">
+                    <ul style="list-style: none; position: relative; top: 29px; left: 30px;">
                         @foreach($treinamento->Vencimentos as $key => $vencimento)
                             @if($key <= 11)
-                                <li style=" font-size: 4.6pt; margin-top: 1.5px; margin-bottom: 0px; display: flex; align-items: center;">
+                                <li style="font-size: {!! strlen($vencimento->label) <= 20 ? '5pt' : '4.7pt' !!}; margin-top: 1.5px; margin-bottom: 0px; display: flex; align-items: center;">
                                     <div
-                                        style="float: left; width: 80px; margin-bottom: 0px; background: #d9d9d9; padding: 2px; border-radius: 2px"> {{ $vencimento->label }}</div>
+                                        style="float: left; width: 98px; margin-bottom: 0px; background: #d9d9d9; padding: 2px; border-radius: 2px"> {{ $vencimento->label }}</div>
                                     <div
-                                        style="float: left; margin-bottom: 0px; margin-left: 3px; margin-top: 0px; width:50px; background: #d9d9d9; padding: 2px; border-radius: 2px; text-align: center"> {{ $vencimento->pivot->data_treinamento  }}</div>
+                                        style="float: left; margin-bottom: 0px; font-size: 5pt; margin-left: 3px; margin-top: 0px; width:42px; background: #d9d9d9; padding: 2px; border-radius: 2px; text-align: center"> {{ $vencimento->pivot->data_treinamento  }}</div>
                                     <div
-                                        style="float: left; margin-bottom: 0px; margin-left: 3px; margin-top: 0px;  width:50px; background: #d9d9d9; padding: 2px; border-radius: 2px; text-align: center"> {{ $vencimento->pivot->data_vencimento  }}</div>
+                                        style="float: left; margin-bottom: 0px; font-size: 5pt; margin-left: 3px; margin-top: 0px;  width:43px; background: #d9d9d9; padding: 2px; border-radius: 2px; text-align: center"> {{ $vencimento->pivot->data_vencimento  }}</div>
                                     <div style="clear: both"></div>
                                 </li>
                             @endif
                         @endforeach
                     </ul>
                 </div>
-                <div style="margin-left: 55px; margin-top: 5.4px">
+                <div style="margin-left: 55px; position: relative;bottom: -8.5px;">
                     <p style="font-family: 'Sacramento', cursive; color: blue; width: 75px; font-size: 5.5pt; text-align: center; float: left;">
                         {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome : 'Não informado' }}
                     </p>
