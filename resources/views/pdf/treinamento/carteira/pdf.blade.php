@@ -22,14 +22,14 @@
                 </p>
                 <p class="chapa"
                    style="font-size: 4.5pt;position: relative; top: 1.77cm; left: 3.90cm">
-                    {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->numero_cracha : null) }}
+                    {!!  $treinamento->FeedbackCurriculo->Admissao->numero_cracha ?:"&nbsp" !!}
                 </p>
 
                 <div style=" position: relative; top: 1.2cm; left: 0.25cm; height: 255px;">
                     <ul style="list-style: none; position: relative; top: 1.0cm; left: 0.87cm;">
                         @foreach($treinamento->Vencimentos as $key => $vencimento)
-                            @if($key <= 13)
-                                <li style=" font-size: 3.5pt; margin-top: 1.5px; margin-bottom: 0px; display: flex; align-items: center;">
+                            @if($key <= 11)
+                                <li style=" font-size: 4.6pt; margin-top: 1.5px; margin-bottom: 0px; display: flex; align-items: center;">
                                     <div
                                         style="float: left; width: 80px; margin-bottom: 0px; background: #d9d9d9; padding: 2px; border-radius: 2px"> {{ $vencimento->label }}</div>
                                     <div
@@ -48,7 +48,11 @@
                     </p>
 
                     <p style="font-family: 'Sacramento', cursive; color: blue; width: 75px; margin-left: 16.8px; font-size: 5.5pt; text-align: center; float: left;">
-                        {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}
+                        @if(auth()->user()->Empresa->CarteiraAssinaturaGestorRh() && auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->arquivo_id)
+                            <img src="" alt="">
+                        @else
+                            {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?  auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}
+                        @endif
                     </p>
 
                 </div>
@@ -64,7 +68,7 @@
     <div style="clear: both"></div>
     <div style="page-break-after: always"></div>
 
-    <div class="a4"  style="padding: 20px">
+    <div class="a4" style="padding: 20px">
         <?php $cont = 0; ?>
         @foreach($treinamentos as $treinamento)
             <div style="margin-top: 20px" class="etiqueta">
