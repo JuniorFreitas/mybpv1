@@ -13,7 +13,8 @@
                             <div class="col-12 col-md-4" v-if="form.colaborador_id !== ''">
                                 <div class="form-group">
                                     <label>Data de Admissão</label>
-                                    <input type="text" class="form-control form-control-sm" v-model="dataAdmissao" readonly="readonly"
+                                    <input type="text" class="form-control form-control-sm" v-model="dataAdmissao"
+                                           readonly="readonly"
                                            disabled="disabled">
                                 </div>
                             </div>
@@ -31,8 +32,8 @@
                                         </option>
                                     </select>
 
-<!--                                    <select2 :settings="settings2" :options="centro_custos" :disabled="controle.carregando"-->
-<!--                                             v-model="form.centro_custo_id"></select2>-->
+                                    <!--                                    <select2 :settings="settings2" :options="centro_custos" :disabled="controle.carregando"-->
+                                    <!--                                             v-model="form.centro_custo_id"></select2>-->
                                 </div>
                             </div>
 
@@ -51,7 +52,8 @@
                             <div class="col-12 col-md-4" v-if="ultimaData !== ''">
                                 <div class="form-group">
                                     <label>Última Data</label>
-                                    <input type="text" class="form-control form-control-sm" v-model="ultimaData" readonly="readonly"
+                                    <input type="text" class="form-control form-control-sm" v-model="ultimaData"
+                                           readonly="readonly"
                                            disabled="disabled">
                                 </div>
                             </div>
@@ -77,13 +79,15 @@
 
                             <div class="col-12 col-md-4" v-if="!aprovando">
                                 <label>Quantidade de dias disponíveis</label>
-                                <input type="text" class="form-control form-control-sm" v-model="qntDias" readonly="readonly"
+                                <input type="text" class="form-control form-control-sm" v-model="qntDias"
+                                       readonly="readonly"
                                        disabled="disabled">
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label>Dias de férias:</label>
-                                <select class="form-control form-control-sm" v-model="form.qnt_dias" :disabled="visualizar">
+                                <select class="form-control form-control-sm" v-model="form.qnt_dias"
+                                        :disabled="visualizar">
                                     <option v-for="cont in qntDias" :value="cont" v-show="cont >= 5">
                                         {{ cont }}
                                     </option>
@@ -98,13 +102,15 @@
 
                             <div class="col-12 col-md-4">
                                 <label>Data do retorno</label>
-                                <input type="text" class="form-control form-control-sm" v-model="dataRetorno" readonly="readonly"
+                                <input type="text" class="form-control form-control-sm" v-model="dataRetorno"
+                                       readonly="readonly"
                                        disabled="disabled">
                             </div>
 
                             <div class="col-12 col-md-4 mb-3" v-if="!aprovando">
                                 <label>Dias de saldo</label>
-                                <input type="text" class="form-control form-control-sm" v-model="qntSaldo" readonly="readonly"
+                                <input type="text" class="form-control form-control-sm" v-model="qntSaldo"
+                                       readonly="readonly"
                                        disabled="disabled">
                             </div>
 
@@ -161,11 +167,25 @@
                                 </div>
                             </div>
                         </fieldset>
+
+                        <fieldset>
+                            <legend>Anexos</legend>
+                            <upload :model="form.anexos"
+                                    :model-delete="form.anexosDel"
+                                    :url="url_anexo"
+                                    :tipos="mimes"
+                                    label="Selecionar"
+                                    :leitura="!podeanexar"
+                                    @onProgresso="anexoUploadAndamento=true"
+                                    @onFinalizado="anexoUploadAndamento=false"></upload>
+                        </fieldset>
+
+
                     </fieldset>
                 </form>
             </template>
             <template slot="rodape">
-                <div v-show="!visualizar">
+                <div v-show="cadastrando">
                     <button type="button" class="btn btn-sm btn-primary"
                             v-show="!preload"
                             @click.prevent="cadastrar">
@@ -420,11 +440,11 @@
                         <span class="text-uppercase" v-if="item.quem_aprovou">
                             <span
                                 v-if="item.status_aprovacao === 'aprovado' && !item.resposta_rh">
-                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br />
+                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
                                 Por gestor(a): {{ item.quem_aprovou.nome }}
                             </span>
                             <span v-if="item.status_aprovacao === 'reprovado'">
-                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br />
+                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
                                 Por gestor(a): {{ item.quem_aprovou.nome }}
                             </span>
                         </span>
@@ -433,19 +453,18 @@
                         </span>
                         </td>
 
-
                         <td class="text-center">
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
                                v-if="item.quem_aprovou === null && aprova === true"
-                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
+                               @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; podeanexar = true"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-check"></i>
                             </a>
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Visualizar"
-                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = false;"
+                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = false;; podeanexar = false"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-search-plus"></i>
@@ -460,7 +479,7 @@
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             :url="urlPaginacao" :por-pagina="controle.dados.pages"
                             :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando" />
+                            v-on:carregou="carregou" v-on:carregando="carregando"/>
     </div>
 </template>
 
@@ -471,6 +490,7 @@ import configselect2 from "../../../components/Select2/mixSelec2";
 import Select2 from "../../../components/Select2/Select2";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
 import Utils from "../../../mixins/Utils";
+import Upload from "../../Upload";
 
 export default {
     mixins: [configselect2, ExportacaoMixin, Utils],
@@ -478,6 +498,7 @@ export default {
         return {
             tituloJanela: "Solicitacao de férias",
             preload: false,
+            cadastrando: false,
             visualizar: false,
             aprovando: false,
             aprova: false,
@@ -486,6 +507,11 @@ export default {
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
             caminho_gestor: `autocomplete/todos-gestores-ativos`,
             urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/export`,
+
+            url_anexo: `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`,
+            anexoUploadAndamento: false,
+            podeanexar:false,
+            mimes: [],
 
             selecionados: [],
             selecionaTudo: false,
@@ -527,7 +553,10 @@ export default {
 
                 periodo_aquisitivo_id: "",
 
-                ultima_data: ""
+                ultima_data: "",
+
+                anexos: [],
+                anexosDel: []
 
             },
 
@@ -566,7 +595,8 @@ export default {
     components: {
         colaborador,
         gestoraprovacao,
-        Select2
+        Select2,
+        Upload
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
@@ -616,7 +646,7 @@ export default {
                 return 12;
             }
             if (this.form.qnt_faltas >= 33) {
-                return  0;
+                return 0;
             }
         },
         qntSaldo() {
@@ -741,8 +771,10 @@ export default {
         },
 
         formNovo() {
+            this.cadastrando = true;
             this.aprovando = false;
             this.visualizar = false;
+            this.podeanexar = true;
             this.tituloJanela = "Solicitação de férias";
 
             formReset();
@@ -793,6 +825,7 @@ export default {
 
         formOpen(id) {
             Object.assign(this.form, this.formDefault);
+            this.cadastrando = false;
             this.form.id = id;
 
             this.tituloJanela = `#${id}`;

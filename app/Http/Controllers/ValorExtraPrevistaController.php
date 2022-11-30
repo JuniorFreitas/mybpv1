@@ -6,6 +6,7 @@ use App\Exports\ModeloRowsExport;
 use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaAprovar;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaAprovarRH;
+use App\Models\Arquivo;
 use App\Models\ValorExtraPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,18 +38,36 @@ class ValorExtraPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Valor Extra',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                ValorExtraPrevista::create($dados);
-                DB::commit();
-                return response()->json('', 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação de Valor Extra:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+        try {
+            DB::beginTransaction();
+            $valorExtraPrevista = ValorExtraPrevista::create($dados);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
             }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $valorExtraPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+            DB::commit();
+            return response()->json('', 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Valor Extra:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -65,7 +84,8 @@ class ValorExtraPrevistaController extends Controller
 
         $valorExtraPrevista->autocomplete_label_gestor_modal = $valorExtraPrevista->GestorAprovacao ? $valorExtraPrevista->GestorAprovacao->nome : '';
         $valorExtraPrevista->autocomplete_label_gestor_modal_anterior = $valorExtraPrevista->GestorAprovacao ? $valorExtraPrevista->GestorAprovacao->nome : '';
-
+        $valorExtraPrevista->anexosDel = [];
+        $valorExtraPrevista->load('Anexos');
         return $valorExtraPrevista;
     }
 
@@ -93,18 +113,35 @@ class ValorExtraPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Valor Extra',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $valorExtraPrevista->update($dados);
-                DB::commit();
-                return response()->json('', 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação de Valor Extra:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+        try {
+            DB::beginTransaction();
+            $valorExtraPrevista->update($dados);
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
             }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $valorExtraPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+            DB::commit();
+            return response()->json('', 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Valor Extra:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -120,6 +157,25 @@ class ValorExtraPrevistaController extends Controller
                 'obs_rh' => $dados['obs_rh'],
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
             ]);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $valorExtraPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
 
             DB::commit();
 
@@ -168,7 +224,6 @@ class ValorExtraPrevistaController extends Controller
     {
 
         $resultado = $this->filtro($request)->paginate($request->pages);
-
         $periodo = ValorExtraPrevista::all();
 
         return response()->json([
@@ -179,6 +234,7 @@ class ValorExtraPrevistaController extends Controller
                 'itens' => $resultado->items(),
                 'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
         ]);
     }
@@ -193,7 +249,7 @@ class ValorExtraPrevistaController extends Controller
             'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
             'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao',
             'Colaborador.FeedBack.VagaSelecionada',
-            'GestorAprovacao:id,nome','UserAprovacao:id,nome');
+            'GestorAprovacao:id,nome', 'UserAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
@@ -216,12 +272,13 @@ class ValorExtraPrevistaController extends Controller
             $resultado->whereStatusAprovacao($status);
         }
 
-        if (!auth()->user()->can('privilegio_gestao_rh')){
+        if (!auth()->user()->can('privilegio_gestao_rh')) {
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
         return $resultado->orderByDesc('created_at');
     }
+
     public function export(Request $request)
     {
         $resultado = $this->filtro($request)->get();
@@ -267,6 +324,7 @@ class ValorExtraPrevistaController extends Controller
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }
+
     public function atualizacaoStatus(Request $request)
     {
         try {

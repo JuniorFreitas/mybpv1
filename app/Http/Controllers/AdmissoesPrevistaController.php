@@ -6,6 +6,7 @@ use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovar;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovarRH;
 use App\Models\AdmissoesPrevista;
+use App\Models\Arquivo;
 use App\Models\DemissaoPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,18 @@ class AdmissoesPrevistaController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-                AdmissoesPrevista::create($dados);
+                $admPrevista = AdmissoesPrevista::create($dados);
+                if (isset($dados['anexos'])) {
+                    foreach ($dados['anexos'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $admPrevista->Anexos()->attach($arquivo->id);
+                        }
+                    }
+                }
                 DB::commit();
                 return response()->json('', 201);
             } catch (\Exception $e) {
@@ -68,6 +80,8 @@ class AdmissoesPrevistaController extends Controller
         $admissoesPrevista->autocomplete_label_cargo = $admissoesPrevista->Cargo ? $admissoesPrevista->Cargo->nome : '';
         $admissoesPrevista->autocomplete_label_cargo_anterior = $admissoesPrevista->Cargo ? $admissoesPrevista->Cargo->nome : '';
 
+        $admissoesPrevista->anexosDel = [];
+        $admissoesPrevista->load('Anexos');
         return $admissoesPrevista;
     }
 
@@ -96,18 +110,35 @@ class AdmissoesPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Admissão',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $admissoesPrevista->update($dados);
-                DB::commit();
-                return response()->json('', 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação de Admissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+        try {
+            DB::beginTransaction();
+            $admissoesPrevista->update($dados);
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
             }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $admissoesPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+            DB::commit();
+            return response()->json('', 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Admissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -123,6 +154,26 @@ class AdmissoesPrevistaController extends Controller
                 'obs_aprovacao' => $dados['obs_aprovacao'],
                 'status_aprovacao' => $dados['status_aprovacao'],
             ]);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $admissoesPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+
             DB::commit();
 
             JobAdmissaoPrevistaAprovar::dispatch($admissoesPrevista);
@@ -216,7 +267,7 @@ class AdmissoesPrevistaController extends Controller
             'Cargo',
             'CentroCusto',
             'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo','GestorAprovacao:id,nome','UserAprovacao:id,nome');
+            'Colaborador:id,nome,login,tipo,ativo', 'GestorAprovacao:id,nome', 'UserAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
@@ -239,7 +290,7 @@ class AdmissoesPrevistaController extends Controller
             $resultado->whereStatusAprovacao($status);
         }
 
-        if (!auth()->user()->can('privilegio_gestao_rh')){
+        if (!auth()->user()->can('privilegio_gestao_rh')) {
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 

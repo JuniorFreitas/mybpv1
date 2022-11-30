@@ -19,7 +19,7 @@
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo</label>
-                                    <select v-model="form.centro_custo_id" class="form-control"
+                                    <select v-model="form.centro_custo_id" class="form-control form-control-sm"
                                             :disabled="visualizar"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -33,14 +33,14 @@
 
                             <div class="col-12 col-md-4">
                                 <label>Data da demissão</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_demissao"
+                                <datepicker label="" class="corrigiDatepicker" formsm v-model="form.data_demissao"
                                             :disabled="visualizar"></datepicker>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Tipo de Aviso</label>
-                                    <select v-model="form.tipo_aviso" class="form-control"
+                                    <select v-model="form.tipo_aviso" class="form-control form-control-sm"
                                             :disabled="visualizar"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -61,6 +61,21 @@
                                               :disabled="visualizar"></textarea>
                                 </div>
                             </div>
+
+                            <div class="col-12">
+                                <fieldset>
+                                    <legend>Anexos</legend>
+                                    <upload :model="form.anexos"
+                                            :model-delete="form.anexosDel"
+                                            :url="url_anexo"
+                                            :tipos="mimes"
+                                            :leitura="!podeanexar"
+                                            label="Selecionar"
+                                            @onProgresso="anexoUploadAndamento=true"
+                                            @onFinalizado="anexoUploadAndamento=false"></upload>
+                                </fieldset>
+                            </div>
+
                         </div>
                         <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
                             Esta solicitação ainda não foi aprovada ou reprovada!
@@ -107,7 +122,7 @@
             <template slot="rodape">
                 <div v-show="!visualizar">
                     <button type="button" class="btn btn-sm btn-primary"
-                            v-show="editando && !atualizado  && !preload"
+                            v-show="editando && !aprovando && !atualizado  && !preload"
                             @click.prevent="alterar">
                         <i class="fa fa-edit"></i> Alterar
                     </button>
@@ -215,8 +230,8 @@
                         Solicitar
                     </button>
                     <button type="button" class="btn btn-sm btn-primary  mr-1"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                            @click.prevent="exportaExcel()"
+                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
                         <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                     </button>
 
@@ -317,14 +332,14 @@
                         <td class="text-center">
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
                                v-if="!item.data_aprovacao && aprovar_por_gestor"
-                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
+                               @click.prevent="formOpen(item.id); aprovando = true; editando = false; visualizar = false; podeanexar = true;"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-check"></i>
                             </a>
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                               @click.prevent="formOpen(item.id); editando = true;"
+                               @click.prevent="formOpen(item.id); editando = true; aprovando = false; visualizar = false; podeanexar = true"
                                v-if="item.data_aprovacao === null"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
@@ -332,7 +347,7 @@
                             </a>
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Visualizar"
-                               @click.prevent="formOpen(item.id); visualizar = true;"
+                               @click.prevent="formOpen(item.id); editando = false;  aprovando = false; visualizar = true; podeanexar= false"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-search-plus"></i>
@@ -363,6 +378,7 @@
 import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
+import Upload from "../../Upload";
 import Utils from "../../../mixins/Utils";
 
 
@@ -371,6 +387,7 @@ export default {
     components: {
         colaborador,
         gestoraprovacao,
+        Upload
     },
     data() {
         return {
@@ -383,11 +400,17 @@ export default {
             atualizado: false,
             visualizar: false,
             aprovando: false,
+
             aprovar_por_gestor: false,
             URL_ADMIN,
             preloadExportacao: false,
 
             urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/export`,
+
+            url_anexo: `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`,
+            anexoUploadAndamento: false,
+            podeanexar: false,
+            mimes: [],
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
@@ -425,7 +448,10 @@ export default {
                 obs: "",
 
                 obs_aprovacao: "",
-                status_aprovacao: ""
+                status_aprovacao: "",
+
+                anexos: [],
+                anexosDel: []
             },
 
             formDefault: null,
@@ -532,11 +558,13 @@ export default {
         },
 
         formNovo() {
+            this.cadastrando = true;
             this.cadastrado = false;
             this.atualizado = false;
             this.editando = false;
             this.aprovando = false;
             this.visualizar = false;
+            this.podeanexar = true;
 
             this.tituloJanela = "Solicitação de Demissão";
 
@@ -680,6 +708,7 @@ export default {
 
         carregou(dados) {
             this.lista = dados.itens;
+            this.mimes = dados.mimes;
             this.aprovar_por_gestor = dados.aprovar_por_gestor;
             this.controle.carregando = false;
         },

@@ -9,7 +9,8 @@
                 <div class="alert alert-success alert-dismissible" v-show="atualizado">
                     <h4><i class="icon fa fa-check"></i>Solicitação alterada com sucesso!</h4>
                 </div>
-                <form v-if="!preload && (!cadastrado && !atualizado) " :id="`form_${hash}`" onsubmit="return false;">
+                <form v-if="!preload && (!cadastrado && !atualizado) " :id="`form_${hash}`" class="form_default"
+                      onsubmit="return false;">
                     <fieldset>
                         <legend>Informações</legend>
                         <div class="row">
@@ -18,7 +19,7 @@
                                 <div class="form-group">
                                     <label>Cargo </label>
                                     <autocomplete :caminho="`autocomplete/cargosEmpresa`"
-                                                  :formsm="false"
+                                                  formsm
                                                   :valido="form.cargo_id !== ''"
                                                   v-model="form.autocomplete_label_cargo"
                                                   placeholder="Selecione um cargo"
@@ -32,7 +33,7 @@
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo</label>
-                                    <select v-model="form.centro_custo_id" class="form-control"
+                                    <select v-model="form.centro_custo_id" class="form-control form-control-sm"
                                             :disabled="visualizar"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -47,7 +48,7 @@
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Tipo de contrato</label>
-                                    <select v-model="form.tipo_contrato" class="form-control"
+                                    <select v-model="form.tipo_contrato" class="form-control form-control-sm"
                                             :disabled="visualizar"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -62,14 +63,14 @@
 
                             <div class="col-12 col-md-4">
                                 <label>Data admissão</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_admissao"
+                                <datepicker formsm label="" class="corrigiDatepicker" v-model="form.data_admissao"
                                             :disabled="visualizar"></datepicker>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Salário</label>
-                                    <input type="text" class="form-control" v-mascara:dinheiro
+                                    <input type="text" class="form-control form-control-sm" v-mascara:dinheiro
                                            onblur="valida_dinheiro(this,1)"
                                            :disabled="visualizar"
                                            v-model="form.salario_format">
@@ -81,9 +82,23 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Observação</label>
-                                    <textarea class="form-control" v-model="form.obs" cols="5" rows="5"
+                                    <textarea class="form-control form-control-sm" v-model="form.obs" cols="5" rows="5"
                                               :disabled="visualizar"></textarea>
                                 </div>
+                            </div>
+
+                            <div class="col-12">
+                                <fieldset>
+                                    <legend>Anexos</legend>
+                                    <upload :model="form.anexos"
+                                            :model-delete="form.anexosDel"
+                                            :url="url_anexo"
+                                            :tipos="mimes"
+                                            :leitura="!podeanexar"
+                                            label="Selecionar"
+                                            @onProgresso="anexoUploadAndamento=true"
+                                            @onFinalizado="anexoUploadAndamento=false"></upload>
+                                </fieldset>
                             </div>
 
                         </div>
@@ -97,7 +112,8 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label>Observação</label>
-                                        <textarea class="form-control" :disabled="form.data_aprovacao || !aprovando"
+                                        <textarea class="form-control form-control-sm"
+                                                  :disabled="form.data_aprovacao || !aprovando"
                                                   v-model="form.obs_aprovacao"
                                                   cols="5" rows="5"></textarea>
                                     </div>
@@ -108,7 +124,7 @@
                                         <label>Status</label>
                                         <select :disabled="form.data_aprovacao || !aprovando " v-if="editando"
                                                 v-model="form.status_aprovacao"
-                                                class="form-control">
+                                                class="form-control form-control-sm">
                                             <option value="">Selecione...</option>
                                             <option value="aprovado">Aprovar</option>
                                             <option value="reprovado">Reprovar</option>
@@ -117,7 +133,8 @@
                                         <select :disabled="form.data_aprovacao || !aprovando " v-if="!editando"
                                                 v-model="form.status_aprovacao"
                                                 onblur="valida_campo_vazio(this,1)"
-                                                onchange="valida_campo_vazio(this,1)" class="form-control">
+                                                onchange="valida_campo_vazio(this,1)"
+                                                class="form-control form-control-sm">
                                             <option value="">Selecione...</option>
                                             <option value="aprovado">Aprovar</option>
                                             <option value="reprovado">Reprovar</option>
@@ -133,7 +150,7 @@
             <template slot="rodape">
                 <div v-show="!visualizar">
                     <button type="button" class="btn btn-sm btn-primary"
-                            v-show="editando && !atualizado  && !preload"
+                            v-show="editando && !aprovando && !atualizado  && !preload"
                             @click.prevent="alterar">
                         <i class="fa fa-edit"></i> Alterar
                     </button>
@@ -143,8 +160,6 @@
                         <i class="fa fa-save"></i> Salvar
                     </button>
                 </div>
-
-
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="aprovando && !atualizado  && !preload && !form.data_aprovacao"
                         @click.prevent="aprovar">
@@ -199,7 +214,8 @@
                         <input type="text"
                                placeholder="Buscar por colaborador"
                                autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoBusca">
+                               class="form-control form-control-sm" :disabled="controle.carregando"
+                               v-model="controle.dados.campoBusca">
                     </div>
                 </div>
 
@@ -348,7 +364,7 @@
                         <td class="text-center">
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
                                v-if="!item.data_aprovacao && aprovar_por_gestor"
-                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
+                               @click.prevent="formOpen(item.id); aprovando = true; editando = false; visualizar = false; podeanexar=true"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-check"></i>
@@ -356,14 +372,14 @@
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
                                v-if="!item.data_aprovacao"
-                               @click.prevent="formOpen(item.id); editando = true"
+                               @click.prevent="formOpen(item.id); editando = true; aprovando = false; visualizar = false; podeanexar=true"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-edit"></i>
                             </a>
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                               @click.prevent="formOpen(item.id); visualizar = true"
+                               @click.prevent="formOpen(item.id); editando = false;  aprovando = false; visualizar = true; podeanexar=false"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-search-plus"></i>
@@ -391,12 +407,14 @@
 import gestoraprovacao from "../../GestorAprovacao";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
 import Utils from "../../../mixins/Utils";
+import Upload from "../../Upload";
 
 export default {
     mixins: [ExportacaoMixin, Utils],
 
     components: {
         gestoraprovacao,
+        Upload
     },
     data() {
         return {
@@ -408,11 +426,16 @@ export default {
             cadastrando: false,
             atualizado: false,
             visualizar: false,
+            visualizando: false,
             aprovar_por_gestor: false,
             aprovando: false,
             preloadExportacao: false,
 
             urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/admissoes-prevista/export`,
+            url_anexo: `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`,
+            anexoUploadAndamento: false,
+            podeanexar: false,
+            mimes: [],
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
@@ -451,6 +474,8 @@ export default {
 
                 obs_aprovacao: '',
                 status_aprovacao: '',
+                anexos: [],
+                anexosDel: []
             },
 
             formDefault: null,
@@ -604,6 +629,8 @@ export default {
             this.editando = false;
             this.aprovando = false;
             this.visualizar = false;
+            this.cadastrando = true;
+            this.podeanexar = true;
 
             this.tituloJanela = "Solicitação de admissão";
 
@@ -651,7 +678,7 @@ export default {
                 })
         },
 
-        formOpen(id) {
+        formOpen(id, so_visualizar = false) {
             Object.assign(this.form, this.formDefault);
             this.form.id = id;
             this.cadastrado = false;
@@ -678,12 +705,22 @@ export default {
                         this.form.observacao = data.status_aprovacao === null ? '' : data.observacao;
                     }
                     this.editando = true;
-
                     this.preload = false;
+                    this.sovizualiza(so_visualizar);
                 })
                 .catch(error => {
                     this.preload = false;
                 })
+
+        },
+
+        sovizualiza(so_visualizar) {
+            if (so_visualizar) {
+                setTimeout(() => {
+                    $(".form_default :input").attr("disabled", "true")
+                }, 100);
+            }
+            this.visualizando = so_visualizar;
         },
 
         alterar() {
