@@ -179,4 +179,9 @@ class AdmissoesPrevista extends Model
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
     }
+
+    public function Anexos()
+    {
+        return $this->belongsToMany(Arquivo::class, 'admissoes_previstas_anexos', 'admissoes_prevista_id', 'arquivo_id');
+    }
 }

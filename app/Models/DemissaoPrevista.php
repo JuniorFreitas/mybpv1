@@ -189,4 +189,9 @@ class DemissaoPrevista extends Model
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
     }
 
+    public function Anexos()
+    {
+        return $this->belongsToMany(Arquivo::class, 'demissao_previstas_anexos', 'demissao_prevista_id', 'arquivo_id');
+    }
+
 }

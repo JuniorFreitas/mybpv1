@@ -7,6 +7,7 @@ use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovar;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
+use App\Models\Arquivo;
 use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
 use App\Models\FeriasPrevista;
@@ -68,40 +69,51 @@ class FeriasPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Férias',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        }
+        try {
+            DB::beginTransaction();
 
-                $colaborador = FeriasPrevista::whereColaboradorId($dados['colaborador_id'])->get();
+            $colaborador = FeriasPrevista::whereColaboradorId($dados['colaborador_id'])->get();
 
-                if (count($colaborador) == 0) {
+            if (count($colaborador) == 0) {
 
-                    $data_admissao = FeedbackCurriculo::whereCurriculoId($dados['colaborador_id'])
-                        ->with('Admissao')->first();
+                $data_admissao = FeedbackCurriculo::whereCurriculoId($dados['colaborador_id'])
+                    ->with('Admissao')->first();
 
-                    $dataAdmissao = $data_admissao->Admissao->data_admissao;
+                $dataAdmissao = $data_admissao->Admissao->data_admissao;
 
-                    $periodo = PeriodoAquisitivo::where('id', $dados['periodo_aquisitivo_id'])->first();
+                $periodo = PeriodoAquisitivo::where('id', $dados['periodo_aquisitivo_id'])->first();
 
-                    $date = new DataHora($dataAdmissao);
-                    $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
-                    $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
-                    $newDate->addDia(330);
-                    $dados['ultima_data'] = $newDate->dataInsert();
-                }
-
-                FeriasPrevista::create($dados);
-
-                DB::commit();
-//                JobFeriasPrevistaStore::dispatch($feriasPrevista);
-                return response()->json('', 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                $date = new DataHora($dataAdmissao);
+                $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
+                $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
+                $newDate->addDia(330);
+                $dados['ultima_data'] = $newDate->dataInsert();
             }
+
+            $feriasPrevista = FeriasPrevista::create($dados);
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $feriasPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+
+            DB::commit();
+//                JobFeriasPrevistaStore::dispatch($feriasPrevista);
+            return response()->json('', 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -141,6 +153,8 @@ class FeriasPrevistaController extends Controller
         $feriasPrevista->data_admissao = $data_admissao->Admissao->data_admissao;
 
         $feriasPrevista->periodo_label = $feriasPrevista->PeriodoAquisitivo->label;
+        $feriasPrevista->anexosDel = [];
+        $feriasPrevista->load('Anexos');
 
         return response()->json($feriasPrevista, 200);
     }
@@ -168,18 +182,35 @@ class FeriasPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Férias',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $feriasPrevista->update($dados);
-                DB::commit();
-                return response()->json('', 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+        try {
+            DB::beginTransaction();
+            $feriasPrevista->update($dados);
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
             }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $feriasPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+            DB::commit();
+            return response()->json('', 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -218,6 +249,24 @@ class FeriasPrevistaController extends Controller
                     'obs_aprovacao' => $dados['obs_aprovacao'],
                     'status_aprovacao' => $dados['status_aprovacao'],
                 ]);
+            }
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $feriasPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
             }
             DB::commit();
 
@@ -276,6 +325,7 @@ class FeriasPrevistaController extends Controller
                 'itens' => $resultado->items(),
                 'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
         ]);
     }
@@ -336,7 +386,7 @@ class FeriasPrevistaController extends Controller
 
         return $resultado->orderByDesc('created_at');
     }
-    
+
     public function buscaDataAdmissao(Request $request)
     {
         $data_admissao = FeedbackCurriculo::whereCurriculoId($request->colaborador_id)

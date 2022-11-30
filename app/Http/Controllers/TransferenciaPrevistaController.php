@@ -7,6 +7,7 @@ use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaAprovar;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaAprovarRH;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaStore;
+use App\Models\Arquivo;
 use App\Models\TransferenciaPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,18 @@ class TransferenciaPrevistaController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-                TransferenciaPrevista::create($dados);
+                $transferenciaPrevista = TransferenciaPrevista::create($dados);
+                if (isset($dados['anexos'])) {
+                    foreach ($dados['anexos'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $transferenciaPrevista->Anexos()->attach($arquivo->id);
+                        }
+                    }
+                }
                 DB::commit();
 //                JobTransferenciaPrevistaStore::dispatch($transferenciaPrevista);
                 return response()->json('', 201);
@@ -66,7 +78,8 @@ class TransferenciaPrevistaController extends Controller
 
         $transferenciaPrevista->autocomplete_label_gestor_modal = $transferenciaPrevista->GestorAprovacao ? $transferenciaPrevista->GestorAprovacao->nome : '';
         $transferenciaPrevista->autocomplete_label_gestor_modal_anterior = $transferenciaPrevista->GestorAprovacao ? $transferenciaPrevista->GestorAprovacao->nome : '';
-
+        $transferenciaPrevista->anexosDel = [];
+        $transferenciaPrevista->load('Anexos');
         return $transferenciaPrevista;
     }
 
@@ -121,6 +134,25 @@ class TransferenciaPrevistaController extends Controller
                 'obs_aprovacao' => $dados['obs_aprovacao'],
                 'status_aprovacao' => $dados['status_aprovacao'],
             ]);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $transferenciaPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
             DB::commit();
 
             JobTransferenciaPrevistaAprovar::dispatch($transferenciaPrevista);
@@ -147,6 +179,25 @@ class TransferenciaPrevistaController extends Controller
                 'obs_rh' => $dados['obs_rh'],
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
             ]);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $transferenciaPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
 
             DB::commit();
 
