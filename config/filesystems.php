@@ -285,6 +285,17 @@ return [
             ]
         ),
 
+        'disco-movimentacao' => array_merge($default,
+            [
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/planejamento/movimentacao') : 'arquivos/planejamento/movimentacao',
+                'urlShow' => env('APP_URL') . '/g/planejamento/movimentacao/anexo',
+                'urlDownload' => env('APP_URL') . '/g/planejamento/movimentacao/anexo',
+                'urlThumb' => env('APP_URL') . '/g/planejamento/movimentacao/anexo',
+                'urlDelete' => env('APP_URL') . '/g/planejamento/movimentacao/anexo',
+                'visibility' => 'public',
+            ]
+        ),
+
         'public' => array_merge($default,
             [
                 'root' => storage_path('app/public'),

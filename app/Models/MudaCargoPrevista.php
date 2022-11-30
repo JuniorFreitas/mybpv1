@@ -187,4 +187,9 @@ class MudaCargoPrevista extends Model
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
     }
+
+    public function Anexos()
+    {
+        return $this->belongsToMany(Arquivo::class, 'muda_cargo_previstas_anexos', 'muda_cargo_prevista_id', 'arquivo_id');
+    }
 }

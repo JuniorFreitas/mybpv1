@@ -159,87 +159,70 @@ class Arquivo extends Model
         self::MIME_ZIP2,
     ];
 
-    public const S3 = 's3';
-    public const DISCO_CLOUD = 'disco-cloud';
-    public const DISCO_FOTOCURRICULO = 'disco-fotocurriculo';
-    public const DISCO_CLIENTE = 'disco-cliente';
-    public const DISCO_PROSPECT = 'disco-prospect';
-    public const DISCO_FORNECEDOR = 'disco-fornecedor';
-    public const DISCO_SERVICO_FORNECEDOR = 'disco-servicofornecedor';
-    public const DISCO_OCORRENCIA = 'disco-ocorrencia';
-    public const DISCO_CIH = 'evidencia-cih';
-    public const DISCO_MEDIDAS = 'evidencia-medidas';
-    public const DISCO_DOCUMENTOS_PRE_ADMISSAO = 'disco-documentospreadmissao';
-    public const DISCO_DOSSIE = 'disco-dossie';
-    public const DISCO_TREINAMENTO_LISTA_PRESENCA = 'listapresenca';
-    public const DISCO_REQUISICAO_VAGA = 'requisicao-vaga';
-    public const DISCO_PUBLICO = 'public';
-    public const DISCO_PONTO_ELETRONICO = 'disco-ponto-eletronico';
-    public const DISCO_PERFIL_USUARIO = 'disco-perfil-usuario';
-    public const DISCO_WEEKLY_REPORT = 'disco-weekly-report';
-    public const DISCO_EXCEL = 'disco-excel';
-    public const DISCO_EXAMES = 'disco-exames';
-    public const DISCO_AFASTAMENTO = 'disco-afastamento';
-    public const DISCO_CONTROLE_EXAMES_RESULTADO = 'disco-controle-exames-resultado';
-    public const DISCO_DOCUMENTO_CONTRATO = 'disco-documento-contrato';
-    public const DISCO_DOCUMENTO_EMPRESA = 'disco-documento-empresa';
-    public const DISCO_DOCUMENTO_SSMA = 'disco-documento-ssma';
+    const S3 = 's3';
+    const DISCO_CLOUD = 'disco-cloud';
+    const DISCO_FOTOCURRICULO = 'disco-fotocurriculo';
+    const DISCO_CLIENTE = 'disco-cliente';
+    const DISCO_PROSPECT = 'disco-prospect';
+    const DISCO_FORNECEDOR = 'disco-fornecedor';
+    const DISCO_SERVICO_FORNECEDOR = 'disco-servicofornecedor';
+    const DISCO_OCORRENCIA = 'disco-ocorrencia';
+    const DISCO_CIH = 'evidencia-cih';
+    const DISCO_MEDIDAS = 'evidencia-medidas';
+    const DISCO_DOCUMENTOS_PRE_ADMISSAO = 'disco-documentospreadmissao';
+    const DISCO_DOSSIE = 'disco-dossie';
+    const DISCO_TREINAMENTO_LISTA_PRESENCA = 'listapresenca';
+    const DISCO_REQUISICAO_VAGA = 'requisicao-vaga';
+    const DISCO_PUBLICO = 'public';
+    const DISCO_PONTO_ELETRONICO = 'disco-ponto-eletronico';
+    const DISCO_PERFIL_USUARIO = 'disco-perfil-usuario';
+    const DISCO_WEEKLY_REPORT = 'disco-weekly-report';
+    const DISCO_EXCEL = 'disco-excel';
+    const DISCO_EXAMES = 'disco-exames';
+    const DISCO_AFASTAMENTO = 'disco-afastamento';
+    const DISCO_CONTROLE_EXAMES_RESULTADO = 'disco-controle-exames-resultado';
+    const DISCO_DOCUMENTO_CONTRATO = 'disco-documento-contrato';
+    const DISCO_DOCUMENTO_EMPRESA = 'disco-documento-empresa';
+    const DISCO_DOCUMENTO_SSMA = 'disco-documento-ssma';
+    const DISCO_MOVIMENTACAO = 'disco-movimentacao';
+
+    const LISTAGEM_DISCOS = [
+        self::DISCO_CLOUD,
+        self::DISCO_FOTOCURRICULO,
+        self::DISCO_CLIENTE,
+        self::DISCO_PROSPECT,
+        self::DISCO_FORNECEDOR,
+        self::DISCO_SERVICO_FORNECEDOR,
+        self::DISCO_OCORRENCIA,
+        self::DISCO_CIH,
+        self::DISCO_MEDIDAS,
+        self::DISCO_DOCUMENTOS_PRE_ADMISSAO,
+        self::DISCO_DOSSIE,
+        self::DISCO_TREINAMENTO_LISTA_PRESENCA,
+        self::DISCO_REQUISICAO_VAGA,
+        self::DISCO_PUBLICO,
+        self::DISCO_PONTO_ELETRONICO,
+        self::DISCO_PERFIL_USUARIO,
+        self::DISCO_WEEKLY_REPORT,
+        self::DISCO_EXCEL,
+        self::DISCO_EXAMES,
+        self::DISCO_AFASTAMENTO,
+        self::DISCO_CONTROLE_EXAMES_RESULTADO,
+        self::DISCO_DOCUMENTO_CONTRATO,
+        self::DISCO_DOCUMENTO_EMPRESA,
+        self::DISCO_DOCUMENTO_SSMA,
+        self::DISCO_MOVIMENTACAO,
+    ];
 
     /**
      * @return string
      */
     public function getUrlAttribute()
     {
-        switch ($this->disco) {
-            case self::DISCO_FOTOCURRICULO:
-                return config('filesystems.disks.disco-fotocurriculo.urlShow') . "/{$this->file}";
-            case self::DISCO_CLOUD:
-                return config('filesystems.disks.disco-cloud.urlShow') . "/{$this->file}";
-            case self::DISCO_CLIENTE:
-                return config('filesystems.disks.disco-cliente.urlShow') . "/{$this->file}";
-            case self::DISCO_FORNECEDOR:
-                return config('filesystems.disks.disco-fornecedor.urlShow') . "/{$this->file}";
-            case self::DISCO_SERVICO_FORNECEDOR:
-                return config('filesystems.disks.disco-servicofornecedor.urlShow') . "/{$this->file}";
-            case self::DISCO_OCORRENCIA:
-                return config('filesystems.disks.disco-ocorrencia.urlShow') . "/{$this->file}";
-            case self::DISCO_CIH:
-                return config('filesystems.disks.evidencia-cih.urlShow') . "/{$this->file}";
-            case self::DISCO_MEDIDAS:
-                return config('filesystems.disks.evidencia-medidas.urlShow') . "/{$this->file}";
-            case self::DISCO_TREINAMENTO_LISTA_PRESENCA:
-                return config('filesystems.disks.listapresenca.urlShow') . "/{$this->file}";
-            case self::DISCO_DOCUMENTOS_PRE_ADMISSAO:
-                return config('filesystems.disks.disco-documentospreadmissao.urlShow') . "/{$this->file}";
-            case self::DISCO_REQUISICAO_VAGA:
-                return config('filesystems.disks.requisicao-vaga.urlShow') . "/{$this->file}";
-            case self::DISCO_DOSSIE:
-                return config('filesystems.disks.disco-dossie.urlShow') . "/{$this->file}";
-            case self::DISCO_PONTO_ELETRONICO:
-                return config('filesystems.disks.disco-ponto-eletronico.urlShow') . "/{$this->file}";
-            case self::DISCO_PUBLICO:
-                return config('filesystems.disks.public.urlShow') . "/{$this->file}";
-            case self::S3:
-                return config('filesystems.disks.s3.urlShow') . "/{$this->file}";
-            case self::DISCO_PERFIL_USUARIO:
-                return config('filesystems.disks.disco-perfil-usuario.urlShow') . "/{$this->file}";
-            case self::DISCO_WEEKLY_REPORT:
-                return config('filesystems.disks.disco-weekly-report.urlShow') . "/{$this->file}";
-            case self::DISCO_EXAMES:
-                return config('filesystems.disks.disco-exames.urlShow') . "/{$this->file}";
-            case self::DISCO_AFASTAMENTO:
-                return config('filesystems.disks.disco-afastamento.urlShow') . "/{$this->file}";
-            case self::DISCO_CONTROLE_EXAMES_RESULTADO:
-                return config('filesystems.disks.disco-controle-exames-resultado.urlShow') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_CONTRATO:
-                return config('filesystems.disks.disco-documento-contrato.urlShow') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_EMPRESA:
-                return config('filesystems.disks.disco-documento-empresa.urlShow') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_SSMA:
-                return config('filesystems.disks.disco-documento-ssma.urlShow') . "/{$this->file}";
-            default:
-                return "";
+        if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
+            return config('filesystems.disks.' . $this->disco . '.urlShow') . "/{$this->file}";
         }
+        return "";
     }
 
     /**
@@ -247,56 +230,10 @@ class Arquivo extends Model
      */
     public function getUrlThumbAttribute()
     {
-        switch ($this->disco) {
-            case self::DISCO_FOTOCURRICULO:
-                return config('filesystems.disks.disco-fotocurriculo.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_CLOUD:
-                return config('filesystems.disks.disco-cloud.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_CLIENTE:
-                return config('filesystems.disks.disco-cliente.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_FORNECEDOR:
-                return config('filesystems.disks.disco-fornecedor.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_SERVICO_FORNECEDOR:
-                return config('filesystems.disks.disco-servicofornecedor.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_OCORRENCIA:
-                return config('filesystems.disks.disco-ocorrencia.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_CIH:
-                return config('filesystems.disks.evidencia-cih.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_MEDIDAS:
-                return config('filesystems.disks.evidencia-medidas.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_TREINAMENTO_LISTA_PRESENCA:
-                return config('filesystems.disks.listapresenca.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_DOCUMENTOS_PRE_ADMISSAO:
-                return config('filesystems.disks.disco-documentospreadmissao.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_REQUISICAO_VAGA:
-                return config('filesystems.disks.requisicao-vaga.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_DOSSIE:
-                return config('filesystems.disks.disco-dossie.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_PONTO_ELETRONICO:
-                return config('filesystems.disks.disco-ponto-eletronico.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_PUBLICO:
-                return config('filesystems.disks.public.urlThumb') . "/{$this->thumb}";
-            case self::S3:
-                return config('filesystems.disks.s3.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_PERFIL_USUARIO:
-                return config('filesystems.disks.disco-perfil-usuario.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_WEEKLY_REPORT:
-                return config('filesystems.disks.disco-weekly-report.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_EXAMES:
-                return config('filesystems.disks.disco-exames.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_AFASTAMENTO:
-                return config('filesystems.disks.disco-afastamento.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_CONTROLE_EXAMES_RESULTADO:
-                return config('filesystems.disks.disco-controle-exames-resultado.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_DOCUMENTO_CONTRATO:
-                return config('filesystems.disks.disco-documento-contrato.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_DOCUMENTO_EMPRESA:
-                return config('filesystems.disks.disco-documento-empresa.urlThumb') . "/{$this->thumb}";
-            case self::DISCO_DOCUMENTO_SSMA:
-                return config('filesystems.disks.disco-documento-ssma.urlThumb') . "/{$this->thumb}";
-            default:
-                return "";
+        if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
+            return config('filesystems.disks.' . $this->disco . '.urlThumb') . "/{$this->file}";
         }
+        return "";
     }
 
     /**
@@ -304,56 +241,10 @@ class Arquivo extends Model
      */
     public function getUrlDownloadAttribute()
     {
-        switch ($this->disco) {
-            case self::DISCO_FOTOCURRICULO:
-                return config('filesystems.disks.disco-fotocurriculo.urlDownload') . "/{$this->file}";
-            case self::DISCO_CLOUD:
-                return config('filesystems.disks.disco-cloud.urlDownload') . "/{$this->file}";
-            case self::DISCO_CLIENTE:
-                return config('filesystems.disks.disco-cliente.urlDownload') . "/{$this->file}";
-            case self::DISCO_FORNECEDOR:
-                return config('filesystems.disks.disco-fornecedor.urlDownload') . "/{$this->file}";
-            case self::DISCO_SERVICO_FORNECEDOR:
-                return config('filesystems.disks.disco-servicofornecedor.urlDownload') . "/{$this->file}";
-            case self::DISCO_OCORRENCIA:
-                return config('filesystems.disks.disco-ocorrencia.urlDownload') . "/{$this->file}";
-            case self::DISCO_CIH:
-                return config('filesystems.disks.evidencia-cih.urlDownload') . "/{$this->file}";
-            case self::DISCO_MEDIDAS:
-                return config('filesystems.disks.evidencia-medidas.urlDownload') . "/{$this->file}";
-            case self::DISCO_TREINAMENTO_LISTA_PRESENCA:
-                return config('filesystems.disks.listapresenca.urlDownload') . "/{$this->file}";
-            case self::DISCO_DOCUMENTOS_PRE_ADMISSAO:
-                return config('filesystems.disks.disco-documentospreadmissao.urlDownload') . "/{$this->file}";
-            case self::DISCO_REQUISICAO_VAGA:
-                return config('filesystems.disks.requisicao-vaga.urlDownload') . "/{$this->file}";
-            case self::DISCO_DOSSIE:
-                return config('filesystems.disks.disco-dossie.urlDownload') . "/{$this->file}";
-            case self::DISCO_PONTO_ELETRONICO:
-                return config('filesystems.disks.disco-ponto-eletronico.urlDownload') . "/{$this->file}";
-            case self::DISCO_PUBLICO:
-                return config('filesystems.disks.public.urlDownload') . "/{$this->file}";
-            case self::S3:
-                return config('filesystems.disks.s3.urlDownload') . "/{$this->file}";
-            case self::DISCO_PERFIL_USUARIO:
-                return config('filesystems.disks.disco-perfil-usuario.urlDownload') . "/{$this->file}";
-            case self::DISCO_WEEKLY_REPORT:
-                return config('filesystems.disks.disco-weekly-report.urlDownload') . "/{$this->file}";
-            case self::DISCO_EXAMES:
-                return config('filesystems.disks.disco-exames.urlDownload') . "/{$this->file}";
-            case self::DISCO_AFASTAMENTO:
-                return config('filesystems.disks.disco-afastamento.urlDownload') . "/{$this->file}";
-            case self::DISCO_CONTROLE_EXAMES_RESULTADO:
-                return config('filesystems.disks.disco-controle-exames-resultado.urlDownload') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_CONTRATO:
-                return config('filesystems.disks.disco-documento-contrato.urlDownload') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_EMPRESA:
-                return config('filesystems.disks.disco-documento-empresa.urlDownload') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_SSMA:
-                return config('filesystems.disks.disco-documento-ssma.urlDownload') . "/{$this->file}";
-            default:
-                return "";
+        if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
+            return config('filesystems.disks.' . $this->disco . '.urlDownload') . "/{$this->file}";
         }
+        return "";
     }
 
     /**
@@ -361,56 +252,10 @@ class Arquivo extends Model
      */
     public function getUrlDeleteAttribute()
     {
-        switch ($this->disco) {
-            case self::DISCO_FOTOCURRICULO:
-                return config('filesystems.disks.disco-fotocurriculo.urlDelete') . "/{$this->file}";
-            case self::DISCO_CLOUD:
-                return config('filesystems.disks.disco-cloud.urlDelete') . "/{$this->file}";
-            case self::DISCO_CLIENTE:
-                return config('filesystems.disks.disco-cliente.urlDelete') . "/{$this->file}";
-            case self::DISCO_FORNECEDOR:
-                return config('filesystems.disks.disco-fornecedor.urlDelete') . "/{$this->file}";
-            case self::DISCO_SERVICO_FORNECEDOR:
-                return config('filesystems.disks.disco-servicofornecedor.urlDelete') . "/{$this->file}";
-            case self::DISCO_OCORRENCIA:
-                return config('filesystems.disks.disco-ocorrencia.urlDelete') . "/{$this->file}";
-            case self::DISCO_CIH:
-                return config('filesystems.disks.evidencia-cih.urlDelete') . "/{$this->file}";
-            case self::DISCO_MEDIDAS:
-                return config('filesystems.disks.evidencia-medidas.urlDelete') . "/{$this->file}";
-            case self::DISCO_TREINAMENTO_LISTA_PRESENCA:
-                return config('filesystems.disks.listapresenca.urlDelete') . "/{$this->file}";
-            case self::DISCO_DOCUMENTOS_PRE_ADMISSAO:
-                return config('filesystems.disks.disco-documentospreadmissao.urlDelete') . "/{$this->file}";
-            case self::DISCO_REQUISICAO_VAGA:
-                return config('filesystems.disks.requisicao-vaga.urlDelete') . "/{$this->file}";
-            case self::DISCO_DOSSIE:
-                return config('filesystems.disks.disco-dossie.urlDelete') . "/{$this->file}";
-            case self::DISCO_PONTO_ELETRONICO:
-                return config('filesystems.disks.disco-ponto-eletronico.urlDelete') . "/{$this->file}";
-            case self::DISCO_PUBLICO:
-                return config('filesystems.disks.public.urlDelete') . "/{$this->file}";
-            case self::S3:
-                return config('filesystems.disks.s3.urlDelete') . "/{$this->file}";
-            case self::DISCO_PERFIL_USUARIO:
-                return config('filesystems.disks.disco-perfil-usuario.urlDelete') . "/{$this->file}";
-            case self::DISCO_WEEKLY_REPORT:
-                return config('filesystems.disks.disco-weekly-report.urlDelete') . "/{$this->file}";
-            case self::DISCO_EXAMES:
-                return config('filesystems.disks.disco-exames.urlDelete') . "/{$this->file}";
-            case self::DISCO_AFASTAMENTO:
-                return config('filesystems.disks.disco-afastamento.urlDelete') . "/{$this->file}";
-            case self::DISCO_CONTROLE_EXAMES_RESULTADO:
-                return config('filesystems.disks.disco-controle-exames-resultado.urlDelete') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_CONTRATO:
-                return config('filesystems.disks.disco-documento-contrato.urlDelete') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_EMPRESA:
-                return config('filesystems.disks.disco-documento-empresa.urlDelete') . "/{$this->file}";
-            case self::DISCO_DOCUMENTO_SSMA:
-                return config('filesystems.disks.disco-documento-ssma.urlDelete') . "/{$this->file}";
-            default:
-                return "";
+        if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
+            return config('filesystems.disks.' . $this->disco . '.urlDelete') . "/{$this->file}";
         }
+        return "";
     }
 
     /**

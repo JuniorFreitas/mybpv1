@@ -6,6 +6,7 @@ use App\Exports\ModeloRowsExport;
 use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovar;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovarRH;
+use App\Models\Arquivo;
 use App\Models\MudaCargoPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -41,10 +42,29 @@ class MudaCargoPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Demissão',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
+        }
+
             try {
                 DB::beginTransaction();
-                MudaCargoPrevista::create($dados);
+                $mudaCargoPrevista = MudaCargoPrevista::create($dados);
+                if (isset($dados['anexosDel'])) {
+                    foreach ($dados['anexosDel'] as $id_anexo) {
+                        $arquivo = Arquivo::find($id_anexo);
+                        $arquivo->excluir();
+                    }
+                }
+
+                if (isset($dados['anexos'])) {
+                    foreach ($dados['anexos'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $mudaCargoPrevista->Anexos()->attach($arquivo->id);
+                        }
+                    }
+                }
                 DB::commit();
                 return response()->json('', 201);
             } catch (\Exception $e) {
@@ -53,7 +73,6 @@ class MudaCargoPrevistaController extends Controller
                 \Log::debug($msg);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
-        }
     }
 
     /**
@@ -75,7 +94,8 @@ class MudaCargoPrevistaController extends Controller
 
         $mudaCargoPrevista->autocomplete_label_novo_cargo = $mudaCargoPrevista->NovoCargo ? $mudaCargoPrevista->NovoCargo->nome : '';
         $mudaCargoPrevista->autocomplete_label_novo_cargo_anterior = $mudaCargoPrevista->NovoCargo ? $mudaCargoPrevista->NovoCargo->nome : '';
-
+        $mudaCargoPrevista->anexosDel = [];
+        $mudaCargoPrevista->load('Anexos');
         return $mudaCargoPrevista;
     }
 
@@ -112,6 +132,24 @@ class MudaCargoPrevistaController extends Controller
             try {
                 DB::beginTransaction();
                 $mudaCargoPrevista->update($dados);
+                if (isset($dados['anexosDel'])) {
+                    foreach ($dados['anexosDel'] as $id_anexo) {
+                        $arquivo = Arquivo::find($id_anexo);
+                        $arquivo->excluir();
+                    }
+                }
+
+                if (isset($dados['anexos'])) {
+                    foreach ($dados['anexos'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $mudaCargoPrevista->Anexos()->attach($arquivo->id);
+                        }
+                    }
+                }
                 DB::commit();
                 return response()->json('', 201);
             } catch (\Exception $e) {
@@ -173,6 +211,24 @@ class MudaCargoPrevistaController extends Controller
                 'obs_aprovacao' => $dados['obs_aprovacao'],
                 'status_aprovacao' => $dados['status_aprovacao'],
             ]);
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $mudaCargoPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
             DB::commit();
             JobMudaCargoPrevistaAprovar::dispatch($mudaCargoPrevista);
 

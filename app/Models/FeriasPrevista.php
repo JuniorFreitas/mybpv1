@@ -258,4 +258,9 @@ class FeriasPrevista extends Model
     {
         return $this->hasOne(User::class, 'id', 'empresa_id');
     }
+
+    public function Anexos()
+    {
+        return $this->belongsToMany(Arquivo::class, 'documento_legais_contratos_anexos', 'id', 'arquivo_id');
+    }
 }
