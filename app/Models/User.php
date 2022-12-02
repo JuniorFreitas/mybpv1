@@ -428,6 +428,11 @@ class User extends Authenticatable
         return $this->belongsToMany(EmpresaEscala::class, 'funcionario_escalas', 'funcionario_id', 'escala_id');
     }
 
+    public function avaliadoresFuncionario()
+    {
+        return $this->belongsToMany(Avaliacao::class, 'avaliacoes', 'funcionario_id', 'avaliador_id');
+    }
+
     public function FotoPerfil()
     {
         return $this->belongsToMany(Arquivo::class, 'user_anexos', 'user_id', 'arquivo_id');

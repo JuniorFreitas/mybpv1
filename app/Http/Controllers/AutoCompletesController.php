@@ -169,6 +169,27 @@ class AutoCompletesController extends Controller
                 });
         }
 
+    public function usuariosAtivosAvaliador(Request $request)
+    {
+        $busca = $request->texto;
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+        $quantidade = 10;
+
+        return User::whereEmpresaId(auth()->user()->empresa_id)
+            ->whereNotIn('id', [auth()->user()->id])
+//                ->whereNotIn('id', User::LISTA_SUPORTE)
+            ->whereAtivo(true)
+            ->where('nome', 'like', '%' . $busca . '%')
+            ->take($quantidade)
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->empresa_id == User::MYBP_EMPRESA_ID ? $item->nome . ' - MyBP' : $item->nome;
+                return $item;
+            });
+    }
+
 
     public function colaboradores(Request $request)
     {

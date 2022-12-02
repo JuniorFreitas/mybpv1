@@ -110,6 +110,9 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('funcionarios', [\App\Http\Controllers\AutoCompletesController::class, 'funcionarios'])->name('funcionarios');
         Route::get('documentos-contratos', [\App\Http\Controllers\AutoCompletesController::class, 'documentosLegaisContrato'])->name('documentosLegaisContrato');
 
+
+        Route::post('todos-usuarios-ativos-avaliador', [\App\Http\Controllers\AutoCompletesController::class, 'usuariosAtivosAvaliador'])->name('usuarios-ativos-avaliador');
+
         //        Route::post('/treinamento/buscaCPF', 'TreinamentoEventoController@buscaCPF')->name('treinamento_sgi.buscaCPF');
     });
 
@@ -387,6 +390,40 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::put('tipocih/{tipocih}', [\App\Http\Controllers\CihController::class, 'tipoCihUpdate'])->name('tipoCihUpdate');
             Route::post('tipocih', [\App\Http\Controllers\CihController::class, 'tipoCihStore'])->name('tipoCihStore');
             Route::get('tipocih', [\App\Http\Controllers\CihController::class, 'tipoCihIndex'])->name('tipoCihIndex');
+        });
+
+        Route::group(['prefix' => 'avaliacoes'], function () {
+            Route::group(['as' => 'avaliacaotipo.'], function () {
+                //            Route::put('avaliacaotipo/{avaliacaotipo}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTipoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_documentos_legais');
+                //            Route::post('avaliacaotipo/atualizar', [\App\Http\Controllers\AvaliacaoTipoController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_documentos_legais');
+                //            Route::resource('avaliacaotipo', \App\Http\Controllers\AvaliacaoTipoController::class)->middleware('can:administracao_documentos_legais');
+
+                Route::put('avaliacaotipo/{avaliacaotipo}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTipoController::class, 'ativaDesativa'])->name('AvaliacaoTipoAtivaDesativa');
+                Route::post('avaliacaotipo/atualizar', [\App\Http\Controllers\AvaliacaoTipoController::class, 'atualizar'])->name('AvaliacaoTipoAtualizar');
+                Route::resource('avaliacaotipo', \App\Http\Controllers\AvaliacaoTipoController::class);
+            });
+
+            Route::group(['as' => 'avaliacaotopico.'], function () {
+                Route::post('avaliacaotopico/atualizar', [\App\Http\Controllers\AvaliacaoTopicoController::class, 'atualizar'])->name('avaliacaotopico.atualizar');
+                Route::put('avaliacaotopico/{avaliacaotopico}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTopicoController::class, 'ativaDesativa'])->name('avaliacaotopico.ativaDesativa');
+                Route::resource('avaliacaotopico', \App\Http\Controllers\AvaliacaoTopicoController::class);
+            });
+
+            Route::group(['as' => 'avaliacao.'], function () {
+                Route::post('avaliacao/atualizar', [\App\Http\Controllers\AvaliacaoController::class, 'atualizar'])->name('avaliacao.atualizar');
+                Route::put('avaliacao/{avaliacao}/ativa-desativa', [\App\Http\Controllers\AvaliacaoController::class, 'ativaDesativa'])->name('avaliacao.ativaDesativa');
+                Route::resource('avaliacao', \App\Http\Controllers\AvaliacaoController::class);
+            });
+
+            //Configuracoes
+            Route::group(['as' => 'avaliadores.'], function () {
+//                Route::post('avaliadores/buscarFuncionarios', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
+                Route::post('avaliadores/atualizarFuncionarios', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
+                Route::get('avaliadores/getPermissoes', [\App\Http\Controllers\AvaliadorController::class, 'getPermissoes'])->name('getPermissoes');
+
+            });
+            Route::resource('avaliadores', \App\Http\Controllers\AvaliadorController::class, ['parameters' => ['configuracoes' => 'config']])->middleware('can:controle_ponto_config_empresa');
+
         });
     });
 

@@ -233,6 +233,29 @@
                         </a>
                     </li>
                 @endcan
+{{--                @can('cadastro_avaliacoes')--}}
+                    <li id="avaliacoes">
+                        <a href="javascript://" class="has-arrow waves-effect" parent="cadastro">
+                            Avaliações</a>
+                        <ul aria-expanded="false">
+                            <li>
+                                <a href="{{route('g.avaliacaotipo.avaliacaotipo.index')}}" subparent="avaliacoes" parent="cadastro" key="avaliacaotipo">
+                                    Tipos
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{route('g.avaliacaotopico.avaliacaotopico.index')}}" subparent="avaliacoes" parent="cadastro" key="avaliacaotopico">
+                                    Tópicos
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{route('g.avaliacao.avaliacao.index')}}" subparent="avaliacoes" parent="cadastro" key="avaliacao">
+                                    Avaliações
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+{{--                @endcan--}}
             </ul>
         </li>
     @endif
