@@ -36,16 +36,19 @@ class AvaliacaoTipo extends Model
     protected $table = "avaliacoes_tipos";
 
     protected $fillable = [
-        'titulo',
-        'avaliacao_tipo_id',
-        'data_inicio_prazo',
-        'data_fim_prazo',
+        'nome',
+        'descricao',
         'empresa_id',
-        'status',
         'ativo'
     ];
 
-    protected $casts = ['id' => 'int', 'titulo' => 'string', 'avaliacao_tipo_id' => 'int', 'empresa_id' => 'int', 'data_inicio_prazo' => 'datetime', 'data_fim_prazo' => 'datetime', 'status' => 'string', 'ativo' => 'boolean'];
+    protected $casts = [
+        'id' => 'int',
+        'nome' => 'string',
+        'descricao' => 'string',
+        'empresa_id' => 'int',
+        'ativo' => 'boolean'
+    ];
 
     public $timestamps = false;
 

@@ -48,7 +48,7 @@ class AvaliacaoController extends Controller
 
                 $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
 
-                if ($diff_dias <= 0) {
+                if ($diff_dias < 0) {
                     $fail('Data Fim precisa ser maior que a Data início');
                 }
             }],
@@ -118,7 +118,7 @@ class AvaliacaoController extends Controller
 
                 $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
 
-                if ($diff_dias <= 0) {
+                if ($diff_dias < 0) {
                     $fail('Data Fim precisa ser maior que a Data início');
                 }
             }],
