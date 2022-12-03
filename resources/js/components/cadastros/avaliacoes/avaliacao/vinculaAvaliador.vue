@@ -269,6 +269,7 @@ export default {
             this.preload = false;
             this.form.autocomplete_label_avaliador = '';
             this.form.avaliadores = [];
+            this.form.avaliadoresDelete = [];
             this.form.feedbacks = this.funcionariosSelecionados;
             if (this.form.feedbacks.length === 1) {
                 axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/avaliador-associado/`,{
