@@ -161,7 +161,9 @@ export default {
                 avaliador_id: '',
                 avaliadores: [],
                 avaliadoresDelete: [],
+                feedbacks: [],
                 avaliacao_id: '',
+                id: '',
             },
             formDefault: null,
 
@@ -247,19 +249,6 @@ export default {
             this.checarMarcarTodosFuncionarios();
         },
 
-        selecionarPerimetro(perimetro) {
-            if (!this.formPerimetroFuncionarios.perimetrosSelecionados.includes(perimetro.id)) {
-                this.formPerimetroFuncionarios.perimetrosSelecionados.push(perimetro.id);
-            } else {
-                let index = this.formPerimetroFuncionarios.perimetrosSelecionados.indexOf(perimetro.id);
-                if (index !== -1) {
-                    this.formPerimetroFuncionarios.perimetrosSelecionados.splice(index, 1);
-                }
-            }
-            this.checarMarcarTodosFuncionarios();
-            this.formPerimetroFuncionarios.perimetrosSelecionados.length === 0 ? this.formPerimetroFuncionarios.perimetro_id = 0 : this.formPerimetroFuncionarios.perimetro_id = null;
-        },
-
         checarMarcarTodosFuncionarios() {
             let quantidade = this.listaFuncionarios.length;
             let marcados = this.listaFuncionarios.filter((funcionario => this.funcionariosSelecionados.includes(funcionario.id))).length
@@ -271,39 +260,42 @@ export default {
             this.preload = false;
             this.form.autocomplete_label_avaliador = '';
             this.form.avaliadores = [];
+            this.form.feedbacks = this.funcionariosSelecionados;
             //Get para pegar os Avaliadores qnd for 1
-            if (this.funcionariosSelecionados.length === 1) {
+            if (this.form.feedbacks.length === 1) {
                 //todo: pegar os avaliadores do funcionario
+                axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/avaliador-associado/`,{
+                    feedback_id: this.form.feedbacks[0],
+                    avaliacao_id: this.form.avaliacao_id,
+                }).then(({data}) =>{
+                    this.form.avaliadores = data;
+                }).catch((error)=>{
 
-                // axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/`).then(({data}) =>{
-                //     this.form.avaliadores = data;
-                // }).catch((error)=>{
-                //
-                // });
+                });
             }
 
-            if (this.funcionariosSelecionados.length > 1) {
+            if (this.form.feedbacks.length > 1) {
                 this.form.avaliadores = [];
             }
 
         },
         associarAvaliadores() {
-            this.formPerimetroFuncionarios.preload = true;
-            axios.put(`${URL_ADMIN}/controle-ponto/perimetros/assosicarPerimetro`, this.formPerimetroFuncionarios)
+            this.preload = true;
+            axios.put(`${URL_ADMIN}/controle-ponto/perimetros/assosicarPerimetro`, this.form)
                 .then(response => {
-                    this.formPerimetroFuncionarios.preload = false;
-                    this.formPerimetroFuncionarios.update = true;
+                    this.preload = false;
+                    this.update = true;
                     this.atualizar();
                     this.checarMarcarTodosFuncionarios();
                 }).catch(error => {
-                this.formPerimetroFuncionarios.preload = false;
+                this.preload = false;
                 this.atualizar();
             });
         },
 
         resetFuncionariosSelecionados() {
-            if (this.formPerimetroFuncionarios.update) {
-                this.formPerimetroFuncionarios.funcionariosSelecionados = [];
+            if (this.update) {
+                this.form.funcionariosSelecionados = [];
                 this.todosFuncionariosSelecionados = false;
             }
         },

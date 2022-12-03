@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cliente;
-use App\Models\EmpresaConfig;
+use App\Models\AvaliacaoFeedback;
 use App\Models\FeedbackCurriculo;
-use App\Models\FormaPagamento;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -45,21 +44,21 @@ class AvaliadorController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param \App\Models\EmpresaConfig $empresaConfig
+     * @param \App\Models\AvaliacaoFeedback $avaliador
      * @return \Illuminate\Http\Response
      */
-    public function show(EmpresaConfig $config)
+    public function show(AvaliacaoFeedback $avaliador)
     {
-
+        return $avaliador;
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param \App\Models\EmpresaConfig $config
+     * @param \App\Models\AvaliacaoFeedback $avaliador
      * @return \Illuminate\Http\Response
      */
-    public function edit(EmpresaConfig $config)
+    public function edit(AvaliacaoFeedback $avaliador)
     {
         //
     }
@@ -68,10 +67,10 @@ class AvaliadorController extends Controller
      * Update the specified resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \App\Models\EmpresaConfig $config
+     * @param \App\Models\AvaliacaoFeedback $avaliador
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, EmpresaConfig $config)
+    public function update(Request $request, AvaliacaoFeedback $avaliador)
     {
 
         $dados = $request->input();
@@ -92,10 +91,10 @@ class AvaliadorController extends Controller
         } else {
             try {
                 \DB::beginTransaction();
-                $config->update($dados);
+                $avaliador->update($dados);
                 \DB::commit();
                 return response()->json([], 200);
-            }catch (\Exception $e) {
+            } catch (\Exception $e) {
                 \DB::rollBack();
                 \Log::error($e->getMessage());
                 return response()->json([
@@ -110,25 +109,36 @@ class AvaliadorController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param \App\Models\EmpresaConfig $config
+     * @param \App\Models\AvaliacaoFeedback $avaliador
      * @return \Illuminate\Http\Response
      */
-    public function destroy(EmpresaConfig $config)
+    public function destroy(AvaliacaoFeedback $avaliador)
     {
     }
 
 
+    public function AvaliadorAssociadoSingle(Request $request)
+    {
+        $avaliadores = AvaliacaoFeedback::where('avaliacao_id', $request->avaliacao_id)->whereFeedbackId($request->feedback_id)->get();
+        $avaliadores = $avaliadores->map(function ($item) {
+            $user = User::find($item->avaliador_id);
+            $avaliador['id'] = $user->id;
+            $avaliador['nome'] = $user->nome;
+            return $avaliador;
+        });
+        return $avaliadores;
+    }
+
     public function atualizarFuncionarios(Request $request)
     {
-        $resultado = FeedbackCurriculo::select(['id','curriculo_id'])
+        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id'])
             ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor')
-            ->with('Avaliadores',function($query) use ($request){
-                $query->where('avaliacao_id',$request->avaliacao_id)->with('Avaliador:id,nome');
+            ->with('Avaliadores', function ($query) use ($request) {
+                $query->where('avaliacao_id', $request->avaliacao_id)->with('Avaliador:id,nome');
             })
             ->whereHas('Curriculo.User', function ($query) {
                 $query->where('ativo', true);
             })
-
             ->admitidos();
         $porPagina = $request->get('porPagina');
         $busca = false;

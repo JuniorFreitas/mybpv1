@@ -419,11 +419,9 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::group(['as' => 'avaliadores.'], function () {
 //                Route::post('avaliadores/buscarFuncionarios', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
                 Route::post('avaliadores/atualizar', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
-                Route::get('avaliadores/getPermissoes', [\App\Http\Controllers\AvaliadorController::class, 'getPermissoes'])->name('getPermissoes');
-
+                Route::post('avaliadores/avaliador-associado', [\App\Http\Controllers\AvaliadorController::class, 'AvaliadorAssociadoSingle'])->name('AvaliadorAssociadoSingle')->middleware('can:controle_ponto_config_empresa');
+                Route::resource('avaliadores', \App\Http\Controllers\AvaliadorController::class, ['parameters' => ['avaliadores' => 'avaliador']])->middleware('can:controle_ponto_config_empresa');
             });
-            Route::resource('avaliadores', \App\Http\Controllers\AvaliadorController::class, ['parameters' => ['configuracoes' => 'config']])->middleware('can:controle_ponto_config_empresa');
-
         });
     });
 
