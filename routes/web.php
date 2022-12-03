@@ -111,7 +111,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('documentos-contratos', [\App\Http\Controllers\AutoCompletesController::class, 'documentosLegaisContrato'])->name('documentosLegaisContrato');
 
 
-        Route::post('todos-usuarios-ativos-avaliador', [\App\Http\Controllers\AutoCompletesController::class, 'usuariosAtivosAvaliador'])->name('usuarios-ativos-avaliador');
+        Route::post('buscaAvaliadoresAtivos', [\App\Http\Controllers\AutoCompletesController::class, 'usuariosAtivosAvaliador'])->name('usuarios-ativos-avaliador');
 
         //        Route::post('/treinamento/buscaCPF', 'TreinamentoEventoController@buscaCPF')->name('treinamento_sgi.buscaCPF');
     });
@@ -418,7 +418,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             //Configuracoes
             Route::group(['as' => 'avaliadores.'], function () {
 //                Route::post('avaliadores/buscarFuncionarios', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
-                Route::post('avaliadores/atualizarFuncionarios', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
+                Route::post('avaliadores/atualizar', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
                 Route::get('avaliadores/getPermissoes', [\App\Http\Controllers\AvaliadorController::class, 'getPermissoes'])->name('getPermissoes');
 
             });

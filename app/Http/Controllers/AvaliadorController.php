@@ -117,21 +117,19 @@ class AvaliadorController extends Controller
     {
     }
 
-    public function getPermissoes(Request $request)
-    {
-
-        return response()->json([
-            'perimetros_insert' => auth()->user()->can('controle_ponto_perimetros_insert'),
-            'perimetros_update' => auth()->user()->can('controle_ponto_perimetros_update'),
-            'perimetros_delete' => auth()->user()->can('controle_ponto_perimetros_delete'),
-            'perimetros_funcionarios' => auth()->user()->can('controle_ponto_perimetros_funcionarios'),
-            'config_empresa' => auth()->user()->can('controle_ponto_config_empresa'),
-        ]);
-    }
 
     public function atualizarFuncionarios(Request $request)
     {
-        $resultado = FeedbackCurriculo::select(['id','curriculo_id'])->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor','Avaliadores.Avaliador:id,nome')->admitidos();
+        $resultado = FeedbackCurriculo::select(['id','curriculo_id'])
+            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor')
+            ->with('Avaliadores',function($query) use ($request){
+                $query->where('avaliacao_id',$request->avaliacao_id)->with('Avaliador:id,nome');
+            })
+            ->whereHas('Curriculo.User', function ($query) {
+                $query->where('ativo', true);
+            })
+
+            ->admitidos();
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->filled('campoBusca')) {

@@ -177,8 +177,11 @@ class AutoCompletesController extends Controller
         }
         $quantidade = 10;
 
+        $usuariosSelecionados = FeedbackCurriculo::whereIn('id',$request->funcionariosSelecionados)->pluck('curriculo_id')->toArray();
+
         return User::whereEmpresaId(auth()->user()->empresa_id)
-            ->whereNotIn('id', [auth()->user()->id])
+            ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
+            ->whereNotIn('id', $usuariosSelecionados)
 //                ->whereNotIn('id', User::LISTA_SUPORTE)
             ->whereAtivo(true)
             ->where('nome', 'like', '%' . $busca . '%')

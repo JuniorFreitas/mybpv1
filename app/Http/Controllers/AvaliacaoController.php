@@ -154,7 +154,8 @@ class AvaliacaoController extends Controller
      */
     private function filtro(Request $request)
     {
-        $resultado = Avaliacao::with('AvaliacaoTipo')->orderBy('data_inicio_prazo');
+        $resultado = Avaliacao::with('AvaliacaoTipo')
+            ->orderBy('data_inicio_prazo');
         if ($request->filled('campoBusca')) {
             $resultado->where("titulo", "like", "%$request->campoBusca%")
                 ->orWhere('id', $request->campoBusca);

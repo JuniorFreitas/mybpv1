@@ -1,5 +1,11 @@
 <template>
     <div :id="hash">
+        <modal id="janelaVinculo" :titulo="janelaVinculo" :fechar="!preload" :size="90">
+            <template slot="conteudo">
+                <vincula-avaliador :obj="avaliacaoSelecionada" v-if="abrirVinculo"></vincula-avaliador>
+            </template>
+        </modal>
+
         <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
             <template slot="conteudo">
                 <preload v-show="preload"></preload>
@@ -21,7 +27,9 @@
                                     <select class="form-control" v-model="form.avaliacao_tipo_id"
                                             onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)">
                                         <option value="">Selecione ...</option>
-                                        <option v-for="item in lista_avaliacoes_tipos" :value="item.id" :key="item.id">{{ item.nome }}</option>
+                                        <option v-for="item in lista_avaliacoes_tipos" :value="item.id" :key="item.id">
+                                            {{ item.nome }}
+                                        </option>
 
                                     </select>
                                 </div>
@@ -63,7 +71,8 @@
                         @click="alterar()">
                     Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-if="lista_avaliacoes_tipos.length > 0" v-show="!editando && !preload"
+                <button type="button" class="btn btn-sm btn-primary" v-if="lista_avaliacoes_tipos.length > 0"
+                        v-show="!editando && !preload"
                         @click="cadastrar()">
                     Cadastrar
                 </button>
@@ -112,7 +121,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
+            <div v-show="!controle.carregando && lista.length > 0">
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
@@ -137,10 +146,30 @@
                                       :model="item"></bt-ativo>
                         </td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-primary mb-1" data-toggle="modal"
-                                    data-target="#janelaCadastrar" @click="alterarForm(item)">
-                                <i class="fa fa-edit"></i>
-                            </button>
+
+                            <div class="dropdown show">
+                                <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                                   id="dropdownMenuLink"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item" href="javascript://" title="Editar"
+                                       data-toggle="modal" data-target="#janelaCadastrar" @click="alterarForm(item)">
+                                        Editar
+                                    </a>
+
+                                    <a class="dropdown-item" href="javascript://" title="Vincular avaliadores"
+                                       data-toggle="modal"
+                                       data-target="#janelaVinculo"
+                                       @click="vinculo(item)"
+                                    >
+                                        Vincular avaliadores
+                                    </a>
+                                </div>
+
+                            </div>
                         </td>
                     </tr>
                     </tbody>
@@ -159,12 +188,14 @@
 import controlePaginacao from "../../../ControlePaginacao";
 import modal from "../../../Modal";
 import DatePicker from "../../../DatePicker";
+import vinculaAvaliador from "./vinculaAvaliador";
 
 export default {
     components: {
         modal,
         controlePaginacao,
-        DatePicker
+        DatePicker,
+        vinculaAvaliador
     },
     props: {
         qntPag: {
@@ -191,9 +222,11 @@ export default {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela: "",
+            janelaVinculo: "",
             preload: false,
             editando: false,
             cadastrado: false,
+            abrirVinculo: false,
 
             form: {
                 titulo: "",
@@ -210,16 +243,27 @@ export default {
             lista_avaliacoes_tipos: [],
             lista_status: [],
 
+            avaliacaoSelecionada: null,
+
             urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliacao/atualizar`,
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: ""
+                    campoBusca: "",
                 }
             }
         };
     },
     methods: {
+        vinculo(obj) {
+            this.abrirVinculo = false;
+            this.janelaVinculo = `Vinculo de avaliadores  avaliação - ${obj.titulo}`;
+            this.avaliacaoSelecionada = obj;
+            setTimeout(() => {
+                this.abrirVinculo = true;
+            }, 300);
+
+        },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault); //copia
             this.titulo_janela = "Montagem da Avaliação";
