@@ -119,13 +119,11 @@ class AvaliadorController extends Controller
 
     public function AvaliadorAssociadoSingle(Request $request)
     {
-        $avaliadores = AvaliacaoFeedback::where('avaliacao_id', $request->avaliacao_id)->whereFeedbackId($request->feedback_id)->get();
-        $avaliadores = $avaliadores->map(function ($item) {
-            $user = User::find($item->avaliador_id);
-            $avaliador['id'] = $user->id;
-            $avaliador['nome'] = $user->nome;
-            return $avaliador;
-        });
+        $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'feedback_id', 'status'])
+            ->where('avaliacao_id', $request->avaliacao_id)
+            ->whereFeedbackId($request->feedback_id)
+            ->with('Avaliador:id,nome')
+            ->get();
         return $avaliadores;
     }
 

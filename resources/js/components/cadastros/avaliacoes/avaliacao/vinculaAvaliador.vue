@@ -1,23 +1,26 @@
 <template>
     <div>
         <modal id="janelaAssociarAvaliador" titulo="Associar avaliadores" :fechar="!preload"
-               :size="80">
+               size="g">
             <template slot="conteudo">
                 <fieldset v-if="editando">
                     <legend>Avaliadores</legend>
-
                     <div class="form-group">
-                        <label>Avaliador </label>
+                        <label>Avaliador</label>
                         <autocomplete :caminho="`autocomplete/buscaAvaliadoresAtivos`"
                                       :formsm="true"
                                       v-model="form.autocomplete_label_avaliador"
                                       placeholder="Selecione um(a) avaliador(a)"
                                       :id="`avaliador_${hash}`"
                                       metodo="post"
+                                      :disabled="form.avaliadores.length >=4"
                                       :dados="{ funcionariosSelecionados: funcionariosSelecionados }"
                                       @onselect="selecionaAvaliador"
                                       @onblur="resetaCampo"
                         ></autocomplete>
+                        <div class="alert alert-warning mt-3" v-show="form.avaliadores.length >=4">
+                            <i class="fa fa-exclamation-triangle"></i> O número máximo de avaliadores foi atingido.
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -30,8 +33,10 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="(avaliador, index) in form.avaliadores">
-                                <td class="text-center">{{ avaliador.nome }}</td>
+                            <tr v-for="(user, index) in form.avaliadores" :key="user.avaliador.id">
+                                <td class="text-center">
+                                    {{ user.avaliador.nome }}<br><span class="badge badge-success ml-1 p-1" v-if="index === 0">Principal</span>
+                                </td>
                                 <td class="text-center">
                                     <a href="javascript://" class="btn btn-sm btn-danger"
                                        @click.prevent="removerLIAvaliador(index)">
@@ -195,18 +200,22 @@ export default {
             this.form.avaliadores.splice(index, 1);
         },
         selecionaAvaliador(obj) {
-            const avaliador = {
-                novo: true,
-                id: obj.id,
-                nome: obj.nome,
+            const user = {
+                avaliacao_id: this.form.avaliacao_id,
+                feedback_id: this.form.id,
+                avaliador:{
+                    novo: true,
+                    id: obj.id,
+                    nome: obj.nome,
+                }
             }
 
-            let atual = this.form.avaliadores.findIndex(val => val.id === avaliador.id);
+            let atual = this.form.avaliadores.findIndex(val => val.id === user.avaliador.id);
 
             if (atual < 0) {//Se não existir ainda no array
-                this.form.avaliadores.push(avaliador);
+                this.form.avaliadores.push(user);
             } else {
-                mostraErro("", `Avaliador(a) ${avaliador.nome} já está na lista.`);
+                mostraErro("", `Avaliador(a) ${user.avaliador.nome} já está na lista.`);
                 this.form.autocomplete_label_avaliador = "";
                 return false;
             }
@@ -261,16 +270,13 @@ export default {
             this.form.autocomplete_label_avaliador = '';
             this.form.avaliadores = [];
             this.form.feedbacks = this.funcionariosSelecionados;
-            //Get para pegar os Avaliadores qnd for 1
             if (this.form.feedbacks.length === 1) {
-                //todo: pegar os avaliadores do funcionario
                 axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/avaliador-associado/`,{
                     feedback_id: this.form.feedbacks[0],
                     avaliacao_id: this.form.avaliacao_id,
                 }).then(({data}) =>{
                     this.form.avaliadores = data;
                 }).catch((error)=>{
-
                 });
             }
 
@@ -280,17 +286,26 @@ export default {
 
         },
         associarAvaliadores() {
-            this.preload = true;
-            axios.put(`${URL_ADMIN}/controle-ponto/perimetros/assosicarPerimetro`, this.form)
-                .then(response => {
-                    this.preload = false;
-                    this.update = true;
-                    this.atualizar();
-                    this.checarMarcarTodosFuncionarios();
-                }).catch(error => {
-                this.preload = false;
-                this.atualizar();
-            });
+            this.form.feedbacks = this.funcionariosSelecionados;
+            console.log(this.form);
+            // this.preload = true;
+            // axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/associar/`,{
+            //     feedback_id: this.form.feedbacks[0],
+            //     avaliacao_id: this.form.avaliacao_id,
+            // }).then(({data}) =>{
+            //     this.form.avaliadores = data;
+            // }).catch((error)=>{
+            // });
+            // axios.put(`${URL_ADMIN}/controle-ponto/perimetros/assosicarPerimetro`, this.form)
+            //     .then(response => {
+            //         this.preload = false;
+            //         this.update = true;
+            //         this.atualizar();
+            //         this.checarMarcarTodosFuncionarios();
+            //     }).catch(error => {
+            //     this.preload = false;
+            //     this.atualizar();
+            // });
         },
 
         resetFuncionariosSelecionados() {
