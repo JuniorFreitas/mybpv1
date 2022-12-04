@@ -72,7 +72,6 @@ class AvaliadorController extends Controller
      */
     public function update(Request $request, AvaliacaoFeedback $avaliador)
     {
-
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -119,34 +118,159 @@ class AvaliadorController extends Controller
 
     public function AvaliadorAssociadoSingle(Request $request)
     {
-        $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'feedback_id', 'status'])
+
+        $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'funcionario_id', 'status'])
             ->where('avaliacao_id', $request->avaliacao_id)
-            ->whereFeedbackId($request->feedback_id)
+            ->where('funcionario_id', $request->funcionario_id)
             ->with('Avaliador:id,nome')
+            ->OrigemAvaliador()
             ->get();
         return $avaliadores;
     }
 
+    public function associar(Request $request)
+    {
+        $dados = $request->input();
+        try {
+            \DB::beginTransaction();
+            if (count($dados['funcionarios']) == 1) {
+                $autoAvaliacao = AvaliacaoFeedback::where('avaliacao_id', $dados['avaliacao_id'])
+                    ->where('funcionario_id', $dados['funcionarios'][0])
+                    ->where('origem_feedback', AvaliacaoFeedback::ORIGEM_FUNCIONARIO)
+                    ->first();
+
+                if ($autoAvaliacao) {
+                    if (isset($request['avaliadoresDelete'])) {
+                        foreach ($request['avaliadoresDelete'] as $id) {
+                            AvaliacaoFeedback::find($id)->delete();
+                        }
+                    }
+                    foreach ($request['avaliadores'] as $avaliador) {
+                        if (isset($avaliador['novo'])) {
+                            $avaliadorFeedback = new AvaliacaoFeedback();
+                            $avaliadorFeedback->avaliacao_id = $request->avaliacao_id;
+                            $avaliadorFeedback->funcionario_id = $dados['funcionarios'][0];
+                            $avaliadorFeedback->avaliador_id = $avaliador['avaliador']['id'];
+                            $autoAvaliacao->principal = $avaliador['principal'];
+                            $avaliadorFeedback->origem_feedback = AvaliacaoFeedback::ORIGEM_AVALIADOR;
+                            $avaliadorFeedback->status = AvaliacaoFeedback::STATUS_AGUARDANDO;
+                            $avaliadorFeedback->save();
+                        }
+                    }
+                } else {
+                    $autoAvaliacao = new AvaliacaoFeedback();
+                    $autoAvaliacao->avaliacao_id = $request->avaliacao_id;
+                    $autoAvaliacao->funcionario_id = $dados['funcionarios'][0];
+                    $autoAvaliacao->avaliador_id = $dados['funcionarios'][0];
+                    $autoAvaliacao->principal = false;
+                    $autoAvaliacao->origem_feedback = AvaliacaoFeedback::ORIGEM_FUNCIONARIO;
+                    $autoAvaliacao->status = AvaliacaoFeedback::STATUS_AGUARDANDO;
+                    $autoAvaliacao->save();
+                    foreach ($request['avaliadores'] as $avaliador) {
+                        if (isset($avaliador['novo'])) {
+                            AvaliacaoFeedback::create(
+                                [
+                                    'avaliacao_id' => $request->avaliacao_id,
+                                    'funcionario_id' => $dados['funcionarios'][0],
+                                    'principal' => $avaliador['principal'],
+                                    'avaliador_id' => $avaliador['avaliador']['id'],
+                                    'origem_feedback' => AvaliacaoFeedback::ORIGEM_AVALIADOR,
+                                    'status' => AvaliacaoFeedback::STATUS_AGUARDANDO
+                                ]
+                            );
+                        }
+                    }
+                }
+
+                \DB::commit();
+                return response()->json(['Unica seleção'], 200);
+
+            } else {
+                foreach ($dados['funcionarios'] as $funcionario_id) {
+                    AvaliacaoFeedback::where('avaliacao_id', $dados['avaliacao_id'])
+                        ->where('funcionario_id', $funcionario_id)
+                        ->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->delete();
+
+                    $autoAvaliacao = AvaliacaoFeedback::where('avaliacao_id', $dados['avaliacao_id'])
+                        ->where('funcionario_id', $funcionario_id)
+                        ->where('origem_feedback', AvaliacaoFeedback::ORIGEM_FUNCIONARIO);
+
+                    if ($autoAvaliacao->count() == 0) {
+                        $autoAvaliacao = new AvaliacaoFeedback();
+                        $autoAvaliacao->avaliacao_id = $request->avaliacao_id;
+                        $autoAvaliacao->avaliador_id = $funcionario_id;
+                        $autoAvaliacao->funcionario_id = $funcionario_id;
+                        $autoAvaliacao->principal = false;
+                        $autoAvaliacao->origem_feedback = AvaliacaoFeedback::ORIGEM_FUNCIONARIO;
+                        $autoAvaliacao->status = AvaliacaoFeedback::STATUS_AGUARDANDO;
+                        $autoAvaliacao->save();
+                        foreach ($request['avaliadores'] as $avaliador) {
+                            $avaliadorFeedback = new AvaliacaoFeedback();
+                            $avaliadorFeedback->avaliacao_id = $request->avaliacao_id;
+                            $avaliadorFeedback->funcionario_id = $funcionario_id;
+                            $avaliadorFeedback->principal = $avaliador['principal'];
+                            $avaliadorFeedback->avaliador_id = $avaliador['avaliador']['id'];
+                            $avaliadorFeedback->origem_feedback = AvaliacaoFeedback::ORIGEM_AVALIADOR;
+                            $avaliadorFeedback->status = AvaliacaoFeedback::STATUS_AGUARDANDO;
+                            $avaliadorFeedback->save();
+                        }
+                    } else {
+                        foreach ($request['avaliadores'] as $avaliador) {
+                            AvaliacaoFeedback::create(
+                                [
+                                    'avaliacao_id' => $request->avaliacao_id,
+                                    'funcionario_id' => $funcionario_id,
+                                    'avaliador_id' => $avaliador['avaliador']['id'],
+                                    'principal' => $avaliador['principal'],
+                                    'origem_feedback' => AvaliacaoFeedback::ORIGEM_AVALIADOR,
+                                    'status' => AvaliacaoFeedback::STATUS_AGUARDANDO
+                                ]
+                            );
+                        }
+                    }
+                }
+
+                \DB::commit();
+                return response()->json(['Multi seleção'], 200);
+            }
+        } catch
+        (\Exception $e) {
+            \DB::rollBack();
+            \Log::error($e->getMessage());
+            return response()->json([
+                'msg' => 'Erro ao associar o avaliador',
+                'erros' => $e->getMessage()
+            ], 400);
+        }
+    }
+
     public function atualizarFuncionarios(Request $request)
     {
-        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id'])
-            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor')
+//        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id'])
+//            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor')
+//            ->with('Avaliadores', function ($query) use ($request) {
+//                $query->where('avaliacao_id', $request->avaliacao_id)->with('Avaliador:id,nome');
+//            })
+//            ->whereHas('Curriculo.User', function ($query) {
+//                $query->where('ativo', true);
+//            })
+//            ->admitidos();
+
+        $resultado = User::select(['id', 'nome', 'login', 'tipo', 'ativo'])
+            ->TiposGerenciais()
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->whereAtivo(true)
             ->with('Avaliadores', function ($query) use ($request) {
-                $query->where('avaliacao_id', $request->avaliacao_id)->with('Avaliador:id,nome');
-            })
-            ->whereHas('Curriculo.User', function ($query) {
-                $query->where('ativo', true);
-            })
-            ->admitidos();
+                $query->where('avaliacao_id', $request->avaliacao_id)
+                    ->with('Avaliador:id,nome');
+            })->orderBy('nome');
+
         $porPagina = $request->get('porPagina');
         $busca = false;
         if ($request->filled('campoBusca')) {
             $busca = $request->get('campoBusca');
-            $resultado = $resultado->where('nome', 'like', '%' . $busca . '%');
+            $resultado->where('nome', 'like', '%' . $busca . '%');
         }
-//        $resultado->with([
-//            'avaliadoresFuncionario:id,nome'
-//        ]);
 
         $resultado = $resultado->paginate($porPagina);
         return response()->json([

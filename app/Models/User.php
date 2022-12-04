@@ -504,6 +504,16 @@ class User extends Authenticatable
         $Colaborador->ClienteFuncionarios()->sync($Empresa->id);
     }
 
+    public function Avaliadores()
+    {
+        return $this->hasMany(AvaliacaoFeedback::class, 'funcionario_id', 'id')->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR);
+    }
+
+    public function scopeTiposGerenciais($query)
+    {
+        return $query->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS);
+    }
+
     protected static function booted()
     {
         static::creating(function ($model) {

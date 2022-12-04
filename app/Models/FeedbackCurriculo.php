@@ -807,10 +807,6 @@ class FeedbackCurriculo extends Model
         return $this->belongsToMany(Cih::class, 'cih_feedback', 'feedback_id', 'cih_id');
     }
 
-    public function Avaliadores()
-    {
-        return $this->hasMany(AvaliacaoFeedback::class, 'feedback_id', 'id')->where('origem_feedback', 'Avaliador');
-    }
 
     /**/
     //scopeManual

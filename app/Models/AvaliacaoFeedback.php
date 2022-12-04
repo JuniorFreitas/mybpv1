@@ -15,8 +15,10 @@ class AvaliacaoFeedback extends Model
     protected $fillable = [
         'avaliacao_id',
         'empresa_id',
-        'origem_feedback',
+        'funcionario_id',
         'feedback_id',
+        'origem_feedback',
+        'principal',
         'avaliador_id',
         'nota_final_total',
         'inicio_feedback',
@@ -29,8 +31,10 @@ class AvaliacaoFeedback extends Model
         'id' => 'int',
         'avaliacao_id' => 'int',
         'empresa_id' => 'int',
-        'origem_feedback' => 'string',
         'feedback_id' => 'int',
+        'funcionario_id' => 'int',
+        'principal' => 'boolean',
+        'origem_feedback' => 'string',
         'avaliador_id' => 'int',
         'nota_final_total' => 'int',
         'inicio_feedback' => 'string',
@@ -39,6 +43,12 @@ class AvaliacaoFeedback extends Model
         'status' => 'string'
     ];
 
+    public $timestamps = false;
+
+    const ORIGEM_FUNCIONARIO = 'Funcionario';
+    const ORIGEM_AVALIADOR = 'Avaliador';
+    const STATUS_AGUARDANDO = 'aguardando';
+
     public function Avaliador()
     {
         return $this->hasOne(User::class, 'id', 'avaliador_id');
@@ -46,6 +56,11 @@ class AvaliacaoFeedback extends Model
 
     public function Funcionario()
     {
-        return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
+    public function scopeOrigemAvaliador($query)
+    {
+        return $query->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR);
     }
 }

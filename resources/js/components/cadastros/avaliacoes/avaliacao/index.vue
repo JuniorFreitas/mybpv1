@@ -1,12 +1,12 @@
 <template>
     <div :id="hash">
-        <modal id="janelaVinculo" :titulo="janelaVinculo" :fechar="!preload" :size="90">
+        <modal id="janelaAssociar" :titulo="janelaAssociar" :fechar="!preload" :size="90">
             <template slot="conteudo">
-                <vincula-avaliador :obj="avaliacaoSelecionada" v-if="abrirVinculo"></vincula-avaliador>
+                <vincula-avaliador :obj="avaliacaoSelecionada" v-if="abrirAssociar"></vincula-avaliador>
             </template>
         </modal>
 
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" size="g">
             <template slot="conteudo">
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -16,16 +16,20 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Título</label>
-                                    <input v-model="form.titulo" class="form-control" type="text"
+                                    <input v-model="form.titulo" class="form-control form-control-sm validacampo" type="text"
                                            placeholder="Informe o titulo da avaliação"
-                                           onblur="valida_campo_vazio(this,1)">
+                                           @keyup.prevent="valida_campo_vazio($event.target, 1);"
+                                           @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                    >
                                 </div>
                             </div>
-                            <div class="col-12">
+                            <div class="col-lg-4">
                                 <div class="form-group">
                                     <label>Tipo de avaliação</label>
-                                    <select class="form-control" v-model="form.avaliacao_tipo_id"
-                                            onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)">
+                                    <select class="form-control form-control-sm validacampo" v-model="form.avaliacao_tipo_id"
+                                            @change.prevent="valida_campo_vazio($event.target, 1);"
+                                            @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                    >
                                         <option value="">Selecione ...</option>
                                         <option v-for="item in lista_avaliacoes_tipos" :value="item.id" :key="item.id">
                                             {{ item.nome }}
@@ -34,29 +38,30 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-lg-4">
                                 <date-picker formsm label="Data Iníco" v-model="form.data_inicio_prazo"></date-picker>
                             </div>
-                            <div class="col-6">
+                            <div class="col-lg-4">
                                 <date-picker formsm label="Data Fim" v-model="form.data_fim_prazo"></date-picker>
                             </div>
-                            <div class="col-12">
+                            <div class="col-lg-3">
                                 <div class="form-group">
                                     <label>Status</label>
-                                    <select class="form-control" v-model="form.status"
-                                            onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)">
+                                    <select class="form-control form-control-sm validacampo" v-model="form.status"
+                                            @change.prevent="valida_campo_vazio($event.target, 1);"
+                                            @blur.prevent="valida_campo_vazio($event.target, 1)">
                                         <option value="">Selecione ...</option>
                                         <option v-for="item in lista_status" :value="item">{{ item }}</option>
 
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12">
+                            <div class="col-lg-3">
                                 <div class="form-group">
                                     <label>Ativo</label>
-                                    <select class="form-control" onblur="valida_campo_vazio(this,1)"
+                                    <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
                                             onchange="valida_campo_vazio(this,1)" v-model="form.ativo">
-                                        <option :value="''">Selecione</option>
+                                        <option value="">Selecione</option>
                                         <option :value="true">Sim</option>
                                         <option :value="false">Não</option>
                                     </select>
@@ -160,12 +165,12 @@
                                         Editar
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Vincular avaliadores"
+                                    <a class="dropdown-item" href="javascript://" title="Associar avaliadores"
                                        data-toggle="modal"
-                                       data-target="#janelaVinculo"
-                                       @click="vinculo(item)"
+                                       data-target="#janelaAssociar"
+                                       @click="associar(item)"
                                     >
-                                        Vincular avaliadores
+                                        Associar avaliadores
                                     </a>
                                 </div>
 
@@ -189,6 +194,7 @@ import controlePaginacao from "../../../ControlePaginacao";
 import modal from "../../../Modal";
 import DatePicker from "../../../DatePicker";
 import vinculaAvaliador from "./vinculaAvaliador";
+import validacoes from "../../../../mixins/Validacoes";
 
 export default {
     components: {
@@ -197,6 +203,7 @@ export default {
         DatePicker,
         vinculaAvaliador
     },
+    mixins: [validacoes],
     props: {
         qntPag: {
             type: Number,
@@ -222,11 +229,11 @@ export default {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela: "",
-            janelaVinculo: "",
+            janelaAssociar: "",
             preload: false,
             editando: false,
             cadastrado: false,
-            abrirVinculo: false,
+            abrirAssociar: false,
 
             form: {
                 titulo: "",
@@ -255,12 +262,12 @@ export default {
         };
     },
     methods: {
-        vinculo(obj) {
-            this.abrirVinculo = false;
-            this.janelaVinculo = `Vinculo de avaliadores  avaliação - ${obj.titulo}`;
+        associar(obj) {
+            this.abrirAssociar = false;
+            this.janelaAssociar = `Associar avaliadores para avaliação - ${obj.titulo}`;
             this.avaliacaoSelecionada = obj;
             setTimeout(() => {
-                this.abrirVinculo = true;
+                this.abrirAssociar = true;
             }, 300);
 
         },
@@ -275,9 +282,10 @@ export default {
         },
 
         cadastrar() {
-            $("#janelaCadastrar :input:visible").trigger("blur");
-            if ($("#janelaCadastrar :input:visible.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
+            this.validaBlur();
+            let countErro = document.querySelectorAll(".is-invalid").length
+            if (countErro > 0) {
+                toastr.error("Verifique os campos", "Atenção!")
                 return false;
             }
             this.preload = true;
@@ -320,13 +328,12 @@ export default {
 
         alterar() {
             formReset();
-            $("#janelaCadastrar :input:enabled").trigger("blur");
-
-            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
+            this.validaBlur();
+            let countErro = document.querySelectorAll(".is-invalid").length
+            if (countErro > 0) {
+                toastr.error("Verifique os campos", "Atenção!")
                 return false;
             }
-
             this.preload = true;
 
             axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${this.form.id}`, this.form).then(response => {
