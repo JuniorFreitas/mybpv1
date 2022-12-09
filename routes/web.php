@@ -423,6 +423,14 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('avaliadores/associar', [\App\Http\Controllers\AvaliadorController::class, 'associar'])->name('associar')->middleware('can:controle_ponto_config_empresa');
                 Route::resource('avaliadores', \App\Http\Controllers\AvaliadorController::class, ['parameters' => ['avaliadores' => 'avaliador']])->middleware('can:controle_ponto_config_empresa');
             });
+
+            Route::group(['as' => 'avaliar.'], function () {
+                Route::post('avaliar/atualizar', [\App\Http\Controllers\AvaliacaoController::class, 'atualizarAvaliar'])->name('avaliarAtualizar');
+                Route::get('avaliar/{avaliacaoFeedback}/edit', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarEdit'])->name('avaliarEdit');
+                Route::put('avaliar/{avaliacaoFeedback}', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarUpdate'])->name('avaliarUpdate');
+                Route::get('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarFinal'])->name('avaliarFinal');
+                Route::get('avaliar', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarIndex'])->name('avaliarIndex');
+            });
         });
     });
 

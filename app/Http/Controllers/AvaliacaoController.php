@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Avaliacao;
+use App\Models\AvaliacaoFeedback;
+use App\Models\AvaliacaoResposta;
 use App\Models\AvaliacaoTipo;
+use App\Models\AvaliacaoTopico;
+use App\Models\FeedbackCurriculo;
 use App\Models\User;
 use App\Rules\TenantUniqueRules;
 use Illuminate\Http\Request;
@@ -200,6 +204,225 @@ class AvaliacaoController extends Controller
         $avaliacao->save();
         $avaliacao->refresh();
         return response()->json(['ativo' => $avaliacao->ativo], 201);
+    }
+
+
+    public function atualizarAvaliar(Request $request)
+    {
+        $resultado = $this->filtroAvaliar($request)->paginate($request->porPag ?: 20);
+        $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
+
+        $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item){
+            $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
+            $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
+            $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
+            $item->total_avaliacoes_concluidas = $totalAvaliacoesFuncConcluidas->count();
+            $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes;
+            return $item;
+        });
+
+        $permissoes = [
+//            'insert' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_insert'),
+//            'update' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_update'),
+//            'delete' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_delete')
+        ];
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'avaliacoes_tipos' => $avaliacoes_tipos,
+                'lista_status' => Avaliacao::LISTA_STATUS,
+//                'permissoes' => [
+//                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
+//                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
+//                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
+//                ]
+            ]
+        ]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    private function filtroAvaliar(Request $request)
+    {
+        $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'Funcionario', 'Avaliador')
+            ->whereAvaliadorId(auth()->user()->id);
+
+        $resultado->whereHas('Avaliacao', function ($query) {
+            $query->whereStatus(Avaliacao::STATUS_ABERTA)
+                  ->whereAtivo(true);
+        });
+
+//            ->whereFeedbackId()
+//            ->orderBy('avaliacoes.data_inicio_prazo');
+        if ($request->filled('campoBusca')) {
+            $resultado->where("titulo", "like", "%$request->campoBusca%")
+                ->orWhere('id', $request->campoBusca);
+        }
+        return $resultado;
+    }
+
+    public function avaliarIndex(Request $request)
+    {
+        return view('g.cadastros.avaliacoes.avaliar.index');
+    }
+
+    public function avaliarEdit(AvaliacaoFeedback $avaliacaoFeedback)
+    {
+        $avaliacaoTopicos = AvaliacaoTopico::TopicosPais()->with('Subtopicos')->where('avaliacao_tipo_id', $avaliacaoFeedback->avaliacao->avaliacao_tipo_id)->get();
+        $respostas = [];
+
+        foreach ($avaliacaoTopicos as $topico) {
+            foreach ($topico->subtopicos as $subtopico){
+                $avaliacaoResposta = AvaliacaoResposta::where('avaliacao_feedback_id', $avaliacaoFeedback->id)
+                    ->where('topico_id', $subtopico->id)->first();
+                $respostas[$topico->id][] = [
+                    'avaliacao_feedback_id' => $avaliacaoFeedback->id,
+                    'topico_id' => $subtopico->id,
+                    'nota' => $avaliacaoResposta ? $avaliacaoResposta->nota : ''
+                ];
+            }
+        }
+
+        $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
+                                     ->whereEmpresaId(auth()->user()->empresa_id)
+                                     ->first();
+
+
+        $dadosDoFuncionario = [
+            'nome' => $avaliacaoFeedback->Funcionario->nome,
+            'matricula' => 'NÃO INFORMADO',
+            'data_admissao' => 'NÃO INFORMADO',
+            'cargo' => 'NÃO INFORMADO',
+            'area' => 'NÃO INFORMADO',
+        ];
+
+        if($feedbackCurriculo){
+            $admissao = $feedbackCurriculo->Admissao;
+            $dadosDoFuncionario = [
+                'nome' => $avaliacaoFeedback->Funcionario->nome,
+                'matricula' => $admissao->matricula ?: "NÃO INFORMADO",
+                'data_admissao' => $admissao->data_admissao,
+                'cargo' => $admissao->cargo,
+                'area' => $admissao->AreaEtiqueta ? $admissao->AreaEtiqueta->label : "NÃO INFORMADO",
+            ];
+        }
+
+        return response()->json([
+            'topicos' => $avaliacaoTopicos,
+            'avaliacao_feedback_id' => $avaliacaoFeedback->id,
+            'respostas' => $respostas,
+            'comentario' => $avaliacaoFeedback->comentario ?: '',
+            'dados_do_funcionario' => $dadosDoFuncionario,
+//                'avaliacoes_tipos' => $avaliacoes_tipos,
+//                'lista_status' => Avaliacao::LISTA_STATUS,
+//                'permissoes' => [
+//                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
+//                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
+//                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
+        ]);
+    }
+
+    public function avaliarUpdate(Request $request, AvaliacaoFeedback $avaliacaoFeedback)
+    {
+        //        $this->authorize('administracao_documentos_legais_insert');
+
+        $dados = $request->input();
+
+        $respostas = collect($dados['respostas'])->collapse()->all();
+//        dd($respostas);
+
+        foreach ($respostas as $key=>$resposta){
+//            dd($resposta);
+            $avaliacaoFeedback->Respostas()->create($resposta);
+//            AvaliacaoResposta::create($resposta);
+        }
+
+        $avaliacaoFeedback->update([
+            'status' => AvaliacaoFeedback::STATUS_CONCLUIDA,
+            'comentario' => $dados['comentario'],
+            'fim_feedback' => (new DataHora())->dataHoraInsert()
+        ]);
+    }
+
+    public function avaliarFinal(AvaliacaoFeedback $avaliacaoFeedback)
+    {
+        $avaliacaoTopicos = AvaliacaoTopico::TopicosPais()->with('Subtopicos')->where('avaliacao_tipo_id', $avaliacaoFeedback->avaliacao->avaliacao_tipo_id)->get();
+        $respostas = [];
+
+        $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
+                                                ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
+                                                ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)->get();
+
+
+
+        $qtdAvalFeedbacks = count($avaliacoesFeedbacks);
+
+        $resultado_final = [];
+
+        foreach ($avaliacaoTopicos as $topico) {
+            foreach ($topico->subtopicos as $subtopico){
+                foreach ($avaliacoesFeedbacks as &$avalFeedback){
+                    $avaliacaoResposta = AvaliacaoResposta::where('avaliacao_feedback_id', $avalFeedback->id)
+                        ->where('topico_id', $subtopico->id)->first();
+                    $respostas[$avalFeedback->id][$topico->id][$subtopico->id] = [
+                        'nota' => $avaliacaoResposta ? $avaliacaoResposta->nota : '',
+                    ];
+                }
+
+//                $resultado_final[$subtopico->id]['nota_final'] = $respostas[$avalFeedback->id][$topico->id][$subtopico->id]['nota'];
+
+            }
+        }
+
+
+
+
+        return $respostas;
+
+        $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->first();
+
+
+        $dadosDoFuncionario = [
+            'nome' => $avaliacaoFeedback->Funcionario->nome,
+            'matricula' => 'NÃO INFORMADO',
+            'data_admissao' => 'NÃO INFORMADO',
+            'cargo' => 'NÃO INFORMADO',
+            'area' => 'NÃO INFORMADO',
+        ];
+
+        if($feedbackCurriculo){
+            $admissao = $feedbackCurriculo->Admissao;
+            $dadosDoFuncionario = [
+                'nome' => $avaliacaoFeedback->Funcionario->nome,
+                'matricula' => $admissao->matricula ?: "NÃO INFORMADO",
+                'data_admissao' => $admissao->data_admissao,
+                'cargo' => $admissao->cargo,
+                'area' => $admissao->AreaEtiqueta ? $admissao->AreaEtiqueta->label : "NÃO INFORMADO",
+            ];
+        }
+
+        return response()->json([
+            'topicos' => $avaliacaoTopicos,
+            'avaliacao_feedback_id' => $avaliacaoFeedback->id,
+            'respostas' => $respostas,
+            'comentario' => $avaliacaoFeedback->comentario ?: '',
+            'dados_do_funcionario' => $dadosDoFuncionario,
+//                'avaliacoes_tipos' => $avaliacoes_tipos,
+//                'lista_status' => Avaliacao::LISTA_STATUS,
+//                'permissoes' => [
+//                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
+//                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
+//                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
+        ]);
     }
 
 }

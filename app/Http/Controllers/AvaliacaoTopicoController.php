@@ -191,11 +191,11 @@ class AvaliacaoTopicoController extends Controller
                     ], 400);
                 }
 
-                if ($subtopicos->duplicates('topico_explicacao')->count() > 0) {
-                    return response()->json([
-                        'msg' => "Verifique os subtópicos com descrições duplicados!",
-                    ], 400);
-                }
+//                if ($subtopicos->duplicates('topico_explicacao')->count() > 0) {
+//                    return response()->json([
+//                        'msg' => "Verifique os subtópicos com descrições duplicados!",
+//                    ], 400);
+//                }
 
                 if ($subtopicos->count() == 0) {
                     return response()->json([

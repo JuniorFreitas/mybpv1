@@ -39,7 +39,7 @@ class AvaliacaoFeedback extends Model
         'nota_final_total' => 'int',
         'inicio_feedback' => 'string',
         'fim_feedback' => 'string',
-        'comentario' => 'int',
+        'comentario' => 'string',
         'status' => 'string'
     ];
 
@@ -47,16 +47,40 @@ class AvaliacaoFeedback extends Model
 
     const ORIGEM_FUNCIONARIO = 'Funcionario';
     const ORIGEM_AVALIADOR = 'Avaliador';
-    const STATUS_AGUARDANDO = 'aguardando';
+
+    const LISTA_ORIGEM = [
+        self::ORIGEM_FUNCIONARIO,
+        self::ORIGEM_AVALIADOR
+    ];
+
+    const STATUS_AGUARDANDO = 'Pendente';
+    const STATUS_CONCLUIDA = 'Avaliada';
+    const STATUS_FINAL = 'Finalizada';
+
+    const LISTA_STATUS = [
+        self::STATUS_AGUARDANDO,
+        self::STATUS_CONCLUIDA,
+        self::STATUS_FINAL
+    ];
 
     public function Avaliador()
     {
         return $this->hasOne(User::class, 'id', 'avaliador_id');
     }
 
+    public function Avaliacao()
+    {
+        return $this->belongsTo(Avaliacao::class, 'avaliacao_id', 'id');
+    }
+
     public function Funcionario()
     {
-        return $this->hasOne(User::class, 'id', 'user_id');
+        return $this->hasOne(User::class, 'id', 'funcionario_id');
+    }
+
+    public function Respostas()
+    {
+        return $this->hasMany(AvaliacaoResposta::class, 'id', 'avaliacao_feedback_id');
     }
 
     public function scopeOrigemAvaliador($query)

@@ -1,0 +1,421 @@
+<template>
+    <div :id="hash">
+<!--        <modal id="janelaVinculo" :titulo="janelaVinculo" :fechar="!preload" :size="90">-->
+<!--            <template slot="conteudo">-->
+<!--                <vincula-avaliador :obj="avaliacaoSelecionada" v-if="abrirVinculo"></vincula-avaliador>-->
+<!--            </template>-->
+<!--        </modal>-->
+
+        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+            <template slot="conteudo">
+                <preload v-show="preload"></preload>
+                <div v-if="!preload">
+                    <fieldset>
+                        <legend>DADOS</legend>
+                        <div class="row">
+                            <div class="col-12 col-lg-4"><strong>Nome:</strong> {{ formAvaliar.dados_do_funcionario.nome }}</div>
+                            <div class="col-12 col-lg-4"><strong>Matrícula:</strong> {{ formAvaliar.dados_do_funcionario.matricula }}</div>
+                            <div class="col-12 col-lg-4"><strong>Admissão:</strong> {{ formAvaliar.dados_do_funcionario.data_admissao }}</div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 col-lg-4"><strong>Cargo:</strong> {{ formAvaliar.dados_do_funcionario.cargo }}</div>
+                            <div class="col-12 col-lg-4"><strong>Área:</strong> {{ formAvaliar.dados_do_funcionario.area }}</div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>ESCALA DE AVALIAÇÃO</legend>
+                        <span><strong>Para esta avaliação considerar as atribuições básicas abaixo, conforme as seguintes notas:</strong></span><br>
+                        <span>5 - Superou muito as expectativas: É percebido por outras áreas/pessoas como alguém com uma atuação excepcional, modelo de referência</span><br>
+                        <span>4 - Superou as expectativas: Atuação melhor que o esperado com alto padrão de qualidade</span><br>
+                        <span>3 -Atingiu as expectativas: Atuação adequada ao esperado (satisfatório), atende os padrões de qualidade e produtividade</span><br>
+                        <span>2 - Abaixo das expectativas: Atuação abaixo do esperado (precisa de desenvolvimento)</span><br>
+                        <span>1 - Muito abaixo das expectativas: Atuação não aceitável, desempenho muito abaixo do que é esperado para a função</span>
+                    </fieldset>
+
+                    <fieldset v-for="item in lista_topicos">
+                        <legend>{{ item.topico }}</legend>
+                        <div class="alert alert-info" v-if="item.topico_explicacao">
+                            {{ item.topico_explicacao }}
+                        </div>
+                        <fieldset v-for="(subtopico,index) in item.subtopicos">
+                            <legend>{{ subtopico.topico }}</legend>
+                            <p class="quebra_linha_textarea">{{ subtopico.topico_explicacao}}</p>
+                            <div class="form-group">
+                                <label>{{ visualizando ? "Nota" : "Informe sua nota"}}</label>
+                                <select :disabled="visualizando" class="form-control" v-model="formAvaliar.respostas[item.id][index].nota">
+                                    <option value="">Selecione</option>
+                                    <option v-for="resp in 5" :value="resp">{{ resp }}</option>
+                                </select>
+                            </div>
+                        </fieldset>
+                    </fieldset>
+                    <fieldset>
+                        <legend>COMENTÁRIO</legend>
+                        <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control" placeholder="Se desejar, faça algum comentário" rows="4"></textarea>
+                    </fieldset>
+                </div>
+            </template>
+            <template slot="rodape">
+                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload && !visualizando"
+                        @click="salvar()">
+                        <i class="fa fa-save"></i> Salvar
+                </button>
+            </template>
+        </modal>
+
+        <!-- Filtro -->
+        <fieldset>
+            <legend>Filtro</legend>
+            <form class="row" @submit.prevent="$refs.componente.buscar()">
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Buscar</label>
+                        <input type="text"
+                               placeholder="Buscar por título"
+                               autocomplete="off"
+                               class="form-control form-control-sm" :disabled="controle.carregando"
+                               v-model="controle.dados.campoBusca">
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-12">
+                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
+                            @click="atualizar"><i
+                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                        Atualizar
+                    </button>
+
+                    <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"
+                            @click="formNovo"
+                            data-toggle="modal"
+                            data-target="#janelaCadastrar">
+                        <i class="fa fa-plus"></i> Cadastrar
+                    </button>
+                </div>
+            </form>
+        </fieldset>
+
+        <div id="conteudo">
+
+            <p class=" mt-2 text-center" v-if="controle.carregando">
+                <preload></preload>
+            </p>
+
+            <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
+                <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+            </div>
+
+            <div v-show="!controle.carregando && lista.length > 0">
+                <table class="tabela">
+                    <thead>
+                    <tr class="bg-default">
+<!--                        <td class="text-center">Nome</td>-->
+                        <td class="text-center">Título</td>
+                        <td class="text-center">Tipo</td>
+                        <td class="text-center">Avaliar até</td>
+                        <td class="text-center">Funcionário</td>
+                        <td class="text-center">Avaliar Como</td>
+                        <td class="text-center">Status</td>
+                        <td class="text-center">Ação</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista">
+<!--                        <td class="text-center">{{ item.avaliacao.feedback.nome }}</td>-->
+                        <td class="text-center">{{ item.avaliacao.titulo }}</td>
+                        <td class="text-center">{{ item.avaliacao.avaliacao_tipo.nome }}</td>
+                        <td class="text-center">{{ item.avaliacao.data_fim_prazo }}</td>
+                        <td class="text-center"><i class="fa fa-user" v-if="item.avaliador_id === item.funcionario_id"></i> {{ item.funcionario.nome }}</td>
+                        <td class="text-center">{{ item.origem_feedback }}</td>
+                        <td class="text-center">
+                            <span class="p-1 badge badge-danger" v-if="item.status === 'Pendente'">Pendente</span>
+                            <span class="p-1 badge badge-info" v-if="item.status === 'Avaliada'">Avaliada</span>
+                            <span class="p-1 badge badge-success" v-if="item.status === 'Finalizada'">Finalizada</span>
+                        </td>
+                        <td class="text-center">
+
+                            <div class="dropdown show">
+                                <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                                   id="dropdownMenuLink"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item" href="javascript://" title="Avaliar"
+                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)" v-if="item.status === 'Pendente'">
+                                        Avaliar
+                                    </a>
+
+                                    <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
+                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'">
+                                        Visualizar Avaliação
+                                    </a>
+
+                                    <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
+                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarFinalForm(item, true)" v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final">
+                                        Fazer Avaliação Final
+                                    </a>
+
+                                    <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
+                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarFinalForm(item, true)" v-if="item.status === 'Finalizada' && item.fazer_avaliacao_final">
+                                        Visualizar Avaliação Final
+                                    </a>
+
+<!--                                    <a class="dropdown-item" href="javascript://" title="Vincular avaliadores"-->
+<!--                                       data-toggle="modal"-->
+<!--                                       data-target="#janelaVinculo"-->
+<!--                                       @click="vinculo(item)"-->
+<!--                                    >-->
+<!--                                        Vincular avaliadores-->
+<!--                                    </a>-->
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
+                                :url="urlPaginacao" :por-pagina="qntPag"
+                                :dados="controle.dados"
+                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+        </div>
+    </div>
+</template>
+
+<script>
+import controlePaginacao from "../../../ControlePaginacao";
+import modal from "../../../Modal";
+import DatePicker from "../../../DatePicker";
+// import vinculaAvaliador from "./vinculaAvaliador";
+
+export default {
+    components: {
+        modal,
+        controlePaginacao,
+        DatePicker,
+        // vinculaAvaliador
+    },
+    props: {
+        qntPag: {
+            type: Number,
+            required: false,
+            default: 20
+        },
+        filtro: {
+            type: Boolean,
+            required: false,
+            default: true
+        },
+        modal: { // modal Pai
+            type: String,
+            required: false,
+            default: ""
+        }
+    },
+    mounted() {
+        this.atualizar();
+        this.formAvaliarDefault = _.cloneDeep(this.formAvaliar);
+        this.formAvaliarFinalDefault = _.cloneDeep(this.formAvaliarFinal);
+    },
+    data() {
+        return {
+            hash: String(Math.random()).substr(2),
+            titulo_janela: "",
+            janelaVinculo: "",
+            preload: false,
+            editando: false,
+            visualizando: false,
+            abrirVinculo: false,
+
+            form: {
+                titulo: "",
+                data_inicio_prazo: "",
+                data_fim_prazo: "",
+                status: "",
+                ativo: true,
+                avaliacao_tipo_id: ''
+            },
+
+            formAvaliar: {
+                respostas: [],
+                dados_do_funcionario: [],
+                comentario: ''
+            },
+
+            formAvaliarFinal: {
+                respostas: [],
+                dados_do_funcionario: [],
+            },
+
+            formAvaliarDefault: null,
+            formAvaliarFinalDefault: null,
+
+            lista: [],
+            lista_topicos: [],
+            lista_avaliacoes_tipos: [],
+            lista_status: [],
+
+            avaliacaoSelecionada: null,
+
+            urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/atualizar`,
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: "",
+                }
+            }
+        };
+    },
+    methods: {
+        vinculo(obj) {
+            this.abrirVinculo = false;
+            this.janelaVinculo = `Vinculo de avaliadores  avaliação - ${obj.titulo}`;
+            this.avaliacaoSelecionada = obj;
+            setTimeout(() => {
+                this.abrirVinculo = true;
+            }, 300);
+
+        },
+        formNovo() {
+            this.form = _.cloneDeep(this.formDefault); //copia
+            this.titulo_janela = "Montagem da Avaliação";
+            this.editando = false;
+            this.preload = false;
+            formReset();
+            setupCampo();
+        },
+
+        cadastrar() {
+            $("#janelaCadastrar :input:visible").trigger("blur");
+            if ($("#janelaCadastrar :input:visible.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
+                return false;
+            }
+            this.preload = true;
+            axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao`, this.form)
+                .then(res => {
+                    if (res.status === 201) {
+                        $("#janelaCadastrar").modal("hide");
+                        mostraSucesso("", "Avaliação cadastrada com sucesso");
+                        this.preload = false;
+                        this.atualizar();
+                    }
+                })
+                .catch(error => {
+                    this.preload = false;
+                });
+        },
+
+        avaliarForm(avaliacaoFeedback, visualizando = false) {
+            this.visualizando = visualizando;
+            this.editando = true;
+            this.titulo_janela = `Avaliação: ${avaliacaoFeedback.avaliacao.titulo}`;
+            this.preload = true;
+
+            this.formAvaliar = _.cloneDeep(this.formAvaliarDefault); //copia
+            formReset();
+
+            axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/edit`)
+                .then(response => {
+                    // Object.assign(this.form, response.data);
+                    // console.log(response.data);
+                    this.lista_topicos = response.data.topicos;
+                    this.formAvaliar.respostas = response.data.respostas;
+                    this.formAvaliar.comentario = response.data.comentario;
+                    this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
+                    this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
+                    this.editando = true;
+                    setupCampo();
+                    this.preload = false;
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
+
+        },
+
+        avaliarFinalForm(avaliacaoFeedback, visualizando = false) {
+            this.visualizando = visualizando;
+            this.editando = true;
+            this.titulo_janela = `Avaliação Final: ${avaliacaoFeedback.avaliacao.titulo}`;
+            this.preload = true;
+
+            this.formAvaliarFinal = _.cloneDeep(this.formAvaliarFinalDefault); //copia
+            formReset();
+
+            axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/avaliar`)
+                .then(response => {
+                    // Object.assign(this.form, response.data);
+                    // console.log(response.data);
+                    this.lista_topicos = response.data.topicos;
+                    this.formAvaliar.respostas = response.data.respostas;
+                    this.formAvaliar.comentario = response.data.comentario;
+                    this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
+                    this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
+                    this.editando = true;
+                    setupCampo();
+                    this.preload = false;
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
+
+        },
+
+        salvar() {
+            formReset();
+            $("#janelaCadastrar :input:enabled").trigger("blur");
+
+            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
+                mostraErro("", "Verificar os erros");
+                return false;
+            }
+
+            this.preload = true;
+
+            axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliar.avaliacao_feedback_id}`, this.formAvaliar).then(response => {
+                $("#janelaCadastrar").modal("hide");
+                mostraSucesso("", "Avaliação enviada com sucesso");
+                this.preload = false;
+                this.atualizado = true;
+                this.atualizar();
+            }).catch(error => (this.preload = false));
+
+        },
+        carregou(dados) {
+            this.lista = dados.itens;
+            this.lista_avaliacoes_tipos = dados.avaliacoes_tipos;
+            this.lista_status = dados.lista_status;
+            this.controle.carregando = false;
+        },
+        carregando() {
+            this.controle.carregando = true;
+        },
+        atualizar() {
+            this.$refs.componente.atual = 1;
+            this.$refs.componente.buscar();
+        }
+    }
+
+};
+</script>
+
+<style scoped>
+.card-header {
+    background-color: white;
+}
+
+.btn-link {
+    font-weight: 400;
+    color: white;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    color: #dddddd;
+}
+
+</style>

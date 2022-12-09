@@ -89,6 +89,7 @@ mix.js("resources/js/app.js", "public/js")
     .js("resources/js/g/cadastros/avaliacoes/avaliacaotopico/app.js", "public/js/g/avaliacoes/avaliacaotopico/")
     .js("resources/js/g/cadastros/avaliacoes/avaliacao/app.js", "public/js/g/avaliacoes/avaliacao/")
     .js("resources/js/g/cadastros/avaliacoes/avaliador/app.js", "public/js/g/avaliacoes/avaliador/")
+    .js("resources/js/g/cadastros/avaliacoes/avaliar/app.js", "public/js/g/avaliacoes/avaliar/")
 
     //Curriculos
     .js("resources/js/g/curriculos/recrutamento/app.js", "public/js/g/recrutamento/")
