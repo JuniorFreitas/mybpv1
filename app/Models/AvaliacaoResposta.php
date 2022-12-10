@@ -27,4 +27,5 @@ class AvaliacaoResposta extends Model
     ];
 
     public $timestamps = false;
+
 }

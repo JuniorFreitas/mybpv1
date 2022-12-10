@@ -80,7 +80,7 @@ class AvaliacaoFeedback extends Model
 
     public function Respostas()
     {
-        return $this->hasMany(AvaliacaoResposta::class, 'id', 'avaliacao_feedback_id');
+        return $this->hasMany(AvaliacaoResposta::class, 'avaliacao_feedback_id', 'id');
     }
 
     public function scopeOrigemAvaliador($query)

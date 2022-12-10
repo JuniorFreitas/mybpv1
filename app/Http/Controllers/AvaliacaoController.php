@@ -42,7 +42,7 @@ class AvaliacaoController extends Controller
             'avaliacao_tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
                 $avaliacao_tipo_id = $dados['avaliacao_tipo_id'];
                 $avaliacaotipo = AvaliacaoTipo::whereId($avaliacao_tipo_id)->first();
-                if(!$avaliacaotipo){
+                if (!$avaliacaotipo) {
                     $fail('Verificar o tipo de avaliação');
                 }
             }],
@@ -112,7 +112,7 @@ class AvaliacaoController extends Controller
             'avaliacao_tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
                 $avaliacao_tipo_id = $dados['avaliacao_tipo_id'];
                 $avaliacaotipo = AvaliacaoTipo::whereId($avaliacao_tipo_id)->first();
-                if(!$avaliacaotipo){
+                if (!$avaliacaotipo) {
                     $fail('Verificar o tipo de avaliação');
                 }
             }],
@@ -212,7 +212,7 @@ class AvaliacaoController extends Controller
         $resultado = $this->filtroAvaliar($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
 
-        $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item){
+        $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
             $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
             $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
             $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
@@ -256,7 +256,7 @@ class AvaliacaoController extends Controller
 
         $resultado->whereHas('Avaliacao', function ($query) {
             $query->whereStatus(Avaliacao::STATUS_ABERTA)
-                  ->whereAtivo(true);
+                ->whereAtivo(true);
         });
 
 //            ->whereFeedbackId()
@@ -279,7 +279,7 @@ class AvaliacaoController extends Controller
         $respostas = [];
 
         foreach ($avaliacaoTopicos as $topico) {
-            foreach ($topico->subtopicos as $subtopico){
+            foreach ($topico->subtopicos as $subtopico) {
                 $avaliacaoResposta = AvaliacaoResposta::where('avaliacao_feedback_id', $avaliacaoFeedback->id)
                     ->where('topico_id', $subtopico->id)->first();
                 $respostas[$topico->id][] = [
@@ -291,8 +291,8 @@ class AvaliacaoController extends Controller
         }
 
         $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
-                                     ->whereEmpresaId(auth()->user()->empresa_id)
-                                     ->first();
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->first();
 
 
         $dadosDoFuncionario = [
@@ -303,7 +303,7 @@ class AvaliacaoController extends Controller
             'area' => 'NÃO INFORMADO',
         ];
 
-        if($feedbackCurriculo){
+        if ($feedbackCurriculo) {
             $admissao = $feedbackCurriculo->Admissao;
             $dadosDoFuncionario = [
                 'nome' => $avaliacaoFeedback->Funcionario->nome,
@@ -338,7 +338,7 @@ class AvaliacaoController extends Controller
         $respostas = collect($dados['respostas'])->collapse()->all();
 //        dd($respostas);
 
-        foreach ($respostas as $key=>$resposta){
+        foreach ($respostas as $key => $resposta) {
 //            dd($resposta);
             $avaliacaoFeedback->Respostas()->create($resposta);
 //            AvaliacaoResposta::create($resposta);
@@ -353,38 +353,73 @@ class AvaliacaoController extends Controller
 
     public function avaliarFinal(AvaliacaoFeedback $avaliacaoFeedback)
     {
+
+        $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
+            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
+            ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
+            ->withSum('Respostas', 'nota')
+            ->with('Respostas')
+            ->get();
+
+
+        $resultTopico = [];
+        foreach ($avaliacoesFeedbacks as $avalFeedback) {
+            foreach ($avalFeedback->respostas as $resposta) {
+                $resultTopico[$resposta->topico_id][] = $resposta->nota;
+            }
+        }
+
+        $resultTopico = collect($resultTopico)->map(function ($item, $key) {
+            return [
+                'topico' => AvaliacaoTopico::find($key)->topico,
+                'nota_total' => array_sum($item),
+                'media' => array_sum($item) / count($item)
+            ];
+        });
+
+
+        $totalAval = array_sum($avaliacoesFeedbacks->pluck('respostas_sum_nota')->toArray());
+
+        return response()->json([
+            'total_aval' => $totalAval,
+            'media_aval' => $totalAval / count($avaliacoesFeedbacks),
+            'result_topico' => $resultTopico,
+        ]);
+
+        die();
+
         $avaliacaoTopicos = AvaliacaoTopico::TopicosPais()->with('Subtopicos')->where('avaliacao_tipo_id', $avaliacaoFeedback->avaliacao->avaliacao_tipo_id)->get();
         $respostas = [];
 
         $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
-                                                ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
-                                                ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)->get();
-
-
+            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
+            ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)->get();
 
         $qtdAvalFeedbacks = count($avaliacoesFeedbacks);
 
         $resultado_final = [];
 
         foreach ($avaliacaoTopicos as $topico) {
-            foreach ($topico->subtopicos as $subtopico){
-                foreach ($avaliacoesFeedbacks as &$avalFeedback){
+            foreach ($topico->subtopicos as $subtopico) {
+                foreach ($avaliacoesFeedbacks as &$avalFeedback) {
                     $avaliacaoResposta = AvaliacaoResposta::where('avaliacao_feedback_id', $avalFeedback->id)
                         ->where('topico_id', $subtopico->id)->first();
-                    $respostas[$avalFeedback->id][$topico->id][$subtopico->id] = [
+                    $respostas[$topico->id][$avalFeedback->id][$subtopico->id] = [
                         'nota' => $avaliacaoResposta ? $avaliacaoResposta->nota : '',
                     ];
                 }
 
-//                $resultado_final[$subtopico->id]['nota_final'] = $respostas[$avalFeedback->id][$topico->id][$subtopico->id]['nota'];
+//                $resultado_final[$avalFeedback][$subtopico->id]['nota_final'] = $respostas[$avalFeedback->id][$topico->id][$subtopico->id]['nota'];
+//                $resultado_final[$avalFeedback->id][$subtopico->id]['nota_final'] = $avalFeedback->id + 1;
 
             }
         }
 
 
+        $notaPorTopico = [];
 
 
-        return $respostas;
+        return $resultado_final;
 
         $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
             ->whereEmpresaId(auth()->user()->empresa_id)
@@ -399,7 +434,7 @@ class AvaliacaoController extends Controller
             'area' => 'NÃO INFORMADO',
         ];
 
-        if($feedbackCurriculo){
+        if ($feedbackCurriculo) {
             $admissao = $feedbackCurriculo->Admissao;
             $dadosDoFuncionario = [
                 'nome' => $avaliacaoFeedback->Funcionario->nome,
