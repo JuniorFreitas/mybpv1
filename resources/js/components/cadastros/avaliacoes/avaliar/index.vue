@@ -1,10 +1,55 @@
 <template>
     <div :id="hash">
-<!--        <modal id="janelaVinculo" :titulo="janelaVinculo" :fechar="!preload" :size="90">-->
-<!--            <template slot="conteudo">-->
-<!--                <vincula-avaliador :obj="avaliacaoSelecionada" v-if="abrirVinculo"></vincula-avaliador>-->
-<!--            </template>-->
-<!--        </modal>-->
+
+        <modal id="janelaAvaliacaoFinal" :titulo="titulo_janela_final" :size="90">
+            <template slot="conteudo">
+                <preload v-show="preloadAvalFinal"></preload>
+                <div v-if="!preloadAvalFinal">
+                    <fieldset>
+                        <legend>DADOS</legend>
+                        <div class="row">
+                            <div class="col-12 col-lg-4"><strong>Nome:</strong>
+                                {{ formAvaliarFinal.dados_do_funcionario.nome }}
+                            </div>
+                            <div class="col-12 col-lg-4"><strong>Matrícula:</strong>
+                                {{ formAvaliarFinal.dados_do_funcionario.matricula }}
+                            </div>
+                            <div class="col-12 col-lg-4"><strong>Admissão:</strong>
+                                {{ formAvaliarFinal.dados_do_funcionario.data_admissao }}
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 col-lg-4"><strong>Cargo:</strong>
+                                {{ formAvaliarFinal.dados_do_funcionario.cargo }}
+                            </div>
+                            <div class="col-12 col-lg-4"><strong>Área:</strong>
+                                {{ formAvaliarFinal.dados_do_funcionario.area }}
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset v-for="(item, topico) in formAvaliarFinal.result_topico_pai_agrupado">
+                        <legend>{{ topico }}</legend>
+<!--                        <div class="alert alert-info" v-if="item.topico_explicacao">-->
+<!--                            {{ item.topico_explicacao }}-->
+<!--                        </div>-->
+                        <fieldset v-for="sub in item">
+                            <legend>{{ sub.subtopico }}</legend>
+<!--                            <div class="form-group">-->
+<!--                                <label>{{ visualizando ? "Nota" : "Informe sua nota" }}</label>-->
+<!--                                <select :disabled="visualizando" class="form-control"-->
+<!--                                        v-model="formAvaliar.respostas[item.id][index].nota">-->
+<!--                                    <option value="">Selecione</option>-->
+<!--                                    <option v-for="resp in 5" :value="resp">{{ resp }}</option>-->
+<!--                                </select>-->
+<!--                            </div>-->
+                        </fieldset>
+                    </fieldset>
+
+
+                </div>
+            </template>
+        </modal>
 
         <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
             <template slot="conteudo">
@@ -13,13 +58,25 @@
                     <fieldset>
                         <legend>DADOS</legend>
                         <div class="row">
-                            <div class="col-12 col-lg-4"><strong>Nome:</strong> {{ formAvaliar.dados_do_funcionario.nome }}</div>
-                            <div class="col-12 col-lg-4"><strong>Matrícula:</strong> {{ formAvaliar.dados_do_funcionario.matricula }}</div>
-                            <div class="col-12 col-lg-4"><strong>Admissão:</strong> {{ formAvaliar.dados_do_funcionario.data_admissao }}</div>
+                            <div class="col-12 col-lg-4"><strong>Nome:</strong> {{
+                                    formAvaliar.dados_do_funcionario.nome
+                                }}
+                            </div>
+                            <div class="col-12 col-lg-4"><strong>Matrícula:</strong>
+                                {{ formAvaliar.dados_do_funcionario.matricula }}
+                            </div>
+                            <div class="col-12 col-lg-4"><strong>Admissão:</strong>
+                                {{ formAvaliar.dados_do_funcionario.data_admissao }}
+                            </div>
                         </div>
                         <div class="row mt-3">
-                            <div class="col-12 col-lg-4"><strong>Cargo:</strong> {{ formAvaliar.dados_do_funcionario.cargo }}</div>
-                            <div class="col-12 col-lg-4"><strong>Área:</strong> {{ formAvaliar.dados_do_funcionario.area }}</div>
+                            <div class="col-12 col-lg-4"><strong>Cargo:</strong>
+                                {{ formAvaliar.dados_do_funcionario.cargo }}
+                            </div>
+                            <div class="col-12 col-lg-4"><strong>Área:</strong> {{
+                                    formAvaliar.dados_do_funcionario.area
+                                }}
+                            </div>
                         </div>
                     </fieldset>
 
@@ -40,10 +97,11 @@
                         </div>
                         <fieldset v-for="(subtopico,index) in item.subtopicos">
                             <legend>{{ subtopico.topico }}</legend>
-                            <p class="quebra_linha_textarea">{{ subtopico.topico_explicacao}}</p>
+                            <p class="quebra_linha_textarea">{{ subtopico.topico_explicacao }}</p>
                             <div class="form-group">
-                                <label>{{ visualizando ? "Nota" : "Informe sua nota"}}</label>
-                                <select :disabled="visualizando" class="form-control" v-model="formAvaliar.respostas[item.id][index].nota">
+                                <label>{{ visualizando ? "Nota" : "Informe sua nota" }}</label>
+                                <select :disabled="visualizando" class="form-control"
+                                        v-model="formAvaliar.respostas[item.id][index].nota">
                                     <option value="">Selecione</option>
                                     <option v-for="resp in 5" :value="resp">{{ resp }}</option>
                                 </select>
@@ -52,14 +110,15 @@
                     </fieldset>
                     <fieldset>
                         <legend>COMENTÁRIO</legend>
-                        <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control" placeholder="Se desejar, faça algum comentário" rows="4"></textarea>
+                        <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control"
+                                  placeholder="Se desejar, faça algum comentário" rows="4"></textarea>
                     </fieldset>
                 </div>
             </template>
             <template slot="rodape">
                 <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload && !visualizando"
                         @click="salvar()">
-                        <i class="fa fa-save"></i> Salvar
+                    <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
         </modal>
@@ -110,7 +169,7 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
-<!--                        <td class="text-center">Nome</td>-->
+                        <!--                        <td class="text-center">Nome</td>-->
                         <td class="text-center">Título</td>
                         <td class="text-center">Tipo</td>
                         <td class="text-center">Avaliar até</td>
@@ -122,11 +181,14 @@
                     </thead>
                     <tbody>
                     <tr v-for="item in lista">
-<!--                        <td class="text-center">{{ item.avaliacao.feedback.nome }}</td>-->
+                        <!--                        <td class="text-center">{{ item.avaliacao.feedback.nome }}</td>-->
                         <td class="text-center">{{ item.avaliacao.titulo }}</td>
                         <td class="text-center">{{ item.avaliacao.avaliacao_tipo.nome }}</td>
                         <td class="text-center">{{ item.avaliacao.data_fim_prazo }}</td>
-                        <td class="text-center"><i class="fa fa-user" v-if="item.avaliador_id === item.funcionario_id"></i> {{ item.funcionario.nome }}</td>
+                        <td class="text-center"><i class="fa fa-user"
+                                                   v-if="item.avaliador_id === item.funcionario_id"></i>
+                            {{ item.funcionario.nome }}
+                        </td>
                         <td class="text-center">{{ item.origem_feedback }}</td>
                         <td class="text-center">
                             <span class="p-1 badge badge-danger" v-if="item.status === 'Pendente'">Pendente</span>
@@ -144,32 +206,38 @@
 
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
-                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)" v-if="item.status === 'Pendente'">
+                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
+                                       v-if="item.status === 'Pendente'">
                                         Avaliar
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
-                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'">
+                                       data-toggle="modal" data-target="#janelaCadastrar"
+                                       @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'">
                                         Visualizar Avaliação
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
-                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarFinalForm(item, true)" v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final">
+                                       data-toggle="modal" data-target="#janelaAvaliacaoFinal"
+                                       @click="avaliarFinalForm(item, true)"
+                                       v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final">
                                         Fazer Avaliação Final
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
-                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarFinalForm(item, true)" v-if="item.status === 'Finalizada' && item.fazer_avaliacao_final">
+                                    <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação Final"
+                                       data-toggle="modal" data-target="#janelaAvaliacaoFinal"
+                                       @click="avaliarFinalForm(item, true)"
+                                       v-if="item.status === 'Finalizada' && item.fazer_avaliacao_final">
                                         Visualizar Avaliação Final
                                     </a>
 
-<!--                                    <a class="dropdown-item" href="javascript://" title="Vincular avaliadores"-->
-<!--                                       data-toggle="modal"-->
-<!--                                       data-target="#janelaVinculo"-->
-<!--                                       @click="vinculo(item)"-->
-<!--                                    >-->
-<!--                                        Vincular avaliadores-->
-<!--                                    </a>-->
+                                    <!--                                    <a class="dropdown-item" href="javascript://" title="Vincular avaliadores"-->
+                                    <!--                                       data-toggle="modal"-->
+                                    <!--                                       data-target="#janelaVinculo"-->
+                                    <!--                                       @click="vinculo(item)"-->
+                                    <!--                                    >-->
+                                    <!--                                        Vincular avaliadores-->
+                                    <!--                                    </a>-->
                                 </div>
 
                             </div>
@@ -226,8 +294,10 @@ export default {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela: "",
+            titulo_janela_final: "Open Feedback - Avaliação Final",
             janelaVinculo: "",
             preload: false,
+            preloadAvalFinal: false,
             editando: false,
             visualizando: false,
             abrirVinculo: false,
@@ -248,8 +318,15 @@ export default {
             },
 
             formAvaliarFinal: {
-                respostas: [],
                 dados_do_funcionario: [],
+                avaliador_principal: '',
+                status_avaliacao: '',
+                total_aval: '',
+                media_aval: '',
+                resultado_topico_pai: [],
+                result_topico_pai_agrupado: [],
+                result_topico: [],
+                result_subtopico: [],
             },
 
             formAvaliarDefault: null,
@@ -347,15 +424,15 @@ export default {
             this.formAvaliarFinal = _.cloneDeep(this.formAvaliarFinalDefault); //copia
             formReset();
 
-            axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/avaliar`)
-                .then(response => {
-                    // Object.assign(this.form, response.data);
-                    // console.log(response.data);
-                    this.lista_topicos = response.data.topicos;
-                    this.formAvaliar.respostas = response.data.respostas;
-                    this.formAvaliar.comentario = response.data.comentario;
-                    this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
-                    this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
+            axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/final`)
+                .then(({data}) => {
+                    console.log(data)
+                    Object.assign(this.formAvaliarFinal, data);
+                    // this.lista_topicos = response.data.topicos;
+                    // this.formAvaliar.respostas = response.data.respostas;
+                    // this.formAvaliar.comentario = response.data.comentario;
+                    // this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
+                    // this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
                     this.editando = true;
                     setupCampo();
                     this.preload = false;

@@ -70,7 +70,9 @@ class AvaliacoesTopicosSeeder extends Seeder
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 1,
             'topico' => '6 - INICIATIVA',
-            'topico_explicacao' => 'Identifica e busca a solução de problemas de maneira preventiva.\nAssume a responsabilidade na identificação de erros cometidos e busca a correção imediata.\nBusca ajuda para solucionar problemas.',
+            'topico_explicacao' => 'Identifica e busca a solução de problemas de maneira preventiva.
+            Assume a responsabilidade na identificação de erros cometidos e busca a correção imediata.
+            Busca ajuda para solucionar problemas.',
             'ativo' => true
         ];
 
@@ -79,7 +81,9 @@ class AvaliacoesTopicosSeeder extends Seeder
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 1,
             'topico' => '7 - INOVAÇÃO E CRIATIVIDADE',
-            'topico_explicacao' => 'Comunica a liderança ao identificar oportunidades de melhoria.\nApresenta sugestões que contribuem para a solução de problemas.\nBusca novas alternativas para aprimorar o seu trabalho.',
+            'topico_explicacao' => 'Comunica a liderança ao identificar oportunidades de melhoria.
+            Apresenta sugestões que contribuem para a solução de problemas.
+            Busca novas alternativas para aprimorar o seu trabalho.',
             'ativo' => true
         ];
 
@@ -88,7 +92,9 @@ class AvaliacoesTopicosSeeder extends Seeder
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 1,
             'topico' => '8 - RELACIONAMENTO INTERPESSOAL',
-            'topico_explicacao' => 'Relaciona-se bem com os colegas de trabalho.\nÉ cortez, educado e estabelece empatia com o cliente.\nRecebe com maturidade (autocontrole) opiniões, críticas e sugestões.',
+            'topico_explicacao' => 'Relaciona-se bem com os colegas de trabalho.
+            É cortez, educado e estabelece empatia com o cliente.
+            Recebe com maturidade (autocontrole) opiniões, críticas e sugestões.',
             'ativo' => true
         ];
 
@@ -97,7 +103,9 @@ class AvaliacoesTopicosSeeder extends Seeder
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 1,
             'topico' => '9 - ORIENTAÇÃO PARA RESULTADOS',
-            'topico_explicacao' => 'Busca todas as alternativas possíveis de acordo com suas atribuições para atender / resolver os problemas do cliente interno e externo.\nEstabelece as prioridades organizando suas atividades de acordo com o grau de \nComunica de forma clara e imediata o problema apresentado pelo cliente ao seu superior, quando não consegue resolver.\nRealiza seu trabalho com atenção e dedicação, buscando sempre a excelência.',
+            'topico_explicacao' => 'Busca todas as alternativas possíveis de acordo com suas atribuições para atender / resolver os problemas do cliente interno e externo.
+            Estabelece as prioridades organizando suas atividades de acordo com o grau de \nComunica de forma clara e imediata o problema apresentado pelo cliente ao seu superior, quando não consegue resolver.
+            Realiza seu trabalho com atenção e dedicação, buscando sempre a excelência.',
             'ativo' => true
         ];
 
@@ -106,7 +114,9 @@ class AvaliacoesTopicosSeeder extends Seeder
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 1,
             'topico' => '10 - RACIOCÍNIO ANALÍTICO',
-            'topico_explicacao' => 'Busca constantemente analisar e aperfeiçoar sua atuação de acordo com os princípios da empresa.\nDá ideias e sugestões para aperfeiçoar a execução do trabalho.\nDurante sua atuação, consegue avaliar os impactos de um problema no resultado final (consequência).',
+            'topico_explicacao' => 'Busca constantemente analisar e aperfeiçoar sua atuação de acordo com os princípios da empresa.
+            Dá ideias e sugestões para aperfeiçoar a execução do trabalho.
+            Durante sua atuação, consegue avaliar os impactos de um problema no resultado final (consequência).',
             'ativo' => true
         ];
 

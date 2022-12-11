@@ -336,10 +336,19 @@ class AvaliacaoController extends Controller
         $dados = $request->input();
 
         $respostas = collect($dados['respostas'])->collapse()->all();
-//        dd($respostas);
+//        $dadosValidados = \Validator::make($dados, [
+//            'respostas.*.nota' => 'required|numeric|min:0|max:5',
+//        ]);
+//
+//        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+//            return response()->json([
+//                'msg' => 'Verifique as respostas, existe pergunta sem nota',
+//            ], 400);
+//
+//        }
+
 
         foreach ($respostas as $key => $resposta) {
-//            dd($resposta);
             $avaliacaoFeedback->Respostas()->create($resposta);
 //            AvaliacaoResposta::create($resposta);
         }
@@ -353,6 +362,13 @@ class AvaliacaoController extends Controller
 
     public function avaliarFinal(AvaliacaoFeedback $avaliacaoFeedback)
     {
+        if (!$avaliacaoFeedback->principal || $avaliacaoFeedback->avaliador_id != auth()->id()) {
+            return response()->json([
+                'msg' => 'Você não tem permissão para acessar essa avaliação',
+                'error' => true,
+                'status' => 401
+            ], 401);
+        }
 
         $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
             ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
@@ -360,7 +376,6 @@ class AvaliacaoController extends Controller
             ->withSum('Respostas', 'nota')
             ->with('Respostas')
             ->get();
-
 
         $resultTopico = [];
         foreach ($avaliacoesFeedbacks as $avalFeedback) {
@@ -370,21 +385,77 @@ class AvaliacaoController extends Controller
         }
 
         $resultTopico = collect($resultTopico)->map(function ($item, $key) {
+            $avalTopico = AvaliacaoTopico::find($key);
             return [
-                'topico' => AvaliacaoTopico::find($key)->topico,
+                'topico_pai' => AvaliacaoTopico::find($avalTopico->topico_pai_id)->topico,
+                'topico_pai_id' => (int)$avalTopico->topico_pai_id,
+                'subtopico' => $avalTopico->topico,
                 'nota_total' => array_sum($item),
-                'media' => array_sum($item) / count($item)
+                'media' => array_sum($item) / count($item),
+                'media_redonda' => round(array_sum($item) / count($item)),
             ];
         });
 
-
         $totalAval = array_sum($avaliacoesFeedbacks->pluck('respostas_sum_nota')->toArray());
 
+        $topico_pai = $resultTopico->groupBy('topico_pai_id')->reduce(function ($carregar, $item) {
+            $carregar[$item[0]['topico_pai']] = [
+                'nota_total' => array_sum($item->pluck('nota_total')->toArray()),
+                'media' => (float)number_format(array_sum($item->pluck('media')->toArray()) / count($item), 2),
+                'media_redonda' => round(array_sum($item->pluck('media')->toArray()) / count($item)),
+            ];
+            return $carregar;
+        }, []);
+
+        $subtopico = $resultTopico->groupBy('subtopico')->reduce(function ($carregar, $item) {
+            $carregar[$item[0]['subtopico']] = [
+                'nota_total' => array_sum($item->pluck('nota_total')->toArray()),
+                'media' => (float)number_format(array_sum($item->pluck('media')->toArray()) / count($item), 2),
+                'media_redonda' => round(array_sum($item->pluck('media')->toArray()) / count($item)),
+            ];
+            return $carregar;
+        }, []);
+
+        $result_topico_agrupado = $resultTopico->groupBy('topico_pai_id')->reduce(function ($carregar, $item) {
+            $carregar[$item[0]['topico_pai']] = $item;
+            return $carregar;
+        }, []);
+
+        $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->first();
+
+        $dadosDoFuncionario = [
+            'nome' => $avaliacaoFeedback->Funcionario->nome,
+            'matricula' => 'NÃO INFORMADO',
+            'data_admissao' => 'NÃO INFORMADO',
+            'cargo' => 'NÃO INFORMADO',
+            'area' => 'NÃO INFORMADO',
+        ];
+
+        if ($feedbackCurriculo) {
+            $admissao = $feedbackCurriculo->Admissao;
+            $dadosDoFuncionario = [
+                'nome' => $avaliacaoFeedback->Funcionario->nome,
+                'matricula' => $admissao->matricula ?: "NÃO INFORMADO",
+                'data_admissao' => $admissao->data_admissao,
+                'cargo' => $admissao->cargo,
+                'area' => $admissao->AreaEtiqueta ? $admissao->AreaEtiqueta->label : "NÃO INFORMADO",
+            ];
+        }
+
         return response()->json([
+            'dados_do_funcionario' => $dadosDoFuncionario,
+            'avaliador_principal' => $avaliacaoFeedback->wherePrincipal(true)->first()->Avaliador->nome,
+            'status_avaliacao' => $avaliacaoFeedback->status,
             'total_aval' => $totalAval,
             'media_aval' => $totalAval / count($avaliacoesFeedbacks),
+            'resultado_topico_pai' => $topico_pai,
+            'result_topico_pai_agrupado' => $result_topico_agrupado,
             'result_topico' => $resultTopico,
+            'result_subtopico' => $subtopico,
         ]);
+
 
         die();
 
