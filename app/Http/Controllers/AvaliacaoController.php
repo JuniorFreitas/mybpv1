@@ -417,9 +417,34 @@ class AvaliacaoController extends Controller
         }, []);
 
         $result_topico_agrupado = $resultTopico->groupBy('topico_pai_id')->reduce(function ($carregar, $item) {
-            $carregar[$item[0]['topico_pai']] = $item;
+            $carregar[] = $item;
             return $carregar;
         }, []);
+
+
+        $resultChart = $resultTopico->groupBy('topico_pai_id')->reduce(function ($carregar, $item) {
+            $carregar[] = [
+                'name' => $item[0]['topico_pai'],
+                'data' => [
+//                    'labels' => $item->pluck('subtopico')->toArray(),
+                    'labels' => range(1, count($item)),
+                    'datasets' => [
+                        [
+                            'label' => "",
+                            'backgroundColor' => 'rgba(255,255,255,0.2)',
+                            'borderColor' => "orange",
+                            'pointBackgroundColor' => "orange",
+                            'pointBorderColor' => "#fff",
+                            'pointHoverBackgroundColor' => "#fff",
+                            'pointHoverBorderColor' => "rgba(239,78,261)",
+                            'data' => $item->pluck('media_redonda')->toArray(),
+                        ]
+                    ]
+                ],
+            ];
+            return $carregar;
+        }, []);
+
 
         $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
             ->whereEmpresaId(auth()->user()->empresa_id)
@@ -454,81 +479,9 @@ class AvaliacaoController extends Controller
             'result_topico_pai_agrupado' => $result_topico_agrupado,
             'result_topico' => $resultTopico,
             'result_subtopico' => $subtopico,
+            'resultChart' => $resultChart
         ]);
 
-
-        die();
-
-        $avaliacaoTopicos = AvaliacaoTopico::TopicosPais()->with('Subtopicos')->where('avaliacao_tipo_id', $avaliacaoFeedback->avaliacao->avaliacao_tipo_id)->get();
-        $respostas = [];
-
-        $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
-            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
-            ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)->get();
-
-        $qtdAvalFeedbacks = count($avaliacoesFeedbacks);
-
-        $resultado_final = [];
-
-        foreach ($avaliacaoTopicos as $topico) {
-            foreach ($topico->subtopicos as $subtopico) {
-                foreach ($avaliacoesFeedbacks as &$avalFeedback) {
-                    $avaliacaoResposta = AvaliacaoResposta::where('avaliacao_feedback_id', $avalFeedback->id)
-                        ->where('topico_id', $subtopico->id)->first();
-                    $respostas[$topico->id][$avalFeedback->id][$subtopico->id] = [
-                        'nota' => $avaliacaoResposta ? $avaliacaoResposta->nota : '',
-                    ];
-                }
-
-//                $resultado_final[$avalFeedback][$subtopico->id]['nota_final'] = $respostas[$avalFeedback->id][$topico->id][$subtopico->id]['nota'];
-//                $resultado_final[$avalFeedback->id][$subtopico->id]['nota_final'] = $avalFeedback->id + 1;
-
-            }
-        }
-
-
-        $notaPorTopico = [];
-
-
-        return $resultado_final;
-
-        $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
-            ->whereEmpresaId(auth()->user()->empresa_id)
-            ->first();
-
-
-        $dadosDoFuncionario = [
-            'nome' => $avaliacaoFeedback->Funcionario->nome,
-            'matricula' => 'NÃO INFORMADO',
-            'data_admissao' => 'NÃO INFORMADO',
-            'cargo' => 'NÃO INFORMADO',
-            'area' => 'NÃO INFORMADO',
-        ];
-
-        if ($feedbackCurriculo) {
-            $admissao = $feedbackCurriculo->Admissao;
-            $dadosDoFuncionario = [
-                'nome' => $avaliacaoFeedback->Funcionario->nome,
-                'matricula' => $admissao->matricula ?: "NÃO INFORMADO",
-                'data_admissao' => $admissao->data_admissao,
-                'cargo' => $admissao->cargo,
-                'area' => $admissao->AreaEtiqueta ? $admissao->AreaEtiqueta->label : "NÃO INFORMADO",
-            ];
-        }
-
-        return response()->json([
-            'topicos' => $avaliacaoTopicos,
-            'avaliacao_feedback_id' => $avaliacaoFeedback->id,
-            'respostas' => $respostas,
-            'comentario' => $avaliacaoFeedback->comentario ?: '',
-            'dados_do_funcionario' => $dadosDoFuncionario,
-//                'avaliacoes_tipos' => $avaliacoes_tipos,
-//                'lista_status' => Avaliacao::LISTA_STATUS,
-//                'permissoes' => [
-//                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
-//                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
-//                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
-        ]);
     }
 
 }

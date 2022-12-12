@@ -28,24 +28,32 @@
                         </div>
                     </fieldset>
 
-                    <fieldset v-for="(item, topico) in formAvaliarFinal.result_topico_pai_agrupado">
-                        <legend>{{ topico }}</legend>
-<!--                        <div class="alert alert-info" v-if="item.topico_explicacao">-->
-<!--                            {{ item.topico_explicacao }}-->
-<!--                        </div>-->
-                        <fieldset v-for="sub in item">
-                            <legend>{{ sub.subtopico }}</legend>
-<!--                            <div class="form-group">-->
-<!--                                <label>{{ visualizando ? "Nota" : "Informe sua nota" }}</label>-->
-<!--                                <select :disabled="visualizando" class="form-control"-->
-<!--                                        v-model="formAvaliar.respostas[item.id][index].nota">-->
-<!--                                    <option value="">Selecione</option>-->
-<!--                                    <option v-for="resp in 5" :value="resp">{{ resp }}</option>-->
-<!--                                </select>-->
-<!--                            </div>-->
-                        </fieldset>
-                    </fieldset>
 
+                    <table class="table" v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado" :key="index">
+                        <thead>
+                            <tr>
+                                <th>{{ item[index].topico_pai }}</th>
+                                <th class="text-center">Média</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr  v-for="sub in item">
+                                <td style="width: 90%">{{ sub.subtopico }}</td>
+                                <td class="text-center">
+                                    <input type="number" class="form-control form-control-sm text-center" readonly="readonly" min="0" max="5"
+                                        step="0.1" :value="sub.media_redonda">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="row">
+                        <div v-for="(chart, index) in formAvaliarFinal.resultChart" :key="index" class="col-md-6">
+                            <h4 class="text-center">{{ chart.name }}</h4>
+                            <RadarChart :id="chart.name" :chart-data="chart.data" />
+                            <h4 class="text-center">Nota Final: {{ formAvaliarFinal.resultado_topico_pai[chart.name].media_redonda }}</h4>
+                        </div>
+                    </div>
 
                 </div>
             </template>
@@ -260,6 +268,9 @@ import controlePaginacao from "../../../ControlePaginacao";
 import modal from "../../../Modal";
 import DatePicker from "../../../DatePicker";
 // import vinculaAvaliador from "./vinculaAvaliador";
+// import Chart from 'chart.js';
+
+import RadarChart from "../../../Charts/Radar"
 
 export default {
     components: {
@@ -267,6 +278,7 @@ export default {
         controlePaginacao,
         DatePicker,
         // vinculaAvaliador
+        RadarChart
     },
     props: {
         qntPag: {
@@ -289,6 +301,7 @@ export default {
         this.atualizar();
         this.formAvaliarDefault = _.cloneDeep(this.formAvaliar);
         this.formAvaliarFinalDefault = _.cloneDeep(this.formAvaliarFinal);
+        // this.geraChartRadar('myChart');
     },
     data() {
         return {
@@ -301,6 +314,8 @@ export default {
             editando: false,
             visualizando: false,
             abrirVinculo: false,
+
+            chartsRadares: [],
 
             form: {
                 titulo: "",
@@ -327,6 +342,7 @@ export default {
                 result_topico_pai_agrupado: [],
                 result_topico: [],
                 result_subtopico: [],
+                resultChart: [],
             },
 
             formAvaliarDefault: null,
@@ -349,6 +365,22 @@ export default {
         };
     },
     methods: {
+        // geraChartRadar(id, dadosLabels) {
+        //     var ctx = document.getElementById(id).getContext('2d');
+        //     var dadosData = {
+        //         labels: dadosLabels,
+        //         datasets: [{
+        //             label: "Student A",
+        //             backgroundColor: "rgba(200,0,0,0.2)",
+        //             data: [65, 75, 70, 80, 60, 80]
+        //         }, {
+        //             label: "Student B",
+        //             backgroundColor: "rgba(0,0,200,0.2)",
+        //             data: [54, 65, 60, 70, 70, 75]
+        //         }]
+        //     };
+        //     new Chart(ctx, {type: 'radar', data: dadosData});
+        // },
         vinculo(obj) {
             this.abrirVinculo = false;
             this.janelaVinculo = `Vinculo de avaliadores  avaliação - ${obj.titulo}`;
@@ -426,13 +458,7 @@ export default {
 
             axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/final`)
                 .then(({data}) => {
-                    console.log(data)
                     Object.assign(this.formAvaliarFinal, data);
-                    // this.lista_topicos = response.data.topicos;
-                    // this.formAvaliar.respostas = response.data.respostas;
-                    // this.formAvaliar.comentario = response.data.comentario;
-                    // this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
-                    // this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
                     this.editando = true;
                     setupCampo();
                     this.preload = false;
@@ -493,6 +519,10 @@ export default {
 
 .btn-link:hover {
     color: #dddddd;
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }
 
 </style>
