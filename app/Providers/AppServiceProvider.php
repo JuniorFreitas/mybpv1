@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
 
-        Schema::defaultStringLength(191);
+        Schema::defaultStringLength(250);
 
         \Route::resourceVerbs([
             'create' => 'novo',

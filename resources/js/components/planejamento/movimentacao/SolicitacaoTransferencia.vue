@@ -19,7 +19,7 @@
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo Origem</label>
-                                    <select v-model="form.centro_custo_origem_id" class="form-control"
+                                    <select v-model="form.centro_custo_origem_id" class="form-control form-control-sm"
                                             :disabled="visualizar"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -35,7 +35,7 @@
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo Destino</label>
-                                    <select v-model="form.centro_custo_destino_id" class="form-control"
+                                    <select v-model="form.centro_custo_destino_id" class="form-control form-control-sm"
                                             :disabled="visualizar"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -59,7 +59,7 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Observação</label>
-                                    <textarea class="form-control" v-model="form.obs" cols="5" rows="5"
+                                    <textarea class="form-control form-control-sm" v-model="form.obs" cols="5" rows="5"
                                               :disabled="visualizar"></textarea>
                                 </div>
                             </div>
@@ -69,13 +69,25 @@
                             Esta solicitação ainda não foi aprovada ou reprovada!
                         </div>
 
+                        <fieldset>
+                            <legend>Anexos</legend>
+                            <upload :model="form.anexos"
+                                    :model-delete="form.anexosDel"
+                                    :url="url_anexo"
+                                    :tipos="mimes"
+                                    :leitura="!podeanexar"
+                                    label="Selecionar"
+                                    @onProgresso="anexoUploadAndamento=true"
+                                    @onFinalizado="anexoUploadAndamento=false"></upload>
+                        </fieldset>
+
                         <fieldset v-if="visualizar || editando">
                             <legend>Aprovação</legend>
                             <div class="row">
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label>Observação</label>
-                                        <textarea class="form-control" :disabled="form.data_aprovacao || !aprovando"
+                                        <textarea class="form-control form-control-sm" :disabled="form.data_aprovacao || !aprovando"
                                                   v-model="form.obs_aprovacao"
                                                   cols="5" rows="5"></textarea>
                                     </div>
@@ -86,7 +98,7 @@
                                         <label>Status</label>
                                         <select :disabled="form.data_aprovacao || !aprovando " v-if="editando"
                                                 v-model="form.status_aprovacao"
-                                                class="form-control">
+                                                class="form-control form-control-sm">
                                             <option value="">Selecione...</option>
                                             <option value="aprovado">Aprovar</option>
                                             <option value="reprovado">Reprovar</option>
@@ -95,7 +107,7 @@
                                         <select :disabled="form.data_aprovacao || !aprovando " v-if="!editando"
                                                 v-model="form.status_aprovacao"
                                                 onblur="valida_campo_vazio(this,1)"
-                                                onchange="valida_campo_vazio(this,1)" class="form-control">
+                                                onchange="valida_campo_vazio(this,1)" class="form-control form-control-sm">
                                             <option value="">Selecione...</option>
                                             <option value="aprovado">Aprovar</option>
                                             <option value="reprovado">Reprovar</option>
@@ -111,7 +123,7 @@
             <template slot="rodape">
                 <div v-show="!visualizar">
                     <button type="button" class="btn btn-sm btn-primary"
-                            v-show="editando && !atualizado  && !preload"
+                            v-show="editando && !aprovando && !atualizado  && !preload"
                             @click.prevent="alterar">
                         <i class="fa fa-edit"></i> Alterar
                     </button>
@@ -121,7 +133,6 @@
                         <i class="fa fa-save"></i> Salvar
                     </button>
                 </div>
-
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="aprovando && !atualizado  && !preload && !form.data_aprovacao"
                         @click.prevent="aprovar">
@@ -136,7 +147,7 @@
                 <div class="col-12">
                     <div class="form-group">
                         <label>Observação</label>
-                        <textarea class="form-control"
+                        <textarea class="form-control form-control-sm"
                                   v-model="formConfirmacao.obs_aprovacao"
                                   cols="5" rows="5"></textarea>
                     </div>
@@ -329,7 +340,7 @@
                         <td class="text-center">
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
                                v-if="!item.data_aprovacao && aprovar_por_gestor"
-                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true"
+                               @click.prevent="formOpen(item.id); aprovando = true; editando = false; visualizar = false; podeanexar = true;"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-check"></i>
@@ -337,14 +348,14 @@
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
                                v-if="!item.data_aprovacao"
-                               @click.prevent="formOpen(item.id); editando = true"
+                               @click.prevent="formOpen(item.id); editando = true; aprovando = false; visualizar = false; podeanexar = true"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-edit"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                               @click.prevent="formOpen(item.id); visualizar = true"
+                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Visualizar"
+                               @click.prevent="formOpen(item.id); editando = false;  aprovando = false; visualizar = true; podeanexar= false"
                                data-toggle="modal"
                                :data-target="`#${hash}`">
                                 <i class="fa fa-search-plus"></i>
@@ -368,6 +379,7 @@
 </template>
 
 <script>
+import Upload from "../../Upload";
 import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
@@ -379,6 +391,7 @@ export default {
     components: {
         colaborador,
         gestoraprovacao,
+        Upload
     },
     data() {
         return {
@@ -395,6 +408,11 @@ export default {
             preloadExportacao: false,
 
             urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/export`,
+
+            url_anexo: `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`,
+            anexoUploadAndamento: false,
+            podeanexar: false,
+            mimes: [],
 
             CSRF_token,
 
@@ -550,6 +568,7 @@ export default {
             this.editando = false;
             this.aprovando = false;
             this.visualizar = false;
+            this.podeanexar = true;
             this.tituloJanela = "Solicitação de admissão";
 
             formReset();
@@ -604,7 +623,6 @@ export default {
             this.cadastrando = false;
             this.visualizar = false;
             this.editando = false;
-            this.aprovando = false;
 
             this.tituloJanela = `#${id}`;
 
@@ -623,6 +641,7 @@ export default {
                         this.form.status_aprovacao = data.status_aprovacao === null ? '' : data.status_aprovacao;
                         this.form.observacao = data.status_aprovacao === null ? '' : data.observacao;
                     }
+                    this.editando = true;
                     this.preload = false;
                 })
                 .catch(error => {

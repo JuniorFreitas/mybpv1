@@ -441,6 +441,11 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         Route::group(['as' => 'movimentacao.', 'prefix' => 'movimentacao'], function () {
 
+            Route::get('anexo/{arquivo}', [\App\Http\Controllers\PlanejamentoMovimentacaoController::class, 'anexoShow'])->name('anexo-show');
+            Route::get('anexoDownload/{arquivo}', [\App\Http\Controllers\PlanejamentoMovimentacaoController::class, 'download'])->name('anexo-download');
+            Route::delete('anexo/{arquivo}', [\App\Http\Controllers\PlanejamentoMovimentacaoController::class, 'anexoDelete'])->name('anexo-delete');
+            Route::post('uploadAnexos', [\App\Http\Controllers\PlanejamentoMovimentacaoController::class, 'uploadAnexos'])->name('.upload-anexos');
+
             Route::group(['as' => 'solicitacao_demissao.'], function () {
                 Route::post('demissao-prevista/atualizacao-status', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizacaoStatus'])->name('demissao-prevista.atualizacaoStatus');
                 Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
