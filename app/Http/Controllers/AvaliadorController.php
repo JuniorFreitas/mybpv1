@@ -49,6 +49,7 @@ class AvaliadorController extends Controller
      */
     public function show(AvaliacaoFeedback $avaliador)
     {
+        $this->authorize('cadastro_avaliacao_vincular_avaliadores');
         return $avaliador;
     }
 
@@ -72,6 +73,7 @@ class AvaliadorController extends Controller
      */
     public function update(Request $request, AvaliacaoFeedback $avaliador)
     {
+        $this->authorize('cadastro_avaliacao_vincular_avaliadores');
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -118,7 +120,7 @@ class AvaliadorController extends Controller
 
     public function AvaliadorAssociadoSingle(Request $request)
     {
-
+        $this->authorize('cadastro_avaliacao_vincular_avaliadores');
         $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'funcionario_id', 'status'])
             ->where('avaliacao_id', $request->avaliacao_id)
             ->where('funcionario_id', $request->funcionario_id)
@@ -130,6 +132,7 @@ class AvaliadorController extends Controller
 
     public function associar(Request $request)
     {
+        $this->authorize('cadastro_avaliacao_vincular_avaliadores');
         $dados = $request->input();
         try {
             \DB::beginTransaction();
@@ -246,15 +249,7 @@ class AvaliadorController extends Controller
 
     public function atualizarFuncionarios(Request $request)
     {
-//        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id'])
-//            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor')
-//            ->with('Avaliadores', function ($query) use ($request) {
-//                $query->where('avaliacao_id', $request->avaliacao_id)->with('Avaliador:id,nome');
-//            })
-//            ->whereHas('Curriculo.User', function ($query) {
-//                $query->where('ativo', true);
-//            })
-//            ->admitidos();
+        $this->authorize('cadastro_avaliacao_vincular_avaliadores');
 
         $resultado = User::select(['id', 'nome', 'login', 'tipo', 'ativo'])
             ->TiposGerenciais()

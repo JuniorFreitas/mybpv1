@@ -26,6 +26,8 @@ class CreateAvaliacoesFeedbacksTable extends Migration
             $table->dateTime('fim_feedback')->nullable();
             $table->text('comentario')->nullable();
             $table->string('status');
+            $table->string('estado_atual')->nullable();
+            $table->string('estado_desejado')->nullable();
 
             $table->foreign('avaliacao_id')->references('id')->on('avaliacoes')->onDelete('CASCADE');
             $table->foreign('empresa_id')->references('id')->on('users')->cascadeOnDelete();

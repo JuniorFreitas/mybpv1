@@ -21,11 +21,14 @@ class CreateAvaliacoesResultadosTable extends Migration
             $table->foreign('gestor_id')->references('id')->on('users')->onDelete('CASCADE');
             $table->unsignedBigInteger('topico_id')->nullable();
             $table->foreign('topico_id')->references('id')->on('avaliacoes_topicos')->onDelete('CASCADE');
-            $table->unsignedInteger('nota');
             $table->text('plano_de_acao');
-            $table->string('responsavel');
+            $table->string('responsavel')->nullable();
             $table->unsignedBigInteger('empresa_id');
             $table->foreign('empresa_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->date('inicio')->nullable();
+            $table->date('termino')->nullable();
+            $table->string('status')->nullable();
+            $table->json('dados_extras')->nullable();
         });
     }
 

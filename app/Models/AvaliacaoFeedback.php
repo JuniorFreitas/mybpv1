@@ -24,7 +24,9 @@ class AvaliacaoFeedback extends Model
         'inicio_feedback',
         'fim_feedback',
         'comentario',
-        'status'
+        'status',
+        'estado_atual',
+        'estado_desejado'
     ];
 
     protected $casts = [
@@ -40,7 +42,9 @@ class AvaliacaoFeedback extends Model
         'inicio_feedback' => 'string',
         'fim_feedback' => 'string',
         'comentario' => 'string',
-        'status' => 'string'
+        'status' => 'string',
+        'estado_atual' => 'string',
+        'estado_desejado' => 'string'
     ];
 
     public $timestamps = false;

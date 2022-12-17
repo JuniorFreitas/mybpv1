@@ -394,42 +394,38 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         Route::group(['prefix' => 'avaliacoes'], function () {
             Route::group(['as' => 'avaliacaotipo.'], function () {
-                //            Route::put('avaliacaotipo/{avaliacaotipo}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTipoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_documentos_legais');
-                //            Route::post('avaliacaotipo/atualizar', [\App\Http\Controllers\AvaliacaoTipoController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_documentos_legais');
-                //            Route::resource('avaliacaotipo', \App\Http\Controllers\AvaliacaoTipoController::class)->middleware('can:administracao_documentos_legais');
-
-                Route::put('avaliacaotipo/{avaliacaotipo}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTipoController::class, 'ativaDesativa'])->name('AvaliacaoTipoAtivaDesativa');
-                Route::post('avaliacaotipo/atualizar', [\App\Http\Controllers\AvaliacaoTipoController::class, 'atualizar'])->name('AvaliacaoTipoAtualizar');
-                Route::resource('avaliacaotipo', \App\Http\Controllers\AvaliacaoTipoController::class);
+                Route::put('avaliacaotipo/{avaliacaotipo}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTipoController::class, 'ativaDesativa'])->name('AvaliacaoTipoAtivaDesativa')->middleware('can:cadastro_avaliacao_tipo');
+                Route::post('avaliacaotipo/atualizar', [\App\Http\Controllers\AvaliacaoTipoController::class, 'atualizar'])->name('AvaliacaoTipoAtualizar')->middleware('can:cadastro_avaliacao_tipo');
+                Route::resource('avaliacaotipo', \App\Http\Controllers\AvaliacaoTipoController::class)->middleware('can:cadastro_avaliacao_tipo');
             });
 
             Route::group(['as' => 'avaliacaotopico.'], function () {
-                Route::post('avaliacaotopico/atualizar', [\App\Http\Controllers\AvaliacaoTopicoController::class, 'atualizar'])->name('avaliacaotopico.atualizar');
-                Route::put('avaliacaotopico/{avaliacaotopico}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTopicoController::class, 'ativaDesativa'])->name('avaliacaotopico.ativaDesativa');
-                Route::resource('avaliacaotopico', \App\Http\Controllers\AvaliacaoTopicoController::class);
+                Route::post('avaliacaotopico/atualizar', [\App\Http\Controllers\AvaliacaoTopicoController::class, 'atualizar'])->name('avaliacaotopico.atualizar')->middleware('can:cadastro_avaliacao_topico');
+                Route::put('avaliacaotopico/{avaliacaotopico}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTopicoController::class, 'ativaDesativa'])->name('avaliacaotopico.ativaDesativa')->middleware('can:cadastro_avaliacao_topico');
+                Route::resource('avaliacaotopico', \App\Http\Controllers\AvaliacaoTopicoController::class)->middleware('can:cadastro_avaliacao_topico');
             });
 
             Route::group(['as' => 'avaliacao.'], function () {
-                Route::post('avaliacao/atualizar', [\App\Http\Controllers\AvaliacaoController::class, 'atualizar'])->name('avaliacao.atualizar');
-                Route::put('avaliacao/{avaliacao}/ativa-desativa', [\App\Http\Controllers\AvaliacaoController::class, 'ativaDesativa'])->name('avaliacao.ativaDesativa');
-                Route::resource('avaliacao', \App\Http\Controllers\AvaliacaoController::class);
+                Route::post('avaliacao/atualizar', [\App\Http\Controllers\AvaliacaoController::class, 'atualizar'])->name('avaliacao.atualizar')->middleware('can:cadastro_avaliacao');
+                Route::put('avaliacao/{avaliacao}/ativa-desativa', [\App\Http\Controllers\AvaliacaoController::class, 'ativaDesativa'])->name('avaliacao.ativaDesativa')->middleware('can:cadastro_avaliacao');
+                Route::resource('avaliacao', \App\Http\Controllers\AvaliacaoController::class)->middleware('can:cadastro_avaliacao');
             });
 
             //Configuracoes
             Route::group(['as' => 'avaliadores.'], function () {
-//                Route::post('avaliadores/buscarFuncionarios', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
-                Route::post('avaliadores/atualizar', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
-                Route::post('avaliadores/avaliador-associado', [\App\Http\Controllers\AvaliadorController::class, 'AvaliadorAssociadoSingle'])->name('AvaliadorAssociadoSingle')->middleware('can:controle_ponto_config_empresa');
-                Route::post('avaliadores/associar', [\App\Http\Controllers\AvaliadorController::class, 'associar'])->name('associar')->middleware('can:controle_ponto_config_empresa');
-                Route::resource('avaliadores', \App\Http\Controllers\AvaliadorController::class, ['parameters' => ['avaliadores' => 'avaliador']])->middleware('can:controle_ponto_config_empresa');
+                Route::post('avaliadores/atualizar', [\App\Http\Controllers\AvaliadorController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:cadastro_avaliacao_vincular_avaliadores');
+                Route::post('avaliadores/avaliador-associado', [\App\Http\Controllers\AvaliadorController::class, 'AvaliadorAssociadoSingle'])->name('AvaliadorAssociadoSingle')->middleware('can:cadastro_avaliacao_vincular_avaliadores');
+                Route::post('avaliadores/associar', [\App\Http\Controllers\AvaliadorController::class, 'associar'])->name('associar')->middleware('can:cadastro_avaliacao_vincular_avaliadores');
+                Route::resource('avaliadores', \App\Http\Controllers\AvaliadorController::class, ['parameters' => ['avaliadores' => 'avaliador']])->middleware('can:cadastro_avaliacao_vincular_avaliadores');
             });
 
             Route::group(['as' => 'avaliar.'], function () {
-                Route::post('avaliar/atualizar', [\App\Http\Controllers\AvaliacaoController::class, 'atualizarAvaliar'])->name('avaliarAtualizar');
-                Route::get('avaliar/{avaliacaoFeedback}/edit', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarEdit'])->name('avaliarEdit');
-                Route::put('avaliar/{avaliacaoFeedback}', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarUpdate'])->name('avaliarUpdate');
-                Route::get('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarFinal'])->name('avaliarFinal');
-                Route::get('avaliar', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarIndex'])->name('avaliarIndex');
+                Route::post('avaliar/atualizar', [\App\Http\Controllers\AvaliacaoController::class, 'atualizarAvaliar'])->name('avaliarAtualizar')->middleware('can:avaliacoes_listar');
+                Route::get('avaliar/{avaliacaoFeedback}/edit', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarEdit'])->name('avaliarEdit')->middleware('can:avaliacoes_listar');
+                Route::put('avaliar/{avaliacaoFeedback}', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarUpdate'])->name('avaliarUpdate')->middleware('can:avaliacoes_listar');
+                Route::get('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarFinal'])->name('avaliarFinal')->middleware('can:avaliacoes_listar');
+                Route::put('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'salvaAvaliacao'])->name('salvarAvaliacao')->middleware('can:avaliacoes_listar');
+                Route::get('avaliar', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarIndex'])->name('avaliarIndex')->middleware('can:avaliacoes_listar');
             });
         });
     });

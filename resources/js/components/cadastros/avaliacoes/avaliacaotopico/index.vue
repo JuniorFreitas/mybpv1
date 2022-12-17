@@ -112,7 +112,7 @@
                     <div class="form-group">
                         <label>Buscar</label>
                         <input type="text"
-                               placeholder="Buscar por título"
+                               placeholder="Buscar por tópico"
                                autocomplete="off"
                                class="form-control form-control-sm" :disabled="controle.carregando"
                                v-model="controle.dados.campoBusca">

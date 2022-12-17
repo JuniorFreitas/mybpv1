@@ -1,6 +1,6 @@
 @extends('layouts.sistema')
-@section('title', 'Avaliar')
-@section('content_header','Avaliar')
+@section('title', 'Minhas Avaliações')
+@section('content_header','Minhas Avaliações')
 @section('content')
     <avaliar></avaliar>
 @stop

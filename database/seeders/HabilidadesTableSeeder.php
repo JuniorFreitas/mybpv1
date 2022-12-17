@@ -448,6 +448,30 @@ class HabilidadesTableSeeder extends Seeder
         //HABILIDADES PLANEJAMENTO MOBILIZAÇÃO------------------------------
         $lista[] = ['nome' => 'planejamento_mobilizacao', 'descricao' => 'Acesso ao menu Mobilização dentro de Planejamento'];
 
+        // HABILIDADES AVALIAÇÃO
+
+        $lista[] = ['nome' => 'cadastro_avaliacoes', 'descricao' => 'Pode cadastrar avaliações'];
+
+        $lista[] = ['nome' => 'cadastro_avaliacao_tipo', 'descricao' => 'Acessar tipos de avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_tipo_insert', 'descricao' => 'Pode cadastrar tipos de avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_tipo_update', 'descricao' => 'Pode alterar tipos de avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_tipo_show', 'descricao' => 'Pode visualizar tipos de avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_tipo_active', 'descricao' => 'Pode ativar/desativar tipos de avaliação'];
+
+        $lista[] = ['nome' => 'cadastro_avaliacao_topico', 'descricao' => 'Acessar tópicos de avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_topico_insert', 'descricao' => 'Pode cadastrar tópicos de avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_topico_update', 'descricao' => 'Pode alterar tópicos de avaliação'];
+
+        $lista[] = ['nome' => 'cadastro_avaliacao', 'descricao' => 'Acessar cadastro de avaliações'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_insert', 'descricao' => 'Pode cadastrar avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_update', 'descricao' => 'Pode alterar cadastro de avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_active', 'descricao' => 'Pode ativar/desativar cadastro de avaliação'];
+        $lista[] = ['nome' => 'cadastro_avaliacao_vincular_avaliadores', 'descricao' => 'Pode vincular avaliadores na avaliação'];
+
+        $lista[] = ['nome' => 'avaliacoes_listar', 'descricao' => 'Acessar avaliações'];
+        $lista[] = ['nome' => 'avaliacoes_avaliar', 'descricao' => 'Pode fazer avaliação'];
+        $lista[] = ['nome' => 'avaliacoes_final', 'descricao' => 'Pode fazer avaliacao final'];
+
 
         try {
             DB::beginTransaction();

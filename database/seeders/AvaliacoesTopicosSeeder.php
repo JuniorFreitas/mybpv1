@@ -133,8 +133,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '1- Cumprimento das normas e procedimentos da empresa.',
+            'topico' => '1 - Cumprimento das normas e procedimentos da empresa.',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -142,8 +142,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '2 - Realização de tarefas/ atividades planejadas (Produtividade).',
+            'topico' => '2 - Realização de tarefas/ atividades planejadas (Produtividade).',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -151,8 +151,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '3 - Cumprimento dos padrões exigidos para a realização das tarefas/ atividades.',
+            'topico' => '3 - Cumprimento dos padrões exigidos para a realização das tarefas/ atividades.',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -160,8 +160,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '4 - Comprometimento com a empresa com suas atribuições e equipe.',
+            'topico' => '4 - Comprometimento com a empresa com suas atribuições e equipe.',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -169,8 +169,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '5 - Delega, acompanha e orientanta a equipe durante a execução das atividades que esta envolvido(a).',
+            'topico' => '5 - Delega, acompanha e orientanta a equipe durante a execução das atividades que esta envolvido(a).',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -178,8 +178,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '6 - Possui espertise em lidar com as mais variadas situações que envolve sua área de atuação.',
+            'topico' => '6 - Possui espertise em lidar com as mais variadas situações que envolve sua área de atuação.',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -187,8 +187,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '7 - Assume a responsabilidade pelas atribuições do seu setor e entrega com eficiência os resultados solicitados.',
+            'topico' => '7 - Assume a responsabilidade pelas atribuições do seu setor e entrega com eficiência os resultados solicitados.',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -196,8 +196,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '8 - Cobra os demais setores da empresa interligado nas suas atividades.',
+            'topico' => '8 - Cobra os demais setores da empresa interligado nas suas atividades.',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -205,8 +205,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '9 - Cumprimento de prazos conforme metas estabelecidas (Prazo).',
+            'topico' => '9 - Cumprimento de prazos conforme metas estabelecidas (Prazo).',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 
@@ -214,8 +214,8 @@ class AvaliacoesTopicosSeeder extends Seeder
             'empresa_id' => 104,
             'avaliacao_tipo_id' => 1,
             'topico_pai_id' => 12,
-            'topico' => 'DESEMPENHO',
-            'topico_explicacao' => '10 - Assiduidade e cumprimento do horário de trabalho.',
+            'topico' => '10 - Assiduidade e cumprimento do horário de trabalho.',
+            'topico_explicacao' => null,
             'ativo' => true
         ];
 

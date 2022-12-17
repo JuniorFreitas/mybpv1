@@ -33,29 +33,118 @@
                         <thead>
                             <tr>
                                 <th>{{ item[index].topico_pai }}</th>
-                                <th class="text-center">Média</th>
+                                <th class="text-center" v-for="avaliador in item[0].avaliadores" :key="avaliador.id">{{ avaliador.nome }}</th>
+                                <th class="text-center">MÉDIA</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr  v-for="sub in item">
-                                <td style="width: 90%">{{ sub.subtopico }}</td>
-                                <td class="text-center">
+                                <td style="width: 33%">{{ sub.subtopico }}</td>
+                                <td style="width: 15%" v-for="avaliador in sub.avaliadores">
                                     <input type="number" class="form-control form-control-sm text-center" readonly="readonly" min="0" max="5"
-                                        step="0.1" :value="sub.media_redonda">
+                                           step="0.1" :value="avaliador.nota | casasDecimais">
+                                </td>
+                                <td style="width: 7%" class="text-center">
+                                    <input type="number" class="form-control form-control-sm text-center" readonly="readonly" min="0" max="5"
+                                        step="0.1" :value="sub.media | casasDecimais">
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <div class="row">
-                        <div v-for="(chart, index) in formAvaliarFinal.resultChart" :key="index" class="col-md-6">
+                    <table class="table" v-if="formAvaliarFinal.result_topico_pai_agrupado.length > 0">
+                        <thead>
+                            <tr>
+                                <th class="text-center" v-for="avaliador in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores" :key="avaliador.id">{{ avaliador.nome }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td v-for="avaliador in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores" :key="avaliador.id">
+                                    <label>Considerações</label>
+                                    <textarea rows="5" class="form-control form-control-sm" readonly="readonly">{{ avaliador.comentario }}</textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="row justify-content-center mt-5">
+                        <div v-for="(chart, index) in formAvaliarFinal.resultChart" :key="index" class="col-md-4">
                             <h4 class="text-center">{{ chart.name }}</h4>
                             <RadarChart :id="chart.name" :chart-data="chart.data" />
-                            <h4 class="text-center">Nota Final: {{ formAvaliarFinal.resultado_topico_pai[chart.name].media_redonda }}</h4>
+                            <h4 class="text-center">Média: {{ formAvaliarFinal.resultado_topico_pai[chart.name].media | casasDecimais}}</h4>
+                        </div>
+                        <div class="col-md-12 text-center">
+                            <h4>Nota final: {{ formAvaliarFinal.nota_final | casasDecimais }}</h4>
                         </div>
                     </div>
 
+                    <fieldset>
+                        <legend>Oportunidades de Melhoria / Plano de Ação</legend>
+
+                        <button class="btn btn-sm btn-primary mb-2" @click="addPlanoAcao($event.target)" v-show="!visualizando">
+                            <i class="fa fa-plus"></i> Adicionar Plano
+                        </button>
+
+                        <fieldset v-for="(item, index) in formAvaliarFinal.planos_acoes" :key="index">
+                            <legend>Plano - {{ index + 1 }}</legend>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+                                        <label>Competência/Desempenho</label>
+                                       <select class="form-control form-control-sm validacampo" v-model="item.topico_id"
+                                               :disabled="visualizando"
+                                               @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                               @change.prevent="valida_campo_vazio($event.target, 1)">
+                                           <option value="">Selecione</option>
+                                           <option v-for="(topico, topico_id) in formAvaliarFinal.result_topico" :key="topico_id" :value="topico_id">{{ topico.topico_pai }} - {{ topico.subtopico }}</option>
+                                        </select>
+                                        <h5 class="my-3 text-danger" v-if="item.topico_id">Média: {{formAvaliarFinal.result_topico[item.topico_id].media | casasDecimais}}</h5>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        <label for="">Plano de Ação</label>
+                                        <textarea rows="3" class="form-control form-control-sm validacampo" v-model="item.plano_de_acao" @blur.prevent="valida_campo_vazio($event.target, 1)" :disabled="visualizando"></textarea>
+                                    </div>
+                                </div>
+
+<!--                                <div class="col-lg-4">-->
+<!--                                    <div class="form-group">-->
+<!--                                        <label for="">Responsável</label>-->
+<!--                                        <input type="text" class="form-control form-control-sm validacampo" @blur.prevent="valida_campo_vazio($event.target, 1)" v-model="item.responsavel" :disabled="visualizando">-->
+<!--                                    </div>-->
+<!--                                </div>-->
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        <date-picker formsm label="Início" v-model="item.inicio" :disabled="visualizando"></date-picker>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="form-group">
+                                        <date-picker formsm label="Término" v-model="item.termino" :disabled="visualizando"></date-picker>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12" v-show="!visualizando">
+                                    <button class="btn btn-sm btn-danger"
+                                       @click="removerPlanoAcao(index)">
+                                        <i class="fa fa-trash"></i> Apagar
+                                    </button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </fieldset>
                 </div>
+            </template>
+            <template slot="rodape">
+                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !visualizando && !preload && formAvaliarFinal.planos_acoes.length > 0"
+                        @click="salvarAvaliacaoFinal()">
+                    <i class="fa fa-save"></i> Salvar
+                </button>
             </template>
         </modal>
 
@@ -108,18 +197,23 @@
                             <p class="quebra_linha_textarea">{{ subtopico.topico_explicacao }}</p>
                             <div class="form-group">
                                 <label>{{ visualizando ? "Nota" : "Informe sua nota" }}</label>
-                                <select :disabled="visualizando" class="form-control"
+                                <select :disabled="visualizando" class="form-control validacampo"
+                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                        @change.prevent="valida_campo_vazio($event.target, 1)"
                                         v-model="formAvaliar.respostas[item.id][index].nota">
                                     <option value="">Selecione</option>
                                     <option v-for="resp in 5" :value="resp">{{ resp }}</option>
                                 </select>
                             </div>
+                            <h5 v-if="formAvaliar.origem_feedback != 'Funcionario'">Nota do funcionário: {{ formAvaliar.respostasFunc[item.id][index].nota}}</h5>
                         </fieldset>
                     </fieldset>
                     <fieldset>
-                        <legend>COMENTÁRIO</legend>
+                        <legend>MINHAS CONSIDERAÇÕES</legend>
                         <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control"
-                                  placeholder="Se desejar, faça algum comentário" rows="4"></textarea>
+                                  placeholder="Se desejar, faça considerações" rows="4"></textarea>
+
+                        <h5 class="mt-3" v-if="formAvaliar.origem_feedback != 'Funcionario'">Considerações do funcionário: {{ formAvaliar.comentario_funcionario }}</h5>
                     </fieldset>
                 </div>
             </template>
@@ -131,37 +225,37 @@
             </template>
         </modal>
 
-        <!-- Filtro -->
-        <fieldset>
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
-                <div class="col-12 col-md-4">
-                    <div class="form-group">
-                        <label>Buscar</label>
-                        <input type="text"
-                               placeholder="Buscar por título"
-                               autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
-                    </div>
-                </div>
+<!--         Filtro-->
+<!--        <fieldset>-->
+<!--            <legend>Filtro</legend>-->
+<!--            <form class="row" @submit.prevent="$refs.componente.buscar()">-->
+<!--                <div class="col-12 col-md-4">-->
+<!--                    <div class="form-group">-->
+<!--                        <label>Buscar</label>-->
+<!--                        <input type="text"-->
+<!--                               placeholder="Buscar por título"-->
+<!--                               autocomplete="off"-->
+<!--                               class="form-control form-control-sm" :disabled="controle.carregando"-->
+<!--                               v-model="controle.dados.campoBusca">-->
+<!--                    </div>-->
+<!--                </div>-->
 
-                <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
-                            @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
+<!--                <div class="col-12 col-md-12">-->
+<!--                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"-->
+<!--                            @click="atualizar"><i-->
+<!--                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>-->
+<!--                        Atualizar-->
+<!--                    </button>-->
 
-                    <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"
-                            @click="formNovo"
-                            data-toggle="modal"
-                            data-target="#janelaCadastrar">
-                        <i class="fa fa-plus"></i> Cadastrar
-                    </button>
-                </div>
-            </form>
-        </fieldset>
+<!--                    <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"-->
+<!--                            @click="formNovo"-->
+<!--                            data-toggle="modal"-->
+<!--                            data-target="#janelaCadastrar">-->
+<!--                        <i class="fa fa-plus"></i> Cadastrar-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--            </form>-->
+<!--        </fieldset>-->
 
         <div id="conteudo">
 
@@ -189,7 +283,6 @@
                     </thead>
                     <tbody>
                     <tr v-for="item in lista">
-                        <!--                        <td class="text-center">{{ item.avaliacao.feedback.nome }}</td>-->
                         <td class="text-center">{{ item.avaliacao.titulo }}</td>
                         <td class="text-center">{{ item.avaliacao.avaliacao_tipo.nome }}</td>
                         <td class="text-center">{{ item.avaliacao.data_fim_prazo }}</td>
@@ -197,15 +290,16 @@
                                                    v-if="item.avaliador_id === item.funcionario_id"></i>
                             {{ item.funcionario.nome }}
                         </td>
-                        <td class="text-center">{{ item.origem_feedback }}</td>
+                        <td class="text-center">{{ item.origem_feedback == "Funcionario" ? "Auto avaliação" : item.origem_feedback }}</td>
                         <td class="text-center">
-                            <span class="p-1 badge badge-danger" v-if="item.status === 'Pendente'">Pendente</span>
+                            <span class="p-1 badge badge-danger" v-if="item.status === 'Pendente' && !item.fez_auto_avaliacao">Aguardando a auto avaliação do funcionário</span>
+                            <span class="p-1 badge badge-danger" v-if="item.status === 'Pendente' && item.fez_auto_avaliacao">Pendente</span>
                             <span class="p-1 badge badge-info" v-if="item.status === 'Avaliada'">Avaliada</span>
                             <span class="p-1 badge badge-success" v-if="item.status === 'Finalizada'">Finalizada</span>
                         </td>
                         <td class="text-center">
 
-                            <div class="dropdown show">
+                            <div class="dropdown show" v-show="(item.status === 'Pendente' && item.fez_auto_avaliacao) || (item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id) || item.status === 'Avaliada' || (item.status === 'Avaliada' && item.fazer_avaliacao_final) || (item.status === 'Finalizada' && !item.fazer_avaliacao_final))">
                                 <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
                                    id="dropdownMenuLink"
                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -215,7 +309,13 @@
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
-                                       v-if="item.status === 'Pendente'">
+                                       v-if="item.status === 'Pendente' && item.fez_auto_avaliacao">
+                                        Avaliar
+                                    </a>
+
+                                    <a class="dropdown-item" href="javascript://" title="Avaliar"
+                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
+                                       v-if="item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id)">
                                         Avaliar
                                     </a>
 
@@ -225,9 +325,15 @@
                                         Visualizar Avaliação
                                     </a>
 
+                                    <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
+                                       data-toggle="modal" data-target="#janelaCadastrar"
+                                       @click="avaliarForm(item, true)" v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final">
+                                        Visualizar Avaliação
+                                    </a>
+
                                     <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
                                        data-toggle="modal" data-target="#janelaAvaliacaoFinal"
-                                       @click="avaliarFinalForm(item, true)"
+                                       @click="avaliarFinalForm(item)"
                                        v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final">
                                         Fazer Avaliação Final
                                     </a>
@@ -235,19 +341,10 @@
                                     <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação Final"
                                        data-toggle="modal" data-target="#janelaAvaliacaoFinal"
                                        @click="avaliarFinalForm(item, true)"
-                                       v-if="item.status === 'Finalizada' && item.fazer_avaliacao_final">
+                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">
                                         Visualizar Avaliação Final
                                     </a>
-
-                                    <!--                                    <a class="dropdown-item" href="javascript://" title="Vincular avaliadores"-->
-                                    <!--                                       data-toggle="modal"-->
-                                    <!--                                       data-target="#janelaVinculo"-->
-                                    <!--                                       @click="vinculo(item)"-->
-                                    <!--                                    >-->
-                                    <!--                                        Vincular avaliadores-->
-                                    <!--                                    </a>-->
                                 </div>
-
                             </div>
                         </td>
                     </tr>
@@ -267,19 +364,17 @@
 import controlePaginacao from "../../../ControlePaginacao";
 import modal from "../../../Modal";
 import DatePicker from "../../../DatePicker";
-// import vinculaAvaliador from "./vinculaAvaliador";
-// import Chart from 'chart.js';
-
 import RadarChart from "../../../Charts/Radar"
+import validacoes from "../../../../mixins/Validacoes";
 
 export default {
     components: {
         modal,
         controlePaginacao,
         DatePicker,
-        // vinculaAvaliador
         RadarChart
     },
+    mixins: [validacoes],
     props: {
         qntPag: {
             type: Number,
@@ -301,7 +396,6 @@ export default {
         this.atualizar();
         this.formAvaliarDefault = _.cloneDeep(this.formAvaliar);
         this.formAvaliarFinalDefault = _.cloneDeep(this.formAvaliarFinal);
-        // this.geraChartRadar('myChart');
     },
     data() {
         return {
@@ -328,8 +422,10 @@ export default {
 
             formAvaliar: {
                 respostas: [],
+                respostasFunc: [],
                 dados_do_funcionario: [],
-                comentario: ''
+                comentario: '',
+                comentario_funcionario: ''
             },
 
             formAvaliarFinal: {
@@ -338,11 +434,14 @@ export default {
                 status_avaliacao: '',
                 total_aval: '',
                 media_aval: '',
+                nota_final: 0,
                 resultado_topico_pai: [],
                 result_topico_pai_agrupado: [],
                 result_topico: [],
                 result_subtopico: [],
                 resultChart: [],
+                planos_acoes: [],
+                planos_acoes_delete: [],
             },
 
             formAvaliarDefault: null,
@@ -364,23 +463,35 @@ export default {
             }
         };
     },
+    filters: {
+        casasDecimais(valor){
+            return valor.toFixed(1);
+        }
+    },
     methods: {
-        // geraChartRadar(id, dadosLabels) {
-        //     var ctx = document.getElementById(id).getContext('2d');
-        //     var dadosData = {
-        //         labels: dadosLabels,
-        //         datasets: [{
-        //             label: "Student A",
-        //             backgroundColor: "rgba(200,0,0,0.2)",
-        //             data: [65, 75, 70, 80, 60, 80]
-        //         }, {
-        //             label: "Student B",
-        //             backgroundColor: "rgba(0,0,200,0.2)",
-        //             data: [54, 65, 60, 70, 70, 75]
-        //         }]
-        //     };
-        //     new Chart(ctx, {type: 'radar', data: dadosData});
-        // },
+        addPlanoAcao() {
+            let obj = {
+                nova: true,
+                avaliacao_feedback_id: this.formAvaliarFinal.avaliacao_feedback_id,
+                avaliacao_feedback_id_avaliador: this.formAvaliarFinal.avaliacao_feedback_id_avaliador,
+                gestor_id: this.formAvaliarFinal.gestor_id,
+                topico_id: '',
+                responsavel: this.formAvaliarFinal.dados_do_funcionario.nome,
+                plano_de_acao: '',
+                inicio: '',
+                termino: '',
+                status: '',
+                dados_extras: {}
+            };
+            this.formAvaliarFinal.planos_acoes.push(obj);
+        },
+        removerPlanoAcao(index) {
+            if (this.formAvaliarFinal.planos_acoes[index].id) {
+                this.formAvaliarFinal.planos_acoes_delete.push(this.formAvaliarFinal.planos_acoes[index].id);
+            }
+            this.formAvaliarFinal.planos_acoes.splice(index, 1);
+        },
+
         vinculo(obj) {
             this.abrirVinculo = false;
             this.janelaVinculo = `Vinculo de avaliadores  avaliação - ${obj.titulo}`;
@@ -431,13 +542,14 @@ export default {
 
             axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/edit`)
                 .then(response => {
-                    // Object.assign(this.form, response.data);
-                    // console.log(response.data);
                     this.lista_topicos = response.data.topicos;
                     this.formAvaliar.respostas = response.data.respostas;
+                    this.formAvaliar.respostasFunc = response.data.respostas_funcionario;
                     this.formAvaliar.comentario = response.data.comentario;
+                    this.formAvaliar.comentario_funcionario = response.data.comentario_funcionario;
                     this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
                     this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
+                    this.formAvaliar.origem_feedback = response.data.origem_feedback;
                     this.editando = true;
                     setupCampo();
                     this.preload = false;
@@ -451,7 +563,7 @@ export default {
             this.visualizando = visualizando;
             this.editando = true;
             this.titulo_janela = `Avaliação Final: ${avaliacaoFeedback.avaliacao.titulo}`;
-            this.preload = true;
+            this.preloadAvalFinal = true;
 
             this.formAvaliarFinal = _.cloneDeep(this.formAvaliarFinalDefault); //copia
             formReset();
@@ -461,22 +573,40 @@ export default {
                     Object.assign(this.formAvaliarFinal, data);
                     this.editando = true;
                     setupCampo();
-                    this.preload = false;
+                    this.preloadAvalFinal = false;
                 }).catch(
-                error => (this.preloadAjax = false)
+                error => (this.preloadAvalFinal = false)
             );
 
         },
 
-        salvar() {
-            formReset();
-            $("#janelaCadastrar :input:enabled").trigger("blur");
+        salvarAvaliacaoFinal() {
 
-            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
+            this.validaBlur();
+            let countErro = document.querySelectorAll(".is-invalid").length
+            if (countErro > 0) {
+                toastr.error("Verifique os campos", "Atenção!")
                 return false;
             }
 
+            this.preloadAvalFinal = true;
+
+            axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliarFinal.avaliacao_feedback_id}/final`, this.formAvaliarFinal).then(response => {
+                $("#janelaAvaliacaoFinal").modal("hide");
+                mostraSucesso("", "Avaliação Final salva com sucesso");
+                this.preloadAvalFinal = false;
+                this.atualizado = true;
+                this.atualizar();
+            }).catch(error => (this.preload = false));
+        },
+
+        salvar() {
+            this.validaBlur();
+            let countErro = document.querySelectorAll(".is-invalid").length
+            if (countErro > 0) {
+                toastr.error("Verifique os campos", "Atenção!")
+                return false;
+            }
             this.preload = true;
 
             axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliar.avaliacao_feedback_id}`, this.formAvaliar).then(response => {
@@ -486,7 +616,6 @@ export default {
                 this.atualizado = true;
                 this.atualizar();
             }).catch(error => (this.preload = false));
-
         },
         carregou(dados) {
             this.lista = dados.itens;

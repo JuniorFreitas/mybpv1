@@ -13,12 +13,11 @@ class AvaliacaoTipoController extends Controller
     public function index(Request $request)
     {
         return view('g.cadastros.avaliacoes.avaliacaotipo.index');
-
     }
 
     public function store(Request $request)
     {
-//        $this->authorize('administracao_documentos_legais_insert');
+        $this->authorize('cadastro_avaliacao_tipo_insert');
         $dados = $request->input();
         $nome = $dados['nome'];
         $descricao = $dados['descricao'];
@@ -59,20 +58,20 @@ class AvaliacaoTipoController extends Controller
 
     public function edit(AvaliacaoTipo $avaliacaotipo)
     {
+        $this->authorize('cadastro_avaliacao_tipo_update');
         return $avaliacaotipo;
     }
 
     public function show(AvaliacaoTipo $avaliacaotipo)
     {
-//        $this->authorize('administracao_documentos_legais_insert');
+        $this->authorize('cadastro_avaliacao_tipo_show');
         return $avaliacaotipo;
     }
 
     public function update(Request $request, AvaliacaoTipo $avaliacaotipo)
     {
-//        $this->authorize('administracao_documentos_legais_insert');
+        $this->authorize('cadastro_avaliacao_tipo_update');
 
-//        dd($request->segment(5));
         $dados = $request->input();
         $nome = $dados['nome'];
         $descricao = $dados['descricao'];
@@ -114,7 +113,7 @@ class AvaliacaoTipoController extends Controller
 
     public function atualizar(Request $request)
     {
-//        $this->authorize('administracao_documentos_legais');
+        $this->authorize('cadastro_avaliacao_tipo');
         $porPagina = $request->get('porPagina');
         $resultado = AvaliacaoTipo::orderBy('id');
 
@@ -125,26 +124,19 @@ class AvaliacaoTipoController extends Controller
 
         $resultado = $resultado->paginate($porPagina);
 
-        $permissoes = [
-//            'insert' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_insert'),
-//            'update' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_update'),
-//            'delete' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_delete')
-        ];
-
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'items' => $resultado->items(),
-                'permissoes' => $permissoes
             ]
         ], 200);
     }
 
     public function ativaDesativa(Request $request)
     {
-//        $this->authorize('administracao_documentos_legais_insert');
+        $this->authorize('cadastro_avaliacao_tipo_active');
 
         $avaliacaoTipo = AvaliacaoTipo::find($request->id);
         $avaliacaoTipo->ativo = !$avaliacaoTipo->ativo;

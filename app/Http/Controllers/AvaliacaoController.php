@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Avaliacao;
 use App\Models\AvaliacaoFeedback;
 use App\Models\AvaliacaoResposta;
+use App\Models\AvaliacaoResultado;
 use App\Models\AvaliacaoTipo;
 use App\Models\AvaliacaoTopico;
 use App\Models\FeedbackCurriculo;
@@ -12,7 +13,6 @@ use App\Models\User;
 use App\Rules\TenantUniqueRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 
 class AvaliacaoController extends Controller
@@ -24,9 +24,8 @@ class AvaliacaoController extends Controller
 
     public function store(Request $request)
     {
-//        $this->authorize('administracao_documentos_legais_insert');
+        $this->authorize('cadastro_avaliacao_insert');
         $dados = $request->input();
-//        dd($dados);
         $titulo = $dados['titulo'];
 
         $arrayValidacao = [
@@ -83,20 +82,19 @@ class AvaliacaoController extends Controller
 
     public function edit(Avaliacao $avaliacao)
     {
+        $this->authorize('cadastro_avaliacao_update');
         return $avaliacao;
     }
 
-    public function show(AvaliacaoTipo $avaliacaotipo)
+    public function show(Avaliacao $avaliacao)
     {
-//        $this->authorize('administracao_documentos_legais_insert');
-        return $avaliacaotipo;
+
     }
 
     public function update(Request $request, Avaliacao $avaliacao)
     {
-        //        $this->authorize('administracao_documentos_legais_insert');
+        $this->authorize('cadastro_avaliacao_update');
         $dados = $request->input();
-//        dd($dados);
         $titulo = $dados['titulo'];
 
         $arrayValidacao = [
@@ -169,14 +167,9 @@ class AvaliacaoController extends Controller
 
     public function atualizar(Request $request)
     {
+        $this->authorize('cadastro_avaliacao');
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
-
-        $permissoes = [
-//            'insert' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_insert'),
-//            'update' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_update'),
-//            'delete' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_delete')
-        ];
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -186,18 +179,13 @@ class AvaliacaoController extends Controller
                 'itens' => $resultado->items(),
                 'avaliacoes_tipos' => $avaliacoes_tipos,
                 'lista_status' => Avaliacao::LISTA_STATUS,
-//                'permissoes' => [
-//                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
-//                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
-//                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
-//                ]
             ]
         ]);
     }
 
     public function ativaDesativa(Request $request)
     {
-//        $this->authorize('administracao_documentos_legais_insert');
+        $this->authorize('cadastro_avaliacao_active');
 
         $avaliacao = Avaliacao::find($request->id);
         $avaliacao->ativo = !$avaliacao->ativo;
@@ -209,6 +197,7 @@ class AvaliacaoController extends Controller
 
     public function atualizarAvaliar(Request $request)
     {
+        $this->authorize('avaliacoes_listar');
         $resultado = $this->filtroAvaliar($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
 
@@ -217,15 +206,10 @@ class AvaliacaoController extends Controller
             $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
             $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
             $item->total_avaliacoes_concluidas = $totalAvaliacoesFuncConcluidas->count();
+            $item->fez_auto_avaliacao = $totalAvaliacoesFuncConcluidas->count() > 0;
             $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes;
             return $item;
         });
-
-        $permissoes = [
-//            'insert' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_insert'),
-//            'update' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_update'),
-//            'delete' => auth()->user()->can('administracao_documentos_legais_tipos_documentos_delete')
-        ];
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -235,11 +219,6 @@ class AvaliacaoController extends Controller
                 'itens' => $resultado->items(),
                 'avaliacoes_tipos' => $avaliacoes_tipos,
                 'lista_status' => Avaliacao::LISTA_STATUS,
-//                'permissoes' => [
-//                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
-//                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
-//                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
-//                ]
             ]
         ]);
     }
@@ -259,8 +238,6 @@ class AvaliacaoController extends Controller
                 ->whereAtivo(true);
         });
 
-//            ->whereFeedbackId()
-//            ->orderBy('avaliacoes.data_inicio_prazo');
         if ($request->filled('campoBusca')) {
             $resultado->where("titulo", "like", "%$request->campoBusca%")
                 ->orWhere('id', $request->campoBusca);
@@ -275,17 +252,34 @@ class AvaliacaoController extends Controller
 
     public function avaliarEdit(AvaliacaoFeedback $avaliacaoFeedback)
     {
+        $this->authorize('avaliacoes_avaliar');
         $avaliacaoTopicos = AvaliacaoTopico::TopicosPais()->with('Subtopicos')->where('avaliacao_tipo_id', $avaliacaoFeedback->avaliacao->avaliacao_tipo_id)->get();
         $respostas = [];
+        $respostasFunc = [];
+
+        $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
+            ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
+            ->whereAvaliadorId($avaliacaoFeedback->funcionario_id)
+            ->first();
 
         foreach ($avaliacaoTopicos as $topico) {
             foreach ($topico->subtopicos as $subtopico) {
                 $avaliacaoResposta = AvaliacaoResposta::where('avaliacao_feedback_id', $avaliacaoFeedback->id)
                     ->where('topico_id', $subtopico->id)->first();
+
                 $respostas[$topico->id][] = [
                     'avaliacao_feedback_id' => $avaliacaoFeedback->id,
                     'topico_id' => $subtopico->id,
                     'nota' => $avaliacaoResposta ? $avaliacaoResposta->nota : ''
+                ];
+
+                $avaliacaoRespostaFunc = AvaliacaoResposta::where('avaliacao_feedback_id', $avaliacaoFeedbackFunc->id)
+                    ->where('topico_id', $subtopico->id)->first();
+
+                $respostasFunc[$topico->id][] = [
+                    'avaliacao_feedback_id' => $avaliacaoFeedbackFunc->id,
+                    'topico_id' => $subtopico->id,
+                    'nota' => $avaliacaoRespostaFunc ? $avaliacaoRespostaFunc->nota : ''
                 ];
             }
         }
@@ -318,39 +312,36 @@ class AvaliacaoController extends Controller
             'topicos' => $avaliacaoTopicos,
             'avaliacao_feedback_id' => $avaliacaoFeedback->id,
             'respostas' => $respostas,
+            'respostas_funcionario' => $respostasFunc,
             'comentario' => $avaliacaoFeedback->comentario ?: '',
+            'comentario_funcionario' => $avaliacaoFeedbackFunc->comentario ?: '',
             'dados_do_funcionario' => $dadosDoFuncionario,
-//                'avaliacoes_tipos' => $avaliacoes_tipos,
-//                'lista_status' => Avaliacao::LISTA_STATUS,
-//                'permissoes' => [
-//                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
-//                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
-//                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
+            'origem_feedback' => $avaliacaoFeedback->origem_feedback,
         ]);
     }
 
     public function avaliarUpdate(Request $request, AvaliacaoFeedback $avaliacaoFeedback)
     {
-        //        $this->authorize('administracao_documentos_legais_insert');
+        $this->authorize('avaliacoes_avaliar');
 
         $dados = $request->input();
 
         $respostas = collect($dados['respostas'])->collapse()->all();
-//        $dadosValidados = \Validator::make($dados, [
-//            'respostas.*.nota' => 'required|numeric|min:0|max:5',
-//        ]);
-//
-//        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-//            return response()->json([
-//                'msg' => 'Verifique as respostas, existe pergunta sem nota',
-//            ], 400);
-//
-//        }
+
+        $dadosValidados = \Validator::make($respostas, [
+            '*.nota' => 'required|numeric|min:1|max:5',
+        ]);
+
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Verifique as respostas, existe pergunta sem nota',
+            ], 400);
+
+        }
 
 
         foreach ($respostas as $key => $resposta) {
             $avaliacaoFeedback->Respostas()->create($resposta);
-//            AvaliacaoResposta::create($resposta);
         }
 
         $avaliacaoFeedback->update([
@@ -362,6 +353,8 @@ class AvaliacaoController extends Controller
 
     public function avaliarFinal(AvaliacaoFeedback $avaliacaoFeedback)
     {
+        $this->authorize('avaliacoes_final');
+
         if (!$avaliacaoFeedback->principal || $avaliacaoFeedback->avaliador_id != auth()->id()) {
             return response()->json([
                 'msg' => 'Você não tem permissão para acessar essa avaliação',
@@ -375,7 +368,14 @@ class AvaliacaoController extends Controller
             ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
             ->withSum('Respostas', 'nota')
             ->with('Respostas')
+            ->orderBy('principal', 'desc')
             ->get();
+
+        $avaliacaoFeedbackFuncionario = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
+            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_FUNCIONARIO)
+            ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
+            ->whereAvaliadorId($avaliacaoFeedback->funcionario_id)
+            ->first();
 
         $resultTopico = [];
         foreach ($avaliacoesFeedbacks as $avalFeedback) {
@@ -384,13 +384,25 @@ class AvaliacaoController extends Controller
             }
         }
 
-        $resultTopico = collect($resultTopico)->map(function ($item, $key) {
+        $resultTopico = collect($resultTopico)->map(function ($item, $key) use ($avaliacoesFeedbacks) {
             $avalTopico = AvaliacaoTopico::find($key);
             return [
                 'topico_pai' => AvaliacaoTopico::find($avalTopico->topico_pai_id)->topico,
                 'topico_pai_id' => (int)$avalTopico->topico_pai_id,
                 'subtopico' => $avalTopico->topico,
+                'topico_id' => $avalTopico->id,
                 'nota_total' => array_sum($item),
+                'media' => array_sum($item) / count($item),
+                'avaliadores' => $avaliacoesFeedbacks->map(function ($item) use ($key) {
+                    $nome_exp = explode(' ', $item->Avaliador->nome);
+                    $nome_avaliador = $nome_exp[0].' '.$nome_exp[count($nome_exp)-1];
+                    return [
+                        'id' => $item->avaliador_id,
+                        'comentario' => $item->comentario,
+                        'nome' => mb_strtoupper($nome_avaliador),
+                        'nota' => $item->respostas->where('topico_id', $key)->first()->nota
+                    ];
+                }),
                 'media' => array_sum($item) / count($item),
                 'media_redonda' => round(array_sum($item) / count($item)),
             ];
@@ -426,7 +438,6 @@ class AvaliacaoController extends Controller
             $carregar[] = [
                 'name' => $item[0]['topico_pai'],
                 'data' => [
-//                    'labels' => $item->pluck('subtopico')->toArray(),
                     'labels' => range(1, count($item)),
                     'datasets' => [
                         [
@@ -469,19 +480,101 @@ class AvaliacaoController extends Controller
             ];
         }
 
+
         return response()->json([
             'dados_do_funcionario' => $dadosDoFuncionario,
             'avaliador_principal' => $avaliacaoFeedback->wherePrincipal(true)->first()->Avaliador->nome,
             'status_avaliacao' => $avaliacaoFeedback->status,
             'total_aval' => $totalAval,
-            'media_aval' => $totalAval / count($avaliacoesFeedbacks),
+            'nota_final' => (($totalAval / count($avaliacoesFeedbacks))/10)/2,
             'resultado_topico_pai' => $topico_pai,
             'result_topico_pai_agrupado' => $result_topico_agrupado,
             'result_topico' => $resultTopico,
             'result_subtopico' => $subtopico,
-            'resultChart' => $resultChart
+            'resultChart' => $resultChart,
+            'avaliacao_feedback_id' => $avaliacaoFeedbackFuncionario->id,
+            'avaliacao_feedback_id_avaliador' => $avaliacaoFeedback->id,
+            'gestor_id' => $avaliacaoFeedback->wherePrincipal(true)->first()->avaliador_id,
+            'planos_acoes' => AvaliacaoResultado::with('Topico')->where('avaliacao_feedback_id', $avaliacaoFeedbackFuncionario->id)->where('gestor_id', $avaliacaoFeedback->wherePrincipal(true)->first()->avaliador_id)->get(),
+            'planos_acoes_delete' => [],
         ]);
-
     }
 
+    public function salvaAvaliacao(Request $request, AvaliacaoFeedback $avaliacaoFeedback)
+    {
+        $this->authorize('avaliacoes_final');
+        $dados = $request->input();
+
+        if (!isset($dados['planos_acoes'])) {
+            return response()->json([
+                'msg' => 'ERRO: É necessário inserir um plano de ação',
+            ], 400);
+        }
+
+        $dadosValidados = \Validator::make($dados['planos_acoes'], [
+            'topico_id.*' => 'required',
+            'plano_de_acao.*' => 'required',
+            'responsavel.*' => 'required',
+        ]);
+
+        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            return response()->json([
+                'msg' => 'Erro ao salvar a avaliação final',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+
+        }
+
+        try{
+            DB::beginTransaction();
+
+            if(isset($dados['planos_acoes_delete'])){
+                foreach ($dados['planos_acoes_delete'] as $lin) {
+                    AvaliacaoResultado::find($lin)->delete();
+                }
+            }
+
+            foreach($dados['planos_acoes'] as $item){
+                if(isset($item['nova'])){
+                    //criar
+                    $aval = AvaliacaoResultado::create([
+                        'avaliacao_feedback_id' => $dados['avaliacao_feedback_id'],
+                        'topico_id' => $item['topico_id'],
+                        'plano_de_acao' => $item['plano_de_acao'],
+                        'inicio' => $item['inicio'],
+                        'termino' => $item['termino'],
+                        'responsavel' => $item['responsavel'],
+                        'status' => AvaliacaoResultado::STATUS_DEFINIDO,
+                        'gestor_id' => $dados['gestor_id'],
+                    ]);
+
+
+                }else{
+                    //atualizar
+                    $aval = AvaliacaoResultado::find($item['id'])->update([
+                        'topico_id' => $item['topico_id'],
+                        'plano_de_acao' => $item['plano_de_acao'],
+                        'responsavel' => $item['responsavel'],
+                        'inicio' => $item['inicio'],
+                        'termino' => $item['termino'],
+                        'status' => AvaliacaoResultado::STATUS_DEFINIDO,
+                    ]);
+                }
+            }
+
+            AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
+                             ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
+                             ->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA)
+                             ->update([
+                                'status' => AvaliacaoFeedback::STATUS_FINAL,
+                                'fim_feedback' => (new DataHora())->dataHoraInsert()
+                             ]);
+
+            DB::commit();
+            return response()->json([], 201);
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

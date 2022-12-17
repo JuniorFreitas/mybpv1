@@ -42,6 +42,7 @@ class AvaliacaoTopicoController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('cadastro_avaliacao_topico_insert');
         $dados = $request->input();
         $topico = [
             'topico' => $dados['topico'],
@@ -139,6 +140,7 @@ class AvaliacaoTopicoController extends Controller
      */
     public function edit(AvaliacaoTopico $avaliacaotopico)
     {
+        $this->authorize('cadastro_avaliacao_topico_update');
         return $avaliacaotopico->load('Subtopicos');
     }
 
@@ -151,6 +153,7 @@ class AvaliacaoTopicoController extends Controller
      */
     public function update(Request $request, AvaliacaoTopico $avaliacaoTopico)
     {
+        $this->authorize('cadastro_avaliacao_topico_update');
         $dados = $request->input();
 
         $topico = [
@@ -190,12 +193,6 @@ class AvaliacaoTopicoController extends Controller
                         'msg' => "Verifique os subtópicos com nomes duplicados!",
                     ], 400);
                 }
-
-//                if ($subtopicos->duplicates('topico_explicacao')->count() > 0) {
-//                    return response()->json([
-//                        'msg' => "Verifique os subtópicos com descrições duplicados!",
-//                    ], 400);
-//                }
 
                 if ($subtopicos->count() == 0) {
                     return response()->json([
@@ -268,6 +265,7 @@ class AvaliacaoTopicoController extends Controller
      */
     public function atualizar(Request $request)
     {
+        $this->authorize('cadastro_avaliacao_topico');
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
 
@@ -278,11 +276,6 @@ class AvaliacaoTopicoController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'avaliacoes_tipos' => $avaliacoes_tipos,
-//                'permissoes' => [
-//                    'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
-//                    'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
-//                    'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
-//                ]
             ]
         ]);
     }
