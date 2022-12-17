@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\Models\User|null $Gestor
  * @property int|null $gestor_id
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereGestorId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Admissao[] $Admissao
+ * @property-read int|null $admissao_count
  */
 class CentroCusto extends Model
 {

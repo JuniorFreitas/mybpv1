@@ -807,6 +807,7 @@ class FeedbackCurriculo extends Model
         return $this->belongsToMany(Cih::class, 'cih_feedback', 'feedback_id', 'cih_id');
     }
 
+
     /**/
     //scopeManual
 //    public function scopeEmpresa($query)

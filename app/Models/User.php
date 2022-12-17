@@ -428,6 +428,11 @@ class User extends Authenticatable
         return $this->belongsToMany(EmpresaEscala::class, 'funcionario_escalas', 'funcionario_id', 'escala_id');
     }
 
+    public function avaliadoresFuncionario()
+    {
+        return $this->belongsToMany(Avaliacao::class, 'avaliacoes', 'funcionario_id', 'avaliador_id');
+    }
+
     public function FotoPerfil()
     {
         return $this->belongsToMany(Arquivo::class, 'user_anexos', 'user_id', 'arquivo_id');
@@ -497,6 +502,16 @@ class User extends Authenticatable
         }
         $Empresa->EmpresaFuncionarios()->attach($Colaborador->id);
         $Colaborador->ClienteFuncionarios()->sync($Empresa->id);
+    }
+
+    public function Avaliadores()
+    {
+        return $this->hasMany(AvaliacaoFeedback::class, 'funcionario_id', 'id')->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR);
+    }
+
+    public function scopeTiposGerenciais($query)
+    {
+        return $query->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS);
     }
 
     protected static function booted()

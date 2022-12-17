@@ -17,6 +17,8 @@ require("bootstrap-daterangepicker");
 
 window.Vue = require("vue");
 
+// window.ChartJs =require("chart.js");
+
 import VueTippy, { TippyComponent } from "vue-tippy";
 // import configuracoes from './mixins/Configuracoes';
 

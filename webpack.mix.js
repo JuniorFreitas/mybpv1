@@ -85,6 +85,11 @@ mix.js("resources/js/app.js", "public/js")
     .js("resources/js/g/cadastros/centrocusto/app.js", "public/js/g/centrocusto/")
     .js("resources/js/g/cadastros/projeto/app.js", "public/js/g/projeto/")
     .js("resources/js/g/cadastros/tipocih/app.js", "public/js/g/cadastros/tipocih/")
+    .js("resources/js/g/cadastros/avaliacoes/avaliacaotipo/app.js", "public/js/g/avaliacoes/avaliacaotipo/")
+    .js("resources/js/g/cadastros/avaliacoes/avaliacaotopico/app.js", "public/js/g/avaliacoes/avaliacaotopico/")
+    .js("resources/js/g/cadastros/avaliacoes/avaliacao/app.js", "public/js/g/avaliacoes/avaliacao/")
+    .js("resources/js/g/cadastros/avaliacoes/avaliador/app.js", "public/js/g/avaliacoes/avaliador/")
+    .js("resources/js/g/cadastros/avaliacoes/avaliar/app.js", "public/js/g/avaliacoes/avaliar/")
 
     //Curriculos
     .js("resources/js/g/curriculos/recrutamento/app.js", "public/js/g/recrutamento/")

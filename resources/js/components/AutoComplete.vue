@@ -59,9 +59,21 @@ export default {
             default: () => []
         },
 
+        dados: {
+            type: Object,
+            required: false,
+            default: () => []
+        },
+
         id: {
             type: String,
             required: false,
+        },
+
+        metodo: {
+            type: String,
+            required: false,
+            default: 'get'
         },
 
         placeholder: {
@@ -152,21 +164,37 @@ export default {
                     /*this.isLoading = true;
                     this.isOpen = true;
                     this.arrowCounter=0;*/
-                    $.get(`${URL_ADMIN}/${this.caminho}?busca=${this.el.value}&rows=${this.rows}`)
-                        .done((data) => {
+                    if(this.metodo === 'get') {
+                        axios.get(`${URL_ADMIN}/${this.caminho}?busca=${this.el.value}&rows=${this.rows}`)
+                            .then(({data}) => {
+                                this.isLoading = false;
+                                this.results = data;
+                                if (data.length > 0) {
+                                    this.isOpen = true;
+                                    this.arrowCounter = 0;
+                                }
+                            })
+                            .catch((error) => {
+                                this.isLoading = false;
+                                this.isOpen = false;
+                                this.arrowCounter = -1;
+                            });
+                    }else{
+                        this.dados.texto = this.el.value;
+                        axios.post(`${URL_ADMIN}/${this.caminho}`, this.dados).then(({data}) => {
                             this.isLoading = false;
-
                             this.results = data;
                             if (data.length > 0) {
                                 this.isOpen = true;
                                 this.arrowCounter = 0;
                             }
-                        })
-                        .fail((data) => {
+                        }).catch(({erro}) => {
                             this.isLoading = false;
                             this.isOpen = false;
                             this.arrowCounter = -1;
-                        });
+                        })
+                    }
+
                 }, this.delay);
             } else {
                 // Let's search our flat array

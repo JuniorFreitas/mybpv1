@@ -166,6 +166,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Query\Builder|Admissao withoutTrashed()
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasAdquiridas[] $FeriasAdquiridas
  * @property-read int|null $ferias_adquiridas_count
+ * @property-read \App\Models\CentroCusto|null $CentroCusto
  */
 class Admissao extends Model
 {
