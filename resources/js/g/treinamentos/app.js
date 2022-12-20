@@ -1,5 +1,6 @@
 import datepicker from '../../components/DatePicker'
 import ExportacaoMixin from "../../mixins/Exportacoes";
+import {Estados} from "../../mixins/Utils";
 
 const app = new Vue({
     mixins: [ExportacaoMixin],
@@ -85,7 +86,7 @@ const app = new Vue({
         },
         formMassaDefault: null,
         vencimentos: [],
-
+        listaTodosTreinamentos: [],
 
         formEnviar: {
             enviado: false,
@@ -138,6 +139,8 @@ const app = new Vue({
                 campo_dataFim: '',
                 campoVencimento: '',
                 vencimento: '',
+                treinamentos: '',
+                treinamentos_selecionados: [],
             }
         }
     },
@@ -206,9 +209,48 @@ const app = new Vue({
             let resultado = totalTreinamento === totalEncontrado
             this.selecionaTudoMassa = resultado
             return resultado
+        },
+        paramsExport() {
+            let dados = this.controle.dados
+            dados.selecionados = this.selecionados
+            return dados
         }
     },
     methods: {
+        selecionaTreinados(valor) {
+            if (valor !== 'S'){
+                this.controle.dados.treinamentos_selecionados = [];
+            }
+            this.atualizar()
+        },
+        addTreinamento(valor) {
+            if(valor !== ''){
+                if(!this.controle.dados.treinamentos_selecionados.includes(valor)) {
+                    this.controle.dados.treinamentos_selecionados.push(valor)
+                }else{
+                    mostraErro('','Treinamento já adicionado na lista')
+                }
+            }
+            if (valor === 'rm') {
+                this.controle.dados.treinamentos_selecionados = [];
+                this.controle.dados.treinamentos = '';
+            }
+            if (valor === 'todos') {
+                this.controle.dados.treinamentos_selecionados = []
+                this.listaTodosTreinamentos.forEach(item => this.controle.dados.treinamentos_selecionados.push(item.label));
+            }
+
+            this.controle.dados.treinamentos = '';
+
+            this.controle.dados.campo_treinados = this.controle.dados.treinamentos_selecionados.length > 0 ? 'S' : '';
+            this.atualizar()
+
+        },
+        removeTreinamento(indice) {
+            this.controle.dados.treinamentos_selecionados.splice(indice, 1)
+            this.controle.dados.campo_treinados = this.controle.dados.treinamentos_selecionados.length > 0 ? 'S' : '';
+            this.atualizar()
+        },
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo
             if (this.selecionaTudo) {
@@ -266,7 +308,7 @@ const app = new Vue({
             setupCampo()
         },
 
-        abrirFormMassa(){
+        abrirFormMassa() {
             this.preload = true
 
             if (this.formMassa.listaVencimentos.length > 0 && !this.formMassaDefault) {
@@ -320,7 +362,6 @@ const app = new Vue({
                     } else {
                         this.form.exame.feedback_id = data.feedback.id
                     }
-
 
                     this.form.listaVencimentos = data.listaVencimentos
 
@@ -536,6 +577,7 @@ const app = new Vue({
 
         carregou(dados) {
             this.lista = dados.itens
+            this.listaTodosTreinamentos = dados.vencimentos
             this.selecionaTudo = this.tudoMarcado
             this.formMassa.listaVencimentos = dados.vencimentos
 

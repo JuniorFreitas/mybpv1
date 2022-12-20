@@ -65,7 +65,7 @@ class TreinamentoController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $medidas = $this->show($request);
+        $treinamentos = $this->show($request);
         $head = [
             'nome',
             'cargo',
@@ -77,7 +77,7 @@ class TreinamentoController extends Controller
         ];
         $rows = [];
 
-        foreach ($medidas as $row) {
+        foreach ($treinamentos as $row) {
             foreach ($row['treinamentos'] as $treinamento) {
                 $rows[] = [
                     $row['nome'],

@@ -298,9 +298,9 @@ class TreinamentoController extends Controller
 
         $itens->transform(function ($item) {
             if ($item->Treinamento) {
-                $item->nr_33 = $item->Treinamento->Vencimentos->where('label', 'NR33')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'NR33')->first()->pivot : null;
-                $item->nr_35 = $item->Treinamento->Vencimentos->where('label', 'NR35')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'NR35')->first()->pivot : null;
-                $item->ebtv = $item->Treinamento->Vencimentos->where('label', 'EBTV')->count() > 0 ? $item->Treinamento->Vencimentos->where('label', 'EBTV')->first()->pivot : null;
+                $item->nr_33 = $item->Treinamento->Vencimentos()->where('label', 'like', '%NR33%')->count() > 0 ? $item->Treinamento->Vencimentos()->where('label', 'like', '%NR33%')->first()->pivot : null;
+                $item->nr_35 = $item->Treinamento->Vencimentos()->where('label', 'like', '%NR35%')->count() > 0 ? $item->Treinamento->Vencimentos()->where('label', 'like', '%NR35%')->first()->pivot : null;
+                $item->ebtv = $item->Treinamento->Vencimentos()->where('label', 'like', '%EBTV%')->count() > 0 ? $item->Treinamento->Vencimentos()->where('label', 'like', '%EBTV%')->first()->pivot : null;
             } else {
                 $item->nr_33 = null;
                 $item->nr_35 = null;
@@ -315,7 +315,7 @@ class TreinamentoController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $itens,
-                'vencimentos' => $vencimentos
+                'vencimentos' => $vencimentos,
             ]
         ]);
     }
@@ -324,15 +324,19 @@ class TreinamentoController extends Controller
     {
         $this->authorize('treinamento_carteira-etiquetas');
 
-        $resultado = FeedbackCurriculo::Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
+        $resultado = FeedbackCurriculo::select([
+            'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id'
+        ])->Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoTreinamento(true);
         })->with(
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
-            'VagaSelecionada:id,nome',
-            'Admissao.AreaEtiqueta',
             'Curriculo.FotoTres:id',
+            'Admissao:id,feedback_id,area_etiqueta_id,data_admissao,matricula,funcao,nr_trinta_cinco,nr_trinta_tres,numero_cracha,status,cargo',
+            'Admissao.AreaEtiqueta',
+            'VagaSelecionada:id,nome',
+            'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
             'Treinamento.Vencimentos',
-            'Treinamento.QuemCadastrou'
+            'Treinamento.QuemCadastrou:id,nome'
         );
 
         if ($request->filled('campoBusca')) {
@@ -367,24 +371,31 @@ class TreinamentoController extends Controller
 
         if ($request->filled('campo_treinados')) {
 
-            if ($request->campo_treinados == 'true') {
+            if ($request->campo_treinados == 'S') {
                 $resultado->has('Treinamento');
             }
-            if ($request->campo_treinados == 'false') {
+            if ($request->campo_treinados == 'N') {
                 $resultado->whereDoesntHave('Treinamento');
             }
 
         }
 
+        if (count($request->treinamentos_selecionados) > 0) {
+            $resultado->whereHas('Treinamento.Vencimentos', function ($query) use ($request) {
+                $query->whereIn('label', $request->treinamentos_selecionados);
+            });
+        }
+
         if ($request->filled('campoNr_trinta_tres')) {
             if ($request->campoNr_trinta_tres == 'Realizado') {
                 $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label', 'NR33');
+                    $query->where('label', 'like', '%NR33');
+
                 });
             }
             if ($request->campoNr_trinta_tres == 'Não Realizado') {
                 $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label', 'NR33');
+                    $query->where('label', 'like', '%NR33');
                 });
             }
             if ($request->campoNr_trinta_tres == 'NÃO SE APLICA') {
@@ -397,12 +408,12 @@ class TreinamentoController extends Controller
         if ($request->filled('campoNr_trinta_cinco')) {
             if ($request->campoNr_trinta_cinco == 'Realizado') {
                 $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label', 'NR35');
+                    $query->where('label', 'like', '%NR35');
                 });
             }
             if (!$request->campoNr_trinta_cinco == 'Não Realizado') {
                 $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
-                    $query->where('label', 'NR35');
+                    $query->where('label', 'like', '%NR35');
                 });
             }
             if ($request->campoNr_trinta_cinco == 'NÃO SE APLICA') {
@@ -428,23 +439,23 @@ class TreinamentoController extends Controller
         }
 
         if ($request->filled('campoAdmitido')) {
-            if ($request->campoAdmitido == 'true') {
+            if ($request->campoAdmitido == 'S') {
                 $resultado->whereHas('Admissao', function ($q) {
                     $q->whereStatus('ADMITIDO');
                 });
             }
-            if ($request->campoAdmitido == 'false') {
+            if ($request->campoAdmitido == 'N') {
                 $resultado->whereDoesntHave('Admissao');
             }
         }
 
         if ($request->filled('campoCracha')) {
-            if ($request->campoCracha == 'true') {
+            if ($request->campoCracha == 'S') {
                 $resultado->whereHas('Admissao', function ($q) {
                     $q->whereNotNull('numero_cracha');
                 });
             }
-            if ($request->campoCracha == 'false') {
+            if ($request->campoCracha == 'N') {
                 $resultado->whereDoesntHave('Admissao', function ($query) use ($request) {
                     $query->whereNull('numero_cracha');
                 });
@@ -485,47 +496,51 @@ class TreinamentoController extends Controller
 
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
+        if ($request->selecionados) {
+            $resultado = $this->filtro($request)->whereIn('id', $request->selecionados);
+        } else {
+            $resultado = $this->filtro($request);
+        }
+
+        $resultado = $resultado->get()
+            ->toArray();
+
         $head = [
             "Nome",
             "Vaga",
             "Cargo",
-            "Área",
-            "Foto 3x4",
-            "NR-33",
-            "NR-35",
-            "EBTV",
-            "Ultima Atualização",
-            "Quem Atualizou",
+            "Status",
             "Data Admissão",
             "PCD",
-            "Status",
-            "Tipo"
+            "Área",
+            "Foto 3x4",
+            "Treinamentos",
+            "Ultima Atualização",
         ];
 
         $rows = [];
 
         foreach ($resultado as $row) {
+            $treinamentos = "";
+            foreach ($row['treinamento']['vencimentos'] as $vencimento) {
+                $treinamentos .= $vencimento['label'] . " - Treinado em: " . $vencimento['pivot']['data_treinamento'] . " - Vence em: " . $vencimento['pivot']['data_vencimento'] . "\n";
+            }
             $rows[] = [
-                $row->Curriculo->nome,
-                $row->VagaSelecionada->nome,
-                $row->Admissao->funcao,
-                $row->Admissao->AreaEtiqueta->label,
-                $row->Curriculo->foto_tres ? "Sim" : "Não",
-                $row->nr_33 != null ? "Sim" : "Não",
-                $row->nr_35 != null ? "Sim" : "Não",
-                $row->ebtv != null ? "Sim" : "Não",
-                $row->Treinamento ? $row->Treinamento->created_at : "",
-                $row->Treinamento ? $row->Treinamento->QuemCadastrou->nome : "",
-                $row->Admissao->data_admissao,
-                $row->Curriculo->pcd != false ? "SIM":"NÂO",
-                $row->Admissao->status,
-                $row->Treinamento ? $row->Treinamento->tipo : "",
+                $row['curriculo']['nome'],
+                $row['vaga_aberta']['titulo'],
+                $row['admissao'] ? $row['admissao']['cargo'] : "",
+                $row['admissao'] ? $row['admissao']['status'] : "",
+                $row['admissao'] ? $row['admissao']['data_admissao'] : "",
 
+                $row['curriculo']['pcd'] ? 'Sim' : 'Não',
+                $row['admissao']['area_etiqueta'] ? $row['admissao']['area_etiqueta']['label'] : 'Não informado',
+                $row['curriculo']['foto_tres'] ? 'Sim' : 'Não',
+                $treinamentos,
+                $row['treinamento']['updated_at'],
             ];
         }
 
-        $nameArquivo = "carteira_etiqueta" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        $nameArquivo = "treinamentos" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
         JobExportaExcel::dispatch(auth()->id(), "Carteira - Etiqueta", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
