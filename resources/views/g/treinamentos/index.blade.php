@@ -339,8 +339,160 @@
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <div class="row">
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-md-3 ">
+                <div class="form-check" style="margin-bottom: -11px;">
+                    <input type="checkbox" class="form-check-input" @change="atualizar()"
+                           :disabled="controle.carregando"
+                           id="filtroVencimento"
+                           v-model="controle.dados.campoVencimento">
+                    <label class="form-check-label cursor-pointer" for="filtroVencimento">Por período de
+                        vencimento</label>
+                </div>
+                <div class="form-group">
+                    <datepicker range formsm label="" @onselect="atualizar()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.vencimento"></datepicker>
+                </div>
+            </div>
 
+            <div class="col-12 col-md-2">
+                <label>CPF</label>
+                <input type="text"
+                       placeholder="Buscar por cpf"
+                       autocomplete="mastertag"
+                       v-mascara:cpf
+                       class="form-control form-control-sm" :disabled="controle.carregando"
+                       v-model="controle.dados.campoCPF">
+            </div>
+
+
+            <div class="col-12 col-md-7">
+                <label>Buscar</label>
+                <input type="text"
+                       placeholder="Buscar por nome"
+                       autocomplete="off"
+                       class="form-control form-control-sm" :disabled="controle.carregando"
+                       v-model="controle.dados.campoBusca">
+            </div>
+
+            <div class="col-12 col-md-3">
+                <div class="form-group">
+                    <label>Por Vaga</label>
+                    <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"
+                                  :valido="controle.dados.campoVaga !== ''"
+                                  v-model="controle.dados.autocomplete_label"
+                                  placeholder="Por vaga"
+                                  @onblur="resetaCampo"
+                                  @onselect="selecionaVaga"></autocomplete>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-2">
+                <div class="form-group">
+                    <label>Estados</label>
+                    <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
+                            v-model="controle.dados.campoUf">
+                        <option value="">Todos</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-2">
+                <label>Admitidos</label>
+                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
+                        v-model="controle.dados.campoAdmitido">
+                    <option value="">Geral</option>
+                    <option value="S">Sim</option>
+                    <option value="N">Não</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-lg-2">
+                <label>Nº Crachá</label>
+                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
+                        v-model="controle.dados.campoCracha">
+                    <option value="">Geral</option>
+                    <option value="S">Sim</option>
+                    <option value="N">Não</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-lg-2">
+                <label>Foto 3x4</label>
+                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
+                        v-model="controle.dados.campoFoto">
+                    <option value="">Geral</option>
+                    <option :value="true">Sim</option>
+                    <option :value="false">Não</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-2">
+                <label>Treinados</label>
+                <select class="custom-select custom-select-sm" @change="selecionaTreinados($event.target.value)" :disabled="controle.carregando"
+                        v-model="controle.dados.campo_treinados">
+                    <option value="">Sem filtro</option>
+                    <option value="S">Sim</option>
+                    <option value="N">Não</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label>Treinamentos</label>
+                <select class="custom-select custom-select-sm" @change="addTreinamento($event.target.value)" :disabled="controle.carregando"
+                        v-model="controle.dados.treinamentos">
+                    <option value="">Selecionar ...</option>
+                    <option value="todos">---- ADICIONAR TODOS ----</option>
+                    <option v-for="treinamento in listaTodosTreinamentos" :value="treinamento.label">
+                        @{{ treinamento.label }}
+                    </option>
+                    <option value="rm">---- REMOVER TODOS ----</option>
+                </select>
+
+            </div>
+
+            <div class="col-12 mt-2">
+                <div class="p-2" style="border: 1px dashed #cccbcb">
+                    <h6>TREINAMENTOS SELECIONADOS:</h6>
+                    <div class="row">
+                        <small class="p-2 ml-2 mb-2 table-secondary text-dark rounded" v-for="(item, ind) in controle.dados.treinamentos_selecionados">
+                            @{{ item }} <a href="javascript://" @click.prevent="removeTreinamento(ind)"><i class="fa fa-times ml-1"></i></a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row" v-if="false">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
                 <label>Buscar</label>
                 <input type="text"
                        placeholder="Buscar por nome"
@@ -350,7 +502,6 @@
             </div>
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-
                 <label>CPF</label>
                 <input type="text"
                        placeholder="Buscar por cpf"
@@ -371,6 +522,7 @@
                                   @onselect="selecionaVaga"></autocomplete>
                 </div>
             </div>
+
 
             {{--            @if(!Request::has('cliente_id'))--}}
             {{--                <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
@@ -457,8 +609,9 @@
                            :disabled="controle.carregando"
                            id="filtroVencimento"
                            v-model="controle.dados.campoVencimento">
-                    <label class="form-check-label cursor-pointer" for="filtroVencimento">Por período de
-                        vencimento</label>
+                    <label class="form-check-label cursor-pointer" for="filtroVencimento">
+                        Por período de vencimento
+                    </label>
                 </div>
                 <div class="form-group">
                     <datepicker range formsm label="" @onselect="atualizar()"
@@ -595,7 +748,7 @@
 
                 <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
                         @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                        :disabled="controle.carregando || preloadExportacao || lista.length===0 || selecionados.length === 0">
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
                                                                            v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
                 </button>
@@ -621,13 +774,13 @@
             <table class="tabela">
                 <thead>
                 <tr class="bg-default">
-                    <th class="text-center">
+                    <th class="text-center" width="30px">
                         <input type="checkbox"
                                :style="!emTreinamentos.length ? 'cursor: not-allowed' : 'cursor: pointer'"
                                :disabled="!emTreinamentos.length" :checked="tudoMarcado"
                                @click="selecionaTodos">
                     </th>
-                    <th class="text-center">
+                    <th class="text-center" width="30px">
                         <input type="checkbox"
                                :checked="tudoMarcadoMassa"
                                @click="selecionaTodosMassa">
@@ -748,21 +901,31 @@
                         @{{ resultado.admissao ? resultado.admissao.data_admissao : null }}
                     </td>
 
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-primary mb-2" title="Gerar Carteira"
-                                @click.prevent="formAlterar(resultado.id)"
-                                data-toggle="modal"
-                                data-target="#janelaTreinamento">
-                            <i class="fa fa-edit"></i> Atualizar
-                        </button>
+                    <td class="text-center" width="30px">
+                        <div class="dropdown dropleft show">
+                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
 
-                        <button class="btn btn-sm btn-primary mb-2"
-                                v-if="resultado.treinamento"
-                                @click.prevent="abriJanelaEnviar(resultado)"
-                                data-toggle="modal"
-                                data-target="#janelaEnviar">
-                            <i class="fas fa-share-square"></i> Enviar
-                        </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                <a class="dropdown-item" href="javascript://" title="Atualizar treinamento"
+                                   @click.prevent="formAlterar(resultado.id)"
+                                   data-toggle="modal"
+                                   data-target="#janelaTreinamento">
+                                    Atualizar
+                                </a>
+                                <a class="dropdown-item" href="javascript://" title="Enviar via e-mail"
+                                   v-if="resultado.treinamento"
+                                   @click.prevent="abriJanelaEnviar(resultado)"
+                                   data-toggle="modal"
+                                   data-target="#janelaAvaliar">
+                                    Enviar via e-mail
+                                </a>
+
+                            </div>
+                        </div>
+
 
                         {{--                        <button href="javascript://" class="btn btn-sm btn-default" title="Enviar Via e-mail"--}}
                         {{--                                v-if="resultado.carteira"--}}

@@ -56,37 +56,37 @@ class UserController extends Controller
             'ativo' => 'required|boolean',
             'empresa_id' => 'required'
         ]);
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao cadastrar usuário',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-
-//            $dados['tipo'] = Papel::find($dados['grupo_id'])->nome;
-            $password = \Str::random(8);
-            $dados['password'] = bcrypt($password);
-            $dados['cadastrou'] = auth()->id();
-
-            JobBoasVindas::dispatch([
-                'nome' => $dados['nome'],
-                'email' => $dados['login'],
-                'empresa_id' => $dados['empresa_id'],
-                'senha' => $password,
-            ]);
-
-            $usuario = User::create($dados);
-
-            if (isset($dados['user_recebe_email'])) {
-                unset($dados['user_recebe_email'][0]);
-                foreach ($dados['user_recebe_email'] as $index => $email) {
-                    $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
-                }
-            }
-
-
-            return response()->json([], 201);
         }
+//            $dados['tipo'] = Papel::find($dados['grupo_id'])->nome;
+        $password = \Str::random(8);
+        $dados['password'] = bcrypt($password);
+        $dados['cadastrou'] = auth()->id();
+
+        JobBoasVindas::dispatch([
+            'nome' => $dados['nome'],
+            'email' => $dados['login'],
+            'empresa_id' => $dados['empresa_id'],
+            'senha' => $password,
+        ]);
+
+        $usuario = User::create($dados);
+
+        if (isset($dados['user_recebe_email'])) {
+            unset($dados['user_recebe_email'][0]);
+            foreach ($dados['user_recebe_email'] as $index => $email) {
+                $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
+            }
+        }
+
+
+        return response()->json([], 201);
+
     }
 
 
@@ -231,18 +231,15 @@ class UserController extends Controller
 
         if (auth()->user()->empresa_id === User::MYBP_EMPRESA_ID) {
             $resultado = User::with('Papel:id,nome', 'Empresa')
-                ->where('tipo', '!=', 'Pessoa')
-                ->where('tipo', '!=', 'Empresa');
+                ->whereNotIn('tipo',[User::CANDIDATO, User::EMPRESA]);
         }
 
         if ($request->filled('campoBusca')) {
-            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('id', $request->campoBusca);
+            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
         }
 
         if ($request->filled('campoLogin')) {
-            $resultado->where('login', 'like', '%' . $request->campoLogin . '%')
-                ->orWhere('id', $request->campoLogin);
+            $resultado->where('login', 'like', '%' . $request->campoLogin . '%');
         }
 
         if ($request->filled('campoEmpresa')) {
@@ -261,6 +258,8 @@ class UserController extends Controller
             $resultado->whereAtivo($request->campoStatus);
         }
 
+
+//        dd($resultado->toSql(), $resultado->getBindings());
         $empresa = auth()->user()->empresa_id;
 
 
@@ -275,10 +274,10 @@ class UserController extends Controller
 
         $resultado = $resultado->orderBy('nome')->paginate($porPagina);
 
-        $lista_tipos = auth()->user()->empresa_id == User::MYBP_EMPRESA_ID ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
+        $lista_tipos = $empresa == User::MYBP_EMPRESA_ID ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
 
-        $lista_grupos = Papel::whereEmpresaId(auth()->user()->empresa_id)->where('master', false)
-                                                                         ->where('nome', 'not like', '% - Clinica Exame')->get();
+        $lista_grupos = Papel::whereEmpresaId($empresa)->where('master', false)
+            ->where('nome', 'not like', '% - Clinica Exame')->get();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -300,7 +299,7 @@ class UserController extends Controller
     public function buscaGrupoEmpresa($empresa_id)
     {
         $papeis = Papel::whereEmpresaId($empresa_id)->where('master', false)
-                                                    ->where('nome', 'not like', '% - Clinica Exame')->get();
+            ->where('nome', 'not like', '% - Clinica Exame')->get();
         $grupo_cloud = GrupoCloud::whereEmpresaId($empresa_id)->get();
 
         return response()->json(['papeis' => $papeis, 'cloud' => $grupo_cloud], 200);
