@@ -1,6 +1,5 @@
 <template>
     <div :id="hash">
-
         <modal id="janelaAvaliacaoFinal" :titulo="titulo_janela_final" :size="90">
             <template slot="conteudo">
                 <preload v-show="preloadAvalFinal"></preload>
@@ -109,13 +108,6 @@
                                         <textarea rows="3" class="form-control form-control-sm validacampo" v-model="item.plano_de_acao" @blur.prevent="valida_campo_vazio($event.target, 1)" :disabled="visualizando"></textarea>
                                     </div>
                                 </div>
-
-<!--                                <div class="col-lg-4">-->
-<!--                                    <div class="form-group">-->
-<!--                                        <label for="">Responsável</label>-->
-<!--                                        <input type="text" class="form-control form-control-sm validacampo" @blur.prevent="valida_campo_vazio($event.target, 1)" v-model="item.responsavel" :disabled="visualizando">-->
-<!--                                    </div>-->
-<!--                                </div>-->
 
                                 <div class="col-lg-4">
                                     <div class="form-group">
@@ -402,23 +394,12 @@ export default {
             hash: String(Math.random()).substr(2),
             titulo_janela: "",
             titulo_janela_final: "Open Feedback - Avaliação Final",
-            janelaVinculo: "",
             preload: false,
             preloadAvalFinal: false,
             editando: false,
             visualizando: false,
-            abrirVinculo: false,
 
             chartsRadares: [],
-
-            form: {
-                titulo: "",
-                data_inicio_prazo: "",
-                data_fim_prazo: "",
-                status: "",
-                ativo: true,
-                avaliacao_tipo_id: ''
-            },
 
             formAvaliar: {
                 respostas: [],
@@ -490,45 +471,6 @@ export default {
                 this.formAvaliarFinal.planos_acoes_delete.push(this.formAvaliarFinal.planos_acoes[index].id);
             }
             this.formAvaliarFinal.planos_acoes.splice(index, 1);
-        },
-
-        vinculo(obj) {
-            this.abrirVinculo = false;
-            this.janelaVinculo = `Vinculo de avaliadores  avaliação - ${obj.titulo}`;
-            this.avaliacaoSelecionada = obj;
-            setTimeout(() => {
-                this.abrirVinculo = true;
-            }, 300);
-
-        },
-        formNovo() {
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.titulo_janela = "Montagem da Avaliação";
-            this.editando = false;
-            this.preload = false;
-            formReset();
-            setupCampo();
-        },
-
-        cadastrar() {
-            $("#janelaCadastrar :input:visible").trigger("blur");
-            if ($("#janelaCadastrar :input:visible.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
-                return false;
-            }
-            this.preload = true;
-            axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao`, this.form)
-                .then(res => {
-                    if (res.status === 201) {
-                        $("#janelaCadastrar").modal("hide");
-                        mostraSucesso("", "Avaliação cadastrada com sucesso");
-                        this.preload = false;
-                        this.atualizar();
-                    }
-                })
-                .catch(error => {
-                    this.preload = false;
-                });
         },
 
         avaliarForm(avaliacaoFeedback, visualizando = false) {
