@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Vencimento;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TreinamentoIndustriaController extends Controller
 {
@@ -42,6 +43,7 @@ class TreinamentoIndustriaController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'label' => 'required',
+                'label_reduzida' => Rule::requiredIf($request->input('exibir_na_carteira')),
                 'descricao' => 'required',
                 'ativo' => 'required',
             ]
@@ -54,6 +56,10 @@ class TreinamentoIndustriaController extends Controller
         } else {
             try {
                 DB::beginTransaction();
+
+                if(!$dados['exibir_na_carteira']){
+                    $dados['label_reduzida'] = null;
+                }
 
                 Vencimento::create($dados);
 
@@ -99,11 +105,13 @@ class TreinamentoIndustriaController extends Controller
      */
     public function update(Request $request, $id)
     {
+//        dd($request->input());
         $this->authorize('cadastro_treinamento_sgi_update');
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados,
             [
                 'label' => 'required',
+                'label_reduzida' => Rule::requiredIf($request->input('exibir_na_carteira')),
                 'descricao' => 'required',
                 'ativo' => 'required',
             ]
@@ -118,6 +126,10 @@ class TreinamentoIndustriaController extends Controller
                 DB::beginTransaction();
 
                 $vencimento = Vencimento::whereId($id)->first();
+
+                if(!$dados['exibir_na_carteira']){
+                    $dados['label_reduzida'] = null;
+                }
 
                 $vencimento->update($dados);
 

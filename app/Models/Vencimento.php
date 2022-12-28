@@ -57,6 +57,8 @@ class Vencimento extends Model
     public $timestamps = false;
     protected $fillable = [
         'label',
+        'label_reduzida',
+        'exibir_na_carteira',
         'descricao',
         'prazo_parada',
         'prazo_fixo',
@@ -68,6 +70,8 @@ class Vencimento extends Model
     protected $casts = [
         'id' => 'int',
         'label' => 'string',
+        'label_reduzida' => 'string',
+        'exibir_na_carteira' => 'boolean',
         'descricao' => 'string',
         'prazo_parada' => 'int',
         'prazo_fixo' => 'int',
