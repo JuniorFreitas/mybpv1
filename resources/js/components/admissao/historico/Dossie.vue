@@ -389,12 +389,12 @@
             </fieldset>
 
             <fieldset>
-                <legend>CERTIFICADOS REQUSIITOS BÁSICOS</legend>
+                <legend>CERTIFICADOS REQUISITOS BÁSICOS</legend>
                 <upload label="Selecionar anexo(s)"
                         :dados-ajax="{
                             tipo:'ArquivamentoEletronico',
                             // curriculo_id: curriculo.id,
-                            label: 'CERTIFICADOS REQUSIITOS BÁSICOS'
+                            label: 'CERTIFICADOS REQUISITOS BÁSICOS'
                         }"
                         :model="form.arquivamento_eletronico"
                         :model-delete="form.arquivamento_eletronicoDel" :url="urlAnexoUpload"
