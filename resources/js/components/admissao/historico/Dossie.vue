@@ -389,12 +389,12 @@
             </fieldset>
 
             <fieldset>
-                <legend>FORMA DE ARQUIVAMENTO REGISTRO ELETRÔNICO</legend>
+                <legend>CERTIFICADOS REQUSIITOS BÁSICOS</legend>
                 <upload label="Selecionar anexo(s)"
                         :dados-ajax="{
                             tipo:'ArquivamentoEletronico',
                             // curriculo_id: curriculo.id,
-                            label: 'FORMA DE ARQUIVAMENTO REGISTRO ELETRÔNICO'
+                            label: 'CERTIFICADOS REQUSIITOS BÁSICOS'
                         }"
                         :model="form.arquivamento_eletronico"
                         :model-delete="form.arquivamento_eletronicoDel" :url="urlAnexoUpload"
@@ -403,12 +403,12 @@
             </fieldset>
 
             <fieldset>
-                <legend>FORMA DE ARQUIVAMENTO DOSSIÊ</legend>
+                <legend>CERTIFICADOS REQUISITOS DESEJÁVEIS</legend>
                 <upload label="Selecionar anexo(s)"
                         :dados-ajax="{
                             tipo:'ArquivamentoDossie',
                             // curriculo_id: curriculo.id,
-                            label: 'FORMA DE ARQUIVAMENTO DOSSIÊ'
+                            label: 'CERTIFICADOS REQUISITOS DESEJÁVEIS'
                         }"
                         :model="form.arquivamento_dossie"
                         :model-delete="form.arquivamento_dossieDel" :url="urlAnexoUpload"
