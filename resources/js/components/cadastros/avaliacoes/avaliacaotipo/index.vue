@@ -1,6 +1,5 @@
 <template>
     <div id="componente">
-
         <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
             <template slot="conteudo">
                 <p class=" mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
@@ -121,13 +120,11 @@
 <script>
 import controlePaginacao from '../../../ControlePaginacao';
 import modal from '../../../Modal';
-import editor from '@tinymce/tinymce-vue';
 
 export default {
     components: {
         modal,
-        controlePaginacao,
-        editor,
+        controlePaginacao
     },
     props: {
         qntPag: {

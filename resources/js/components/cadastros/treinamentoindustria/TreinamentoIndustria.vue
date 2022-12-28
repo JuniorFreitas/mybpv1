@@ -14,6 +14,19 @@
                                            onblur="valida_campo_vazio(this,1)">
                                 </div>
                             </div>
+                            <div class="col-12 mb-2">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" v-model="form.exibir_na_carteira" class="custom-control-input" id="exibir_na_carteira">
+                                    <label class="custom-control-label"
+                                           for="exibir_na_carteira">Exibir Carteira Treinamento</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-12" v-if="form.exibir_na_carteira">
+                                <div class="form-group">
+                                    <label>Nome Reduzido</label>
+                                    <input v-model="form.label_reduzida" class="form-control form-control-sm" type="text" placeholder="Informe o Nome reduzido">
+                                </div>
+                            </div>
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
                                     <label>A quem se destina</label>
@@ -207,6 +220,8 @@ export default {
 
             form: {
                 label: '',
+                label_reduzida: '',
+                exibir_na_carteira: false,
                 descricao: '',
                 prazo_parada: 30,
                 prazo_fixo: 30,

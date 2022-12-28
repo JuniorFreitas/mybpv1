@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * App\Models\AvaliacaoTipo
@@ -31,7 +33,23 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AvaliacaoTipo extends Model
 {
-    use HasFactory, TenantTrait;
+    use HasFactory, TenantTrait, LogsActivity;
+
+    protected static $logFillable = true;
+    protected static $logName = 'avaliacoes_tipos';
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = "";
+    }
+
 
     protected $table = "avaliacoes_tipos";
 
