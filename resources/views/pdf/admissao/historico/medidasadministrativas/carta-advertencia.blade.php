@@ -34,7 +34,7 @@
         Assino a presente,
         <br>
         <br>
-        São Luís-MA, {{ (new \MasterTag\DataHora())->dataCompletaExt() }}
+        São Luís-MA, {{ (new \MasterTag\DataHora($medida->data_solicitacao))->dataCompletaExt() }}
         <br>
         <br>
         <br>
@@ -42,7 +42,7 @@
         {{$medida->Feedback->Empresa->razao_social}}
         <br>
         <br>
-        Ciente em {{ (new \MasterTag\DataHora())->dataCompleta() }}
+        Ciente em {{ (new \MasterTag\DataHora($medida->data_solicitacao))->dataCompleta() }}
         <br><br>
         <hr style="width: 10cm; margin-top: 5px;  border:none; border-top: 1px solid #333">
         {{$medida->Feedback->Curriculo->nome}}
