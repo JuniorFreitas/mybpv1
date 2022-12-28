@@ -7,10 +7,10 @@
                     <div class="form-group">
                         <label>Buscar</label>
                         <input type="text"
-                               placeholder="Buscar por conteudo"
+                               placeholder="Buscar por nome"
                                autocomplete="off"
                                class="form-control" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                               v-model="nome_filtrado">
                     </div>
                 </div>
 
@@ -20,6 +20,14 @@
                             @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
+                    </button>
+                    <button class="btn btn-sm btn-primary"
+                            :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                            @click.pre.prevent="abrirFormParabens()"
+                            data-toggle="modal"
+                            data-target="#janelaParabensMassa"
+                            :disabled="!selecionadosMassa.length">
+                        <i class="fa fa-envelope"></i> Enviar Parabéns <span class="badge badge-light">{{ selecionadosMassa.length }}</span>
                     </button>
                 </div>
             </form>
@@ -39,50 +47,59 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
+                        <th class="text-center">
+                            <input type="checkbox"
+                                   :checked="tudoMarcadoMassa"
+                                   @click="selecionaTodosMassa">
+                        </th>
                         <td class="text-center">Nome</td>
                         <td class="text-center">Data</td>
                         <td class="text-center">Email</td>
                         <td class="text-center">Idade</td>
-                        <td class="text-center">Tipo</td>
-                        <td class="text-center">Enviar Parabéns</td>
+                        <td class="text-center">Enviado</td>
+<!--                        <td class="text-center">Enviar Parabéns</td>-->
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="aniversariantes in lista">
+                    <tr v-if="filtrarLista.length" v-for="aniversariantes in filtrarLista">
+                        <td class="text-center">
+                            <label :for="aniversariantes.id" v-if="aniversariantes.enviado == 'Não'">
+                                <input
+                                    type="checkbox"
+                                    v-model="selecionadosMassa"
+                                    :value="aniversariantes.id"
+                                    :id="aniversariantes.id"
+                                    :style="aniversariantes.id ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                >
+                            </label>
+                        </td>
                         <td class="text-center">{{aniversariantes.nome}}</td>
                         <td class="text-center">{{aniversariantes.aniversario}}</td>
                         <td class="text-center">{{aniversariantes.email}}</td>
                         <td class="text-center">{{aniversariantes.idade ? aniversariantes.idade : '-'}}</td>
-                        <td class="text-center">{{aniversariantes.tipo}}</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-primary"
-                                    @click="enviar(aniversariantes)">
-                                <i class="fa fa-share"></i>
-                            </button>
-                        </td>
+                        <td class="text-center">{{aniversariantes.enviado}}</td>
+<!--                        <td class="text-center">-->
+<!--                            <button type="button" class="btn btn-sm btn-primary" v-if="aniversariantes.enviado == 'Não' && aniversariantes.email != 'sistema@mybp.com.br'"-->
+<!--                                    @click="enviar(aniversariantes)">-->
+<!--                                <i class="fa fa-share"></i>-->
+<!--                            </button>-->
+<!--                        </td>-->
                     </tr>
                     </tbody>
                 </table>
             </div>
-
-            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                                :url="urlPaginacao" :por-pagina="qntPag"
-                                :dados="controle.dados"
-                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
         </div>
     </div>
 </template>
 
 <script>
-    import controlePaginacao from '../../ControlePaginacao';
     import modal from '../../Modal';
     import DatePicker from "../../DatePicker";
 
     export default {
         components: {
             DatePicker,
-            modal,
-            controlePaginacao,
+            modal
         },
         props: {
             qntPag: {
@@ -107,6 +124,9 @@
                 atualizado: false,
 
                 lista: [],
+                nome_filtrado: '',
+                selecionadosMassa: [],
+                selecionaTudoMassa: false,
 
                 urlPaginacao: `${URL_ADMIN}/administracao/aniversariantes/atualizar`,
                 controle: {
@@ -118,28 +138,58 @@
             }
         },
         mounted() {
+            console.log('Iniciando');
             this.atualizar();
             this.formDefault = _.cloneDeep(this.form);
+        },
+        computed: {
+            filtrarLista(){
+                if (this.lista && this.lista.length) {
+                    return this.lista.filter(item => item.nome.toLowerCase().includes(this.nome_filtrado.toLowerCase()))
+                }
+            },
+            emTreinamentosMassa() {
+
+            },
+            tudoMarcadoMassa() {
+
+            }
         },
         methods: {
             enviar(dados) {
                 this.preloadAjax = true;
                 axios.post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, dados).then(response => {
-                    this.$refs.componente.buscar();
+                    this.atualizar();
                     this.preloadAjax = false;
                 }).catch(error => (this.preloadAjax = false));
 
             },
-            carregou(dados) {
-                this.lista = dados;
-                this.controle.carregando = false;
-            },
-            carregando() {
-                this.controle.carregando = true;
-            },
             atualizar() {
-                this.$refs.componente.atual = 1;
-                this.$refs.componente.buscar();
+                this.controle.carregando = true;
+                axios.post(this.urlPaginacao).then(({data}) => {
+                    this.lista = data.dados;
+                    this.controle.carregando = false;
+                }).catch();
+            },
+
+            selecionaTodosMassa() {
+                this.selecionaTudoMassa = !this.selecionaTudoMassa
+                if (this.selecionaTudoMassa) {
+                    this.lista.map(item => {
+                        let id = item.id
+                        if (this.selecionadosMassa.indexOf(id) === -1) {
+                            this.selecionadosMassa.push(id)
+                        }
+                    })
+                } else {
+                    this.lista.map(item => {
+                        let id = item.id
+                        let index = this.selecionadosMassa.indexOf(id)
+                        if (index >= 0) {
+                            this.selecionadosMassa.splice(index, 1)
+                        }
+                    })
+                }
             },
         }
 
