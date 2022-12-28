@@ -6,10 +6,16 @@ use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class AvaliacaoResultado extends Model
 {
-    use HasFactory, TenantTrait;
+    use HasFactory, TenantTrait, LogsActivity;
+
+    protected static $logFillable = true;
+    protected static $logName = 'avaliacoes_resultados';
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
 
     protected $table = "avaliacoes_resultados";
 

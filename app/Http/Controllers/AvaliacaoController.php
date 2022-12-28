@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobAutoAvaliacaoConcluida;
 use App\Models\Avaliacao;
 use App\Models\AvaliacaoFeedback;
 use App\Models\AvaliacaoResposta;
@@ -344,11 +345,43 @@ class AvaliacaoController extends Controller
             $avaliacaoFeedback->Respostas()->create($resposta);
         }
 
-        $avaliacaoFeedback->update([
+        $salvarAvaliacao = $avaliacaoFeedback->update([
             'status' => AvaliacaoFeedback::STATUS_CONCLUIDA,
             'comentario' => $dados['comentario'],
             'fim_feedback' => (new DataHora())->dataHoraInsert()
         ]);
+
+        $dados_job = [];
+
+        if($salvarAvaliacao && $avaliacaoFeedback->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO && $avaliacaoFeedback->status === AvaliacaoFeedback::STATUS_CONCLUIDA) {
+            $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'funcionario_id', 'status'])
+                ->where('avaliacao_id', $avaliacaoFeedback->avaliacao_id)
+                ->where('funcionario_id', $avaliacaoFeedback->funcionario_id)
+                ->with('Avaliador:id,nome,login')
+                ->with('Funcionario:id,nome')
+                ->with('Avaliacao:id,titulo')
+                ->OrigemAvaliador()
+                ->get();
+
+            foreach ($avaliadores as $avaliador) {
+
+                $dados_job['nome'] = $avaliador->avaliador->nome;
+                $dados_job['email'] = $avaliador->avaliador->login;
+                $dados_job['funcionario'] = $avaliador->funcionario->nome;
+                $dados_job['avaliacao'] = $avaliador->avaliacao->titulo;
+                $dados_job['empresa_id'] = $avaliacaoFeedback->empresa_id;
+
+                JobAutoAvaliacaoConcluida::dispatch([
+                    'nome' => $dados_job['nome'],
+                    'email' => $dados_job['email'],
+                    'funcionario' => $dados_job['funcionario'],
+                    'avaliacao' => $dados_job['avaliacao'],
+                    'empresa_id' => $dados_job['empresa_id']
+                ]);
+
+                $dados_job = [];
+             }
+        }
     }
 
     public function avaliarFinal(AvaliacaoFeedback $avaliacaoFeedback)
