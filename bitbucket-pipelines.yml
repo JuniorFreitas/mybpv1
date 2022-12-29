@@ -8,10 +8,10 @@ image: php:7.1.29
 pipelines:
 
   branches:
-    develop:
+    production:
       - step:
           name: Deploy em homologocao
-          deployment: develop
+          deployment: production
           script:
             - echo "Deploying to production environment"
             - pipe: atlassian/ssh-run:0.2.2
