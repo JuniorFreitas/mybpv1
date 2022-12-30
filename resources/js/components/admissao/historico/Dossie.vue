@@ -416,6 +416,18 @@
                         @onfinalizado="anexoUploadAndamento=false"></upload>
             </fieldset>
 
+            <fieldset>
+                <legend>PLANO DE SAÚDE ASSINADO</legend>
+                <upload label="Selecionar anexo(s)"
+                        :dados-ajax="{
+                            tipo:'PlanoSaudeAssinado',
+                            label: 'PLANO DE SAÚDE ASSINADO'
+                        }"
+                        :model="form.plano_saude_assinado"
+                        :model-delete="form.plano_saude_assinadoDel" :url="urlAnexoUpload"
+                        @onprogresso="anexoUploadAndamento=true"
+                        @onfinalizado="anexoUploadAndamento=false"></upload>
+            </fieldset>
 
             <button class="btn btn-sm btn-primary mb-3" @click="salvar">
                 <i class="fa fa-save"></i> Salvar
@@ -541,7 +553,11 @@ export default {
                 arquivamento_eletronicoDel: [],
 
                 arquivamento_dossie: [],
-                arquivamento_dossieDel: []
+                arquivamento_dossieDel: [],
+
+                plano_saude_assinado: [],
+                plano_saude_assinadoDel: [],
+
 
             },
             formDefault: null
