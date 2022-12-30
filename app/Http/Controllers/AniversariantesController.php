@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\AniversariantesMail;
-use App\Models\Cliente;
+use App\Jobs\JobAniversariantes;
 use App\Models\Curriculo;
 use App\Models\ParabensEnviado;
 use Illuminate\Http\Request;
@@ -51,26 +50,23 @@ class AniversariantesController extends Controller
 
     public function enviaEmail(Request $request)
     {
-        $dt = new DataHora();
-        $ano = $dt->ano();
-        if ($request['tipo'] == 'Funcionário') {
-            $dados = [
-                'curriculo_id' => $request['id'],
-                'ano' => $ano,
-            ];
-        } else {
-            $dados = [
-                'cliente_id' => $request['id'],
-                'ano' => $ano,
-            ];
+//        dd($request->selecionados);
+
+        $dados = [
+            'selecionados' => $request->selecionados,
+            'empresa_id' => auth()->user()->empresa_id
+        ];
+
+        foreach ($request->selecionados as $selecionado){
+            ParabensEnviado::withoutGlobalScopes()->create([
+                'empresa_id' => auth()->user()->empresa_id,
+                'status' => ParabensEnviado::STATUS_ENVIANDO,
+                'curriculo_id' => $selecionado,
+                'ano' => (int) date('Y'),
+            ]);
         }
 
-        ParabensEnviado::create($dados);
-
-        \Mail::send(new AniversariantesMail([
-            'nome' => $request['nome'],
-            'email' => $request['email'],
-        ]));
+        JobAniversariantes::dispatch($dados);
 
         return response()->json('', 200);
     }
@@ -78,59 +74,29 @@ class AniversariantesController extends Controller
     public function atualizar(Request $request)
     {
         $this->authorize('administracao_aniversariantes');
-        $porPagina = $request->get('porPagina');
         $dataHoje = new DataHora();
-
-        $dia = $dataHoje->dia();
-        $mes = $dataHoje->mes();
         $ano = $dataHoje->ano();
-
         $ano = intval($ano);
-        $curriculo = Curriculo::whereHas('FeedBack', function ($q) {
-            $q->whereHas('Cliente');
-            $q->where('selecionado', 'sim');
-        })
-            ->with(['Parabens' => function ($q) use ($ano) {
-                $q->where('ano', $ano);
-            }])
-            ->get();
 
-        $resultado = [];
-        foreach ($curriculo as $c) {
-            $data = explode('/', $c->nascimento);
-            if ($data[0] == $dia && $data[1] == $mes) {
-                if (!isset($c['Parabens'])) {
-                    $resultado[] = [
-                        'idade' => $c->idade,
-                        'nome' => $c->nome,
-                        'email' => $c->email,
-                        'id' => $c->id,
-                        'aniversario' => $c->nascimento,
-                        'tipo' => 'Funcionário'
-                    ];
-                }
-            }
-        }
+        $funcionarios = Curriculo::select(['id','nome','email','nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function($q){
+            $q->admitidos();
+        })->whereRaw('month(nascimento) = month(now())')
+          ->with('Parabens', function ($query) use ($ano) {
+             $query->where('ano', $ano);
+          })->orderByRaw('day(nascimento)')->get()->map(function ($item) {
+              $data_nascimento = new DataHora($item->nascimento);
+              $dia_nascimento = $data_nascimento->dia();
+              return [
+                  'idade' => $item->idade,
+                  'nome' => $item->nome,
+                  'email' => $item->email,
+                  'id' => $item->id,
+                  'aniversario' => $data_nascimento->dia().'/'.$data_nascimento->mes(),
+                  'enviado' => $item->Parabens()->count() > 0 ? $item->Parabens->status : 'Não',
+                  'hoje' => date('d') == $dia_nascimento,
+              ];
+            });
 
-        $cliente = Cliente::whereAtivo(true)->with('Parabens')->get();
-        $resultado2 = [];
-        foreach ($cliente as $ci) {
-            $data = explode('/', $ci->aniversario);
-            if ($data[0] == $dia && $data[1] == $mes) {
-                if (!isset($ci['Parabens'])) {
-                    $resultado2[] = [
-                        'nome' => $ci->nome_fantasia,
-                        'email' => $ci->email,
-                        'id' => $ci->id,
-                        'aniversario' => $ci->aniversario,
-                        'tipo' => 'Cliente'
-                    ];
-                }
-            }
-        }
-
-        $resultado = array_merge($resultado, $resultado2);
-
-        return response()->json(['dados' => $resultado], 200);
+        return response()->json(['dados' => $funcionarios], 200);
     }
 }

@@ -1,5 +1,25 @@
 <template>
     <div id="componenteAniversariante">
+        <modal id="janelaParabensMassa" :fechar="!this.preload"
+               titulo="Enviar Parabéns">
+            <template slot="conteudo">
+                <div class="row" v-show="!this.enviado && !this.preload">
+                    <div class="col-12">
+                        <h5>Enviar os parabéns para os <strong>{{ this.selecionadosMassa.length }}</strong> funcionário(s) selecionado(s)?</h5>
+                    </div>
+                </div>
+            </template>
+            <template slot="rodape">
+                <div v-show="!this.preload">
+                    <button type="button" class="btn btn-sm btn-primary"
+                            @click="enviar()"
+                            v-show="!this.enviado">
+                        <i class="fa fa-envelope"></i> Enviar
+                    </button>
+                </div>
+            </template>
+        </modal>
+
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
@@ -7,10 +27,21 @@
                     <div class="form-group">
                         <label>Buscar</label>
                         <input type="text"
-                               placeholder="Buscar por conteudo"
+                               placeholder="Buscar por nome"
                                autocomplete="off"
-                               class="form-control" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                               class="form-control form-control-sm" :disabled="controle.carregando"
+                               v-model="nome_filtrado">
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <label>Aniversariantes do dia</label>
+                        <select v-model="niver_dia" @change="aniversariantes_do_dia()" class="custom-select custom-select-sm" :disabled="controle.carregando">
+                            <option value="todos" selected>Todos</option>
+                            <option :value="true">Sim</option>
+                            <option :value="false">Não</option>
+                        </select>
                     </div>
                 </div>
 
@@ -20,6 +51,13 @@
                             @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary"
+                            :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                            data-toggle="modal"
+                            data-target="#janelaParabensMassa"
+                            :disabled="!selecionadosMassa.length">
+                        <i class="fa fa-envelope"></i> Enviar Parabéns <span class="badge badge-light">{{ selecionadosMassa.length }}</span>
                     </button>
                 </div>
             </form>
@@ -39,50 +77,52 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
+                        <th class="text-center">
+                            <input type="checkbox"
+                                   @click="selecionaTodosMassa" v-model="selecionaTudoMassa">
+                        </th>
                         <td class="text-center">Nome</td>
                         <td class="text-center">Data</td>
                         <td class="text-center">Email</td>
-                        <td class="text-center">Idade</td>
-                        <td class="text-center">Tipo</td>
-                        <td class="text-center">Enviar Parabéns</td>
+                        <td class="text-center">Enviado</td>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="aniversariantes in lista">
-                        <td class="text-center">{{aniversariantes.nome}}</td>
+                    <tr v-if="filtrarLista.length" v-for="aniversariantes in filtrarLista" :key="aniversariantes.id" :class="{
+                        'table-success': aniversariantes.enviado == 'enviado',
+                        'table-warning': aniversariantes.enviado == 'enviando',
+                      }">
+                        <td class="text-center">
+                            <label :for="aniversariantes.id" v-if="aniversariantes.enviado == 'Não' && aniversariantes.email != 'sistema@mybp.com.br'">
+                                <input
+                                    type="checkbox"
+                                    v-model="selecionadosMassa"
+                                    :value="aniversariantes.id"
+                                    :id="aniversariantes.id"
+                                    :style="aniversariantes.id ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                >
+                            </label>
+                        </td>
+                        <td class="text-center"><i class="fa fa-birthday-cake mr-2" v-if="aniversariantes.hoje"></i>{{aniversariantes.nome}}</td>
                         <td class="text-center">{{aniversariantes.aniversario}}</td>
                         <td class="text-center">{{aniversariantes.email}}</td>
-                        <td class="text-center">{{aniversariantes.idade ? aniversariantes.idade : '-'}}</td>
-                        <td class="text-center">{{aniversariantes.tipo}}</td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-primary"
-                                    @click="enviar(aniversariantes)">
-                                <i class="fa fa-share"></i>
-                            </button>
-                        </td>
+                        <td class="text-center">{{aniversariantes.enviado}}</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
-
-            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                                :url="urlPaginacao" :por-pagina="qntPag"
-                                :dados="controle.dados"
-                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
         </div>
     </div>
 </template>
 
 <script>
-    import controlePaginacao from '../../ControlePaginacao';
     import modal from '../../Modal';
     import DatePicker from "../../DatePicker";
 
     export default {
         components: {
             DatePicker,
-            modal,
-            controlePaginacao,
+            modal
         },
         props: {
             qntPag: {
@@ -99,14 +139,18 @@
         data() {
             return {
                 hash: String(Math.random()).substr(2),
-                titulo_janela: 'Planejamento Diário',
-
                 preload: false,
+                enviado: false,
                 editando: false,
                 cadastrado: false,
                 atualizado: false,
 
                 lista: [],
+                lista_original: [],
+                nome_filtrado: '',
+                selecionadosMassa: [],
+                selecionaTudoMassa: false,
+                niver_dia: 'todos',
 
                 urlPaginacao: `${URL_ADMIN}/administracao/aniversariantes/atualizar`,
                 controle: {
@@ -121,25 +165,60 @@
             this.atualizar();
             this.formDefault = _.cloneDeep(this.form);
         },
+        computed: {
+            filtrarLista(){
+                if (this.lista && this.lista.length) {
+                    return this.lista.filter(item => item.nome.toLowerCase().includes(this.nome_filtrado.toLowerCase()))
+                }
+            }
+        },
         methods: {
-            enviar(dados) {
-                this.preloadAjax = true;
-                axios.post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, dados).then(response => {
-                    this.$refs.componente.buscar();
-                    this.preloadAjax = false;
-                }).catch(error => (this.preloadAjax = false));
+            enviar() {
+                this.preload = true;
+                axios.post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, {selecionados:this.selecionadosMassa}).then(response => {
+                    $('#janelaParabensMassa').modal('hide');
+                    mostraSucesso('', 'Estamos enviando a mensagem de parabéns');
+                    this.atualizar();
+                    this.selecionadosMassa = [];
+                    this.selecionaTudoMassa = false;
+                    this.preload = false;
+                }).catch(error => (this.preload = false));
 
             },
-            carregou(dados) {
-                this.lista = dados;
-                this.controle.carregando = false;
-            },
-            carregando() {
-                this.controle.carregando = true;
+            aniversariantes_do_dia(){
+                this.lista = this.lista_original;
+                if(this.niver_dia !== 'todos') {
+                    this.lista = this.lista.filter(item => item.hoje === this.niver_dia);
+                }
             },
             atualizar() {
-                this.$refs.componente.atual = 1;
-                this.$refs.componente.buscar();
+                this.controle.carregando = true;
+                axios.post(this.urlPaginacao).then(({data}) => {
+                    this.lista = data.dados;
+                    this.lista_original = data.dados;
+                    this.aniversariantes_do_dia();
+                    this.controle.carregando = false;
+                }).catch();
+            },
+
+            selecionaTodosMassa() {
+                this.selecionaTudoMassa = !this.selecionaTudoMassa
+                if (this.selecionaTudoMassa) {
+                    this.lista.map(item => {
+                        let id = item.id
+                        if (this.selecionadosMassa.indexOf(id) === -1 && (item.enviado == 'Não' && item.email != 'sistema@mybp.com.br')) {
+                            this.selecionadosMassa.push(id)
+                        }
+                    })
+                } else {
+                    this.lista.map(item => {
+                        let id = item.id
+                        let index = this.selecionadosMassa.indexOf(id)
+                        if (index >= 0) {
+                            this.selecionadosMassa.splice(index, 1)
+                        }
+                    })
+                }
             },
         }
 
