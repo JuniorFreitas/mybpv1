@@ -233,7 +233,12 @@ class AtaReuniaoController extends Controller
     {
         $this->authorize('administracao_atareuniao');
         $porPagina = $request->get('porPagina');
-        $resultado = AtaReuniao::with('Assuntos', 'Tipos', 'Acoes', 'Participantes', 'QuemCadastrou');
+
+        if(auth()->user()->can('administracao_atareuniao_privilegio_adm')) {
+            $resultado = AtaReuniao::with('Assuntos', 'Tipos', 'Acoes', 'Participantes', 'QuemCadastrou');
+        }else{
+            $resultado = AtaReuniao::vinculados()->with('Assuntos', 'Tipos', 'Acoes', 'Participantes', 'QuemCadastrou');
+        }
 
         // se tiver busca
         if ($request->filled('campoBusca')) {
@@ -255,7 +260,7 @@ class AtaReuniaoController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'items' => $resultado->items(),
+                'items' => $resultado->items()
             ]
         ], 200);
 

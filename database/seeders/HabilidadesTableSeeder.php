@@ -275,6 +275,8 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'administracao_atareuniao', 'descricao' => 'Acessar Ata Reunião'];
         $lista[] = ['nome' => 'administracao_atareuniao_insert', 'descricao' => 'Acessar Ata Reunião Insert'];
         $lista[] = ['nome' => 'administracao_atareuniao_update', 'descricao' => 'Acessar Ata Reunião Update'];
+        $lista[] = ['nome' => 'administracao_atareuniao_privilegio_adm', 'descricao' => 'Pode visualizar todas as Atas de Reunião'];
+
 
         $lista[] = ['nome' => 'admissao_pre_admissao', 'descricao' => 'Acessar Menu Pré Admissão'];
 
