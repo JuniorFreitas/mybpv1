@@ -83,6 +83,16 @@ class AtaReuniao extends Model
         'empresa_id' => 'int'
     ];
 
+    /**
+     * Scope a query para mostrar apenas cihs vinculados ao user autenticado.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeVinculados($query)
+    {
+        return $query->where('quem_cadastrou', auth()->user()->id);
+    }
 
     //Acessor ->data_inicio
     public function getDataInicioAttribute($value)
