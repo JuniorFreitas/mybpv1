@@ -26,10 +26,23 @@ class ParabensEnviado extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cliente_id',
+        'empresa_id',
         'curriculo_id',
-        'ano'
+        'ano',
+        'status'
     ];
+
+    protected $casts = [
+        'empresa_id' => 'int',
+        'curriculo_id' => 'int',
+        'ano' => 'int',
+        'status' => 'string'
+    ];
+
+    const STATUS_ENVIADO = "enviado";
+    const STATUS_ENVIANDO = "enviando";
+    const STATUS_NAO = "não";
+    const STATUS_ERRO = "erro";
 
     protected $table = 'parabens_enviados';
 

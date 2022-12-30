@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\AniversariantesMail;
-use App\Models\Cliente;
+use App\Jobs\JobAniversariantes;
 use App\Models\Curriculo;
-use App\Models\FeedbackCurriculo;
 use App\Models\ParabensEnviado;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
 
@@ -53,26 +50,23 @@ class AniversariantesController extends Controller
 
     public function enviaEmail(Request $request)
     {
-        $dt = new DataHora();
-        $ano = $dt->ano();
-        if ($request['tipo'] == 'Funcionário') {
-            $dados = [
-                'curriculo_id' => $request['id'],
-                'ano' => $ano,
-            ];
-        } else {
-            $dados = [
-                'cliente_id' => $request['id'],
-                'ano' => $ano,
-            ];
+//        dd($request->selecionados);
+
+        $dados = [
+            'selecionados' => $request->selecionados,
+            'empresa_id' => auth()->user()->empresa_id
+        ];
+
+        foreach ($request->selecionados as $selecionado){
+            ParabensEnviado::withoutGlobalScopes()->create([
+                'empresa_id' => auth()->user()->empresa_id,
+                'status' => ParabensEnviado::STATUS_ENVIANDO,
+                'curriculo_id' => $selecionado,
+                'ano' => (int) date('Y'),
+            ]);
         }
 
-        ParabensEnviado::create($dados);
-
-        \Mail::send(new AniversariantesMail([
-            'nome' => $request['nome'],
-            'email' => $request['email'],
-        ]));
+        JobAniversariantes::dispatch($dados);
 
         return response()->json('', 200);
     }
@@ -91,13 +85,15 @@ class AniversariantesController extends Controller
              $query->where('ano', $ano);
           })->orderByRaw('day(nascimento)')->get()->map(function ($item) {
               $data_nascimento = new DataHora($item->nascimento);
+              $dia_nascimento = $data_nascimento->dia();
               return [
                   'idade' => $item->idade,
                   'nome' => $item->nome,
                   'email' => $item->email,
                   'id' => $item->id,
                   'aniversario' => $data_nascimento->dia().'/'.$data_nascimento->mes(),
-                  'enviado' => $item->Parabens()->count() > 0 ? 'Sim' : 'Não',
+                  'enviado' => $item->Parabens()->count() > 0 ? $item->Parabens->status : 'Não',
+                  'hoje' => date('d') == $dia_nascimento,
               ];
             });
 

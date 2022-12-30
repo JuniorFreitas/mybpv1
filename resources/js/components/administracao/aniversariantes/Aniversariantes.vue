@@ -1,5 +1,25 @@
 <template>
     <div id="componenteAniversariante">
+        <modal id="janelaParabensMassa" :fechar="!this.preload"
+               titulo="Enviar Parabéns">
+            <template slot="conteudo">
+                <div class="row" v-show="!this.enviado && !this.preload">
+                    <div class="col-12">
+                        <h5>Enviar os parabéns para os <strong>{{ this.selecionadosMassa.length }}</strong> funcionário(s) selecionado(s)?</h5>
+                    </div>
+                </div>
+            </template>
+            <template slot="rodape">
+                <div v-show="!this.preload">
+                    <button type="button" class="btn btn-sm btn-primary"
+                            @click="enviar()"
+                            v-show="!this.enviado">
+                        <i class="fa fa-envelope"></i> Enviar
+                    </button>
+                </div>
+            </template>
+        </modal>
+
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
@@ -9,8 +29,19 @@
                         <input type="text"
                                placeholder="Buscar por nome"
                                autocomplete="off"
-                               class="form-control" :disabled="controle.carregando"
+                               class="form-control form-control-sm" :disabled="controle.carregando"
                                v-model="nome_filtrado">
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <label>Aniversariantes do dia</label>
+                        <select v-model="niver_dia" @change="aniversariantes_do_dia()" class="custom-select custom-select-sm" :disabled="controle.carregando">
+                            <option value="todos" selected>Todos</option>
+                            <option :value="true">Sim</option>
+                            <option :value="false">Não</option>
+                        </select>
                     </div>
                 </div>
 
@@ -21,9 +52,8 @@
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button class="btn btn-sm btn-primary"
+                    <button type="button" class="btn btn-sm btn-primary"
                             :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                            @click.pre.prevent="abrirFormParabens()"
                             data-toggle="modal"
                             data-target="#janelaParabensMassa"
                             :disabled="!selecionadosMassa.length">
@@ -49,21 +79,21 @@
                     <tr class="bg-default">
                         <th class="text-center">
                             <input type="checkbox"
-                                   :checked="tudoMarcadoMassa"
-                                   @click="selecionaTodosMassa">
+                                   @click="selecionaTodosMassa" v-model="selecionaTudoMassa">
                         </th>
                         <td class="text-center">Nome</td>
                         <td class="text-center">Data</td>
                         <td class="text-center">Email</td>
-                        <td class="text-center">Idade</td>
                         <td class="text-center">Enviado</td>
-<!--                        <td class="text-center">Enviar Parabéns</td>-->
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-if="filtrarLista.length" v-for="aniversariantes in filtrarLista">
+                    <tr v-if="filtrarLista.length" v-for="aniversariantes in filtrarLista" :key="aniversariantes.id" :class="{
+                        'table-success': aniversariantes.enviado == 'enviado',
+                        'table-warning': aniversariantes.enviado == 'enviando',
+                      }">
                         <td class="text-center">
-                            <label :for="aniversariantes.id" v-if="aniversariantes.enviado == 'Não'">
+                            <label :for="aniversariantes.id" v-if="aniversariantes.enviado == 'Não' && aniversariantes.email != 'sistema@mybp.com.br'">
                                 <input
                                     type="checkbox"
                                     v-model="selecionadosMassa"
@@ -73,17 +103,10 @@
                                 >
                             </label>
                         </td>
-                        <td class="text-center">{{aniversariantes.nome}}</td>
+                        <td class="text-center"><i class="fa fa-birthday-cake mr-2" v-if="aniversariantes.hoje"></i>{{aniversariantes.nome}}</td>
                         <td class="text-center">{{aniversariantes.aniversario}}</td>
                         <td class="text-center">{{aniversariantes.email}}</td>
-                        <td class="text-center">{{aniversariantes.idade ? aniversariantes.idade : '-'}}</td>
                         <td class="text-center">{{aniversariantes.enviado}}</td>
-<!--                        <td class="text-center">-->
-<!--                            <button type="button" class="btn btn-sm btn-primary" v-if="aniversariantes.enviado == 'Não' && aniversariantes.email != 'sistema@mybp.com.br'"-->
-<!--                                    @click="enviar(aniversariantes)">-->
-<!--                                <i class="fa fa-share"></i>-->
-<!--                            </button>-->
-<!--                        </td>-->
                     </tr>
                     </tbody>
                 </table>
@@ -116,17 +139,18 @@
         data() {
             return {
                 hash: String(Math.random()).substr(2),
-                titulo_janela: 'Planejamento Diário',
-
                 preload: false,
+                enviado: false,
                 editando: false,
                 cadastrado: false,
                 atualizado: false,
 
                 lista: [],
+                lista_original: [],
                 nome_filtrado: '',
                 selecionadosMassa: [],
                 selecionaTudoMassa: false,
+                niver_dia: 'todos',
 
                 urlPaginacao: `${URL_ADMIN}/administracao/aniversariantes/atualizar`,
                 controle: {
@@ -138,7 +162,6 @@
             }
         },
         mounted() {
-            console.log('Iniciando');
             this.atualizar();
             this.formDefault = _.cloneDeep(this.form);
         },
@@ -147,27 +170,33 @@
                 if (this.lista && this.lista.length) {
                     return this.lista.filter(item => item.nome.toLowerCase().includes(this.nome_filtrado.toLowerCase()))
                 }
-            },
-            emTreinamentosMassa() {
-
-            },
-            tudoMarcadoMassa() {
-
             }
         },
         methods: {
-            enviar(dados) {
-                this.preloadAjax = true;
-                axios.post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, dados).then(response => {
+            enviar() {
+                this.preload = true;
+                axios.post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, {selecionados:this.selecionadosMassa}).then(response => {
+                    $('#janelaParabensMassa').modal('hide');
+                    mostraSucesso('', 'Estamos enviando a mensagem de parabéns');
                     this.atualizar();
-                    this.preloadAjax = false;
-                }).catch(error => (this.preloadAjax = false));
+                    this.selecionadosMassa = [];
+                    this.selecionaTudoMassa = false;
+                    this.preload = false;
+                }).catch(error => (this.preload = false));
 
+            },
+            aniversariantes_do_dia(){
+                this.lista = this.lista_original;
+                if(this.niver_dia !== 'todos') {
+                    this.lista = this.lista.filter(item => item.hoje === this.niver_dia);
+                }
             },
             atualizar() {
                 this.controle.carregando = true;
                 axios.post(this.urlPaginacao).then(({data}) => {
                     this.lista = data.dados;
+                    this.lista_original = data.dados;
+                    this.aniversariantes_do_dia();
                     this.controle.carregando = false;
                 }).catch();
             },
@@ -177,7 +206,7 @@
                 if (this.selecionaTudoMassa) {
                     this.lista.map(item => {
                         let id = item.id
-                        if (this.selecionadosMassa.indexOf(id) === -1) {
+                        if (this.selecionadosMassa.indexOf(id) === -1 && (item.enviado == 'Não' && item.email != 'sistema@mybp.com.br')) {
                             this.selecionadosMassa.push(id)
                         }
                     })
