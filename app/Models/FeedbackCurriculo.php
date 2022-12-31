@@ -773,6 +773,13 @@ class FeedbackCurriculo extends Model
             ->whereTipo('PppAssinado');
     }
 
+    public function PlanoSaudeAssinado()
+    {
+        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
+            ->withPivot(['tipo', 'feedback_id', 'label'])
+            ->whereTipo('PlanoSaudeAssinado');
+    }
+
     public function ArquivamentoEletronico()
     {
         return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')

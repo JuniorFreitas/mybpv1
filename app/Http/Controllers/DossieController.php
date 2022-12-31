@@ -48,6 +48,7 @@ class DossieController extends Controller
             'NadaConstaFichaEpi',
             'ComprovanteDevolucaoCtps',
             'PppAssinado',
+            'PlanoSaudeAssinado',
             'ArquivamentoEletronico',
             'ArquivamentoDossie'
         )->first();
@@ -742,6 +743,30 @@ class DossieController extends Controller
                                 'curriculo_id' => $feedback->curriculo_id,
                                 'tipo' => 'ArquivamentoDossie',
                                 'label' => 'FORMA DE ARQUIVAMENTO DOSSIÊ'
+                            ]);
+                        }
+                    }
+                }
+
+                //Remove PlanoSaudeAssinado
+                if (isset($dados['plano_saude_assinadoDel'])) {
+                    foreach ($dados['plano_saude_assinadoDel'] as $id_anexo) {
+                        $arquivo = Arquivo::find($id_anexo);
+                        $arquivo->excluir();
+                    }
+                }
+                // inseri uma nova PlanoSaudeAssinado
+                if (isset($dados['plano_saude_assinado'])) {
+                    foreach ($dados['plano_saude_assinado'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $feedback->PlanoSaudeAssinado()->attach($arquivo->id, [
+                                'curriculo_id' => $feedback->curriculo_id,
+                                'tipo' => 'PlanoSaudeAssinado',
+                                'label' => 'PLANO DE SAÚDE ASSINADO'
                             ]);
                         }
                     }
