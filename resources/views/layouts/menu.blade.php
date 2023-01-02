@@ -683,7 +683,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias','relatorio_centro_de_custo'))
+    @if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias','relatorio_centro_de_custo','relatorio_aniversariantes'))
         <li id="relatorios">
             <a href="javascript://" class="has-arrow waves-effect" parent="relatorios">
                 <i class="bx bx-chart"></i>
@@ -748,6 +748,15 @@
                     </li>
                 @endcan
 
+            </ul>
+            <ul aria-expanded="false">
+                @can('relatorio_aniversariantes')
+                    <li>
+                        <a href="{{route('g.relatorios.aniversariantes.relatorioNivers')}}" parent="relatorios" key="aniversariantes">
+                            Aniversariantes
+                        </a>
+                    </li>
+                @endcan
             </ul>
         </li>
     @endif

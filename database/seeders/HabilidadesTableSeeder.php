@@ -360,6 +360,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'relatorio_treinamento', 'descricao' => 'Acessar Relatorio de Treinamentos'];
         $lista[] = ['nome' => 'relatorio_ferias', 'descricao' => 'Acessar Relatorio de Férias'];
         $lista[] = ['nome' => 'relatorio_centro_de_custo', 'descricao' => 'Acessar Relatorio de Centro de Custo'];
+        $lista[] = ['nome' => 'relatorio_aniversariantes', 'descricao' => 'Acessar Relatórios de Aniversariantes'];
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
