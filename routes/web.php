@@ -971,6 +971,14 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('centrodecusto/export-excel', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_centro_de_custo');
             Route::post('centrodecusto/atualizar', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_centro_de_custo');
         });
+
+        //Aniversariantes
+        Route::group(['as' => 'aniversariantes.'], function () {
+            Route::post('aniversariantes/atualizar', [\App\Http\Controllers\AniversariantesController::class, 'relatorioAtualizar'])->name('relatNiversAtualizar')->middleware('can:relatorio_aniversariantes');
+            Route::get('aniversariantes', [\App\Http\Controllers\AniversariantesController::class, 'relatorioIndex'])->name('relatorioNivers')->middleware('can:relatorio_aniversariantes');
+            Route::post('aniversariantes/pdf', [\App\Http\Controllers\AniversariantesController::class, 'exporRelatorioPdf'])->name('relatNiversPdf')->middleware('can:relatorio_aniversariantes');
+            Route::post('aniversariantes/export', [\App\Http\Controllers\AniversariantesController::class, 'exporRelatorioExcel'])->name('relatNiversExcel')->middleware('can:relatorio_aniversariantes');
+        });
     });
 
     // Usuarios
