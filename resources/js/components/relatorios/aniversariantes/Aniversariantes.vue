@@ -104,18 +104,6 @@
             this.atualizar();
         },
         methods: {
-            // enviar() {
-            //     this.preload = true;
-            //     axios.post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, {selecionados:this.selecionadosMassa}).then(response => {
-            //         $('#janelaParabensMassa').modal('hide');
-            //         mostraSucesso('', 'Estamos enviando a mensagem de parabéns');
-            //         this.atualizar();
-            //         this.selecionadosMassa = [];
-            //         this.selecionaTudoMassa = false;
-            //         this.preload = false;
-            //     }).catch(error => (this.preload = false));
-            //
-            // },
             atualizar() {
                 this.controle.carregando = true;
                 axios.post(this.urlPaginacao, this.controle.dados).then(({data}) => {
