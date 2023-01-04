@@ -685,16 +685,16 @@ export default {
             this.form.autocomplete_label_novo_cargo = obj.label;
             this.form.autocomplete_label_novo_cargo_anterior = obj.label;
 
-            setTimeout(() => {
-                if (this.form.novo_cargo_id !== '' && this.form.novo_cargo_id === this.form.cargo_anterior_id) {
-                    valida_campo_vazio($(`#cargo_anterior_${this.hash}`), 1);
-                    $(`#${this.hash} #cargo_anterior_${this.hash}`).focus().trigger('blur');
-                    mostraErro('Erro', 'O NOVO CARGO não pode ser igual ao CARGO ANTERIOR');
-                    this.form.novo_cargo_id = '';
-                    this.form.autocomplete_label_novo_cargo = '';
-                    this.form.autocomplete_label_novo_cargo_anterior = '';
-                }
-            }, 100);
+            // setTimeout(() => {
+            //     if (this.form.novo_cargo_id !== '' && this.form.novo_cargo_id === this.form.cargo_anterior_id) {
+            //         valida_campo_vazio($(`#cargo_anterior_${this.hash}`), 1);
+            //         $(`#${this.hash} #cargo_anterior_${this.hash}`).focus().trigger('blur');
+            //         mostraErro('Erro', 'O NOVO CARGO não pode ser igual ao CARGO ANTERIOR');
+            //         this.form.novo_cargo_id = '';
+            //         this.form.autocomplete_label_novo_cargo = '';
+            //         this.form.autocomplete_label_novo_cargo_anterior = '';
+            //     }
+            // }, 100);
         },
         resetaCampoNovoCargo() {
             if (this.form.autocomplete_label_novo_cargo_anterior !== this.form.autocomplete_label_novo_cargo) {
@@ -702,13 +702,13 @@ export default {
                 this.form.autocomplete_label_novo_cargo = '';
                 this.form.novo_cargo_id = '';
 
-                setTimeout(() => {
-                    if (this.form.novo_cargo_id === '') {
-                        valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1);
-                        $(`#${this.hash} #novo_cargo_${this.hash}`).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Novo Cargo não pode ficar vazio');
-                    }
-                }, 100);
+                // setTimeout(() => {
+                //     if (this.form.novo_cargo_id === '') {
+                //         valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1);
+                //         $(`#${this.hash} #novo_cargo_${this.hash}`).focus().trigger('blur');
+                //         mostraErro('Erro', 'O Campo Novo Cargo não pode ficar vazio');
+                //     }
+                // }, 100);
             }
         },
 
