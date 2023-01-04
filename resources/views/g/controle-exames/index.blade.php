@@ -215,8 +215,8 @@
                                                 v-model='form.empresa_exame_id'
                                         >
                                             <option value=''>Selecione</option>
-                                            <option v-for='item in listaEmpresasExames' :value='item.id'>@{{ item.nome
-                                                }}
+                                            <option v-for='item in listaEmpresasExames' :value='item.id'>
+                                                @{{ item.nome }}
                                             </option>
                                         </select>
                                     </div>

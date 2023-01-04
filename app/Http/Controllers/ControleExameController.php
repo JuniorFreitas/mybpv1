@@ -34,11 +34,7 @@ class ControleExameController extends Controller
         if ($request->filled('feedback_id') && $request->filled('formulario')) {
             $resposta = ExameFuncionario::whereFeedbackId($request->feedback_id)
                 ->whereFormularioId($request->formulario)
-                ->with(
-                    'EmpresaExame:id,nome',
-                    'QuemEncaminhou:id,nome',
-                )
-                ->with('Formulario.Setores.Alternativas.Opcoes')
+                ->with('EmpresaExame:id,nome', 'QuemEncaminhou:id,nome','Formulario.Setores.Alternativas.Opcoes')
                 ->orderByDesc('created_at')->get();
 
             $resposta->transform(function ($item) {
