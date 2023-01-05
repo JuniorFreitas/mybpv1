@@ -72,7 +72,9 @@ class AtaReuniao extends Model
         'local',
         'data_inicio',
         'data_fim',
-        'empresa_id'
+        'empresa_id',
+        'area_etiqueta_id',
+        'centro_custo_id',
     ];
 
     protected $casts = [
@@ -80,13 +82,15 @@ class AtaReuniao extends Model
         'local' => 'string',
         'data_inicio' => 'string',
         'data_fim' => 'string',
-        'empresa_id' => 'int'
+        'empresa_id' => 'int',
+        'area_etiqueta_id' => 'int',
+        'centro_custo_id' => 'int',
     ];
 
     /**
      * Scope a query para mostrar apenas cihs vinculados ao user autenticado.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeVinculados($query)
@@ -147,6 +151,14 @@ class AtaReuniao extends Model
     public function Participantes()
     {
         return $this->hasMany(AtaReuniaoParticipante::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Area(){
+        return $this->hasOne(AreaEtiqueta::class, 'id', 'area_etiqueta_id');
+    }
+
+    public function CentroCusto(){
+        return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
     }
 
 }

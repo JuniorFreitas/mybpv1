@@ -123,6 +123,8 @@
                     <tr class="bg-default">
                         <td class="text-center">ID</td>
                         <td class="text-center">Nome</td>
+                        <td class="text-center">Gestor</td>
+                        <td class="text-center">Centro de Custo</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Opções</td>
                     </tr>
@@ -131,6 +133,8 @@
                     <tr v-for="area in lista">
                         <td class="text-center">{{ area.id }}</td>
                         <td class="text-center">{{ area.label }}</td>
+                        <td class="text-center">{{ area.gestor ? area.gestor.nome : 'Não Informado' }}</td>
+                        <td class="text-center">{{ area.centro_custo ? area.centro_custo.label : 'Não Informado' }}</td>
                         <td class="text-center">
                             <bt-ativo :rota="`cadastro/areas/${area.id}/ativa-desativa`"
                                       :model="area"></bt-ativo>

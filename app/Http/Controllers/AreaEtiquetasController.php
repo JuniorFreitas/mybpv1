@@ -143,7 +143,7 @@ class AreaEtiquetasController extends Controller
     {
         $this->authorize('cadastro_areaetiqueta');
         $porPagina = $request->get('porPagina');
-        $resultado = AreaEtiqueta::with('Gestor:id,nome,empresa_id', 'CentroCusto:id,empresa_id')->orderBy('id');
+        $resultado = AreaEtiqueta::with('Gestor:id,nome,empresa_id', 'CentroCusto:id,empresa_id,label')->orderBy('id');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
