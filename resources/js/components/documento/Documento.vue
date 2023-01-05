@@ -116,7 +116,7 @@
                         :model="formUser.certificado_escolaridade"
                         :model-delete="formUser.certificado_escolaridadeDel" :url="urlAnexoUpload"
                         @onprogresso="anexoUploadAndamento=true"
-                        @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
+                        @onfinalizado="anexoUploadAndamento=false" :multi="true"></upload>
             </fieldset>
             <fieldset>
                 <legend>CONTA BANCO</legend>
