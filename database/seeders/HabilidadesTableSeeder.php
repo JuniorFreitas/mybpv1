@@ -412,6 +412,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'controle_ponto_ponto-eletronico', 'descricao' => 'O usuáro terá que bater ponto nas escalas definidas'];
         $lista[] = ['nome' => 'controle_ponto_ajustar-jornadas', 'descricao' => 'Pode fazer correções/ajuste nas jornadas de trabalho já registradas'];
         $lista[] = ['nome' => 'controle_ponto_folha-ponto', 'descricao' => 'Pode verificar e imprimir a folha de ponto do funcionário'];
+        $lista[] = ['nome' => 'controle_ponto_folha-ponto_adm', 'descricao' => 'Administrar e ver todas as folhas de ponto'];
 
         //Feriados------------------------------
         $lista[] = ['nome' => 'controle_ponto_feriados', 'descricao' => 'Acessar rota/menu feriados'];

@@ -97,6 +97,7 @@ const app = new Vue({
                 campoBusca: "",
                 campoCPF: "",
                 campoUf: "",
+                status: "em_processo",
                 pages: EXIBICAO[0]
             }
         }

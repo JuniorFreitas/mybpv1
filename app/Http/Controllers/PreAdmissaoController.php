@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Mail\Entrevista\EnvioDocumentosMail;
+use App\Models\Admissao;
 use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
 use App\Models\Sistema;
@@ -48,9 +49,7 @@ class PreAdmissaoController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
-            $q->whereDocumentosEntregue(true);
-        })->with(['Curriculo' => function ($model) {
+        $resultado = FeedbackCurriculo::with(['Curriculo' => function ($model) {
             $model->select(['id', 'nome', 'cpf', 'email', 'nascimento', 'rg', 'orgao_expeditor', 'logradouro', 'complemento', 'bairro', 'municipio', 'uf'])
                 ->withCount([
                     'FotoTres',
@@ -74,6 +73,7 @@ class PreAdmissaoController extends Controller
             'VagaSelecionada:id,nome',
             'Admissao:feedback_id,data_admissao,funcao,cargo,status',
         );
+
         $filtroPeriodo = $request->filtroPeriodo == 'true';
 
         if ($filtroPeriodo) {
@@ -84,6 +84,27 @@ class PreAdmissaoController extends Controller
                 $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
             });
         }
+
+        if ($request->filled('status')){
+            if ($request->status == 'em_processo') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereDocumentosEntregue(true);
+                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao');
+            }
+            if ($request->status == 'admitidos') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereDocumentosEntregue(true);
+                })->whereHas('Admissao', function ($q){
+                    $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
+                })->whereDoesntHave('Demissao');
+            }
+            if ($request->status == 'demitidos') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereDocumentosEntregue(true);
+                })->demitidos();
+            }
+        }
+
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
                 $query->where('nome', 'like', '%' . $request->campoBusca . '%')
@@ -109,7 +130,6 @@ class PreAdmissaoController extends Controller
                 $q->whereUf($request->campoUf);
             });
         }
-
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
 

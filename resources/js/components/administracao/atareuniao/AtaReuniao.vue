@@ -269,8 +269,8 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="atareuniao in lista">
-                        <td class="text-center">{{atareuniao.id}}</td>
+                    <tr v-for="(atareuniao, ind) in lista">
+                        <td class="text-center">{{ind + 1}}</td>
                         <td class="text-center">{{atareuniao.quem_cadastrou.nome}}</td>
                         <td class="text-center">{{atareuniao.local}}</td>
                         <td class="text-center">{{atareuniao.data_inicio}}</td>

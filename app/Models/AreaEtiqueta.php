@@ -27,12 +27,23 @@ class AreaEtiqueta extends Model
     use HasFactory;
     use TenantTrait;
 
-    protected $fillable = ['label', 'ativo', 'empresa_id'];
-    protected $casts = ['id' => 'int', 'label' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int'];
+    protected $fillable = ['label', 'ativo', 'empresa_id','gestor_id','centro_custo_id'];
+    protected $casts = ['id' => 'int', 'label' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int', 'gestor_id' => 'int', 'centro_custo_id' => 'int'];
 
     public function usesTimestamps()
     {
         return false;
     }
+
+    public function Gestor()
+    {
+        return $this->hasOne(User::class,'id','gestor_id');
+    }
+
+    public function CentroCusto()
+    {
+        return $this->hasOne(CentroCusto::class,'id','centro_custo_id');
+    }
+
 
 }

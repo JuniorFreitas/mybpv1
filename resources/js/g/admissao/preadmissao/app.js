@@ -121,7 +121,8 @@ const app = new Vue({
                 campoFiltro: '',
                 campoPcd: '',
                 campoCliente: '',
-                campoUf: ''
+                campoUf: '',
+                status: 'em_processo',
             },
         },
     },

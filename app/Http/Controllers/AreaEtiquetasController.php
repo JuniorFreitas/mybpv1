@@ -75,7 +75,9 @@ class AreaEtiquetasController extends Controller
      */
     public function edit($id)
     {
-        $area = AreaEtiqueta::find($id);
+        $area = AreaEtiqueta::find($id)->load('Gestor');
+        $area->autocomplete_label_gestor_modal = $area->Gestor ? $area->Gestor->nome : '';
+        $area->autocomplete_label_gestor_modal_anterior = $area->Gestor ? $area->Gestor->nome : '';
         $area->numero_supervisor = DB::table('cliente_area_etiquetas')->where('area_etiqueta_id', $id)->value('numero_supervisor');
         return $area;
     }
@@ -141,7 +143,7 @@ class AreaEtiquetasController extends Controller
     {
         $this->authorize('cadastro_areaetiqueta');
         $porPagina = $request->get('porPagina');
-        $resultado = AreaEtiqueta::orderBy('id');
+        $resultado = AreaEtiqueta::with('Gestor:id,nome,empresa_id', 'CentroCusto:id,empresa_id')->orderBy('id');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
@@ -159,6 +161,7 @@ class AreaEtiquetasController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'items' => $resultado->items(),
+                'empresa_id' => auth()->user()->empresa_id,
             ]
         ], 200);
     }

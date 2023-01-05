@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ControleExames\FichaClinicaMail;
 use App\Mail\ControleExames\FichaColaboradorMail;
+use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
 use App\Models\Curriculo;
@@ -256,13 +257,32 @@ class ControleExameController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
-            $q->whereEncaminhadoExame(true);
-        })->select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id','vagas_abertas_id'])->with(
+        $resultado = FeedbackCurriculo::select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id','vagas_abertas_id'])->with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social,area_id',
             'vagaSelecionada',
             'TelPrincipal');
+
+        if ($request->filled('status')){
+            if ($request->status == 'em_processo') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereEncaminhadoExame(true);
+                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao');
+            }
+            if ($request->status == 'admitidos') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereEncaminhadoExame(true);
+                })->whereHas('Admissao', function ($q){
+                    $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
+                })->whereDoesntHave('Demissao');
+            }
+            if ($request->status == 'demitidos') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereEncaminhadoExame(true);
+                })->demitidos();
+            }
+        }
+
         $resultado = $resultado->paginate($request->pages);
 
         $empresaExames = EmpresaExame::whereAtivo(true)->get();

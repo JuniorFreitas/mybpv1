@@ -13,10 +13,27 @@
                                    onblur="valida_campo_vazio(this,1)" v-model="form.label">
                         </div>
 
-                        <div class="col-12 mt-2">
-                            <label>Supervisor</label>
+                        <div class="col-12 mt-2 mb-2">
+                            <label>Contato supervisor para etiqueta</label>
                             <input class="form-control form-control-sm" type="text"
                                    onblur="valida_telefone(this)" v-mascara:telefone v-model="form.numero_supervisor">
+                        </div>
+
+                        <gestor label="Gestor responsável" :model="form" :verifica="false" :hash="hash"></gestor>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Centro de Custo</label>
+                                <select
+                                    v-model="form.centro_custo_id"
+                                    class="form-control"
+                                >
+                                    <option value="">Selecione</option>
+                                    <option v-for="item in centro_custos" :value="item.id" :key="item.id">
+                                        {{ item.label }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="col-12 mt-2">
@@ -64,7 +81,8 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
+                        <select class="form-control form-control-sm" :disabled="controle.carregando"
+                                v-model="controle.dados.campoStatus" @change="atualizar()">
                             <option value="">Todos os Status</option>
                             <option :value="true">Apenas Ativos</option>
                             <option :value="false">Apenas Inativos</option>
@@ -103,7 +121,7 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
-                        <td class="text-center">Nº</td>
+                        <td class="text-center">ID</td>
                         <td class="text-center">Nome</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Opções</td>
@@ -143,12 +161,14 @@
 import controlePaginacao from "../../ControlePaginacao";
 import modal from "../../Modal";
 import editor from "@tinymce/tinymce-vue";
+import gestor from "../../GestorAprovacao.vue";
 
 export default {
     components: {
         modal,
         controlePaginacao,
-        editor
+        editor,
+        gestor
     },
     props: {
         qntPag: {
@@ -178,6 +198,7 @@ export default {
     mounted() {
         this.atualizar();
         this.formDefault = _.cloneDeep(this.form);
+
     },
     data() {
         return {
@@ -191,7 +212,15 @@ export default {
 
             // cliente_id: '',
 
+            empresa_id: '',
+
             form: {
+                gestor_id: '',
+                autocomplete_label_gestor_modal: '',
+                autocomplete_label_gestor_modal_anterior: '',
+
+                centro_custo_id: '',
+
                 label: "",
                 numero_supervisor: "",
                 ativo: true
@@ -200,6 +229,7 @@ export default {
 
             //Paginacao
             lista: [],
+            centro_custos: [],
 
             urlPaginacao: `${URL_ADMIN}/cadastro/areas/atualizar`,
             controle: {
@@ -286,6 +316,12 @@ export default {
         carregou(dados) {
             this.lista = dados.items;
             this.controle.carregando = false;
+            axios.post(`${URL_PUBLICO}/centro-custos/`, {'empresa_id': dados.empresa_id})
+                .then(response => {
+                    this.centro_custos = response.data.centro_custos;
+                }).catch(error => {
+                this.preload = false;
+            });
         },
         carregando() {
             this.controle.carregando = true;
