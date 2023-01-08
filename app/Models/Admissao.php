@@ -325,13 +325,17 @@ class Admissao extends Model
     const TIPO_ADMISSAO_DETERMINADO = 'DETERMINADO';
     const TIPO_ADMISSAO_FIXO = 'FIXO';
     const TIPO_ADMISSAO_PJ = 'PJ';
+    const TIPO_ADMISSAO_ESTAGIO = 'ESTÁGIO';
+    const TIPO_ADMISSAO_APRENDIZ = 'APRENDIZ';
 
     const TODOS_TIPOS_ADMISSAO = [
         self::TIPO_ADMISSAO_TEMPORARIO,
         self::TIPO_ADMISSAO_INTERMITENTE,
         self::TIPO_ADMISSAO_DETERMINADO,
         self::TIPO_ADMISSAO_FIXO,
-        self::TIPO_ADMISSAO_PJ
+        self::TIPO_ADMISSAO_PJ,
+        self::TIPO_ADMISSAO_ESTAGIO,
+        self::TIPO_ADMISSAO_APRENDIZ,
     ];
 
     const TODOS_STATUS_ADMISSAO = [
