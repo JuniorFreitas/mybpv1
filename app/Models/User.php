@@ -187,6 +187,9 @@ class User extends Authenticatable
         'api_token',
         'empresa_id',
         'gestor',
+        'privilegio_gestor_area',
+        'privilegio_gestor_centro_custo',
+//        'privilegios'
     ];
 
     /**
@@ -229,7 +232,9 @@ class User extends Authenticatable
         'device_token' => 'string',
         'api_token' => 'string',
         'empresa_id' => 'int',
-        'gestor' => 'boolean'
+        'gestor' => 'boolean',
+        'privilegio_gestor_area' => 'boolean',
+        'privilegio_gestor_centro_custo' => 'boolean',
     ];
 
     private $listaDeHabilidade = [];
@@ -309,6 +314,11 @@ class User extends Authenticatable
     public function setLoginlAttribute($value)
     {
         $this->attributes['login'] = trim(mb_strtolower($value));
+    }
+
+    public function getPrivilegiosAttribute($value)
+    {
+        return json_decode($value);
     }
 
     public function Curriculo()
@@ -495,7 +505,7 @@ class User extends Authenticatable
         $Empresa = User::select(['id'])->find($empresa_id);
         $Colaborador = User::find($colaborador_id);
 
-        if ($Empresa->EmpresaFuncionarios()->whereFuncionarioId($Colaborador->id)->first()){
+        if ($Empresa->EmpresaFuncionarios()->whereFuncionarioId($Colaborador->id)->first()) {
             $Empresa->EmpresaFuncionarios()->detach($Colaborador->id);
         }
         $Empresa->EmpresaFuncionarios()->attach($Colaborador->id);

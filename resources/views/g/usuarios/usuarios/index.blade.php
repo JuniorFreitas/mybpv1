@@ -84,6 +84,30 @@
                         </label>
                     </div>
                 </fieldset>
+
+                <fieldset v-if="form.gestor">
+                    <legend>Privilegios</legend>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input mb-1"
+                               v-model="form.privilegio_gestor_area"
+                               id="privilegio_gestor_area">
+                        <label class="custom-control-label" style="cursor: pointer"
+                               for="privilegio_gestor_area">
+                                Gestor de área
+                        </label>
+                    </div>
+
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input mb-1"
+                               v-model="form.privilegio_gestor_centro_custo"
+                               id="privilegio_gestor_centro_custo">
+                        <label class="custom-control-label" style="cursor: pointer"
+                               for="privilegio_gestor_centro_custo">
+                                Gestor de centro de custo
+                        </label>
+                    </div>
+
+                </fieldset>
             </form>
         </template>
         <template slot="rodape">
@@ -203,10 +227,12 @@
                 </div>
             </div>
         </form>
+
         <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar"><i
                 :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
             Atualizar
         </button>
+
         @can('usuario_usuarios_insert')
             <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
                     @click="formNovo()">
@@ -218,6 +244,7 @@
     <p class="text-center" v-if="controle.carregando">
         <preload></preload>
     </p>
+
     <div id="conteudo">
         <h4 v-show="!controle.carregando && lista.length==0"></h4>
         <div class="table-responsive">

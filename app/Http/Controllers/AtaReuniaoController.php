@@ -75,6 +75,8 @@ class AtaReuniaoController extends Controller
                 $dados['data_fim'] = $data->dataHoraInsert();
 
                 $ata = [
+                    'centro_custo_id' => $dados['centro_custo_id'],
+                    'area_etiqueta_id' => $dados['area_etiqueta_id'],
                     'quem_cadastrou' => auth()->user()->id,
                     'local' => $dados['local'],
                     'data_inicio' => $dados['data_inicio'],
@@ -192,6 +194,8 @@ class AtaReuniaoController extends Controller
 
                 $dadosAta = [
                     'local' => $dados['local'],
+                    'centro_custo_id' => $dados['centro_custo_id'],
+                    'area_etiqueta_id' => $dados['area_etiqueta_id'],
                 ];
 
                 $ata->update($dadosAta);
@@ -254,13 +258,17 @@ class AtaReuniaoController extends Controller
             $resultado->where('tipo', $request->campoTipo);
         }
 
+//      privilegio_gestor_area
+//      privilegio_gestor_centro_custo
+
         $resultado = $resultado->orderByDesc('updated_at')->paginate($porPagina);
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'items' => $resultado->items()
+                'items' => $resultado->items(),
+                'empresa_id' => auth()->user()->empresa_id,
             ]
         ], 200);
 

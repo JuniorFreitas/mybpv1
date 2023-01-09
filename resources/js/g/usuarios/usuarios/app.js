@@ -21,7 +21,9 @@ const app = new Vue({
             empresa_id: "",
             ativo: true,
             gestor: false,
-            user_recebe_email: []
+            user_recebe_email: [],
+            privilegio_gestor_area: false,
+            privilegio_gestor_centro_custo: false,
         },
         empresa_id: "",
         formDefault: null,
@@ -77,6 +79,12 @@ const app = new Vue({
             }
 
             this.preloadAjax = true;
+
+            if (!this.form.gestor) {
+                this.form.privilegio_gestor_centro_custo = false;
+                this.form.privilegio_gestor_area = false;
+            }
+
             axios.post(`${URL_ADMIN}/usuarios`, this.form)
                 .then(response => {
                     this.preloadAjax = false;
@@ -112,10 +120,10 @@ const app = new Vue({
                 .then(response => {
                     Object.assign(this.form, response.data.usuario);
 
-                    if(response.data.usuario.grupo_id == null){
+                    if (response.data.usuario.grupo_id == null) {
                         this.form.grupo_id = '';
                     }
-                    if(response.data.usuario.gestor == null){
+                    if (response.data.usuario.gestor == null) {
                         this.form.gestor = false;
                     }
 
@@ -138,6 +146,12 @@ const app = new Vue({
             }
 
             this.preloadAjax = true;
+
+            if (!this.form.gestor) {
+                this.form.privilegio_gestor_centro_custo = false;
+                this.form.privilegio_gestor_area = false;
+            }
+
             axios.put(`${URL_ADMIN}/usuarios/${this.form.id}`, this.form)
                 .then(response => {
                     if (response.status === 201) {
@@ -153,7 +167,7 @@ const app = new Vue({
         simularUsuario(user_id) {
 
             this.preloadAjax = true;
-            axios.put(`${URL_ADMIN}/usuarios/simularUsuario`, { user_id: user_id })
+            axios.put(`${URL_ADMIN}/usuarios/simularUsuario`, {user_id: user_id})
                 .then(response => {
                     if (response.data.simulacao) {
                         window.location.href = `${URL_ADMIN}/dashboard`;
@@ -167,7 +181,7 @@ const app = new Vue({
             this.grupoempresa = false;
             this.listaPapeis = [];
             this.form.grupo_id = "";
-            if(id != '' && id != 100){
+            if (id != '' && id != 100) {
                 axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
                     .then(response => {
                         if (response.status === 200) {
@@ -184,7 +198,7 @@ const app = new Vue({
             this.controle.showCampoGrupo = false;
             this.controle.dados.listaPapeis = [];
             this.controle.dados.campoGrupo = '';
-            if(id != ''){
+            if (id != '') {
                 axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
                     .then(response => {
                         if (response.status === 200) {

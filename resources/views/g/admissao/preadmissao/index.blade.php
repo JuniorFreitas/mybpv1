@@ -271,6 +271,18 @@
             </div>
 
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
+                <div class="form-group">
+                    <label for="">Status</label>
+                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                            v-model="controle.dados.status">
+                        <option value="em_processo">Em processo</option>
+                        <option value="admitidos">Admitidos</option>
+                        <option value="demitidos">Demitidos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>Exibir</label>
                 <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
                         v-model="controle.dados.pages">
