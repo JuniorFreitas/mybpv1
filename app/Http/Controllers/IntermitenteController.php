@@ -96,16 +96,29 @@ class IntermitenteController extends Controller
 //                    $resposta_sim = str_replace('http://localhost:8000', 'https://mybp.com.br', $resposta_sim);
 //                    $resposta_nao = str_replace('http://localhost:8000', 'https://mybp.com.br', $resposta_nao);
 
+                    $dadosEnvio = [
+                        'colaborador' => $curriculo['nome'],
+                        'email' => $curriculo['email'],
+                        'periodo' => $periodo,
+                        'centro_de_custo' => $centroDeCusto->label,
+                        'area' => $area->label,
+                        'resposta_sim' => $resposta_sim,
+                        'resposta_nao' => $resposta_nao,
+                        'prazo_resposta_expiracao' => (new DataHora($intermitente->prazo_resposta_expiracao))->dataHoraCompleta(),
+                        'empresa_id' => $empresa->id,
+                        'empresa' => $empresa->razao_social,
+                    ];
+
                     if ($permite_envio_whatsapp) {
-                        $mensagem = "Prezado, *{$curriculo['nome']}*";
+                        $mensagem = "Prezado(a), *{$dadosEnvio['colaborador']}*";
                         $mensagem .= "\nConforme seu modelo de contrato INTERMITENTE prevê a convocação ao trabalho, ";
-                        $mensagem .= "viemos através dessa mensagem informá-lo(a) que o(a) Sr(a). está convocado para trabalho ";
-                        $mensagem .= "no período de ".$periodo." no ".$centroDeCusto->label." / ".$area->label.".";
-                        $mensagem .= "\nPara isso, gentileza confirmar aceite de convocação, conforme links abaixo ⬇️";
-                        $mensagem .= "\n\nPara *aceitar*, clique no link a seguir:\n".$resposta_sim;
-                        $mensagem .= "\n\nPara *recusar*, clique no link a seguir:\n".$resposta_nao;
-                        $mensagem .= "\n\nInformamos que você tem até *24horas* para sinalizar a sua resposta.";
-                        $mensagem .= "\n\nUm forte abraço da equipe *" . $empresa->razao_social . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+                        $mensagem .= "viemos através dessa mensagem informá-lo(a) que o(a) Sr(a). está convocado(a) para trabalho ";
+                        $mensagem .= "no período de *".$dadosEnvio['periodo']."* no *".$dadosEnvio['centro_de_custo']." / ".$dadosEnvio['area']."*.";
+                        $mensagem .= "\n\nPara isso, gentileza confirmar aceite de convocação, conforme links abaixo ⬇️";
+                        $mensagem .= "\n\nPara *aceitar*, clique no link a seguir:\n".$dadosEnvio['resposta_sim'];
+                        $mensagem .= "\n\nPara *recusar*, clique no link a seguir:\n".$dadosEnvio['resposta_nao'];
+                        $mensagem .= "\n\nInformamos que você tem até *".$dadosEnvio['prazo_resposta_expiracao']."* para sinalizar a sua resposta.";
+                        $mensagem .= "\n\nUm forte abraço da equipe *" . $dadosEnvio['empresa'] . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
 
                         $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo['id'])->wherePrincipal(true)->first();
 

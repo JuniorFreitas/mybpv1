@@ -413,7 +413,7 @@
             </template>
             <template slot="rodape">
                 <div>
-                    <button type="button" class="btn btn-sm btn-primary" v-if="form.status === 'aberto'"
+                    <button type="button" class="btn btn-sm btn-primary" v-if="form.status === 'Aberto'"
                             v-show="editando"
                             @click="confirmaEncerraConvocacao()">
                         <i class="fa fa-save"></i> Encerrar
@@ -512,7 +512,7 @@
                     </thead>
                     <tbody>
                     <tr v-for="item in lista" :class="
-                                        item.status === 'aberto' ? 'table-warning' : item.status === 'encerrado' ? 'table-success' : null
+                                        item.status === 'Aberto' ? 'table-warning' : item.status === 'Encerrado' ? 'table-success' : null
                         ">
                         <td class="text-center">
                             {{ item.id }}
@@ -531,7 +531,7 @@
                             em {{ item.data_lancamento }}
                         </td>
                         <td class="text-center">
-                                <span v-if="item.status === 'encerrado'">
+                                <span v-if="item.status === 'Encerrado'">
                                     Encerrado por {{ item.responsavel_aprovacao.nome }} <br>
                                     em {{ item.data_aprovacao }}
                                 </span>
@@ -542,21 +542,21 @@
                         </td>
 
                         <td class="text-center">
-                            <a v-show="item.status === 'aberto'" href="javascript://" class="btn btn-sm btn-default"
+                            <a v-show="item.status === 'Aberto'" href="javascript://" class="btn btn-sm btn-default"
                                @click="formNovoProrrogacao(item.id)"
                                data-toggle="modal"
                                data-target="#janelaFormProrrogacao">
                                 <i class="fa fa-plus"></i> Prorrogação
                             </a>
 
-                            <a v-show="item.status === 'aberto'" href="javascript://" class="btn btn-sm btn-default"
+                            <a v-show="item.status === 'Aberto'" href="javascript://" class="btn btn-sm btn-default"
                                @click="encerrarConvocacao(item.id)"
                                data-toggle="modal"
                                data-target="#janelaCadastrar">
                                 <i class="fa fa-times"></i> Encerrar Convocação
                             </a>
 
-                            <a v-show="item.status === 'encerrado'" href="javascript://"
+                            <a v-show="item.status === 'Encerrado'" href="javascript://"
                                class="btn btn-sm btn-default"
                                @click="visualizar(item.id)"
                                data-toggle="modal"
@@ -783,7 +783,7 @@ export default {
             setupCampo();
 
             this.formProrrogacao = _.cloneDeep(this.formProrrogacaoDefault) //copia
-            this.form.status = 'aberto';
+            this.form.status = 'Aberto';
 
         },
         formNovoProrrogacao(id) {
@@ -812,7 +812,7 @@ export default {
             }
 
             this.preloadAjax = true;
-            this.form.status = "aberto";
+            this.form.status = "Aberto";
 
             axios.post(`${URL_ADMIN}/apontamento/intermitente/prorrogacao`, this.formProrrogacao)
                 .then(response => {
@@ -838,7 +838,7 @@ export default {
             setupCampo();
 
             this.form = _.cloneDeep(this.formDefault) //copia
-            this.form.status = 'aberto';
+            this.form.status = 'Aberto';
 
         },
         cadastrar() {
@@ -862,7 +862,7 @@ export default {
             }
 
             this.preloadAjax = true;
-            this.form.status = "aberto";
+            this.form.status = "Aberto";
 
             axios.post(`${URL_ADMIN}/apontamento/intermitente`, this.form)
                 .then(response => {
