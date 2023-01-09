@@ -14,12 +14,13 @@ class AddHashRespostaDatarespostaColaboradorParaIntermitentesTable extends Migra
     public function up()
     {
         Schema::table('intermitentes', function (Blueprint $table) {
-            $table->string('hash_colaborador');
-            $table->string('resposta_colaborador')->nullable();
-            $table->dateTime('data_resposta_colaborador')->nullable();
-            $table->unsignedBigInteger('centro_custo_id');
-            $table->foreign('centro_custo_id')->references('id')->on('centro_custos')->cascadeOnDelete();
-            $table->unsignedInteger('prazo_resposta');
+//            $table->string('hash_colaborador');
+//            $table->string('resposta_colaborador')->nullable();
+//            $table->dateTime('data_resposta_colaborador')->nullable();
+//            $table->unsignedBigInteger('centro_custo_id')->nullable();
+//            $table->foreign('centro_custo_id')->references('id')->on('centro_custos')->cascadeOnDelete();
+//            $table->unsignedInteger('prazo_resposta')->nullable();
+            $table->dateTime('prazo_resposta_expiracao')->nullable();
         });
     }
 
@@ -36,6 +37,7 @@ class AddHashRespostaDatarespostaColaboradorParaIntermitentesTable extends Migra
             $table->dropColumn('data_resposta_colaborador');
             $table->dropColumn('centro_custo_id');
             $table->dropColumn('prazo_resposta');
+            $table->dropColumn('prazo_resposta_expiracao');
         });
     }
 }

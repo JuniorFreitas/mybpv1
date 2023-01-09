@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\User;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -107,6 +108,8 @@ class Intermitente extends Model
         'hash_colaborador',
         'resposta_colaborador',
         'data_resposta_colaborador',
+        'prazo_resposta',
+        'prazo_resposta_expiracao',
     ];
 
     protected $casts = [
@@ -130,6 +133,8 @@ class Intermitente extends Model
         'hash_colaborador' => 'string',
         'resposta_colaborador' => 'string',
         'data_resposta_colaborador' => 'string',
+        'prazo_resposta' => 'int',
+        'prazo_resposta_expiracao' => 'string',
     ];
 
     public function getDataLancamentoAttribute($value)
@@ -209,4 +214,11 @@ class Intermitente extends Model
     {
         return $this->belongsToMany(Arquivo::class, 'intermitente_evidencias', 'intermitente_id', 'arquivo_id');
     }
+
+    protected static function booted() {
+        static::creating(function ($model) {
+            $model->prazo_resposta_expiracao = Carbon::now()->addHours($model->prazo_resposta)->addSeconds(0);
+        });
+    }
+
 }
