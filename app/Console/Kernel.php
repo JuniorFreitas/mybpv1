@@ -8,6 +8,7 @@ use App\Jobs\JobDeletaExportacaoExcel;
 use App\Jobs\Movimentacao\FeriasPrevista\VerificaSaidaFeriasJob;
 use App\Jobs\Movimentacao\FeriasPrevista\VerificaVencimentoFeriasJob;
 use App\Jobs\Rotinas\JobAniversariantesDia;
+use App\Jobs\Rotinas\JobConvocacaoIntermitente;
 use App\Jobs\Weekly_report\LembreteTarefaJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -43,6 +44,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily();
         $schedule->call(new JobDeletaExportacaoExcel)->daily();
         $schedule->call(new JobAniversariantesDia)->daily();
+        $schedule->call(new JobConvocacaoIntermitente())->hourly();
 //        $schedule->call(new Im)->daily();
     }
 
