@@ -158,8 +158,20 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <date-picker :disabled="encerrado" :range="true" label="Data da Ocorrência"
+                                <date-picker :disabled="encerrado" :range="true" label="Data da Convocação"
                                              v-model="form.data_lancamento"></date-picker>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Prazo de resposta do colaborador</label>
+                                <select :disabled="encerrado" v-model="form.prazo_resposta"
+                                        onblur="valida_campo_vazio(this,1)"
+                                        onchange="valida_campo_vazio(this,1)" class="form-control">
+                                    <option value="">Selecione...</option>
+                                    <option v-for="item in 72" :value="item">{{ item }} hora(s)</option>
+                                </select>
                             </div>
                         </div>
 
@@ -179,7 +191,7 @@
 
                         <div class="col-12"></div>
 
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label>Área</label>
                                 <select :disabled="encerrado" v-model="form.area_id"
@@ -191,15 +203,21 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6" v-if="form.area_id === 0">
+                        <div class="col-12 col-md-6">
                             <div class="form-group">
-                                <label>Especifique</label>
-                                <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
-                                       :disabled="encerrado" v-model="form.outra_area">
+                                <label>Centro de Custo</label>
+                                <select
+                                    :disabled="encerrado"
+                                    v-model="form.centro_custo_id"
+                                    class="form-control"
+                                >
+                                    <option value="">Selecione</option>
+                                    <option v-for="item in centro_custos" :value="item.id" :key="item.id">{{ item.label }}</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="col-12">
+                        <div class="col-12" v-if="editando">
                             <div class="form-group">
                                 <label>Colaborador</label>
                                 <autocomplete :caminho="colaborador_ativo"
@@ -208,7 +226,48 @@
                                               placeholder="Selecione um(a) colaborador(a)"
                                               :disabled="encerrado"
                                               @onblur="resetaCampoColaborador"
-                                              @onselect="selecionaColaborador"></autocomplete>
+                                              @onselect="selecionaColaboradorUnico"></autocomplete>
+                            </div>
+                        </div>
+
+                        <div class="col-12" v-if="!editando">
+                            <div class="form-group">
+                                <label>Colaborador(es)</label>
+                                <autocomplete
+                                    :caminho="colaborador_ativo"
+                                    :valido="form.feedback_id !== ''"
+                                    v-model="form.autocomplete_label_colaborador"
+                                    placeholder="Selecione um(a) colaborador(a)"
+                                    :disabled="encerrado"
+                                    :id="`colaborador_${hash}`"
+                                    @onselect="selecionaColaborador"
+                                    v-if="!editando"
+                                ></autocomplete>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-condensed bg-white"
+                                       v-if="form.colaboradores.length">
+                                    <thead>
+                                    <tr class="bg-default">
+                                        <th class="text-center" width="50%">Nome</th>
+                                        <th class="text-center" width="40%">Cargo</th>
+                                        <th class="text-center" v-if="!editando">Remover</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="(colaborador, index) in form.colaboradores">
+                                        <td class="text-center">{{ colaborador.curriculo.nome }}</td>
+                                        <td class="text-center">{{ colaborador.vaga_aberta.vaga.nome }}</td>
+                                        <td class="text-center" v-if="!editando">
+                                            <a href="javascript://" class="btn btn-sm btn-danger"
+                                               @click.prevent="removerLIColaborador(index)">
+                                                <i class="fa fa-times" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -402,7 +461,7 @@
                             :disabled="controle.carregando"
                             data-target="#janelaCadastrar"
                             @click="formNovo()">
-                        <i class="fa fa-plus"></i> Cadastrar
+                        <i class="fa fa-plus"></i> Convocar
                     </button>
 
                     <button type="button" class="btn btn-sm btn-secondary mb-1 mr-1" :disabled="controle.carregando"
@@ -541,7 +600,7 @@ export default {
     },
     data() {
         return {
-            tituloJanela: 'Cadastrando INTERMITENTE',
+            tituloJanela: 'Convocando INTERMITENTE',
             titulo_janela_form_tipo: '',
             titulo_janela_form_prorrogacao: '',
             preloadAjax: false,
@@ -572,10 +631,14 @@ export default {
             form: {
                 tipo_id: '',
                 feedback_id: '',
+                colaboradores: [],
+                colaboradoresDelete: [],
                 autocomplete_label_colaborador: '',
                 autocomplete_label_colaborador_anterior: '',
                 cliente_id: '',
                 area_id: '',
+                prazo_resposta: '',
+                centro_custo_id: '',
                 acao: '',
                 user_lancamento_id: '',
                 obs_lancamento: '',
@@ -620,6 +683,7 @@ export default {
             listaAreas: [],
             listaClientes: [],
             listaProrrogacao: [],
+            centro_custos: [],
 
             controle: {
                 carregando: false,
@@ -638,13 +702,42 @@ export default {
         this.atualizar();
     },
     methods: {
-        selecionaColaborador(obj) {
+        selecionaColaboradorUnico(obj) {
             this.form.feedback_id = obj.id;
             this.form.cliente_id = obj.cliente_id;
             this.form.treinamentos = obj.curriculo.treinamentos.vencimentos;
             this.form.exames = obj.exames;
             this.form.autocomplete_label_colaborador = obj.label;
             this.form.autocomplete_label_colaborador_anterior = obj.label;
+        },
+        selecionaColaborador(obj) {
+            // this.form.feedback_id = obj.id;
+            // this.form.cliente_id = obj.cliente_id;
+            // this.form.autocomplete_label_colaborador = obj.label;
+            // this.form.autocomplete_label_colaborador_anterior = obj.label;
+
+            const colaborador = {};
+
+            Object.assign(colaborador, obj);
+            colaborador.novo = true;
+
+
+            let atual = this.form.colaboradores.findIndex(val => val.id === colaborador.id);
+
+            if (atual < 0) {//Se não existir ainda no array
+                this.form.colaboradores.push(colaborador);
+            } else {
+                mostraErro("", `O colaborador(a) ${colaborador.nome} já está na lista.`);
+                this.form.autocomplete_label_colaborador = "";
+                return false;
+            }
+            this.form.autocomplete_label_colaborador = "";
+        },
+        removerLIColaborador(index) {
+            if (!this.form.colaboradores[index].novo) {
+                this.form.colaboradoresDelete.push(this.form.colaboradores[index].id);
+            }
+            this.form.colaboradores.splice(index, 1);
         },
         resetaCampoColaborador() {
             if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
@@ -756,10 +849,15 @@ export default {
                 return false;
             }
 
-            if (this.form.feedback_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                $(`#janelaCadastrar #colaborador_${this.hash}`).focus().trigger('blur');
-                mostraErro('Erro', 'O campo vaga não pode ficar vazio');
+            // if (this.form.feedback_id === '') {
+            //     valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
+            //     $(`#janelaCadastrar #colaborador_${this.hash}`).focus().trigger('blur');
+            //     mostraErro('Erro', 'O campo vaga não pode ficar vazio');
+            //     return false;
+            // }
+
+            if (!this.form.colaboradores) {
+                this.mostraErro("", "Adcione o colaborador");
                 return false;
             }
 
@@ -880,6 +978,13 @@ export default {
             this.hoje = dados.hoje;
             this.listaClientes = dados.listaClientes;
             this.controle.carregando = false;
+
+            axios.post(`${URL_PUBLICO}/centro-custos/`, {'empresa_id': dados.empresa_id})
+                .then(response => {
+                    this.centro_custos = response.data.centro_custos;
+                }).catch(error => {
+                this.preload = false;
+            });
         },
         carregando() {
             this.controle.carregando = true;

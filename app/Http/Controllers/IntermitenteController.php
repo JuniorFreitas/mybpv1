@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\ZapNotificacao;
 use App\Jobs\JobExportaExcel;
 use App\Models\AreaEtiqueta;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
 use App\Models\Cliente;
+use App\Models\ClienteConfig;
 use App\Models\Intermitente;
 use App\Models\IntermitenteProrrogacao;
 use App\Models\IntermitenteTipo;
+use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use DB;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
 
@@ -47,16 +52,18 @@ class IntermitenteController extends Controller
         $this->authorize('admissao_intermitente');
         $dados = $request->input();
         $dados['user_lancamento_id'] = auth()->id();
-//        $dados['data_lancamento'] = (new DataHora($dados['data_lancamento'] . ' ' . date('H:m:s')))->dataHoraInsert();
-
+        $periodo = $dados['data_lancamento'];
+        $area = AreaEtiqueta::find($dados['area_id']);
+        $centroDeCusto = CentroCusto::find($dados['centro_custo_id']);
         $dados['range_convocacao'] = explode(' até ', $dados['data_lancamento']);
         $dados['data_lancamento'] = (new DataHora($dados['range_convocacao'][0] . ' ' . date('H:m:s')))->dataHoraInsert(); // data concocação
         $dados['encerramento_previsto'] = (new DataHora($dados['range_convocacao'][1]))->dataInsert();; // data fim convocacao
+        $dados['varios_colaboradores'] = count($dados['colaboradores']) > 1;
 
 
         $dadosValidados = \Validator::make($dados, [
             'tipo_id' => 'required',
-            'feedback_id' => 'required'
+            'colaboradores' => 'required|array|min:1',
         ]);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -67,9 +74,50 @@ class IntermitenteController extends Controller
         } else {
             try {
                 DB::beginTransaction();
+                $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+                $permite_envio_whatsapp = !empty($permite_envio_whatsapp) && $permite_envio_whatsapp->envia_whatsapp;
+                $empresa = Cliente::find(auth()->user()->empresa_id);
+
                 $dados['tipo_id'] = $dados['tipo_id'] > 0 ? $dados['tipo_id'] : null;
                 $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
-                $intermitente = Intermitente::create($dados);
+
+                foreach ($dados['colaboradores'] as $colaborador) {
+                    $dados['feedback_id'] = $colaborador['id'];
+                    $dados['hash_colaborador'] = Str::uuid();
+                    $intermitente = Intermitente::create($dados);
+
+                    $curriculo = $colaborador['curriculo'];
+
+                    $colaborador['envia_whatsapp'] = true;
+
+                    $resposta_sim = route('respostaConvocacao', ['s', $dados['hash_colaborador']]);
+                    $resposta_nao = route('respostaConvocacao', ['n', $dados['hash_colaborador']]);
+
+//                    $resposta_sim = str_replace('http://localhost:8000', 'https://mybp.com.br', $resposta_sim);
+//                    $resposta_nao = str_replace('http://localhost:8000', 'https://mybp.com.br', $resposta_nao);
+
+                    if ($permite_envio_whatsapp) {
+                        $mensagem = "Prezado, *{$curriculo['nome']}*";
+                        $mensagem .= "\nConforme seu modelo de contrato INTERMITENTE prevê a convocação ao trabalho, ";
+                        $mensagem .= "viemos através dessa mensagem informá-lo(a) que o(a) Sr(a). está convocado para trabalho ";
+                        $mensagem .= "no período de ".$periodo." no ".$centroDeCusto->label." / ".$area->label.".";
+                        $mensagem .= "\nPara isso, gentileza confirmar aceite de convocação, conforme links abaixo ⬇️";
+                        $mensagem .= "\n\nPara *aceitar*, clique no link a seguir:\n".$resposta_sim;
+                        $mensagem .= "\n\nPara *recusar*, clique no link a seguir:\n".$resposta_nao;
+                        $mensagem .= "\n\nInformamos que você tem até *24horas* para sinalizar a sua resposta.";
+                        $mensagem .= "\n\nUm forte abraço da equipe *" . $empresa->razao_social . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+
+                        $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo['id'])->wherePrincipal(true)->first();
+
+//                        if ($telefonePrincipal->tipo == 'whatsapp') {
+                            (new ZapNotificacao())->enviar([
+                                'enviado_id' => $curriculo['id'],
+                                'telefone' => $telefonePrincipal->sonumero,
+                                'mensagem' => $mensagem,
+                            ]);
+//                        }
+                    }
+                }
 
                 if (isset($dados['anexosDel'])) {
                     foreach ($dados['anexosDel'] as $id_anexo) {
@@ -90,7 +138,7 @@ class IntermitenteController extends Controller
                         }
                     }
                 }
-
+                // WHATSAPP
                 DB::commit();
                 return response()->json([$intermitente->load('Anexos')], 201);
             } catch (\Exception $e) {
@@ -314,7 +362,7 @@ class IntermitenteController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'tipos' => $tipos,
-                'cliente_id' => auth()->user()->cliente_id,
+                'empresa_id' => auth()->user()->empresa_id,
                 'intervalo' => $intervalo,
                 'areas' => $areas,
                 'listaClientes' => $clientes,
@@ -332,9 +380,9 @@ class IntermitenteController extends Controller
             'ResponsavelAprovacao:id,nome'
         );
 
-        if (auth()->user()->cliente_id != User::BPSE) {
-            $resultado->whereClienteId(auth()->user()->cliente_id);
-        }
+//        if (auth()->user()->cliente_id != User::BPSE) {
+//            $resultado->whereClienteId(auth()->user()->cliente_id);
+//        }
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Colaborador.Curriculo', function ($query) use ($request) {
@@ -407,5 +455,27 @@ class IntermitenteController extends Controller
     public function download(Request $request, $arquivo)
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_CIH, $arquivo);
+    }
+
+    public function respostaConvocacao($resposta, $hash){
+        $convocacao = Intermitente::withoutGlobalScopes()->whereHashColaborador($hash)->whereNull('resposta_colaborador')->first();
+
+        if($convocacao){
+            $convocacao->update([
+                'resposta_colaborador' => $resposta == 's' ? 'Sim' : 'Não',
+                'data_resposta_colaborador' => (new DataHora())->dataHoraInsert(),
+            ]);
+
+            return response()->json([
+                'sucesso' => true,
+                'mensagem' => 'Obrigado por sua resposta',
+            ], 200);
+
+        }else{
+            return response()->json([
+                'erro' => true,
+                'mensagem' => 'Link expirado',
+            ], 400);
+        }
     }
 }

@@ -91,6 +91,7 @@ class Intermitente extends Model
         'feedback_id',
         'cliente_id',
         'area_id',
+        'centro_custo_id',
         'user_lancamento_id',
         'obs_lancamento',
         'data_lancamento',
@@ -103,6 +104,9 @@ class Intermitente extends Model
         'devolve_epi',
         'devolve_cracha',
         'empresa_id',
+        'hash_colaborador',
+        'resposta_colaborador',
+        'data_resposta_colaborador',
     ];
 
     protected $casts = [
@@ -110,6 +114,7 @@ class Intermitente extends Model
         'tipo_id' => 'int',
         'feedback_id' => 'int',
         'area_id' => 'int',
+        'centro_custo_id' => 'int',
         'cliente_id' => 'int',
         'user_lancamento_id' => 'int',
         'obs_lancamento' => 'string',
@@ -122,6 +127,9 @@ class Intermitente extends Model
         'devolve_epi' => 'boolean',
         'devolve_cracha' => 'boolean',
         'empresa_id' => 'int',
+        'hash_colaborador' => 'string',
+        'resposta_colaborador' => 'string',
+        'data_resposta_colaborador' => 'string',
     ];
 
     public function getDataLancamentoAttribute($value)
