@@ -261,9 +261,9 @@ class AutoCompletesController extends Controller
         return FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO'])->whereTipoAdmissao('INTERMITENTE');
         })->whereHas('Curriculo', function ($q) use ($busca) {
-            $q->where('nome', 'like', '%' . $busca . '%');
+            $q->where('nome', 'like', '%' . $busca . '%')->where('email','<>','sistema@mybp.com.br');
         })->take($quantidade)
-            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
+            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor,email', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
                 $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - {$item->VagaAberta->Municipio->nome} - {$item->VagaAberta->Municipio->uf}";
                 return $item;
