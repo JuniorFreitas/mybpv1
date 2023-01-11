@@ -79,7 +79,7 @@ class ExameFuncionario extends Model
 
     public function EmpresaExame()
     {
-        return $this->hasOne(EmpresaExame::class, 'empresa_exame_id', 'id');
+        return $this->hasOne(EmpresaExame::class, 'id', 'empresa_exame_id');
     }
 
     public function Sesmt(){
