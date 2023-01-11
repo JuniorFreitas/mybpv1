@@ -54,6 +54,7 @@
                 .then(response => {
                     this.$set(this.model, 'preload', false);
                     this.model.ativo = response.data.ativo;
+                    this.$emit('atualizou', true);
                 }).catch(error =>{
                     this.$set(this.model, 'preload', false)
                 });

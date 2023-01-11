@@ -4,6 +4,7 @@ use App\Classes\ZapNotificacao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::get('convocacao/{resposta}/{hash}/', [\App\Http\Controllers\IntermitenteController::class, "respostaConvocacao"])->name('respostaConvocacao');
 
 Route::middleware('apitoken')->post('envia-whats', function (Request $request) {
     try {
