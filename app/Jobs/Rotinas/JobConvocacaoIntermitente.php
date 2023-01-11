@@ -4,6 +4,7 @@ namespace App\Jobs\Rotinas;
 
 use App\Mail\AniversariantesMail;
 use App\Models\Admissao;
+use App\Models\Intermitente;
 use App\Models\ParabensEnviado;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -43,14 +44,13 @@ class JobConvocacaoIntermitente implements ShouldQueue
     {
         try {
             \App\Models\Intermitente::withoutGlobalScopes()->whereNull('resposta_colaborador')
-                ->where('status','Aberto')
+                ->where('status',Intermitente::STATUS_ABERTO)
                 ->where('prazo_resposta_expiracao','<=',(new DataHora())->dataHoraInsert())
                 ->update([
-                    'status' => 'Expirado',
-                    'resposta_colaborador' => 'Expirado',
-                    'data_resposta_colaborador' => now()
+                    'status' => Intermitente::STATUS_EXPIRADO,
+                    'resposta_colaborador' => Intermitente::STATUS_EXPIRADO,
+                    'data_resposta_colaborador' => (new DataHora())->dataHoraInsert()
                 ]);
-           \Log::info('Rotina de convocação de intermitentes executada com sucesso!');
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
         }

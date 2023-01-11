@@ -645,10 +645,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('intermitente/prorrogacao', [\App\Http\Controllers\IntermitenteController::class, 'storeProrrogacao'])->name('storeProrrogacao'); // manter essa rota antes do resource
             Route::put('intermitente/encerrar-convocacao/{id}', [\App\Http\Controllers\IntermitenteController::class, 'encerrarConvocacao'])->name('storeEncerrarConvocacao'); // manter essa rota antes do resource
             Route::get('intermitente/prorrogacao/{id}/editar', [\App\Http\Controllers\IntermitenteController::class, 'editProrrogacao'])->name('editProrrogacao'); // manter essa rota antes do resource
+            Route::get('intermitente/{id}/treinamentos', [\App\Http\Controllers\IntermitenteController::class, 'treinamentosColaborador'])->name('treinamentosColaborador'); // manter essa rota antes do resource
             Route::post('intermitente/gerapdf', [\App\Http\Controllers\IntermitenteController::class, 'relatorioPdf'])->name('relatorioPdf'); // manter essa rota antes do resource
             Route::post('intermitente/export', [\App\Http\Controllers\IntermitenteController::class, 'export'])->name('export'); // manter essa rota antes do resource
             Route::post('intermitente/atualizar', [\App\Http\Controllers\IntermitenteController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::post('intermitente/storeTipo', [\App\Http\Controllers\IntermitenteController::class, 'storeTipo'])->name('storeTipo'); // manter essa rota antes do resource
+            Route::put('intermitente/tipo/ativa-desativa/{tipo}', [\App\Http\Controllers\IntermitenteController::class, 'ativaDesativa'])->name('ativaDesativa');
+            Route::get('intermitente/tipo/editar/{tipo}', [\App\Http\Controllers\IntermitenteController::class, 'editarTipo'])->name('editarTipo');
             Route::put('intermitente/aprovar/{intermitente}', [\App\Http\Controllers\IntermitenteController::class, 'aprovar'])->name('aprovar'); // manter essa rota antes do resource
             Route::resource('intermitente', \App\Http\Controllers\IntermitenteController::class)->middleware('can:admissao_intermitente');
         });

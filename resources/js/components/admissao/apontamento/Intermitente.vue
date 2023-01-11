@@ -40,6 +40,39 @@
         <!--                </form>-->
         <!--            </template>-->
         <!--        </modal>-->
+        <!--        </modal>-->
+        <modal :titulo="tituloJanelaTreinamentos" size="g" :fechar="!preloadAjax" id="janelaTreinamentos" modal-pai="janelaCadastrar">
+            <template slot="conteudo">
+                <p class=" mt-2 text-center" v-if="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
+                <div v-if="!preloadAjax">
+                    <fieldset>
+                        <legend>Treinamentos</legend>
+                        <div class="table-responsive">
+                            <table class="tabela">
+                                <thead>
+                                <tr class="bg-default">
+                                    <th class="text-center">Tipo</th>
+                                    <th class="text-center">Data do Treinamento</th>
+                                    <th class="text-center">Data do Vencimento</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="treinamento in treinamentosColaborador">
+                                    <td class="text-center">{{ treinamento.label }}</td>
+                                    <td class="text-center">{{ treinamento.pivot.data_treinamento }}</td>
+                                    <td class="text-center">{{ treinamento.pivot.data_vencimento }}</td>
+                                    <td class="text-center">{{ treinamento.pivot.status }}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </fieldset>
+                </div>
+            </template>
+            <template slot="rodape">
+            </template>
+        </modal>
 
         <modal :titulo="titulo_janela_form_prorrogacao" :fechar="!preloadProrrogacao" :size="90"
                id="janelaFormProrrogacao">
@@ -109,12 +142,42 @@
             <template slot="rodape">
                 <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo"
                         @click="cadastrarProrrogacao">
-                    <i class="fa fa-save"></i>Cadastrar
+                    <i class="fa fa-save"></i> Cadastrar
                 </button>
             </template>
         </modal>
 
-        <modal :titulo="titulo_janela_form_tipo" :fechar="!preloadTipo" id="janelaFormTipo">
+        <modal :titulo="titulo_janela_form_editar_tipo" size="g" :fechar="!preloadTipo" modal-pai="janelaFormTipo" id="janelaFormEditarTipo">
+            <template slot="conteudo">
+                <p class=" mt-2 text-center" v-if="preloadTipo"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
+                <div v-if="!preloadTipo && !cadastrado">
+                    <fieldset>
+                        <legend>Editar Tipo de Intermitente</legend>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                <span class="input-group-prepend">
+                                    <span class="input-group-text">Nome</span>
+                                </span>
+                                        <input class="form-control" type="text"
+                                               onblur="valida_campo_vazio(this,1)" v-model="formTipo.label">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </template>
+            <template slot="rodape">
+                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo && !preloadTipoLista">
+<!--                        @click="editaTipo">-->
+                    <i class="fa fa-save"></i> Editar
+                </button>
+            </template>
+        </modal>
+
+        <modal :titulo="titulo_janela_form_tipo" size="g" :fechar="!preloadTipo" id="janelaFormTipo">
             <template slot="conteudo">
                 <p class=" mt-2 text-center" v-if="preloadTipo"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div v-if="!preloadTipo && !cadastrado">
@@ -134,12 +197,40 @@
                             </div>
                         </div>
                     </fieldset>
+                    <div class="table-responsive" v-show="!preloadTipoLista && listaTiposCadastro.length > 0">
+                        <table class="tabela">
+                            <thead>
+                            <tr class="bg-default">
+                                <td class="text-center">Nome</td>
+                                <td class="text-center">Ativo</td>
+<!--                                <td class="text-center">Opções</td>-->
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="tipo in listaTiposCadastro">
+                                    <td class="text-center">{{tipo.label}}</td>
+                                    <td class="text-center">
+                                        <bt-ativo :rota="`apontamento/intermitente/tipo/ativa-desativa/${tipo.id}`"
+                                                  :model="tipo" @atualizou="$refs.componente.buscar()"></bt-ativo>
+                                    </td>
+<!--                                    <td class="text-center">-->
+<!--                                        <button type="button" class="btn btn-sm btn-primary"-->
+<!--                                            @click="editarTipo(tipo.id)"-->
+<!--                                            data-toggle="modal"-->
+<!--                                            data-target="#janelaFormEditarTipo">-->
+<!--                                            <i class="fa fa-edit"></i>-->
+<!--                                        </button>-->
+<!--                                    </td>-->
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </template>
             <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo"
+                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo && !preloadTipoLista"
                         @click="cadastraTipo">
-                    <i class="fa fa-save"></i>Cadastrar
+                    <i class="fa fa-save"></i> Cadastrar
                 </button>
             </template>
         </modal>
@@ -156,14 +247,14 @@
                 <fieldset>
                     <legend>Lançamento</legend>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <date-picker :disabled="encerrado" :range="true" label="Data da Convocação"
                                              v-model="form.data_lancamento"></date-picker>
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label>Prazo de resposta do colaborador</label>
                                 <select :disabled="encerrado" v-model="form.prazo_resposta"
@@ -175,9 +266,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12"></div>
-
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label>Tipo</label>
                                 <select :disabled="encerrado" v-model="form.tipo_id"
@@ -252,6 +341,7 @@
                                     <tr class="bg-default">
                                         <th class="text-center" width="50%">Nome</th>
                                         <th class="text-center" width="40%">Cargo</th>
+                                        <th class="text-center" v-if="!editando">Treinamentos/Exames</th>
                                         <th class="text-center" v-if="!editando">Remover</th>
                                     </tr>
                                     </thead>
@@ -259,6 +349,14 @@
                                     <tr v-for="(colaborador, index) in form.colaboradores">
                                         <td class="text-center">{{ colaborador.curriculo.nome }}</td>
                                         <td class="text-center">{{ colaborador.vaga_aberta.vaga.nome }}</td>
+                                        <td class="text-center" v-if="!editando">
+                                            <a href="javascript://" class="btn btn-sm btn-info"
+                                               data-toggle="modal"
+                                               data-target="#janelaTreinamentos"
+                                               @click.prevent="visualizarTreinamentos(colaborador)">
+                                                <i class="fa fa-search" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
                                         <td class="text-center" v-if="!editando">
                                             <a href="javascript://" class="btn btn-sm btn-danger"
                                                @click.prevent="removerLIColaborador(index)">
@@ -300,7 +398,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12">
+                        <div class="col-12" v-if="leitura">
                             <fieldset>
                                 <legend>Treinamentos</legend>
                                 <div class="table-responsive">
@@ -310,8 +408,7 @@
                                             <th class="text-center">Tipo</th>
                                             <th class="text-center">Data do Treinamento</th>
                                             <th class="text-center">Data do Vencimento</th>
-                                            <th class="text-center">Prazo Fixo</th>
-                                            <th class="text-center">Prazo Parada</th>
+                                            <th class="text-center">Status</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -319,8 +416,7 @@
                                             <td class="text-center">{{ t.label }}</td>
                                             <td class="text-center">{{ t.pivot.data_treinamento }}</td>
                                             <td class="text-center">{{ t.pivot.data_vencimento }}</td>
-                                            <td class="text-center">{{ t.prazo_fixo }}</td>
-                                            <td class="text-center">{{ t.prazo_parada }}</td>
+                                            <td class="text-center">{{ t.pivot.status }}</td>
                                         </tr>
                                         </tbody>
                                     </table>
@@ -328,9 +424,9 @@
                             </fieldset>
                         </div>
 
-                        <div class="col-12">
-                            <fieldset>
-                                <legend>Exames</legend>
+<!--                        <div class="col-12">-->
+<!--                            <fieldset>-->
+<!--                                <legend>Exames</legend>-->
                                 <!--                                <div class="table-responsive">-->
                                 <!--                                    <table class="tabela">-->
                                 <!--                                        <thead>-->
@@ -353,8 +449,8 @@
                                 <!--                                        </tbody>-->
                                 <!--                                    </table>-->
                                 <!--                                </div>-->
-                            </fieldset>
-                        </div>
+<!--                            </fieldset>-->
+<!--                        </div>-->
 
                     </div>
                 </fieldset>
@@ -430,6 +526,22 @@
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
+                <div class="col-12 col-md-3">
+                    <div class="form-check" style="margin-bottom: -11px;">
+                        <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
+                               @change.prevent="atualizar()"
+                               id="filtroIntervalo"
+                               v-model="controle.dados.filtroPeriodo">
+                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
+                    </div>
+                    <div class="form-group">
+                        <datepicker range formsm label=""
+                                    @onselect="atualizar()"
+                                    :disabled="controle.carregando || !controle.dados.filtroPeriodo"
+                                    v-model="controle.dados.periodo"></datepicker>
+                    </div>
+                </div>
+
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -443,11 +555,40 @@
 
                 <div class="col-12 col-md-4">
                     <div class="form-group">
+                        <label>Tipos</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoTipo" :disabled="controle.carregando" @change="atualizar()">
+                            <option value="">Todos os Tipos</option>
+                            <option v-for="item in listaTipos" :value="item.id">{{ item.label }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Áreas</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoArea" :disabled="controle.carregando" @change="atualizar()">
+                            <option value="">Todos os áreas</option>
+                            <option v-for="item in listaAreas" :value="item.id">{{ item.label }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Centros de Custo</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoCentroDeCusto" :disabled="controle.carregando" @change="atualizar()">
+                            <option value="">Todos os centros de custo</option>
+                            <option v-for="item in centro_custos" :value="item.id">{{ item.label }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" @change="atualizar()">
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Status</option>
-                            <option :value="true">Apenas Ativos</option>
-                            <option :value="false">Apenas Inativos</option>
+                            <option v-for="item in listaStatus" :value="item">{{ item }}</option>
                         </select>
                     </div>
                 </div>
@@ -470,11 +611,11 @@
                             data-target="#janelaFormTipo">
                         <i class="fa fa-plus"></i> Cadastrar Tipo
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
-                            @click.prevent="exportaExcel()"
-                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">
-                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
-                    </button>
+<!--                    <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"-->
+<!--                            @click.prevent="exportaExcel()"-->
+<!--                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">-->
+<!--                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL-->
+<!--                    </button>-->
                 </div>
             </form>
         </fieldset>
@@ -501,9 +642,9 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
-                        <th class="text-center">ID</th>
-                        <th v-if="cliente_id == 1">Cliente</th>
+                        <th class="text-center">COD</th>
                         <th class="text-center">Colaborador</th>
+                        <th class="text-center">Tipo</th>
                         <th class="text-center">Lançamento</th>
                         <th class="text-center">Encerrado</th>
                         <th class="text-center">Status</th>
@@ -518,12 +659,12 @@
                             {{ item.id }}
                         </td>
 
-                        <td v-if="cliente_id === 1">
-                            {{ item.cliente.nome_fantasia }}
+                        <td>
+                            {{ item.colaborador.curriculo.nome }}
                         </td>
 
                         <td>
-                            {{ item.colaborador.curriculo.nome }}
+                            {{ item.tipo.label }}
                         </td>
 
                         <td class="text-center">
@@ -531,9 +672,17 @@
                             em {{ item.data_lancamento }}
                         </td>
                         <td class="text-center">
-                                <span v-if="item.status === 'Encerrado'">
+                                <span v-if="item.status === 'Encerrado' && item.resposta_colaborador === 'Sim'">
                                     Encerrado por {{ item.responsavel_aprovacao.nome }} <br>
                                     em {{ item.data_aprovacao }}
+                                </span>
+                                <span v-if="item.status === 'Encerrado' && item.resposta_colaborador === 'Não'">
+                                    Encerrado pelo colaborador <br>
+                                    em {{ item.data_resposta_colaborador }}
+                                </span>
+                                <span v-if="item.status === 'Expirado'">
+                                    Convocação Expirada <br>
+                                    em {{ item.data_resposta_colaborador }}
                                 </span>
                         </td>
 
@@ -542,27 +691,33 @@
                         </td>
 
                         <td class="text-center">
-                            <a v-show="item.status === 'Aberto'" href="javascript://" class="btn btn-sm btn-default"
-                               @click="formNovoProrrogacao(item.id)"
-                               data-toggle="modal"
-                               data-target="#janelaFormProrrogacao">
-                                <i class="fa fa-plus"></i> Prorrogação
-                            </a>
-
-                            <a v-show="item.status === 'Aberto'" href="javascript://" class="btn btn-sm btn-default"
-                               @click="encerrarConvocacao(item.id)"
-                               data-toggle="modal"
-                               data-target="#janelaCadastrar">
-                                <i class="fa fa-times"></i> Encerrar Convocação
-                            </a>
-
-                            <a v-show="item.status === 'Encerrado'" href="javascript://"
-                               class="btn btn-sm btn-default"
-                               @click="visualizar(item.id)"
-                               data-toggle="modal"
-                               data-target="#janelaCadastrar">
-                                <i class="fa fa-search"></i> Visualizar
-                            </a>
+                            <div class="dropdown show">
+                                <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                                   id="dropdownMenuLink"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                    <a v-show="item.status === 'Aberto'" class="dropdown-item" href="javascript://"
+                                       @click="formNovoProrrogacao(item.id)"
+                                       data-toggle="modal"
+                                       data-target="#janelaFormProrrogacao">
+                                        <i class="fa fa-plus"></i> Prorrogação
+                                    </a>
+                                    <a v-show="item.status === 'Aberto'" class="dropdown-item" href="javascript://"
+                                       @click="encerrarConvocacao(item.id)"
+                                       data-toggle="modal"
+                                       data-target="#janelaCadastrar">
+                                        <i class="fa fa-times"></i> Encerrar Convocação
+                                    </a>
+                                    <a v-show="item.status === 'Encerrado' || item.status === 'Expirado'" class="dropdown-item" href="javascript://"
+                                       @click="visualizar(item.id)"
+                                       data-toggle="modal"
+                                       data-target="#janelaCadastrar">
+                                        <i class="fa fa-search"></i> Visualizar
+                                    </a>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     </tbody>
@@ -601,7 +756,9 @@ export default {
     data() {
         return {
             tituloJanela: 'Convocando INTERMITENTE',
+            tituloJanelaTreinamentos: '',
             titulo_janela_form_tipo: '',
+            titulo_janela_form_editar_tipo: '',
             titulo_janela_form_prorrogacao: '',
             preloadAjax: false,
             editando: false,
@@ -610,6 +767,7 @@ export default {
             aprovando: false,
             encerrado: false,
             preloadTipo: false,
+            preloadTipoLista: false,
             preloadProrrogacao: false,
             preloadExportacao: false,
 
@@ -625,6 +783,7 @@ export default {
             datarelatorio: '',
             tipoRelatorio: 'pdf',
             cliente_relatorio: '',
+            treinamentosColaborador: [],
 
             hoje: '',
 
@@ -680,9 +839,12 @@ export default {
 
             lista: [],
             listaTipos: [],
+            listaTiposCadastro: [],
             listaAreas: [],
+            listaC: [],
             listaClientes: [],
             listaProrrogacao: [],
+            listaStatus: [],
             centro_custos: [],
 
             controle: {
@@ -690,6 +852,11 @@ export default {
                 dados: {
                     campoBusca: "",
                     campoStatus: "",
+                    campoTipo: "",
+                    campoArea: "",
+                    campoCentroDeCusto: "",
+                    filtroPeriodo: false,
+                    periodo: "",
                     pages: 50,
                 },
             }
@@ -897,6 +1064,18 @@ export default {
                 error => (this.preloadAjax = false)
             );
         },
+        visualizarTreinamentos(colaborador) {
+            this.tituloJanelaTreinamentos = `TREINAMENTOS DE ${colaborador.curriculo.nome}`;
+            axios.get(`${URL_ADMIN}/apontamento/intermitente/${colaborador.id}/treinamentos`)
+                .then(response => {
+                    this.treinamentosColaborador = [];
+                    this.treinamentosColaborador = response.data;
+                    this.preloadAjax = false;
+                    setupCampo();
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
+        },
         encerrarConvocacao(id) {
             this.cadastrado = false;
             this.atualizado = false;
@@ -958,9 +1137,8 @@ export default {
             this.preloadTipo = true;
             axios.post(`${URL_ADMIN}/apontamento/intermitente/storeTipo`, this.formTipo)
                 .then((res) => {
-                    $('#janelaFormTipo').modal('hide');
+                    this.formTipo = _.cloneDeep(this.formTipoDefault)
                     mostraSucesso('', 'Tipo cadastrado com sucesso');
-                    this.cadastrado = true;
                     this.$refs.componente.buscar();
                     this.preloadTipo = false;
                 })
@@ -969,15 +1147,34 @@ export default {
                     this.preloadTipo = false;
                 });
         },
+        editarTipo(tipo) {
+            this.editando = true;
+            this.titulo_janela_form_editar_tipo = "Alterando Tipo de Intermitente";
+            formReset();
+
+            this.formTipo = _.cloneDeep(this.formTipoDefault) //copia
+
+            axios.get(`${URL_ADMIN}/apontamento/intermitente/tipo/editar/${tipo}`)
+                .then(response => {
+                    Object.assign(this.formTipo, response.data);
+                    this.editando = true;
+                    setupCampo();
+                }).catch(
+                error => (this.preloadAjax = false)
+            );
+
+        },
         carregou(dados) {
             this.lista = dados.itens;
             this.listaTipos = dados.tipos;
+            this.listaTiposCadastro = dados.tipos_cadastro;
             this.listaAreas = dados.areas;
+            this.listaStatus = dados.lista_status;
             this.cliente_id = dados.cliente_id;
             this.datarelatorio = dados.intervalo;
             this.hoje = dados.hoje;
-            this.listaClientes = dados.listaClientes;
             this.controle.carregando = false;
+            this.preloadTipoLista = false;
 
             axios.post(`${URL_PUBLICO}/centro-custos/`, {'empresa_id': dados.empresa_id})
                 .then(response => {
@@ -988,6 +1185,7 @@ export default {
         },
         carregando() {
             this.controle.carregando = true;
+            this.preloadTipoLista = true;
         },
         atualizar() {
             this.$refs.componente.atual = 1;

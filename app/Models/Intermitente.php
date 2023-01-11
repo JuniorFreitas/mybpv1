@@ -137,6 +137,16 @@ class Intermitente extends Model
         'prazo_resposta_expiracao' => 'string',
     ];
 
+    const STATUS_EXPIRADO = 'Expirado';
+    const STATUS_ABERTO = 'Aberto';
+    const STATUS_ENCERRADO = 'Encerrado';
+
+    const LISTA_STATUS = [
+        self::STATUS_ABERTO,
+        self::STATUS_ENCERRADO,
+        self::STATUS_EXPIRADO
+    ];
+
     public function getDataLancamentoAttribute($value)
     {
         if ($value) {
@@ -175,6 +185,14 @@ class Intermitente extends Model
         }
     }
 
+    public function getDataRespostaColaboradorAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($this->attributes['data_resposta_colaborador']);
+            return $data->dataCompleta() . ' às ' . $data->horaCompleta();
+        }
+    }
+
     public function Cliente()
     {
         return $this->hasOne(Cliente::class, 'id', 'cliente_id');
@@ -198,6 +216,11 @@ class Intermitente extends Model
     public function Area()
     {
         return $this->hasOne(AreaEtiqueta::class, 'id', 'area_id');
+    }
+
+    public function CentroDeCusto()
+    {
+        return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
     }
 
     public function ResponsavelAprovacao()
