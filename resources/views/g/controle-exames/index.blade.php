@@ -228,11 +228,25 @@
                                             v-text="listaEmpresasExames.filter(item => item.id === form.empresa_exame_id)[0].dados.email"></h5>
                                     </div>
                                 </div>
+
+                                <div class="col-12" v-if="form.empresa_exame_id">
+                                    <div class="switchToggle">
+                                        <input type="checkbox" v-model="form.envia_email" id="envia_email_documentos">
+                                        <label for="envia_email_documentos">Enviar E-mail</label>
+                                    </div>
+                                </div>
+{{--                                <div class="col-2" v-if="form.empresa_exame_id">--}}
+{{--                                    <div class="switchToggle" v-show="whatsappLiberado">--}}
+{{--                                        <input type="checkbox" v-model="form.envia_whatsapp_documentos" id="envia_whatsapp_documentos">--}}
+{{--                                        <label for="envia_whatsapp_documentos">Enviar Whatsapp</label>--}}
+{{--                                    </div>--}}
+{{--                                </div>--}}
                             </div>
                         </fieldset>
 
                         <formulario :model='form' :formulario_id='2' v-if='form.formulario'
                                     :mostra_titulo='false'></formulario>
+
 
                     </div>
 
