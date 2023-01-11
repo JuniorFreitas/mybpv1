@@ -23,6 +23,8 @@ const app = new Vue({
         formBusca: {
             preload: false,
             funcionarioNome: '',
+            status: 'admitidos',
+            escala_id: '',
         },
         lista: [],
         formPonto: {
@@ -32,6 +34,9 @@ const app = new Vue({
             preloadFrequencia: false,
             pontos: [],
         },
+        todas_escalas: [],
+        controle_ponto_adm: false,
+
         formPontoDefault: null,
         OCORRENCIA_FALTA: null,
         USER_ID: null,
@@ -91,7 +96,9 @@ const app = new Vue({
             this.$refs.paginacao.buscar();
         },
         carregou(dados) {
-            this.lista = dados;
+            this.lista = dados.itens;
+            this.todas_escalas = dados.todas_escalas;
+            this.controle_ponto_adm = dados.controle_ponto_adm;
             this.formBusca.preload = false;
         },
         carregando() {

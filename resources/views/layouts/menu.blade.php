@@ -815,7 +815,7 @@
             <ul aria-expanded="false">
                 @can('acesso_clinica')
                     <li>
-                        <a href="{{route('g.acesso-clinica.aces`so-clinica.index')}}" parent="exames" key="acesso-clinica-colaboradores">
+                        <a href="{{route('g.acesso-clinica.acesso-clinica.index')}}" parent="exames" key="acesso-clinica-colaboradores">
                             Colaboradores
                         </a>
                     </li>

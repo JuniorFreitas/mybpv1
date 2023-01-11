@@ -296,8 +296,8 @@ class AdmissaoController extends Controller
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
 
                 //Cria Usuario na Empresa
-                if ($dadosAdmissao['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO){
-                    User::SincronizaEmpresaFuncionario($feedback->empresa_id,$feedback->curriculo_id);
+                if ($dadosAdmissao['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
+                    User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
                 }
 
                 $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
@@ -593,8 +593,8 @@ class AdmissaoController extends Controller
 
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
                 //Cria Usuario na Empresa
-                if ($dadosAdmissao['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO){
-                    User::SincronizaEmpresaFuncionario($feedback->empresa_id,$feedback->curriculo_id);
+                if ($dadosAdmissao['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
+                    User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
                 }
 
                 $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
@@ -725,7 +725,6 @@ class AdmissaoController extends Controller
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
             }
-
 
 
             DB::commit();
@@ -1096,8 +1095,8 @@ class AdmissaoController extends Controller
 
                     $feedback->Admissao->update($admissaoDados);
                     //Cria Usuario na Empresa
-                    if ($admissaoDados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO){
-                        User::SincronizaEmpresaFuncionario($feedback->empresa_id,$feedback->curriculo_id);
+                    if ($admissaoDados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
+                        User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
                     }
                     if (!isset($dadosAdmissao['id'])) {
                         $dadosAdmissao['admissao_id'] = $feedback->Admissao->id;
@@ -1110,8 +1109,8 @@ class AdmissaoController extends Controller
                     $admissao_id = $feedback->Admissao()->create($admissaoDados);
 
                     //Cria Usuario na Empresa
-                    if ($admissaoDados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO){
-                        User::SincronizaEmpresaFuncionario($feedback->empresa_id,$feedback->curriculo_id);
+                    if ($admissaoDados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
+                        User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
                     }
 
                     $dadosAdmissao['admissao_id'] = $admissao_id['id'];
@@ -1512,9 +1511,13 @@ class AdmissaoController extends Controller
         }
 
         if ($request->filled('campoStatusAdmissao')) {
-            $resultado->whereHas('Admissao', function ($query) use ($request) {
-                $query->whereStatus($request->campoStatusAdmissao);
-            });
+            if ($request->campoStatusAdmissao == 'EM PROCESSO') {
+                $resultado->whereDoesntHave('Admissao');
+            } else {
+                $resultado->whereHas('Admissao', function ($query) use ($request) {
+                    $query->whereStatus($request->campoStatusAdmissao);
+                });
+            }
         }
 
         if ($request->filled('campoTipoAdmissao')) {
@@ -1540,10 +1543,10 @@ class AdmissaoController extends Controller
      */
     public function atualizar(Request $request)
     {
-        $pg = $this->filtro($request)->paginate($request->porPag ?: 20);
+        $pg = $this->filtro($request)->paginate($request->pages ?: 20);
         $dados = [
             'admissao_processo_dados_editar' => auth()->user()->can('privilegio_admissao_processo_dados_editar'),
-            'status_admissao' => Admissao::TODOS_STATUS_ADMISSAO,
+            'status_admissao' => array_merge(['EM PROCESSO'], Admissao::TODOS_STATUS_ADMISSAO),
             'tipos_admissao' => Admissao::TODOS_TIPOS_ADMISSAO,
             'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO
         ];

@@ -67,8 +67,8 @@
 
                 <div class="col-12 col-md-12">
                     <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
-                            @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                            @click="atualizar">
+                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
                     <button type="button" class="btn btn-sm btn-secondary"
@@ -95,7 +95,7 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
-                        <td class="text-center">Nº</td>
+                        <td class="text-center">ID</td>
                         <td class="text-center">Nome</td>
                         <td class="text-center">Gestor</td>
                         <td class="text-center">Ativo</td>
