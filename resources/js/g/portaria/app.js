@@ -64,7 +64,9 @@ const app = new Vue({
                 },
 
                 admissao: {
-                    funcao: ""
+                    funcao: "",
+                    avaliacao_psicologica: "",
+                    acessar_area_porto: "",
                 }
             }
 
