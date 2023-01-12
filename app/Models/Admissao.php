@@ -244,7 +244,9 @@ class Admissao extends Model
         'data_biometria',
         'pis',
         'prazo_experiencia',
-        'data_encerramento'
+        'data_encerramento',
+        'acessar_area_porto',
+        'avaliacao_psicologica'
     ];
     protected $casts = [
         'id' => 'int',
@@ -301,6 +303,8 @@ class Admissao extends Model
         'pis' => 'string',
         'prazo_experiencia' => 'string',
         'data_encerramento' => 'string',
+        'acessar_area_porto' => 'string',
+        'avaliacao_psicologica' => 'string'
     ];
 
     const STATUS_ADMISSAO_AGUARDANDOQUALIFICACAO = "AGUARDANDO QUALIFICAÇÃO";

@@ -75,10 +75,16 @@ class PortariaController extends Controller
             }
 
             if ($resultado->Admissao) {
-                $resultado->Admissao->update(['funcao' => $dados['funcao']]);
+                $resultado->Admissao->update([
+                    'funcao' => $dados['admissao']['funcao'],
+                    'acessar_area_porto' => $dados['admissao']['acessar_area_porto'],
+                    'avaliacao_psicologica' => $dados['admissao']['avaliacao_psicologica'],
+                ]);
             } else {
                 $resultado->Admissao()->create([
-                    'funcao' => $dados['funcao']
+                    'funcao' => $dados['admissao']['funcao'],
+                    'acessar_area_porto' => $dados['admissao']['acessar_area_porto'],
+                    'avaliacao_psicologica' => $dados['admissao']['avaliacao_psicologica'],
                 ]);
             }
             \DB::commit();

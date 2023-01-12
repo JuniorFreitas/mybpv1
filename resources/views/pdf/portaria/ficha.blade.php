@@ -104,7 +104,7 @@
 
         .linhas {
             width: 16.085cm;
-            height: 30.3px;
+            height: 37.7px;
         }
 
         .txt {
@@ -121,7 +121,7 @@
         }
 
         .linhaComum {
-            height: 40.3px;
+            height: 42px;
         }
 
         .txtComum {
@@ -135,7 +135,7 @@
         .rsptxtComum {
             margin-left: 15px;
             margin-right: 25px;
-            padding-top: 5px
+            padding-top: 5px;
         }
 
         .d-flex {
@@ -161,6 +161,19 @@
 
         .float-right {
             float: right !important;
+        }
+
+        .caixaSelecao{
+            width: 16px;
+            height: 16px;
+            border: 1px solid black;
+            text-align: center;
+            margin-right: 5px;
+            display: flex;
+            align-items: stretch;
+            justify-content: space-around;
+            margin-top: -2px;
+            margin-left: 14px;
         }
 
         :root {
@@ -241,7 +254,7 @@
                     </div>
                 </div>
 
-                <div class="b-bottom  b-left float-left linhas">
+                <div class="b-bottom b-right b-left float-left linhas" style="width: 100%">
                     <div class="txt" style="width: 40px;">Endereço:</div>
                     <div class="rsptxt">
                         {{ $candidato->Curriculo->endereco_completo}}
@@ -292,27 +305,28 @@
                     </div>
                 </div>
 
-                <div class="b-bottom b-left b-right  float-left linhaComum" style="width: 50%;">
-                    <div class="txtComum" style="width: 100%; margin-bottom: 4px;">Nome do pai</div>
+                <div class="b-bottom b-left b-right float-left linhaComum" style="width: 240px;">
+                    <div class="txtComum" style="width: 100%; margin-bottom: 4px;">Ass. Resp.Empresa:</div>
                     <div class="rsptxtComum">
-                        {{ $candidato->Curriculo->filiacao_pai}}
+
                     </div>
                 </div>
 
-                <div class="b-bottom b-right float-left linhaComum" style="width: 50%;">
-                    <div class="txtComum" style="width: 100%; margin-bottom: 4px;">Nome da mãe</div>
-                    <div class="rsptxtComum">
-                        {{ $candidato->Curriculo->filiacao_mae}}
+                <div class="b-bottom b-right float-left linhaComum" style="width: 275px">
+                    <div class="txtComum" style="width: 100%; margin-bottom: 4px;">O colaborador acessará a área do porto?</div>
+                    <div class="rsptxtComum" style="display: inline-flex; margin: -5px 0px 0px 65px;">
+                        <div class="caixaSelecao">{{ $candidato->Admissao->acessar_area_porto == 'Sim' ? 'X' : '' }}</div>Sim
+                        <div class="caixaSelecao">{{ $candidato->Admissao->acessar_area_porto == 'Não' ? 'X' : '' }}</div>Não
                     </div>
                 </div>
 
-
-                <div class="b-bottom b-left b-right float-left linhaComum" style="width: 100%;">
-                    <div class="txtComum">Ass. Resp.Empresa:</div>
-                    <div class="rsptxtComum">
+                <div class="b-bottom b-right float-left linhaComum" style="width: 206px;">
+                    <div class="txtComum" style="width: 100%; margin-bottom: 4px; margin-left: 30px;">Avaliação Psicológica</div>
+                    <div class="rsptxtComum" style="display: inline-flex; margin: -5px 0px 0px 35px;">
+                        <div class="caixaSelecao">{{ $candidato->Admissao->avaliacao_psicologica == 'Sim' ? 'X' : '' }}</div>Sim
+                        <div class="caixaSelecao">{{ $candidato->Admissao->avaliacao_psicologica == 'Não' ? 'X' : '' }}</div>Não
                     </div>
                 </div>
-
 
                 <div class="b-bottom b-left float-left"
                      style="width: 50%; height: 113px; border-bottom-left-radius: 9px;">
@@ -326,6 +340,10 @@
                     <div class="txtComum" style="margin-top: 10px; margin-right: 20px;">2.Treinamento de Introdutório
                     </div>
                     <div class="rsptxtComum" style="margin-top: 10px; "> ____/____/________</div>
+
+                    <div class="txtComum" style="margin-top: 10px;">3. Plano de Saúde</div>
+                    <div class="rsptxtComum" style="margin-top: 12px; margin-left: 210px;"> __________________
+                    </div>
                 </div>
 
                 <div class="b-bottom b-right float-left"
@@ -333,16 +351,16 @@
                     <div class="txtComum" style="color: white"></div>
                     <div class="rsptxtComum"></div>
 
-                    <div class="txtComum" style="margin-top: 22px; margin-right: 0px">3. ASO <span
+                    <div class="txtComum" style="margin-top: 22px; margin-right: 0px">4. ASO <span
                             style="color: white"></span></div>
                     <div class="rsptxtComum b-bottom" style="margin-top: 33px; margin-left: 61px; width: 299px;"></div>
 
-                    <div class="txtComum" style="margin-top: 15px; margin-right: 0px; margin-left: -41px;">4. Consulta
+                    <div class="txtComum" style="margin-top: 15px; margin-right: 0px; margin-left: -41px;">5. Consulta
                     </div>
                     <div class="rsptxtComum b-bottom"
                          style="margin-top: 25px; margin-right: 0px; margin-left: 88px; width: 272px;"></div>
 
-                    <div class="txtComum" style="margin-top: 13px; margin-left: -69px;">5. Aprov. Seg. Patrimonial</div>
+                    <div class="txtComum" style="margin-top: 13px; margin-left: -69px;">6. Aprov. Seg. Patrimonial</div>
                     <div class="rsptxtComum b-bottom"
                          style="margin-top: 25px; margin-right: 0px; margin-left: 175px; width: 184px;"></div>
                 </div>
