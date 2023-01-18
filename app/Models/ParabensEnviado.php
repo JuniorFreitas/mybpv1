@@ -20,6 +20,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereId($value)
  * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @property string|null $status
+ * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereStatus($value)
  */
 class ParabensEnviado extends Model
 {

@@ -75,6 +75,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereObsRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereRespostaRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserRhId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  */
 class DemissaoPrevista extends Model
 {

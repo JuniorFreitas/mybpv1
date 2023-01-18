@@ -190,6 +190,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereDeletedAt($value)
  * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo withTrashed()
  * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo withoutTrashed()
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $PlanoSaudeAssinado
+ * @property-read int|null $plano_saude_assinado_count
  */
 class FeedbackCurriculo extends Model
 {

@@ -21,6 +21,12 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereEmpresaId($value)
+ * @property int|null $gestor_id
+ * @property int|null $centro_custo_id
+ * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \App\Models\User|null $Gestor
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereGestorId($value)
  */
 class AreaEtiqueta extends Model
 {

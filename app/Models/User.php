@@ -139,6 +139,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Query\Builder|User withTrashed()
  * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
  * @property-read \App\Models\EmpresaConfig|null $EmpresaPontoConfiguracoes
+ * @property bool $privilegio_gestor_area
+ * @property bool $privilegio_gestor_centro_custo
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoFeedback[] $Avaliadores
+ * @property-read int|null $avaliadores_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Avaliacao[] $avaliadoresFuncionario
+ * @property-read int|null $avaliadores_funcionario_count
+ * @property-read mixed $privilegios
+ * @method static Builder|User tiposGerenciais()
+ * @method static Builder|User wherePrivilegioGestorArea($value)
+ * @method static Builder|User wherePrivilegioGestorCentroCusto($value)
  */
 class User extends Authenticatable
 {
