@@ -8,6 +8,7 @@ use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\EmpresaTemporaria;
 use App\Models\FeedbackCurriculo;
+use App\Models\LogHistorico;
 use App\Models\User;
 use Barryvdh\DomPDF\PDF;
 use DB;
@@ -80,6 +81,7 @@ class DossieController extends Controller
                     foreach ($dados['doc_selecaoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+                        LogHistorico::createLog($feedback->id, 'Removeu Documento de Seleção');
                     }
                 }
                 // inseri uma nova DocSelecao
@@ -96,6 +98,8 @@ class DossieController extends Controller
                                 'tipo' => 'DocSelecao',
                                 'label' => 'DOCUMENTO DE SELEÇÃO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Documento de Seleção');
                         }
                     }
                 }
@@ -105,6 +109,7 @@ class DossieController extends Controller
                     foreach ($dados['doc_checklistDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+                        LogHistorico::createLog($feedback->id, 'Removeu Documentos de Checklist Admissão');
                     }
                 }
                 // inseri uma nova DocChecklist
@@ -120,6 +125,8 @@ class DossieController extends Controller
                                 'tipo' => 'DocChecklist',
                                 'label' => 'DOCUMENTOS CHECK LIST ADMISSÃO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Documentos de Checklist Admissão');
                         }
                     }
                 }
@@ -129,9 +136,11 @@ class DossieController extends Controller
                     foreach ($dados['ficha_registradaDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Ficha Registro Assinada');
                     }
                 }
-                // inseri uma nova DocSelecao
+                // insere uma nova Ficha Registrada
                 if (isset($dados['ficha_registrada'])) {
                     foreach ($dados['ficha_registrada'] as $index => $anexo) {
                         $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
@@ -144,6 +153,8 @@ class DossieController extends Controller
                                 'tipo' => 'FichaRegistrada',
                                 'label' => 'FICHA REGISTRO ASSINADA'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Ficha Registro Assinada');
                         }
                     }
                 }
@@ -153,6 +164,8 @@ class DossieController extends Controller
                     foreach ($dados['contrato_trabalho_assinadoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Contrato de Trabalho Assinado');
                     }
                 }
                 // inseri uma nova ContratoTrabalhoAssinado
@@ -168,6 +181,8 @@ class DossieController extends Controller
                                 'tipo' => 'ContratoTrabalhoAssinado',
                                 'label' => 'CONTRATO DE TRABALHO ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Contrato de Trabalho Assinado');
                         }
                     }
                 }
@@ -177,6 +192,8 @@ class DossieController extends Controller
                     foreach ($dados['termo_confiabilidadeDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Termo de Confidencialidade Assinado');
                     }
                 }
                 // inseri uma nova TermoConfiabilidade
@@ -192,6 +209,8 @@ class DossieController extends Controller
                                 'tipo' => 'TermoConfiabilidade',
                                 'label' => 'TERMO DE CONFIDENCIALIDADE ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Termo de Confidencialidade Assinado');
                         }
                     }
                 }
@@ -201,6 +220,8 @@ class DossieController extends Controller
                     foreach ($dados['vale_transporte_assinadoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Opção Vale Transporte Assinado');
                     }
                 }
                 // inseri uma nova ValeTransporteAssinado
@@ -216,6 +237,8 @@ class DossieController extends Controller
                                 'tipo' => 'ValeTransporteAssinado',
                                 'label' => 'OPÇÃO VALE TRANSPORTE ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Opção Vale Transporte Assinado');
                         }
                     }
                 }
@@ -225,6 +248,8 @@ class DossieController extends Controller
                     foreach ($dados['acordo_horaDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Acordo Compensação de Horas Assinado');
                     }
                 }
                 // inseri uma nova AcordoHora
@@ -240,6 +265,8 @@ class DossieController extends Controller
                                 'tipo' => 'AcordoHora',
                                 'label' => 'ACORDO COMPENSAÇÃO DE HORAS ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Acordo Compensação de Horas Assinado');
                         }
                     }
                 }
@@ -249,6 +276,8 @@ class DossieController extends Controller
                     foreach ($dados['salario_familia_assinadoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Termo Salário Família Assinado');
                     }
                 }
                 // inseri uma nova SalarioFamiliaAssinado
@@ -264,6 +293,8 @@ class DossieController extends Controller
                                 'tipo' => 'SalarioFamiliaAssinado',
                                 'label' => 'TERMO SALÁRIO FAMILIA ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Termo Salário Família Assinado');
                         }
                     }
                 }
@@ -273,6 +304,8 @@ class DossieController extends Controller
                     foreach ($dados['declaracao_dependentes_impostoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Declaração Dependentes Imposto de Renda Assinado');
                     }
                 }
                 // inseri uma nova DeclaracaoDependentesImposto
@@ -288,6 +321,8 @@ class DossieController extends Controller
                                 'tipo' => 'DeclaracaoDependentesImposto',
                                 'label' => 'DECLARAÇÃO DEPENDENTES IMPOSTO DE RENDA ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Declaração Dependentes Imposto de Renda Assinado');
                         }
                     }
                 }
@@ -297,6 +332,8 @@ class DossieController extends Controller
                     foreach ($dados['comprovante_dev_ctpDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Comprovante Devolução CTPS Assinado');
                     }
                 }
                 // inseri uma nova ComprovanteDevCtp
@@ -312,6 +349,8 @@ class DossieController extends Controller
                                 'tipo' => 'ComprovanteDevCtp',
                                 'label' => 'COMPROVANTE DEVOLUÇÃO CTPS ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Comprovante Devolução CTPS Assinado');
                         }
                     }
                 }
@@ -321,6 +360,8 @@ class DossieController extends Controller
                     foreach ($dados['ordem_servico_assinadaDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Ordem de Serviço Assinada');
                     }
                 }
                 // inseri uma nova OrdemServicoAssinada
@@ -336,6 +377,8 @@ class DossieController extends Controller
                                 'tipo' => 'OrdemServicoAssinada',
                                 'label' => 'ORDEM DE SERVIÇO ASSINADA'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Ordem de Serviço Assinada');
                         }
                     }
                 }
@@ -345,6 +388,8 @@ class DossieController extends Controller
                     foreach ($dados['certificado_trein_segDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Certificados de Treinamentos Segurança');
                     }
                 }
                 // inseri uma nova CertificadoTreinSeg
@@ -360,6 +405,7 @@ class DossieController extends Controller
                                 'tipo' => 'CertificadoTreinSeg',
                                 'label' => 'CERTIFICADOS DE TREINAMENTOS SEGURANÇA'
                             ]);
+                            LogHistorico::createLog($feedback->id, 'Inseriu Certificados de Treinamentos Segurança');
                         }
                     }
                 }
@@ -369,6 +415,7 @@ class DossieController extends Controller
                     foreach ($dados['ficha_entrega_epiDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+                        LogHistorico::createLog($feedback->id, 'Removeu Ficha de Entrega de EPI');
                     }
                 }
                 // inseri uma nova FichaEntregaEpi
@@ -384,6 +431,8 @@ class DossieController extends Controller
                                 'tipo' => 'FichaEntregaEpi',
                                 'label' => 'FICHA DE ENTREGA DE EPI'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Ficha de Entrega de EPI');
                         }
                     }
                 }
@@ -393,6 +442,8 @@ class DossieController extends Controller
                     foreach ($dados['contra_cheque_mensaisDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Contracheques Mensais');
                     }
                 }
                 // inseri uma nova ContraChequeMensais
@@ -408,6 +459,8 @@ class DossieController extends Controller
                                 'tipo' => 'ContraChequeMensais',
                                 'label' => 'CONTRACHEQUES MENSAIS'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Contracheques Mensais');
                         }
                     }
                 }
@@ -417,6 +470,8 @@ class DossieController extends Controller
                     foreach ($dados['cartoes_pontoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Cartões de Ponto Mensais');
                     }
                 }
                 // inseri uma nova CartoesPonto
@@ -432,6 +487,8 @@ class DossieController extends Controller
                                 'tipo' => 'CartoesPonto',
                                 'label' => 'CARTÕES DE PONTO MENSAIS'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Cartões de Ponto Mensais');
                         }
                     }
                 }
@@ -441,6 +498,8 @@ class DossieController extends Controller
                     foreach ($dados['aviso_feriasDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Avisos de Férias Anuais');
                     }
                 }
                 // inseri uma nova AvisoFerias
@@ -456,6 +515,8 @@ class DossieController extends Controller
                                 'tipo' => 'AvisoFerias',
                                 'label' => 'AVISOS DE FÉRIAS ANUAIS'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Avisos de Férias Anuais');
                         }
                     }
                 }
@@ -465,6 +526,8 @@ class DossieController extends Controller
                     foreach ($dados['controle_asosDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Pasta de Controle de ASOS');
                     }
                 }
                 // inseri uma nova ControleAsos
@@ -480,6 +543,8 @@ class DossieController extends Controller
                                 'tipo' => 'ControleAsos',
                                 'label' => 'PASTA DE CONTROLE DE ASOS: ADMISSIONAIS, PERIODICOS,MUDANÇA DE FUNÇÃO, DEMISSIONAL'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Pasta de Controle de ASOS');
                         }
                     }
                 }
@@ -489,6 +554,8 @@ class DossieController extends Controller
                     foreach ($dados['book_rescisaoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Book de Rescisão - Checklist Demissão');
                     }
                 }
                 // inseri uma nova BookRescisao
@@ -504,6 +571,8 @@ class DossieController extends Controller
                                 'tipo' => 'BookRescisao',
                                 'label' => 'BOOK DE RESCISÃO – CHECK LIST DEMISSÃO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Book de Rescisão - Checklist Demissão');
                         }
                     }
                 }
@@ -513,6 +582,8 @@ class DossieController extends Controller
                     foreach ($dados['termo_rescisaoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Termo de Rescisão de Contrato de Trabalho Assinado');
                     }
                 }
                 // inseri uma nova TermoRescisao
@@ -528,6 +599,8 @@ class DossieController extends Controller
                                 'tipo' => 'TermoRescisao',
                                 'label' => 'TERMO DE RESCISAO DE CONTRATO DE TRABALHO ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Termo de Rescisão de Contrato de Trabalho Assinado');
                         }
                     }
                 }
@@ -537,6 +610,8 @@ class DossieController extends Controller
                     foreach ($dados['guia_seguro_desempregoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Guias de Seguro Desemprego Assinadas');
                     }
                 }
                 // inseri uma nova GuiaSeguroDesemprego
@@ -552,6 +627,8 @@ class DossieController extends Controller
                                 'tipo' => 'GuiaSeguroDesemprego',
                                 'label' => 'GUIAS DE SEGURO DESEMPREGO ASSINADAS'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Guias de Seguro Desemprego Assinadas');
                         }
                     }
                 }
@@ -561,6 +638,8 @@ class DossieController extends Controller
                     foreach ($dados['chave_fgtsDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Chave de FGTS Assinada');
                     }
                 }
                 // inseri uma nova ChaveFgts
@@ -576,6 +655,8 @@ class DossieController extends Controller
                                 'tipo' => 'ChaveFgts',
                                 'label' => 'CHAVE DE FGTS ASSINADA'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Chave de FGTS Assinada');
                         }
                     }
                 }
@@ -585,6 +666,8 @@ class DossieController extends Controller
                     foreach ($dados['comprovante_pagamentoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Comprovante de Pagamento');
                     }
                 }
                 // inseri uma nova ComprovantePagamento
@@ -600,6 +683,8 @@ class DossieController extends Controller
                                 'tipo' => 'ComprovantePagamento',
                                 'label' => 'COMPROVANTE DE PAGAMENTO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Comprovante de Pagamento');
                         }
                     }
                 }
@@ -609,6 +694,8 @@ class DossieController extends Controller
                     foreach ($dados['exame_demissionalDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Exame Demissional');
                     }
                 }
                 // inseri uma nova ExameDemissional
@@ -624,6 +711,8 @@ class DossieController extends Controller
                                 'tipo' => 'ExameDemissional',
                                 'label' => 'EXAME DEMISSIONAL'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Exame Demissional');
                         }
                     }
                 }
@@ -633,6 +722,8 @@ class DossieController extends Controller
                     foreach ($dados['nada_consta_ficha_epiDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Nada Consta de Baixa e Ficha de Entrega de EPI');
                     }
                 }
                 // inseri uma nova NadaConstaFichaEpi
@@ -648,6 +739,8 @@ class DossieController extends Controller
                                 'tipo' => 'NadaConstaFichaEpi',
                                 'label' => 'NADA CONSTA DE BAIXA E FICHA DE ENTREGA DE EPI'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Nada Consta de Baixa e Ficha de Entrega de EPI');
                         }
                     }
                 }
@@ -657,6 +750,8 @@ class DossieController extends Controller
                     foreach ($dados['comprovante_devolucao_ctpsDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Comprovante Devolução CTPS Assinado');
                     }
                 }
                 // inseri uma nova ComprovanteDevolucaoCtps
@@ -672,6 +767,8 @@ class DossieController extends Controller
                                 'tipo' => 'ComprovanteDevolucaoCtps',
                                 'label' => 'COMPROVANTE DEVOLUÇÃO CTPS ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Comprovante Devolução CTPS Assinado');
                         }
                     }
                 }
@@ -681,6 +778,8 @@ class DossieController extends Controller
                     foreach ($dados['ppp_assinadoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu PPP Assinado');
                     }
                 }
                 // inseri uma nova PppAssinado
@@ -696,6 +795,8 @@ class DossieController extends Controller
                                 'tipo' => 'PppAssinado',
                                 'label' => 'PPP ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu PPP Assinado');
                         }
                     }
                 }
@@ -705,6 +806,8 @@ class DossieController extends Controller
                     foreach ($dados['arquivamento_eletronicoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Forma de Arquivamento Registro Eletrônico');
                     }
                 }
                 // inseri uma nova ArquivamentoEletronico
@@ -720,6 +823,8 @@ class DossieController extends Controller
                                 'tipo' => 'ArquivamentoEletronico',
                                 'label' => 'FORMA DE ARQUIVAMENTO REGISTRO ELETRÔNICO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Forma de Arquivamento Registro Eletrônico');
                         }
                     }
                 }
@@ -729,6 +834,8 @@ class DossieController extends Controller
                     foreach ($dados['arquivamento_dossieDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Forma de Arquivamento Dossiê');
                     }
                 }
                 // inseri uma nova ArquivamentoDossie
@@ -744,6 +851,8 @@ class DossieController extends Controller
                                 'tipo' => 'ArquivamentoDossie',
                                 'label' => 'FORMA DE ARQUIVAMENTO DOSSIÊ'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Forma de Arquivamento Dossiê');
                         }
                     }
                 }
@@ -753,6 +862,8 @@ class DossieController extends Controller
                     foreach ($dados['plano_saude_assinadoDel'] as $id_anexo) {
                         $arquivo = Arquivo::find($id_anexo);
                         $arquivo->excluir();
+
+                        LogHistorico::createLog($feedback->id, 'Removeu Plano de Saúde Assinado');
                     }
                 }
                 // inseri uma nova PlanoSaudeAssinado
@@ -768,6 +879,8 @@ class DossieController extends Controller
                                 'tipo' => 'PlanoSaudeAssinado',
                                 'label' => 'PLANO DE SAÚDE ASSINADO'
                             ]);
+
+                            LogHistorico::createLog($feedback->id, 'Inseriu Plano de Saúde Assinado');
                         }
                     }
                 }

@@ -44,6 +44,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereEmpresaId($value)
+ * @property int|null $area_etiqueta_id
+ * @property int|null $centro_custo_id
+ * @property-read \App\Models\AreaEtiqueta|null $Area
+ * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao vinculados()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereAreaEtiquetaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereCentroCustoId($value)
  */
 class AtaReuniao extends Model
 {

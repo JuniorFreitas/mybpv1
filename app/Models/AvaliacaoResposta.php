@@ -8,6 +8,26 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\AvaliacaoResposta
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int|null $avaliacao_feedback_id
+ * @property int|null $topico_id
+ * @property int $nota
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResposta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResposta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResposta query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResposta whereAvaliacaoFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResposta whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResposta whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResposta whereNota($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResposta whereTopicoId($value)
+ * @mixin \Eloquent
+ */
 class AvaliacaoResposta extends Model
 {
     use HasFactory, TenantTrait, LogsActivity;

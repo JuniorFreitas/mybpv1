@@ -783,6 +783,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('/{feedback}', [\App\Http\Controllers\FeedbackHistoricoController::class, 'store'])->name('store');
         });
 
+        Route::group(['as' => 'logshistorico.', 'prefix' => 'log-historico'], function () {
+            Route::post('/atualizar', [\App\Http\Controllers\LogsHistoricoController::class, 'atualizar'])->name('atualizarLog'); // manter essa rota antes do resource
+        });
+
 
     });
     //Fim Menu Admissao
