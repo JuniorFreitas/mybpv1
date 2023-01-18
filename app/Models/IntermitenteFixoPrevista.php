@@ -83,6 +83,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereObsRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereRespostaRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserRhId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  */
 class IntermitenteFixoPrevista extends Model
 {

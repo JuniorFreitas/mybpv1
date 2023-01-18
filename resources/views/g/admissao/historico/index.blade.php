@@ -91,6 +91,13 @@
                            href="#nav-meta"
                            role="tab" aria-controls="nav-meta" aria-selected="false">METAS</a>
                     </li>
+                    <li class="nav-item" v-if="permissoes.logs">
+                        <a class="nav-item nav-link" id="nav-log-historico-tab"
+                           @click.prevent="trocaAba('abrirLogHistorico')" data-toggle="tab"
+                           href="#nav-log-historico"
+                           role="tab" aria-controls="nav-log-historico" aria-selected="true">
+                            LOGS</a>
+                    </li>
                 </ul>
 
                 <div class="tab-content py-3 p-2">
@@ -147,6 +154,11 @@
                          aria-labelledby="nav-meta-tab">
                         <metas v-if="abas.abrirMetas && permissoes.metas"
                         :feedback_id="form.feedback_id"></metas>
+                    </div>
+                    <div class="tab-pane fade show" id="nav-log-historico" role="tabpanel"
+                         aria-labelledby="nav-log-historico-tab">
+                        <logs-historico v-if="abas.abrirLogHistorico && permissoes.logs"
+                                            :feedback_id="form.feedback_id"></logs-historico>
                     </div>
                 </div>
 
@@ -225,6 +237,7 @@
                     <th class="text-center">Nome</th>
                     <th class="text-center">Cargo</th>
                     <th class="text-center">Status</th>
+                    <th class="text-center">Última Atualização</th>
                     <th class="text-center">Ação</th>
                 </tr>
                 </thead>
@@ -243,7 +256,9 @@
                         @{{item.admissao.status}}
                         @{{item.admissao.status === 'ADMITIDO' ? item.admissao.data_admissao : null}}
                     </td>
-
+                    <td class="text-center">
+                        @{{item.ultima_atualizacao}}
+                    </td>
                     <td class="text-center">
                         <button type="button" class="btn btn-sm btn-primary mb-1" title="Editar"
                                 @click.prevent="abrirHistorico(item)"

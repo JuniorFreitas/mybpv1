@@ -33,6 +33,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereOrdem($value)
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereEmpresaId($value)
+ * @property string|null $label_reduzida
+ * @property bool|null $exibir_na_carteira
+ * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereExibirNaCarteira($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereLabelReduzida($value)
  */
 class Vencimento extends Model
 {
