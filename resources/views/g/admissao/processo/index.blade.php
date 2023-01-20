@@ -83,7 +83,9 @@
             </p>
             <div v-if="!formAvulsa.preload && !formAvulsa.cadastrado">
                 <div v-if="!formAvulsa.preload">
-
+                    <div class="alert alert-warning" v-show="formAvulsa.ex_funcionario">
+                        <i class="fa fa-exclamation-triangle"></i> Ex-Funcionário
+                    </div>
                     <fieldset>
                         <legend>Dados Pessoais</legend>
                         <div class="row">

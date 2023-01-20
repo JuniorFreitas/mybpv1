@@ -207,7 +207,7 @@
             <div class="col-12">
                 <div class="form-group">
                     <label>Observações</label>
-                    <input type="text" :disabled="visualizar || disabled || form.obs === 'ADMISSÃO AVULSA'"
+                    <input type="text" :disabled="visualizar || disabled || form.obs === 'ADMISSÃO AVULSA' || form.obs === 'RECONTRATAÇÃO'"
                            autocomplete="off"
                            class="form-control" v-model="form.obs"/>
                 </div>
