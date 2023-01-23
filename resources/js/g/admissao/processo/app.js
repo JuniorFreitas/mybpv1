@@ -80,6 +80,7 @@ const app = new Vue({
             preload: false,
             cadastrado: false,
             cadastrando: false,
+            ex_funcionario: false,
 
             curriculo: {
                 cpf: "",
@@ -649,6 +650,8 @@ const app = new Vue({
                             Object.assign(this.formAvulsa, response.data);
                             this.exibiFormulario = true;
                             this.formAvulsa.preload = false;
+                            this.formAvulsa.ex_funcionario = data.ex_funcionario;
+                            console.log(response.data.parecer_rh.indicacao);
                         }
 
                         if (!data.achou) {
