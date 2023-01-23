@@ -1800,9 +1800,12 @@ class AdmissaoController extends Controller
             $q->whereCpf($cpf);
         });
 
+        $demissao = Admissao::whereHas('Demissao')->whereHas('Feedback.Curriculo', function ($q) use ($cpf) {
+            $q->whereCpf($cpf);
+        });
 
         // Se o cara ja possui cadastro na Admissão
-        if ($admissao->count() > 0) {
+        if ($admissao->count() > 0 && $demissao->count() == 0) {
             return response()->json([
                 'msg' => "Candidato {$admissao->first()->Feedback->Curriculo->id} - {$admissao->first()->Feedback->Curriculo->nome} ja possui cadastro de admissão desde " . DataHora::dataFormatada($admissao->first()->created_at),
             ], 400);
@@ -1828,8 +1831,8 @@ class AdmissaoController extends Controller
                     $feedback->vaga_id = $feedback->vaga_id ? $feedback->vaga_id : '';
                     $feedback->autocomplete_label_vaga_modal = $feedback->vaga_id ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
                     $feedback->autocomplete_label_vaga_modal_anterior = $feedback->vaga_id ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
-                    $feedback->autocomplete_label_cliente_modal = $feedback->vaga_id ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
-                    $feedback->autocomplete_label_cliente_modal_anterior = $feedback->vaga_id ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
+                    $feedback->autocomplete_label_cliente_modal = $feedback->vaga_id && $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
+                    $feedback->autocomplete_label_cliente_modal_anterior = $feedback->vaga_id && $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
                 } else {
                     $feedback = new \stdClass();
                     $feedback->vaga_id = '';
@@ -1844,6 +1847,7 @@ class AdmissaoController extends Controller
                 if ($curriculo->FeedBack && $curriculo->FeedBack->parecerRh) {
                     $parecerRH = $curriculo->FeedBack->parecerRh;
                     $parecerRH->ex_funcionario = $parecerRH->ex_funcionario ? $parecerRH->ex_funcionario : false;
+                    $parecerRH->indicacao = is_null($parecerRH->indicado) ? '' : $parecerRH->indicacao;
                 } else {
                     $parecerRH = new \stdClass();
                     $parecerRH->ex_funcionario = false;
@@ -1892,6 +1896,8 @@ class AdmissaoController extends Controller
                     $resultadoIntegrado->encaminhado_exame = $resultadoIntegrado->encaminhado_exame ?: false;
                     $resultadoIntegrado->encaminhado_treinamento = $resultadoIntegrado->encaminhado_treinamento ?: false;
                     $resultadoIntegrado->excessao = $resultadoIntegrado->excessao ?: false;
+                    $resultadoIntegrado->responsavel_envio = '';
+                    $resultadoIntegrado->obs = 'RECONTRATAÇÃO';
 
                 } else {
                     $resultadoIntegrado = new \stdClass();
@@ -1909,6 +1915,7 @@ class AdmissaoController extends Controller
                 return response()->json(
                     [
                         'achou' => true,
+                        'ex_funcionario' => true,
                         'curriculo' => $curriculo->load('Telefones'),
                         'feedback' => $feedback,
                         'parecer_rh' => $parecerRH,
@@ -1919,7 +1926,7 @@ class AdmissaoController extends Controller
                     ]
                     , 200);
             } else {
-                return response()->json(['achou' => false], 200);
+                return response()->json(['achou' => false, 'ex_funcionario' => false], 200);
             }
         }
 
