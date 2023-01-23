@@ -43,12 +43,12 @@
         horário que lhe for determinado, observando o limite legal.
     </p><br>
     <p class="f12 text-justify">
-        <strong>3ª (Horas Extras)</strong> – Obriga-se também o <strong>EMPREGADO</strong> a prestar serviços em horas extraordinárias,
-        sempre que lhe for determinado pela <strong>EMPREGADORA</strong>, na forma prevista em Lei. Na hipótese desta
-        faculdade pela <strong>EMPREGADORA</strong>, o <strong>EMPREGADO</strong> receberá as horas extraordinárias com
-        o acréscimo
-        legal, ou será tratado através de acordo de compensação de horas, com a consequente redução da jornada de
-        trabalho em outro dia.
+        <strong>3ª (Horas Extras)</strong> – Obriga-se também o <strong>EMPREGADO</strong> a prestar serviços em horas
+        extraordinárias, sempre que lhe for determinado pela <strong>EMPREGADORA</strong>, na forma prevista em Lei.
+        Na hipótese desta faculdade pela <strong>EMPREGADORA</strong>, o <strong>EMPREGADO</strong> receberá as horas
+        extraordinárias com o acréscimo legal, ou será tratado através de acordo de compensação de
+        horas, com a consequente redução da jornada de trabalho em outro dia. Horas extras não autorizadas não serão
+        remuneradas e estarão passíveis de medidas administrativas.
     </p><br>
     <p class="f12 text-justify">
         <strong>4ª (Localidade)</strong> – Fica ajustado nos termos que dispõe o Parágrafo 10° do Artigo 469, da
