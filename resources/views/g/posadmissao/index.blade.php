@@ -29,7 +29,8 @@
                                     form.feedback.empresa.nome}}</strong>
                                 <br>
                                 Vaga: <strong>
-                                    @{{ form.feedback.vaga_selecionada.nome }}</strong>
+                                    @{{ form.feedback.vaga_aberta.vaga.nome }}
+                                </strong>
                                 <br>
 
                                 Cargo: <strong>@{{ form.cargo }}</strong> | Função: <strong>
