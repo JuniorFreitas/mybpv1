@@ -924,13 +924,17 @@ class DossieController extends Controller
     {
         $dados = Curriculo::whereId($curriculo_id)->first();
         $cliente = Cliente::whereId($dados->User->empresa_id)->first();
+        $tipo_admissao = \Str::slug($dados->FeedBack->Admissao->tipo_admissao);
 
-        if($dados->FeedBack->Admissao->tipo_admissao == Admissao::TIPO_ADMISSAO_TEMPORARIO){
-            $temporaria = EmpresaTemporaria::whereEmpresaId($dados->User->empresa_id)->first();
-//            dd($temporaria);
-            $pdf = \PDF::loadView('pdf.historico.dossie.contratotemporario.'.$tipo_modelo, compact('dados','cliente','temporaria'));
-        }else{
-            $pdf = \PDF::loadView('pdf.historico.dossie.'.$tipo_modelo, compact('dados','cliente'));
+        if ($tipo_modelo == 'contratotrabalhoassinado') {
+            if (in_array($dados->FeedBack->Admissao->tipo_admissao, [Admissao::TIPO_ADMISSAO_TEMPORARIO, Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO])) {
+                $temporaria = EmpresaTemporaria::whereEmpresaId($dados->User->empresa_id)->first();
+                $pdf = \PDF::loadView('pdf.historico.dossie.contratos.' . $tipo_admissao, compact('dados', 'cliente', 'temporaria'));
+            } else {
+                $pdf = \PDF::loadView('pdf.historico.dossie.' . $tipo_modelo, compact('dados', 'cliente'));
+            }
+        } else {
+            $pdf = \PDF::loadView('pdf.historico.dossie.' . $tipo_modelo, compact('dados', 'cliente'));
         }
 
         $pdf->setPaper('A4');
