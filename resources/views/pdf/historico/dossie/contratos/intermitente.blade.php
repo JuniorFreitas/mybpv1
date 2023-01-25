@@ -180,7 +180,7 @@
     <p class="f12 text-justify">
         <strong>9ª (Vigência)</strong> – Na hipótese deste ajuste transformar-se em contrato de prazo indeterminado,
         pelo decurso
-        do tempo, continuarão em plena vigência as cláusulas de 01 (Um) a 07 (Sete), enquanto durarem as relações
+        do tempo, continuarão em plena vigência as cláusulas de 01 (Um) a 08 (Oito), enquanto durarem as relações
         do(a) <strong>EMPREGADO(A)</strong> com a <strong>EMPREGADORA</strong>.
         <br><br>
         E por estarem de pleno acordo, as partes contratantes, assinam o presente contrato de experiência em duas
