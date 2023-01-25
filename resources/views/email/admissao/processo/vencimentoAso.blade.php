@@ -14,6 +14,7 @@
                     <tr>
                         <th style="text-align: center">#</th>
                         <th style="text-align: center">Nome</th>
+                        <th style="text-align: center">Data do ASO</th>
                         <th style="text-align: center">Data de Vencimento</th>
                     </tr>
                     </thead>
@@ -23,6 +24,7 @@
                         <tr>
                             <td style="text-align: center">{{ $i++ }}</td>
                             <td style="text-align: center">{{ $vencimento['colaborador'] }}</td>
+                            <td style="text-align: center">{{ $vencimento['data_aso'] }}</td>
                             <td style="text-align: center">{{ $vencimento['data_vencimento'] }}</td>
                         </tr>
                     @endforeach
