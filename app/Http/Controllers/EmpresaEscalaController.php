@@ -298,16 +298,22 @@ class EmpresaEscalaController extends Controller {
         ]);*/
 
         $resultado = $resultado->paginate($porPagina);
-        $escalasSelecionadas = collect($resultado->items())->transform(function ($item){
-            $item->selecionado = false;
-            return $item;
+        $listaTodasEscalas = auth()->user()->EmpresaEscalas->map(function ($item){
+            return [
+                'id' => $item->id,
+                'descricao' => $item->descricao,
+                'selecionado' => false
+            ];
         });
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $escalasSelecionadas,
+            'dados' => [
+                'itens' => $resultado->items(),
+                'listaTodasEscalas' => $listaTodasEscalas
+                ],
         ]);
     }
 }

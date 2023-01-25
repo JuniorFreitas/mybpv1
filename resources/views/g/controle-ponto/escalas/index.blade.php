@@ -32,16 +32,16 @@
                 <preload v-if="formEscalaFuncionarios.preload" label="Aguarde..."></preload>
             </p>
             <div v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update">
-                <h4 v-if="listaEscalas.length === 0" class="text-center">
+                <h4 v-if="listaTodasEscalas.length === 0" class="text-center">
                     <i class="fas fa-map-marked-alt fa-2x"></i><br>
                     Nenhuma escala cadastrada
                 </h4>
-                <h5 v-if="listaEscalas.length > 0" class="text-danger">
+                <h5 v-if="listaTodasEscalas.length > 0" class="text-danger">
                      <i class="fas fa-users fa-2x"></i> selecionado(s) @{{ formEscalaFuncionarios.funcionariosSelecionados.length }} coladorador(es)
                 </h5>
                 <div class="form-group">
                     <h4>Selecione uma escala para associar:</h4>
-                    <div class="custom-control custom-switch mt-2" v-for="(p,index) in listaEscalas" :key="index">
+                    <div class="custom-control custom-switch mt-2" v-for="(p,index) in listaTodasEscalas" :key="index">
                         <input type="checkbox" v-model="p['selecionado']" :value="p.id" :id="index" class="custom-control-input" @click="selecionarEscala(p)">
                         <label :for="index" class="custom-control-label">@{{ p.descricao }}</label>
                     </div>
@@ -50,7 +50,7 @@
 
         </template>
         <template slot="rodape">
-            <button :disabled="listaEscalas.length=== 0" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarEscala">
+            <button :disabled="listaTodasEscalas.length=== 0" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarEscala">
                 <i class="fas fa-link"></i> Aplicar
             </button>
         </template>
@@ -145,7 +145,7 @@
             </table>
 
             <controle-paginacao class="d-flex justify-content-center" ref="paginacaoEscalas"
-                                url="{{route('g.controle-ponto.escalas.atualizarEscalas')}}" por-pagina="10"
+                                url="{{route('g.controle-ponto.escalas.atualizarEscalas')}}" por-pagina="3"
                                 :dados="paginacaoEscalas.dados"
                                 v-on:carregou="carregouEscalas" v-on:carregando="carregandoEscalas"></controle-paginacao>
 

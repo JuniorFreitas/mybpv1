@@ -53,6 +53,7 @@ const app = new Vue({
             save:false,
         },
         formPerimetroDefault:null,
+        listaTodasEscalas:[],
         listaEscalas:[],
         listaEscalasDefault:[],
         listaFuncionarios:[],
@@ -126,7 +127,8 @@ const app = new Vue({
             this.paginacaoEscalas.carregando = true;
         },
         carregouEscalas: function (dados) {
-            this.listaEscalas = dados;
+            this.listaEscalas = dados.itens;
+            this.listaTodasEscalas = dados.listaTodasEscalas;
             this.listaEscalasDefault = _.cloneDeep(dados);
             this.paginacaoEscalas.carregando = false;
             //this.formEscalaFuncionarios.preload = false;
@@ -292,7 +294,8 @@ const app = new Vue({
         },
 
         formAssociarEscala(){
-            this.listaEscalas = _.cloneDeep(this.listaEscalasDefault);
+            // this.listaEscalas = _.cloneDeep(this.listaEscalasDefault);
+
             this.formEscalaFuncionarios.escala_id=0;
             this.formEscalaFuncionarios.escalasSelecionadas = [];
 
@@ -300,7 +303,7 @@ const app = new Vue({
                 let funcionarioId = this.formEscalaFuncionarios.funcionariosSelecionados[0];
                 let escalas = _.filter(this.listaFuncionarios, {'id':funcionarioId})[0].escalas_funcionario;
 
-                this.listaEscalas.forEach((item) => {
+                this.listaTodasEscalas.forEach((item) => {
                     escalas.forEach((escala) => {
                         if (item.id === escala.id){
                             this.formEscalaFuncionarios.escalasSelecionadas.push(escala.id);
