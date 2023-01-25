@@ -28,7 +28,7 @@ class VencimentoAsosController extends Controller
 
         $AdmissoesAso = AdmissaoAso::whereAtivo(true)->whereEmpresaId($empresa_id)
             ->whereHas('Admissao', function ($q) {
-                $q->Admitidos();
+                $q->Admitidos()->whereNotNull('data_aso');
             })
             ->select(['id', 'empresa_id', 'admissao_id', 'data_aso', 'data_vencimento'])
 //            ->where('data_vencimento', '>=', (new DataHora())->dataInsert())
