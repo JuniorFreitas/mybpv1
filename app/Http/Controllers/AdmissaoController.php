@@ -505,13 +505,16 @@ class AdmissaoController extends Controller
 
                 // 4- Atualiza ou cria o FeedbackCurriculo
 
-                if ($candidato->FeedBack) {
-                    $candidato->FeedBack->update($dadosFeedback);
-                    $feedback = $candidato->FeedBack;
-                } else {
-                    $dadosFeedback['curriculo_id'] = $candidato->id;
-                    $feedback = FeedbackCurriculo::create($dadosFeedback);
-                }
+//                if ($candidato->FeedBack) {
+//                    $candidato->FeedBack->update($dadosFeedback);
+//                    $feedback = $candidato->FeedBack;
+//                } else {
+//                    $dadosFeedback['curriculo_id'] = $candidato->id;
+//                    $feedback = FeedbackCurriculo::create($dadosFeedback);
+//                }
+
+                $dadosFeedback['curriculo_id'] = $candidato->id;
+                $feedback = FeedbackCurriculo::create($dadosFeedback);
 
                 // Dependentes
                 if (isset($dadosCurriculo['dependentesDelete'])) {
@@ -1817,105 +1820,90 @@ class AdmissaoController extends Controller
             $curriculo = Curriculo::whereCpf($cpf);
 
             if ($curriculo->count() > 0) {
-                $curriculo = $curriculo->first()->load('Dependentes');
+                $curriculo = $curriculo->first()->load('Dependentes', 'FotoTres');
                 $curriculo->dependentesDelete = [];
+                $curriculo->foto_tres_delete = [];
 
                 $curriculo->pcd = $curriculo->pcd ?: false;
 
                 $curriculo->autocomplete_label_municipio_modal = $curriculo->Cidade ? $curriculo->Cidade->nome . ' - ' . $curriculo->Cidade->uf : '';
                 $curriculo->autocomplete_label_municipio_modal_anterior = $curriculo->Cidade ? $curriculo->Cidade->nome . ' - ' . $curriculo->Cidade->uf : '';
 
-                if ($curriculo->FeedBack) {
-                    $feedback = $curriculo->FeedBack;
+                $feedback = new \stdClass();
+                $feedback->vaga_id = '';
+                $feedback->cliente_id = '';
+                $feedback->interesse = true;
+                $feedback->autocomplete_label_vaga_modal = '';
+                $feedback->autocomplete_label_vaga_modal_anterior = '';
+                $feedback->autocomplete_label_cliente_modal = '';
+                $feedback->autocomplete_label_cliente_modal_anterior = '';
 
-                    $feedback->vaga_id = $feedback->vaga_id ? $feedback->vaga_id : '';
-                    $feedback->autocomplete_label_vaga_modal = $feedback->vaga_id ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
-                    $feedback->autocomplete_label_vaga_modal_anterior = $feedback->vaga_id ? $feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf : '';
-                    $feedback->autocomplete_label_cliente_modal = $feedback->vaga_id && $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
-                    $feedback->autocomplete_label_cliente_modal_anterior = $feedback->vaga_id && $feedback->Cliente ? $feedback->Cliente->razao_social . ' | ' . $feedback->Cliente->cnpj : '';
-                } else {
-                    $feedback = new \stdClass();
-                    $feedback->vaga_id = '';
-                    $feedback->cliente_id = '';
-                    $feedback->interesse = true;
-                    $feedback->autocomplete_label_vaga_modal = '';
-                    $feedback->autocomplete_label_vaga_modal_anterior = '';
-                    $feedback->autocomplete_label_cliente_modal = '';
-                    $feedback->autocomplete_label_cliente_modal_anterior = '';
+                $parecerRH = new \stdClass();
+                $parecerRH->ex_funcionario = false;
+                $parecerRH->calca = '';
+                $parecerRH->bota = '';
+                $parecerRH->camisa_protecao = '';
+                $parecerRH->camisa_meia = '';
+                $parecerRH->turnos_seis_por_dois = '';
+                $parecerRH->indicacao = '';
+                $parecerRH->indicado_por = '';
+                $parecerRH->ex_funcionario = $admissao->count() > 0;
+
+                $parecerTecnica = new \stdClass();
+                $parecerTecnica->experiencia_cargas_rigger = 'NÃO SE APLICA';
+                $parecerTecnica->opera_plat_movel = 'NÃO SE APLICA';
+                $parecerTecnica->opera_plat_ponte = 'NÃO SE APLICA';
+                $parecerTecnica->indicado_area = '';
+
+                $parecerRota = new \stdClass();
+                $parecerRota->bairro_rota = '';
+                $parecerRota->ponto_referencia_rota = '';
+                $parecerRota->ponto_referencia_residencia = '';
+
+                $parecerTeste = new \stdClass();
+                $parecerTeste->qual_teste = '';
+                $parecerTeste->parecer_final_teste = '';
+
+                $resultadoIntegrado = new \stdClass();
+                $resultadoIntegrado->documentos_entregue = '';
+                $resultadoIntegrado->documentos_entregue_data = '';
+                $resultadoIntegrado->encaminhado_exame = '';
+                $resultadoIntegrado->encaminhado_exame_data = '';
+                $resultadoIntegrado->encaminhado_treinamento = '';
+                $resultadoIntegrado->encaminhado_treinamento_data = '';
+                $resultadoIntegrado->excessao = '';
+                $resultadoIntegrado->autorizado_por = '';
+                $resultadoIntegrado->responsavel_envio = '';
+                $resultadoIntegrado->obs = $demissao->count() > 0 ? 'RECONTRATAÇÃO' : 'ADMISSÃO AVULSA';
+
+                $admissao = $demissao->with('DadosAdmissoes')->first();
+
+                if ($admissao && $admissao->DadosAdmissoes) {
+                    $dados_admissao = new \stdClass();
+                    $dados_admissao->pis = $admissao->pis;
+                    $dados_admissao->dados_admissoes = $admissao->DadosAdmissoes;
+                }else {
+                    $dados_admissao = new \stdClass();
+                    $dados_admissao->pis = '';
+                    $dados_admissao->dados_admissoes = (object) [
+                        'ctps_numero' => '',
+                        'ctps_serie' => '',
+                        'ctps_data_emissao' => '',
+                        'titulo_eleitor_numero' => '',
+                        'titulo_eleitor_sessao' => '',
+                        'titulo_eleitor_zona' => '',
+                    ];
                 }
 
-                if ($curriculo->FeedBack && $curriculo->FeedBack->parecerRh) {
-                    $parecerRH = $curriculo->FeedBack->parecerRh;
-                    $parecerRH->ex_funcionario = $parecerRH->ex_funcionario ? $parecerRH->ex_funcionario : false;
-                    $parecerRH->indicacao = is_null($parecerRH->indicado) ? '' : $parecerRH->indicacao;
-                } else {
-                    $parecerRH = new \stdClass();
-                    $parecerRH->ex_funcionario = false;
-                    $parecerRH->calca = '';
-                    $parecerRH->bota = '';
-                    $parecerRH->camisa_protecao = '';
-                    $parecerRH->camisa_meia = '';
-                    $parecerRH->turnos_seis_por_dois = '';
-                    $parecerRH->indicacao = '';
-                    $parecerRH->indicado_por = '';
-                }
-
-                if ($curriculo->FeedBack && $curriculo->FeedBack->parecerTecnica) {
-                    $parecerTecnica = $curriculo->FeedBack->parecerTecnica;
-                } else {
-                    $parecerTecnica = new \stdClass();
-                    $parecerTecnica->indicado_area = 'NÃO SE APLICA';
-                    $parecerTecnica->experiencia_cargas_rigger = 'NÃO SE APLICA';
-                    $parecerTecnica->opera_plat_movel = 'NÃO SE APLICA';
-                    $parecerTecnica->opera_plat_ponte = 'NÃO SE APLICA';
-                }
-
-
-                if ($curriculo->FeedBack && $curriculo->FeedBack->parecerRota) {
-                    $parecerRota = $curriculo->FeedBack->parecerRota;
-                } else {
-                    $parecerRota = new \stdClass();
-                    $parecerRota->bairro_rota = '';
-                    $parecerRota->ponto_referencia_rota = '';
-                    $parecerRota->ponto_referencia_residencia = '';
-                }
-
-                if ($curriculo->FeedBack && $curriculo->FeedBack->parecerTeste) {
-                    $parecerTeste = $curriculo->FeedBack->parecerTeste;
-                } else {
-                    $parecerTeste = new \stdClass();
-                    $parecerTeste->qual_teste = '';
-                    $parecerTeste->parecer_final_teste = '';
-                }
-
-
-                if ($curriculo->FeedBack && $curriculo->FeedBack->ResultadoIntegrado) {
-                    $resultadoIntegrado = $curriculo->FeedBack->ResultadoIntegrado;
-
-                    $resultadoIntegrado->documentos_entregue = $resultadoIntegrado->documentos_entregue ?: false;
-                    $resultadoIntegrado->encaminhado_exame = $resultadoIntegrado->encaminhado_exame ?: false;
-                    $resultadoIntegrado->encaminhado_treinamento = $resultadoIntegrado->encaminhado_treinamento ?: false;
-                    $resultadoIntegrado->excessao = $resultadoIntegrado->excessao ?: false;
-                    $resultadoIntegrado->responsavel_envio = '';
-                    $resultadoIntegrado->obs = 'RECONTRATAÇÃO';
-
-                } else {
-                    $resultadoIntegrado = new \stdClass();
-                    $resultadoIntegrado->documentos_entregue = '';
-                    $resultadoIntegrado->documentos_entregue_data = '';
-                    $resultadoIntegrado->encaminhado_exame = '';
-                    $resultadoIntegrado->encaminhado_exame_data = '';
-                    $resultadoIntegrado->encaminhado_treinamento = '';
-                    $resultadoIntegrado->encaminhado_treinamento_data = '';
-                    $resultadoIntegrado->excessao = '';
-                    $resultadoIntegrado->autorizado_por = '';
-                    $resultadoIntegrado->responsavel_envio = '';
+                if ($curriculo->FeedBack && $curriculo->FeedBack->BancoConta) {
+                    $feedback->banco_conta = $curriculo->FeedBack->BancoConta;
                 }
 
                 return response()->json(
                     [
                         'achou' => true,
-                        'ex_funcionario' => true,
+                        'admissao' => $dados_admissao,
+                        'ex_funcionario' => $demissao->count() > 0,
                         'curriculo' => $curriculo->load('Telefones'),
                         'feedback' => $feedback,
                         'parecer_rh' => $parecerRH,
@@ -1929,7 +1917,6 @@ class AdmissaoController extends Controller
                 return response()->json(['achou' => false, 'ex_funcionario' => false], 200);
             }
         }
-
     }
 
 
@@ -2374,9 +2361,5 @@ class AdmissaoController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
         }
-
-
     }
-
-
 }

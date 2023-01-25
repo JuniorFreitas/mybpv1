@@ -648,10 +648,10 @@ const app = new Vue({
                         let data = response.data;
                         if (data.achou) {
                             Object.assign(this.formAvulsa, response.data);
+                            Object.assign(this.form.admissao, response.data.admissao);
                             this.exibiFormulario = true;
                             this.formAvulsa.preload = false;
                             this.formAvulsa.ex_funcionario = data.ex_funcionario;
-                            console.log(response.data.parecer_rh.indicacao);
                         }
 
                         if (!data.achou) {
