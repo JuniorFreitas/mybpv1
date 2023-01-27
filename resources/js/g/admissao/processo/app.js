@@ -76,6 +76,9 @@ const app = new Vue({
         selecionados: [],
         selecionaTudo: false,
 
+        lista_sexos: [],
+        lista_estados_civis: [],
+
         formAvulsa: {
             preload: false,
             cadastrado: false,
@@ -100,6 +103,9 @@ const app = new Vue({
                 cep: "",
                 municipio_id: "",
                 cnh: "",
+
+                sexo: "",
+                estado_civil: "",
 
                 filiacao_pai: "",
                 filiacao_mae: "",
@@ -221,7 +227,10 @@ const app = new Vue({
                     ctps_data_emissao: "",
                     titulo_eleitor_numero: "",
                     titulo_eleitor_sessao: "",
-                    titulo_eleitor_zona: ""
+                    titulo_eleitor_zona: "",
+                    ctps_uf: "",
+                    cert_reservista_num: "",
+                    cert_reservista_categoria: "",
                 },
                 // data_aso: "",
                 ultimo_aso_ativo: {
@@ -249,8 +258,8 @@ const app = new Vue({
 
                 foto_tres: [],
                 foto_tresDel: [],
-                ferias_adquiridas:[],
-                ferias_adquiridasDelete:[],
+                ferias_adquiridas: [],
+                ferias_adquiridasDelete: [],
             }
         },
 
@@ -283,6 +292,8 @@ const app = new Vue({
                 municipio_id: "",
                 rg: "",
                 pcd: "",
+                sexo: "",
+                estado_civil: "",
                 rg_data_emissao: "",
                 naturalidade: "",
                 autocomplete_label_municipio_modal: "",
@@ -441,7 +452,10 @@ const app = new Vue({
                     ctps_data_emissao: "",
                     titulo_eleitor_numero: "",
                     titulo_eleitor_sessao: "",
-                    titulo_eleitor_zona: ""
+                    titulo_eleitor_zona: "",
+                    ctps_uf: "",
+                    cert_reservista_num: "",
+                    cert_reservista_categoria: "",
                 },
                 // data_aso: "",
                 ultimo_aso_ativo: {
@@ -467,8 +481,8 @@ const app = new Vue({
                 camisa_protecao: "",
                 camisa_meia: "",
 
-                ferias_adquiridas:[],
-                ferias_adquiridasDelete:[],
+                ferias_adquiridas: [],
+                ferias_adquiridasDelete: [],
 
                 foto_tres: [],
                 foto_tresDel: []
@@ -541,8 +555,8 @@ const app = new Vue({
                 campoStatusAdmissao: "",
                 campoTipoAdmissao: "",
                 campoUf: "",
-                campoAso:"",
-                campoAdmissao:""
+                campoAso: "",
+                campoAdmissao: ""
             }
         }
     },
@@ -1021,6 +1035,8 @@ const app = new Vue({
             this.listaStatusAdmissao = dados.status_admissao;
             this.listaTipoAdmissao = dados.tipos_admissao;
             this.editando = dados.admissao_processo_dados_editar;
+            this.lista_sexos = dados.lista_sexos;
+            this.lista_estados_civis = dados.lista_estados_civis;
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;
         },

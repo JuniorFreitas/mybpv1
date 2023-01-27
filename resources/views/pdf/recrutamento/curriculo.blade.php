@@ -46,7 +46,7 @@
 <div class="pagina">
     @include('layouts.cabecalioEmpresa')
     <h3>Dados Pessoais</h3>
-    <p>Nome: <strong>{{ ucwords($recrutamento->nome) }}</strong><br>
+    <p>Nome: <strong>{{ ucwords($recrutamento->nome) }}</strong><br> Sexo: <strong>{{ ucwords($recrutamento->sexo) }}</strong> | Estado Civil: <strong>{{ ucwords($recrutamento->estado_civil ?? 'Não informado') }}</strong> |
         Nascimento: <strong>{{ $recrutamento->nascimento }}</strong> | CPF: <strong>{{ $recrutamento->cpf }}</strong> |
         CNH: <strong>{{ $recrutamento->cnh }}</strong> | PCD: <strong>{{ $recrutamento->pcd ? 'Sim' : 'Não' }}</strong>
         <br> Disponibilidade para viajar: <strong>{{ $recrutamento->viajar ? 'Sim' : 'Não' }}</strong><br>

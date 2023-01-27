@@ -278,6 +278,33 @@ class Curriculo extends Model
 
     protected $appends = ['idade', 'endereco_completo', 'rg_format'];
 
+    public function getCTokenAttribute()
+    {
+        return \Crypt::encrypt($this->id);
+    }
+    const ESTADO_CIVIL_SOLTEIRO = 'SOLTEIRO(A)';
+    const ESTADO_CIVIL_CASADO = 'CASADO(A)';
+    const ESTADO_CIVIL_DIVORCIADO = 'DIVORCIADO(A)';
+    const ESTADO_CIVIL_UNIAO_ESTAVEL = 'UNIÃO ESTÁVEL';
+    const ESTADO_CIVIL_VIUVO = 'VIÚVO(A)';
+    const ESTADO_CIVIL_OUTRO = 'OUTRO';
+
+    const SEXO_MASCULINO = 'Masculino';
+    const SEXO_FEMININO = 'Feminino';
+
+    const TIPOS_SEXOS = [
+        self::SEXO_MASCULINO,
+        self::SEXO_FEMININO,
+    ];
+    const ESTADOS_CIVIS = [
+        self::ESTADO_CIVIL_SOLTEIRO,
+        self::ESTADO_CIVIL_CASADO,
+        self::ESTADO_CIVIL_DIVORCIADO,
+        self::ESTADO_CIVIL_UNIAO_ESTAVEL,
+        self::ESTADO_CIVIL_VIUVO,
+        self::ESTADO_CIVIL_OUTRO,
+    ];
+
     protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('Y-m-d H:i:s');

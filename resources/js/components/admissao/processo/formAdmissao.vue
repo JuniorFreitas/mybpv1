@@ -276,12 +276,39 @@
 
         <div class="col-12 col-sm-6">
             <div class="form-group">
+                <label>CTPS UF</label>
+                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                       :disabled="visualizar || disabled"
+                       v-model="form.dados_admissoes.ctps_uf">
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6">
+            <div class="form-group">
                 <label>Data Emissão CTPS</label>
                 <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                        :disabled="visualizar || disabled"
                        v-model="form.dados_admissoes.ctps_data_emissao" v-mascara:data
                        @keyup.prevent="valida_data($event.target)"
                        @blur.prevent="valida_data($event.target)">
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6">
+            <div class="form-group">
+                <label>Certificado Reservista Numero</label>
+                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                       :disabled="visualizar || disabled"
+                       v-model="form.dados_admissoes.cert_reservista_num">
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6">
+            <div class="form-group">
+                <label>Certificado Reservista Categoria</label>
+                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                       :disabled="visualizar || disabled"
+                       v-model="form.dados_admissoes.cert_reservista_categoria">
             </div>
         </div>
 
@@ -383,7 +410,10 @@ export default {
                     ctps_data_emissao: "",
                     titulo_eleitor_numero: "",
                     titulo_eleitor_sessao: "",
-                    titulo_eleitor_zona: ""
+                    titulo_eleitor_zona: "",
+                    ctps_uf: "",
+                    cert_reservista_num: "",
+                    cert_reservista_categoria: "",
                 },
                 ultimo_aso_ativo: {
                     data_aso: ""
