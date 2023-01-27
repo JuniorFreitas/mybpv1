@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Classes\ZapNotificacao;
+use App\Jobs\JobEnviaZap;
 use App\Jobs\JobExportaExcel;
-use App\Mail\DesclassificacaoMail;
-use App\Mail\ProvaMail;
-use App\Mail\ProximaEtapaMail;
+use App\Jobs\Recrutamento\JobDesclassificacao;
+use App\Jobs\Recrutamento\JobProva;
+use App\Jobs\Recrutamento\JobProximaEtapa;
 use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\Curriculo;
@@ -17,7 +17,6 @@ use App\Models\VagasAbertas;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Maatwebsite\Excel\Excel;
 use MasterTag\DataHora;
 use PDF;
 
@@ -97,18 +96,17 @@ class RecrutamentoController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param Curriculo $recrutamento
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Throwable
      */
     public function update(Request $request, Curriculo $recrutamento)
     {
         $curriculo = $recrutamento;
         $dados = $request->input();
 
-        $dados['form_feedback']['cliente_id'] = auth()->user()->empresa_id;
+        $dados['cliente_id'] = auth()->user()->empresa_id;
         $dados['contato_realizado'] = $dados['contato_realizado'] == 'true' ? true : false;
 
         $dados['interesse'] = $dados['interesse'] == 'true' ? true : false;
@@ -199,10 +197,11 @@ class RecrutamentoController extends Controller
                     if ($dados['envia_mail_desclassificacao']) {
                         $dados['data_envia_mail_desclassificacao'] = (new DataHora())->dataHoraInsert();
                         $dados['user_envia_mail_desclassificacao'] = auth()->id();
-                        \Mail::send(new DesclassificacaoMail([
+
+                        JobDesclassificacao::dispatch([
                             'nome' => $infCurriculo['nome'],
                             'email' => $infCurriculo['email']
-                        ]));
+                        ]);
                     }
                     $curriculo->FeedBack()->create($dados);
                 } else {
@@ -212,22 +211,23 @@ class RecrutamentoController extends Controller
                             $dados['user_envia_mail_proxima_etapa'] = auth()->id();
                             $vaga_aberta = VagasAbertas::find($dados['vaga_id']);
 
-                            \Mail::send(new ProximaEtapaMail([
-                                'nome' => $infCurriculo['nome'],
-                                'email' => $infCurriculo['email'],
-                                'empresa' => $empresa->razao_social,
-                                'logo' => env('AWS_URL') . "/public/email_" . $empresa->apelido . ".jpg",
-                                'vaga_selecionada' => $vaga_aberta->titulo . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
-                                'local_entrevista' => $dados['local_entrevista'],
-                                'data_entrevista' => $dados['data_entrevista'],
-                            ]));
+                            JobProximaEtapa::dispatch(
+                                [
+                                    'nome' => $infCurriculo['nome'],
+                                    'email' => $infCurriculo['email'],
+                                    'empresa' => $empresa->razao_social,
+                                    'logo' => env('AWS_URL') . "/public/email_" . $empresa->apelido . ".jpg",
+                                    'vaga_selecionada' => $vaga_aberta->titulo . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
+                                    'local_entrevista' => $dados['local_entrevista'],
+                                    'data_entrevista' => $dados['data_entrevista'],
+                                ]);
                         }
                         if ($dados['contato_realizado'] && $dados['envia_whatsapp'] && $permite_envio_whatsapp) {
                             $mensagem = "👏🏽👏🏽Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nPara a vaga *{$vaga_aberta->titulo} - {$vaga_aberta->Municipio->nome}/{$vaga_aberta->Municipio->uf}* fique atento as próximas etapas do processo!\n\n📆 Data da entrevista: {$dados['data_entrevista']}\n📍Local da entrevista: {$dados['local_entrevista']}\n\nSucesso e esperamos vê-lo em breve. \n\n*☺️ Um forte abraço da equipe " . $empresa->razao_social . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
 
                             $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
                             if ($telefonePrincipal->tipo == 'whatsapp') {
-                                (new ZapNotificacao())->enviar([
+                                JobEnviaZap::dispatch([
                                     'enviado_id' => $curriculo->id,
                                     'telefone' => $telefonePrincipal->sonumero,
                                     'mensagem' => $mensagem,
@@ -253,20 +253,22 @@ class RecrutamentoController extends Controller
                                 $mensagem .= "\n\nCuidado para não perder o prazo! Esperamos te ver em breve!\n\n*Equipe RH BPSE* ";
 
                                 if ($telefonePrincipal->tipo == 'whatsapp') {
-                                    (new ZapNotificacao())->enviar([
+                                    JobEnviaZap::dispatch([
                                         'enviado_id' => $curriculo->id,
                                         'telefone' => $telefonePrincipal->sonumero,
                                         'mensagem' => $mensagem,
                                     ]);
                                 }
                             }
-                            \Mail::send(new ProvaMail([
-                                'nome' => $infCurriculo['nome'],
-                                'email' => $infCurriculo['email'],
-                                'vaga' => $dados['autocomplete_label_vaga_modal'],
-                                'vaga_id' => $dados['vaga_id'],
-                                'provas' => $provas
-                            ]));
+                            JobProva::dispatch(
+                                [
+                                    'nome' => $infCurriculo['nome'],
+                                    'email' => $infCurriculo['email'],
+                                    'vaga' => $dados['autocomplete_label_vaga_modal'],
+                                    'vaga_id' => $dados['vaga_id'],
+                                    'provas' => $provas
+                                ]
+                            );
                         } else {
                             $dados['envia_mail_provas'] = false;
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
@@ -286,10 +288,10 @@ class RecrutamentoController extends Controller
                     if ($dados['envia_mail_desclassificacao']) {
                         $dados['data_envia_mail_desclassificacao'] = (new DataHora())->dataHoraInsert();
                         $dados['user_envia_mail_desclassificacao'] = auth()->id();
-                        \Mail::send(new DesclassificacaoMail([
+                        JobDesclassificacao::dispatch([
                             'nome' => $infCurriculo['nome'],
                             'email' => $infCurriculo['email']
-                        ]));
+                        ]);
                     }
                 } else {
 
@@ -299,22 +301,24 @@ class RecrutamentoController extends Controller
                             $dados['user_envia_mail_provas'] = auth()->id();
                             $vaga_aberta = VagasAbertas::find($dados['vagas_abertas_id']);
                             $empresa = Cliente::find(auth()->user()->empresa_id);
-                            \Mail::send(new ProximaEtapaMail([
-                                'nome' => $infCurriculo['nome'],
-                                'email' => $infCurriculo['email'],
-                                'empresa' => $empresa->razao_social,
-                                'logo' => env('AWS_URL') . "/public/email_" . $empresa->apelido . ".jpg",
-                                'vaga_selecionada' => $vaga_aberta->titulo . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
-                                'local_entrevista' => $dados['local_entrevista'],
-                                'data_entrevista' => $dados['data_entrevista'],
-                            ]));
+                            JobProximaEtapa::dispatch(
+                                [
+                                    'nome' => $infCurriculo['nome'],
+                                    'email' => $infCurriculo['email'],
+                                    'empresa' => $empresa->razao_social,
+                                    'logo' => env('AWS_URL') . "/public/email_" . $empresa->apelido . ".jpg",
+                                    'vaga_selecionada' => $vaga_aberta->titulo . ' -' . $vaga_aberta->Municipio->nome . '/' . $vaga_aberta->Municipio->uf,
+                                    'local_entrevista' => $dados['local_entrevista'],
+                                    'data_entrevista' => $dados['data_entrevista'],
+                                ]
+                            );
                         }
 
                         if ($dados['contato_realizado'] && $dados['envia_whatsapp'] && $permite_envio_whatsapp) {
                             $mensagem = "👏🏽👏🏽Parabéns, *{$infCurriculo['nome']}*. Você foi *selecionado(a)*!\nPara a vaga *{$vaga_aberta->titulo} - {$vaga_aberta->Municipio->nome}/{$vaga_aberta->Municipio->uf}* fique atento as próximas etapas do processo!\n\n📆 Data da entrevista: {$dados['data_entrevista']}\n📍Local da entrevista: {$dados['local_entrevista']}\n\nSucesso e esperamos vê-lo em breve. \n\n*☺️ Um forte abraço da equipe " . $empresa->razao_social . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
                             $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
                             if ($telefonePrincipal->tipo == 'whatsapp') {
-                                (new ZapNotificacao())->enviar([
+                                JobEnviaZap::dispatch([
                                     'enviado_id' => $curriculo->id,
                                     'telefone' => $telefonePrincipal->sonumero,
                                     'mensagem' => $mensagem,
@@ -341,20 +345,20 @@ class RecrutamentoController extends Controller
                                 $mensagem .= "\n\nCuidado para não perder o prazo! Esperamos te ver em breve!\n\n*Equipe RH BPSE* ";
 
                                 if ($telefonePrincipal->tipo == 'whatsapp') {
-                                    (new ZapNotificacao())->enviar([
+                                    JobEnviaZap::dispatch([
                                         'enviado_id' => $curriculo->id,
                                         'telefone' => $telefonePrincipal->sonumero,
                                         'mensagem' => $mensagem,
                                     ]);
                                 }
                             }
-                            \Mail::send(new ProvaMail([
+                            JobProva::dispatch([
                                 'nome' => $infCurriculo['nome'],
                                 'email' => $infCurriculo['email'],
                                 'vaga' => $dados['autocomplete_label_vaga_modal'],
                                 'vaga_id' => $dados['vaga_id'],
                                 'provas' => $provas
-                            ]));
+                            ]);
                         }
                     }
                 }
