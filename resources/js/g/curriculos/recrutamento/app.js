@@ -26,6 +26,9 @@ const app = new Vue({
             feedback: false,
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
+            lista_sexos:[],
+            lista_estados_civis:[],
+
             form: {
                 id: "",
                 bairro: "'",
@@ -33,6 +36,8 @@ const app = new Vue({
                 cnh: "",
                 complemento: '',
                 cpf: "",
+                sexo: "",
+                estado_civil: "",
                 created_at: "",
                 datalido: "",
                 email: "",
@@ -167,28 +172,28 @@ const app = new Vue({
                     // }, 100);
                 }
             },
-            selecionaClienteModal(obj) {
-                this.form_feedback.cliente_id = obj.id;
-                this.form_feedback.autocomplete_label_cliente_modal = obj.label;
-                this.form_feedback.autocomplete_label_cliente_modal_anterior = obj.label;
-            },
-            resetaCampoClienteModal() {
-                if (this.form_feedback.autocomplete_label_cliente_modal_anterior !== this.form_feedback.autocomplete_label_cliente_modal) {
-                    this.form_feedback.autocomplete_label_cliente_modal_anterior = '';
-                    this.form_feedback.autocomplete_label_cliente_modal = '';
-                    this.form_feedback.cliente_id = '';
-
-                    setTimeout(() => {
-                        if (this.form_feedback.cliente_id === '') {
-                            valida_campo_vazio($('#cliente_modal_' + this.hash), 1);
-                            $('#janelaCadastrar #cliente_modal_' + this.hash).focus().trigger('blur');
-                            mostraErro('Erro', 'O Campo Cliente não pode ficar vazio');
-                        }
-                    }, 100);
-
-                }
-
-            },
+            // selecionaClienteModal(obj) {
+            //     this.form_feedback.cliente_id = obj.id;
+            //     this.form_feedback.autocomplete_label_cliente_modal = obj.label;
+            //     this.form_feedback.autocomplete_label_cliente_modal_anterior = obj.label;
+            // },
+            // resetaCampoClienteModal() {
+            //     if (this.form_feedback.autocomplete_label_cliente_modal_anterior !== this.form_feedback.autocomplete_label_cliente_modal) {
+            //         this.form_feedback.autocomplete_label_cliente_modal_anterior = '';
+            //         this.form_feedback.autocomplete_label_cliente_modal = '';
+            //         this.form_feedback.cliente_id = '';
+            //
+            //         setTimeout(() => {
+            //             if (this.form_feedback.cliente_id === '') {
+            //                 valida_campo_vazio($('#cliente_modal_' + this.hash), 1);
+            //                 $('#janelaCadastrar #cliente_modal_' + this.hash).focus().trigger('blur');
+            //                 mostraErro('Erro', 'O Campo Cliente não pode ficar vazio');
+            //             }
+            //         }, 100);
+            //
+            //     }
+            //
+            // },
 
             formAlterar(id) {
                 this.form.id = id;
@@ -259,15 +264,6 @@ const app = new Vue({
                     }
                 }
 
-                if (this.form_feedback.interesse) {
-                    if (this.form_feedback.cliente_id === '') {
-                        valida_campo_vazio($('#cliente_modal_' + this.hash), 1);
-                        $('#janelaCadastrar #cliente_modal_' + this.hash).focus().trigger('blur');
-                        mostraErro('', 'O campo cliente não pode ficar vazio');
-                        return false;
-                    }
-                }
-
 
                 $('#janelaCadastrar :input:visible').trigger('blur');
                 if ($('#janelaCadastrar :input:visible.is-invalid').length) {
@@ -330,6 +326,8 @@ const app = new Vue({
             },
             carregou(dados) {
                 this.lista = dados.items;
+                this.lista_sexos = dados.lista_sexos;
+                this.lista_estados_civis = dados.lista_estados_civis;
                 this.permite_envio_whatsapp = dados.permite_envio_whatsapp;
                 this.controle.carregando = false;
 

@@ -61,8 +61,9 @@ class RecrutamentoController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Curriculo $recrutamento)
+    public function show($curriculo)
     {
+        $recrutamento = Curriculo::where('id', \Crypt::decrypt($curriculo))->first();
         $pdf = PDF::loadView('pdf.recrutamento.curriculo', compact('recrutamento'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("curriculo" . Str::slug($recrutamento->nome) . ".pdf");
@@ -78,6 +79,8 @@ class RecrutamentoController extends Controller
     {
 
 //        $value = cache()->rememberForever("curriculo_{$recrutamento->id}", function () use($recrutamento) {
+        $recrutamento->estado_civil = $recrutamento->estado_civil ?? '';
+        $recrutamento->sexo = $recrutamento->sexo ?? '';
         return $recrutamento->load('Atualizacao', 'Qualificacoes', 'Experiencias', 'VagaAberta.VagaSelecionada', 'Formacao', 'Telefones', 'Usuario')->load(['FeedBack' => function ($query) {
             $query->with('VagaAberta.VagaSelecionada.SimuladoVaga', 'VagaAberta.Municipio', 'Cliente', 'QuemMarcou', 'TelPrincipal');
         }]);
@@ -104,6 +107,8 @@ class RecrutamentoController extends Controller
     {
         $curriculo = $recrutamento;
         $dados = $request->input();
+
+        $dados['form_feedback']['cliente_id'] = auth()->user()->empresa_id;
         $dados['contato_realizado'] = $dados['contato_realizado'] == 'true' ? true : false;
 
         $dados['interesse'] = $dados['interesse'] == 'true' ? true : false;
@@ -133,7 +138,9 @@ class RecrutamentoController extends Controller
                 'logradouro' => $infCurriculo['logradouro'],
                 'bairro' => $infCurriculo['bairro'],
                 'municipio' => $infCurriculo['municipio'],
-                'uf' => $infCurriculo['uf']
+                'uf' => $infCurriculo['uf'],
+                'sexo' => $infCurriculo['sexo'],
+                'estado_civil' => $infCurriculo['estado_civil'],
             ];
 
             if (isset($infCurriculo['telefonesDelete'])) {
@@ -356,10 +363,9 @@ class RecrutamentoController extends Controller
             return response()->json([], 201);
 
         } catch (\Exception $e) {
-            return $e->getTrace();
+            DB::rollback();
             $msg = "error FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
-            DB::rollback();
             return response()->json(['msg' => $msg], 400);
         }
 
@@ -404,8 +410,13 @@ class RecrutamentoController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'items' => $resultado->items(),
+                'items' => collect($resultado->items())->transform(function ($item) {
+                    $item->ctoken = \Crypt::encrypt($item->id);
+                    return $item;
+                }),
                 'permite_envio_whatsapp' => $permite_envio_whatsapp,
+                'lista_sexos' => Curriculo::TIPOS_SEXOS,
+                'lista_estados_civis' => Curriculo::ESTADOS_CIVIS,
             ]
         ]);
     }
@@ -428,9 +439,12 @@ class RecrutamentoController extends Controller
                 'pcd',
                 'uf_vaga',
                 'municipio_id',
+                'sexo',
+                'estado_civil',
                 'lido',
                 'created_at']
-        )->with('VagaAberta.VagaSelecionada')->doesntHave('FeedBack.parecerRh');
+        )->with('VagaAberta.VagaSelecionada')
+            ->doesntHave('FeedBack.parecerRh');
 
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;

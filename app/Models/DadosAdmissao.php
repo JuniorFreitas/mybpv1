@@ -42,6 +42,9 @@ class DadosAdmissao extends Model
         'titulo_eleitor_numero',
         'titulo_eleitor_sessao',
         'titulo_eleitor_zona',
+        'ctps_uf',
+        'cert_reservista_num',
+        'cert_reservista_categoria',
     ];
 
     protected $casts = [
@@ -52,6 +55,9 @@ class DadosAdmissao extends Model
         'titulo_eleitor_numero' => 'string',
         'titulo_eleitor_sessao' => 'string',
         'titulo_eleitor_zona' => 'string',
+        'ctps_uf' => 'string',
+        'cert_reservista_num' => 'string',
+        'cert_reservista_categoria' => 'string',
     ];
 
     public $timestamps = false;

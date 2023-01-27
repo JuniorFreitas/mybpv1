@@ -4,6 +4,7 @@
     @include('layouts.cabecalioEmpresa')
 @endsection
 @section('conteudo')
+
     <h5 class="text-center">FICHA DE ADMISSÃO</h5>
     <h5 style="margin-top: 5px; margin-bottom: 5px;">INFORMAÇÕES:</h5>
     <table width="100%" style="border: 1px solid #666666; padding: 8px 17px 15px">
@@ -19,6 +20,8 @@
                     | RG: <strong>{{ $dados->Curriculo->rg ?? 'Não informado' }}</strong>
                     | RG Data Emissão: <strong>{{ $dados->Curriculo->rg_data_emissao ?? 'Não informado' }}</strong>
                     | Naturalidade: <strong>{{ $dados->Curriculo->naturalidade ?? 'Não informado' }}</strong>
+                    | Sexo: <strong>{{ $dados->Curriculo->sexo ?? 'Não informado' }}</strong>
+                    | Estado Civil: <strong>{{ $dados->Curriculo->estado_civil ?? 'Não informado' }}</strong>
                     | Mãe: <strong>{{ $dados->Curriculo->filiacao_mae ?? 'Não informado' }}</strong>
                     | Pai: <strong>{{ $dados->Curriculo->filiacao_pai ?? 'Não informado' }}</strong>
                     | Calça: <strong>{{ $dados->ParecerRh->calca }}</strong>
@@ -78,21 +81,24 @@
                     | Treinamento: <strong>{{ $dados->Admissao->treinamento ?? 'Não informado' }}</strong>
                     | Tipo de Treinamento: <strong>{{ $dados->Admissao->tipo_treinamento ?? 'Não informado' }}</strong>
                     | Data Treinamento: <strong>{{ $dados->Admissao->data_treinamento ?? 'Não informado' }}</strong>
-                    | NR 33: <strong>{{ $dados->Admissao->nr_trinta_tres ?? 'Não informado' }}</strong>
-                    | Data NR 33: <strong>{{ $dados->Admissao->data_nr_trinta_tres ?? 'Não informado' }}</strong>
-                    | NR 35: <strong>{{ $dados->Admissao->nr_trinta_cinco ?? 'Não informado' }}</strong>
-                    | Data NR 35: <strong>{{ $dados->Admissao->data_nr_trinta_cinco ?? 'Não informado' }}</strong>
-                    | 3260: <strong>{{ $dados->Admissao->trinta_dois_sessenta ?? 'Não informado' }}</strong>
-                    | Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong>
+{{--                    | NR 33: <strong>{{ $dados->Admissao->nr_trinta_tres ?? 'Não informado' }}</strong>--}}
+{{--                    | Data NR 33: <strong>{{ $dados->Admissao->data_nr_trinta_tres ?? 'Não informado' }}</strong>--}}
+{{--                    | NR 35: <strong>{{ $dados->Admissao->nr_trinta_cinco ?? 'Não informado' }}</strong>--}}
+{{--                    | Data NR 35: <strong>{{ $dados->Admissao->data_nr_trinta_cinco ?? 'Não informado' }}</strong>--}}
+{{--                    | 3260: <strong>{{ $dados->Admissao->trinta_dois_sessenta ?? 'Não informado' }}</strong>--}}
+{{--                    | Data 3260: <strong>{{ $dados->Admissao->data_trinta_dois_sessenta ?? 'Não informado' }}</strong>--}}
                     | Número Crachá: <strong>{{ $dados->Admissao->numero_cracha ?? 'Não informado' }}</strong>
                     | Data do ASO: <strong>{{ $dados->Admissao->UltimoAsoAtivo->data_aso ?? 'Não informado' }}</strong>
                     | PIS: <strong>{{$dados->Admissao->pis ?? 'Não informado'}}</strong>
                     | CTPS: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_numero :'Não Informado'}}</strong>
                     | CTPS Série: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_serie :'Não Informado'}}</strong>
                     | CTPS Data Emissão: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_data_emissao :'Não Informado'}}</strong>
+                    | CTPS UF: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->ctps_uf :'Não Informado'}}</strong>
                     | Título de Eleitor: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_numero :'Não Informado'}}</strong>
                     | Título de Eleitor Sessão: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_sessao :'Não Informado'}}</strong>
                     | Título de Eleitor Zona: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->titulo_eleitor_zona :'Não Informado'}}</strong>
+                    | Certificado Reservista Nº: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->cert_reservista_num :'Não Informado'}}</strong>
+                    | Certificado Reservista Cat: <strong>{{ $dados->Admissao->DadosAdmissoes ? $dados->Admissao->DadosAdmissoes->cert_reservista_categoria :'Não Informado'}}</strong>
                     | Banco: <strong>{{ $dados->BancoConta ? $dados->BancoConta->banco :'Não Informado'}}</strong>
                     | Agência: <strong>{{ $dados->BancoConta ? $dados->BancoConta->agencia :'Não Informado'}}</strong>
                     | Conta: <strong>{{ $dados->BancoConta ? $dados->BancoConta->conta :'Não Informado'}}</strong>
