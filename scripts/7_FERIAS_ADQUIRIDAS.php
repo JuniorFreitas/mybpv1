@@ -75,7 +75,8 @@ foreach ($DB as $key => $linha) {
         'data_limite' => (new DataHora($data_limite))->dataInsert(),
         'user_cadastrou_id' => $user_id,
         'created_at' => (new DataHora())->dataHoraInsert(),
-        'status' => $status
+        'status' => $status,
+        'ferias_prevista_id' => $linha->id
     ];
 
     try {

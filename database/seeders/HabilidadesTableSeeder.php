@@ -363,6 +363,8 @@ class HabilidadesTableSeeder extends Seeder
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
+        $lista[] = ['nome' => 'privilegio_aprovar_por_gestor', 'descricao' => 'Aprovação de Gestor'];
+        $lista[] = ['nome' => 'privilegio_aprovar_por_rh', 'descricao' => 'Aprovação de Rh'];
 
         //weekly-report
         $lista[] = ['nome' => 'weekly_report', 'descricao' => 'Acessar rota Weekley report'];

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Relatorios;
 use App\Http\Controllers\Controller;
 use App\Jobs\JobExportaExcel;
 use App\Models\ClienteConfig;
+use App\Models\FeriasAdquiridas;
 use App\Models\FeriasPrevista;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -27,46 +28,49 @@ class FeriasController extends Controller
         $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->verifica_mes_vencimento];
         $periodo_vencimento = preg_replace("/[^0-9]/", "", $periodo_vencimento);
 
-        $feriasPrevistas = FeriasPrevista::select([
-            'id', 'colaborador_id', 'centro_custo_id', 'data_saida', 'qnt_dias', 'data_retorno', 'dias_saldo', 'status_aprovacao',
-            'tem_faltas', 'qnt_faltas', 'periodo_aquisitivo_id', 'periodo_aquisitivo', 'ultima_data', 'user_aprovacao_id', 'data_aprovacao', 'obs_aprovacao', 'gestor_id'
-        ])->whereEmpresaId($empresa_id)
-            ->whereNull('status_aprovacao')
-            ->where('ultima_data', '>=', $dataInicio->dataInsert())
-            ->where('ultima_data', '<=', $dataFim->dataInsert())
-            ->whereHas('Feedback', function ($q) {
+        $feriasAdquiridas = FeriasAdquiridas::
+            where('data_saida', '>=', $dataInicio->dataInsert())
+            ->where('data_saida', '<=', $dataFim->dataInsert())
+            ->whereNotIn('status',  [FeriasAdquiridas::STATUS_GOZANDO, FeriasAdquiridas::STATUS_GOZADA])
+            ->whereHas('Admissao.Feedback', function ($q) {
                 $q->Admitidos();
-            })->with(['Feedback' => function ($F) {
+            })->with(['Admissao.Feedback' => function ($F) {
                 $F->Admitidos()->select(['id', 'curriculo_id', 'empresa_id', 'vaga_id'])
-                    ->with('Admissao:id,feedback_id,data_admissao')
                     ->with('VagaSelecionada:id,nome')
-                    ->with('Curriculo', function ($C) {
-                        $C->select(['id', 'nome', 'nascimento', 'rg', 'orgao_expeditor']);
-                    });
-            }, 'CentroCusto:id,label', 'QuemAprovou:id,nome', 'GestorAprovacao:id,nome']);
+                    ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor');
+            }, 'UsuarioCadastrou:id,nome', 'FeriasPrevista.CentroCusto:id,label', 'FeriasPrevista.GestorAprovacao:id,nome', 'FeriasPrevista.RhAprovacao:id,nome', 'FeriasPrevista.PeriodoAquisitivo', 'FeriasPrevista.QuemAprovou:id,nome']);
 
-        $feriasPrevistas = $feriasPrevistas->get();
+        $feriasAdquiridas = $feriasAdquiridas->get()->toArray();
 
         $resultado = collect();
 
-        foreach ($feriasPrevistas as $ferias) {
-            $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $ferias->ultima_data);
+        foreach ($feriasAdquiridas as $ferias) {
+            $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $ferias['data_limite']);
             $resultado->push([
-                'nome' => $ferias->Feedback->Curriculo->nome,
-                'cargo' => $ferias->Feedback->VagaSelecionada->nome,
-                'data_admissao' => $ferias->Feedback->Admissao->data_admissao,
-                'gestor' => $ferias->GestorAprovacao->nome,
-                'quem_aprovou' => $ferias->QuemAprovou ? $ferias->QuemAprovou->nome : "Sistema",
-                'centro_custo' => $ferias->CentroCusto->label,
-                'data_saida' => $ferias->data_saida,
-                'data_retorno' => $ferias->data_retorno,
-                'qnt_dias' => $ferias->qnt_dias,
-                'dias_saldo' => $ferias->dias_saldo,
-                'tem_faltas' => $ferias->tem_faltas ? "Sim" : "Não",
-                'qnt_faltas' => (int)$ferias->qnt_faltas,
-                'periodo_aquisitivo' => $ferias->periodo_aquisitivo,
-                'ultima_data' => $ferias->ultima_data,
-                'status_aprovacao' => $ferias->status_aprovacao,
+                'nome' => $ferias['admissao']['feedback']['curriculo']['nome'],
+                'cargo' => $ferias['admissao']['feedback']['vaga_selecionada']['nome'],
+                'data_admissao' => $ferias['admissao']['data_admissao'],
+                'gestor' => $ferias['ferias_prevista']['gestor_aprovacao']['nome'] ?? '',
+                'quem_aprovou' => $ferias['ferias_prevista']['quem_aprovou']['nome'] ?? '',
+                'centro_custo' => $ferias['ferias_prevista']['centro_custo']['label'] ?? '',
+                'periodo_gozado' => $ferias['periodo_gozado'],
+                'qnt_dias' => $ferias['qnt_dias'],
+                'dias_saldo' => $ferias['ferias_prevista']['dias_saldo'],
+                'tem_faltas' => $ferias['ferias_prevista']['tem_faltas'] ? 'Sim' : 'Não',
+                'qnt_faltas' => $ferias['ferias_prevista']['qnt_faltas'],
+                'periodo_aquisitivo' => $ferias['ferias_prevista']['periodo_aquisitivo']['label'],
+                'data_saida' => $ferias['data_saida'],
+                'data_retorno' => $ferias['data_retorno'],
+                'proximo_periodo' => $ferias['proximo_periodo'],
+                'data_limite' => $ferias['data_limite'],
+                'ultima_data' => $ferias['ferias_prevista']['ultima_data'],
+                'usuario_cadastrou' => $ferias['usuario_cadastrou']['nome'],
+                'status' => $ferias['status'],
+                'status_aprovacao' => $ferias['ferias_prevista']['status_aprovacao'],
+                'resposta_rh' => $ferias['ferias_prevista']['resposta_rh'],
+                'data_aprovacao_rh' => $ferias['ferias_prevista']['data_aprovacao_rh'],
+                'data_aprovacao' => $ferias['ferias_prevista']['data_aprovacao'],
+                'rh' => $ferias['ferias_prevista']['rh_aprovacao']['nome'] ?? '',
                 'dias_vencer' => $dias_vencer,
                 'pintar' => $dias_vencer <= $periodo_vencimento / 2,
             ]);
@@ -78,7 +82,7 @@ class FeriasController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $ferias = $this->show($request);
+       $ferias = $this->show($request);
 
         $head = [
             'nome',
@@ -96,6 +100,10 @@ class FeriasController extends Controller
             'periodo_aquisitivo',
             'ultima_data',
             'status_aprovacao',
+            'data_aprovacao',
+            'rh',
+            'resposta_rh',
+            'data_aprovacao_rh',
             'dias_vencer',
         ];
         $rows = [];
@@ -117,6 +125,10 @@ class FeriasController extends Controller
                 $row['periodo_aquisitivo'],
                 $row['ultima_data'],
                 $row['status_aprovacao'],
+                $row['data_aprovacao'],
+                $row['rh'],
+                $row['resposta_rh'],
+                $row['data_aprovacao_rh'],
                 $row['dias_vencer'],
             );
         }

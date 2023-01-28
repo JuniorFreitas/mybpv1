@@ -40,8 +40,8 @@
                                     <th style="text-align: center">Centro de custo</th>
                                     <th style="text-align: center">Qnt dias</th>
                                     <th style="text-align: center">Férias</th>
-                                    <th style="text-align: center">Faltas</th>
-                                    <th style="text-align: center">Saldo</th>
+<!--                                    <th style="text-align: center">Faltas</th>-->
+<!--                                    <th style="text-align: center">Saldo</th>-->
                                     <th style="text-align: center">Período Aquisitivo</th>
                                     <th style="text-align: center">Data Limite</th>
                                     <th style="text-align: center">Status</th>
@@ -53,10 +53,10 @@
                                     <td style="text-align: center">{{ item.centro_custo }}</td>
                                     <td style="text-align: center">{{ item.qnt_dias }}</td>
                                     <td style="text-align: center">{{ item.data_saida }} à {{ item.data_retorno }}</td>
-                                    <td style="text-align: center">{{ item.qnt_faltas }}</td>
-                                    <td style="text-align: center">{{ item.dias_saldo }}</td>
-                                    <td style="text-align: center">{{ item.periodo_aquisitivo }}</td>
-                                    <td style="text-align: center">{{ item.ultima_data }}</td>
+<!--                                    <td style="text-align: center">{{ item.qnt_faltas }}</td>-->
+<!--                                    <td style="text-align: center">{{ item.dias_saldo }}</td>-->
+                                    <td style="text-align: center">{{ item.periodo_gozado }}</td>
+                                    <td style="text-align: center">{{ item.data_limite }}</td>
                                     <td style="text-align: center">{{ item.dias_vencer < 0 ?
                                         Math.abs(item.dias_vencer) + ' dia(s) vencido(s)' : item.dias_vencer + ' dia(s) à vencer'}}
                                     </td>

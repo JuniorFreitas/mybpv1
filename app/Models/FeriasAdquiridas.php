@@ -92,6 +92,11 @@ class FeriasAdquiridas extends Model
         'user_alterou_id' => 'int',
     ];
 
+    const STATUS_GOZANDO = 'gozando';
+    const STATUS_GOZADA = 'gozada';
+    const STATUS_AGUARDANDO = 'aguardando';
+    const STATUS_CANCELADA = 'cancelada';
+
     //Acessor ->data_saida
     public function getDataSaidaAttribute($value)
     {
@@ -136,19 +141,33 @@ class FeriasAdquiridas extends Model
 
     public function Admissao()
     {
-        return $this->hasMany(Admissao::class, 'id', 'admissao_id');
+        return $this->hasOne(Admissao::class, 'id', 'admissao_id');
     }
 
     public function UsuarioCadastrou()
     {
-        return $this->hasMany(User::class, 'id', 'user_cadastrou_id')->select(['id', 'nome']);
+        return $this->hasOne(User::class, 'id', 'user_cadastrou_id')->select(['id', 'nome']);
     }
 
     public function UsuarioEditou()
     {
-        return $this->hasMany(User::class, 'id', 'user_editou_id')->select(['id', 'nome']);
+        return $this->hasOne(User::class, 'id', 'user_editou_id')->select(['id', 'nome']);
     }
 
+    public function Colaborador()
+    {
+        return $this->hasOne(Curriculo::class, 'id', 'colaborador_id');
+    }
+
+    public function Feedback()
+    {
+        return $this->hasOne(FeedbackCurriculo::class, 'curriculo_id', 'colaborador_id');
+    }
+
+    public function FeriasPrevista()
+    {
+        return $this->hasOne(FeriasPrevista::class, 'id', 'ferias_prevista_id');
+    }
 
     protected static function booted()
     {

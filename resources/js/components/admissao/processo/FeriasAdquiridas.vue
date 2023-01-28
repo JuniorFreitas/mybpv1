@@ -19,7 +19,7 @@
                                 <label>Período aquisitivo gozado</label>
                                 <input type="text" class="form-control validacampo"
                                        v-mascara:per_aquisitivo
-                                       :disabled="visualizar"
+                                       :disabled="visualizar || item.status === 'gozada' || item.status === 'gozando'"
                                        placeholder="Ex: 2020/2021"
                                        @keyup.prevent="valida_campo_vazio($event.target,9)"
                                        @blur.prevent="valida_campo_vazio($event.target,9)"
@@ -29,7 +29,7 @@
 
                         <div class="col-12 col-md-2 col-lg-2">
                             <label>Quant de dias</label>
-                            <select class="form-control validacampo" v-model="item.qnt_dias" :disabled="visualizar"
+                            <select class="form-control validacampo" v-model="item.qnt_dias" :disabled="visualizar || item.status === 'gozada' || item.status === 'gozando'"
                                     @change.prevent="valida_campo_vazio($event.target,1);dataRetorno(item,index)"
                                     @blur.prevent="valida_campo_vazio($event.target,1);dataRetorno(item,index)"
                             >
@@ -44,7 +44,7 @@
                                 <label>Data saída</label>
                                 <datepicker label="" @onselect="dataRetorno(item,index)"
                                             class="corrigiDatepicker" v-model="item.data_saida"
-                                            :disabled="visualizar"></datepicker>
+                                            :disabled="visualizar || item.status === 'gozada' || item.status === 'gozando'"></datepicker>
                             </div>
                         </div>
 
@@ -64,7 +64,7 @@
                                 <label>Próximo período</label>
                                 <input type="text" class="form-control validacampo"
                                        v-mascara:per_aquisitivo
-                                       :disabled="visualizar"
+                                       :disabled="visualizar || item.status === 'gozada' || item.status === 'gozando'"
                                        placeholder="Ex: 2021/2022"
                                        @keyup.prevent="valida_campo_vazio($event.target,9)"
                                        @blur.prevent="valida_campo_vazio($event.target,9)"
@@ -77,14 +77,14 @@
                                 <label>Data limite</label>
                                 <datepicker label=""
                                             class="corrigiDatepicker" v-model="item.data_limite"
-                                            :disabled="visualizar"></datepicker>
+                                            :disabled="visualizar || item.status === 'gozada' || item.status === 'gozando'"></datepicker>
                             </div>
                         </div>
 
                     </div>
                     <div class="row" v-show="model.length > 0">
                         <div class="col-12 mb-3">
-                            <button v-if="!visualizar" class="btn btn-sm btn-danger mb-2 mr-1" type="button"
+                            <button v-if="!visualizar && item.status === 'aguardando'" class="btn btn-sm btn-danger mb-2 mr-1" type="button"
                                     @click.prevent="remove(index)">
                                 <span class="fas fa-times" aria-hidden="true"></span>
                                 REMOVER
@@ -154,6 +154,7 @@ export default {
             obj.data_retorno = dataHoje;
             obj.proximo_periodo = '';
             obj.data_limite = dataLimite;
+            obj.status = 'aguardando';
             this.lista.push(obj);
 
             this.dataRetorno(this.lista[this.lista.length - 1], this.lista.length - 1);
