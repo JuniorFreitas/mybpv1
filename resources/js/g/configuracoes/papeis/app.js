@@ -5,7 +5,6 @@ const app = new Vue({
         empresa_id: '',
         preloadAjax: false,
         editando: false,
-        id: 0,//id_curso
 
         cadastrado: false,
         atualizado: false,
@@ -22,6 +21,8 @@ const app = new Vue({
             listaDeHabilidades: '',
         },
 
+        formDefault: null,
+
         lista: [],
         listaDeHabilidades: [],
         todasHabilidades: true,
@@ -29,11 +30,18 @@ const app = new Vue({
         dados: {},
         controle: {
             carregando: false,
-            dados: {},
+            dados: {
+                pages: 20,
+                campoBusca: "",
+            }
         }
     },
+    mounted() {
+        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form);
+    },
     methods: {
-        selecionarTodas: function () {
+        selecionarTodas() {
             this.todasHabilidades = !this.todasHabilidades;
             var valor = this.todasHabilidades;
             _.forEach(this.listaDeHabilidades, function (habilidade) {
@@ -42,22 +50,23 @@ const app = new Vue({
         },
         formNovo() {
             this.tituloJanela = 'Cadastrando papeis'
-            formReset();
-
+            $("#aba-identificacao-tab").tab("show");
+            Object.assign(this.form, this.formDefault);
             this.preloadAjax = true;
             this.cadastrado = false;
             this.atualizado = false;
             this.editando = false;
             formReset();
 
-            $.get(`${URL_ADMIN}/papeis/novo`)
-                .done((data) => {
+            axios.get(`${URL_ADMIN}/papeis/novo`)
+                .then(({data}) => {
                     this.listaDeHabilidades = data;
                     this.preloadAjax = false;
-                });
+                }).catch((error) => {
+                    console.log(error);
+            })
         },
         cadastrar() {
-
             $('#janelaCadastrar :input:visible:enabled').trigger('blur');
             if ($('#janelaCadastrar :input:visible:enabled.is-invalid').length) {
                 alert('Verificar os erros');
@@ -75,7 +84,6 @@ const app = new Vue({
                         mostraSucesso('', 'Papel cadastrado com sucesso!');
                         $('#janelaCadastrar').modal('hide');
                         this.$refs.componente.buscar();
-                        // $('#controle button:eq(0)').click();
                     }
                 }).catch(error => {
                 this.preloadAjax = false;
@@ -83,6 +91,7 @@ const app = new Vue({
         },
         formAlterar(id) {
             this.tituloJanela = 'Alterando papeis'
+            $("#aba-identificacao-tab").tab("show");
             formReset();
             this.cadastrado = false;
             this.atualizado = false;
@@ -141,64 +150,19 @@ const app = new Vue({
                 this.preloadAjax = false;
             });
         },
-        janelaConfirmar: function (id) {
-            app.id = id;
-            this.apagado = false;
-            this.preloadAjax = false;
-        },
-        apagar: function () {
-            this.erros = [];
-            var dados = {};
-            dados._method = 'DELETE';
-            this.preloadAjax = true;
-
-            $.post(`${URL_ADMIN}/papeis/${this.id}`, dados)
-                .done((data) => {
-
-                    app.preloadAjax = false;
-                    app.apagado = true;
-                    $('#controle button:eq(0)').click();
-
-                });
+        atualizar() {
+            this.$refs.componente.atual = 1;
+            this.$refs.componente.buscar();
         },
 
-        carregou: function (dados) {
-
+        carregou(dados) {
             this.lista = dados.itens;
             this.empresa_id = dados.empresa_id;
             this.controle.carregando = false;
-
         },
-        carregando: function () {
+        carregando() {
             this.controle.carregando = true;
         }
 
     }
 });
-
-
-$().ready(function () {
-
-
-    $('#janelaCadastrar').on('shown.bs.modal', function () {
-        $('#nome').focus(); // ja foca no nome quando a janela abrir
-    });
-
-    $('#btnAtualizar').on('click', atualizar);
-
-    atualizar();
-
-    $('#formBusca').on('submit', function (e) {
-        e.preventDefault();
-        app.controle.dados.campoBusca = $('#campoBusca').val();
-        atualizar();
-    });
-
-
-});
-
-function atualizar() {
-    app.$refs.componente.atual = 1;
-    app.$refs.componente.buscar();
-
-}
