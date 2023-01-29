@@ -142,8 +142,17 @@ class AdmissaoController extends Controller
             return response()->json(['msg' => 'Por favor insira um telefone'], 400);
         }
 
-        if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO]) && trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) ==  0) {
-            return response()->json(['message' => 'Informe a data do Aso'], 422);
+        if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
+            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) ==  0){
+                return response()->json([
+                    'msg' => 'Informe a data do ASO'
+                ], 400);
+            }
+            if (trim($dados['admissao']['data_admissao']) ==  0){
+                return response()->json([
+                    'msg' => 'Informe a data do ASO'
+                ], 400);
+            }
         }
 
         try {
@@ -913,8 +922,17 @@ class AdmissaoController extends Controller
 
         $dados['curriculo']['nascimento'] = $data_nascimento->dataInsert();
 
-        if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO]) && trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) ==  0) {
-            return response()->json(['message' => 'Informe a data do Aso'], 422);
+        if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
+            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) ==  0){
+                return response()->json([
+                    'msg' => 'Informe a data do ASO'
+                ], 400);
+            }
+            if (trim($dados['admissao']['data_admissao']) ==  0){
+                return response()->json([
+                    'msg' => 'Informe a data do ASO'
+                ], 400);
+            }
         }
 
         $dadosValidados = \Validator::make($dados, [

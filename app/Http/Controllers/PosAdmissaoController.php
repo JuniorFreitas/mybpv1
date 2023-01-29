@@ -370,7 +370,11 @@ class PosAdmissaoController extends Controller
                 'tipos_rescisoes' => $tipoRescisoes,
                 'classificacoes_rescisoes' => $classificacoesRescisoes,
                 'formulario' => $formulario,
-                'form_limpo' => $formulario_vazio
+                'form_limpo' => $formulario_vazio,
+                // ToDO ajustar na branch que vai ser feito a modificação de formulario por tabela
+//                'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
+//                'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
+//                'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
             ]
         ]);
     }

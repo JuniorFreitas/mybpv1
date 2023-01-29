@@ -26,7 +26,6 @@
                         style="margin-top: -19px;"
                         label=""
                         :disabled="visualizar || disabled"
-                        onblur="valida_campo_vazio(this,1)"
                         v-model="form.documentos_entregue_data"
                     ></datepicker>
                 </div>
@@ -101,7 +100,6 @@
                         label=""
                         style="margin-top: -19px;"
                         :disabled="visualizar || disabled"
-                        onblur="valida_campo_vazio(this,1)"
                         v-model="form.encaminhado_exame_data"
                     ></datepicker>
                 </div>
@@ -147,7 +145,6 @@
                         label=""
                         style="margin-top: -19px;"
                         :disabled="visualizar || disabled"
-                        onblur="valida_campo_vazio(this,1)"
                         v-model="form.encaminhado_treinamento_data"
                     ></datepicker>
                 </div>

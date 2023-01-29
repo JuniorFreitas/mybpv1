@@ -49,6 +49,8 @@ const app = new Vue({
         cliente_id: "",
         cliente_area_id: 0,
 
+        formulario_open: '',
+
         colunasTabela: {
             cliente: false,
             pcd: false,
@@ -780,6 +782,7 @@ const app = new Vue({
             this.disabledInput = false;
             this.formAvulsa = _.cloneDeep(this.formAvulsaDefault); //copia
             this.form = _.cloneDeep(this.formDefault); //copia
+            this.formulario_open = 'Avulsa';
 
             this.form.foto_tres = [];
             this.form.foto_tresDel = [];
@@ -790,12 +793,18 @@ const app = new Vue({
 
         CadastraAvulsa() {
             formReset();
-
-            if (this.formAvulsa.feedback.vaga_id === "") {
-                valida_campo_vazio($("#vaga_" + this.hash), 1);
-                $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
-                mostraErro("", "O campo vaga não pode ficar vazio");
+            $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
+            if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
+                mostraErro("", "Verifique os erros");
                 return false;
+            }
+
+            if(['ADMITIDO', 'PRONTO PARA ADMISSÃO'].includes(this.form.admissao.status)){
+                if (this.form.admissao.data_admissao === "") {
+                    valida_campo_vazio($("#data_admissao_" + this.hash), 1);
+                    $("#janelaAdmissaoAvulsa #data_admissao_" + this.hash).focus().trigger("blur");
+                    return;
+                }
             }
 
             if (this.formAvulsa.curriculo.telefones.length === 0) {
@@ -813,9 +822,11 @@ const app = new Vue({
             }
 
 
-            $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
-            if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os erros");
+
+            if (this.formAvulsa.feedback.vaga_id === "") {
+                valida_campo_vazio($("#vaga_" + this.hash), 1);
+                $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O campo vaga não pode ficar vazio");
                 return false;
             }
 
@@ -896,6 +907,7 @@ const app = new Vue({
         //Form Normal
         formEntrevistar(id) {
             Object.assign(this.form, this.formDefault);
+            this.formulario_open = 'Comum';
 
             this.form.id = id;
             this.cadastrado = false;
@@ -976,6 +988,12 @@ const app = new Vue({
 
 
         alterar() {
+            this.validaBlur();
+            let countErro = document.querySelectorAll(".is-invalid").length
+            if (countErro > 0) {
+                toastr.error("Verifique os campos", "Atenção!")
+                return false;
+            }
             $("#janelaCadastrar :input:visible").trigger("blur");
             if ($("#janelaCadastrar :input:visible.is-invalid").length) {
                 mostraErro("", "Verifique os erros");

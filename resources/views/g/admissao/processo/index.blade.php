@@ -164,7 +164,7 @@
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
                                         <label>Sexo</label>
-                                        <select
+                                        <select class="form-control"
                                             v-model="formAvulsa.curriculo.sexo"
                                         >
                                             <option value="">Selecione</option>
