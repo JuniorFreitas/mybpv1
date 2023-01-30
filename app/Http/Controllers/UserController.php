@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Jobs\JobBoasVindas;
 use App\Jobs\JobRecuperaSenha;
 use App\Models\Arquivo;
+use App\Models\Cliente;
+use App\Models\ClienteConfig;
 use App\Models\GrupoCloud;
 use App\Models\Papel;
 use App\Models\RecuperacaoSenha;
@@ -176,22 +178,24 @@ class UserController extends Controller
 
         if ($cliente) {
             $usuario = [
-                'cliente_id' => $cliente->Cliente->id,
+                'cliente_id' => auth()->user()->empresa_id,
                 'area_id' => $cliente->Cliente->area_id,
                 'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
                 'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
-                'user_id' => auth()->id()
+                'user_id' => auth()->id(),
+                'whatsappLiberado' => ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first()->envia_whatsapp
             ];
 
         } else {
 //            $usuario = auth()->user()->ClientesEmpresa()->select(['id'])->with('Cliente:id,area_id')->get();
             $usuario = [
-                'cliente_id' => 0,
+                'cliente_id' => auth()->user()->empresa_id,
                 'area_id' => 0,
                 'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id(),
+                'whatsappLiberado' => ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first()->envia_whatsapp
             ];
         }
 
