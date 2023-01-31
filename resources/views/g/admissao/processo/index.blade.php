@@ -127,7 +127,8 @@
                                                v-model="formAvulsa.curriculo.nascimento"
                                                placeholder="Ex: 10/10/2010"
                                                v-mascara:data
-                                               autocomplete="mybp" @keyup.prevent="valida_data_vazio($event.target,true)"
+                                               autocomplete="mybp"
+                                               @keyup.prevent="valida_data_vazio($event.target,true)"
                                                @blur.prevent="valida_data_vazio($event.target,true)">
                                     </div>
                                 </div>

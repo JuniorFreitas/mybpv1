@@ -793,13 +793,17 @@ const app = new Vue({
 
         CadastraAvulsa() {
             formReset();
+            this.validaBlur();
             $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
-            if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os erros");
+            $("#janelaAdmissaoAvulsa :input:visible.is-invalid").length
+            let countErro = document.querySelectorAll(".is-invalid").length
+
+            if (countErro > 0) {
+                toastr.error("Verifique os campos", "Atenção!")
                 return false;
             }
 
-            if(['ADMITIDO', 'PRONTO PARA ADMISSÃO'].includes(this.form.admissao.status)){
+            if (['ADMITIDO', 'PRONTO PARA ADMISSÃO'].includes(this.form.admissao.status)) {
                 if (this.form.admissao.data_admissao === "") {
                     valida_campo_vazio($("#data_admissao_" + this.hash), 1);
                     $("#janelaAdmissaoAvulsa #data_admissao_" + this.hash).focus().trigger("blur");
@@ -820,8 +824,6 @@ const app = new Vue({
                 mostraErro("", "Insira pelo menos UM telefone de contato");
                 return false;
             }
-
-
 
             if (this.formAvulsa.feedback.vaga_id === "") {
                 valida_campo_vazio($("#vaga_" + this.hash), 1);
@@ -994,6 +996,7 @@ const app = new Vue({
                 toastr.error("Verifique os campos", "Atenção!")
                 return false;
             }
+
             $("#janelaCadastrar :input:visible").trigger("blur");
             if ($("#janelaCadastrar :input:visible.is-invalid").length) {
                 mostraErro("", "Verifique os erros");
