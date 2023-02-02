@@ -222,7 +222,7 @@ class BeneficioController extends Controller
     {
         $this->authorize('cadastro_beneficio');
 
-        $beneficio = Beneficio::where('cliente_id', auth()->user()->id)->get();
+        $beneficio = Beneficio::get();
 
         $listaBeneficios = BeneficioFeedback::where('feedback_id', $feedback)
             ->with('Beneficio', 'Feedback.Curriculo')->get();
