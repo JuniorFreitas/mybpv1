@@ -20,42 +20,65 @@
         n.º {{$dados->FeedBack->Admissao->DadosAdmissoes? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero : 'NÃO INFORMADO'}}
         ,
         Série {{$dados->FeedBack->Admissao->DadosAdmissoes? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_serie: 'NÃO INFORMADO'}}
-        a seguir chamado apenas <strong>EMPREGADO</strong>, é celebrado o
-        presente <strong>CONTRATO DE EXPERIÊNCIA</strong>, que terá vigência a partir da data de início da prestação de
-        serviços, de
-        acordo com as condições a seguir especificadas:
+        a seguir chamado apenas <strong>EMPREGADO(A)</strong>, é celebrado o
+        presente <strong>CONTRATO DE TRABALHO INTERMITENTE</strong>,, conforme artigo 443 e seu parágrafo 3º, e artigo
+        452-A e seus parágrafos, da CLT que terá vigência a partir da data
+        de {{$dados->FeedBack->Admissao->data_admissao}}, de acordo com as condições a seguir
+        especificadas:
 
     </p><br>
     <p class="f12 text-justify">
-        <strong>1ª (Função/Salário)</strong> – Fica o <strong>EMPREGADO</strong> admitido no quadro de funcionários da
+        <strong>1ª (Função/Salário)</strong> – Fica o <strong>EMPREGADO(A)</strong> admitido no quadro de funcionários
+        da
         <strong>EMPREGADORA</strong> para exercer as funções de <span
             style="text-transform: uppercase; font-weight: bold">{{ $dados->FeedBack->VagaAberta->VagaSelecionada->nome }}</span>
-        mediante a remuneração mensal de R$ {{ $dados->FeedBack->Admissao->salario }}
+        mediante a remuneração como horista de R$ {{ $dados->FeedBack->Admissao->salario }}
         ({{\App\Models\Sistema::valorPorExtenso($dados->FeedBack->Admissao->salario)}}). A circunstância, porém, de ser
-        a função especificada não importa na intransferibilidade do <strong>EMPREGADO</strong> para outro serviço, no
-        qual demonstre melhor capacidade de adaptação desde que compatível com sua condição pessoal.
+        a função especificada não importa na intransferibilidade do(a) <strong>EMPREGADO(A)</strong> para outro serviço,
+        no qual
+        demonstre melhor capacidade de adaptação desde que compatível com sua condição pessoal.
     </p><br>
     <p class="f12 text-justify">
-        <strong>2ª (Horário)</strong> – O horário de trabalho será no horário administrativo ou, especialmente, em
-        horário de turno cumprindo jornada de 44h/semanais, se comprometendo a trabalhar em regime de compensação e de
-        prorrogação de horas, quando necessário, e a eventual redução da jornada, por determinação da <strong>EMPREGADORA</strong>,
-        não inovará este ajuste, permanecendo sempre íntegra a obrigação do <strong>EMPREGADO</strong> de cumprir o
-        horário que lhe for determinado, observando o limite legal.
+        <strong>2ª (Horário)</strong> – A EMPREGADORA convocará o(a) EMPREGADO(a) por meio de comunicação eficaz,
+        informando a jornada solicitada, com antecedência de pelo menos três dias. Recebida a comunicação o(a)
+        EMPREGADO(A) terá um dia útil para comunicar a aceitação ou não da proposta, sendo que seu silêncio representará
+        a recusa.
     </p><br>
     <p class="f12 text-justify">
-        <strong>3ª (Horas Extras)</strong> – Obriga-se também o <strong>EMPREGADO</strong> a prestar serviços em horas
-        extraordinárias, sempre que lhe for determinado pela <strong>EMPREGADORA</strong>, na forma prevista em Lei.
-        Na hipótese desta faculdade pela <strong>EMPREGADORA</strong>, o <strong>EMPREGADO</strong> receberá as horas
-        extraordinárias com o acréscimo legal, ou será tratado através de acordo de compensação de
-        horas, com a consequente redução da jornada de trabalho em outro dia. Horas extras não autorizadas não serão
-        remuneradas e estarão passíveis de medidas administrativas.
+        Parágrafo Primeiro. Não será computado como período extraordinário o que exceder a jornada normal, ainda que
+        ultrapasse o limite de cinco minutos previsto no § 1º do art. 58 da CLT, quando o empregado, por escolha
+        própria, permanecer nas dependências da empresa para exercer atividades particulares de práticas religiosas,
+        descanso, lazer, estudo, alimentação, atividades de relacionamento social, higiene pessoal e troca de roupa ou
+        uniforme.<br>
+        As partes desde já convencionam a celebração do banco de horas, nos termos dos § 2º e 5º do artigo 59 da CLT
+        para a compensação de jornada no período de seis meses.
     </p><br>
     <p class="f12 text-justify">
-        <strong>4ª (Localidade)</strong> – Fica ajustado nos termos que dispõe o Parágrafo 10° do Artigo 469, da
-        Consolidação das Leis de Trabalho, que o <strong>EMPREGADO</strong> acatará ordem emanada da
-        <strong>EMPREGADORA</strong> para prestação de serviços tanto da localidade de
-        celebração do Contrato de Trabalho, como qualquer outra cidade, quer essa transferência seja transitória ou
-        definitiva.
+        Parágrafo Segundo: Aceita a proposta, a parte que, sem justo motivo, descumprir o ajustado, pagará à outra
+        parte, no prazo de trinta dias, multa de 50% (cinquenta por cento) da remuneração que seria devida, permitida a
+        compensação em igual prazo.
+    </p><br>
+    <p class="f12 text-justify">
+        Parágrafo Terceiro: O período de inatividade não será considerado tempo à disposição da EMPREGADORA, podendo
+        o(a) EMPREGADO(A) prestar serviços a outros contratantes.
+    </p><br>
+    <p class="f12 text-justify">
+        PParágrafo Quarto: Não será computado como jornada de trabalho o tempo utilizado pelo EMPREGADO, por escolha
+        própria, para permanecer nas dependências da empresa para exercer atividade particulares de práticas religiosas,
+        descanso, lazer, estudo, alimentação, atividades de relacionamento social, higiente pessoal e troca de roupa ou
+        uniforme.
+    </p><br>
+    <p class="f12 text-justify">
+        <strong>3ª (Turno)</strong> – Aceita o(a) EMPREGADO(A), expressamente, a condição de prestar serviços em
+        qualquer dos
+        turnos de trabalho, isto é, tanto durante o dia como à noite, desde que sem simultaneidade, observadas as
+        prescrições legais reguladoras do assunto, quanto à remuneração.
+    </p><br>
+    <p class="f12 text-justify">
+        <strong>4ª (Localidade)</strong> – Fica ajustado nos termos que dispõe o § 2° e 3ª do Artigo 469, da
+        Consolidação das Leis de Trabalho, que o(a) EMPREGADO(A) acatará ordem emanada da EMPREGADORA para prestação de
+        serviços tanto da localidade de celebração do Contrato de Trabalho, como qualquer outra cidade, quer essa
+        transferência seja transitória ou definitiva.
     </p><br>
     <p class="f12 text-justify">
         <strong>5ª (Dano)</strong> – Em caso de dano causado pelo(a) <strong>EMPREGADO(A)</strong>, de qualquer tipo,
@@ -64,8 +87,12 @@
         autorizada a
         efetivar o desconto da importância correspondente ao prejuízo, o qual fará independente do valor já que essa
         possibilidade fica expressamente prevista em contrato, nos termos do § 1º do artigo 462 da CLT.
-        <br><br>
-        Parágrafo único: O(A) <strong>EMPREGADO(A)</strong> compromete-se também, a respeitar o regulamento da empresa,
+
+    </p>
+    <br>
+    <p class="f12 text-justify">
+        <strong>Parágrafo único:</strong> O(A) <strong>EMPREGADO(A)</strong> compromete-se também, a respeitar o
+        regulamento da empresa,
         mantendo conduta irrepreensível no ambiente de trabalho, confidencialidade (conforme Termo de Confidencialidade
         anexo a esse contrato) e postura, constituindo motivos para imediata dispensa do(a)
         <strong>EMPREGADO(A)</strong>, além dos previstos em lei, o desacato moral ou agressão física a <strong>EMPREGADORA</strong>,
