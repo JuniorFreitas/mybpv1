@@ -28,10 +28,11 @@
                 <preload v-if="this.formPonto.preloadFrequencia"></preload>
                 <div class="col-12" v-else>
                     <h4>Frequência</h4>
-                    <h5 class="text-center" v-if="formPonto.pontos.length === 0"> Sem registros encontrados de @{{
-                        formPonto.intervalo }}</h5>
+                    <h5 class="text-center" v-if="formPonto.pontos.length === 0"> Sem registros encontrados de
+                        @{{ formPonto.intervalo }}
+                    </h5>
                     <div class="table-responsive">
-                        <table class="table table-borderless table-hover table-sm" v-if="formPonto.pontos.length > 0">
+                        <table class="table table-bordered table-hover table-sm" v-if="formPonto.pontos.length > 0">
                             <thead>
                             <tr>
                                 <th scope="col">Data</th>
@@ -45,7 +46,111 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="ponto in formPonto.pontos">
+
+                            <tr v-for="calend in calendario">
+                                <td>
+                                    @{{ calend.dia }}<br><small>@{{ calend.diaSem }}</small>
+                                    <small class="text-danger" v-if="calend.feriado">(@{{ calend.feriado.descricao
+                                        }})</small>
+                                </td>
+
+                                <td>
+                                    <div v-if="calend.ponto">
+                                        <i class="fas fa-circle text-success ml-2" v-if="calend.ponto.verificado"></i>
+                                        <i class="fas fa-circle text-warning ml-2" v-if="!calend.ponto.verificado"></i>
+
+                                        <span v-for="(periodo,index) in calend.ponto.periodos"
+                                              v-if="calend.ponto.ocorrencia.trabalhado">
+                                    <span v-show="index > 0">|</span>
+                                    @{{ periodo.horaEntrada }}<span
+                                                v-if="periodo.horaSaida">-@{{ periodo.horaSaida }}</span>
+                                    <span v-if="!periodo.horaSaida">-<span
+                                            class="badge badge-warning">trabalhando</span></span>
+                                        </span>
+                                    </div>
+                                    <div v-else>
+                                        --
+                                    </div>
+
+                                <td>
+                                    <div v-if="calend.ponto">
+                                        @{{ calend.ponto.jornada.escala.descricao }}
+                                    </div>
+                                    <div v-else>
+                                        --
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div v-if="calend.ponto">
+                                        <span
+                                            v-if="calend.ponto.jornada.ocorrencia.trabalhado && calend.ponto.ocorrencia.conta_horas">
+                                            @{{ calend.ponto.horasNormalOriginalFormat }}
+                                        </span>
+                                        <span v-else> -- </span>
+                                    </div>
+                                    <div v-else>
+                                        --
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div v-if="calend.ponto">
+                                        <span
+                                            v-if="calend.ponto.jornada.ocorrencia.trabalhado && calend.ponto.ocorrencia.conta_horas && calend.ponto.periodos_em_aberto.length ===0">
+                                            @{{ calend.ponto.horasNormalFormat }}
+                                        </span>
+                                        <span v-else> -- </span>
+                                    </div>
+                                    <div v-else>
+                                        --
+                                    </div>
+                                </td>
+                                <td>
+                                    <div v-if="calend.ponto">
+                                    <span
+                                        v-if="calend.ponto.jornada.ocorrencia.trabalhado && calend.ponto.ocorrencia.conta_horas && calend.ponto.periodos_em_aberto.length ===0">
+                                            <span class="text-success" v-if="calend.ponto.horasNoturna>0">@{{ calend.ponto.horasNoturnaFormat }}</span>
+                                            <span v-else>00h:00m</span>
+                                        </span>
+                                        <span v-else> -- </span>
+                                    </div>
+                                    <div v-else>
+                                        --
+                                    </div>
+                                </td>
+                                <td>
+                                    <div v-if="calend.ponto">
+                                    <span
+                                        v-if="calend.ponto.jornada.ocorrencia.trabalhado && calend.ponto.ocorrencia.conta_horas && calend.ponto.periodos_em_aberto.length ===0">
+                                        <span class="text-success"
+                                              v-if="calend.ponto.horasExtra>0">@{{ calend.ponto.horasExtraFormat }}</span>
+                                                <span v-else>00h:00m</span>
+                                        </span>
+                                        <span v-else> -- </span>
+                                    </div>
+                                    <div v-else>
+                                        --
+                                    </div>
+                                </td>
+                                <td>
+                                    <div v-if="calend.ponto">
+                                        <span
+                                            v-if="calend.ponto.jornada.ocorrencia.trabalhado && calend.ponto.ocorrencia.conta_horas && calend.ponto.periodos_em_aberto.length ===0">
+                                            <span class="text-danger"
+                                                  v-if="calend.ponto.horasExtra<0">@{{ calend.ponto.horasExtraFormat }}</span>
+                                            <span v-else>00h:00m</span>
+                                        </span>
+                                            <span v-else> -- </span>
+                                    </div>
+                                    <div v-else>
+                                        --
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <tr v-for="ponto in formPonto.pontos" v-if="false">
                                 <td>
                                     @{{ ponto.dia }} <small>@{{ ponto.diaSem }}</small>
                                 </td>
@@ -193,9 +298,11 @@
                             <div class="col-12 col-sm-6 col-md-5 col-lg-4">
                                 <div class="form-group">
                                     <label for="">Por Escala</label>
-                                    <select class="form-control form-control-sm" v-model="formBusca.escala_id" @change="atualizar">
+                                    <select class="form-control form-control-sm" v-model="formBusca.escala_id"
+                                            @change="atualizar">
                                         <option value="">Selecione...</option>
-                                        <option v-for="escala in todas_escalas" :value="escala.id" v-text="escala.descricao"></option>
+                                        <option v-for="escala in todas_escalas" :value="escala.id"
+                                                v-text="escala.descricao"></option>
                                     </select>
                                 </div>
                             </div>
@@ -203,7 +310,8 @@
                             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                                 <div class="form-group">
                                     <label for="">Status</label>
-                                    <select class="form-control form-control-sm"  v-model="formBusca.status" @change="atualizar">
+                                    <select class="form-control form-control-sm" v-model="formBusca.status"
+                                            @change="atualizar">
                                         <option value="admitidos">Admitidos</option>
                                         <option value="demitidos">Demitidos</option>
                                     </select>

@@ -145,7 +145,7 @@
             </table>
 
             <controle-paginacao class="d-flex justify-content-center" ref="paginacaoEscalas"
-                                url="{{route('g.controle-ponto.escalas.atualizarEscalas')}}" por-pagina="3"
+                                url="{{route('g.controle-ponto.escalas.atualizarEscalas')}}" por-pagina="10"
                                 :dados="paginacaoEscalas.dados"
                                 v-on:carregou="carregouEscalas" v-on:carregando="carregandoEscalas"></controle-paginacao>
 

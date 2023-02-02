@@ -5,6 +5,7 @@ namespace App\Models;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -29,7 +30,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class PeriodoJornada extends Model
 {
-    use HasFactory,LogsActivity;
+    use HasFactory,LogsActivity, SoftDeletes;
     protected static $logFillable = true;
     protected static $logName = 'PeriodoJornada';
     protected static $logOnlyDirty = true;

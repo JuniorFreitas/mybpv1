@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Admissao;
 use App\Models\EmpresaEscala;
+use App\Models\Feriado;
 use App\Models\OcorrenciaJornada;
 use App\Models\PontoEletronico;
 use App\Models\User;
@@ -71,11 +72,17 @@ class FolhaDePontoController extends Controller
      */
     public function edit(Request $request, User $user)
     {
-        $funcionario = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($user->id)->first();
+        $funcionario = User::select(['id', 'nome', 'empresa_id', 'login as email'])
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->whereId($user->id)
+            ->first();
+
         if (!$funcionario) {
             return response()->json(['msg' => 'Funcionário não encontrado'], 400);
         }
-        return $funcionario;
+
+
+        return response()->json($funcionario, 200);
     }
 
     /**
@@ -104,6 +111,7 @@ class FolhaDePontoController extends Controller
     public function buscarFrequencia(Request $request, User $user)
     {
         $funcionario = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($user->id)->first();
+
         if (!$funcionario) {
             return response()->json(['msg' => 'Funcionário não encontrado'], 400);
         }
@@ -115,20 +123,57 @@ class FolhaDePontoController extends Controller
             //$lista = PontoEletronico::whereBetween('created_at',[$inicio->dataHoraInsert(),$fim->dataHoraInsert()])
             ->whereFuncionarioId($funcionario->id)
             ->with([
-                'PeriodosEmAberto:id,ponto_id',
-                'Jornada.Ocorrencia:id,descricao,trabalhado,conta_horas',
-                'Jornada.Escala',
                 'Ocorrencia:id,descricao,trabalhado,conta_horas',
                 'Periodos' => function ($q) {
-                    $q->orderBy('created_at')->select(['id', 'ponto_id', 'entrada', 'saida']);
+                    $q->select(['id', 'ponto_id', 'entrada', 'saida'])->withTrashed()->orderBy('created_at');
+                },
+                'PeriodosEmAberto' => function ($q) {
+                    $q->select(['id','ponto_id'])->withTrashed();
+                },
+                'Jornada' => function ($q) {
+                    $q->withTrashed()
+                        ->with([
+                            'Ocorrencia:id,descricao,trabalhado,conta_horas',
+                            'Escala' => function ($q) {
+                                $q->withTrashed();
+                            },
+                        ]);
                 },
             ])
+//            ->with([
+//                'PeriodosEmAberto:id,ponto_id',
+//                'Jornada.Ocorrencia:id,descricao,trabalhado,conta_horas',
+//                'Jornada.Escala',
+//                'Ocorrencia:id,descricao,trabalhado,conta_horas',
+//                'Periodos' => function ($q) {
+//                    $q->orderBy('created_at')->select(['id', 'ponto_id', 'entrada', 'saida']);
+//                },
+//            ])
             ->orderBy('created_at')
             ->get();
+
+        $dias = [];
+
+        $qnt_dias = DataHora::diferencaDias($inicio->dataHoraInsert(), $fim->dataHoraInsert());
+        foreach (range(0, $qnt_dias) as $d) {
+            $dataD = new DataHora($inicio->dataHoraInsert());
+            $dh = $dataD->addDia($d, true);
+            $feriado = Feriado::whereData($dataD->dataInsert())->whereAtivo(true)->first(['descricao', 'id']);
+            $ponto = $lista->where('dia', '=', $dh)->first();
+
+            $dias[] = [
+                'dia' => $dh,
+                'diaSem' => $dataD->diaSemanaExtM(),
+                'diaSemana' => substr($dataD->diaSemanaExtM(), 0, 3),
+                'feriado' => $feriado,
+                'ponto' => $ponto
+            ];
+        }
 
         return response()->json([
             'pontos' => $lista,
             'ocorrencia_falta' => OcorrenciaJornada::FALTA,
+            'calendario' => $dias,
         ], 200);
     }
 
@@ -148,14 +193,32 @@ class FolhaDePontoController extends Controller
             //$lista = PontoEletronico::whereBetween('created_at',[$inicio->dataHoraInsert(),$fim->dataHoraInsert()])
             ->whereFuncionarioId($funcionario->id)
             ->with([
-                'PeriodosEmAberto:id,ponto_id',
-                'Jornada.Ocorrencia:id,descricao,trabalhado,conta_horas',
-                'Jornada.Escala',
                 'Ocorrencia:id,descricao,trabalhado,conta_horas',
                 'Periodos' => function ($q) {
-                    $q->orderBy('created_at')->select(['id', 'ponto_id', 'entrada', 'saida']);
+                    $q->select(['id', 'ponto_id', 'entrada', 'saida'])->withTrashed()->orderBy('created_at');
+                },
+                'PeriodosEmAberto' => function ($q) {
+                    $q->select(['id','ponto_id'])->withTrashed();
+                },
+                'Jornada' => function ($q) {
+                    $q->withTrashed()
+                        ->with([
+                            'Ocorrencia:id,descricao,trabalhado,conta_horas',
+                            'Escala' => function ($q) {
+                                $q->withTrashed();
+                            },
+                        ]);
                 },
             ])
+//            ->with([
+//                'PeriodosEmAberto:id,ponto_id',
+//                'Jornada.Ocorrencia:id,descricao,trabalhado,conta_horas',
+//                'Jornada.Escala',
+//                'Ocorrencia:id,descricao,trabalhado,conta_horas',
+//                'Periodos' => function ($q) {
+//                    $q->orderBy('created_at')->select(['id', 'ponto_id', 'entrada', 'saida']);
+//                },
+//            ])
             ->orderBy('created_at');
 
         //Total horas normais
@@ -164,16 +227,35 @@ class FolhaDePontoController extends Controller
         $totalHorasExtra = clone $consulta;
         $totalHorasNegativas = clone $consulta;
 
-
         $totalHorasNormais = $totalHorasNormais->whereDoesntHave('PeriodosEmAberto')->sum('duracao_normal');
         $totalHorasNoturnas = $totalHorasNoturnas->whereDoesntHave('PeriodosEmAberto')->sum('duracao_noturna');
         $totalHorasExtra = $totalHorasExtra->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '>', 0)->sum('duracao_extra');
         $totalHorasNegativas = abs($totalHorasNegativas->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '<', 0)->sum('duracao_extra'));
 
         $dados = $user;
+
+
+        $dias = [];
+
+        $qnt_dias = DataHora::diferencaDias($inicio->dataHoraInsert(), $fim->dataHoraInsert());
+        foreach (range(0, $qnt_dias) as $d) {
+            $dataD = new DataHora($inicio->dataHoraInsert());
+            $dh = $dataD->addDia($d, true);
+            $feriado = Feriado::whereData($dataD->dataInsert())->whereAtivo(true)->first(['descricao', 'id']);
+            $ponto = $consulta->get()->where('dia', '=', $dh)->first();
+
+            $dias[] = [
+                'dia' => $dh,
+                'diaSem' => $dataD->diaSemanaExtM(),
+                'diaSemana' => substr($dataD->diaSemanaExtM(), 0, 3),
+                'feriado' => $feriado,
+                'ponto' => $ponto
+            ];
+        }
+
         $pdf = PDF::loadView('pdf.controle-ponto.folha-ponto.pdf', [
             'dados' => $dados,
-            'lista' => $consulta->get(),
+            'lista' => $dias,
             'intervaloText' => $intervaloText,
             'totalHorasNormais' => PontoEletronico::formataTempo($totalHorasNormais),
             'totalHorasNoturnas' => PontoEletronico::formataTempo($totalHorasNoturnas),
@@ -184,7 +266,7 @@ class FolhaDePontoController extends Controller
             'escala' => $user->EmpresaEscalas[0]
 
         ]);
-        $pdf->setPaper('A4', 'landscape');
+        $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("Folha de ponto" . STR::slug($dados->tipo == 'Pessoa Jurídica' ? $dados->razao_social : $dados->nome) . ".pdf");
 
     }
@@ -207,17 +289,17 @@ class FolhaDePontoController extends Controller
 //                }
 //            });
 
-        if(auth()->user()->can('controle_ponto_folha-ponto_adm')){
+        if (auth()->user()->can('controle_ponto_folha-ponto_adm')) {
             $user = auth()->user()->Empresa->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false);
-        }else{
-            $user =  User::whereId(auth()->id())->whereAtivo(true)->whereTemp(false);
+        } else {
+            $user = User::whereId(auth()->id())->whereAtivo(true)->whereTemp(false);
         }
 
         $resultado = $user->has('EscalasFuncionario')
             ->whereHas('Feedback', function ($q) use ($request) {
-                if ($request->status == 'admitidos'){
+                if ($request->status == 'admitidos') {
                     $q->admitidos();
-                }else{
+                } else {
                     $q->demitidos();
                 }
             });
@@ -251,7 +333,7 @@ class FolhaDePontoController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'todas_escalas' => EmpresaEscala::select(['id','empresa_id','descricao'])->get(),
+                'todas_escalas' => EmpresaEscala::select(['id', 'empresa_id', 'descricao'])->get(),
                 'controle_ponto_adm' => (auth()->user()->can('controle_ponto_folha-ponto_adm'))
             ],
         ]);

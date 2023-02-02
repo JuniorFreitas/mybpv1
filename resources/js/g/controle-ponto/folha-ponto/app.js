@@ -36,6 +36,7 @@ const app = new Vue({
         },
         todas_escalas: [],
         controle_ponto_adm: false,
+        calendario: [],
 
         formPontoDefault: null,
         OCORRENCIA_FALTA: null,
@@ -139,10 +140,11 @@ const app = new Vue({
         buscarFrequencia() {
             this.formPonto.preloadFrequencia = true;
             axios.post(`${URL_ADMIN}/controle-ponto/folha-ponto/${this.USER_ID}/frequencia`, {intervalo: this.formPonto.intervalo})
-                .then(response => {
+                .then(({data}) => {
                     this.formPonto.preloadFrequencia = false;
-                    this.formPonto.pontos = response.data.pontos
-                    this.OCORRENCIA_FALTA = response.data.ocorrencia_falta
+                    this.formPonto.pontos = data.pontos
+                    this.OCORRENCIA_FALTA = data.ocorrencia_falta
+                    this.calendario = data.calendario
                 }).catch(error => {
                 this.formPonto.preloadFrequencia = false;
             });
