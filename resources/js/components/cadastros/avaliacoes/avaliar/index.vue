@@ -172,9 +172,8 @@
                     <fieldset>
                         <legend>DADOS</legend>
                         <div class="row">
-                            <div class="col-12 col-lg-4"><strong>Nome:</strong> {{
-                                    formAvaliar.dados_do_funcionario.nome
-                                }}
+                            <div class="col-12 col-lg-4"><strong>Nome:</strong>
+                                {{ formAvaliar.dados_do_funcionario.nome }}
                             </div>
                             <div class="col-12 col-lg-4"><strong>Matrícula:</strong>
                                 {{ formAvaliar.dados_do_funcionario.matricula }}
@@ -187,9 +186,8 @@
                             <div class="col-12 col-lg-4"><strong>Cargo:</strong>
                                 {{ formAvaliar.dados_do_funcionario.cargo }}
                             </div>
-                            <div class="col-12 col-lg-4"><strong>Área:</strong> {{
-                                    formAvaliar.dados_do_funcionario.area
-                                }}
+                            <div class="col-12 col-lg-4"><strong>Área:</strong>
+                                {{ formAvaliar.dados_do_funcionario.area }}
                             </div>
                         </div>
                     </fieldset>
@@ -222,7 +220,7 @@
                                     <option v-for="resp in 5" :value="resp">{{ resp }}</option>
                                 </select>
                             </div>
-                            <h5 v-if="formAvaliar.origem_feedback != 'Funcionario'">Nota do funcionário:
+                            <h5 v-if="formAvaliar.origem_feedback != 'Funcionario' && !formAvaliar.principal">Nota do funcionário:
                                 {{ formAvaliar.respostasFunc[item.id][index].nota }}</h5>
                         </fieldset>
                     </fieldset>
@@ -231,7 +229,7 @@
                         <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control"
                                   placeholder="Se desejar, faça considerações" rows="4"></textarea>
 
-                        <h5 class="mt-3" v-if="formAvaliar.origem_feedback != 'Funcionario'">Considerações do
+                        <h5 class="mt-3" v-if="formAvaliar.origem_feedback != 'Funcionario' && !formAvaliar.principal">Considerações do
                             funcionário: {{ formAvaliar.comentario_funcionario }}</h5>
                     </fieldset>
                 </div>
@@ -243,38 +241,6 @@
                 </button>
             </template>
         </modal>
-
-        <!--         Filtro-->
-        <!--        <fieldset>-->
-        <!--            <legend>Filtro</legend>-->
-        <!--            <form class="row" @submit.prevent="$refs.componente.buscar()">-->
-        <!--                <div class="col-12 col-md-4">-->
-        <!--                    <div class="form-group">-->
-        <!--                        <label>Buscar</label>-->
-        <!--                        <input type="text"-->
-        <!--                               placeholder="Buscar por título"-->
-        <!--                               autocomplete="off"-->
-        <!--                               class="form-control form-control-sm" :disabled="controle.carregando"-->
-        <!--                               v-model="controle.dados.campoBusca">-->
-        <!--                    </div>-->
-        <!--                </div>-->
-
-        <!--                <div class="col-12 col-md-12">-->
-        <!--                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"-->
-        <!--                            @click="atualizar"><i-->
-        <!--                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>-->
-        <!--                        Atualizar-->
-        <!--                    </button>-->
-
-        <!--                    <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"-->
-        <!--                            @click="formNovo"-->
-        <!--                            data-toggle="modal"-->
-        <!--                            data-target="#janelaCadastrar">-->
-        <!--                        <i class="fa fa-plus"></i> Cadastrar-->
-        <!--                    </button>-->
-        <!--                </div>-->
-        <!--            </form>-->
-        <!--        </fieldset>-->
 
         <div id="conteudo">
 
@@ -307,13 +273,11 @@
                 <table class="table table-bordered">
                     <thead class="bg-white">
                     <tr class="bg-white">
-                        <!--                        <td class="text-center">Nome</td>-->
                         <td class="text-center">Título</td>
                         <td class="text-center">Tipo</td>
                         <td class="text-center">Avaliar até</td>
                         <td class="text-center">Funcionário</td>
                         <td class="text-center">Avaliar Como</td>
-<!--                        <td class="text-center">Status</td>-->
                         <td class="text-center">Ação</td>
                     </tr>
                     </thead>
@@ -336,14 +300,6 @@
                         <td class="text-center">
                             {{ item.origem_feedback == "Funcionario" ? "Auto avaliação" : item.origem_feedback }}
                         </td>
-<!--                        <td class="text-center">-->
-<!--                            <span class="p-1"-->
-<!--                                  v-if="item.pendente_autoavaliacao">Pendente autoavaliação</span>-->
-<!--                            <span class="p-1 badge badge-danger"-->
-<!--                                  v-if="item.status === 'Pendente' && item.fez_auto_avaliacao">Pendente</span>-->
-<!--                            <span class="p-1 badge badge-info" v-if="item.status === 'Avaliada'">Avaliada</span>-->
-<!--                            <span class="p-1 badge badge-success" v-if="item.status === 'Finalizada'">Finalizada</span>-->
-<!--                        </td>-->
                         <td class="text-center">
 
                             <div class="dropdown show"
