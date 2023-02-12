@@ -220,7 +220,7 @@
                                     <option v-for="resp in 5" :value="resp">{{ resp }}</option>
                                 </select>
                             </div>
-                            <h5 v-if="formAvaliar.origem_feedback != 'Funcionario' && !formAvaliar.principal">Nota do funcionário:
+                            <h5 v-if="formAvaliar.origem_feedback != 'Funcionario' || !formAvaliar.principal">Nota do funcionário:
                                 {{ formAvaliar.respostasFunc[item.id][index].nota }}</h5>
                         </fieldset>
                     </fieldset>
@@ -229,7 +229,7 @@
                         <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control"
                                   placeholder="Se desejar, faça considerações" rows="4"></textarea>
 
-                        <h5 class="mt-3" v-if="formAvaliar.origem_feedback != 'Funcionario' && !formAvaliar.principal">Considerações do
+                        <h5 class="mt-3" v-if="formAvaliar.origem_feedback != 'Funcionario' || !formAvaliar.principal">Considerações do
                             funcionário: {{ formAvaliar.comentario_funcionario }}</h5>
                     </fieldset>
                 </div>
