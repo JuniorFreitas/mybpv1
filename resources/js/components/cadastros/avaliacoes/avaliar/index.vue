@@ -34,7 +34,6 @@
                         <tr>
                             <th>{{ item[index].topico_pai }}</th>
                             <th class="text-center" v-for="(avaliador, id) in item[0].avaliadores" :key="avaliador.id">
-<!--                                {{ avaliador.nome }}-->
                                 Avaliador {{id + 1}}
                             </th>
                             <th class="text-center">MÉDIA</th>
@@ -220,17 +219,19 @@
                                     <option v-for="resp in 5" :value="resp">{{ resp }}</option>
                                 </select>
                             </div>
-                            <h5 v-if="formAvaliar.origem_feedback != 'Funcionario' || !formAvaliar.principal">Nota do funcionário:
+                            <h5 v-if="formAvaliar.principal">Nota do colaborador:
                                 {{ formAvaliar.respostasFunc[item.id][index].nota }}</h5>
                         </fieldset>
                     </fieldset>
                     <fieldset>
                         <legend>MINHAS CONSIDERAÇÕES</legend>
                         <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control"
+                                  @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                  @change.prevent="valida_campo_vazio($event.target, 1)"
                                   placeholder="Se desejar, faça considerações" rows="4"></textarea>
 
-                        <h5 class="mt-3" v-if="formAvaliar.origem_feedback != 'Funcionario' || !formAvaliar.principal">Considerações do
-                            funcionário: {{ formAvaliar.comentario_funcionario }}</h5>
+                        <h5 class="mt-3" v-if="formAvaliar.principal">Considerações do
+                            colaborador: {{ formAvaliar.comentario_funcionario }}</h5>
                     </fieldset>
                 </div>
             </template>
@@ -298,7 +299,9 @@
                             {{ item.funcionario.nome }}
                         </td>
                         <td class="text-center">
-                            {{ item.origem_feedback == "Funcionario" ? "Auto avaliação" : item.origem_feedback }}
+                            <span v-show="item.origem_feedback == 'Funcionario' && !item.principal">Autoavaliação</span>
+                            <span v-show="item.origem_feedback == 'Avaliador' && !item.principal">Avaliador Par</span>
+                            <span v-show="item.origem_feedback == 'Avaliador' && item.principal">Avaliador Gestor (Principal)</span>
                         </td>
                         <td class="text-center">
 
@@ -511,6 +514,7 @@ export default {
                     this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
                     this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
                     this.formAvaliar.origem_feedback = response.data.origem_feedback;
+                    this.formAvaliar.principal = response.data.principal;
                     this.editando = true;
                     setupCampo();
                     this.preload = false;

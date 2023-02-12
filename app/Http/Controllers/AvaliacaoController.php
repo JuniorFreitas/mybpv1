@@ -323,11 +323,12 @@ class AvaliacaoController extends Controller
             'topicos' => $avaliacaoTopicos,
             'avaliacao_feedback_id' => $avaliacaoFeedback->id,
             'respostas' => $respostas,
-            'respostas_funcionario' => $respostasFunc,
+            'respostas_funcionario' => $avaliacaoFeedback->principal ? $respostasFunc : [],
             'comentario' => $avaliacaoFeedback->comentario ?: '',
             'comentario_funcionario' => $avaliacaoFeedbackFunc->comentario ?: '',
             'dados_do_funcionario' => $dadosDoFuncionario,
             'origem_feedback' => $avaliacaoFeedback->origem_feedback,
+            'principal' => $avaliacaoFeedback->principal,
         ]);
     }
 
