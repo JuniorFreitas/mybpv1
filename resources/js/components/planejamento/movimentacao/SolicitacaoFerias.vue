@@ -124,7 +124,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-4 mt-4 mb-4" v-if="visualizar">
-                                <legend>Solicitação feita por: {{ form.solicitante.nome }} {{ form.created_at }}
+                                <legend>Solicitação feita por: {{ form.solicitante !== null ? form.solicitante.nome : '' }} {{ form.data_solicitacao }}
                                 </legend>
                             </div>
                         </div>
@@ -140,7 +140,7 @@
                                 <div v-if="!aprovando && form.gestor_aprovacao !== null" class="col-12">
                                     <legend>{{ form.status_aprovacao_gestor }}
                                         por: {{ form.gestor_aprovacao.nome }} em
-                                        {{ form.data_aprovacao }}
+                                        {{ form.data_aprovacao_gestor }}
                                     </legend>
                                 </div>
 
@@ -617,20 +617,21 @@ export default {
                 dias_saldo: "",
                 tem_faltas: false,
                 qnt_faltas: 0,
-                solicitante: "",
+                solicitante: [],
                 obs_solicitante: "",
                 data_solicitacao: "",
-                gestor_aprovacao: "",
+                gestor_aprovacao: [],
                 obs_gestor: "",
                 status_aprovacao_gestor: "",
                 data_aprovacao_gestor: "",
-                rh_aprovacao: "",
+                data_aprovacao_rh: "",
+                rh_aprovacao: [],
                 obs_rh: "",
                 status_aprovacao_rh: "",
                 aprovado_via_script: false,
                 autocomplete_label_gestor_modal: "",
                 autocomplete_label_gestor_modal_anterior: "",
-                centro_custo: "",
+                centro_custo: [],
                 anexos: [],
                 anexosDel: []
             },
