@@ -249,8 +249,8 @@
             <div class="form-group">
                 <label>PIS</label>
                 <input type="text" class="form-control validacampo"
-                       @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,11) : valida_campo($event.target,11)"
-                       @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,11) : valida_campo($event.target,11)"
+                       @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,8) : valida_campo($event.target,8)"
+                       @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,8) : valida_campo($event.target,8)"
                        :disabled="visualizar || disabled"
                        v-model="form.pis">
             </div>
@@ -260,8 +260,8 @@
             <div class="form-group">
                 <label>Número CTPS</label>
                 <input type="text" class="form-control validacampo"
-                       @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,6) : valida_campo($event.target,6)"
-                       @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,6) : valida_campo($event.target,6)"
+                       @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,2) : valida_campo($event.target,2)"
+                       @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,2) : valida_campo($event.target,2)"
                        :disabled="visualizar || disabled"
                        v-model="form.dados_admissoes.ctps_numero">
             </div>
@@ -271,8 +271,8 @@
             <div class="form-group">
                 <label>Série CTPS</label>
                 <input type="text" class="form-control validacampo"
-                       @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_campo_vazio($event.target,3) : valida_campo($event.target,3)"
-                       @blur.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_campo_vazio($event.target,3) : valida_campo($event.target,3)"
+                       @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_campo_vazio($event.target,2) : valida_campo($event.target,2)"
+                       @blur.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_campo_vazio($event.target,2) : valida_campo($event.target,2)"
                        :disabled="visualizar || disabled"
                        v-model="form.dados_admissoes.ctps_serie">
             </div>
@@ -328,8 +328,8 @@
             <div class="form-group">
                 <label>Titulo de Eleitor</label>
                 <input type="text" class="form-control validacampo"
-                       @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,12) : valida_campo($event.target,12)"
-                       @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,12) : valida_campo($event.target,12)"
+                       @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,8) : valida_campo($event.target,8)"
+                       @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,8) : valida_campo($event.target,8)"
                        :disabled="visualizar || disabled"
                        v-model="form.dados_admissoes.titulo_eleitor_numero">
             </div>
