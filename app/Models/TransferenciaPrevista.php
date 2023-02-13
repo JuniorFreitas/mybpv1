@@ -63,6 +63,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereObsRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereRespostaRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserRhId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  */
 class TransferenciaPrevista extends Model
 {

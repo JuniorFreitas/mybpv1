@@ -67,6 +67,19 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEncerramentoPrevisto($value)
  * @property int $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEmpresaId($value)
+ * @property string $hash_colaborador
+ * @property string|null $resposta_colaborador
+ * @property string|null $data_resposta_colaborador
+ * @property int|null $centro_custo_id
+ * @property int|null $prazo_resposta
+ * @property string|null $prazo_resposta_expiracao
+ * @property-read \App\Models\CentroCusto|null $CentroDeCusto
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDataRespostaColaborador($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereHashColaborador($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente wherePrazoResposta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente wherePrazoRespostaExpiracao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereRespostaColaborador($value)
  */
 class Intermitente extends Model
 {

@@ -11,6 +11,7 @@ use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
+use App\Models\Ferias;
 use App\Models\FeriasAdquiridas;
 use App\Models\FeriasPrevista;
 use App\Models\FeriasPrevistaDados;
@@ -19,6 +20,7 @@ use App\Models\PeriodoAquisitivo;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
+use ParagonIE\Sodium\Core\Curve25519\Fe;
 
 class FeriasPrevistaController extends Controller
 {
@@ -131,36 +133,35 @@ class FeriasPrevistaController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\FeriasPrevistaMov $feriasPrevista
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * @param Ferias $ferias
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function edit(FeriasPrevista $feriasPrevista)
+    public function edit(Ferias $ferias)
     {
+        $ferias->autocomplete_label_colaborador = $ferias->Admissao->Feedback->Curriculo ? $ferias->Admissao->Feedback->Curriculo->nome : '';
+        $ferias->autocomplete_label_colaborador_anterior = $ferias->Admissao->Feedback->Curriculo ? $ferias->Admissao->Feedback->Curriculo->nome : '';
+        $ferias->colaborador_id = $ferias->Admissao->Feedback->Curriculo ? $ferias->Admissao->Feedback->Curriculo->id : '';
 
-        $feriasPrevista->autocomplete_label_colaborador = $feriasPrevista->Colaborador ? $feriasPrevista->Colaborador->nome : '';
-        $feriasPrevista->autocomplete_label_colaborador_anterior = $feriasPrevista->Colaborador ? $feriasPrevista->Colaborador->nome : '';
+        $ferias->autocomplete_label_gestor_modal = $ferias->GestorAprovacao ? $ferias->GestorAprovacao->nome : '';
+        $ferias->autocomplete_label_gestor_modal_anterior = $ferias->GestorAprovacao ? $ferias->GestorAprovacao->nome : '';
 
-        $feriasPrevista->autocomplete_label_gestor_modal = $feriasPrevista->GestorAprovacao ? $feriasPrevista->GestorAprovacao->nome : '';
-        $feriasPrevista->autocomplete_label_gestor_modal_anterior = $feriasPrevista->GestorAprovacao ? $feriasPrevista->GestorAprovacao->nome : '';
+        $ferias->gestor_aprovacao = $ferias->GestorAprovacao ? $ferias->GestorAprovacao->nome : '';
 
-        $feriasPrevista->quem_aprovou = $feriasPrevista->QuemAprovou ?? '';
+        $ferias->centro_custo_id = $ferias->Admissao->centro_custo_id ? $ferias->Admissao->centro_custo_id : $ferias->FeriasPrevista->centro_custo_id;
 
-        $feriasPrevista->rh_aprovacao = $feriasPrevista->RhAprovacao ?? '';
+        $ferias->rh_aprovacao = $ferias->RhAprovacao ? $ferias->RhAprovacao->nome : '';;
 
-        $feriasPrevista->solicitante_nome = $feriasPrevista->UserCadastrou->nome ?? '';
+        $ferias->solicitante = $ferias->Solicitante->nome ?? '';
 
-        $data_admissao = FeedbackCurriculo::whereCurriculoId($feriasPrevista->colaborador_id)
-            ->with('Admissao')->first();
+        $data_admissao = $ferias->Admissao->data_admissao;
 
-        $feriasPrevista->data_admissao = $data_admissao->Admissao->data_admissao;
+        $ferias->data_admissao = $data_admissao;
 
-        $feriasPrevista->periodo_label = $feriasPrevista->PeriodoAquisitivo->label;
-        $feriasPrevista->anexosDel = [];
-        $feriasPrevista->load('Anexos');
+        $ferias->periodo_label = $ferias->PeriodoAquisitivo->label;
+        $ferias->anexosDel = [];
+        $ferias->load('Anexos');
 
-        return response()->json($feriasPrevista, 200);
+        return response()->json($ferias, 200);
     }
 
     /**
@@ -411,16 +412,18 @@ class FeriasPrevistaController extends Controller
     public function filtro(Request $request)
     {
 
-        $resultado = FeriasPrevista::with(
-            'Colaborador:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,email,municipio_id,uf_vaga',
-            'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
-            'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao',
-            'Colaborador.FeedBack.VagaSelecionada',
-            'CentroCusto:id,label',
-            'UserCadastrou:id,nome',
-            'QuemAprovou:id,nome',
-            'RhAprovacao:id,nome',
+        $resultado = Ferias::with(
+            'Admissao',
+            'Admissao.Feedback',
+            'Admissao.Feedback.Curriculo',
+            'Admissao.Feedback.VagaSelecionada',
+            'Admissao.CentroCusto',
+            'Empresa',
+            'Solicitante',
+            'GestorAprovacao',
+            'RhAprovacao',
             'PeriodoAquisitivo',
+            'FeriasPrevista.CentroCusto'
         );
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
@@ -428,7 +431,7 @@ class FeriasPrevistaController extends Controller
             $periodo = explode(' até ', $request->periodo);
             $dataInicio = new DataHora($periodo[0]);
             $dataFim = new DataHora($periodo[1]);
-            $resultado->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
+            $resultado->where('data_solicitacao', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
         }
 
         $filtroVencimento = $request->filtroVencimento == 'true' ? true : false;
@@ -448,22 +451,22 @@ class FeriasPrevistaController extends Controller
         }
 
         if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Colaborador', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
+            $resultado->whereHas('Admissao.Curriculo', function ($q) use ($request) {
+                $q->wheere('nome', 'like', '%' . $request->campoBusca . '%')
                     ->orWhere('id', $request->campoBusca);
             });
         }
 
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus;
-            if ($request->campoStatus == "aberto"){
-                $resultado->whereNull('status_aprovacao');
-            }elseif ($request->campoStatus == "aprovado_rh"){
-                $resultado->whereRespostaRh("aprovado");
-            }elseif ($request->campoStatus == "aprovado"){
-                $resultado->whereStatusAprovacao($status)->whereNull('resposta_rh');
+        if ($request->filled('campoStatusAprovacao')) {
+            $status = $request->campoStatusAprovacao;
+            if ($request->campoStatusAprovacao === "aberto"){
+                $resultado->whereNull('status_aprovacao_gestor');
+            }elseif ($request->campoStatusAprovacao === "aprovado_gestor"){
+                $resultado->whereStatusAprovacaoGestor(Ferias::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            }elseif ($request->campoStatusAprovacao === "aprovado_rh"){
+                $resultado->whereStatusAprovacaoRh(Ferias::STATUS_APROVADO);
             }else{
-                $resultado->whereStatusAprovacao($status)->orWhere('resposta_rh', $status);
+                $resultado->whereStatusAprovacaoGestor(Ferias::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', Ferias::STATUS_REPROVADO);
             }
         }
 
@@ -471,23 +474,24 @@ class FeriasPrevistaController extends Controller
             $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
-        return $resultado->orderByDesc('created_at');
+        $resultado->whereStatusFerias(Ferias::STATUS_AGUARDANDO)->orWhere('status_ferias', Ferias::STATUS_GOZANDO);
+
+        return $resultado->orderBy('data_solicitacao');
     }
 
     public function buscaDataAdmissao(Request $request)
     {
-        $data_admissao = FeedbackCurriculo::whereCurriculoId($request->colaborador_id)
-            ->with('Admissao')->first();
-        $dataAdmissao = $data_admissao->Admissao->data_admissao;
+        $ferias = Ferias::find($request->ferias_id);
+        $dataAdmissao = $ferias->Admissao->data_admissao;
 
-        $colaboradorPeriodo = FeriasPrevista::whereColaboradorId($request->colaborador_id)->latest('id')->first();
+        $colaboradorPeriodo = $ferias->PeriodoAquisitivo;
         $dataHoje = new DataHora();
         $data_saida = $dataHoje->dataCompleta();
         $data_retorno = $dataHoje->dataCompleta();
 
         if ($colaboradorPeriodo !== null && !$request->visualizar) {
 
-            $periodo = PeriodoAquisitivo::where('id', '>', $colaboradorPeriodo->periodo_aquisitivo_id)->first();
+            $periodo = PeriodoAquisitivo::where('id', '>', $colaboradorPeriodo->id)->first();
 
             $date = new DataHora($dataAdmissao);
             $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
@@ -497,10 +501,10 @@ class FeriasPrevistaController extends Controller
             $ultimaData = $newDate->addDia(330);
 
         } elseif ($colaboradorPeriodo !== null && $request->visualizar) {
-            $periodo = $colaboradorPeriodo->PeriodoAquisitivo;
-            $data_saida = $colaboradorPeriodo->data_saida;
-            $data_retorno = $colaboradorPeriodo->data_retorno;
-            $ultimaData = $colaboradorPeriodo->ultima_data;
+            $periodo = $colaboradorPeriodo;
+            $data_saida = $ferias->data_saida;
+            $data_retorno = $ferias->data_retorno;
+            $ultimaData = $ferias->ultima_data;
             $newDate = new DataHora($ultimaData);
             $ultimaData = $newDate->dataCompleta();
         } else {
@@ -509,7 +513,7 @@ class FeriasPrevistaController extends Controller
         }
 
         return response()->json([
-            'data_admissao' => $data_admissao->Admissao->data_admissao,
+            'data_admissao' => $dataAdmissao,
             'periodo' => $periodo,
             'ultimaData' => $ultimaData,
             'data_saida' => $data_saida,

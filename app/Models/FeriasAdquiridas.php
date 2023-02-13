@@ -47,6 +47,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUserAlterouId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUserCadastrouId($value)
+ * @property string|null $status
+ * @property int|null $ferias_prevista_id
+ * @property-read \App\Models\Curriculo|null $Colaborador
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \App\Models\FeriasPrevista|null $FeriasPrevista
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereFeriasPrevistaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereStatus($value)
  */
 class FeriasAdquiridas extends Model
 {

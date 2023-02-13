@@ -167,6 +167,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasAdquiridas[] $FeriasAdquiridas
  * @property-read int|null $ferias_adquiridas_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property string|null $acessar_area_porto
+ * @property string|null $avaliacao_psicologica
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAcessarAreaPorto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAvaliacaoPsicologica($value)
  */
 class Admissao extends Model
 {

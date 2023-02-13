@@ -29,6 +29,12 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorSessao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorZona($value)
  * @mixin \Eloquent
+ * @property string|null $ctps_uf
+ * @property string|null $cert_reservista_num
+ * @property string|null $cert_reservista_categoria
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCertReservistaCategoria($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCertReservistaNum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCtpsUf($value)
  */
 class DadosAdmissao extends Model
 {

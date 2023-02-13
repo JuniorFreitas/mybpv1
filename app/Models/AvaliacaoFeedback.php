@@ -8,6 +8,50 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\AvaliacaoFeedback
+ *
+ * @property int $id
+ * @property int|null $avaliacao_id
+ * @property int $empresa_id
+ * @property string $origem_feedback
+ * @property bool $principal
+ * @property int|null $avaliador_id
+ * @property int|null $funcionario_id
+ * @property int|null $nota_final_total
+ * @property string|null $inicio_feedback
+ * @property string|null $fim_feedback
+ * @property string|null $comentario
+ * @property string $status
+ * @property string|null $estado_atual
+ * @property string|null $estado_desejado
+ * @property-read \App\Models\Avaliacao|null $Avaliacao
+ * @property-read \App\Models\User|null $Avaliador
+ * @property-read \App\Models\User|null $Funcionario
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoResposta[] $Respostas
+ * @property-read int|null $respostas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback origemAvaliador()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereAvaliacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereAvaliadorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereComentario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereEstadoAtual($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereEstadoDesejado($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereFimFeedback($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereFuncionarioId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereInicioFeedback($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereNotaFinalTotal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereOrigemFeedback($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback wherePrincipal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereStatus($value)
+ * @mixin \Eloquent
+ */
 class AvaliacaoFeedback extends Model
 {
     use HasFactory, TenantTrait, LogsActivity;

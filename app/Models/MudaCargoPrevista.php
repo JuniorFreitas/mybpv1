@@ -76,6 +76,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereObsRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereRespostaRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereUserRhId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  */
 class MudaCargoPrevista extends Model
 {
