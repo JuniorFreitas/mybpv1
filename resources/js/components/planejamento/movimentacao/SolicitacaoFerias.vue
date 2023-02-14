@@ -8,7 +8,7 @@
                         <legend>Informações</legend>
                         <div class="row">
 
-                            <colaborador :model="form" :verifica="visualizar" :hash="hash"></colaborador>
+                            <colaborador :model="form" :verifica="visualizar || aprovando" :hash="hash"></colaborador>
 
                             <div class="col-12 col-md-4" v-if="form.colaborador_id !== ''">
                                 <div class="form-group">
@@ -23,7 +23,7 @@
                                 <div class="form-group">
                                     <label>Centro de Custo</label>
                                     <select v-model="form.centro_custo_id" class="form-control form-control-sm"
-                                            :disabled="visualizar || aprovandoRh"
+                                            :disabled="visualizar || aprovandoRh || aprovando"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
                                         <option value="">Selecione</option>
@@ -41,7 +41,7 @@
                                 <div class="form-group">
                                     <label>Período Aquisitivo</label>
                                     <select v-model="form.periodo_aquisitivo_id" class="form-control form-control-sm"
-                                            :disabled="visualizar || aprovandoRh">
+                                            :disabled="visualizar || aprovandoRh || aprovando">
                                         <option value="">Selecione</option>
                                         <option v-for="periodo in periodos" :value="periodo.id">{{ periodo.label }}
                                         </option>
@@ -61,7 +61,7 @@
                             <div class="col-12 col-md-4">
                                 <label>Tem Falta?</label>
                                 <select type="text" class="form-control form-control-sm" v-model="form.tem_faltas"
-                                        :disabled="visualizar || aprovandoRh"
+                                        :disabled="visualizar || aprovandoRh || aprovando"
                                         @change.prevent="verificaFaltas()">
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -71,7 +71,7 @@
                             <div class="col-12 col-md-4" v-if="form.tem_faltas === true">
                                 <label>Quantidade de faltas</label>
                                 <select class="form-control form-control-sm" v-model="form.qnt_faltas"
-                                        :disabled="visualizar || aprovandoRh"
+                                        :disabled="visualizar || aprovandoRh || aprovando"
                                         @change.prevent="form.qnt_dias=5">
                                     <option v-for="cont in 32" :value="cont" v-show="cont >= 1">{{ cont }}</option>
                                 </select>
@@ -87,7 +87,7 @@
                             <div class="col-12 col-md-4">
                                 <label>Dias de férias:</label>
                                 <select class="form-control form-control-sm" v-model="form.qnt_dias"
-                                        :disabled="visualizar || aprovandoRh">
+                                        :disabled="visualizar || aprovandoRh || aprovando">
                                     <option v-for="cont in qntDias" :value="cont" v-show="cont >= 5">
                                         {{ cont }}
                                     </option>
@@ -97,7 +97,7 @@
                             <div class="col-12 col-md-4">
                                 <label>Data da saída</label>
                                 <datepicker label="" formsm class="corrigiDatepicker" v-model="form.data_saida"
-                                            :disabled="visualizar || aprovandoRh"></datepicker>
+                                            :disabled="visualizar || aprovandoRh || aprovando"></datepicker>
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -114,13 +114,13 @@
                                        disabled="disabled">
                             </div>
 
-                            <gestoraprovacao formsm :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>
+                            <gestoraprovacao formsm :model="form" :verifica="visualizar || aprovando" :hash="hash"></gestoraprovacao>
 
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Observação</label>
                                     <textarea class="form-control form-control-sm" v-model="form.obs_gestor" cols="5" rows="5"
-                                              :disabled="visualizar || aprovandoRh"></textarea>
+                                              :disabled="visualizar || aprovandoRh || aprovando"></textarea>
                                 </div>
                             </div>
                             <div class="col-12 col-md-4 mt-4 mb-4" v-if="visualizar">
@@ -137,7 +137,7 @@
                             <legend>Aprovação Gestor</legend>
                             <div class="row">
 
-                                <div v-if="!aprovando && form.gestor_aprovacao !== null" class="col-12">
+                                <div v-if="!aprovando && form.gestor_aprovacao" class="col-12">
                                     <legend>{{ form.status_aprovacao_gestor }}
                                         por: {{ form.gestor_aprovacao.nome }} em
                                         {{ form.data_aprovacao_gestor }}
@@ -157,7 +157,7 @@
                                     <div class="form-group">
                                         <label>Status</label>
                                         <select :disabled="!aprovando || aprovandoRh"
-                                                v-model="form.status_aprovacao_rh"
+                                                v-model="form.status_aprovacao_gestor"
                                                 class="form-control form-control-sm validacampo"
                                                 @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
                                             <option value="">Selecione...</option>
@@ -177,7 +177,7 @@
                             <legend>Aprovação RH</legend>
                             <div class="row">
 
-                                <div v-if="!aprovandoRh && form.user_rh_id !== null" class="col-12">
+                                <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12">
                                     <legend>{{ form.status_aprovacao_rh }}
                                         por: {{ form.rh_aprovacao.nome }} em
                                         {{ form.data_aprovacao_rh }}
@@ -269,8 +269,34 @@
         <fieldset class="mt-0">
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
-
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
+                    <div class="form-check" style="margin-bottom: -11px;">
+                        <input type="checkbox" class="form-check-input" @change="atualizar()"
+                               :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroPeriodo"
+                               id="filtroPeriodoAquisitivo"
+                               v-model="controle.dados.filtroPeriodoAquisitivo">
+                        <label class="form-check-label cursor-pointer" for="filtroPeriodoAquisitivo">Por período aquisitivo</label>
+                    </div>
+                    <div class="form-group">
+                        <datepicker range formsm label="" @onselect="atualizar()"
+                                    :disabled="controle.carregando || !controle.dados.filtroInicioFerias"
+                                    v-model="controle.dados.inicioFerias"></datepicker>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
+                                :disabled="controle.carregando" @change="atualizar()">
+                            <option value="">Todos os Status</option>
+                            <option value="aberto">Aguardando</option>
+                            <option value="aprovado_gestor">Aprovado Gestor</option>
+                            <option value="aprovado_rh">Aprovado Rh</option>
+                            <option value="reprovado">Reprovado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="atualizar()"
                                :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroInicioFerias"
@@ -286,7 +312,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="atualizar()"
                                :disabled="controle.carregando || controle.dados.filtroPeriodo || controle.dados.filtroInicioFerias"
@@ -302,7 +328,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-3">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="atualizar()"
                                :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroPeriodo"
@@ -487,20 +513,20 @@
                         <td>
                         <span class="text-uppercase" v-if="item.gestor_aprovacao || item.rh_aprovacao">
                             <span
-                                v-if="item.status_aprovacao_gestor == 'aprovado' && item.status_aprovacao_rh == null">
+                                v-if="item.status_aprovacao_gestor === 'aprovado' && item.status_aprovacao_rh === null">
                                 {{ item.status_aprovacao_gestor }} em {{ item.data_aprovacao_gestor }}<br/>
                                 Por gestor(a): {{ item.gestor_aprovacao.nome }}
                             </span>
                             <span
-                                v-if="item.status_aprovacao_rh == 'aprovado'">
+                                v-if="item.status_aprovacao_rh === 'aprovado'">
                                 {{ item.status_aprovacao_rh }} em {{ item.data_aprovacao_rh }}<br/>
                                 Por RH: {{ item.rh_aprovacao.nome }}
                             </span>
-                            <span v-if="item.status_aprovacao_gestor == 'reprovado' && item.status_aprovacao_rh == null">
+                            <span v-if="item.status_aprovacao_gestor === 'reprovado' && item.status_aprovacao_rh === null">
                                 {{ item.status_aprovacao_gestor }} em {{ item.data_aprovacao_gestor }}<br/>
                                 Por gestor(a): {{ item.gestor_aprovacao.nome }}
                             </span>
-                            <span v-if="item.status_aprovacao_rh == 'reprovado'">
+                            <span v-if="item.status_aprovacao_rh === 'reprovado'">
                                 {{ item.status_aprovacao_rh }} em {{ item.data_aprovacao_rh }}<br/>
                                 Por RH: {{ item.rh_aprovacao.nome }}
                             </span>
@@ -617,21 +643,22 @@ export default {
                 dias_saldo: "",
                 tem_faltas: false,
                 qnt_faltas: 0,
-                solicitante: [],
+                solicitante: null,
                 obs_solicitante: "",
                 data_solicitacao: "",
-                gestor_aprovacao: [],
+                gestor_aprovacao: null,
                 obs_gestor: "",
                 status_aprovacao_gestor: "",
                 data_aprovacao_gestor: "",
                 data_aprovacao_rh: "",
-                rh_aprovacao: [],
+                rh_aprovacao: null,
                 obs_rh: "",
                 status_aprovacao_rh: "",
                 aprovado_via_script: false,
+                gestor_id: "",
                 autocomplete_label_gestor_modal: "",
                 autocomplete_label_gestor_modal_anterior: "",
-                centro_custo: [],
+                centro_custo: null,
                 anexos: [],
                 anexosDel: []
             },
@@ -920,10 +947,11 @@ export default {
 
                     this.tituloJanela = `#${id} Solicitação de férias`;
 
-                    this.form.status_aprovacao = data.status_aprovacao === null ? "" : data.status_aprovacao;
-                    this.form.resposta_rh = data.resposta_rh === null ? "" : data.resposta_rh;
-                    this.form.obs_aprovacao = data.status_aprovacao === null ? "" : data.obs_aprovacao;
-                    this.periodo_label = data.periodo_aquistivo.label;
+                    this.form.status_aprovacao_gestor = data.status_aprovacao_gestor === null ? "" : data.status_aprovacao_gestor;
+                    this.form.status_aprovacao_rh = data.status_aprovacao_rh === null ? "" : data.status_aprovacao_rh;
+                    this.form.obs_gestor = data.status_aprovacao_gestor === null ? "" : data.obs_gestor;
+                    this.form.obs_rh = data.status_aprovacao_rh === null ? "" : data.obs_rh;
+                    this.periodo_label = data.periodo_label;
 
                     this.preload = false;
                 })

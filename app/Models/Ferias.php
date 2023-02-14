@@ -140,6 +140,7 @@ class Ferias extends Model
         'obs_solicitante',
         'data_solicitacao',
         'gestor_aprovacao_id',
+        'gestor_id',
         'obs_gestor',
         'status_aprovacao_gestor',
         'data_aprovacao_gestor',
@@ -169,6 +170,7 @@ class Ferias extends Model
         'obs_solicitante' => 'string',
         'data_solicitacao' => 'datetime:d/m/Y à\s H:i:s',
         'gestor_aprovacao_id' => 'int',
+        'gestor_id' => 'int',
         'obs_gestor' => 'string',
         'status_aprovacao_gestor' => 'string',
         'data_aprovacao_gestor' => 'datetime:d/m/Y à\s H:i:s',
@@ -300,6 +302,11 @@ class Ferias extends Model
     public function GestorAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'gestor_aprovacao_id');
+    }
+
+    public function Gestor()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_id');
     }
 
     public function RhAprovacao()

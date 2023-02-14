@@ -28,6 +28,7 @@ class CreateFeriasTable extends Migration
             $table->unsignedBigInteger('solicitante_id');
             $table->text('obs_solicitante')->nullable();
             $table->dateTime('data_solicitacao');
+            $table->unsignedBigInteger('gestor_id')->nullable();
             $table->unsignedBigInteger('gestor_aprovacao_id')->nullable();
             $table->text('obs_gestor')->nullable();
             $table->string('status_aprovacao_gestor')->nullable();
@@ -48,6 +49,7 @@ class CreateFeriasTable extends Migration
             $table->foreign('periodo_aquisitivo_id')->references('id')->on('periodos_aquisitivos');
             $table->foreign('solicitante_id')->references('id')->on('users');
             $table->foreign('gestor_aprovacao_id')->references('id')->on('users');
+            $table->foreign('gestor_id')->references('id')->on('users');
             $table->foreign('rh_aprovacao_id')->references('id')->on('users');
             $table->foreign('ferias_prevista_id')->references('id')->on('ferias_previstas');
         });
