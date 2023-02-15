@@ -298,20 +298,13 @@ class FeriasPrevistaController extends Controller
 
     }
 
-    public function aprovarRH(Request $request, FeriasPrevista $feriasPrevista)
+    public function aprovarRH(Request $request, Ferias $ferias)
     {
         $this->authorize('privilegio_aprovar_por_rh');
         $dados = $request->input();
         try {
             DB::beginTransaction();
-            $feriasPrevista->update([
-                'user_rh_id' => auth()->id(),
-                'resposta_rh' => $dados['resposta_rh'],
-                'obs_rh' => $dados['obs_rh'],
-                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
-            ]);
-
-            if($dados['resposta_rh'] === 'aprovado'){
+            if($dados['status_aprovacao_rh'] === 'aprovado'){
 
                 $hoje = (new DataHora())->dataInsert();
                 $lista_periodos_aquisitivos = PeriodoAquisitivo::select(["id", "label"])->get();
@@ -321,44 +314,26 @@ class FeriasPrevistaController extends Controller
                     $periodo_aquisitivo[$pa->id] = $pa->label;
                 }
 
-                if($feriasPrevista->data_saida <= $hoje && $feriasPrevista->data_retorno >= $hoje){
+                if($ferias->data_saida <= $hoje && $ferias->data_retorno >= $hoje){
                     $status = 'gozando';
                 }
 
-                if($feriasPrevista->data_retorno < $hoje){
+                if($ferias->data_retorno < $hoje){
                     $status = 'gozada';
                 }
 
-                if($feriasPrevista->data_saida > $hoje){
+                if($ferias->data_saida > $hoje){
                     $status = 'aguardando';
                 }
 
-                $data_limite = (new DataHora($feriasPrevista->data_retorno))->addAno(1);
-
-                $proximo_periodo = $feriasPrevista->periodo_aquisitivo_id + 1;
-
-                $ferias_adquiridas = [
-                    'admissao_id' => $feriasPrevista->Feedback->Admissao->id,
-                    'periodo_gozado' => $feriasPrevista->PeriodoAquisitivo->label,
-                    'qnt_dias' => $feriasPrevista->qnt_dias,
-                    'data_saida' => (new DataHora($feriasPrevista->data_saida))->dataInsert(),
-                    'data_retorno' => (new DataHora($feriasPrevista->data_retorno))->dataInsert(),
-                    'proximo_periodo' => $periodo_aquisitivo[$proximo_periodo],
-                    'data_limite' => (new DataHora($data_limite))->dataInsert(),
-                    'user_cadastrou_id' => auth()->id(),
-                    'created_at' => (new DataHora())->dataHoraInsert(),
-                    'status' => $status,
-                    'ferias_prevista_id' => $feriasPrevista->id
-                ];
-
-                $feriasAdquiridas = FeriasAdquiridas::where('admissao_id', $ferias_adquiridas['admissao_id'])
-                    ->where('periodo_gozado', $ferias_adquiridas['periodo_gozado'])
-                    ->where('data_saida', $ferias_adquiridas['data_saida'])
-                    ->count();
-
-                if($feriasAdquiridas == 0){
-                    $ferias = FeriasAdquiridas::insert($ferias_adquiridas);
-                }
+                $ferias->update([
+                    'rh_aprovacao_id' => auth()->id(),
+                    'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
+                    'obs_rh' => $dados['obs_rh'],
+                    'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
+                    'status_ferias' => $status,
+                    'data_status_ferias' => (new DataHora())->dataHoraInsert(),
+                ]);
             }
 
             DB::commit();
@@ -366,21 +341,21 @@ class FeriasPrevistaController extends Controller
             $dados_email = [
                 'dados_quem_cadastrou' => [
                     'nome_de' => auth()->user()->nome,
-                    'nome_para' => $feriasPrevista->UserCadastrou->nome,
-                    'email_para' => $feriasPrevista->UserCadastrou->login,
-                    'status_aprovacao' => $feriasPrevista->resposta_rh,
-                    'ferias_id' => $feriasPrevista->id,
-                    'colaborador' => $feriasPrevista->Colaborador->nome,
+                    'nome_para' => $ferias->Solicitante->nome,
+                    'email_para' => $ferias->Solicitante->login,
+                    'status_aprovacao' => $ferias->status_aprovacao_rh,
+                    'ferias_id' => $ferias->id,
+                    'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
                     'empresa_id' => auth()->user()->empresa_id,
                     'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
                 ],
                 'dados_gestor' => [
                     'nome_de' => auth()->user()->nome,
-                    'nome_para' => $feriasPrevista->QuemAprovou->nome,
-                    'email_para' => $feriasPrevista->QuemAprovou->login,
-                    'status_aprovacao' => $feriasPrevista->resposta_rh,
-                    'ferias_id' => $feriasPrevista->id,
-                    'colaborador' => $feriasPrevista->Colaborador->nome,
+                    'nome_para' => $ferias->GestorAprovacao->nome,
+                    'email_para' => $ferias->GestorAprovacao->login,
+                    'status_aprovacao' => $ferias->status_aprovacao_rh,
+                    'ferias_id' => $ferias->id,
+                    'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
                     'empresa_id' => auth()->user()->empresa_id,
                     'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
                 ]
@@ -489,9 +464,19 @@ class FeriasPrevistaController extends Controller
 
 //        $resultado->whereIn('status_ferias', [Ferias::STATUS_AGUARDANDO, Ferias::STATUS_GOZANDO, Ferias::STATUS_CANCELADA, null]);
 
-        $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
-            $q->whereIn('ano_inicial', [date('Y')-2, date('Y')-1, date('Y')]);
-        });
+        if ($request->filled('filtroPeriodoAquisitivo')) {
+            $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
+                $q->where('id', $request->filtroPeriodoAquisitivo);
+            });
+        }else{
+            $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
+                $q->whereIn('ano_inicial', [date('Y')-2, date('Y')-1, date('Y')]);
+            });
+        }
+
+//        $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
+//            $q->whereIn('ano_inicial', [date('Y')-2, date('Y')-1, date('Y')]);
+//        });
 
         return $resultado->orderBy('data_solicitacao');
     }
@@ -614,10 +599,10 @@ class FeriasPrevistaController extends Controller
 
         foreach ($resultado as $row) {
             $rows[] = array(
-                $row->Colaborador->nome,
-                $row->Colaborador->FeedBack->VagaSelecionada->nome,
-                $row->Colaborador->FeedBack->Admissao->data_admissao,
-                $row->CentroCusto->label,
+                $row->Admissao->Feedback->Curriculo->nome,
+                $row->Admissao->FeedBack->VagaSelecionada->nome,
+                $row->Admissao->data_admissao,
+                $row->FeriasPrevista->CentroCusto->label,
                 $row->PeriodoAquisitivo->label,
                 $row->ultima_data,
                 (string)$row->qnt_faltas,
@@ -625,19 +610,19 @@ class FeriasPrevistaController extends Controller
                 $row->data_retorno,
                 (string)$row->qnt_dias,
                 (string)$row->dias_saldo,
-                $row->UserCadastrou->nome,
-                $row->GestorAprovacao->nome,
-                $row->QuemAprovou ? $row->QuemAprovou->nome : '',
-                $row->status_aprovacao ? $row->data_aprovacao : '',
-                $row->status_aprovacao,
-                $row->RhAprovacao ? $row->RhAprovacao->nome : '',
-                $row->resposta_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
-                $row->resposta_rh,
+                $row->Solicitante->nome,
+                $row->Gestor->nome,
+                $row->GestorAprovacao ? $row->GestorAprovacao->nome : '',
+                $row->status_aprovacao_gestor ? $row->data_aprovacao_gestor : '',
+                $row->status_aprovacao_gestor,
+                $row->status_aprovacao_rh ? $row->RhAprovacao->nome : '',
+                $row->status_aprovacao_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
+                $row->status_aprovacao_rh,
             );
         }
 
-        $nameArquivo = "ferias_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Ferias - Prevista", $head, $rows, $nameArquivo);
+        $nameArquivo = "ferias_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Ferias", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }

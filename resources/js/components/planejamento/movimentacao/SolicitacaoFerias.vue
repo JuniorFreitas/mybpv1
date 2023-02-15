@@ -270,29 +270,13 @@
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
                 <div class="col-12 col-md-3">
-                    <div class="form-check" style="margin-bottom: -11px;">
-                        <input type="checkbox" class="form-check-input" @change="atualizar()"
-                               :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroPeriodo"
-                               id="filtroPeriodoAquisitivo"
-                               v-model="controle.dados.filtroPeriodoAquisitivo">
-                        <label class="form-check-label cursor-pointer" for="filtroPeriodoAquisitivo">Por período aquisitivo</label>
-                    </div>
                     <div class="form-group">
-                        <datepicker range formsm label="" @onselect="atualizar()"
-                                    :disabled="controle.carregando || !controle.dados.filtroInicioFerias"
-                                    v-model="controle.dados.inicioFerias"></datepicker>
-                    </div>
-                </div>
-                <div class="col-12 col-md-3">
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
+                        <label>Período Aquisitivo</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.filtroPeriodoAquisitivo"
                                 :disabled="controle.carregando" @change="atualizar()">
-                            <option value="">Todos os Status</option>
-                            <option value="aberto">Aguardando</option>
-                            <option value="aprovado_gestor">Aprovado Gestor</option>
-                            <option value="aprovado_rh">Aprovado Rh</option>
-                            <option value="reprovado">Reprovado</option>
+                            <option value="">Últimos 3 períodos</option>
+                            <option v-for="item in periodos" :value="item.id" :key="item.id"
+                                    v-text="item.label"></option>
                         </select>
                     </div>
                 </div>
@@ -355,7 +339,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-2">
+                <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Status</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
@@ -369,7 +353,7 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-2">
+                <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label for="">Exibir</label>
                         <select class="form-control form-control-sm" @change="atualizar()"
@@ -683,6 +667,7 @@ export default {
                 carregando: false,
                 dados: {
                     filtroPeriodo: false,
+                    filtroPeriodoAquisitivo: "",
                     periodo: "",
                     campoBusca: "",
                     campoStatusAprovacao: "",
