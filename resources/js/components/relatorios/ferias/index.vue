@@ -27,7 +27,7 @@
 
                     <div class="col-12 col-md-3 mb-2">
                         <label for="">Por status:</label>
-                        <select class="form-control form-control-sm">
+                        <select class="form-control form-control-sm" v-model="filtrar.status_ferias">
                             <option value="">Todos</option>
                             <option v-for="item in filtro.status_ferias" :value="item">{{ item }}</option>
                         </select>
@@ -121,14 +121,14 @@ export default {
                 tipo: 'aquisitivo',
                 periodo: '',
                 periodo_range: '',
-                status: ''
+                status_ferias: ''
             }
         };
     },
     async mounted() {
         let inicio_de_mes = moment().startOf("month").format("DD/MM/YYYY");
         let fim_de_mes = moment().add(1, "M").endOf("month").format("DD/MM/YYYY");
-        this.periodo_range = `${inicio_de_mes} até ${fim_de_mes}`;
+        this.filtrar.periodo_range = `${inicio_de_mes} até ${fim_de_mes}`;
         await this.periodosAquisitivosList();
 
         this.filtrar.periodo = this.filtro.periodo_aquisitivo[1].id
