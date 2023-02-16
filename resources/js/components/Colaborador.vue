@@ -64,6 +64,7 @@ export default {
     methods: {
         selecionaColaborador(obj) {
             this.model.colaborador_id = this.tipo === 'ferias' ? obj.feedback_id : obj.curriculo_id;
+            this.model.admissao_id = obj.id;
             this.model.centro_custo_id = obj.centro_custo_id ?? '';
             this.model.autocomplete_label_colaborador = obj.label;
             this.model.autocomplete_label_colaborador_anterior = obj.label;
