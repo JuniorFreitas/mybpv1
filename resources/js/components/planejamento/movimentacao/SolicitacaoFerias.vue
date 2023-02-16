@@ -41,7 +41,9 @@
                                 <div class="form-group">
                                     <label>Período Aquisitivo</label>
                                     <select v-model="form.periodo_aquisitivo_id" class="form-control form-control-sm"
-                                            :disabled="visualizar || aprovandoRh || aprovando">
+                                            :disabled="visualizar || aprovandoRh || aprovando"
+                                            onchange="valida_campo_vazio(this,1)"
+                                            onblur="valida_campo_vazio(this,1)">
                                         <option value="">Selecione</option>
                                         <option v-for="periodo in periodos" :value="periodo.id">{{ periodo.label }}
                                         </option>
@@ -533,7 +535,7 @@
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
                                        @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; aprovandoRh = false; podeanexar = true"
-                                       v-if="item.gestor_aprovacao_id === null && aprovaGestor">
+                                       v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor">
                                         Aprovação Gestor
                                     </a>
 
@@ -541,7 +543,7 @@
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
                                        @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoRh = true; podeanexar = false"
-                                       v-if="item.status_aprovacao_gestor === 'aprovado' && item.rh_aprovacao_id === null && aprovaRh">
+                                       v-if="item.status_aprovacao_gestor === 'aprovado' && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh">
                                         Aprovação Rh
                                     </a>
 
@@ -872,21 +874,6 @@ export default {
         },
 
         cadastrar() {
-
-            if (this.form.colaborador_id === "") {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger("blur");
-                mostraErro("", "Campo COLABORADOR não pode ficar vazio");
-                this.resetaCampoColaborador();
-                return false;
-            }
-            if (this.form.gestor_id === "") {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1);
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger("blur");
-                mostraErro("", "Campo GESTOR não pode ficar vazio");
-                this.resetaCampoGestor();
-                return false;
-            }
 
             $(`#${this.hash} :input:visible`).trigger("blur");
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {

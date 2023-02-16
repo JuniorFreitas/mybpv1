@@ -7,6 +7,7 @@ use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovar;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
+use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Curriculo;
@@ -62,10 +63,23 @@ class FeriasPrevistaController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'centro_custo_id' => 'required',
-                'colaborador_id' => 'required',
                 'qnt_dias' => 'required',
                 'dias_saldo' => 'required',
                 'periodo_aquisitivo_id' => 'required',
+                'colaborador_id' => [
+                    function ($attribute, $value, $fail) use ($dados) {
+                        if (strlen($value) == 0) {
+                            $fail('Informe um colaborar para continuar');
+                        }
+                    }
+                ],
+                'gestor_id' => [
+                    function ($attribute, $value, $fail) use ($dados) {
+                        if (strlen($value) == 0) {
+                            $fail('Informe um gestor para aprovação');
+                        }
+                    }
+                ],
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -77,13 +91,15 @@ class FeriasPrevistaController extends Controller
         try {
             DB::beginTransaction();
 
-            $colaborador = FeedbackCurriculo::whereCurriculoId($dados['colaborador_id'])
-                ->with('Admissao')->first();
+            $ferias = Ferias::where('admissao_id', $dados['admissao_id'])
+                            ->where('periodo_aquisitivo_id', $dados['periodo_aquisitivo_id'])
+                            ->where('dias_saldo', '>', 0)
+                            ->where('status_ferias', Ferias::STATUS_GOZADA)
+                            ->orderByDesc('id')
+                            ->first();
 
-            $ferias = Ferias::where('admissao_id', $colaborador->Admissao->id)->where('periodo_aquisitivo_id', $dados['periodo_aquisitivo_id'])->first();
-
-            if (empty($ferias)) {
-                $dataAdmissao = $colaborador->Admissao->data_admissao;
+            if (is_null($ferias)) {
+                $dataAdmissao = $dados['data_admissao'];
 
                 $periodo = PeriodoAquisitivo::where('id', $dados['periodo_aquisitivo_id'])->first();
 
@@ -92,35 +108,39 @@ class FeriasPrevistaController extends Controller
                 $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
                 $newDate->addDia(330);
                 $dados['ultima_data'] = $newDate->dataInsert();
-            }
 
-            $dados['admissao_id'] = $colaborador->Admissao->id;
-            $dados['data_solicitacao'] = (new DataHora())->dataHoraInsert();
-            $dados['solicitante_id'] = auth()->user()->id;
+                $dados['data_solicitacao'] = (new DataHora())->dataHoraInsert();
+                $dados['solicitante_id'] = auth()->user()->id;
 
-            $feriasPrevista = Ferias::create($dados);
+                $admissao = Admissao::find($dados['admissao_id'])->update([
+                    'centro_custo_id' => $dados['centro_custo_id']
+                ]);
 
-            if (isset($dados['anexos'])) {
-                foreach ($dados['anexos'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $feriasPrevista->Anexos()->attach($arquivo->id);
+                $feriasPrevista = Ferias::create($dados);
+
+                if (isset($dados['anexos'])) {
+                    foreach ($dados['anexos'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $feriasPrevista->Anexos()->attach($arquivo->id);
+                        }
                     }
                 }
+            }else{
+                return response()->json([
+                    'msg' => 'Colaborador sem saldo de férias para este período aquisitivo'
+                ], 400);
             }
-
             DB::commit();
-//                JobFeriasPrevistaStore::dispatch($feriasPrevista);
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -492,14 +512,13 @@ class FeriasPrevistaController extends Controller
             $dataAdmissao = $ferias->Admissao->data_admissao;
             $colaboradorPeriodo = $ferias->PeriodoAquisitivo;
         }else{
-             $colaborador = FeedbackCurriculo::whereId($dados['colaborador_id'])
-                ->with('Admissao')->first();
+             $admissao = Admissao::whereFeedbackId($dados['colaborador_id'])->Admitidos()->first();
 
-             $admissaoId = $colaborador->Admissao->id;
-             $dataAdmissao = $colaborador->Admissao->data_admissao;
+             $admissaoId = $admissao->id;
+             $dataAdmissao = $admissao->data_admissao;
              $ferias = Ferias::whereAdmissaoId($admissaoId)->whereStatusFerias(Ferias::STATUS_GOZADA)->orderByDesc('data_retorno')->select('periodo_aquisitivo_id')->first();
 
-             if(!$ferias){
+             if(is_null($ferias)){
                  $anoAtual = date('Y');
                  $periodo = PeriodoAquisitivo::where('ano_inicial', $anoAtual)->first();
                  $colaboradorPeriodo = $periodo;
@@ -514,7 +533,7 @@ class FeriasPrevistaController extends Controller
 
         if ($colaboradorPeriodo !== null && !$request->visualizar) {
 
-            $periodo = PeriodoAquisitivo::where('id', '>=', $colaboradorPeriodo->id)->first();
+            $periodo = PeriodoAquisitivo::where('id', '>', $colaboradorPeriodo->id)->first();
 
             $date = (new DataHora($dataAdmissao));
             $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
@@ -531,7 +550,7 @@ class FeriasPrevistaController extends Controller
             $newDate = new DataHora($ultimaData);
             $ultimaData = $newDate->dataCompleta();
         } else {
-            $periodo = PeriodoAquisitivo::all();
+            $periodo = PeriodoAquisitivo::get();
             $ultimaData = '';
         }
 
