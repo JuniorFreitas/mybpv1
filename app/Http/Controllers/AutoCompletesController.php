@@ -229,6 +229,28 @@ class AutoCompletesController extends Controller
             });
     }
 
+    public function colaboradoresFerias(Request $request)
+    {
+        $busca = $request->query('busca');
+
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+        $quantidade = $request->query('rows');
+
+        $busca = $request->query('busca');
+
+        return FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
+            $q->whereIn('status', ['ADMITIDO'])->whereNotNull('data_admissao');
+        })->whereHas('Curriculo', function ($q) use ($busca) {
+            $q->where('nome', 'like', '%' . $busca . '%');
+        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome', 'Admissao:id,data_admissao,centro_custo_id', 'Admissao.CentroCusto:id,label')->take($quantidade)
+            ->get()->map(function ($item) {
+                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - {$item->VagaAberta->Municipio->nome} - {$item->VagaAberta->Municipio->uf}";
+                return $item;
+            });
+    }
+
     public function colaboradorCih(Request $request)
     {
         $busca = $request->query('busca');

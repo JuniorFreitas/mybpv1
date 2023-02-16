@@ -8,7 +8,7 @@
                         <legend>Informações</legend>
                         <div class="row">
 
-                            <colaborador :model="form" :verifica="visualizar || aprovando" :hash="hash"></colaborador>
+                            <colaborador tipo="ferias" :model="form" :verifica="visualizar || aprovando" :hash="hash"></colaborador>
 
                             <div class="col-12 col-md-4" v-if="form.colaborador_id !== ''">
                                 <div class="form-group">
@@ -119,7 +119,7 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Observação</label>
-                                    <textarea class="form-control form-control-sm" v-model="form.obs_gestor" cols="5" rows="5"
+                                    <textarea class="form-control form-control-sm" v-model="form.obs_solicitante" cols="5" rows="5"
                                               :disabled="visualizar || aprovandoRh || aprovando"></textarea>
                                 </div>
                             </div>
@@ -148,7 +148,7 @@
                                     <div class="form-group">
                                         <label>Observação</label>
                                         <textarea class="form-control form-control-sm" :disabled="!aprovando || aprovandoRh"
-                                                  v-model="form.obs_rh"
+                                                  v-model="form.obs_gestor"
                                                   cols="5" rows="5"></textarea>
                                     </div>
                                 </div>
@@ -345,7 +345,7 @@
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
                                 :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Status</option>
-                            <option value="aberto">Aguardando</option>
+                            <option value="aberto">Aguardando Aprovação</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
                             <option value="aprovado_rh">Aprovado Rh</option>
                             <option value="reprovado">Reprovado</option>
@@ -407,7 +407,7 @@
             <div class="mb-2 mt-2 pt-1 pb-1 border-bottom" v-show="!controle.carregando && lista.length > 0">
                 <span class="small text-right">
                     Legenda:
-                    <i class="fas fa-circle text-warning ml-2"></i> Aguardando
+                    <i class="fas fa-circle text-warning ml-2"></i> Aguardando Aprovação
                     <i class="fas fa-circle text-info ml-2"></i> Aprovado pelo Gestor
                     <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH
                     <i class="fas fa-circle text-danger ml-2"></i> Reprovado
@@ -438,12 +438,12 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in lista"
-                        :class="!item.status_aprovacao_gestor ? 'table-warning'
-                        : item.status_aprovacao_gestor == 'reprovado' || item.status_aprovacao_rh == 'reprovado' ? 'table-danger'
-                        : item.status_aprovacao_gestor == 'aprovado' && item.status_aprovacao_rh == null ? 'table-info'
-                        : item.status_aprovacao_gestor == 'aprovado' && item.status_aprovacao_rh == 'aprovado' ? 'table-success'
-                        : null">
+                        <tr v-for="item in lista" :class="{
+                            'table-danger' : item.status_aprovacao_gestor === 'reprovado' || item.status_aprovacao_rh === 'reprovado',
+                            'table-success' : item.status_aprovacao_rh === 'aprovado' || (item.status_aprovacao_gestor === 'aprovado' && item.status_aprovacao_rh === null && item.aprovado_via_script),
+                            'table-info' : item.status_aprovacao_gestor === 'aprovado' && item.status_aprovacao_rh === null && !item.aprovado_via_script,
+                            'table-warning' : !item.status_aprovacao_gestor,
+                        }">
                         <td class="text-center">
                             <label :for="item.id">
                                 <input
@@ -456,7 +456,6 @@
                                     v-if="!item.status_aprovacao_gestor"
                                 >
                                 <input type="checkbox" v-else disabled="disabled" title="Status já atualizado">
-
                             </label>
                         </td>
                         <td>
@@ -744,9 +743,10 @@ export default {
         },
 
         dataAdmissao() {
-            if (this.form.id !== "") {
+            if (this.form.colaborador_id !== "") {
                 axios.post(`${URL_ADMIN}/busca-data-admissao`, {
                     ferias_id: this.form.id,
+                    colaborador_id: this.form.colaborador_id,
                     visualizar: this.visualizar
                 }).then(response => {
 

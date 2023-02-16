@@ -2,7 +2,7 @@
     <div class="col-12">
         <div class="form-group">
             <label>Colaborador </label>
-            <autocomplete :caminho="`autocomplete/colaboradores/`"
+            <autocomplete :caminho="urlAutocomplete"
                           :formsm="formsm"
                           :valido="model.colaborador_id !== ''"
                           v-model="model.autocomplete_label_colaborador"
@@ -37,6 +37,11 @@ export default {
                 }
             }
         },
+        tipo: {
+          type: String,
+          required: false,
+          default: '',
+        },
         formsm: {
             type: Boolean,
             default: true,
@@ -51,6 +56,9 @@ export default {
         hash() {
             return `colaborador_${parseInt((Math.random() * 999999))}`;
         },
+        urlAutocomplete() {
+            return this.tipo == 'ferias' ? 'autocomplete/colaboradores-ferias/' : 'autocomplete/colaboradores/'
+        }
     },
     methods: {
         selecionaColaborador(obj) {

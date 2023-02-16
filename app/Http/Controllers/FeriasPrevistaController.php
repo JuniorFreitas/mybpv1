@@ -77,14 +77,13 @@ class FeriasPrevistaController extends Controller
         try {
             DB::beginTransaction();
 
-            $colaborador = FeriasPrevista::whereColaboradorId($dados['colaborador_id'])->get();
+            $colaborador = FeedbackCurriculo::whereCurriculoId($dados['colaborador_id'])
+                ->with('Admissao')->first();
 
-            if (count($colaborador) == 0) {
+            $ferias = Ferias::where('admissao_id', $colaborador->Admissao->id)->where('periodo_aquisitivo_id', $dados['periodo_aquisitivo_id'])->first();
 
-                $data_admissao = FeedbackCurriculo::whereCurriculoId($dados['colaborador_id'])
-                    ->with('Admissao')->first();
-
-                $dataAdmissao = $data_admissao->Admissao->data_admissao;
+            if (empty($ferias)) {
+                $dataAdmissao = $colaborador->Admissao->data_admissao;
 
                 $periodo = PeriodoAquisitivo::where('id', $dados['periodo_aquisitivo_id'])->first();
 
@@ -95,7 +94,11 @@ class FeriasPrevistaController extends Controller
                 $dados['ultima_data'] = $newDate->dataInsert();
             }
 
-            $feriasPrevista = FeriasPrevista::create($dados);
+            $dados['admissao_id'] = $colaborador->Admissao->id;
+            $dados['data_solicitacao'] = (new DataHora())->dataHoraInsert();
+            $dados['solicitante_id'] = auth()->user()->id;
+
+            $feriasPrevista = Ferias::create($dados);
 
             if (isset($dados['anexos'])) {
                 foreach ($dados['anexos'] as $index => $anexo) {
@@ -144,8 +147,8 @@ class FeriasPrevistaController extends Controller
         $ferias->autocomplete_label_gestor_modal = $ferias->Gestor ? $ferias->Gestor->nome : '';
         $ferias->autocomplete_label_gestor_modal_anterior = $ferias->Gestor ? $ferias->Gestor->nome : '';
         $ferias->gestor_aprovacao = $ferias->GestorAprovacao ? $ferias->GestorAprovacao->nome : '';
-        $ferias->centro_custo_id = $ferias->Admissao->centro_custo_id ? $ferias->Admissao->centro_custo_id : $ferias->FeriasPrevista->centro_custo_id;
-        $ferias->centro_custo = $ferias->Admissao->CentroCusto ? $ferias->Admissao->CentroCusto : $ferias->FeriasPrevista->CentroCusto;
+        $ferias->centro_custo_id = $ferias->Admissao ? $ferias->Admissao->centro_custo_id : $ferias->FeriasPrevista->centro_custo_id;
+        $ferias->centro_custo = $ferias->Admissao->CentroCusto ? $ferias->Admissao->CentroCusto : '';
         $ferias->rh_aprovacao = $ferias->RhAprovacao ? $ferias->RhAprovacao->nome : '';
         $ferias->solicitante = $ferias->Solicitante->nome ?? '';
         $ferias->gestor_id = $ferias->gestor_id?? '';
@@ -474,8 +477,6 @@ class FeriasPrevistaController extends Controller
             });
         }
 
-        $resultado->where('ferias_prevista_id',711);
-
 //        $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
 //            $q->whereIn('ano_inicial', [date('Y')-2, date('Y')-1, date('Y')]);
 //        });
@@ -485,19 +486,37 @@ class FeriasPrevistaController extends Controller
 
     public function buscaDataAdmissao(Request $request)
     {
-        $ferias = Ferias::find($request->ferias_id);
-        $dataAdmissao = $ferias->Admissao->data_admissao;
+        $dados = $request->input();
+        if(!is_null($request->ferias_id)){
+            $ferias = Ferias::find($request->ferias_id);
+            $dataAdmissao = $ferias->Admissao->data_admissao;
+            $colaboradorPeriodo = $ferias->PeriodoAquisitivo;
+        }else{
+             $colaborador = FeedbackCurriculo::whereCurriculoId($dados['colaborador_id'])
+                ->with('Admissao')->first();
 
-        $colaboradorPeriodo = $ferias->PeriodoAquisitivo;
+             $admissaoId = $colaborador->Admissao->id;
+             $dataAdmissao = $colaborador->Admissao->data_admissao;
+             $ferias = Ferias::whereAdmissaoId($admissaoId)->whereStatusFerias(Ferias::STATUS_GOZADA)->orderByDesc('data_retorno')->select('periodo_aquisitivo_id')->first();
+
+             if(!$ferias){
+                 $anoAtual = date('Y');
+                 $periodo = PeriodoAquisitivo::where('ano_inicial', $anoAtual)->first();
+                 $colaboradorPeriodo = $periodo;
+             }else{
+                 $colaboradorPeriodo = $ferias->PeriodoAquisitivo;
+             }
+        }
+
         $dataHoje = new DataHora();
         $data_saida = $dataHoje->dataCompleta();
         $data_retorno = $dataHoje->dataCompleta();
 
         if ($colaboradorPeriodo !== null && !$request->visualizar) {
 
-            $periodo = PeriodoAquisitivo::where('id', '>', $colaboradorPeriodo->id)->first();
+            $periodo = PeriodoAquisitivo::where('id', '>=', $colaboradorPeriodo->id)->first();
 
-            $date = new DataHora($dataAdmissao);
+            $date = (new DataHora($dataAdmissao));
             $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
             $data_saida = $date->dia() . '/' . $date->mes() . '/' . $periodo['ano_inicial'];
             $data_retorno = $date->dia() . '/' . $date->mes() . '/' . $periodo['ano_inicial'];

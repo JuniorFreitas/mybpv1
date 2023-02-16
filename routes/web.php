@@ -103,6 +103,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('colaboradorCih', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorCih'])->name('colaboradorCih');
         Route::get('colaboradorIntermitente', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitente'])->name('colaboradorIntermitente');
         Route::get('colaboradores', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradores'])->name('colaboradores');
+        Route::get('colaboradores-ferias', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradoresFerias'])->name('colaboradoresFerias');
         Route::get('cargosEmpresa', [\App\Http\Controllers\AutoCompletesController::class, 'cargosEmpresa'])->name('cargosEmpresa');
         Route::get('buscaUsuariosAtivos', [\App\Http\Controllers\AutoCompletesController::class, 'buscaUsuariosAtivos'])->name('buscaUsuariosAtivos');
 //        Route::get('colaboradorIntermitente/{cliente_id}', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitenteCliente'])->name('colaboradorIntermitenteCliente');
