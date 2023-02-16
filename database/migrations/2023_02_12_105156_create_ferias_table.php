@@ -42,7 +42,8 @@ class CreateFeriasTable extends Migration
             $table->unsignedBigInteger('ferias_prevista_id')->nullable();
             $table->boolean('aprovado_via_script')->default(false);
             $table->timestamps();
-
+            $table->unsignedBigInteger('quem_deletou_id')->nullable();
+            $table->softDeletes();
 
             $table->foreign('empresa_id')->references('id')->on('users');
             $table->foreign('admissao_id')->references('id')->on('admissoes');
@@ -52,6 +53,7 @@ class CreateFeriasTable extends Migration
             $table->foreign('gestor_id')->references('id')->on('users');
             $table->foreign('rh_aprovacao_id')->references('id')->on('users');
             $table->foreign('ferias_prevista_id')->references('id')->on('ferias_previstas');
+            $table->foreign('quem_deletou_id')->references('id')->on('users');
         });
     }
 

@@ -964,6 +964,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'vencimentoferias.'], function () {
             Route::get('vencimento-ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'index'])->name('index')->middleware('can:relatorio_ferias');
             Route::post('vencimento-ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'show'])->name('show')->middleware('can:relatorio_ferias');
+            Route::post('vencimento-ferias/listaperiodos', [\App\Http\Controllers\Relatorios\FeriasController::class, 'listaperiodos'])->name('listaperiodos')->middleware('can:relatorio_ferias');
             Route::post('vencimento-ferias/export-excel', [\App\Http\Controllers\Relatorios\FeriasController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_ferias');
 
         });

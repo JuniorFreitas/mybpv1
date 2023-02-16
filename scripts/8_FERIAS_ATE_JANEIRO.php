@@ -22,7 +22,7 @@ ini_set('max_execution_time', '-1');
 //$empresa_id = $argv[1];
 //$user_id = $argv[2];
 
-$DB = DB::select("SELECT fp.id as empresa_id,
+$DB = DB::select("SELECT
        a.id as admissao_id,
        a.data_admissao as data_admissao,
        fp.id,
@@ -54,9 +54,9 @@ $DB = DB::select("SELECT fp.id as empresa_id,
         INNER JOIN periodos_aquisitivos as pa on pa.id = fp.periodo_aquisitivo_id
         INNER JOIN users as u on fp.colaborador_id = u.id
         INNER JOIN feedback_curriculos as fc on u.id = fc.curriculo_id
-        INNER JOIN admissoes a on a.id = fc.id
-    WHERE
-        a.data_admissao <= '2022-01-31'
+        INNER JOIN admissoes a on a.feedback_id = fc.id
+/*    WHERE
+        a.data_admissao <= '2022-01-31'*/
     ORDER BY fp.data_saida asc
 ");
 

@@ -474,6 +474,8 @@ class FeriasPrevistaController extends Controller
             });
         }
 
+        $resultado->where('ferias_prevista_id',711);
+
 //        $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
 //            $q->whereIn('ano_inicial', [date('Y')-2, date('Y')-1, date('Y')]);
 //        });

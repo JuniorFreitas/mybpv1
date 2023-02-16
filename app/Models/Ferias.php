@@ -7,6 +7,7 @@ use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 
 /**
@@ -123,7 +124,7 @@ use MasterTag\DataHora;
  */
 class Ferias extends Model
 {
-    use HasFactory, TenantTrait;
+    use HasFactory, TenantTrait, SoftDeletes;
 
     protected $fillable = [
         'empresa_id',
@@ -222,6 +223,10 @@ class Ferias extends Model
         self::STATUS_CANCELADA
     ];
 
+    const LISTA_RELATORIO_VENCIMENTO_FERIAS = [
+        self::STATUS_AGUARDANDO,
+        self::STATUS_GOZANDO
+    ];
 
     public function setDataSaidaAttribute($value)
     {

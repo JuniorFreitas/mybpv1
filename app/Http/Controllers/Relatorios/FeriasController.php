@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Relatorios;
 use App\Http\Controllers\Controller;
 use App\Jobs\JobExportaExcel;
 use App\Models\ClienteConfig;
+use App\Models\Ferias;
 use App\Models\FeriasAdquiridas;
-use App\Models\FeriasPrevista;
-use App\Models\User;
+use App\Models\PeriodoAquisitivo;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
 
@@ -18,20 +18,101 @@ class FeriasController extends Controller
         return view('g.relatorios.ferias.index');
     }
 
+    public function listaperiodos()
+    {
+        $periodosAquisitivos = PeriodoAquisitivo::orderByDesc('ano_final')->limit(3)->get()->toArray();
+        return [
+            'filtro' => [
+                'periodo_aquisitivo' => $periodosAquisitivos,
+                'status_ferias' => Ferias::LISTA_RELATORIO_VENCIMENTO_FERIAS,
+            ]
+        ];
+    }
+
     public function show(Request $request)
     {
-        $periodo = explode(' até ', $request->periodo);
-        $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-        $dataFim = new DataHora($periodo[1], ' 23:59:59');
+        if ($request->filled('periodo_range')) {
+            $periodo = explode(' até ', $request->periodo);
+            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
+            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+        }
 
-        $empresa_id = auth()->user()->empresa_id;
         $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->verifica_mes_vencimento];
         $periodo_vencimento = preg_replace("/[^0-9]/", "", $periodo_vencimento);
 
+        $queryResult = Ferias::with('FeriasPrevista',
+            'PeriodoAquisitivo',
+            'Gestor',
+            'GestorAprovacao',
+            'Solicitante',
+            'Admissao',
+            'Admissao.CentroCusto',
+            'Admissao.Feedback',
+            'Admissao.Feedback.VagaSelecionada',
+            'Admissao.Feedback.Curriculo',
+            'Admissao.Feedback.Curriculo',
+            'Admissao.CentroCusto:id,label',
+            'FeriasPrevista:id,centro_custo_id',
+            'FeriasPrevista.CentroCusto:id,label',
+        )->whereHas('Admissao', function ($query) {
+            $query->admitidos();
+        })
+            ->whereIn('status_ferias', Ferias::LISTA_RELATORIO_VENCIMENTO_FERIAS);
+
+        if ($request->filled('tipo')) {
+            if ($request->tipo == 'aquisitivo') {
+                $queryResult->where('periodo_aquisitivo_id', $request->periodo);
+            } else {
+                $queryResult->where('data_saida', '>=', $dataInicio->dataInsert())
+                    ->where('data_saida', '<=', $dataFim->dataInsert());
+            }
+        }
+        if ($request->status_ferias) {
+            $queryResult->where('status_ferias', $request->status_ferias);
+        }
+
+        $queryResult = $queryResult->get()->toArray();
+
+        $resultado = collect();
+
+        foreach ($queryResult as $ferias) {
+            $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $ferias['data_saida']);
+            $resultado->push([
+                'nome' => $ferias['admissao']['feedback']['curriculo']['nome'],
+                'cargo' => $ferias['admissao']['cargo'],
+                'funcao' => $ferias['admissao']['funcao'],
+                'data_admissao' => $ferias['admissao']['data_admissao'],
+                'gestor' => $ferias['gestor_aprovacao']['nome'] ?? '',
+                'centro_custo' => !is_null($ferias['admissao']['centro_custo_id']) ? $ferias['admissao']['centro_custo']['label'] : $ferias['ferias_prevista']['centro_custo']['label'],
+                'qnt_dias' => $ferias['qnt_dias'],
+                'dias_saldo' => $ferias['dias_saldo'],
+                'tem_faltas' => $ferias['tem_faltas'] ? 'Sim' : 'Não',
+                'qnt_faltas' => $ferias['qnt_faltas'],
+                'periodo_aquisitivo' => $ferias['periodo_aquisitivo']['label'],
+                'data_saida' => $ferias['data_saida'],
+                'data_retorno' => $ferias['data_retorno'],
+                'ultima_data' => $ferias['ultima_data'],
+                'usuario_cadastrou' => $ferias['solicitante']['nome'],
+                'status' => $ferias['status_ferias'],
+                'status_aprovacao' => $ferias['status_aprovacao_gestor'],
+//                'resposta_rh' => $ferias['ferias_prevista']['resposta_rh'],
+//                'data_aprovacao_rh' => $ferias['ferias_prevista']['data_aprovacao_rh'],
+//                'data_aprovacao' => $ferias['ferias_prevista']['data_aprovacao'],
+//                'rh' => $ferias['ferias_prevista']['rh_aprovacao']['nome'] ?? '',
+                'dias_vencer' => $dias_vencer,
+                'pintar' => $dias_vencer <= $periodo_vencimento / 2,
+            ]);
+        }
+
+
+        return [
+            'dados' => $resultado->sortBy('dias_vencer')->values()->all(),
+        ];
+
         $feriasAdquiridas = FeriasAdquiridas::
-            where('data_saida', '>=', $dataInicio->dataInsert())
+        where('data_saida', '>=', $dataInicio->dataInsert())
             ->where('data_saida', '<=', $dataFim->dataInsert())
-            ->whereNotIn('status',  [FeriasAdquiridas::STATUS_GOZANDO, FeriasAdquiridas::STATUS_GOZADA])
+            ->whereNotIn('status', [FeriasAdquiridas::STATUS_GOZANDO, FeriasAdquiridas::STATUS_GOZADA])
             ->whereHas('Admissao.Feedback', function ($q) {
                 $q->Admitidos();
             })->with(['Admissao.Feedback' => function ($F) {
@@ -82,7 +163,7 @@ class FeriasController extends Controller
 
     public function exportExcel(Request $request)
     {
-       $ferias = $this->show($request);
+        $ferias = $this->show($request);
 
         $head = [
             'nome',
