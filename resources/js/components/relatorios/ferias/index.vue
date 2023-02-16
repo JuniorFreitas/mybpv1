@@ -54,13 +54,18 @@
                 </div>
 
                 <div v-for="(item, index) in dados" :key="index" class="mb-3" v-show="dados.length">
-                    <h5 class="text-center">{{ item.nome }} - (Admitido em: {{ item.data_admissao }})</h5>
-                    <h6 class="text-center">{{ item.cargo }}</h6>
                     <div class="row">
                         <div class="col-md-12">
-                            <table class="mt-4 table table-bordered tabela">
+                            <table class="mt-4 table table-bordered table-striped">
                                 <thead>
-                                <tr>
+                                <tr class="bg-white text-center">
+                                    <th rowspan="4" style="display: table-cell; vertical-align: middle; text-align: center; /* Não necessário */">{{ index + 1}}</th>
+                                    <th colspan="6">{{ item.nome }}<br>(Admitido em: {{ item.data_admissao }})</th>
+                                </tr>
+                                <tr class="bg-white text-center">
+                                    <th colspan="6">{{ item.cargo }}</th>
+                                </tr>
+                                <tr class="bg-white">
                                     <th style="text-align: center">Centro de custo</th>
                                     <th style="text-align: center">Qnt dias</th>
                                     <th style="text-align: center">Férias</th>
@@ -70,25 +75,28 @@
                                     <th style="text-align: center">Data Limite</th>
                                     <th style="text-align: center">Status</th>
                                 </tr>
-                                </thead>
-                                <tbody>
                                 <tr
-                                    :class="item.pintar ? 'table-danger': ''">
-                                    <td style="text-align: center">{{ item.centro_custo }}</td>
-                                    <td style="text-align: center">{{ item.qnt_dias }}</td>
-                                    <td style="text-align: center">{{ item.data_saida }} à {{ item.data_retorno }}</td>
-                                    <!--                                    <td style="text-align: center">{{ item.qnt_faltas }}</td>-->
-                                    <!--                                    <td style="text-align: center">{{ item.dias_saldo }}</td>-->
-                                    <td style="text-align: center">{{ item.periodo_aquisitivo }}</td>
-                                    <td style="text-align: center">{{ item.ultima_data }}</td>
-                                    <td style="text-align: center">{{
-                                            item.dias_vencer < 0 ?
-                                                Math.abs(item.dias_vencer) + ' dia(s) vencido(s)' : item.dias_vencer + ' dia(s) à vencer'
-                                        }}
-                                    </td>
+                                    :class="{
+                                    'table-danger': item.pintar && item.status === 'aguardando',
+                                    'table-success': item.status === 'gozando',
+                                    }
+                                    ">
+                                    <th style="text-align: center">{{ item.centro_custo }}</th>
+                                    <th style="text-align: center">{{ item.qnt_dias }}</th>
+                                    <th style="text-align: center">{{ item.data_saida }} à {{ item.data_retorno }}</th>
+                                    <!--                                    <th style="text-align: center">{{ item.qnt_faltas }}</th>-->
+                                    <!--                                    <th style="text-align: center">{{ item.dias_saldo }}</th>-->
+                                    <th style="text-align: center">{{ item.periodo_aquisitivo }}</th>
+                                    <th style="text-align: center">{{ item.ultima_data }}</th>
+                                    <th style="text-align: center">
+                                        <span v-if="item.status === 'aguardando'">{{
+                                                item.dias_vencer < 0 ? Math.abs(item.dias_vencer) + ' dia(s) vencido(s)' : item.dias_vencer + ' dia(s) à vencer'
+                                            }}</span>
+                                        <span v-if="item.status === 'gozando'">Gozando</span>
+                                    </th>
 
                                 </tr>
-                                </tbody>
+                                </thead>
                             </table>
                         </div>
                     </div>
