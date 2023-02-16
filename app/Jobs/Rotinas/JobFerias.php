@@ -41,7 +41,7 @@ class JobFerias implements ShouldQueue
     {
         try {
             $ferias_gozando_sistema = \DB::table('ferias')
-                ->whereNotNull('status_aprovacao_gestor')
+                ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
                 ->where('aprovado_via_script', true)
                 ->where('data_saida','<=',(new DataHora())->dataInsert())
                 ->where('data_retorno','>=',(new DataHora())->dataInsert())
@@ -51,7 +51,7 @@ class JobFerias implements ShouldQueue
                 ]);
 
             $ferias_gozando_rh = \DB::table('ferias')
-                ->whereNotNull('status_aprovacao_rh')
+                ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
                 ->where('data_saida','<=',(new DataHora())->dataInsert())
                 ->where('data_retorno','>=',(new DataHora())->dataInsert())
                 ->update([
@@ -60,22 +60,22 @@ class JobFerias implements ShouldQueue
                 ]);
 
             $ferias_gozadas_sistema = \DB::table('ferias')
-                ->whereNotNull('status_aprovacao_gestor')
+                ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
                 ->where('aprovado_via_script', true)
                 ->where('data_retorno','<',(new DataHora())->dataInsert())
                 ->update([
-                    'status' => Ferias::STATUS_GOZADA,
+                    'status_ferias' => Ferias::STATUS_GOZADA,
                     'data_status_ferias' => (new DataHora())->dataInsert()
                 ]);
 
             $ferias_gozadas_rh = \DB::table('ferias')
-                ->whereNotNull('status_aprovacao_rh')
-                ->where('aprovado_via_script', true)
+                ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
                 ->where('data_retorno','<',(new DataHora())->dataInsert())
                 ->update([
-                    'status' => Ferias::STATUS_GOZADA,
+                    'status_ferias' => Ferias::STATUS_GOZADA,
                     'data_status_ferias' => (new DataHora())->dataInsert()
                 ]);
+
 
             // NAO FAZER AGORA - AGUARDANDO DEFINICAO DE REGRAS DE NEGOCIO (DANY)
         } catch (\Exception $e) {

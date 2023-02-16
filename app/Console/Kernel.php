@@ -46,7 +46,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(new JobDeletaExportacaoExcel)->daily();
         $schedule->call(new JobAniversariantesDia)->daily();
         $schedule->call(new JobConvocacaoIntermitente())->hourly();
-        $schedule->call(new JobFerias())->daily();
+        $schedule->call(new JobFerias())->everyMinute();
 //        $schedule->call(new Im)->daily();
     }
 

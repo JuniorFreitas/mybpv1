@@ -485,8 +485,6 @@ class FeriasPrevistaController extends Controller
             $resultado->whereSolicitanteId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
-//        $resultado->whereIn('status_ferias', [Ferias::STATUS_AGUARDANDO, Ferias::STATUS_GOZANDO, Ferias::STATUS_CANCELADA, null]);
-
         if ($request->filled('filtroPeriodoAquisitivo')) {
             $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
                 $q->where('id', $request->filtroPeriodoAquisitivo);
@@ -497,11 +495,8 @@ class FeriasPrevistaController extends Controller
             });
         }
 
-//        $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
-//            $q->whereIn('ano_inicial', [date('Y')-2, date('Y')-1, date('Y')]);
-//        });
-
-        return $resultado->orderBy('data_solicitacao');
+        // Fazer o filtro pra excluir gozada
+        return $resultado->orderByDesc('data_solicitacao');
     }
 
     public function buscaDataAdmissao(Request $request)

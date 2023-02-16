@@ -79,6 +79,7 @@ class FeriasController extends Controller
         foreach ($queryResult as $ferias) {
             $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $ferias['data_saida']);
             $resultado->push([
+                'ferias_id' => $ferias['id'],
                 'nome' => $ferias['admissao']['feedback']['curriculo']['nome'],
                 'cargo' => $ferias['admissao']['cargo'],
                 'funcao' => $ferias['admissao']['funcao'],
