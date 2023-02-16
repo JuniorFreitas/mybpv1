@@ -8,12 +8,12 @@
                         <legend>Informações</legend>
                         <div class="row">
 
-                            <colaborador tipo="ferias" :model="form" :verifica="visualizar || aprovando" :hash="hash"></colaborador>
+                            <colaborador tipo="ferias" @evtseleciona="dataAdmissao" @evtreseta="dataAdmissao"  :model="form" :verifica="visualizar || aprovando" :hash="hash"></colaborador>
 
                             <div class="col-12 col-md-4" v-if="form.colaborador_id !== ''">
                                 <div class="form-group">
                                     <label>Data de Admissão</label>
-                                    <input type="text" class="form-control form-control-sm" v-model="dataAdmissao"
+                                    <input type="text" class="form-control form-control-sm" v-model="form.data_admissao"
                                            readonly="readonly"
                                            disabled="disabled">
                                 </div>
@@ -742,6 +742,24 @@ export default {
             return this.form.dias_saldo;
         },
 
+
+        dataRetorno() {
+            let dias_ferias = this.form.qnt_dias;
+            let data_saida = this.form.data_saida.split("/");
+            let data_saida_convert = data_saida[2] + "-" + data_saida[1] + "-" + data_saida[0];
+
+            let data_retorno = new Date(data_saida_convert);
+            data_retorno.setDate(data_retorno.getDate() + dias_ferias);
+            let data_retorno_ptbr = this.padTo2Digits(data_retorno.getDate()) + "/" + this.padTo2Digits((data_retorno.getMonth() + 1)) + "/" + data_retorno.getFullYear();
+            this.form.data_retorno = data_retorno_ptbr;
+
+            return data_retorno_ptbr;
+        },
+        por_pagina() {
+            return [20, 50, 100, 150];
+        }
+    },
+    methods: {
         dataAdmissao() {
             if (this.form.colaborador_id !== "") {
                 axios.post(`${URL_ADMIN}/busca-data-admissao`, {
@@ -749,7 +767,6 @@ export default {
                     colaborador_id: this.form.colaborador_id,
                     visualizar: this.visualizar
                 }).then(response => {
-
                     this.form.data_admissao = response.data.data_admissao;
                     this.ultimaData = response.data.ultimaData;
 
@@ -778,23 +795,6 @@ export default {
                 return this.form.data_admissao;
             }
         },
-        dataRetorno() {
-            let dias_ferias = this.form.qnt_dias;
-            let data_saida = this.form.data_saida.split("/");
-            let data_saida_convert = data_saida[2] + "-" + data_saida[1] + "-" + data_saida[0];
-
-            let data_retorno = new Date(data_saida_convert);
-            data_retorno.setDate(data_retorno.getDate() + dias_ferias);
-            let data_retorno_ptbr = this.padTo2Digits(data_retorno.getDate()) + "/" + this.padTo2Digits((data_retorno.getMonth() + 1)) + "/" + data_retorno.getFullYear();
-            this.form.data_retorno = data_retorno_ptbr;
-
-            return data_retorno_ptbr;
-        },
-        por_pagina() {
-            return [20, 50, 100, 150];
-        }
-    },
-    methods: {
         padTo2Digits(num) {
             return num.toString().padStart(2, "0");
         },

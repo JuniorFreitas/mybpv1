@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admissao;
 use App\Models\Cliente;
 use App\Models\DocumentoContratos;
 use App\Models\FeedbackCurriculo;
@@ -21,10 +22,10 @@ class AutoCompletesController extends Controller
         }
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
-        return VagasAbertas::whereAtivoSistema(true)->with('Vaga','Projetos.Projeto')
+        return VagasAbertas::whereAtivoSistema(true)->with('Vaga', 'Projetos.Projeto')
             ->whereHas('VagaSelecionada', function ($query) use ($busca, $quantidade) {
-            $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
-        })
+                $query->where('nome', 'like', '%' . $busca . '%')->take($quantidade);
+            })
 //                ->with(['VagaSelecionada.SimuladoVaga.Simulado' => function ($q) {
 //                $q->whereAtivo(true);
 //            }, 'Municipio', 'VagaSelecionada' => function ($query) use ($busca, $quantidade) {
@@ -45,7 +46,7 @@ class AutoCompletesController extends Controller
         }
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
-        return VagasAbertas::whereAtivoSistema(true)->with('Vaga','Projetos.Projeto')
+        return VagasAbertas::whereAtivoSistema(true)->with('Vaga', 'Projetos.Projeto')
             ->where('titulo', 'like', '%' . $busca . '%')->take($quantidade)
             ->get()
             ->map(function ($item) {
@@ -156,18 +157,18 @@ class AutoCompletesController extends Controller
 
         $busca = $request->query('busca');
 
-            return User::whereEmpresaId(auth()->user()->empresa_id)
-                ->whereNotIn('id', [auth()->user()->empresa_id])
+        return User::whereEmpresaId(auth()->user()->empresa_id)
+            ->whereNotIn('id', [auth()->user()->empresa_id])
 //                ->orWhereIn('id', User::LISTA_SUPORTE)
-                ->whereAtivo(true)
-                ->where('nome', 'like', '%' . $busca . '%')
-                ->take($quantidade)
-                ->get()
-                ->map(function ($item) {
-                    $item->label = $item->empresa_id == User::MYBP_EMPRESA_ID ? $item->nome . ' - MyBP' : $item->nome;
-                    return $item;
-                });
-        }
+            ->whereAtivo(true)
+            ->where('nome', 'like', '%' . $busca . '%')
+            ->take($quantidade)
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->empresa_id == User::MYBP_EMPRESA_ID ? $item->nome . ' - MyBP' : $item->nome;
+                return $item;
+            });
+    }
 
     public function usuariosAtivosAvaliador(Request $request)
     {
@@ -179,7 +180,7 @@ class AutoCompletesController extends Controller
 
 //        $usuariosSelecionados = FeedbackCurriculo::whereIn('id',$request->funcionariosSelecionados)->pluck('curriculo_id')->toArray();
 
-        return User::select(['id', 'nome','login', 'tipo', 'ativo'])
+        return User::select(['id', 'nome', 'login', 'tipo', 'ativo'])
             ->TiposGerenciais()
             ->whereEmpresaId(auth()->user()->empresa_id)
             ->whereNotIn('id', $request->funcionariosSelecionados)
@@ -232,21 +233,20 @@ class AutoCompletesController extends Controller
     public function colaboradoresFerias(Request $request)
     {
         $busca = $request->query('busca');
-
         if ($busca == '') {
             return response()->json([], 201);
         }
         $quantidade = $request->query('rows');
-
         $busca = $request->query('busca');
 
-        return FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
-            $q->whereIn('status', ['ADMITIDO'])->whereNotNull('data_admissao');
-        })->whereHas('Curriculo', function ($q) use ($busca) {
-            $q->where('nome', 'like', '%' . $busca . '%');
-        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome', 'Admissao:id,data_admissao,centro_custo_id', 'Admissao.CentroCusto:id,label')->take($quantidade)
+        return Admissao::whereNotNull('data_admissao')->admitidos()->whereHas('Feedback', function ($q) use ($busca) {
+            $q->whereHas('Curriculo', function ($q) use ($busca) {
+                $q->where('nome', 'like', '%' . $busca . '%');
+            });
+        })->with('Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'Feedback.VagaAberta.Municipio', 'Feedback.VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - {$item->VagaAberta->Municipio->nome} - {$item->VagaAberta->Municipio->uf}";
+                $item->curriculo_id = $item->Feedback->Curriculo->id;
+                $item->label = "{$item->Feedback->Curriculo->nome} - {$item->Feedback->VagaAberta->VagaSelecionada->nome} - {$item->Feedback->VagaAberta->Municipio->nome} - {$item->Feedback->VagaAberta->Municipio->uf}";
                 return $item;
             });
     }
@@ -260,7 +260,7 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
 
         $busca = $request->query('busca');
-        return $feedback = FeedbackCurriculo::select(['id','vagas_abertas_id','curriculo_id'])->Admitidos()->whereHas('Admissao', function ($q) {
+        return $feedback = FeedbackCurriculo::select(['id', 'vagas_abertas_id', 'curriculo_id'])->Admitidos()->whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO']);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
@@ -283,7 +283,7 @@ class AutoCompletesController extends Controller
         return FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
             $q->whereIn('status', ['ADMITIDO'])->whereTipoAdmissao('INTERMITENTE');
         })->whereHas('Curriculo', function ($q) use ($busca) {
-            $q->where('nome', 'like', '%' . $busca . '%')->where('email','<>','sistema@mybp.com.br');
+            $q->where('nome', 'like', '%' . $busca . '%')->where('email', '<>', 'sistema@mybp.com.br');
         })->take($quantidade)
             ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor,email', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {

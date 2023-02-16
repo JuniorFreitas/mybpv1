@@ -492,7 +492,7 @@ class FeriasPrevistaController extends Controller
             $dataAdmissao = $ferias->Admissao->data_admissao;
             $colaboradorPeriodo = $ferias->PeriodoAquisitivo;
         }else{
-             $colaborador = FeedbackCurriculo::whereCurriculoId($dados['colaborador_id'])
+             $colaborador = FeedbackCurriculo::whereId($dados['colaborador_id'])
                 ->with('Admissao')->first();
 
              $admissaoId = $colaborador->Admissao->id;
