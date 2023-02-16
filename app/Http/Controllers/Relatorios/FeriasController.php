@@ -31,8 +31,8 @@ class FeriasController extends Controller
 
     public function show(Request $request)
     {
-        if ($request->filled('periodo_range')) {
-            $periodo = explode(' até ', $request->periodo);
+        if ($request->filled('periodo_range') && $request->filled('tipo') && $request->tipo == 'data') {
+            $periodo = explode(' até ', $request->periodo_range);
             $dataInicio = new DataHora($periodo[0], ' 00:00:00');
             $dataFim = new DataHora($periodo[1], ' 23:59:59');
         }
@@ -56,8 +56,7 @@ class FeriasController extends Controller
             'FeriasPrevista.CentroCusto:id,label',
         )->whereHas('Admissao', function ($query) {
             $query->admitidos();
-        })
-            ->whereIn('status_ferias', Ferias::LISTA_RELATORIO_VENCIMENTO_FERIAS);
+        });
 
         if ($request->filled('tipo')) {
             if ($request->tipo == 'aquisitivo') {
@@ -67,8 +66,10 @@ class FeriasController extends Controller
                     ->where('data_saida', '<=', $dataFim->dataInsert());
             }
         }
-        if ($request->status_ferias) {
+        if ($request->filled('status_ferias')) {
             $queryResult->where('status_ferias', $request->status_ferias);
+        }else{
+            $queryResult->whereIn('status_ferias', Ferias::LISTA_RELATORIO_VENCIMENTO_FERIAS);
         }
 
         $queryResult = $queryResult->get()->toArray();

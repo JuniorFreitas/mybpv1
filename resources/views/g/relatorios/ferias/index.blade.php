@@ -1,6 +1,6 @@
 @extends('layouts.sistema')
-@section('title', 'Vencimentos de Férias')
-@section('content_header', 'Vencimentos de Férias')
+@section('title', 'Relatorio de Férias')
+@section('content_header', 'Relatorio de Férias')
 @section('content')
     <ferias></ferias>
 @stop
