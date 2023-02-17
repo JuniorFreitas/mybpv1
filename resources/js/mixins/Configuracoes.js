@@ -6,15 +6,15 @@ const configuracoes = {
     },
     mounted() {
         axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-            .then(response => {
-                this.authconfiguracao = response.data;
+            .then(({data}) => {
+                this.authconfiguracao = data;
             })
             .catch(error => {
             });
     },
     computed: {
         whatsappLiberado() {
-            return this.authconfiguracao?.empresa_configuracoes?.envia_whatsapp
+            return this.authconfiguracao?.whatsappLiberado
         }
     }
 };

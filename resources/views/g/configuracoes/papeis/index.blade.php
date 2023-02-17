@@ -26,7 +26,7 @@
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
                     <li role="presentation" class="nav-item">
-                        <a href="#abaIdentificacao" class="nav-link active" aria-controls="home" role="tab"
+                        <a href="#abaIdentificacao" class="nav-link active" id="aba-identificacao-tab" aria-controls="home" role="tab"
                            data-toggle="tab">Identificação</a>
                     </li>
                     <li role="presentation">
@@ -45,18 +45,6 @@
                                        placeholder="Nome do grupo"
                                        autocomplete="off" onblur="valida_campo_vazio(this,3)">
                             </div>
-
-{{--                            <div class="form-group" v-if="">--}}
-{{--                                <label>Empresa</label>--}}
-{{--                                <select class="form-control form-control-sm" v-model="form.empresa_id"--}}
-{{--                                        onchange="valida_campo_vazio(this,1)"--}}
-{{--                                        onblur="valida_campo_vazio(this,1)">--}}
-{{--                                    <option value="">Selecione...</option>--}}
-{{--                                    @foreach (\App\Models\Cliente::whereAtivo(true)->get() as $cliente)--}}
-{{--                                        <option value="{{$cliente->id}}">{{$cliente->nome_fantasia}}</option>--}}
-{{--                                    @endforeach--}}
-{{--                                </select>--}}
-{{--                            </div>--}}
 
                             <div class="form-group">
                                 <label>Descrição</label>
@@ -165,14 +153,14 @@
         <legend>Filtragem por</legend>
         <div class="row">
             <div class="col-md-4 column">
-                <form id="formBusca">
+                <form id="formBusca" @submit.prevent="$refs.componente.buscar()">
                     <div class="form-group">
                         <label>Buscar:</label>
                         <div class="input-group input-group-sm">
                         <span class="input-group-prepend">
                             <span class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></span>
                         </span>
-                            <input type="text" id="campoBusca" placeholder="Nome do papel" autocomplete="off"
+                            <input type="text" id="campoBusca" v-model="controle.dados.campoBusca" placeholder="Nome do papel" autocomplete="off"
                                    class="form-control form-control-sm">
                         </div>
                     </div>
@@ -180,7 +168,7 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-sm btn-success" id="btnAtualizar">Atualizar</button>
+        <button type="button" class="btn btn-sm btn-success" @click.prevent="atualizar()">Atualizar</button>
         @can('configuracao_papel_insert')
             <button type="button" class="btn btn-sm btn-primary" id="btnFormCadastrar" data-toggle="modal"
                     data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
@@ -225,13 +213,7 @@
                                 <i class="fa fa-edit"></i>
                             </a>
                         @endcan
-                        @can('configuracao_papel_delete')
-                            <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"
-                               @click.prevent="janelaConfirmar(papel.id)" data-toggle="modal"
-                               data-target="#janelaConfirmar">
-                                <i class="fa fa-trash" aria-hidden="true"></i>
-                            </a>
-                        @endcan
+
                     </td>
                     <td v-else></td>
                 </tr>

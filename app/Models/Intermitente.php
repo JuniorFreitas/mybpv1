@@ -71,7 +71,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $resposta_colaborador
  * @property string|null $data_resposta_colaborador
  * @property int|null $centro_custo_id
- * @property int|null $prazo_resposta
+ * @property int $prazo_resposta
  * @property string|null $prazo_resposta_expiracao
  * @property-read \App\Models\CentroCusto|null $CentroDeCusto
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereCentroCustoId($value)

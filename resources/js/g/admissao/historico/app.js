@@ -9,6 +9,7 @@ import Cih from "../../../components/admissao/historico/CIH";
 import Promocao from "../../../components/admissao/historico/Promocao";
 import Metas from "../../../components/admissao/historico/Meta";
 import FeedbackHistorico from "../../../components/admissao/historico/FeedbackHistorico";
+import LogsHistorico from "../../../components/admissao/historico/LogsHistorico";
 
 const app = new Vue({
     el: "#app",
@@ -24,7 +25,8 @@ const app = new Vue({
         Beneficio,
         Cih,
         Promocao,
-        Metas
+        Metas,
+        LogsHistorico
     },
     data: {
         tituloJanela: "Histórico",
@@ -45,7 +47,8 @@ const app = new Vue({
             abrirBeneficio: false,
             abrirCih: false,
             abrirPromocao: false,
-            abrirMetas: false
+            abrirMetas: false,
+            abrirLogs: false,
         },
         abasDefault: null,
 

@@ -15,9 +15,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $avaliacao_id
  * @property int $empresa_id
  * @property string $origem_feedback
- * @property bool $principal
- * @property int|null $avaliador_id
  * @property int|null $funcionario_id
+ * @property int|null $avaliador_id
+ * @property bool|null $principal
  * @property int|null $nota_final_total
  * @property string|null $inicio_feedback
  * @property string|null $fim_feedback

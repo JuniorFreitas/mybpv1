@@ -83,7 +83,9 @@
             </p>
             <div v-if="!formAvulsa.preload && !formAvulsa.cadastrado">
                 <div v-if="!formAvulsa.preload">
-
+                    <div class="alert alert-warning" v-show="formAvulsa.ex_funcionario">
+                        <i class="fa fa-exclamation-triangle"></i> Ex-Funcionário
+                    </div>
                     <fieldset>
                         <legend>Dados Pessoais</legend>
                         <div class="row">
@@ -125,7 +127,8 @@
                                                v-model="formAvulsa.curriculo.nascimento"
                                                placeholder="Ex: 10/10/2010"
                                                v-mascara:data
-                                               autocomplete="mybp" @keyup.prevent="valida_data_vazio($event.target,true)"
+                                               autocomplete="mybp"
+                                               @keyup.prevent="valida_data_vazio($event.target,true)"
                                                @blur.prevent="valida_data_vazio($event.target,true)">
                                     </div>
                                 </div>
@@ -150,6 +153,7 @@
                                         </select>
                                     </div>
                                 </div>
+
                                 <div class="col-12 col-sm-6 col-md-4" v-if="formAvulsa.curriculo.pcd">
                                     <div class="form-group">
                                         <label>CID (Código Internacional de Doenças)</label>
@@ -157,6 +161,32 @@
                                                placeholder="Informe o CID" v-model="formAvulsa.curriculo.cid">
                                     </div>
                                 </div>
+
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label>Sexo</label>
+                                        <select class="form-control"
+                                            v-model="formAvulsa.curriculo.sexo"
+                                        >
+                                            <option value="">Selecione</option>
+                                            <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label>Estado Civil</label>
+                                        <select
+                                            class="form-control"
+                                            v-model="formAvulsa.curriculo.estado_civil"
+                                        >
+                                            <option value="">Selecione</option>
+                                            <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
 
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
@@ -647,8 +677,35 @@
                             <div class="form-group">
                                 <label>Naturalidade</label>
                                 <input type="text" class="form-control" onblur="valida_campo(this,2)"
-                                       :disabled="visualizar"
                                        v-model="form.curriculo.naturalidade" :disabled="visualizar">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>Sexo</label>
+                                <select
+                                    class="form-control"
+                                    v-model="form.curriculo.sexo"
+                                    :disabled="visualizar"
+                                >
+                                    <option value="">Selecione</option>
+                                    <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>Estado Civil</label>
+                                <select
+                                    class="form-control"
+                                    :disabled="visualizar"
+                                    v-model="form.curriculo.estado_civil"
+                                >
+                                    <option value="">Selecione</option>
+                                    <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
+                                </select>
                             </div>
                         </div>
 
@@ -663,6 +720,14 @@
                                     <option :value='true'>Sim</option>
                                     <option :value='false'>Não</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4" v-if="form.curriculo.pcd">
+                            <div class="form-group">
+                                <label>CID (Código Internacional de Doenças)</label>
+                                <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
+                                       placeholder="Informe o CID" v-model="form.curriculo.cid">
                             </div>
                         </div>
 
@@ -894,6 +959,7 @@
                                 <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
                                        @blur.prevent="valida_data($event.target)"
+                                       :disabled="visualizar"
                                        v-model="form.admissao.data_adm_prevista">
                             </div>
                         </div>
@@ -1516,7 +1582,7 @@
                             <i class="fa fa-search-plus"></i>
                         </button>
 
-                        <a v-if="item.admissao" :href="`admissao/${item.id}/pdf`"
+                        <a v-if="item.admissao" :href="`admissao/${item.fc_token}/pdf`"
                            class="btn btn-sm btn-primary mb-2" content="Gerar PDF" v-tippy
                            target="_blank">
                             <i class="fa fa-file-pdf"></i>

@@ -288,6 +288,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_historico_aba_ferias', 'descricao' => 'Pode Acessar aba de Ferias no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_promocao', 'descricao' => 'Pode Acessar aba de Promocao no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_metas', 'descricao' => 'Pode Acessar aba de Metas no historico'];
+        $lista[] = ['nome' => 'admissao_historico_aba_log', 'descricao' => 'Pode Acessar aba de Logs no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_afastamento', 'descricao' => 'Pode Acessar aba de Afastamento no historico'];
         $lista[] = ['nome' => 'admissao_historico_filtrar_demitido', 'descricao' => 'Acessar Usuarios Demitidos'];
 

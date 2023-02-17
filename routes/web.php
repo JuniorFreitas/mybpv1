@@ -668,7 +668,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::post('admissao/export', [\App\Http\Controllers\AdmissaoController::class, 'export'])->name('admissao.excel');
         Route::post('admissao/cadastra-massa', [\App\Http\Controllers\AdmissaoController::class, 'cadastraMassa'])->name('admissao.cadastraMassa');
         Route::post('admissao/busca-cpf', [\App\Http\Controllers\AdmissaoController::class, 'buscaCPF'])->name('admissao.buscaCPF');
-        Route::get('admissao/{feedback}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');
+        Route::get('admissao/{fc_token}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');
         // Anexos
         Route::post('admissao/uploadAnexos', [\App\Http\Controllers\AdmissaoController::class, 'uploadAnexos'])->name('admissao.upload-anexos');
         Route::get('admissao/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoShow'])->name('admissao.anexo-show');
@@ -782,6 +782,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'feedbackhistorico.', 'prefix' => 'feedback-historico'], function () {
             Route::get('/atualizar/{feedback_id}', [\App\Http\Controllers\FeedbackHistoricoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::post('/{feedback}', [\App\Http\Controllers\FeedbackHistoricoController::class, 'store'])->name('store');
+        });
+
+        Route::group(['as' => 'logshistorico.', 'prefix' => 'log-historico'], function () {
+            Route::post('/atualizar', [\App\Http\Controllers\LogsHistoricoController::class, 'atualizar'])->name('atualizarLog'); // manter essa rota antes do resource
         });
 
 

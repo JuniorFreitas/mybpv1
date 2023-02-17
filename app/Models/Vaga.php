@@ -34,6 +34,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereEmpresaId($value)
  * @property-read \App\Models\Cliente|null $Empresa
  * @property-read \App\Models\VagasAbertas|null $VagaAberta
+ * @property float|null $salario
+ * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereSalario($value)
  */
 class Vaga extends Model
 {

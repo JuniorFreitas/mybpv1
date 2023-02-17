@@ -204,11 +204,21 @@ class AvaliacaoController extends Controller
 
         $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
             $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
+            $avaliacaoPar = clone $avaliacaoFeedbackFunc;
+            $avaliacaoPar = $avaliacaoPar->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->where('principal',false);
+            $totalAvaliacaoPar = $avaliacaoPar->count();
+            $totalAvaliacaoParConcluida = $avaliacaoPar->where('status', AvaliacaoFeedback::STATUS_CONCLUIDA)->count();
+
             $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
             $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
             $item->total_avaliacoes_concluidas = $totalAvaliacoesFuncConcluidas->count();
             $item->fez_auto_avaliacao = $totalAvaliacoesFuncConcluidas->count() > 0;
             $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes;
+
+            $item->pendente_autoavaliacao = $item->avaliador_id == $item->funcionario_id && !$item->fez_auto_avaliacao;
+            $item->pendente_autoavaliacao_colaborador = $item->avaliador_id != $item->funcionario_id && $item->status == 'Pendente' && !$item->fez_auto_avaliacao;
+            $item->pendente_avaliacao_par = $totalAvaliacaoPar != $totalAvaliacaoParConcluida;
+            $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
             return $item;
         });
 
@@ -217,7 +227,7 @@ class AvaliacaoController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $avaliacoesFeedbacks,
                 'avaliacoes_tipos' => $avaliacoes_tipos,
                 'lista_status' => Avaliacao::LISTA_STATUS,
             ]
@@ -231,7 +241,7 @@ class AvaliacaoController extends Controller
      */
     private function filtroAvaliar(Request $request)
     {
-        $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'Funcionario', 'Avaliador')
+        $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'Funcionario:id,nome,login', 'Avaliador:id,nome,login')
             ->whereAvaliadorId(auth()->user()->id);
 
         $resultado->whereHas('Avaliacao', function ($query) {
@@ -313,11 +323,12 @@ class AvaliacaoController extends Controller
             'topicos' => $avaliacaoTopicos,
             'avaliacao_feedback_id' => $avaliacaoFeedback->id,
             'respostas' => $respostas,
-            'respostas_funcionario' => $respostasFunc,
+            'respostas_funcionario' => $avaliacaoFeedback->principal ? $respostasFunc : [],
             'comentario' => $avaliacaoFeedback->comentario ?: '',
             'comentario_funcionario' => $avaliacaoFeedbackFunc->comentario ?: '',
             'dados_do_funcionario' => $dadosDoFuncionario,
             'origem_feedback' => $avaliacaoFeedback->origem_feedback,
+            'principal' => $avaliacaoFeedback->principal,
         ]);
     }
 
