@@ -23,8 +23,8 @@ class AprovacaoRhMail extends Mailable
     {
         $this->dados = $dados;
         $this->to($this->dados['email_para'], $this->dados['nome_para']);
-        $this->from('naoresponda@mybp.com.br', 'BPSE-BUSINESS PARTNERS SERVIÇOS EMPRESARIAIS');
-        $this->subject = "CONFIRMAÇÃO PARA FÉRIAS PREVISTA  - COLABORADOR {$this->dados['colaborador']}  CÓD - ". $this->dados['ferias_id'];
+        $this->from('naoresponda@mybp.com.br', $this->dados['nome_empresa']);
+        $this->subject = "ATUALIZAÇÃO MOVIMENTAÇÃO DE FÉRIAS  - COLABORADOR {$this->dados['colaborador']}  CÓD - ". $this->dados['ferias_id'];
         $this->assunto = $this->subject;
     }
 

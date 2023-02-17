@@ -86,6 +86,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereCentroCustoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereCentroCustoOutro($value)
  * @method static Builder|Cih vinculados()
+ * @method static \Illuminate\Database\Query\Builder|Cih onlyTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Cih withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Cih withoutTrashed()
  */
 class Cih extends Model
 {
