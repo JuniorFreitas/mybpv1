@@ -6,7 +6,8 @@
                 <form class="row">
                     <div class="col-12 col-md-3">
                         <label for="">Filtrar por:</label>
-                        <select class="form-control form-control-sm" v-model="filtrar.tipo">
+                        <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.tipo"
+                                @change="buscarDados()">
                             <option value="aquisitivo">Período aquisitivo</option>
                             <option value="data">Por data</option>
                         </select>
@@ -14,32 +15,35 @@
 
                     <div class="col-12 col-md-3" v-if="filtrar.tipo === 'aquisitivo'">
                         <label for="">Escolha o período:</label>
-                        <select class="form-control form-control-sm" v-model="filtrar.periodo">
+                        <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.periodo"
+                                @change="buscarDados()">
                             <option v-for="(item, key) in filtro.periodo_aquisitivo" :value="item.id">{{ item.label }}
                             </option>
                         </select>
                     </div>
 
                     <div class="col-12 col-md-3" v-if="filtrar.tipo === 'data'">
-                        <datepicker range formsm label="Escolha a data:"
+                        <datepicker range formsm label="Escolha a data:" :disabled="preload" @onselect="buscarDados()"
                                     v-model="filtrar.periodo_range"></datepicker>
                     </div>
 
                     <div class="col-12 col-md-3 mb-2">
                         <label for="">Por status:</label>
-                        <select class="form-control form-control-sm" v-model="filtrar.status_ferias">
+                        <select class="form-control form-control-sm" :disabled="preload" @change="buscarDados()"
+                                v-model="filtrar.status_ferias">
                             <option value="">Todos</option>
-                            <option v-for="item in filtro.status_ferias" :value="item">{{ item }}</option>
+                            <option v-for="item in filtro.status_ferias" :value="item">{{ item | letterCase }}</option>
                         </select>
                     </div>
 
                     <div class="clearfix"></div>
 
                     <div class="col-12">
-                        <button class="btn btn-sm btn-primary" @click.prevent="buscarDados()" type="button">
+                        <button class="btn btn-sm btn-primary" :disabled="preload" @click.prevent="buscarDados()"
+                                type="button">
                             <i class="fa fa-search"></i> Buscar
                         </button>
-                        <button type="button" class="btn btn-sm btn-primary"
+                        <button type="button" class="btn btn-sm btn-primary" :disabled="preload || !dados.length"
                                 @click.prevent="exportaExcel()">
                             <i class="fas fa-file-excel"></i> Exportar Excel
                         </button>
@@ -59,7 +63,10 @@
                             <table class="mt-4 table table-bordered table-striped">
                                 <thead>
                                 <tr class="bg-white text-center">
-                                    <th rowspan="4" style="display: table-cell; vertical-align: middle; text-align: center; /* Não necessário */">{{ index + 1}}</th>
+                                    <th rowspan="4"
+                                        style="display: table-cell; vertical-align: middle; text-align: center; /* Não necessário */">
+                                        {{ index + 1 }}
+                                    </th>
                                     <th colspan="6">{{ item.nome }}<br>(Admitido em: {{ item.data_admissao }})</th>
                                 </tr>
                                 <tr class="bg-white text-center">
@@ -89,10 +96,15 @@
                                     <th style="text-align: center">{{ item.periodo_aquisitivo }}</th>
                                     <th style="text-align: center">{{ item.ultima_data }}</th>
                                     <th style="text-align: center">
-                                        <span v-if="item.status === 'aguardando'">{{
-                                                item.dias_vencer < 0 ? Math.abs(item.dias_vencer) + ' dia(s) vencido(s)' : item.dias_vencer + ' dia(s) à vencer'
-                                            }}</span>
-                                        <span v-if="item.status === 'gozando'">Gozando</span>
+                                        <span class="text-uppercase">{{ item.status }}</span>
+                                        <!--                                        <span v-if="item.status === 'aguardando'">{{-->
+                                        <!--                                                item.dias_vencer < 0 ? Math.abs(item.dias_vencer) + ' dia(s) vencido(s)' : item.dias_vencer + ' dia(s) à vencer'-->
+                                        <!--                                            }}-->
+                                        <!--                                        </span> -->
+                                        <!--                                        <span v-if="item.status === 'aguardando'">-->
+                                        <!--                                            Aguardando-->
+                                        <!--                                        </span>-->
+                                        <!--                                        <span v-if="item.status === 'gozando'">Gozando</span>-->
                                     </th>
 
                                 </tr>
@@ -134,11 +146,14 @@ export default {
         this.filtrar.periodo = this.filtro.periodo_aquisitivo[1].id
         await this.buscarDados();
     },
+    filters:{
+        letterCase(value) {
+            return value.charAt(0).toUpperCase() + value.slice(1);
+        }
+    },
     computed: {
         paramsExport() {
-            return {
-                periodo: this.periodo
-            }
+            return this.filtrar;
         }
     },
     methods: {
