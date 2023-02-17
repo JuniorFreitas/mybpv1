@@ -174,6 +174,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $dependentes_count
  * @property string|null $nacionalidade
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNacionalidade($value)
+ * @property-read mixed $c_token
  */
 class Curriculo extends Model
 {

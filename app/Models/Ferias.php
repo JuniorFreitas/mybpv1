@@ -121,6 +121,14 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereStatusAprovacaoGestor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereStatusAprovacaoRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereStatusFerias($value)
+ * @property int|null $quem_deletou_id
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read User|null $Gestor
+ * @method static \Illuminate\Database\Query\Builder|Ferias onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereQuemDeletouId($value)
+ * @method static \Illuminate\Database\Query\Builder|Ferias withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Ferias withoutTrashed()
  */
 class Ferias extends Model
 {
