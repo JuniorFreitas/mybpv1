@@ -739,4 +739,10 @@ class Sistema
         return $telefone;
     }
 
+    public static function LogFormatado($dados)
+    {
+        \Log::debug(print_r(json_encode($dados, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE), 1));
+    }
+
+
 }

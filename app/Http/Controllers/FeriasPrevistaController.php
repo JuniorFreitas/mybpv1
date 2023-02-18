@@ -18,6 +18,7 @@ use App\Models\FeriasPrevista;
 use App\Models\FeriasPrevistaDados;
 use App\Models\FeriasPrevistaMov;
 use App\Models\PeriodoAquisitivo;
+use App\Models\Sistema;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -147,6 +148,7 @@ class FeriasPrevistaController extends Controller
             DB::rollback();
             $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
+            Sistema::LogFormatado($dados);
             return response()->json(['msg' => $msg], 400);
         }
     }
@@ -239,8 +241,9 @@ class FeriasPrevistaController extends Controller
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            $msg = "erro ao atualizar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
+            Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
@@ -321,8 +324,9 @@ class FeriasPrevistaController extends Controller
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "error ao aprovar Solicitação de Férias:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            $msg = "error ao aprovar Solicitação de Férias - Gestor:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
+            Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
@@ -396,8 +400,9 @@ class FeriasPrevistaController extends Controller
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "error ao aprovar solicitação RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            $msg = "error ao aprovar solicitação - RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
+            Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
@@ -581,30 +586,28 @@ class FeriasPrevistaController extends Controller
 
             foreach ($request->selecionados[0] as $selecionado) {
 
-                $feriasPrevista = FeriasPrevista::find($selecionado);
+                $feriasPrevista = Ferias::find($selecionado);
+
+                $dados = [
+                    'user_aprovacao_id' => auth()->id(),
+                    'data_aprovacao' => (new DataHora())->dataHoraInsert(),
+                    'obs_gestor' => $request->obs_aprovacao,
+                    'status_aprovacao_gestor' => $request->status_aprovacao,
+                ];
 
                 if ($request->status_aprovacao === 'reprovado') {
-                    $feriasPrevista->update([
-                        'user_aprovacao_id' => auth()->id(),
-                        'data_aprovacao' => (new DataHora())->dataHoraInsert(),
-                        'obs_aprovacao' => $request->obs_aprovacao,
-                        'status_aprovacao' => $request->status_aprovacao,
-                    ]);
+                    $feriasPrevista->update($dados);
                 } else {
-                    $feriasPrevista->update([
-                        'user_aprovacao_id' => auth()->id(),
-                        'data_aprovacao' => (new DataHora())->dataHoraInsert(),
-                        'obs_aprovacao' => $request->obs_aprovacao,
-                        'status_aprovacao' => $request->status_aprovacao,
-                    ]);
+                    $feriasPrevista->update($dados);
                 }
                 DB::commit();
             }
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "error ao aprovar Solicitação de Férias:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            $msg = "error ao Atualizar Status em Massa:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
+            Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
