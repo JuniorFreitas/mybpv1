@@ -39,7 +39,7 @@ class FeriasController extends Controller
         $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->verifica_mes_vencimento];
         $periodo_vencimento = preg_replace("/[^0-9]/", "", $periodo_vencimento);
 
-        $queryResult = Ferias::with('FeriasPrevista',
+        $queryResult = Ferias::with(
             'PeriodoAquisitivo',
             'Gestor:id,nome',
             'GestorAprovacao:id,nome',
