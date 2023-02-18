@@ -769,6 +769,11 @@ export default {
                     colaborador_id: this.form.colaborador_id,
                     visualizar: this.visualizar
                 }).then(response => {
+                    if(!response.data.data_admissao){
+                        mostraErro("", "Atualize a data de admissão no cadastro do colaborador");
+                        return false;
+                    }
+
                     this.form.data_admissao = response.data.data_admissao;
                     this.ultimaData = response.data.ultimaData;
 

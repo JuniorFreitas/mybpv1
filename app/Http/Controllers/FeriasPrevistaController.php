@@ -80,6 +80,13 @@ class FeriasPrevistaController extends Controller
                         }
                     }
                 ],
+                'data_admissao' => [
+                    function ($attribute, $value, $fail) use ($dados) {
+                        if (strlen($value) == 0) {
+                            $fail('Atualize a data de admissão do colaborador');
+                        }
+                    }
+                ]
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -422,18 +429,19 @@ class FeriasPrevistaController extends Controller
     {
 
         $resultado = Ferias::with(
-            'Admissao',
-            'Admissao.Feedback',
-            'Admissao.Feedback.Curriculo',
-            'Admissao.Feedback.VagaSelecionada',
-            'Admissao.CentroCusto',
-            'Empresa',
-            'Solicitante',
-            'GestorAprovacao',
-            'Gestor',
-            'RhAprovacao',
             'PeriodoAquisitivo',
-            'FeriasPrevista.CentroCusto'
+            'Gestor:id,nome',
+            'GestorAprovacao:id,nome',
+            'RhAprovacao:id,nome',
+            'Solicitante:id,nome',
+            'Admissao:id,centro_custo_id,cargo,funcao,data_admissao,feedback_id',
+            'Admissao.CentroCusto',
+            'Admissao.Feedback:id,curriculo_id,vagas_abertas_id',
+            'Admissao.Feedback.VagaSelecionada',
+            'Admissao.Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+            'Admissao.CentroCusto:id,label',
+            'FeriasPrevista:id,centro_custo_id',
+            'FeriasPrevista.CentroCusto:id,label',
         );
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
@@ -528,7 +536,7 @@ class FeriasPrevistaController extends Controller
 
         if ($colaboradorPeriodo !== null && !$request->visualizar) {
 
-            $periodo = PeriodoAquisitivo::where('id', '>', $colaboradorPeriodo->id)->first();
+            $periodo = PeriodoAquisitivo::where('id', '>=', $colaboradorPeriodo->id)->first();
 
             $date = (new DataHora($dataAdmissao));
             $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
