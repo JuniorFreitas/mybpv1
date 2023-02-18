@@ -757,6 +757,7 @@ class AdmissaoController extends Controller
             \Log::info("-------DADOS-------");
             Sistema::telegram(print_r($dados, true));
             \Log::info("-------FIM DE DADOS-------");
+            Sistema::LogFormatado($dados);
 //            return response()->json($msg, 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
 
@@ -1295,6 +1296,7 @@ class AdmissaoController extends Controller
                 \Log::info("-------DADOS-------");
                 \Log::alert(print_r($dados, true));
                 \Log::info("-------FIM DE DADOS-------");
+                Sistema::LogFormatado($dados);
 
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
@@ -1469,6 +1471,7 @@ class AdmissaoController extends Controller
                 \Log::info("-------DADOS-------");
                 Sistema::telegram(print_r($dados, true));
                 \Log::info("-------FIM DE DADOS-------");
+                Sistema::LogFormatado($dados);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
             }
         }

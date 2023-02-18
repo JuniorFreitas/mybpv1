@@ -10,6 +10,7 @@ use App\Models\AvaliacaoResultado;
 use App\Models\AvaliacaoTipo;
 use App\Models\AvaliacaoTopico;
 use App\Models\FeedbackCurriculo;
+use App\Models\Sistema;
 use App\Models\User;
 use App\Rules\TenantUniqueRules;
 use Illuminate\Http\Request;
@@ -77,6 +78,7 @@ class AvaliacaoController extends Controller
             DB::rollback();
             $msg = "error STORE AVALIAÇÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
+            Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
@@ -146,6 +148,7 @@ class AvaliacaoController extends Controller
             DB::rollback();
             $msg = "error UPDATE AVALIAÇÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
+            Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
@@ -351,47 +354,56 @@ class AvaliacaoController extends Controller
 
         }
 
+        try {
+            DB::beginTransaction();
 
-        foreach ($respostas as $key => $resposta) {
-            $avaliacaoFeedback->Respostas()->create($resposta);
-        }
+            foreach ($respostas as $key => $resposta) {
+                $avaliacaoFeedback->Respostas()->create($resposta);
+            }
 
-        $salvarAvaliacao = $avaliacaoFeedback->update([
-            'status' => AvaliacaoFeedback::STATUS_CONCLUIDA,
-            'comentario' => $dados['comentario'],
-            'fim_feedback' => (new DataHora())->dataHoraInsert()
-        ]);
+            $salvarAvaliacao = $avaliacaoFeedback->update([
+                'status' => AvaliacaoFeedback::STATUS_CONCLUIDA,
+                'comentario' => $dados['comentario'],
+                'fim_feedback' => (new DataHora())->dataHoraInsert()
+            ]);
 
-        $dados_job = [];
+            $dados_job = [];
 
-        if($salvarAvaliacao && $avaliacaoFeedback->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO && $avaliacaoFeedback->status === AvaliacaoFeedback::STATUS_CONCLUIDA) {
-            $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'funcionario_id', 'status'])
-                ->where('avaliacao_id', $avaliacaoFeedback->avaliacao_id)
-                ->where('funcionario_id', $avaliacaoFeedback->funcionario_id)
-                ->with('Avaliador:id,nome,login')
-                ->with('Funcionario:id,nome')
-                ->with('Avaliacao:id,titulo')
-                ->OrigemAvaliador()
-                ->get();
+            if ($salvarAvaliacao && $avaliacaoFeedback->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO && $avaliacaoFeedback->status === AvaliacaoFeedback::STATUS_CONCLUIDA) {
+                $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'funcionario_id', 'status'])
+                    ->where('avaliacao_id', $avaliacaoFeedback->avaliacao_id)
+                    ->where('funcionario_id', $avaliacaoFeedback->funcionario_id)
+                    ->with('Avaliador:id,nome,login')
+                    ->with('Funcionario:id,nome')
+                    ->with('Avaliacao:id,titulo')
+                    ->OrigemAvaliador()
+                    ->get();
 
-            foreach ($avaliadores as $avaliador) {
+                foreach ($avaliadores as $avaliador) {
 
-                $dados_job['nome'] = $avaliador->avaliador->nome;
-                $dados_job['email'] = $avaliador->avaliador->login;
-                $dados_job['funcionario'] = $avaliador->funcionario->nome;
-                $dados_job['avaliacao'] = $avaliador->avaliacao->titulo;
-                $dados_job['empresa_id'] = $avaliacaoFeedback->empresa_id;
+                    $dados_job['nome'] = $avaliador->avaliador->nome;
+                    $dados_job['email'] = $avaliador->avaliador->login;
+                    $dados_job['funcionario'] = $avaliador->funcionario->nome;
+                    $dados_job['avaliacao'] = $avaliador->avaliacao->titulo;
+                    $dados_job['empresa_id'] = $avaliacaoFeedback->empresa_id;
 
-                JobAutoAvaliacaoConcluida::dispatch([
-                    'nome' => $dados_job['nome'],
-                    'email' => $dados_job['email'],
-                    'funcionario' => $dados_job['funcionario'],
-                    'avaliacao' => $dados_job['avaliacao'],
-                    'empresa_id' => $dados_job['empresa_id']
-                ]);
+                    JobAutoAvaliacaoConcluida::dispatch([
+                        'nome' => $dados_job['nome'],
+                        'email' => $dados_job['email'],
+                        'funcionario' => $dados_job['funcionario'],
+                        'avaliacao' => $dados_job['avaliacao'],
+                        'empresa_id' => $dados_job['empresa_id']
+                    ]);
 
-                $dados_job = [];
-             }
+                    $dados_job = [];
+                }
+            }
+        }catch(\Exception $e){
+            DB::rollBack();
+            $msg = "error UPDATE AVALIAR:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            Sistema::LogFormatado($dados);
+            return response()->json(['error' => 'Ocorreu um erro'], 500);
         }
     }
 
@@ -618,7 +630,10 @@ class AvaliacaoController extends Controller
             return response()->json([], 201);
         }catch(\Exception $e){
             DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+            $msg = "error SALVAR AVALIAÇÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            Sistema::LogFormatado($dados);
+            return response()->json(['error' => 'Ocorreu um erro'], 500);
         }
     }
 }
