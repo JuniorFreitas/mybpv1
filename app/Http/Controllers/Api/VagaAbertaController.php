@@ -437,9 +437,7 @@ class VagaAbertaController extends Controller
             $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'] . " CPF:" . $dados['cpf_padrao'];
             \Log::debug($msg);
             \Log::debug($e->getTraceAsString());
-            \Log::info("-------DADOS-------");
-            \Log::alert($dados);
-            \Log::info("-------FIM DE DADOS-------");
+            Sistema::LogFormatado($dados);
 
             if ($e->getLine() == 297) {
                 return response()->json(['msg' => 'Remova os telefones adicione novamente, caso o erro persistir atualize a página!'], 400);
