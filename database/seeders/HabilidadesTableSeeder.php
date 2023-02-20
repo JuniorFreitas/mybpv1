@@ -478,6 +478,8 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'avaliacoes_avaliar', 'descricao' => 'Pode fazer avaliação'];
         $lista[] = ['nome' => 'avaliacoes_final', 'descricao' => 'Pode fazer avaliacao final'];
 
+        $lista[] = ['nome' => 'relatorio_efetivo', 'descricao' => 'Pode acessar relatório de efetivo'];
+
 
         try {
             DB::beginTransaction();

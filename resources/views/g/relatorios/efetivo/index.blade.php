@@ -1,7 +1,7 @@
 @extends('layouts.sistema')
-@section('title', 'Centros de Custo')
+@section('title', 'Efetivo')
 @section('content_header')
-    <h4 class="text-default">Centros de Custo</h4>
+    <h4 class="text-default">Efetivo</h4>
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
@@ -60,13 +60,14 @@
                         <th>Código</th>
                         <th>Nome</th>
                         <th>Cargo</th>
+                        <th>Salário</th>
                         <th>Tipo Admissão</th>
                         <th>Data da Admissão</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr v-if="!centro_de_custo.admissao.length">
-                        <td colspan="5">
+                        <td colspan="6">
                             <div class="alert alert-warning">
                                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
                             </div>
@@ -84,6 +85,9 @@
                             @{{item.feedback.vaga_aberta.municipio.uf}}
                         </td>
                         <td>
+                            @{{item ? 'R$ '+item.salario : '' }}
+                        </td>
+                        <td>
                             @{{item ? item.tipo_admissao : '' }}
                         </td>
                         <td>
@@ -91,7 +95,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="5" class="text-right">
+                        <td colspan="6" class="text-right">
                             <strong>Total de Funcionários: </strong> @{{ centro_de_custo.admissao.length }}
                         </td>
                     </tr>
@@ -108,12 +112,12 @@
         </div>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                            url="{{route('g.relatorios.centrodecusto.atualizar')}}"
+                            url="{{route('g.relatorios.efetivo.atualizar')}}"
                             :por-pagina="controle.dados.porPagina"
                             :dados="controle.dados"
                             v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/relatorios/centrodecusto/app.js')}}"></script>
+    <script src="{{mix('js/g/relatorios/efetivo/app.js')}}"></script>
 @endpush
