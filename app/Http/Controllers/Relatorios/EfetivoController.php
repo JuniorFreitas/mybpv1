@@ -12,7 +12,7 @@ use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
 use Illuminate\Http\Request;
 
-class CentroDeCustoController extends Controller
+class EfetivoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -21,7 +21,7 @@ class CentroDeCustoController extends Controller
      */
     public function index()
     {
-        return view('g.relatorios.centrodecusto.index');
+        return view('g.relatorios.efetivo.index');
     }
 
     /**
@@ -104,7 +104,7 @@ class CentroDeCustoController extends Controller
                     'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id',
                     'Feedback.VagaAberta.VagaSelecionada:id,nome',
                     'Feedback.VagaAberta.Municipio')
-                ->select(['id', 'feedback_id', 'tipo_admissao', 'centro_custo_id', 'status', 'data_admissao']);
+                ->select(['id', 'feedback_id', 'salario', 'tipo_admissao', 'centro_custo_id', 'status', 'data_admissao']);
         }])->whereAtivo(true);
 
         if ($request->filled('campoCentrosDeCusto')) {
@@ -171,6 +171,7 @@ class CentroDeCustoController extends Controller
             "Nome",
             "Centro de Custo",
             "Cargo",
+            "Salário",
             "Tipo de admissão",
             "Data da Admissão",
         ];
@@ -185,6 +186,7 @@ class CentroDeCustoController extends Controller
                         $admissao->Feedback->Curriculo->nome,
                         $row->label,
                         $admissao->Feedback->VagaAberta ? $admissao->Feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $admissao->Feedback->VagaAberta->Municipio->uf ?: "" : "",
+                        $admissao ? $admissao->salario ?: "" : "",
                         $admissao ? $admissao->tipo_admissao ?: "" : "",
                         $admissao ? $admissao->data_admissao ?: "" : "",
                     );
@@ -192,8 +194,8 @@ class CentroDeCustoController extends Controller
             }
         }
 
-        $nameArquivo = "relatorio_centro_de_custo" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Relatório - Centro de Custo", $head, $rows, $nameArquivo);
+        $nameArquivo = "relatorio_efetivo" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Relatório - Efetivo", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }

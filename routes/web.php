@@ -981,6 +981,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('centrodecusto/atualizar', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_centro_de_custo');
         });
 
+        Route::group(['as' => 'efetivo.'], function () {
+            Route::get('efetivo', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'index'])->name('index')->middleware('can:relatorio_efetivo');
+            Route::post('efetivo/pdf', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'exportPdf'])->name('exportPdf')->middleware('can:relatorio_efetivo');
+            Route::post('efetivo/export-excel', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_efetivo');
+            Route::post('efetivo/atualizar', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_efetivo');
+        });
+
         //Aniversariantes
         Route::group(['as' => 'aniversariantes.'], function () {
             Route::post('aniversariantes/atualizar', [\App\Http\Controllers\AniversariantesController::class, 'relatorioAtualizar'])->name('relatNiversAtualizar')->middleware('can:relatorio_aniversariantes');
