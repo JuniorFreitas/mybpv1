@@ -21,6 +21,7 @@ class FolhaManualController extends Controller
             ->whereHas('Admissao', function ($query) {
                 $query->where('status', 'admitido');
             })
+            ->admitidos()
             ->with(
                 'Admissao:id,feedback_id,data_admissao,cargo,funcao,pis,centro_custo_id,matricula',
                 'Admissao.DadosAdmissoes',
