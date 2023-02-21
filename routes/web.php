@@ -1135,6 +1135,11 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
         Route::resource('folha-ponto', \App\Http\Controllers\FolhaDePontoController::class, ['parameters' => ['folha-ponto' => 'user']])->middleware('can:controle_ponto_folha-ponto');
 
+        Route::group(['as' => 'folha-manual.','prefix' => 'folha-manual'], function (){
+            Route::post('atualizar', [\App\Http\Controllers\FolhaManualController::class,'atualizar'])->name('folha-manual')->middleware('can:controle_ponto_folha_ponto_manual');
+            Route::post('imprimir', [\App\Http\Controllers\FolhaManualController::class,'imprimir'])->name('folha-manual_imprimir')->middleware('can:controle_ponto_folha_ponto_manual');
+            Route::get('', [\App\Http\Controllers\FolhaManualController::class,'index'])->name('index')->middleware('can:controle_ponto_folha_ponto_manual');
+        });
 
     });
 
