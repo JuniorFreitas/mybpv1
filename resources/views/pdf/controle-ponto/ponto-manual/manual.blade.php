@@ -228,10 +228,22 @@
                         {{ $calendario['feriado'] ? 'FERIADO' : ':'}}
                     </td>
                     <td style="text-align: center">
-                        {{ $calendario['feriado'] ? 'FERIADO' : ':'}}
+                        @if($calendario['feriado'])
+                            FERIADO
+                        @elseif(!$calendario['feriado'] && !$calendario['repouso'])
+                            {{$calendario['intervalo_almoco']}}
+                        @else
+                            :
+                        @endif
                     </td>
                     <td style="text-align: center">
-                        {{ $calendario['feriado'] ? 'FERIADO' : ':'}}
+                        @if($calendario['feriado'])
+                            FERIADO
+                        @elseif(!$calendario['feriado'] && !$calendario['repouso'])
+                            {{$calendario['fim_intervalo_almoco']}}
+                        @else
+                            :
+                        @endif
                     </td>
                     <td style="text-align: center">
                         {{ $calendario['feriado'] ? 'FERIADO' : ':'}}
@@ -269,7 +281,8 @@
 
         <div style="font-size: 8.4pt; margin-top: 7px">
             <p style="font-size: 7.4pt; color: #444444; margin-bottom: 2.5px;">
-                Esse documento foi gerado automaticamente pelo usuário {{ $dados['quem_gerou'] }} Via Sistema Integrado MYBP em {{ (new \MasterTag\DataHora())->dataCompleta() }}
+                Esse documento foi gerado automaticamente pelo usuário {{ $dados['quem_gerou'] }} Via Sistema Integrado
+                MYBP em {{ (new \MasterTag\DataHora())->dataCompleta() }}
                 às {{ (new \MasterTag\DataHora())->horaCompleta() }}.
             </p>
         </div>
