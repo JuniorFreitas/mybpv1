@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admissao;
+use App\Models\EmpresaEscala;
 use App\Models\OcorrenciaJornada;
 use App\Models\PontoEletronico;
 use App\Models\User;
@@ -10,13 +12,15 @@ use Illuminate\Support\Str;
 use MasterTag\DataHora;
 use PDF;
 
-class FolhaDePontoController extends Controller {
+class FolhaDePontoController extends Controller
+{
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
+    public function index()
+    {
         /*$lista = PontoEletronico::get();
         foreach ($lista as $ponto){
             $ponto->duracao_extra = $ponto->horas_extra;
@@ -32,7 +36,8 @@ class FolhaDePontoController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function create() {
+    public function create()
+    {
         //
     }
 
@@ -42,7 +47,8 @@ class FolhaDePontoController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         //
     }
 
@@ -52,7 +58,8 @@ class FolhaDePontoController extends Controller {
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function show(User $user) {
+    public function show(User $user)
+    {
 
     }
 
@@ -62,10 +69,11 @@ class FolhaDePontoController extends Controller {
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request,User $user) {
+    public function edit(Request $request, User $user)
+    {
         $funcionario = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($user->id)->first();
-        if(!$funcionario){
-            return response()->json(['msg' => 'Funcionário não encontrado' ], 400);
+        if (!$funcionario) {
+            return response()->json(['msg' => 'Funcionário não encontrado'], 400);
         }
         return $funcionario;
     }
@@ -77,7 +85,8 @@ class FolhaDePontoController extends Controller {
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         //
     }
 
@@ -87,18 +96,20 @@ class FolhaDePontoController extends Controller {
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id) {
+    public function destroy($id)
+    {
         //
     }
 
-    public function buscarFrequencia(Request $request,User $user) {
+    public function buscarFrequencia(Request $request, User $user)
+    {
         $funcionario = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($user->id)->first();
-        if(!$funcionario){
-            return response()->json(['msg' => 'Funcionário não encontrado' ], 400);
+        if (!$funcionario) {
+            return response()->json(['msg' => 'Funcionário não encontrado'], 400);
         }
-        $intervalo = explode(" até ",$request->intervalo);
-        $inicio = new DataHora($intervalo[0]." 00:00:00");
-        $fim = new DataHora($intervalo[1]." 23:59:59");
+        $intervalo = explode(" até ", $request->intervalo);
+        $inicio = new DataHora($intervalo[0] . " 00:00:00");
+        $fim = new DataHora($intervalo[1] . " 23:59:59");
 
         $lista = PontoEletronico::whereBetween('created_at', [$inicio->dataHoraInsert(), $fim->dataHoraInsert()])
             //$lista = PontoEletronico::whereBetween('created_at',[$inicio->dataHoraInsert(),$fim->dataHoraInsert()])
@@ -121,7 +132,8 @@ class FolhaDePontoController extends Controller {
         ], 200);
     }
 
-    public function imprimir(Request $request, User $user) {
+    public function imprimir(Request $request, User $user)
+    {
 
         $funcionario = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($user->id)->first();
         if (!$funcionario) {
@@ -175,19 +187,51 @@ class FolhaDePontoController extends Controller {
         $pdf->setPaper('A4', 'landscape');
         return $pdf->stream("Folha de ponto" . STR::slug($dados->tipo == 'Pessoa Jurídica' ? $dados->razao_social : $dados->nome) . ".pdf");
 
-
     }
 
-    public function atualizarLista(Request $request) {
+    public function atualizarLista(Request $request)
+    {
         $hoje = new DataHora();
         $porPagina = $request->get('porPagina');
 
         //Lista de funcionarios da empresa
+//        $resultado = auth()->user()->Empresa->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false)->has('EscalasFuncionario');
 
-        $resultado = auth()->user()->Empresa->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false)->has('EscalasFuncionario');
+//        $resultado = auth()->user()->Empresa->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false)
+//            ->has('EscalasFuncionario')
+//            ->whereHas('Feedback', function ($q) use ($request) {
+//                if ($request->status == 'admitidos'){
+//                    $q->admitidos();
+//                }else{
+//                    $q->demitidos();
+//                }
+//            });
+
+        if(auth()->user()->can('controle_ponto_folha-ponto_adm')){
+            $user = auth()->user()->Empresa->EmpresaFuncionarios()->whereAtivo(true)->whereTemp(false);
+        }else{
+            $user =  User::whereId(auth()->id())->whereAtivo(true)->whereTemp(false);
+        }
+
+        $resultado = $user->has('EscalasFuncionario')
+            ->whereHas('Feedback', function ($q) use ($request) {
+                if ($request->status == 'admitidos'){
+                    $q->admitidos();
+                }else{
+                    $q->demitidos();
+                }
+            });
+
         if ($request->filled('funcionario_id')) {
             $resultado->whereId($request->funcionario_id);
         }
+
+        if ($request->filled('escala_id')) {
+            $resultado->whereHas('EscalasFuncionario', function ($q) use ($request) {
+                $q->whereEscalaId($request->escala_id);
+            });
+        }
+
         if ($request->filled('funcionarioNome')) {
             $resultado = $resultado->where('nome', 'like', '%' . $request->funcionarioNome . '%');
         }
@@ -205,7 +249,11 @@ class FolhaDePontoController extends Controller {
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $resultado->items(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'todas_escalas' => EmpresaEscala::select(['id','empresa_id','descricao'])->get(),
+                'controle_ponto_adm' => (auth()->user()->can('controle_ponto_folha-ponto_adm'))
+            ],
         ]);
     }
 }

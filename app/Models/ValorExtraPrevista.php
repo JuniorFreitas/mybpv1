@@ -64,6 +64,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereObsRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereRespostaRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereUserRhId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  */
 class ValorExtraPrevista extends Model
 {

@@ -304,10 +304,10 @@ const validacoes = {
                     if ($(evt).siblings("div.input-group-append").length) {
                         $(evt)
                             .siblings("div.input-group-append")
-                            .after(`<div class="invalid-feedback">Campo obrigatório</div>`);
+                            .after(`<div class="invalid-feedback">Campo obrigatório, informe no minimo ${carac_minimo}</div>`);
                     } else {
                         $(evt).after(
-                            `<div class="invalid-feedback">Campo obrigatório</div>`
+                            `<div class="invalid-feedback">Campo obrigatório, informe no minimo ${carac_minimo}</div>`
                         );
                     }
                 }
@@ -327,10 +327,10 @@ const validacoes = {
                         if ($(evt).siblings("div.input-group-append").length) {
                             $(evt)
                                 .siblings("div.input-group-append")
-                                .after(`<div class="invalid-feedback">Campo obrigatório</div>`);
+                                .after(`<div class="invalid-feedback">Campo obrigatório, informe no minimo ${carac_minimo}</div>`);
                         } else {
                             $(evt).after(
-                                `<div class="invalid-feedback">Campo obrigatório</div>`
+                                `<div class="invalid-feedback">Campo obrigatório, informe no minimo ${carac_minimo}</div>`
                             );
                         }
                     }

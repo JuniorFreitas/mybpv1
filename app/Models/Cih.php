@@ -9,6 +9,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -85,10 +86,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereCentroCustoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Cih whereCentroCustoOutro($value)
  * @method static Builder|Cih vinculados()
+ * @method static \Illuminate\Database\Query\Builder|Cih onlyTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Cih withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Cih withoutTrashed()
  */
 class Cih extends Model
 {
-    use HasFactory, LogsActivity, TenantTrait;
+    use HasFactory, LogsActivity, TenantTrait, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'cih';
@@ -127,7 +131,8 @@ class Cih extends Model
         'data_aprovacao',
         'status',
         'empresa_id',
-        'centro_de_custo_id'
+        'centro_de_custo_id',
+        'user_deletou_id'
     ];
 
     protected $casts = [
@@ -152,7 +157,8 @@ class Cih extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i\h',
         'updated_at' => 'datetime:d/m/Y à\s H:i\h',
         'empresa_id' => 'int',
-        'centro_de_custo_id'
+        'centro_de_custo_id' => 'int',
+        'user_deletou_id' => 'int'
     ];
 
     /**

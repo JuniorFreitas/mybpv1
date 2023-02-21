@@ -172,6 +172,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Query\Builder|Curriculo withoutTrashed()
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\UsuarioDependente[] $Dependentes
  * @property-read int|null $dependentes_count
+ * @property string|null $nacionalidade
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNacionalidade($value)
+ * @property-read mixed $c_token
  */
 class Curriculo extends Model
 {
@@ -200,6 +203,7 @@ class Curriculo extends Model
         "rg",
         'rg_data_emissao',
         'naturalidade',
+        'nacionalidade',
         "orgao_expeditor",
         "carteira_trabalho",
         "nome",
@@ -240,6 +244,7 @@ class Curriculo extends Model
         "rg" => "string",
         "rg_data_emissao" => "string",
         "naturalidade" => "string",
+        "nacionalidade" => "string",
         "orgao_expeditor" => "string",
         "carteira_trabalho" => "string",
         "nome" => "string",
@@ -277,6 +282,33 @@ class Curriculo extends Model
     ];
 
     protected $appends = ['idade', 'endereco_completo', 'rg_format'];
+
+    public function getCTokenAttribute()
+    {
+        return \Crypt::encrypt($this->id);
+    }
+    const ESTADO_CIVIL_SOLTEIRO = 'SOLTEIRO(A)';
+    const ESTADO_CIVIL_CASADO = 'CASADO(A)';
+    const ESTADO_CIVIL_DIVORCIADO = 'DIVORCIADO(A)';
+    const ESTADO_CIVIL_UNIAO_ESTAVEL = 'UNIÃO ESTÁVEL';
+    const ESTADO_CIVIL_VIUVO = 'VIÚVO(A)';
+    const ESTADO_CIVIL_OUTRO = 'OUTRO';
+
+    const SEXO_MASCULINO = 'Masculino';
+    const SEXO_FEMININO = 'Feminino';
+
+    const TIPOS_SEXOS = [
+        self::SEXO_MASCULINO,
+        self::SEXO_FEMININO,
+    ];
+    const ESTADOS_CIVIS = [
+        self::ESTADO_CIVIL_SOLTEIRO,
+        self::ESTADO_CIVIL_CASADO,
+        self::ESTADO_CIVIL_DIVORCIADO,
+        self::ESTADO_CIVIL_UNIAO_ESTAVEL,
+        self::ESTADO_CIVIL_VIUVO,
+        self::ESTADO_CIVIL_OUTRO,
+    ];
 
     protected function serializeDate(DateTimeInterface $date)
     {

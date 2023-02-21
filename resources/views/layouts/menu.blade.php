@@ -683,7 +683,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias','relatorio_centro_de_custo','relatorio_aniversariantes'))
+    @if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias','relatorio_centro_de_custo','relatorio_efetivo','relatorio_aniversariantes'))
         <li id="relatorios">
             <a href="javascript://" class="has-arrow waves-effect" parent="relatorios">
                 <i class="bx bx-chart"></i>
@@ -747,7 +747,16 @@
                         </a>
                     </li>
                 @endcan
+            </ul>
 
+            <ul aria-expanded="false">
+                @can('relatorio_efetivo')
+                    <li>
+                        <a href="{{route('g.relatorios.efetivo.index')}}" parent="relatorios" key="efetivo">
+                            Efetivo
+                        </a>
+                    </li>
+                @endcan
             </ul>
             <ul aria-expanded="false">
                 @can('relatorio_aniversariantes')
@@ -815,7 +824,7 @@
             <ul aria-expanded="false">
                 @can('acesso_clinica')
                     <li>
-                        <a href="{{route('g.acesso-clinica.aces`so-clinica.index')}}" parent="exames" key="acesso-clinica-colaboradores">
+                        <a href="{{route('g.acesso-clinica.acesso-clinica.index')}}" parent="exames" key="acesso-clinica-colaboradores">
                             Colaboradores
                         </a>
                     </li>

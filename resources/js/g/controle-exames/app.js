@@ -65,7 +65,8 @@ const app = new Vue({
             respostas: {},
             feedback_id: 0,
             empresa_exame_id: "",
-            empresa_id: 0
+            empresa_id: 0,
+            envia_email: false,
         },
 
         formDefault: null,
@@ -97,6 +98,7 @@ const app = new Vue({
                 campoBusca: "",
                 campoCPF: "",
                 campoUf: "",
+                status: "em_processo",
                 pages: EXIBICAO[0]
             }
         }
@@ -211,7 +213,8 @@ const app = new Vue({
                     feedback_id: this.form.feedback_id,
                     empresa_exame_id: this.form.empresa_exame_id,
                     respostas: this.form.respostas,
-                    tipo: "store"
+                    tipo: "store",
+                    envia_email: this.form.envia_email,
                 }).then(res => {
                     let data = res.data;
                     mostraSucesso("", "Exame cadastrado com sucesso!");

@@ -225,6 +225,10 @@ class DataHora
         return $this->dia . "/" . $this->mes . "/" . $this->ano;
     }
 
+    public function dataHoraCompleta() {
+        return $this->dia . "/" . $this->mes . "/" . $this->ano. " às ". $this->hora . ":" . $this->minuto. "h";
+    }
+
     public function dataCompletaExt() {
         return $this->dia . " de " . $this->mesExtM() . " de " . $this->ano();
     }

@@ -49,6 +49,8 @@ const app = new Vue({
         cliente_id: "",
         cliente_area_id: 0,
 
+        formulario_open: '',
+
         colunasTabela: {
             cliente: false,
             pcd: false,
@@ -76,10 +78,14 @@ const app = new Vue({
         selecionados: [],
         selecionaTudo: false,
 
+        lista_sexos: [],
+        lista_estados_civis: [],
+
         formAvulsa: {
             preload: false,
             cadastrado: false,
             cadastrando: false,
+            ex_funcionario: false,
 
             curriculo: {
                 cpf: "",
@@ -99,6 +105,9 @@ const app = new Vue({
                 cep: "",
                 municipio_id: "",
                 cnh: "",
+
+                sexo: "",
+                estado_civil: "",
 
                 filiacao_pai: "",
                 filiacao_mae: "",
@@ -220,7 +229,10 @@ const app = new Vue({
                     ctps_data_emissao: "",
                     titulo_eleitor_numero: "",
                     titulo_eleitor_sessao: "",
-                    titulo_eleitor_zona: ""
+                    titulo_eleitor_zona: "",
+                    ctps_uf: "",
+                    cert_reservista_num: "",
+                    cert_reservista_categoria: "",
                 },
                 // data_aso: "",
                 ultimo_aso_ativo: {
@@ -248,8 +260,8 @@ const app = new Vue({
 
                 foto_tres: [],
                 foto_tresDel: [],
-                ferias_adquiridas:[],
-                ferias_adquiridasDelete:[],
+                ferias_adquiridas: [],
+                ferias_adquiridasDelete: [],
             }
         },
 
@@ -282,6 +294,8 @@ const app = new Vue({
                 municipio_id: "",
                 rg: "",
                 pcd: "",
+                sexo: "",
+                estado_civil: "",
                 rg_data_emissao: "",
                 naturalidade: "",
                 autocomplete_label_municipio_modal: "",
@@ -440,7 +454,10 @@ const app = new Vue({
                     ctps_data_emissao: "",
                     titulo_eleitor_numero: "",
                     titulo_eleitor_sessao: "",
-                    titulo_eleitor_zona: ""
+                    titulo_eleitor_zona: "",
+                    ctps_uf: "",
+                    cert_reservista_num: "",
+                    cert_reservista_categoria: "",
                 },
                 // data_aso: "",
                 ultimo_aso_ativo: {
@@ -466,8 +483,8 @@ const app = new Vue({
                 camisa_protecao: "",
                 camisa_meia: "",
 
-                ferias_adquiridas:[],
-                ferias_adquiridasDelete:[],
+                ferias_adquiridas: [],
+                ferias_adquiridasDelete: [],
 
                 foto_tres: [],
                 foto_tresDel: []
@@ -540,8 +557,8 @@ const app = new Vue({
                 campoStatusAdmissao: "",
                 campoTipoAdmissao: "",
                 campoUf: "",
-                campoAso:"",
-                campoAdmissao:""
+                campoAso: "",
+                campoAdmissao: ""
             }
         }
     },
@@ -647,8 +664,10 @@ const app = new Vue({
                         let data = response.data;
                         if (data.achou) {
                             Object.assign(this.formAvulsa, response.data);
+                            Object.assign(this.form.admissao, response.data.admissao);
                             this.exibiFormulario = true;
                             this.formAvulsa.preload = false;
+                            this.formAvulsa.ex_funcionario = data.ex_funcionario;
                         }
 
                         if (!data.achou) {
@@ -763,6 +782,7 @@ const app = new Vue({
             this.disabledInput = false;
             this.formAvulsa = _.cloneDeep(this.formAvulsaDefault); //copia
             this.form = _.cloneDeep(this.formDefault); //copia
+            this.formulario_open = 'Avulsa';
 
             this.form.foto_tres = [];
             this.form.foto_tresDel = [];
@@ -773,12 +793,22 @@ const app = new Vue({
 
         CadastraAvulsa() {
             formReset();
+            this.validaBlur();
+            $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
+            $("#janelaAdmissaoAvulsa :input:visible.is-invalid").length
+            let countErro = document.querySelectorAll(".is-invalid").length
 
-            if (this.formAvulsa.feedback.vaga_id === "") {
-                valida_campo_vazio($("#vaga_" + this.hash), 1);
-                $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
-                mostraErro("", "O campo vaga não pode ficar vazio");
+            if (countErro > 0) {
+                toastr.error("Verifique os campos", "Atenção!")
                 return false;
+            }
+
+            if (['ADMITIDO', 'PRONTO PARA ADMISSÃO'].includes(this.form.admissao.status)) {
+                if (this.form.admissao.data_admissao === "") {
+                    valida_campo_vazio($("#data_admissao_" + this.hash), 1);
+                    $("#janelaAdmissaoAvulsa #data_admissao_" + this.hash).focus().trigger("blur");
+                    return;
+                }
             }
 
             if (this.formAvulsa.curriculo.telefones.length === 0) {
@@ -795,10 +825,10 @@ const app = new Vue({
                 return false;
             }
 
-
-            $("#janelaAdmissaoAvulsa :input:visible").trigger("blur");
-            if ($("#janelaAdmissaoAvulsa :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os erros");
+            if (this.formAvulsa.feedback.vaga_id === "") {
+                valida_campo_vazio($("#vaga_" + this.hash), 1);
+                $("#janelaAdmissaoAvulsa #vaga_" + this.hash).focus().trigger("blur");
+                mostraErro("", "O campo vaga não pode ficar vazio");
                 return false;
             }
 
@@ -879,6 +909,7 @@ const app = new Vue({
         //Form Normal
         formEntrevistar(id) {
             Object.assign(this.form, this.formDefault);
+            this.formulario_open = 'Comum';
 
             this.form.id = id;
             this.cadastrado = false;
@@ -959,6 +990,13 @@ const app = new Vue({
 
 
         alterar() {
+            this.validaBlur();
+            let countErro = document.querySelectorAll(".is-invalid").length
+            if (countErro > 0) {
+                toastr.error("Verifique os campos", "Atenção!")
+                return false;
+            }
+
             $("#janelaCadastrar :input:visible").trigger("blur");
             if ($("#janelaCadastrar :input:visible.is-invalid").length) {
                 mostraErro("", "Verifique os erros");
@@ -1018,6 +1056,8 @@ const app = new Vue({
             this.listaStatusAdmissao = dados.status_admissao;
             this.listaTipoAdmissao = dados.tipos_admissao;
             this.editando = dados.admissao_processo_dados_editar;
+            this.lista_sexos = dados.lista_sexos;
+            this.lista_estados_civis = dados.lista_estados_civis;
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;
         },

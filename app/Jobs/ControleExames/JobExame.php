@@ -3,6 +3,8 @@
 namespace App\Jobs\ControleExames;
 
 use App\Mail\ControleExames\FichaClinicaMail;
+use App\Mail\ControleExames\FichaColaboradorMail;
+use App\Models\Sistema;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -24,16 +26,7 @@ class JobExame implements ShouldQueue
 
     public function __construct($dados)
     {
-        $this->mail = [
-            'clinica' => $dados['clinica'],
-            'email' => trim(mb_strtolower($dados['email'])),
-            'assunto' => "Encaminhamento de Exame {$dados['tipoExame']} colaborador {$dados['colaborador']}",
-            'colaborador' => $dados['colaborador'],
-            'idade' => $dados['idade'],
-            'tipoExame' => $dados['tipoExame'],
-            'link' => $dados['link']
-        ];
-
+        $this->mail = $dados;
     }
 
     /**
@@ -43,6 +36,9 @@ class JobExame implements ShouldQueue
      */
     public function handle()
     {
-        \Mail::send(new FichaClinicaMail($this->mail));
+        \Mail::send(new FichaClinicaMail($this->mail['dtEmailClinica']));
+        if ($this->mail['dtEmailColaborador']['email'] != Sistema::EMAILPADRAO){
+            \Mail::send(new FichaColaboradorMail($this->mail['dtEmailColaborador']));
+        }
     }
 }

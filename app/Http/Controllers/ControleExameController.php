@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ControleExames\JobExame;
 use App\Mail\ControleExames\FichaClinicaMail;
 use App\Mail\ControleExames\FichaColaboradorMail;
+use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
 use App\Models\Curriculo;
@@ -39,7 +41,7 @@ class ControleExameController extends Controller
 
             $resposta->transform(function ($item) {
                 $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
-                $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_'.$tipoOrdem]['valor'])->label;
+                $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;
                 $item->resultado = Examesesmt::whereExameFuncionarioId($item->id)->first();
                 return $item;
             });
@@ -70,33 +72,40 @@ class ControleExameController extends Controller
 
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
                 $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
-                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_'.$tipoOrdem]['valor'])->label;;
+                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;;
                 $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id'])->find($request->feedback_id);
 
-                $dtEmailClinica = [
-                    'clinica' => $empExame->nome,
-                    'email' => trim(mb_strtolower($empExame->dados['email'])),
-                    'assunto' => "Encaminhamento de Exame {$tipoExame} colaborador {$colaborador->Curriculo->nome}",
-                    'colaborador' => $colaborador->Curriculo->nome,
-                    'colaborador_email' => $colaborador->Curriculo->email,
-                    'idade' => $colaborador->Curriculo->idade,
-                    'tipoExame' => $tipoExame,
-                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
-                ];
+                if ($request->envia_email) {
+                    $dtEmailClinica = [
+                        'clinica' => $empExame->nome,
+                        'email' => trim(mb_strtolower($empExame->dados['email'])),
+                        'assunto' => "Encaminhamento de Exame {$tipoExame} colaborador {$colaborador->Curriculo->nome}",
+                        'colaborador' => $colaborador->Curriculo->nome,
+                        'colaborador_email' => trim(mb_strtolower($colaborador->Curriculo->email)),
+                        'idade' => $colaborador->Curriculo->idade,
+                        'tipoExame' => $tipoExame,
+                        'empresa_id' => $empExame->id,
+                        'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
+                    ];
 
-                \Mail::send(new FichaClinicaMail($dtEmailClinica));
+                    $dtEmailColaborador = [
+                        'clinica' => $empExame,
+                        'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
+                        'assunto' => "Encaminhamento de Exame {$tipoExame}",
+                        'colaborador' => $colaborador->Curriculo->nome,
+                        'tipoExame' => $tipoExame,
+                        'empresa_id' => $empExame->id,
+                        'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
+                    ];
 
-                $dtEmailColaborador = [
-                    'clinica' => $empExame,
-                    'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
-//                    'email' => trim(mb_strtolower('atendimento@mybp.com.br')),
-                    'assunto' => "Encaminhamento de Exame {$tipoExame}",
-                    'colaborador' => $colaborador->Curriculo->nome,
-                    'tipoExame' => $tipoExame,
-                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
-                ];
+                    $dados_email = [
+                        'dtEmailClinica' => $dtEmailClinica,
+                        'dtEmailColaborador' => $dtEmailColaborador
+                    ];
 
-                \Mail::send(new FichaColaboradorMail($dtEmailColaborador));
+                    JobExame::dispatch($dados_email);
+
+                }
 
                 \DB::commit();
                 return response()->json("");
@@ -252,13 +261,32 @@ class ControleExameController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
-            $q->whereEncaminhadoExame(true);
-        })->select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id','vagas_abertas_id'])->with(
+        $resultado = FeedbackCurriculo::select(['id', 'cliente_id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id'])->with(
             'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
             'Cliente:id,razao_social,area_id',
             'vagaSelecionada',
             'TelPrincipal');
+
+        if ($request->filled('status')) {
+            if ($request->status == 'em_processo') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereEncaminhadoExame(true);
+                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao');
+            }
+            if ($request->status == 'admitidos') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereEncaminhadoExame(true);
+                })->whereHas('Admissao', function ($q) {
+                    $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
+                })->whereDoesntHave('Demissao');
+            }
+            if ($request->status == 'demitidos') {
+                $resultado->whereHas('ResultadoIntegrado', function ($q) {
+                    $q->whereEncaminhadoExame(true);
+                })->demitidos();
+            }
+        }
+
         $resultado = $resultado->paginate($request->pages);
 
         $empresaExames = EmpresaExame::whereAtivo(true)->get();

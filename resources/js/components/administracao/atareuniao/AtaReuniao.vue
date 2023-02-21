@@ -12,9 +12,35 @@
                     <fieldset>
                         <legend>Informações</legend>
                         <div class="row">
+                            <div class="col-12 col-sm-6">
+                                <div class="form-group">
+                                    <label>Área</label>
+                                    <select class="form-control form-control-sm" v-model="form.area_etiqueta_id"
+                                    >
+                                        <option value="">Selecione</option>
+                                        <option :value="item.id"
+                                                v-for="item in areasetiquetas">
+                                            {{ item.label }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <div class="form-group">
+                                    <label>Centro de Custo</label>
+                                    <select
+                                        v-model="form.centro_custo_id"
+                                        class="form-control form-control-sm"
+                                    >
+                                        <option value="">Selecione</option>
+                                        <option v-for="item in centro_custos" :value="item.id" :key="item.id">{{ item.label }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="col-12">
                                 <label>Local</label>
-                                <input class="form-control" v-model="form.local"
+                                <input class="form-control form-control-sm" v-model="form.local"
                                        onblur="valida_campo_vazio(this,1)" type="text">
                             </div>
                             <div class="col-6">
@@ -269,8 +295,8 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="atareuniao in lista">
-                        <td class="text-center">{{atareuniao.id}}</td>
+                    <tr v-for="(atareuniao, ind) in lista">
+                        <td class="text-center">{{ind + 1}}</td>
                         <td class="text-center">{{atareuniao.quem_cadastrou.nome}}</td>
                         <td class="text-center">{{atareuniao.local}}</td>
                         <td class="text-center">{{atareuniao.data_inicio}}</td>
@@ -348,6 +374,8 @@
                 atualizado: false,
 
                 form: {
+                    area_etiqueta_id: '',
+                    centro_custo_id: '',
                     local: '',
                     data_inicio: '',
                     data_fim: '',
@@ -363,6 +391,10 @@
                 formDefault: null,
 
                 lista: [],
+                empresa_id: null,
+
+                areasetiquetas: [],
+                centro_custos: [],
 
                 urlPaginacao: `${URL_ADMIN}/administracao/atareuniao/atualizar`,
                 controle: {
@@ -485,6 +517,8 @@
                 axios.get(`${URL_ADMIN}/administracao/atareuniao/${atareuniao}/editar`)
                     .then(response => {
                         Object.assign(this.form, response.data);
+                        this.form.area_etiqueta_id = response.data.area_etiqueta_id ? response.data.area_etiqueta_id :'';
+                        this.form.centro_custo_id = response.data.centro_custo_id ? response.data.centro_custo_id:'';
                         this.editando = true;
                         setupCampo();
                     }).catch(
@@ -519,6 +553,19 @@
             },
             carregou(dados) {
                 this.lista = dados.items;
+
+                axios.get(`${URL_PUBLICO}/lista-areas`)
+                    .then(response => {
+                        this.areasetiquetas = response.data.areas ?? "";
+                    }).catch(e => console.log(e));
+
+                axios.post(`${URL_PUBLICO}/centro-custos/`, {'empresa_id': dados.empresa_id})
+                    .then(response => {
+                        this.centro_custos = response.data.centro_custos;
+                    }).catch(error => {
+                    this.preload = false;
+                });
+
                 this.controle.carregando = false;
             },
             carregando() {

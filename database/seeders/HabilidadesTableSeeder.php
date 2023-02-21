@@ -277,7 +277,6 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'administracao_atareuniao_update', 'descricao' => 'Acessar Ata Reunião Update'];
         $lista[] = ['nome' => 'administracao_atareuniao_privilegio_adm', 'descricao' => 'Pode visualizar todas as Atas de Reunião'];
 
-
         $lista[] = ['nome' => 'admissao_pre_admissao', 'descricao' => 'Acessar Menu Pré Admissão'];
 
         $lista[] = ['nome' => 'admissao_historico_aba_dossie', 'descricao' => 'Acessar Dossie'];
@@ -289,6 +288,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_historico_aba_ferias', 'descricao' => 'Pode Acessar aba de Ferias no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_promocao', 'descricao' => 'Pode Acessar aba de Promocao no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_metas', 'descricao' => 'Pode Acessar aba de Metas no historico'];
+        $lista[] = ['nome' => 'admissao_historico_aba_log', 'descricao' => 'Pode Acessar aba de Logs no historico'];
         $lista[] = ['nome' => 'admissao_historico_aba_afastamento', 'descricao' => 'Pode Acessar aba de Afastamento no historico'];
         $lista[] = ['nome' => 'admissao_historico_filtrar_demitido', 'descricao' => 'Acessar Usuarios Demitidos'];
 
@@ -364,6 +364,8 @@ class HabilidadesTableSeeder extends Seeder
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
+        $lista[] = ['nome' => 'privilegio_aprovar_por_gestor', 'descricao' => 'Aprovação de Gestor'];
+        $lista[] = ['nome' => 'privilegio_aprovar_por_rh', 'descricao' => 'Aprovação de Rh'];
 
         //weekly-report
         $lista[] = ['nome' => 'weekly_report', 'descricao' => 'Acessar rota Weekley report'];
@@ -412,6 +414,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'controle_ponto_ponto-eletronico', 'descricao' => 'O usuáro terá que bater ponto nas escalas definidas'];
         $lista[] = ['nome' => 'controle_ponto_ajustar-jornadas', 'descricao' => 'Pode fazer correções/ajuste nas jornadas de trabalho já registradas'];
         $lista[] = ['nome' => 'controle_ponto_folha-ponto', 'descricao' => 'Pode verificar e imprimir a folha de ponto do funcionário'];
+        $lista[] = ['nome' => 'controle_ponto_folha-ponto_adm', 'descricao' => 'Administrar e ver todas as folhas de ponto'];
 
         //Feriados------------------------------
         $lista[] = ['nome' => 'controle_ponto_feriados', 'descricao' => 'Acessar rota/menu feriados'];
@@ -474,6 +477,8 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'avaliacoes_listar', 'descricao' => 'Acessar avaliações'];
         $lista[] = ['nome' => 'avaliacoes_avaliar', 'descricao' => 'Pode fazer avaliação'];
         $lista[] = ['nome' => 'avaliacoes_final', 'descricao' => 'Pode fazer avaliacao final'];
+
+        $lista[] = ['nome' => 'relatorio_efetivo', 'descricao' => 'Pode acessar relatório de efetivo'];
 
 
         try {

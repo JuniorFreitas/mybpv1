@@ -33,6 +33,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereTitulo($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
  */
 class Avaliacao extends Model
 {

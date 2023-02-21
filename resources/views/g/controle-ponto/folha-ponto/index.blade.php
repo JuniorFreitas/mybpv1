@@ -42,76 +42,76 @@
                                 <th scope="col">Noturna</th>
                                 <th scope="col">Extra</th>
                                 <th scope="col">Negativa</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="ponto in formPonto.pontos">
-                            <td>
-                                @{{ ponto.dia }} <small>@{{ ponto.diaSem }}</small>
-                            </td>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="ponto in formPonto.pontos">
+                                <td>
+                                    @{{ ponto.dia }} <small>@{{ ponto.diaSem }}</small>
+                                </td>
 
-                            <td>
-                                <i class="fas fa-circle text-success ml-2" v-if="ponto.verificado"></i>
-                                <i class="fas fa-circle text-warning ml-2" v-if="!ponto.verificado"></i>
+                                <td>
+                                    <i class="fas fa-circle text-success ml-2" v-if="ponto.verificado"></i>
+                                    <i class="fas fa-circle text-warning ml-2" v-if="!ponto.verificado"></i>
 
-                                <span v-for="(periodo,index) in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
+                                    <span v-for="(periodo,index) in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
                                     <span v-show="index > 0">|</span>
                                     @{{ periodo.horaEntrada }}<span
-                                        v-if="periodo.horaSaida">-@{{ periodo.horaSaida }}</span>
+                                            v-if="periodo.horaSaida">-@{{ periodo.horaSaida }}</span>
                                     <span v-if="!periodo.horaSaida">-<span
                                             class="badge badge-warning">trabalhando</span></span>
                                 </span>
 
-                                <span v-if="!ponto.ocorrencia.trabalhado">@{{ ponto.ocorrencia.descricao }}</span>
-                            </td>
-                            <td>
-                                @{{ ponto.jornada.escala.descricao }}
-                            </td>
-                            <td>
+                                    <span v-if="!ponto.ocorrencia.trabalhado">@{{ ponto.ocorrencia.descricao }}</span>
+                                </td>
+                                <td>
+                                    @{{ ponto.jornada.escala.descricao }}
+                                </td>
+                                <td>
                                 <span v-if="ponto.jornada.ocorrencia.trabalhado && ponto.ocorrencia.conta_horas">
                                     @{{ ponto.horasNormalOriginalFormat }}
                                 </span>
-                                <span v-else> -- </span>
+                                    <span v-else> -- </span>
 
-                            </td>
-                            <td>
+                                </td>
+                                <td>
                                 <span
                                     v-if="ponto.jornada.ocorrencia.trabalhado && ponto.ocorrencia.conta_horas && ponto.periodos_em_aberto.length ===0">
                                     @{{ ponto.horasNormalFormat }}
                                 </span>
-                                <span v-else> -- </span>
+                                    <span v-else> -- </span>
 
-                            </td>
-                            <td>
+                                </td>
+                                <td>
                                 <span
                                     v-if="ponto.jornada.ocorrencia.trabalhado && ponto.ocorrencia.conta_horas && ponto.periodos_em_aberto.length ===0">
                                     <span class="text-success" v-if="ponto.horasNoturna>0">@{{ ponto.horasNoturnaFormat }}</span>
                                     <span v-else>00h:00m</span>
                                 </span>
-                                <span v-else> -- </span>
-                            </td>
-                            <td>
+                                    <span v-else> -- </span>
+                                </td>
+                                <td>
                                 <span
                                     v-if="ponto.jornada.ocorrencia.trabalhado && ponto.ocorrencia.conta_horas && ponto.periodos_em_aberto.length ===0">
                                     <span class="text-success"
                                           v-if="ponto.horasExtra>0">@{{ ponto.horasExtraFormat }}</span>
                                     <span v-else>00h:00m</span>
                                 </span>
-                                <span v-else> -- </span>
+                                    <span v-else> -- </span>
 
-                            </td>
-                            <td>
+                                </td>
+                                <td>
                                 <span
                                     v-if="ponto.jornada.ocorrencia.trabalhado && ponto.ocorrencia.conta_horas && ponto.periodos_em_aberto.length ===0">
                                     <span class="text-danger"
                                           v-if="ponto.horasExtra<0">@{{ ponto.horasExtraFormat }}</span>
                                     <span v-else>00h:00m</span>
                                 </span>
-                                <span v-else> -- </span>
-                            </td>
-                        </tr>
+                                    <span v-else> -- </span>
+                                </td>
+                            </tr>
 
-                        </tbody>
+                            </tbody>
                         </table>
                     </div>
 
@@ -177,38 +177,60 @@
         </template>
     </modal>
 
-
     <div class="row">
 
         <div class="col-12">
-            <div class="row">
+            <div class="row" v-if="controle_ponto_adm">
                 <div class="col-12 mt-3">
                     <form @submit.prevent="atualizar">
-                        <div class="form-row">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-md-5 col-lg-4">
+                                <label for="">Buscar</label>
+                                <input type="text" placeholder="Nome do colaborador" v-model="formBusca.funcionarioNome"
+                                       autocomplete="off" class="form-control form-control-sm">
+                            </div>
 
-                            <div class="col">
-                                <div class="input-group">
-                                    <span class="input-group-prepend">
-                                        <i class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></i>
-                                    </span>
-                                    <input type="text" placeholder="Nome do colaborador" v-model="formBusca.funcionarioNome" autocomplete="off" class="form-control">
+                            <div class="col-12 col-sm-6 col-md-5 col-lg-4">
+                                <div class="form-group">
+                                    <label for="">Por Escala</label>
+                                    <select class="form-control form-control-sm" v-model="formBusca.escala_id" @change="atualizar">
+                                        <option value="">Selecione...</option>
+                                        <option v-for="escala in todas_escalas" :value="escala.id" v-text="escala.descricao"></option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="col">
-                                <button type="button" class="btn btn-primary" :disabled="formBusca.preload" @click="atualizar">Buscar</button>
+
+                            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
+                                <div class="form-group">
+                                    <label for="">Status</label>
+                                    <select class="form-control form-control-sm"  v-model="formBusca.status" @change="atualizar">
+                                        <option value="admitidos">Admitidos</option>
+                                        <option value="demitidos">Demitidos</option>
+                                    </select>
+                                </div>
                             </div>
 
                         </div>
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn btn-primary btn-sm" :disabled="formBusca.preload"
+                                        @click="atualizar">Buscar
+                                </button>
+                            </div>
+                        </div>
+
                     </form>
                 </div>
             </div>
+
             <div class="row">
 
                 <div class="col-12 mt-3">
                     <p class="text-center" v-if="formBusca.preload">
-                        <preload />
+                        <preload/>
                     </p>
-                    <h4 class="text-center" v-if="lista.length === 0 && !formBusca.preload">Nenhum registro encontrado</h4>
+                    <h4 class="text-center" v-if="lista.length === 0 && !formBusca.preload">Nenhum registro
+                        encontrado</h4>
 
                     <table class="tabela" v-if="lista.length > 0 && !formBusca.preload">
                         <thead class="bg-default">
@@ -238,7 +260,10 @@
                                 @{{ funcionario.escalas_funcionario[0].descricao }}
                             </td>
                             <td>
-                                <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#janelaFormDetalhes" @click="verDetalhes(funcionario.id)"> <i class="fas fa-clipboard-list"></i> Detalhes</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal"
+                                        data-target="#janelaFormDetalhes" @click="verDetalhes(funcionario.id)"><i
+                                        class="fas fa-clipboard-list"></i> Detalhes
+                                </button>
                             </td>
                         </tr>
                     </table>

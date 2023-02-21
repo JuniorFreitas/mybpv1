@@ -47,6 +47,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUserAlterouId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUserCadastrouId($value)
+ * @property string|null $status
+ * @property int|null $ferias_prevista_id
+ * @property-read \App\Models\Curriculo|null $Colaborador
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \App\Models\FeriasPrevista|null $FeriasPrevista
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereFeriasPrevistaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereStatus($value)
  */
 class FeriasAdquiridas extends Model
 {
@@ -92,6 +99,11 @@ class FeriasAdquiridas extends Model
         'user_alterou_id' => 'int',
     ];
 
+    const STATUS_GOZANDO = 'gozando';
+    const STATUS_GOZADA = 'gozada';
+    const STATUS_AGUARDANDO = 'aguardando';
+    const STATUS_CANCELADA = 'cancelada';
+
     //Acessor ->data_saida
     public function getDataSaidaAttribute($value)
     {
@@ -136,19 +148,33 @@ class FeriasAdquiridas extends Model
 
     public function Admissao()
     {
-        return $this->hasMany(Admissao::class, 'id', 'admissao_id');
+        return $this->hasOne(Admissao::class, 'id', 'admissao_id');
     }
 
     public function UsuarioCadastrou()
     {
-        return $this->hasMany(User::class, 'id', 'user_cadastrou_id')->select(['id', 'nome']);
+        return $this->hasOne(User::class, 'id', 'user_cadastrou_id')->select(['id', 'nome']);
     }
 
     public function UsuarioEditou()
     {
-        return $this->hasMany(User::class, 'id', 'user_editou_id')->select(['id', 'nome']);
+        return $this->hasOne(User::class, 'id', 'user_editou_id')->select(['id', 'nome']);
     }
 
+    public function Colaborador()
+    {
+        return $this->hasOne(Curriculo::class, 'id', 'colaborador_id');
+    }
+
+    public function Feedback()
+    {
+        return $this->hasOne(FeedbackCurriculo::class, 'curriculo_id', 'colaborador_id');
+    }
+
+    public function FeriasPrevista()
+    {
+        return $this->hasOne(FeriasPrevista::class, 'id', 'ferias_prevista_id');
+    }
 
     protected static function booted()
     {

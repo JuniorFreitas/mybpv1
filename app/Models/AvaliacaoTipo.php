@@ -30,6 +30,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTipo whereNome($value)
  * @mixin \Eloquent
  * @property-read \App\Models\AvaliacaoTopico $AvaliacaoTipo
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
  */
 class AvaliacaoTipo extends Model
 {

@@ -8,6 +8,7 @@ use App\Models\AvaliacaoNoventaDias;
 use App\Models\AvaliacaoNoventaFeedback;
 use App\Models\AvaliacaoNoventaFeedbackQuantidade;
 use App\Models\FeedbackCurriculo;
+use App\Models\LogHistorico;
 use App\Models\MedidaAdministrativa;
 use App\Models\User;
 use App\Models\Vaga;
@@ -100,13 +101,20 @@ class HistoricoController extends Controller
             'cih' => auth()->user()->can('admissao_cih'),
             'afastamento' => auth()->user()->can('admissao_historico_aba_afastamento'),
             'filtrar_demitido' => auth()->user()->can('admissao_historico_filtrar_demitido'),
+            'logs' => auth()->user()->can('admissao_historico_aba_log'),
         ];
+
+        $itens = collect($resultado->items())->transform(function ($item) {
+            $ultima_atualizacao = LogHistorico::whereFeedbackId($item->id)->orderByDesc('id')->first();
+            $item->ultima_atualizacao = $ultima_atualizacao ? $ultima_atualizacao->data : '';
+            return $item;
+        });
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'cargos' => $cargos,
                 'permissoes' => $permissoes
             ]

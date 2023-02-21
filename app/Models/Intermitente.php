@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\User;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -66,6 +67,19 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEncerramentoPrevisto($value)
  * @property int $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEmpresaId($value)
+ * @property string $hash_colaborador
+ * @property string|null $resposta_colaborador
+ * @property string|null $data_resposta_colaborador
+ * @property int|null $centro_custo_id
+ * @property int $prazo_resposta
+ * @property string|null $prazo_resposta_expiracao
+ * @property-read \App\Models\CentroCusto|null $CentroDeCusto
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDataRespostaColaborador($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereHashColaborador($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente wherePrazoResposta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente wherePrazoRespostaExpiracao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereRespostaColaborador($value)
  */
 class Intermitente extends Model
 {
@@ -91,6 +105,7 @@ class Intermitente extends Model
         'feedback_id',
         'cliente_id',
         'area_id',
+        'centro_custo_id',
         'user_lancamento_id',
         'obs_lancamento',
         'data_lancamento',
@@ -103,6 +118,11 @@ class Intermitente extends Model
         'devolve_epi',
         'devolve_cracha',
         'empresa_id',
+        'hash_colaborador',
+        'resposta_colaborador',
+        'data_resposta_colaborador',
+        'prazo_resposta',
+        'prazo_resposta_expiracao',
     ];
 
     protected $casts = [
@@ -110,6 +130,7 @@ class Intermitente extends Model
         'tipo_id' => 'int',
         'feedback_id' => 'int',
         'area_id' => 'int',
+        'centro_custo_id' => 'int',
         'cliente_id' => 'int',
         'user_lancamento_id' => 'int',
         'obs_lancamento' => 'string',
@@ -122,6 +143,21 @@ class Intermitente extends Model
         'devolve_epi' => 'boolean',
         'devolve_cracha' => 'boolean',
         'empresa_id' => 'int',
+        'hash_colaborador' => 'string',
+        'resposta_colaborador' => 'string',
+        'data_resposta_colaborador' => 'string',
+        'prazo_resposta' => 'int',
+        'prazo_resposta_expiracao' => 'string',
+    ];
+
+    const STATUS_EXPIRADO = 'Expirado';
+    const STATUS_ABERTO = 'Aberto';
+    const STATUS_ENCERRADO = 'Encerrado';
+
+    const LISTA_STATUS = [
+        self::STATUS_ABERTO,
+        self::STATUS_ENCERRADO,
+        self::STATUS_EXPIRADO
     ];
 
     public function getDataLancamentoAttribute($value)
@@ -162,6 +198,14 @@ class Intermitente extends Model
         }
     }
 
+    public function getDataRespostaColaboradorAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($this->attributes['data_resposta_colaborador']);
+            return $data->dataCompleta() . ' às ' . $data->horaCompleta();
+        }
+    }
+
     public function Cliente()
     {
         return $this->hasOne(Cliente::class, 'id', 'cliente_id');
@@ -187,6 +231,11 @@ class Intermitente extends Model
         return $this->hasOne(AreaEtiqueta::class, 'id', 'area_id');
     }
 
+    public function CentroDeCusto()
+    {
+        return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
+    }
+
     public function ResponsavelAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
@@ -201,4 +250,11 @@ class Intermitente extends Model
     {
         return $this->belongsToMany(Arquivo::class, 'intermitente_evidencias', 'intermitente_id', 'arquivo_id');
     }
+
+    protected static function booted() {
+        static::creating(function ($model) {
+            $model->prazo_resposta_expiracao = Carbon::now()->addHours($model->prazo_resposta)->addSeconds(0);
+        });
+    }
+
 }

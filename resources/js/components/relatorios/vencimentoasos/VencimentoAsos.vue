@@ -13,10 +13,11 @@
            <table class="mt-4 table table-bordered tabela" v-if="dados.length">
                 <thead>
                 <tr>
-                    <th style="text-align: center; width: 2% ;">#</th>
+                    <th style="text-align: center; width: 45px ;">#</th>
                     <th style="text-align: center">Nome</th>
                     <th style="text-align: center">Cargo</th>
                     <th style="text-align: center">Data da Admissão</th>
+                    <th style="text-align: center">Data do ASO</th>
                     <th style="text-align: center">Data de Vencimento</th>
                     <th style="text-align: center">Dias</th>
                 </tr>
@@ -27,6 +28,7 @@
                     <td style="text-align: center">{{ vencimento.colaborador }}</td>
                     <td style="text-align: center">{{ vencimento.cargo }}</td>
                     <td style="text-align: center">{{ vencimento.data_admissao }}</td>
+                    <td style="text-align: center">{{ vencimento.data_aso === vencimento.data_aso_adm ? vencimento.data_aso :'Entrar em contato com suporte'  }}</td>
                     <td style="text-align: center">{{ vencimento.data_vencimento }}</td>
                     <td style="text-align: center">
                         {{ Math.abs(vencimento.dias_vencer) }}

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,16 +33,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EmpresaEscala extends Model
 {
-    use HasFactory,LogsActivity;
+    use HasFactory, LogsActivity, TenantTrait;
+
     protected static $logFillable = true;
     protected static $logName = 'EmpresaEscala';
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
-    public $timestamps=false;
+    public $timestamps = false;
     protected $table = 'empresa_escalas';
     protected $fillable = [
-        'descricao' ,
-        'inicio' ,
+        'descricao',
+        'inicio',
     ];
     protected $casts = [
         'id' => 'int',
@@ -51,35 +53,40 @@ class EmpresaEscala extends Model
 
     ];
 
-    public function getDescriptionForEvent(string $eventName): string {
+    public function getDescriptionForEvent(string $eventName): string
+    {
         return $eventName;
     }
 
-    public function tapActivity(Activity $activity, string $eventName) {
+    public function tapActivity(Activity $activity, string $eventName)
+    {
         $activity->descricao = "";
     }
 
-    protected function serializeDate(DateTimeInterface $date) {
+    protected function serializeDate(DateTimeInterface $date)
+    {
         return $date->format('Y-m-d H:i:s');
     }
 
-    public function Empresa(){
-        return $this->hasOne(User::class,'id','empresa_id');
+    public function Empresa()
+    {
+        return $this->hasOne(User::class, 'id', 'empresa_id');
     }
 
-    public function Jornadas(){
-        return $this->hasMany(EscalaJornada::class,'escala_id','id');
+    public function Jornadas()
+    {
+        return $this->hasMany(EscalaJornada::class, 'escala_id', 'id');
     }
 
-    protected static function booted() {
-        static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
-
-        static::updating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
-
-        static::addGlobalScope(new ScopeEmpresa());
-    }
+//    protected static function booted() {
+//        static::creating(function ($model) {
+//            $model->empresa_id = auth()->user()->empresa_id;
+//        });
+//
+//        static::updating(function ($model) {
+//            $model->empresa_id = auth()->user()->empresa_id;
+//        });
+//
+//        static::addGlobalScope(new ScopeEmpresa());
+//    }
 }

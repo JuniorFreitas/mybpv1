@@ -88,6 +88,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUltimaData($value)
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  */
 class FeriasPrevista extends Model
 {

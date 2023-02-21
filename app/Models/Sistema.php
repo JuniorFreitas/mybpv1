@@ -595,6 +595,7 @@ class Sistema
                     ->get();
 
                 foreach ($admissoes as $admissao) {
+                    DB::table('admissao_asos')->where('admissao_id', $admissao->id)->update(['ativo' => false]);
                     $aso = AdmissaoAso::withoutGlobalScopes()->create([
                         'empresa_id' => $Empresa->id,
                         'admissao_id' => $admissao->id,
@@ -602,7 +603,7 @@ class Sistema
                         'data_aso' => $admissao->data_aso,
                         'ativo' => 1
                     ]);
-                    echo $aso->data_aso . "Criado\n";
+                    echo $aso->data_aso . " Criado \n";
                 }
             }
             echo "Fim de Sincronização...\n";
@@ -618,7 +619,7 @@ class Sistema
         $Empresas = \App\Models\User::select('id', 'nome', 'empresa_id')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true);
         if ($empresa_id == 0) {
             $Empresas = $Empresas->get();
-        }else{
+        } else {
             $Empresas = $Empresas->whereId($empresa_id)->get();
         }
 
@@ -731,11 +732,17 @@ class Sistema
         $matches = [];
         preg_match('/^([0-9]{2})([0-9]{4,5})([0-9]{4})$/', $formatedPhone, $matches);
         if ($matches) {
-            $primeiro = strlen($matches[2]) == 5 ? substr($matches[2],0,1).' '.substr($matches[2],1,4): $matches[2];
-            return '('.$matches[1].') '.$primeiro.'-'.$matches[3];
+            $primeiro = strlen($matches[2]) == 5 ? substr($matches[2], 0, 1) . ' ' . substr($matches[2], 1, 4) : $matches[2];
+            return '(' . $matches[1] . ') ' . $primeiro . '-' . $matches[3];
         }
 
         return $telefone;
     }
+
+    public static function LogFormatado($dados)
+    {
+        \Log::debug(print_r(json_encode($dados, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE), 1));
+    }
+
 
 }

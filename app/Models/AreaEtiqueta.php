@@ -21,18 +21,35 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereEmpresaId($value)
+ * @property int|null $gestor_id
+ * @property int|null $centro_custo_id
+ * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \App\Models\User|null $Gestor
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereGestorId($value)
  */
 class AreaEtiqueta extends Model
 {
     use HasFactory;
     use TenantTrait;
 
-    protected $fillable = ['label', 'ativo', 'empresa_id'];
-    protected $casts = ['id' => 'int', 'label' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int'];
+    protected $fillable = ['label', 'ativo', 'empresa_id','gestor_id','centro_custo_id'];
+    protected $casts = ['id' => 'int', 'label' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int', 'gestor_id' => 'int', 'centro_custo_id' => 'int'];
 
     public function usesTimestamps()
     {
         return false;
     }
+
+    public function Gestor()
+    {
+        return $this->hasOne(User::class,'id','gestor_id');
+    }
+
+    public function CentroCusto()
+    {
+        return $this->hasOne(CentroCusto::class,'id','centro_custo_id');
+    }
+
 
 }

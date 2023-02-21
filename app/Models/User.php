@@ -139,6 +139,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Query\Builder|User withTrashed()
  * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
  * @property-read \App\Models\EmpresaConfig|null $EmpresaPontoConfiguracoes
+ * @property bool $privilegio_gestor_area
+ * @property bool $privilegio_gestor_centro_custo
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoFeedback[] $Avaliadores
+ * @property-read int|null $avaliadores_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Avaliacao[] $avaliadoresFuncionario
+ * @property-read int|null $avaliadores_funcionario_count
+ * @property-read mixed $privilegios
+ * @method static Builder|User tiposGerenciais()
+ * @method static Builder|User wherePrivilegioGestorArea($value)
+ * @method static Builder|User wherePrivilegioGestorCentroCusto($value)
  */
 class User extends Authenticatable
 {
@@ -187,6 +197,9 @@ class User extends Authenticatable
         'api_token',
         'empresa_id',
         'gestor',
+        'privilegio_gestor_area',
+        'privilegio_gestor_centro_custo',
+//        'privilegios'
     ];
 
     /**
@@ -229,7 +242,9 @@ class User extends Authenticatable
         'device_token' => 'string',
         'api_token' => 'string',
         'empresa_id' => 'int',
-        'gestor' => 'boolean'
+        'gestor' => 'boolean',
+        'privilegio_gestor_area' => 'boolean',
+        'privilegio_gestor_centro_custo' => 'boolean',
     ];
 
     private $listaDeHabilidade = [];
@@ -309,6 +324,11 @@ class User extends Authenticatable
     public function setLoginlAttribute($value)
     {
         $this->attributes['login'] = trim(mb_strtolower($value));
+    }
+
+    public function getPrivilegiosAttribute($value)
+    {
+        return json_decode($value);
     }
 
     public function Curriculo()
@@ -495,7 +515,7 @@ class User extends Authenticatable
         $Empresa = User::select(['id'])->find($empresa_id);
         $Colaborador = User::find($colaborador_id);
 
-        if ($Empresa->EmpresaFuncionarios()->whereFuncionarioId($Colaborador->id)->first()){
+        if ($Empresa->EmpresaFuncionarios()->whereFuncionarioId($Colaborador->id)->first()) {
             $Empresa->EmpresaFuncionarios()->detach($Colaborador->id);
         }
         $Empresa->EmpresaFuncionarios()->attach($Colaborador->id);

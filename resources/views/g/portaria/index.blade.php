@@ -127,12 +127,32 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
+                        <div class="col-12 col-md-4 col-lg-4">
                             <div class="form-group">
                                 <label>Função</label>
                                 <input type="text" class="form-control" onblur="valida_campo_vazio(this,2)"
                                        v-model="form.funcao">
                             </div>
+                        </div>
+
+                        <div class="col-12 col-md-4 col-lg-4">
+                            <label>Acessará a área do porto</label>
+                            <select class="custom-select custom-select-sm" :disabled="controle.carregando"
+                                    v-model="form.admissao.acessar_area_porto">
+                                <option :value="null">Não informado</option>
+                                <option value="Sim">Sim</option>
+                                <option value="Não">Não</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-4 col-lg-4">
+                            <label>Avaliação Psicológica</label>
+                            <select class="custom-select custom-select-sm" :disabled="controle.carregando"
+                                    v-model="form.admissao.avaliacao_psicologica">
+                                <option :value="null">Não informado</option>
+                                <option value="Sim">Sim</option>
+                                <option value="Não">Não</option>
+                            </select>
                         </div>
 
                         <div class="col-12">

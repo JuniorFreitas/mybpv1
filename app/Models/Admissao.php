@@ -167,6 +167,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasAdquiridas[] $FeriasAdquiridas
  * @property-read int|null $ferias_adquiridas_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property int $usar_salario_base
+ * @property mixed|null $movimentacoes
+ * @property string|null $acessar_area_porto
+ * @property string|null $avaliacao_psicologica
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAcessarAreaPorto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAvaliacaoPsicologica($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereMovimentacoes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsarSalarioBase($value)
  */
 class Admissao extends Model
 {
@@ -244,7 +252,9 @@ class Admissao extends Model
         'data_biometria',
         'pis',
         'prazo_experiencia',
-        'data_encerramento'
+        'data_encerramento',
+        'acessar_area_porto',
+        'avaliacao_psicologica'
     ];
     protected $casts = [
         'id' => 'int',
@@ -301,6 +311,8 @@ class Admissao extends Model
         'pis' => 'string',
         'prazo_experiencia' => 'string',
         'data_encerramento' => 'string',
+        'acessar_area_porto' => 'string',
+        'avaliacao_psicologica' => 'string'
     ];
 
     const STATUS_ADMISSAO_AGUARDANDOQUALIFICACAO = "AGUARDANDO QUALIFICAÇÃO";
@@ -314,6 +326,8 @@ class Admissao extends Model
     const STATUS_ADMISSAO_CANCELADO = "CANCELADO";
     const STATUS_ADMISSAO_ENCAMINHADOEXAME = "ENCAMINHADO EXAME";
     const STATUS_ADMISSAO_DESISTENCIA = "DESISTÊNCIA";
+    const STATUS_DEMITIDO = "DEMITIDO";
+    const STATUS_DESMOBILIZADO = "DESMOBILIZADO";
 
 
     const STATUS_CARTEIRA_TREINAMENTO_PENDENTE = "PENDENTE";
@@ -325,13 +339,17 @@ class Admissao extends Model
     const TIPO_ADMISSAO_DETERMINADO = 'DETERMINADO';
     const TIPO_ADMISSAO_FIXO = 'FIXO';
     const TIPO_ADMISSAO_PJ = 'PJ';
+    const TIPO_ADMISSAO_ESTAGIO = 'ESTÁGIO';
+    const TIPO_ADMISSAO_APRENDIZ = 'APRENDIZ';
 
     const TODOS_TIPOS_ADMISSAO = [
         self::TIPO_ADMISSAO_TEMPORARIO,
         self::TIPO_ADMISSAO_INTERMITENTE,
         self::TIPO_ADMISSAO_DETERMINADO,
         self::TIPO_ADMISSAO_FIXO,
-        self::TIPO_ADMISSAO_PJ
+        self::TIPO_ADMISSAO_PJ,
+        self::TIPO_ADMISSAO_ESTAGIO,
+        self::TIPO_ADMISSAO_APRENDIZ,
     ];
 
     const TODOS_STATUS_ADMISSAO = [
