@@ -390,6 +390,10 @@ class HabilidadesTableSeeder extends Seeder
         //Configurações da empresa
         $lista[] = ['nome' => 'controle_ponto_config_empresa', 'descricao' => 'Acesso a tela de configurações da empresa'];
 
+        //PONTO MANUAL
+        $lista[] = ['nome' => 'controle_ponto_folha_ponto_manual', 'descricao' => 'Acesso a tela de folha de ponto manual'];
+
+
         //Perimetros
         $lista[] = ['nome' => 'controle_ponto_perimetros', 'descricao' => 'Acessar a rota de perímetros'];
         $lista[] = ['nome' => 'controle_ponto_perimetros_insert', 'descricao' => 'Pode cadastrar perímetros da empresa'];
