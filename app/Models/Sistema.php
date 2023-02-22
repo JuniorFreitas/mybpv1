@@ -249,6 +249,24 @@ class Sistema
         echo $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
     }
 
+    /**
+     * @param $arquivo
+     * @param $storage
+     * @return string
+     */
+    public static function convertBase3($arquivo, $storage = null)
+    {
+        if (!$storage) {
+            $path = storage_path($arquivo);
+        } else {
+            $path = $arquivo;
+        }
+
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        return 'data:image/' . $type . ';base64,' . base64_encode($data);
+    }
+
     public static function convertBase2($arquivo, $storage = null)
     {
 

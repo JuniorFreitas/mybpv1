@@ -6,6 +6,7 @@ use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\Exportacao;
 use App\Models\FeedbackCurriculo;
 use App\Models\Feriado;
+use App\Models\Sistema;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,7 +27,7 @@ class JobExportaPontoManualPdf implements ShouldQueue
 
     public $usuario;
     public $model;
-    public $timeout = 600;
+//    public $timeout = 600;
 
     /**
      * Create a new job instance.
@@ -103,17 +104,11 @@ class JobExportaPontoManualPdf implements ShouldQueue
             'repouso' => $repouso,
             'dias_normais' => $dias_normais,
             'empresa' => $resultado[0]['empresa'],
+            'empresa_logo' => Sistema::convertBase3('https://mybp-dev.s3.amazonaws.com/arquivos/disco-cliente/xMpHjIrz1jrpSA1H9HQ3hvRbcuJyqahDpxkN3FfZ.png',true),
             'quem_gerou' => $request['quem_gerou'],
         ];
 
         $this->model = $dados;
-
-//        $this->model = $model;
-//        $this->nome_arquivo = $nome_arquivo;
-//        $this->view = $view;
-//        $this->local = $local;
-//        $this->usuario = $usuario;
-//        $this->delay = now()->addSeconds(rand(1, 1));
     }
 
     /**
@@ -123,6 +118,9 @@ class JobExportaPontoManualPdf implements ShouldQueue
      */
     public function handle()
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', '-1');
+
         $nome_arquivo = "relatorio_aniversariantes_" . (new DataHora())->nomeUnico() . ".pdf";
 
         $pdf = PDF::setOptions([

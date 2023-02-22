@@ -134,12 +134,10 @@
             <thead>
             <tr>
                 <th style="font-size: 15pt; font-weight: normal !important; padding-right: 10px; width: 20%">
-                    @if(count($dados['empresa']['logo']) > 0)
                         <img
-                            src="{{$dados['empresa']['logo'][0]['urlThumb']}}"
-                            alt="BPSE" title="BPSE" style="height: 70px; margin-top: 0px;">
+                            src="{{ $dados['empresa_logo'] }}"
+                            alt="BPSE" title="BPSE" style="height: 70px; margin-top: 10px;">
                         <br>
-                    @endif
                 </th>
                 <th style="color: black">
                     <h1 style="text-align: center; font-size: 15px">
