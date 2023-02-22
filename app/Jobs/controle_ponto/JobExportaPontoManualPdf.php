@@ -104,7 +104,7 @@ class JobExportaPontoManualPdf implements ShouldQueue
             'repouso' => $repouso,
             'dias_normais' => $dias_normais,
             'empresa' => $resultado[0]['empresa'],
-            'empresa_logo' => Sistema::convertBase3($resultado[0]['empresa']['logo']['urlThumb'],true),
+            'empresa_logo' => Sistema::convertBase3($resultado[0]['empresa']['logo'][0]['urlThumb'],true),
             'quem_gerou' => $request['quem_gerou'],
         ];
 
