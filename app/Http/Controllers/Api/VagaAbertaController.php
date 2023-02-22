@@ -135,8 +135,6 @@ class VagaAbertaController extends Controller
                 'disponibilidade_sabado', 'disponibilidade_domingo', 'sexo'
             ])->first();
 
-
-
         if ($curriculo) {
             $cpfNascimentoValido = $curriculo->nascimento == $nascimento->dataCompleta();
             if ($cpfNascimentoValido) {
@@ -298,7 +296,7 @@ class VagaAbertaController extends Controller
                     'nome' => $dados['nome'],
                     'login' => $dados['email'],
                     'password' => Sistema::SenhaCpf($dados['cpf_padrao']),
-                    'tipo' => 'Candidato',
+                    'tipo' => User::CANDIDATO,
                     'ativo' => true,
                     'temp' => false,
                     'termos' => false,
@@ -436,12 +434,10 @@ class VagaAbertaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'] . " CPF:" . $dados['cpf_padrao'];
+            $msg = "Erro ao tentar cadastrar o Curriculo: " . $e->getMessage() . " - Linha: " . $e->getLine() . " Empresa ID: " . $dados['empresa_id'] . " CPF:" . $dados['cpf_padrao'];
             \Log::debug($msg);
             \Log::debug($e->getTraceAsString());
-            \Log::info("-------DADOS-------");
-            \Log::alert($dados);
-            \Log::info("-------FIM DE DADOS-------");
+            Sistema::LogFormatado($dados);
 
             if ($e->getLine() == 297) {
                 return response()->json(['msg' => 'Remova os telefones adicione novamente, caso o erro persistir atualize a página!'], 400);

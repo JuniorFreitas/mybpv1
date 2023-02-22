@@ -60,14 +60,13 @@
                         <th>Código</th>
                         <th>Nome</th>
                         <th>Cargo</th>
-                        <th>Salário</th>
                         <th>Tipo Admissão</th>
-                        <th>Data da Admissao</th>
+                        <th>Data da Admissão</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr v-if="!centro_de_custo.admissao.length">
-                        <td colspan="6">
+                        <td colspan="5">
                             <div class="alert alert-warning">
                                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
                             </div>
@@ -85,9 +84,6 @@
                             @{{item.feedback.vaga_aberta.municipio.uf}}
                         </td>
                         <td>
-                            @{{item ? 'R$ '+item.salario : '' }}
-                        </td>
-                        <td>
                             @{{item ? item.tipo_admissao : '' }}
                         </td>
                         <td>
@@ -95,7 +91,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="6" class="text-right">
+                        <td colspan="5" class="text-right">
                             <strong>Total de Funcionários: </strong> @{{ centro_de_custo.admissao.length }}
                         </td>
                     </tr>

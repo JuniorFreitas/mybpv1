@@ -142,6 +142,19 @@ class AdmissaoController extends Controller
             return response()->json(['msg' => 'Por favor insira um telefone'], 400);
         }
 
+        if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
+            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) ==  0){
+                return response()->json([
+                    'msg' => 'Informe a data do ASO'
+                ], 400);
+            }
+            if (trim($dados['admissao']['data_admissao']) ==  0){
+                return response()->json([
+                    'msg' => 'Informe a data do ASO'
+                ], 400);
+            }
+        }
+
         try {
             DB::beginTransaction();
 
@@ -298,6 +311,7 @@ class AdmissaoController extends Controller
                 //Cria Usuario na Empresa
                 if ($dadosAdmissao['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
                     User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
+                    User::find($feedback->curriculo_id)->update(['tipo' => User::FUNCIONARIO]);
                 }
 
                 $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
@@ -459,6 +473,8 @@ class AdmissaoController extends Controller
                     'filiacao_pai' => $dadosCurriculo['filiacao_pai'],
                     'formacao' => $dadosCurriculo['formacao'],
                     'formacao_curso' => $dadosCurriculo['formacao_curso'],
+                    'estado_civil' => $dadosCurriculo['estado_civil'],
+                    'sexo' => $dadosCurriculo['sexo'],
                 ]);
 
                 if (isset($dadosAdmissao['foto_tres_delete'])) {
@@ -598,6 +614,7 @@ class AdmissaoController extends Controller
                 //Cria Usuario na Empresa
                 if ($dadosAdmissao['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
                     User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
+                    User::find($feedback->curriculo_id)->update(['tipo' => User::FUNCIONARIO]);
                 }
 
                 $tableDadosAdmissao['admissao_id'] = $admissaoCreate['id'];
@@ -740,6 +757,7 @@ class AdmissaoController extends Controller
             \Log::info("-------DADOS-------");
             Sistema::telegram(print_r($dados, true));
             \Log::info("-------FIM DE DADOS-------");
+            Sistema::LogFormatado($dados);
 //            return response()->json($msg, 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
 
@@ -905,6 +923,19 @@ class AdmissaoController extends Controller
 
         $dados['curriculo']['nascimento'] = $data_nascimento->dataInsert();
 
+        if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
+            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) ==  0){
+                return response()->json([
+                    'msg' => 'Informe a data do ASO'
+                ], 400);
+            }
+            if (trim($dados['admissao']['data_admissao']) ==  0){
+                return response()->json([
+                    'msg' => 'Informe a data do ASO'
+                ], 400);
+            }
+        }
+
         $dadosValidados = \Validator::make($dados, [
             'curriculo.email' => 'required|email:rfc,dns',
             'admissao.status' => 'required|in:' . implode(',', Admissao::TODOS_STATUS_ADMISSAO),
@@ -991,6 +1022,8 @@ class AdmissaoController extends Controller
                     'uf' => $dados['curriculo']['uf'],
                     'cep' => $dados['curriculo']['cep'],
                     'municipio_id' => $dados['curriculo']['municipio_id'],
+                    'estado_civil' => $dados['curriculo']['estado_civil'],
+                    'sexo' => $dados['curriculo']['sexo'],
                 ]);
 
                 if ($feedback->parecerRh) {
@@ -1087,12 +1120,14 @@ class AdmissaoController extends Controller
                                 ]);
                             }
                         } else {
-                            $feedback->Admissao->UltimoAsoAtivo()->create([
-                                'admissao_id' => $feedback->Admissao['admissao_id'],
-                                'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                'ativo' => true,
-                                'user_alterou_id' => auth()->id()
-                            ]);
+                            if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
+                                $feedback->Admissao->UltimoAsoAtivo()->create([
+                                    'admissao_id' => $feedback->Admissao['admissao_id'],
+                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                                    'ativo' => true,
+                                    'user_alterou_id' => auth()->id()
+                                ]);
+                            }
                         }
                     }
 
@@ -1100,6 +1135,7 @@ class AdmissaoController extends Controller
                     //Cria Usuario na Empresa
                     if ($admissaoDados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
                         User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
+                        User::find($feedback->curriculo_id)->update(['tipo' => User::FUNCIONARIO]);
                     }
                     if (!isset($dadosAdmissao['id'])) {
                         $dadosAdmissao['admissao_id'] = $feedback->Admissao->id;
@@ -1114,18 +1150,21 @@ class AdmissaoController extends Controller
                     //Cria Usuario na Empresa
                     if ($admissaoDados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
                         User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
+                        User::find($feedback->curriculo_id)->update(['tipo' => User::FUNCIONARIO]);
                     }
 
                     $dadosAdmissao['admissao_id'] = $admissao_id['id'];
                     DadosAdmissao::create($dadosAdmissao);
 
                     $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
-                    AdmissaoAso::create([
-                        'admissao_id' => $dadosAdmissao['admissao_id'],
-                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                        'ativo' => true,
-                        'user_alterou_id' => auth()->id()
-                    ]);
+                    if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
+                        AdmissaoAso::create([
+                            'admissao_id' => $dadosAdmissao['admissao_id'],
+                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                            'ativo' => true,
+                            'user_alterou_id' => auth()->id()
+                        ]);
+                    }
 
                 }
 
@@ -1255,10 +1294,10 @@ class AdmissaoController extends Controller
                 \Log::debug($msg);
                 \Log::debug($e->getTraceAsString());
                 \Log::info("-------DADOS-------");
-                \Log::alert($dados);
+                \Log::alert(print_r($dados, true));
                 \Log::info("-------FIM DE DADOS-------");
+                Sistema::LogFormatado($dados);
 
-//                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
@@ -1270,6 +1309,10 @@ class AdmissaoController extends Controller
         $dados = $request->input();
 
         $ultimo_aso_ativo_dados = $dados['ultimo_aso_ativo'];
+
+        if (in_array($dados['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO]) && trim($dados['ultimo_aso_ativo']['data_aso']) ==  0) {
+            return response()->json(['message' => 'Informe a data do Aso'], 422);
+        }
 
         $dadosValidados = \Validator::make($dados, []);
         if ($dadosValidados->fails()) {
@@ -1338,12 +1381,14 @@ class AdmissaoController extends Controller
                         }
                     }
                     $feedback->Admissao()->create($dados);
-                    AdmissaoAso::create([
-                        'admissao_id' => $feedback->Admissao['admissao_id'],
-                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                        'ativo' => true,
-                        'user_alterou_id' => auth()->id()
-                    ]);
+                    if (in_array($dados['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
+                        AdmissaoAso::create([
+                            'admissao_id' => $feedback->Admissao['admissao_id'],
+                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
+                            'ativo' => true,
+                            'user_alterou_id' => auth()->id()
+                        ]);
+                    }
 
                     $datas = [];
                     if ($dados['tipo_admissao'] == 'FIXO') {
@@ -1408,6 +1453,13 @@ class AdmissaoController extends Controller
                         isset($avaliacao) ? $avaliacao->delete() : null;
                     }
                 }
+
+                //Cria Usuario na Empresa
+                if ($dados['status'] == Admissao::STATUS_ADMISSAO_ADMITIDO) {
+                    User::SincronizaEmpresaFuncionario($feedback->empresa_id, $feedback->curriculo_id);
+                    User::find($feedback->curriculo_id)->update(['tipo' => User::FUNCIONARIO]);
+                }
+
                 DB::commit();
                 return response()->json([], 201);
 
@@ -1419,6 +1471,7 @@ class AdmissaoController extends Controller
                 \Log::info("-------DADOS-------");
                 Sistema::telegram(print_r($dados, true));
                 \Log::info("-------FIM DE DADOS-------");
+                Sistema::LogFormatado($dados);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
             }
         }
@@ -1551,7 +1604,9 @@ class AdmissaoController extends Controller
             'admissao_processo_dados_editar' => auth()->user()->can('privilegio_admissao_processo_dados_editar'),
             'status_admissao' => array_merge(['EM PROCESSO'], Admissao::TODOS_STATUS_ADMISSAO),
             'tipos_admissao' => Admissao::TODOS_TIPOS_ADMISSAO,
-            'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO
+            'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
+            'lista_sexos' => Curriculo::TIPOS_SEXOS,
+            'lista_estados_civis' => Curriculo::ESTADOS_CIVIS,
         ];
         return Sistema::pg($pg, $dados);
     }
@@ -1600,12 +1655,13 @@ class AdmissaoController extends Controller
     }
 
 //PDF
-    public function getFichaPdf(FeedbackCurriculo $feedback)
+    public function getFichaPdf($fc_token)
     {
-        $dados = $feedback->load('ResultadoIntegrado');
+        $dados = FeedbackCurriculo::find(\Crypt::decrypt($fc_token))->load('ResultadoIntegrado');
+
         $pdf = PDF::loadView('pdf.admissao.ficha', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("ficha_admissao_" . ($dados->Curriculo->nome) . ".pdf");
+        return $pdf->stream("ficha_admissao_" . ($dados->Curriculo->nome).'_'.(new DataHora())->nomeUnico(). ".pdf");
     }
 
 //Excel
@@ -1714,6 +1770,8 @@ class AdmissaoController extends Controller
             $rows[] = array(
                 $row->Curriculo->nome,
                 $row->Curriculo->cpf,
+                $row->Curriculo->estado_civil ?? '',
+                $row->Curriculo->sexo ?? '',
                 $row->Curriculo->filiacao_pai,
                 $row->Curriculo->filiacao_mae,
                 $row->Curriculo->pcd ? 'Sim' : 'Não',
@@ -1774,9 +1832,12 @@ class AdmissaoController extends Controller
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_numero : "" : "",
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_serie : "" : "",
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_data_emissao : "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_uf : "" : "",
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_numero : "" : "",
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_sessao : "" : "",
                 $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_zona : "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->cert_reservista_num : "" : "",
+                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->cert_reservista_categoria : "" : "",
                 $dependentes,
                 $row->BancoConta ? $row->BancoConta->banco : "",
                 $row->BancoConta ? $row->BancoConta->agencia : "",
@@ -1882,16 +1943,19 @@ class AdmissaoController extends Controller
                     $dados_admissao = new \stdClass();
                     $dados_admissao->pis = $admissao->pis;
                     $dados_admissao->dados_admissoes = $admissao->DadosAdmissoes;
-                }else {
+                } else {
                     $dados_admissao = new \stdClass();
                     $dados_admissao->pis = '';
-                    $dados_admissao->dados_admissoes = (object) [
+                    $dados_admissao->dados_admissoes = (object)[
                         'ctps_numero' => '',
                         'ctps_serie' => '',
+                        'ctps_uf' => '',
                         'ctps_data_emissao' => '',
                         'titulo_eleitor_numero' => '',
                         'titulo_eleitor_sessao' => '',
                         'titulo_eleitor_zona' => '',
+                        'cert_reservista_num' => '',
+                        'cert_reservista_categoria' => '',
                     ];
                 }
 

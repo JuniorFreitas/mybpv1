@@ -139,7 +139,7 @@
 
                         <div v-if="form.tipo_form === setor.id" v-for="(setor, setorIndex) in formulariosAtivos">
                             <fieldset>
-                                <legend>Checklist - @{{ setor.nome }} - @{{setorIndex}}</legend>
+                                <legend>Checklist - @{{ setor.nome }}</legend>
                                 <div class="custom-control custom-switch"
                                      v-for="(alternativa, key) in setor.alternativas">
                                     <input type="checkbox" class="custom-control-input"

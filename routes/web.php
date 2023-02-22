@@ -103,6 +103,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('colaboradorCih', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorCih'])->name('colaboradorCih');
         Route::get('colaboradorIntermitente', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitente'])->name('colaboradorIntermitente');
         Route::get('colaboradores', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradores'])->name('colaboradores');
+        Route::get('colaboradores-ferias', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradoresFerias'])->name('colaboradoresFerias');
         Route::get('cargosEmpresa', [\App\Http\Controllers\AutoCompletesController::class, 'cargosEmpresa'])->name('cargosEmpresa');
         Route::get('buscaUsuariosAtivos', [\App\Http\Controllers\AutoCompletesController::class, 'buscaUsuariosAtivos'])->name('buscaUsuariosAtivos');
 //        Route::get('colaboradorIntermitente/{cliente_id}', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitenteCliente'])->name('colaboradorIntermitenteCliente');
@@ -456,12 +457,12 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             });
 
             Route::group(['as' => 'solicitacao_ferias.'], function () {
-                Route::put('ferias-prevista/{feriasPrevista}/aprovargestor', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarGestor'])->name('aprovarGestor');
+                Route::put('ferias-prevista/{ferias}/aprovargestor', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarGestor'])->name('aprovarGestor');
                 Route::post('ferias-prevista/export', [\App\Http\Controllers\FeriasPrevistaController::class, 'export'])->name('ferias-prevista.excel');
                 Route::post('ferias-prevista/atualizacao-status', [\App\Http\Controllers\FeriasPrevistaController::class, 'atualizacaoStatus'])->name('ferias-prevista.atualizacaoStatus');
                 Route::post('ferias-prevista/atualizar', [\App\Http\Controllers\FeriasPrevistaController::class, 'atualizar'])->name('atualizar');
-                Route::put('ferias-prevista/{feriasPrevista}/aprovarRH', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
-                Route::resource('ferias-prevista', \App\Http\Controllers\FeriasPrevistaController::class, ['parameters' => ['ferias-prevista' => 'ferias_prevista']]);
+                Route::put('ferias-prevista/{ferias}/aprovarrh', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
+                Route::resource('ferias-prevista', \App\Http\Controllers\FeriasPrevistaController::class, ['parameters' => ['ferias-prevista' => 'ferias']]);
             });
 
             Route::group(['as' => 'solicitacao_admissoes.'], function () {
@@ -667,7 +668,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::post('admissao/export', [\App\Http\Controllers\AdmissaoController::class, 'export'])->name('admissao.excel');
         Route::post('admissao/cadastra-massa', [\App\Http\Controllers\AdmissaoController::class, 'cadastraMassa'])->name('admissao.cadastraMassa');
         Route::post('admissao/busca-cpf', [\App\Http\Controllers\AdmissaoController::class, 'buscaCPF'])->name('admissao.buscaCPF');
-        Route::get('admissao/{feedback}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');
+        Route::get('admissao/{fc_token}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');
         // Anexos
         Route::post('admissao/uploadAnexos', [\App\Http\Controllers\AdmissaoController::class, 'uploadAnexos'])->name('admissao.upload-anexos');
         Route::get('admissao/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoShow'])->name('admissao.anexo-show');
@@ -968,6 +969,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'vencimentoferias.'], function () {
             Route::get('vencimento-ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'index'])->name('index')->middleware('can:relatorio_ferias');
             Route::post('vencimento-ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'show'])->name('show')->middleware('can:relatorio_ferias');
+            Route::post('vencimento-ferias/listaperiodos', [\App\Http\Controllers\Relatorios\FeriasController::class, 'listaperiodos'])->name('listaperiodos')->middleware('can:relatorio_ferias');
             Route::post('vencimento-ferias/export-excel', [\App\Http\Controllers\Relatorios\FeriasController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_ferias');
 
         });
@@ -977,6 +979,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('centrodecusto/pdf', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'exportPdf'])->name('exportPdf')->middleware('can:relatorio_centro_de_custo');
             Route::post('centrodecusto/export-excel', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_centro_de_custo');
             Route::post('centrodecusto/atualizar', [\App\Http\Controllers\Relatorios\CentroDeCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_centro_de_custo');
+        });
+
+        Route::group(['as' => 'efetivo.'], function () {
+            Route::get('efetivo', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'index'])->name('index')->middleware('can:relatorio_efetivo');
+            Route::post('efetivo/pdf', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'exportPdf'])->name('exportPdf')->middleware('can:relatorio_efetivo');
+            Route::post('efetivo/export-excel', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_efetivo');
+            Route::post('efetivo/atualizar', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_efetivo');
         });
 
         //Aniversariantes
@@ -1126,6 +1135,11 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
         Route::resource('folha-ponto', \App\Http\Controllers\FolhaDePontoController::class, ['parameters' => ['folha-ponto' => 'user']])->middleware('can:controle_ponto_folha-ponto');
 
+        Route::group(['as' => 'folha-manual.','prefix' => 'folha-manual'], function (){
+            Route::post('atualizar', [\App\Http\Controllers\FolhaManualController::class,'atualizar'])->name('folha-manual')->middleware('can:controle_ponto_folha_ponto_manual');
+            Route::post('imprimir', [\App\Http\Controllers\FolhaManualController::class,'imprimir'])->name('folha-manual_imprimir')->middleware('can:controle_ponto_folha_ponto_manual');
+            Route::get('', [\App\Http\Controllers\FolhaManualController::class,'index'])->name('index')->middleware('can:controle_ponto_folha_ponto_manual');
+        });
 
     });
 

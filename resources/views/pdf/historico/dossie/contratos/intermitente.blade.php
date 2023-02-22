@@ -6,187 +6,249 @@
 @section('conteudo')
     <p class="f12"
        style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase">
-        <strong>CONTRATO DE TRABALHO INTERMITENTE</strong><br>
-        (§2º o artigo 443 c/c Artigo 452-A da CLT)
+        <strong>CONTRATO DE TRABALHO INTERMITENTE</strong>
     </p>
     <p class="f12 text-justify">
-        Pelo presente Instrumento Particular de Contrato de Trabalho a Título de Experiência, que de um lado celebra a
-        empresa <strong>{{$dados->User->DadosEmpresa->razao_social}}</strong>, sociedade empresária limitada, inscrita
-        no CNPJ/MF sob n.º
-        <strong>{{$dados->User->DadosEmpresa->cnpj}}</strong>, com atividade
-        localizada: {{$dados->User->DadosEmpresa->endereco_completo}},
-        doravante designada simplesmente <strong>EMPREGADORA</strong> e de outro <strong>{{$dados->nome}}</strong>
-        portador(a) Carteira Profissional
-        n.º {{$dados->FeedBack->Admissao->DadosAdmissoes? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero : 'NÃO INFORMADO'}}
-        ,
-        Série {{$dados->FeedBack->Admissao->DadosAdmissoes? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_serie: 'NÃO INFORMADO'}}
-        a seguir chamado apenas <strong>EMPREGADO</strong>, é celebrado o
-        presente <strong>CONTRATO DE EXPERIÊNCIA</strong>, que terá vigência a partir da data de início da prestação de
-        serviços, de
-        acordo com as condições a seguir especificadas:
+        Por este instrumento particular, de um lado <strong>{{$dados->User->DadosEmpresa->razao_social}}</strong>,
+        pessoa jurídica de direito
+        privado, inscrita no CNPJ/MF sob o nº <strong>{{$dados->User->DadosEmpresa->cnpj}}</strong>, estabelecida
+        no(a) {{$dados->User->DadosEmpresa->endereco_completo}}, doravante denominada <strong>EMPREGADOR(A)</strong>, e,
+        de outro, {{$dados->nome}}, inscrito(a) no CPF sob o nº {{$dados->cpf}}, doravante, ,denominado(a)
+        <strong>EMPREGADO(A)</strong>, firmam o Contrato de Trabalho na Modalidade Intermitente, nos termos da Lei n°
+        13.467/2017, com vigência, a partir
+        do {{ (new \MasterTag\DataHora($dados->FeedBack->Admissao->data_admissao))->dataCompletaExt() }},
+        fundamentado em todo o teor da Consolidação das Leis do Trabalho, nos termos seguintes.
+    </p><br>
 
+    <p class="f12 text-justify">
+        Cláusula 1ª - O(a) EMPREGADO(a) é contratado(a) na modalidade de EMPREGO INTERMITENTE,
+        conforme artigo 443 e seu parágrafo 3º, e artigo 452-A e seus parágrafos, da CLT.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo único: O(A) EMPREGADO(A) tem subordinação jurídica na relação de emprego, contudo, no presente
+        contrato não há continuidade, pois ocorrerá a alternância dos períodos com a prestação de serviço, portanto, nos
+        períodos inativos o(a) EMPREGADO(A) não estará à disposição do seu EMPREGADOR(A), tão pouco receberá qualquer
+        salário ou remuneração, podendo o(a) EMPREGADO(A) prestar serviços a outros contratantes.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 2ª - O(A) EMPREGADO(A) obriga-se a prestar seus serviços no quadro de funcionários do EMPREGADOR(A),
+        para exercer as funções de {{  mb_strtoupper($dados->FeedBack->Admissao->funcao) }} A com todas as atribuições
+        que lhe são peculiares.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 3ª - O(A) EMPREGADO(A) receberá o salário de {{ $dados->FeedBack->Admissao->salario }}
+        ({{\App\Models\Sistema::valorPorExtenso($dados->FeedBack->Admissao->salario)}}) por hora
+        trabalhada, nos horários estabelecidos na convocação e o pagamento dar-se-á de forma mensal, devendo ser pago
+        até o quinto dia útil do mês seguinte ao trabalhado, de acordo com o previsto no § 1 do artigo 459 da CLT.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 4ª - O EMPREGADOR(A) convocará o(a) EMPREGADO(A) por meio de comunicação eficaz, informando a jornada
+        solicitada, com antecedência de até 3 dias úteis antes, considerando o Art. 34 da Portaria 671 como
+        possibilidade de continuidade da convocação,
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo único: Recebida a comunicação o(a) o empregado terá o prazo de até um dia útil para responder ao
+        chamado, presumindo-se, no silêncio, a recusa.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 5ª - Aceita a proposta, a parte que, sem justo motivo, descumprir o ajustado, pagará à outra parte, no
+        prazo de trinta dias, multa de 50% (cinquenta por cento) da remuneração que seria devida, permitida a
+        compensação em igual prazo.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 6ª - Aceita o EMPREGADO(A), expressamente, a condição de prestar serviços em qualquer dos turnos de
+        trabalho, isto é, tanto durante o dia como à noite, desde que sem simultaneidade, observadas as prescrições
+        legais reguladoras do assunto, quanto à remuneração.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 7ª - Em caso de dano causado pelo EMPREGADO(A), de qualquer tipo, incluindo danos físicos ao veículo,
+        arranhão, batida de veículo da empresa ou de terceiros envolvidos, fica a EMPREGADOR(A) autorizada a efetivar o
+        desconto da importância correspondente ao prejuízo, o qual fará independente do valor já que essa possibilidade
+        fica expressamente prevista em contrato, nos § 1º do artigo 462 da CLT.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 8ª – O EMPREGADO(A) compromete-se também, a respeitar o regulamento da empresa, mantendo conduta
+        irrepreensível no ambiente de trabalho, confidencialidade e postura, constituindo motivos para imediata dispensa
+        do empregado, além dos previstos em lei, o desacato moral ou agressão física ao EMPREGADOR(A), ao administrador ou
+        a pessoa de seus respectivos companheiros de trabalho, a embriagues ou briga em serviço. Destaca-se também que é
+        proibido o uso de aparelhos celulares no horário de trabalho, excetos os concedidos pela empresa para exercício
+        das atividades laborais, ciente de que a empresa não se responsabiliza por furtos e perdas desses aparelhos no
+        local de trabalho.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 9ª – A EMPREGADOR(A) concederá ao colaborador, uniformes e EPIs padronizados, sendo de uso diário
+        obrigatório, objetivando manter imagem e identidade da empresa como também evitar eventuais acidentes. Os mesmos
+        deverão ser devolvidos no ato do desligamento ou quando ocorrer substituição por qualquer defeito decorrente do
+        uso normal.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 10ª – Pelo presente instrumento, o EMPREGADO(A) autoriza o EMPREGADOR(A) a, em razão do contrato de trabalho,
+        dispor dos dados pessoais e dados pessoais sensíveis do EMPREGADO(A), de acordo com os artigos 7° e 11 da Lei n°
+        13.709/2018, conforme disposto neste termo:
+    </p><br>
+
+    <p class="f12 text-justify">
+        Cláusula 10ª – Pelo presente instrumento, o EMPREGADO(A) autoriza o EMPREGADOR(A) a, em razão do contrato de trabalho,
+        dispor dos dados pessoais e dados pessoais sensíveis do EMPREGADO(A), de acordo com os artigos 7° e 11 da Lei n°
+        13.709/2018, conforme disposto neste termo:<br>
+        Dados Pessoais
+    </p><br>
+
+    <p class="f12 text-justify">
+        a)- O Titular autoriza a Controladora a realizar o tratamento, ou seja, a utilizar os seguintes dados pessoais,
+        para os fins que serão relacionados na cláusula segunda:<br>
+        b)- Nome completo;<br>
+        c)- Data de nascimento;<br>
+        d)- Número e imagem da Carteira de Identidade (RG);<br>
+        e)- Número e imagem do Cadastro de Pessoas Físicas (CPF);<br>
+        f)- Número e imagem do Título de Eleitor;<br>
+        g)- Número e imagem do Certificado de Reservista;<br>
+        h)- Número e imagem da Carteira Nacional de Habilitação (CNH) (quando necessário para a função contratada);<br>
+        i)- Número e Imagem do cartão de vale transporte (quando utilizado pelo empregado);<br>
+        j)- Número e imagem do Programa de Integração Social (PIS); <br>
+        k)- CTPS física e/ou digital; <br>
+        l)- Fotografia 3×4; <br>
+        m)- Imagem da Certidão de Casamento ou Declaração de União Estável; <br>
+        n)- Imagem do Diploma de _________ (Nível de instrução ou escolaridade); <br>
+        o)- Endereço completo; <br>
+        p)- Números de telefone, WhatsApp e endereços de e-mail; <br>
+        q)- Banco, agência e número de contas bancárias; <br>
+        r)- Nome de usuário e senha específicos para uso dos serviços da Controladora; <br>
+        t)- Comunicação, verbal e escrita, mantida entre o Titular e o Controlador; <br>
+        u)- Exames e atestados médicos, especialmente admissionais, periódicos, incluídos de retorno por afastamento
+        superior a 30 dias em caso de doença, acidente ou parto, de mudança de função, demissionais e ainda aqueles que
+        atestem doença ou acidente; <br>
+        v)- Certidão de nascimento dos filhos menores de 14 anos, Carteira de vacinação dos menores de 7 anos, e
+        atestado de matrícula e frequência escolar semestral dos maiores de 4 anos; <br>
+        x)- Número e Imagem da Carteira Profissional; <br>
+        y)- e outros documentos específicos para a função, por exemplo: Documento de filiação a Sindicato; Número e
+        Imagem da Carteira Profissional, etc.).
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Primeiro (Finalidade do Tratamento dos Dados): O EMPREGADO(A) autoriza que o EMPREGADOR(A) utilize seus
+        dados pessoais e seus dados pessoais sensíveis listados neste termo para as seguintes finalidades:
+    </p><br>
+
+    <p class="f12 text-justify">
+        a)- Permitir que o EMPREGADOR(A) identifique e entre em contato com o titular, em razão do contrato de trabalho;
+        <br>
+        b)- Para cumprimento de obrigações decorrentes da legislação, principalmente trabalhista e previdenciária,
+        incluindo o disposto em Acordo ou Convenção Coletiva da categoria da Controladora; <br>
+        c)- Para procedimentos de admissão e execução do contrato de trabalho, inclusive após seu término; <br>
+        d)- Para cumprimento, pelo EMPREGADOR(A), de obrigações impostas por órgãos de fiscalização; <br>
+        e)- Quando necessário para a executar um contrato, no qual seja parte o titular; <br>
+        g)- A pedido do titular dos dados; <br>
+        i)- Para o exercício regular de direitos em processo judicial, administrativo ou arbitral; <br>
+        j)- Para a proteção da vida ou da incolumidade física do titular ou de terceiros; <br>
+        k)- Para a tutela da saúde, exclusivamente, em procedimento realizado por profissionais de saúde, serviços de
+        saúde ou autoridade sanitária; <br>
+        l)- Quando necessário para atender aos interesses legítimos do EMPREGADOR(A) ou de terceiros, exceto no caso de
+        prevalecerem direitos e liberdades fundamentais do titular que exijam a proteção dos dados pessoais; <br>
+        m)- Para contratação de serviços de terceiros, tais como exemplificativamente, empresas de vale alimentação,
+        plano de saúde, plano odontológico, previdência privada, seguro de vida, etc., de modo que somente serão
+        repassados para a empresa contratada os dados pessoais de identificação do titular; <br>
+        n)- Permitir que o EMPREGADOR(A) utilize esses dados para a contratação e prestação de serviços diversos dos
+        inicialmente ajustados, desde que o Titular também demonstre interesse em contratar novos serviços.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Segundo: Caso seja necessário o compartilhamento de dados com terceiros que não tenham sido
+        relacionados nesse termo ou qualquer alteração contratual posterior, será ajustado termo de consentimento para
+        este fim (§ 6° do artigo 8° e § 2° do artigo 9° da Lei n° 13.709/2018).
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Terceiro: Em caso de alteração na finalidade, que esteja em desacordo com o consentimento original, o
+        EMPREGADOR(A) deverá comunicar o EMPREGADO(A), que poderá revogar o consentimento, conforme previsto no § 7º da
+        presente Cláusula.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Quarto (Compartilhamento de Dados): A EMPREGADOR(A) fica autorizada a compartilhar os dados pessoais do
+        EMPREGADO(A) com outros agentes de tratamento de dados, caso seja necessário para as finalidades listadas neste
+        instrumento, desde que, sejam respeitados os princípios da boa-fé, finalidade, adequação, necessidade, livre
+        acesso, qualidade dos dados, transparência, segurança, prevenção, não discriminação e responsabilização e
+        prestação de contas.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Quinto (Responsabilidade pela Segurança dos Dados): A EMPREGADOR(A) se responsabiliza por manter medidas
+        de segurança, técnicas e administrativas suficientes a proteger os dados pessoais do EMPREGADO e à Autoridade
+        Nacional de Proteção de Dados (ANPD), comunicando ao EMPREGADO(A), acaso ocorra algum incidente de segurança que
+        possa acarretar risco ou dano relevante, conforme artigo 48 da Lei n° 13.709/2020.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Sexto (Término do Tratamento dos Dados): À EMPREGADOR(A), é permitido manter e utilizar os dados
+        pessoais do EMPREGADO(A) durante todo o período contratualmente firmado para as finalidades relacionadas neste
+        termo e ainda após o término da contratação para cumprimento de obrigação legal ou impostas por órgãos de
+        fiscalização, nos termos do artigo 16 da Lei n° 13.709/2018.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Sétimo (Direito de Revogação do Consentimento): O EMPREGADO(A) poderá revogar seu consentimento, a
+        qualquer tempo, por e-mail ou por carta escrita, conforme o artigo 8°, § 5°, da Lei n° 13.709/2020. O Titular
+        fica ciente de que a Controladora poderá permanecer utilizando os dados para as seguintes finalidades:
+    </p><br>
+
+    <p class="f12 text-justify">
+        a)- Para cumprimento de obrigações decorrentes da legislação trabalhista e previdenciária, incluindo o disposto
+        em Acordo ou Convenção Coletiva da categoria da Controladora;<br>
+        b)- Para procedimentos de admissão e execução do contrato de trabalho, inclusive após seu término;<br>
+        c)- Para cumprimento, pela EMPREGADOR(A), de obrigações impostas por órgãos de fiscalização;<br>
+        d)- Para o exercício regular de direitos em processo judicial, administrativo ou arbitral;<br>
+        e)- Para a proteção da vida ou da incolumidade física do titular ou de terceiros;<br>
+        f)- Para a tutela da saúde, exclusivamente, em procedimento realizado por profissionais de saúde, serviços de
+        saúde ou autoridade sanitária;<br>
+        g)- Quando necessário para atender aos interesses legítimos do EMPREGADOR(A) ou de terceiros, exceto no caso de
+        prevalecerem direitos e liberdades fundamentais do titular que exijam a proteção dos dados pessoais.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Oitavo (Tempo de Permanência dos Dados Recolhidos): O EMPREGADO(A) fica ciente de que a EMPREGADOR(A)
+        deverá permanecer com os seus dados pelo período mínimo de guarda de documentos trabalhistas, previdenciários,
+        bem como os relacionados à segurança e saúde no trabalho, mesmo após o encerramento do vínculo empregatício.
+    </p><br>
+
+    <p class="f12 text-justify">
+        Parágrafo Nono (Vazamento de Dados ou Acessos Não Autorizados – Penalidades): As partes poderão entrar em
+        acordo, quanto aos eventuais danos causados, caso exista o vazamento de dados pessoais ou acessos não
+        autorizados, e caso não haja acordo, a EMPREGADOR(A) tem ciência que estará sujeita às penalidades previstas no
+        artigo 52 da Lei n° 13.709/2018.
     </p><br>
     <p class="f12 text-justify">
-        <strong>1ª (Função/Salário)</strong> – Fica o <strong>EMPREGADO</strong> admitido no quadro de funcionários da
-        <strong>EMPREGADORA</strong> para exercer as funções de <span
-            style="text-transform: uppercase; font-weight: bold">{{ $dados->FeedBack->VagaAberta->VagaSelecionada->nome }}</span>
-        mediante a remuneração mensal de R$ {{ $dados->FeedBack->Admissao->salario }}
-        ({{\App\Models\Sistema::valorPorExtenso($dados->FeedBack->Admissao->salario)}}). A circunstância, porém, de ser
-        a função especificada não importa na intransferibilidade do <strong>EMPREGADO</strong> para outro serviço, no
-        qual demonstre melhor capacidade de adaptação desde que compatível com sua condição pessoal.
+        Cláusula 11ª – A EMPREGADOR(A) poderá divulgar o nome, imagem e voz do EMPREGADO(A), para fins publicitários,
+        propaganda, ou eventos, cedendo, neste ato, o EMPREGADO(A), seu direito de imagem, a título gratuito.
     </p><br>
     <p class="f12 text-justify">
-        <strong>2ª (Horário)</strong> – O horário de trabalho será no horário administrativo ou, especialmente, em
-        horário de turno cumprindo jornada de 44h/semanais, se comprometendo a trabalhar em regime de compensação e de
-        prorrogação de horas, quando necessário, e a eventual redução da jornada, por determinação da <strong>EMPREGADORA</strong>,
-        não inovará este ajuste, permanecendo sempre íntegra a obrigação do <strong>EMPREGADO</strong> de cumprir o
-        horário que lhe for determinado, observando o limite legal.
+        Parágrafo 1º - Como cessão correlata por afinidade ou conexão, necessária à publicação, promoção e divulgação
+        nos moldes delineados no caput, por todos os meios midiáticos, o EMPREGADO(A) cede à EMPREGADOR(A), seu direito de
+        imagem e voz, de forma expressa, coletiva ou individualmente de quaisquer atividades que participar, seja
+        audiovisual, seja via internet, redes sociais jornais, folders, periódicos diversos e demais meios de
+        comunicação público ou privado ou outra maneira lícita possível, por prazo indeterminado.
     </p><br>
+
     <p class="f12 text-justify">
-        <strong>3ª (Horas Extras)</strong> – Obriga-se também o <strong>EMPREGADO</strong> a prestar serviços em horas
-        extraordinárias, sempre que lhe for determinado pela <strong>EMPREGADORA</strong>, na forma prevista em Lei.
-        Na hipótese desta faculdade pela <strong>EMPREGADORA</strong>, o <strong>EMPREGADO</strong> receberá as horas
-        extraordinárias com o acréscimo legal, ou será tratado através de acordo de compensação de
-        horas, com a consequente redução da jornada de trabalho em outro dia. Horas extras não autorizadas não serão
-        remuneradas e estarão passíveis de medidas administrativas.
+        Parágrafo 2º - Pelo presente instrumento, as partes pactuantes acordam que o EMPREGADO(A) não terá qualquer
+        participação nos valores decorrentes do uso da imagem e voz ora cedida, para os quais cedem sua imagem, voz e
+        direitos conexos, bem como não terão direito a qualquer valor pecuniário referente aos ganhos deles decorrentes.
     </p><br>
+
     <p class="f12 text-justify">
-        <strong>4ª (Localidade)</strong> – Fica ajustado nos termos que dispõe o Parágrafo 10° do Artigo 469, da
-        Consolidação das Leis de Trabalho, que o <strong>EMPREGADO</strong> acatará ordem emanada da
-        <strong>EMPREGADORA</strong> para prestação de serviços tanto da localidade de
-        celebração do Contrato de Trabalho, como qualquer outra cidade, quer essa transferência seja transitória ou
-        definitiva.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>5ª (Dano)</strong> – Em caso de dano causado pelo(a) <strong>EMPREGADO(A)</strong>, de qualquer tipo,
-        incluindo veiculos,
-        arranhão, batida de veículo da <strong>EMPREGADORA</strong> ou de terceiros envolvidos, fica a <strong>EMPREGADORA</strong>
-        autorizada a
-        efetivar o desconto da importância correspondente ao prejuízo, o qual fará independente do valor já que essa
-        possibilidade fica expressamente prevista em contrato, nos termos do § 1º do artigo 462 da CLT.
-        <br><br>
-        Parágrafo único: O(A) <strong>EMPREGADO(A)</strong> compromete-se também, a respeitar o regulamento da empresa,
-        mantendo conduta irrepreensível no ambiente de trabalho, confidencialidade (conforme Termo de Confidencialidade
-        anexo a esse contrato) e postura, constituindo motivos para imediata dispensa do(a)
-        <strong>EMPREGADO(A)</strong>, além dos previstos em lei, o desacato moral ou agressão física a <strong>EMPREGADORA</strong>,
-        ao administrador ou a pessoa de seus respectivos companheiros de trabalho, a embriagues ou briga em serviço.
-        Destaca-se também que é proibido o uso de aparelhos celulares no horário de trabalho, excetos os concedidos pela
-        empresa para exercício das atividades laborais, ciente de que a empresa não se responsabiliza por furtos e
-        perdas desses aparelhos no local de trabalho.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>6ª (EPIs)</strong> – A <strong>EMPREGADORA</strong> concederá a(o) <strong>EMPREGADO(A)</strong>,
-        uniformes e EPIs padronizados, sendo de uso diário obrigatório, objetivando manter imagem e identidade da
-        empresa como também evitar eventuais acidentes. Os mesmos deverão ser devolvidos no ato do desligamento ou
-        quando ocorrer substituição por qualquer defeito decorrente do uso normal.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>7ª (Rescisão)</strong> – Opera-se a rescisão do presente contrato pela decorrência do prazo supra ou por
-        vontade de uma das partes; rescindindo-se por vontade do(a) <strong>EMPREGADO(A)</strong> ou pela <strong>EMPREGADORA</strong>
-        com justa causa, nenhuma indenização é devida. Sendo o término na vigência posterior ao contrato de experiência
-        o aviso prévio é devido pela rescisão do devido contrato que poderá ser trabalhado, podendo haver ou não
-        convocação para o trabalho, gerando ou não valores de aviso.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8ª (Proteção de Dados Pessoais)</strong> – O <strong>EMPREGADO</strong> está ciente de que informa os
-        dados contidos na Ficha Registro de Funcionário à <strong>EMPREGADORA</strong>, os quais são necessários para a
-        execução do contrato de trabalho de experiência.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.1</strong> - Durante a vigência do contrato, outros dados pessoais poderão ser gerados, os quais
-        também são necessários para a execução do contrato e para as finalidades mencionados na cláusula 8.3 e, na
-        hipótese de ausência de previsão, por meio de formulário próprio autorizativo.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.2</strong> - O <strong>EMPREGADO</strong> ao assinar o presente contrato, está ciente que a empresa
-        contratante poderá solicitar dados extras, para o cumprimento de uma obrigação legal, uso de sistemas de
-        controle de pessoal, pagamento de impostos e informações sociais aos órgãos públicos, bem como, para a execução
-        do presente contrato.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.3</strong> - Os dados fornecidos pelo <strong>EMPREGADO</strong> serão utilizados para as seguintes
-        finalidades:<br>
-        a. Funcionalidades de sistemas, softwares, plataformas, cadastros e normas internas;<br>
-        b. Cadastro para eventuais notificações, comunicações formais entre empregado e empregadora no âmbito da gestão
-        contratual por parte da <strong>EMPREGADORA</strong>;<br>
-        c. Atendimento das demandas administrativas e operacionais no setor de RH;<br>
-        d. Atendimento à pedidos de autoridades públicas, prestação de contas e informações sociais obrigadas em lei.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.4</strong> - A coleta de dados se dá através de sua inserção pela <strong>EMPREGADORA</strong> no
-        momento da contratação pelo setor de RH.
-    </p><br>
-    <p class="f12 text-justify">
-        Parágrafo Primeiro – Os dados da cláusula 8.3 serão gerados no decorrer do relacionamento entre as partes e do
-        cumprimento do presente contrato.
-    </p><br>
-    <p class="f12 text-justify">
-        Parágrafo segundo – A qualquer tempo, a <strong>EMPREGADORA</strong> pode requerer a correção ou atualização dos
-        dados pessoais coletados, tendo o <strong>EMPREGADO</strong> de pleno conhecimento e aceite deste parágrafo.
-    </p>
-    <p class="f12 text-justify">
-        <strong>8.5</strong> - Os dados pessoais coletados podem ser acessados a qualquer momento pela <strong>EMPREGADORA</strong>
-        através de solicitação no site/e-mail/plataforma, solicitação do setor de RH, solicitação do setor contábil e
-        quantas outras solicitações sejam necessárias para o cumprimento do presente contrato, estando o empregado de
-        pleno acordo com tais termos.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.6</strong> - O tratamento dos dados será realizado enquanto o <strong>EMPREGADO</strong> estiver
-        trabalhando para a
-        empresa contratante, ou seja, enquanto durar o contrato de trabalho.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.7</strong> - A <strong>EMPREGADORA</strong> armazenará os dados relativos ao
-        <strong>EMPREGADO</strong> por até 5 anos, após o encerramento do contrato, prorrogáveis por igual prazo, a fim
-        de atender ao prazo prescricional de discussões judiciais que estão em Ficha Registro do Empregado atrelada à
-        este contrato.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.8</strong> - Os dados serão tratados pela própria <strong>EMPREGADORA</strong>, o qual poderá
-        realizar a transferência de dados pessoais a terceiros visando o melhor desempenho das atividades vinculadas ao
-        serviço contratado, assim como para gestão, segurança, armazenamento e backup em nuvem. Poderá, ainda, quando
-        solicitado, compartilhar os dados pessoais do <strong>EMPREGADO</strong> com autoridades e entidades
-        governamentais em função de exigências legais ou na defesa dos seus interesses no caso de conflitos, judiciais
-        ou administrativos.
-    </p><br>
-    <p class="f12 text-justify">
-        Parágrafo primeiro – A <strong>EMPREGADORA</strong> garante, desde já, que os terceiros
-        contratados/subcontratados adotam medidas de segurança adequadas aos princípios e diretrizes previstos na LGPD e
-        em conformidade com as boas práticas de privacidade e segurança da informação.
-    </p><br>
-    <p class="f12 text-justify">
-        Parágrafo segundo – A <strong>EMPREGADORA</strong> cumprirá os princípios de adequação, necessidade e
-        finalidade, e limitará internamente o acesso aos dados aos colaboradores estritamente necessários ao atendimento
-        da finalidade.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.9</strong> - Os dados coletados são de acesso exclusivo da <strong>EMPREGADORA</strong>, e não serão
-        vendidos ou cedidos a terceiros sem expresso consentimento pelo <strong>EMPREGADO</strong>. A <strong>EMPREGADORA</strong>
-        se compromete em manter seguros os dados pessoais coletados, e realizará, quando necessário, relatório para
-        avaliar o impacto dos tratamentos.
-    </p><br>
-    <p class="f12 text-justify">
-        Parágrafo único – A <strong>EMPREGADORA</strong>, ao prezar pela privacidade do <strong>EMPREGADO</strong>,
-        garante que os funcionários e terceiros envolvidos direta ou indiretamente nas operações de tratamento de dados
-        pessoais estão cobertos por um dever de confidencialidade.
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>8.10</strong> - Se, apesar das medidas de segurança implementadas, houver vazamento de dados que possa
-        acarretar risco ou dano relevante aos titulares, a <strong>EMPREGADORA</strong> irá comunicar o <strong>EMPREGADO</strong>
-        e a Autoridade Nacional de Proteção de Dados, nos termos do art. 48 da Lei nº 13.709/2018, e tomará as medidas
-        necessárias para reduzir os danos e o risco de recorrência. Entende-se como vazamento a destruição, perda,
-        alteração ou acesso não autorizados, seja de forma acidental ou deliberada, a dados pessoais.”
-    </p><br>
-    <p class="f12 text-justify">
-        <strong>9ª (Vigência)</strong> – Na hipótese deste ajuste transformar-se em contrato de prazo indeterminado,
-        pelo decurso
-        do tempo, continuarão em plena vigência as cláusulas de 01 (Um) a 08 (Oito), enquanto durarem as relações
-        do(a) <strong>EMPREGADO(A)</strong> com a <strong>EMPREGADORA</strong>.
-        <br><br>
-        E por estarem de pleno acordo, as partes contratantes, assinam o presente contrato de experiência em duas
-        vias, ficando a primeira em poder da <strong>EMPREGADORA</strong>, e a segunda com o(a)
-        <strong>EMPREGADO(A)</strong>, que dela dará o
-        competente recibo.
+        E por estarem de pleno acordo, assinam ambas as partes este contrato, em duas vias de igual teor na presente das
+        testemunhas abaixo relacionadas.
     </p><br>
 
     <br><br>

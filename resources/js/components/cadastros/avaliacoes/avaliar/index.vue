@@ -28,50 +28,60 @@
                     </fieldset>
 
 
-                    <table class="table" v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado" :key="index">
+                    <table class="table" v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado"
+                           :key="index">
                         <thead>
-                            <tr>
-                                <th>{{ item[index].topico_pai }}</th>
-                                <th class="text-center" v-for="avaliador in item[0].avaliadores" :key="avaliador.id">{{ avaliador.nome }}</th>
-                                <th class="text-center">MÉDIA</th>
-                            </tr>
+                        <tr>
+                            <th>{{ item[index].topico_pai }}</th>
+                            <th class="text-center" v-for="(avaliador, id) in item[0].avaliadores" :key="avaliador.id">
+                                Avaliador {{id + 1}}
+                            </th>
+                            <th class="text-center">MÉDIA</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <tr  v-for="sub in item">
-                                <td style="width: 33%">{{ sub.subtopico }}</td>
-                                <td style="width: 15%" v-for="avaliador in sub.avaliadores">
-                                    <input type="number" class="form-control form-control-sm text-center" readonly="readonly" min="0" max="5"
-                                           step="0.1" :value="avaliador.nota | casasDecimais">
-                                </td>
-                                <td style="width: 7%" class="text-center">
-                                    <input type="number" class="form-control form-control-sm text-center" readonly="readonly" min="0" max="5"
-                                        step="0.1" :value="sub.media | casasDecimais">
-                                </td>
-                            </tr>
+                        <tr v-for="sub in item">
+                            <td style="width: 33%">{{ sub.subtopico }}</td>
+                            <td style="width: 15%" v-for="avaliador in sub.avaliadores">
+                                <input type="number" class="form-control form-control-sm text-center"
+                                       readonly="readonly" min="0" max="5"
+                                       step="0.1" :value="avaliador.nota | casasDecimais">
+                            </td>
+                            <td style="width: 7%" class="text-center">
+                                <input type="number" class="form-control form-control-sm text-center"
+                                       readonly="readonly" min="0" max="5"
+                                       step="0.1" :value="sub.media | casasDecimais">
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
 
                     <table class="table" v-if="formAvaliarFinal.result_topico_pai_agrupado.length > 0">
                         <thead>
-                            <tr>
-                                <th class="text-center" v-for="avaliador in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores" :key="avaliador.id">{{ avaliador.nome }}</th>
-                            </tr>
+                        <tr>
+                            <th class="text-center"
+                                v-for="(avaliador,id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                                :key="avaliador.id">Avaliador {{ id+1 }}
+                            </th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td v-for="avaliador in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores" :key="avaliador.id">
-                                    <label>Considerações</label>
-                                    <textarea rows="5" class="form-control form-control-sm" readonly="readonly">{{ avaliador.comentario }}</textarea>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td v-for="avaliador in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                                :key="avaliador.id">
+                                <label>Considerações</label>
+                                <textarea rows="5" class="form-control form-control-sm" readonly="readonly">{{ avaliador.comentario }}</textarea>
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
 
                     <div class="row justify-content-center mt-5">
                         <div v-for="(chart, index) in formAvaliarFinal.resultChart" :key="index" class="col-md-4">
                             <h4 class="text-center">{{ chart.name }}</h4>
-                            <RadarChart :id="chart.name" :chart-data="chart.data" />
-                            <h4 class="text-center">Média: {{ formAvaliarFinal.resultado_topico_pai[chart.name].media | casasDecimais}}</h4>
+                            <RadarChart :id="chart.name" :chart-data="chart.data"/>
+                            <h4 class="text-center">Média:
+                                {{ formAvaliarFinal.resultado_topico_pai[chart.name].media | casasDecimais }}</h4>
                         </div>
                         <div class="col-md-12 text-center">
                             <h4>Nota final: {{ formAvaliarFinal.nota_final | casasDecimais }}</h4>
@@ -81,7 +91,8 @@
                     <fieldset>
                         <legend>Oportunidades de Melhoria / Plano de Ação</legend>
 
-                        <button class="btn btn-sm btn-primary mb-2" @click="addPlanoAcao($event.target)" v-show="!visualizando">
+                        <button class="btn btn-sm btn-primary mb-2" @click="addPlanoAcao($event.target)"
+                                v-show="!visualizando">
                             <i class="fa fa-plus"></i> Adicionar Plano
                         </button>
 
@@ -91,39 +102,51 @@
                                 <div class="col-lg-12">
                                     <div class="form-group">
                                         <label>Competência/Desempenho</label>
-                                       <select class="form-control form-control-sm validacampo" v-model="item.topico_id"
-                                               :disabled="visualizando"
-                                               @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                               @change.prevent="valida_campo_vazio($event.target, 1)">
-                                           <option value="">Selecione</option>
-                                           <option v-for="(topico, topico_id) in formAvaliarFinal.result_topico" :key="topico_id" :value="topico_id">{{ topico.topico_pai }} - {{ topico.subtopico }}</option>
+                                        <select class="form-control form-control-sm validacampo"
+                                                v-model="item.topico_id"
+                                                :disabled="visualizando"
+                                                @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                                @change.prevent="valida_campo_vazio($event.target, 1)">
+                                            <option value="">Selecione</option>
+                                            <option v-for="(topico, topico_id) in formAvaliarFinal.result_topico"
+                                                    :key="topico_id" :value="topico_id">{{ topico.topico_pai }} -
+                                                {{ topico.subtopico }}
+                                            </option>
                                         </select>
-                                        <h5 class="my-3 text-danger" v-if="item.topico_id">Média: {{formAvaliarFinal.result_topico[item.topico_id].media | casasDecimais}}</h5>
+                                        <h5 class="my-3 text-danger" v-if="item.topico_id">Média:
+                                            {{
+                                                formAvaliarFinal.result_topico[item.topico_id].media | casasDecimais
+                                            }}</h5>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-4">
                                     <div class="form-group">
                                         <label for="">Plano de Ação</label>
-                                        <textarea rows="3" class="form-control form-control-sm validacampo" v-model="item.plano_de_acao" @blur.prevent="valida_campo_vazio($event.target, 1)" :disabled="visualizando"></textarea>
+                                        <textarea rows="3" class="form-control form-control-sm validacampo"
+                                                  v-model="item.plano_de_acao"
+                                                  @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                                  :disabled="visualizando"></textarea>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-4">
                                     <div class="form-group">
-                                        <date-picker formsm label="Início" v-model="item.inicio" :disabled="visualizando"></date-picker>
+                                        <date-picker formsm label="Início" v-model="item.inicio"
+                                                     :disabled="visualizando"></date-picker>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-4">
                                     <div class="form-group">
-                                        <date-picker formsm label="Término" v-model="item.termino" :disabled="visualizando"></date-picker>
+                                        <date-picker formsm label="Término" v-model="item.termino"
+                                                     :disabled="visualizando"></date-picker>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-12" v-show="!visualizando">
                                     <button class="btn btn-sm btn-danger"
-                                       @click="removerPlanoAcao(index)">
+                                            @click="removerPlanoAcao(index)">
                                         <i class="fa fa-trash"></i> Apagar
                                     </button>
                                 </div>
@@ -133,7 +156,8 @@
                 </div>
             </template>
             <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !visualizando && !preload && formAvaliarFinal.planos_acoes.length > 0"
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="editando && !visualizando && !preload && formAvaliarFinal.planos_acoes.length > 0"
                         @click="salvarAvaliacaoFinal()">
                     <i class="fa fa-save"></i> Salvar
                 </button>
@@ -147,9 +171,8 @@
                     <fieldset>
                         <legend>DADOS</legend>
                         <div class="row">
-                            <div class="col-12 col-lg-4"><strong>Nome:</strong> {{
-                                    formAvaliar.dados_do_funcionario.nome
-                                }}
+                            <div class="col-12 col-lg-4"><strong>Nome:</strong>
+                                {{ formAvaliar.dados_do_funcionario.nome }}
                             </div>
                             <div class="col-12 col-lg-4"><strong>Matrícula:</strong>
                                 {{ formAvaliar.dados_do_funcionario.matricula }}
@@ -162,9 +185,8 @@
                             <div class="col-12 col-lg-4"><strong>Cargo:</strong>
                                 {{ formAvaliar.dados_do_funcionario.cargo }}
                             </div>
-                            <div class="col-12 col-lg-4"><strong>Área:</strong> {{
-                                    formAvaliar.dados_do_funcionario.area
-                                }}
+                            <div class="col-12 col-lg-4"><strong>Área:</strong>
+                                {{ formAvaliar.dados_do_funcionario.area }}
                             </div>
                         </div>
                     </fieldset>
@@ -197,15 +219,19 @@
                                     <option v-for="resp in 5" :value="resp">{{ resp }}</option>
                                 </select>
                             </div>
-                            <h5 v-if="formAvaliar.origem_feedback != 'Funcionario'">Nota do funcionário: {{ formAvaliar.respostasFunc[item.id][index].nota}}</h5>
+                            <h5 v-if="formAvaliar.principal">Nota do colaborador:
+                                {{ formAvaliar.respostasFunc[item.id][index].nota }}</h5>
                         </fieldset>
                     </fieldset>
                     <fieldset>
                         <legend>MINHAS CONSIDERAÇÕES</legend>
                         <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control"
+                                  @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                  @change.prevent="valida_campo_vazio($event.target, 1)"
                                   placeholder="Se desejar, faça considerações" rows="4"></textarea>
 
-                        <h5 class="mt-3" v-if="formAvaliar.origem_feedback != 'Funcionario'">Considerações do funcionário: {{ formAvaliar.comentario_funcionario }}</h5>
+                        <h5 class="mt-3" v-if="formAvaliar.principal">Considerações do
+                            colaborador: {{ formAvaliar.comentario_funcionario }}</h5>
                     </fieldset>
                 </div>
             </template>
@@ -217,39 +243,24 @@
             </template>
         </modal>
 
-<!--         Filtro-->
-<!--        <fieldset>-->
-<!--            <legend>Filtro</legend>-->
-<!--            <form class="row" @submit.prevent="$refs.componente.buscar()">-->
-<!--                <div class="col-12 col-md-4">-->
-<!--                    <div class="form-group">-->
-<!--                        <label>Buscar</label>-->
-<!--                        <input type="text"-->
-<!--                               placeholder="Buscar por título"-->
-<!--                               autocomplete="off"-->
-<!--                               class="form-control form-control-sm" :disabled="controle.carregando"-->
-<!--                               v-model="controle.dados.campoBusca">-->
-<!--                    </div>-->
-<!--                </div>-->
-
-<!--                <div class="col-12 col-md-12">-->
-<!--                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"-->
-<!--                            @click="atualizar"><i-->
-<!--                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>-->
-<!--                        Atualizar-->
-<!--                    </button>-->
-
-<!--                    <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"-->
-<!--                            @click="formNovo"-->
-<!--                            data-toggle="modal"-->
-<!--                            data-target="#janelaCadastrar">-->
-<!--                        <i class="fa fa-plus"></i> Cadastrar-->
-<!--                    </button>-->
-<!--                </div>-->
-<!--            </form>-->
-<!--        </fieldset>-->
-
         <div id="conteudo">
+
+            <div class="row mt-2 pt-1 pb-1 border-bottom">
+                <div class="col-12">
+                    <p class="bg-white p-3 rounded">
+                        <i class="fas fa-circle text-danger"></i>
+                        Pendente autoavaliação
+                        <i class="fas fa-circle text-pink"></i>
+                        Pendente autoavaliação colaborador
+                        <i class="fas fa-circle text-warning ml-2"></i>
+                        Pendente avaliação do par
+                        <i class="fas fa-circle text-info ml-2"></i>
+                        Pendente avaliação gestor
+                        <i class="fas fa-circle text-success ml-2"></i>
+                        Completa
+                    </p>
+                </div>
+            </div>
 
             <p class=" mt-2 text-center" v-if="controle.carregando">
                 <preload></preload>
@@ -259,22 +270,27 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
-                    <thead>
-                    <tr class="bg-default">
-                        <!--                        <td class="text-center">Nome</td>-->
+            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
+                <table class="table table-bordered">
+                    <thead class="bg-white">
+                    <tr class="bg-white">
                         <td class="text-center">Título</td>
                         <td class="text-center">Tipo</td>
                         <td class="text-center">Avaliar até</td>
                         <td class="text-center">Funcionário</td>
                         <td class="text-center">Avaliar Como</td>
-                        <td class="text-center">Status</td>
                         <td class="text-center">Ação</td>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in lista">
+                    <tr v-for="item in lista" :class="{
+                        'bg-danger text-white': item.pendente_autoavaliacao,
+                        'bg-pink': item.pendente_autoavaliacao_colaborador,
+                        'bg-warning': item.pendente_avaliacao_par && item.status !== 'Finalizada',
+                        'bg-info text-white': !item.pendente_avaliacao_par,
+                        'bg-success text-white': item.status === 'Finalizada'
+                    }"
+                    >
                         <td class="text-center">{{ item.avaliacao.titulo }}</td>
                         <td class="text-center">{{ item.avaliacao.avaliacao_tipo.nome }}</td>
                         <td class="text-center">{{ item.avaliacao.data_fim_prazo }}</td>
@@ -282,16 +298,21 @@
                                                    v-if="item.avaliador_id === item.funcionario_id"></i>
                             {{ item.funcionario.nome }}
                         </td>
-                        <td class="text-center">{{ item.origem_feedback == "Funcionario" ? "Auto avaliação" : item.origem_feedback }}</td>
                         <td class="text-center">
-                            <span class="p-1 badge badge-danger" v-if="item.status === 'Pendente' && !item.fez_auto_avaliacao">Aguardando a auto avaliação do funcionário</span>
-                            <span class="p-1 badge badge-danger" v-if="item.status === 'Pendente' && item.fez_auto_avaliacao">Pendente</span>
-                            <span class="p-1 badge badge-info" v-if="item.status === 'Avaliada'">Avaliada</span>
-                            <span class="p-1 badge badge-success" v-if="item.status === 'Finalizada'">Finalizada</span>
+                            <span v-show="item.origem_feedback == 'Funcionario' && !item.principal">Autoavaliação</span>
+                            <span v-show="item.origem_feedback == 'Avaliador' && !item.principal">Avaliador Par</span>
+                            <span v-show="item.origem_feedback == 'Avaliador' && item.principal">Avaliador Gestor (Principal)</span>
                         </td>
                         <td class="text-center">
 
-                            <div class="dropdown show" v-show="(item.status === 'Pendente' && item.fez_auto_avaliacao) || (item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id) || item.status === 'Avaliada' || (item.status === 'Avaliada' && item.fazer_avaliacao_final) || (item.status === 'Finalizada' && !item.fazer_avaliacao_final))">
+                            <div class="dropdown show"
+                                 v-show="
+                                  (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) // Autoavaliacao Par
+                                  || (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par) // Autoavaliacao Gestor
+                                  || (item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id) // autoavailiacao
+                                  || item.status === 'Avaliada' || (item.status === 'Avaliada' && item.fazer_avaliacao_final) // Avaliacao final
+                                  || (item.status === 'Finalizada' && !item.fazer_avaliacao_final)) // successo
+                                ">
                                 <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
                                    id="dropdownMenuLink"
                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -301,7 +322,7 @@
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
-                                       v-if="item.status === 'Pendente' && item.fez_auto_avaliacao">
+                                       v-if="(item.status === 'Pendente' && item.fez_auto_avaliacao  && !item.principal) || (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par)">
                                         Avaliar
                                     </a>
 
@@ -319,7 +340,8 @@
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
                                        data-toggle="modal" data-target="#janelaCadastrar"
-                                       @click="avaliarForm(item, true)" v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final">
+                                       @click="avaliarForm(item, true)"
+                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final">
                                         Visualizar Avaliação
                                     </a>
 
@@ -445,7 +467,7 @@ export default {
         };
     },
     filters: {
-        casasDecimais(valor){
+        casasDecimais(valor) {
             return valor.toFixed(1);
         }
     },
@@ -492,6 +514,7 @@ export default {
                     this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
                     this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
                     this.formAvaliar.origem_feedback = response.data.origem_feedback;
+                    this.formAvaliar.principal = response.data.principal;
                     this.editando = true;
                     setupCampo();
                     this.preload = false;
@@ -591,9 +614,26 @@ export default {
 .btn-link:hover {
     color: #dddddd;
 }
+
 .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+}
+
+.text-pink {
+    color: pink !important;
+}
+
+.bg-pink {
+    background: pink !important;
+}
+
+.text-azul {
+    color: powderblue !important;
+}
+
+.bg-azul {
+    background: powderblue !important;
 }
 
 </style>

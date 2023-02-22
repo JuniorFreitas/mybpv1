@@ -364,6 +364,8 @@ class HabilidadesTableSeeder extends Seeder
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
+        $lista[] = ['nome' => 'privilegio_aprovar_por_gestor', 'descricao' => 'Aprovação de Gestor'];
+        $lista[] = ['nome' => 'privilegio_aprovar_por_rh', 'descricao' => 'Aprovação de Rh'];
 
         //weekly-report
         $lista[] = ['nome' => 'weekly_report', 'descricao' => 'Acessar rota Weekley report'];
@@ -387,6 +389,10 @@ class HabilidadesTableSeeder extends Seeder
 
         //Configurações da empresa
         $lista[] = ['nome' => 'controle_ponto_config_empresa', 'descricao' => 'Acesso a tela de configurações da empresa'];
+
+        //PONTO MANUAL
+        $lista[] = ['nome' => 'controle_ponto_folha_ponto_manual', 'descricao' => 'Acesso a tela de folha de ponto manual'];
+
 
         //Perimetros
         $lista[] = ['nome' => 'controle_ponto_perimetros', 'descricao' => 'Acessar a rota de perímetros'];
@@ -475,6 +481,8 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'avaliacoes_listar', 'descricao' => 'Acessar avaliações'];
         $lista[] = ['nome' => 'avaliacoes_avaliar', 'descricao' => 'Pode fazer avaliação'];
         $lista[] = ['nome' => 'avaliacoes_final', 'descricao' => 'Pode fazer avaliacao final'];
+
+        $lista[] = ['nome' => 'relatorio_efetivo', 'descricao' => 'Pode acessar relatório de efetivo'];
 
 
         try {

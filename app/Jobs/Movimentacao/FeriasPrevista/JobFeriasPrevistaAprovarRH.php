@@ -24,28 +24,11 @@ class JobFeriasPrevistaAprovarRH implements ShouldQueue
     public $tries = 3;
     public $mailGestor;
 
-    public function __construct($feriasPrevista)
+    public function __construct($dados)
     {
-        $this->mail = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $feriasPrevista->UserCadastrou->nome,
-            'email_para' => $feriasPrevista->UserCadastrou->login,
-            'status_aprovacao' => $feriasPrevista->resposta_rh,
-            'ferias_id' => $feriasPrevista->id,
-            'colaborador' => $feriasPrevista->Colaborador->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
+        $this->mail = $dados['dados_quem_cadastrou'];
 
-        $this->mailGestor = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $feriasPrevista->QuemAprovou->nome,
-            'email_para' => $feriasPrevista->QuemAprovou->login,
-            'status_aprovacao' => $feriasPrevista->resposta_rh,
-            'ferias_id' => $feriasPrevista->id,
-            'colaborador' => $feriasPrevista->Colaborador->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
-
+        $this->mailGestor = $dados['dados_gestor'];
     }
 
     /**

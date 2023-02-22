@@ -21,9 +21,8 @@
                         <th>Código</th>
                         <th>Nome</th>
                         <th>Cargo</th>
-                        <th>Salário</th>
                         <th>Tipo Admissão</th>
-                        <th>Data da Admissao</th>
+                        <th>Data da Admissão</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -40,9 +39,6 @@
                                     {{ $item['feedback']['vaga_aberta']['municipio']['uf'] }}
                                 </td>
                                 <td class="text-center">
-                                    {{ $item ? 'R$ '.$item['salario'] : '' }}
-                                </td>
-                                <td class="text-center">
                                     {{ $item ? $item['tipo_admissao'] : '' }}
                                 </td>
                                 <td class="text-center">
@@ -51,7 +47,7 @@
                             </tr>
                         @endforeach
                         <tr>
-                            <td colspan="6" style="text-align: right; ">
+                            <td colspan="5" style="text-align: right; ">
                                 <strong>Total de Funcionários: </strong>{{ count($centro_de_custo['admissao']) }}
                                 @php
                                     $total = $total + count($centro_de_custo['admissao']);

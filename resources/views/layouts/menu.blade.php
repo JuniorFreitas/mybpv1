@@ -5,7 +5,8 @@
 <li class="pl-3 pr-3 mt-3">
     <div class="form-group">
         <label for="filter-menu" class="text-white">Filtrar Menu</label>
-        <input type="text" class="form-control form-control-sm" name="filter-menu" id="filter-menu" placeholder="Buscar">
+        <input type="text" class="form-control form-control-sm" name="filter-menu" id="filter-menu"
+               placeholder="Buscar">
     </div>
 </li>
 <li class="menu-title">Menu</li>
@@ -43,14 +44,16 @@
             <ul aria-expanded="false">
                 @can('administracao_clientes')
                     <li>
-                        <a href="{{route('g.administracao.clientes.clientes.index')}}" parent="administracao" key="clientes">
+                        <a href="{{route('g.administracao.clientes.clientes.index')}}" parent="administracao"
+                           key="clientes">
                             Clientes
                         </a>
                     </li>
                 @endcan
                 @can('administracao_fornecedores')
                     <li>
-                        <a href="{{route('g.administracao.fornecedor.fornecedor.index')}}" parent="administracao" key="fornecedores">
+                        <a href="{{route('g.administracao.fornecedor.fornecedor.index')}}" parent="administracao"
+                           key="fornecedores">
                             Fornecedores
                         </a>
                     </li>
@@ -61,32 +64,38 @@
                             Documentos Legais</a>
                         <ul aria-expanded="false">
                             <li>
-                                <a href="{{route('g.administracao.documentoslegais.contrato.contrato.index')}}" subparent="documentos_legais" parent="administracao" key="contrato">
-                                Contrato
+                                <a href="{{route('g.administracao.documentoslegais.contrato.contrato.index')}}"
+                                   subparent="documentos_legais" parent="administracao" key="contrato">
+                                    Contrato
                                 </a>
                             </li>
                             <li>
-                                <a href="{{route('g.administracao.documentoslegais.empresa.empresa.index')}}" subparent="documentos_legais" parent="administracao" key="documentoempresa">
-                                Documentos Empresa
+                                <a href="{{route('g.administracao.documentoslegais.empresa.empresa.index')}}"
+                                   subparent="documentos_legais" parent="administracao" key="documentoempresa">
+                                    Documentos Empresa
                                 </a>
                             </li>
                             <li>
-                                <a href="{{route('g.administracao.documentoslegais.ssma.ssma.index')}}" subparent="documentos_legais" parent="administracao" key="documentossma">
-                                Documentos SSMA
+                                <a href="{{route('g.administracao.documentoslegais.ssma.ssma.index')}}"
+                                   subparent="documentos_legais" parent="administracao" key="documentossma">
+                                    Documentos SSMA
                                 </a>
                             </li>
                             <li>
-                                <a href="{{route('g.administracao.documentoslegais.tipodocumento.tipodocumento.index')}}" subparent="documentos_legais" parent="administracao" key="tipodocumento">
+                                <a href="{{route('g.administracao.documentoslegais.tipodocumento.tipodocumento.index')}}"
+                                   subparent="documentos_legais" parent="administracao" key="tipodocumento">
                                     Tipos Documentos
                                 </a>
                             </li>
                             <li>
-                                <a href="{{route('g.administracao.documentoslegais.tiposervico.tiposervico.index')}}" subparent="documentos_legais" parent="administracao" key="tiposervico">
+                                <a href="{{route('g.administracao.documentoslegais.tiposervico.tiposervico.index')}}"
+                                   subparent="documentos_legais" parent="administracao" key="tiposervico">
                                     Tipos Serviços
                                 </a>
                             </li>
                             <li>
-                                <a href="{{route('g.administracao.documentoslegais.formacontrato.formacontrato.index')}}" subparent="documentos_legais" parent="administracao" key="formacontrato">
+                                <a href="{{route('g.administracao.documentoslegais.formacontrato.formacontrato.index')}}"
+                                   subparent="documentos_legais" parent="administracao" key="formacontrato">
                                     Formas Contratos
                                 </a>
                             </li>
@@ -95,14 +104,16 @@
                 @endcan
                 @can('administracao_atareuniao')
                     <li>
-                        <a href="{{route('g.administracao.atareuniao.atareuniao.index')}}" parent="administracao" key="atareuniao">
+                        <a href="{{route('g.administracao.atareuniao.atareuniao.index')}}" parent="administracao"
+                           key="atareuniao">
                             Ata Reunião
                         </a>
                     </li>
                 @endcan
                 @can('administracao_pesquisaclima')
                     <li>
-                        <a href="{{route('g.administracao.pesquisaclima.indexAdm')}}" parent="administracao" key="pesquisaclima">
+                        <a href="{{route('g.administracao.pesquisaclima.indexAdm')}}" parent="administracao"
+                           key="pesquisaclima">
                             Pesquisa de Clima
                         </a>
                     </li>
@@ -199,21 +210,24 @@
                 @endcan
                 @can('cadastro_treinamento_industria')
                     <li>
-                        <a href="{{route('g.treinamentoindustria.treinamentoindustria.index')}}" parent="cadastro" key="treinamentoindustria">
+                        <a href="{{route('g.treinamentoindustria.treinamentoindustria.index')}}" parent="cadastro"
+                           key="treinamentoindustria">
                             Treinamentos Indústria
                         </a>
                     </li>
                 @endcan
                 @can('cadastro_treinamento_sgi')
                     <li>
-                        <a href="{{route('g.treinamentosgi.treinamentosgi.index')}}" parent="cadastro" key="treinamentosgi">
+                        <a href="{{route('g.treinamentosgi.treinamentosgi.index')}}" parent="cadastro"
+                           key="treinamentosgi">
                             Treinamentos
                         </a>
                     </li>
                 @endcan
                 @can('cadastro_empresa_treinamento')
                     <li>
-                        <a href="{{route('g.empresatreinamento.empresatreinamento.index')}}" parent="cadastro" key="empresatreinamento">
+                        <a href="{{route('g.empresatreinamento.empresatreinamento.index')}}" parent="cadastro"
+                           key="empresatreinamento">
                             Empresa Treinamento
                         </a>
                     </li>
@@ -221,7 +235,8 @@
 
                 @can('cadastro_empresa_temporaria')
                     <li>
-                        <a href="{{route('g.empresatemporaria.empresa-temporaria.index')}}" parent="cadastro" key="empresatemporaria">
+                        <a href="{{route('g.empresatemporaria.empresa-temporaria.index')}}" parent="cadastro"
+                           key="empresatemporaria">
                             Empresa Temporaria
                         </a>
                     </li>
@@ -240,21 +255,24 @@
                         <ul aria-expanded="false">
                             @can('cadastro_avaliacao_tipo')
                                 <li>
-                                    <a href="{{route('g.avaliacaotipo.avaliacaotipo.index')}}" subparent="avaliacoes" parent="cadastro" key="avaliacaotipo">
+                                    <a href="{{route('g.avaliacaotipo.avaliacaotipo.index')}}" subparent="avaliacoes"
+                                       parent="cadastro" key="avaliacaotipo">
                                         Tipos
                                     </a>
                                 </li>
                             @endcan
                             @can('cadastro_avaliacao_topico')
                                 <li>
-                                    <a href="{{route('g.avaliacaotopico.avaliacaotopico.index')}}" subparent="avaliacoes" parent="cadastro" key="avaliacaotopico">
+                                    <a href="{{route('g.avaliacaotopico.avaliacaotopico.index')}}"
+                                       subparent="avaliacoes" parent="cadastro" key="avaliacaotopico">
                                         Tópicos
                                     </a>
                                 </li>
                             @endcan
                             @can('cadastro_avaliacao')
                                 <li>
-                                    <a href="{{route('g.avaliacao.avaliacao.index')}}" subparent="avaliacoes" parent="cadastro" key="avaliacao">
+                                    <a href="{{route('g.avaliacao.avaliacao.index')}}" subparent="avaliacoes"
+                                       parent="cadastro" key="avaliacao">
                                         Avaliações
                                     </a>
                                 </li>
@@ -268,13 +286,15 @@
 
     @if(\App\Models\Sistema::permitirLinks('planejamento_requisicao_vaga','planejamento_mobilizacao'))
         <li id="planejamento">
-            <a href="javascript://" class="has-arrow waves-effect" parent="planejamento"><i class="bx bx-add-to-queue"></i>
+            <a href="javascript://" class="has-arrow waves-effect" parent="planejamento"><i
+                    class="bx bx-add-to-queue"></i>
                 <span>PLANEJAMENTO</span>
             </a>
             <ul aria-expanded="false">
                 @can('planejamento_requisicao_vaga')
                     <li>
-                        <a href="{{route('g.requisicao_vagas.requisicao-vaga.index')}}" parent="planejamento" key="requisicao_vaga">
+                        <a href="{{route('g.requisicao_vagas.requisicao-vaga.index')}}" parent="planejamento"
+                           key="requisicao_vaga">
                             Requisição de Vaga
                         </a>
                     </li>
@@ -303,14 +323,16 @@
             <ul aria-expanded="false">
                 @can('curriculos_recrutamento')
                     <li>
-                        <a href="{{route('g.recrutamento.recrutamentos.index')}}" parent="curriculos" key="recrutamento">
+                        <a href="{{route('g.recrutamento.recrutamentos.index')}}" parent="curriculos"
+                           key="recrutamento">
                             Recrutamento
                         </a>
                     </li>
                 @endcan
                 @can('curriculos_selecionados')
                     <li>
-                        <a href="{{route('g.curriculoselecao.curriculos-selecionados.index')}}" parent="curriculos" key="selecionados">
+                        <a href="{{route('g.curriculoselecao.curriculos-selecionados.index')}}" parent="curriculos"
+                           key="selecionados">
                             Selecionados
                         </a>
                     </li>
@@ -321,13 +343,15 @@
 
     @if(\App\Models\Sistema::permitirLinks('entrevista_parecer_rh', 'entrevista_parecer_rota', 'entrevista_parecer_teste_pratico', 'entrevista_parecer_entrevista', 'entrevista_resultado_integrado','entrevista_rh_cliente','entrevista_gestor_cliente'))
         <li id="entrevistas">
-            <a href="javascript://" class="has-arrow waves-effect"><i class="mdi mdi-clipboard-list-outline" parent="entrevistas"></i>
+            <a href="javascript://" class="has-arrow waves-effect"><i class="mdi mdi-clipboard-list-outline"
+                                                                      parent="entrevistas"></i>
                 <span>ENTREVISTAS</span>
             </a>
             <ul aria-expanded="false">
                 @can('entrevista_parecer_rh')
                     <li>
-                        <a href="{{route('g.entrevista.parecer_rh.parecer_rh.index')}}" parent="entrevistas" key="parecer_rh">
+                        <a href="{{route('g.entrevista.parecer_rh.parecer_rh.index')}}" parent="entrevistas"
+                           key="parecer_rh">
                             Parecer RH
                         </a>
                     </li>
@@ -335,7 +359,8 @@
 
                 @can('entrevista_parecer_rota')
                     <li>
-                        <a href="{{route('g.entrevista.parecer_rota_transporte.parecer-rota.index')}}" parent="entrevistas" key="parecer_rota">
+                        <a href="{{route('g.entrevista.parecer_rota_transporte.parecer-rota.index')}}"
+                           parent="entrevistas" key="parecer_rota">
                             Parecer Rota - Transporte
                         </a>
                     </li>
@@ -389,7 +414,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('controle_ponto_config_empresa','controle_ponto_ocorrencias_jornadas','controle_ponto_escalas'))
+    @if(\App\Models\Sistema::permitirLinks('controle_ponto_config_empresa','controle_ponto_ocorrencias_jornadas','controle_ponto_escalas','controle_ponto_folha_ponto_manual'))
         <li id="ponto">
             <a href="javascript://" class="has-arrow waves-effect" parent="ponto">
                 <i class="bx bx-time"></i>
@@ -445,6 +470,13 @@
                         </a>
                     </li>
                 @endcan
+                @can('controle_ponto_folha_ponto_manual')
+                    <li>
+                        <a href="{{route('g.controle-ponto.folha-manual.index')}}" parent="ponto">
+                            FOLHA DE PONTO MANUAL
+                        </a>
+                    </li>
+                @endcan
             </ul>
         </li>
     @endif
@@ -471,23 +503,27 @@
                 @endcan
                 @can('admissao_cih')
                     <li id="apontamento">
-                        <a href="javascript://" class="has-arrow waves-effect" subparent="apontamento" parent="admissao">
+                        <a href="javascript://" class="has-arrow waves-effect" subparent="apontamento"
+                           parent="admissao">
                             APONTAMENTO</a>
                         <ul aria-expanded="false">
                             @can('cadastro_tipos_cih')
                                 <li>
-                                    <a href="{{route('g.tipocih.tipoCihIndex')}}" subparent="apontamento" parent="admissao" key="tipocih">
+                                    <a href="{{route('g.tipocih.tipoCihIndex')}}" subparent="apontamento"
+                                       parent="admissao" key="tipocih">
                                         Tipos CIH
                                     </a>
                                 </li>
                             @endcan
                             <li>
-                                <a href="{{ (route('g.admissao.cih.cih.index')) }}" subparent="apontamento" parent="admissao">
+                                <a href="{{ (route('g.admissao.cih.cih.index')) }}" subparent="apontamento"
+                                   parent="admissao">
                                     CIH
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ (route('g.admissao.intermitente.intermitente.index')) }}" subparent="apontamento" parent="admissao">
+                                <a href="{{ (route('g.admissao.intermitente.intermitente.index')) }}"
+                                   subparent="apontamento" parent="admissao">
                                     INTERMITENTE
                                 </a>
                             </li>
@@ -511,7 +547,8 @@
                 @endcan
                 @can('admissao_pos_admissao')
                     <li>
-                        <a href="{{route('g.posadmissao.posadmissao.index', auth()->user()->cliente_id != 1 ? ['cliente_id' => auth()->user()->cliente_id] : null)}}" parent="admissao">
+                        <a href="{{route('g.posadmissao.posadmissao.index', auth()->user()->cliente_id != 1 ? ['cliente_id' => auth()->user()->cliente_id] : null)}}"
+                           parent="admissao">
                             PÓS-ADMISSÃO
                         </a>
                     </li>
@@ -559,14 +596,16 @@
                 @endcan
                 @can('treinamento_carteira-etiquetas')
                     <li>
-                        <a href="{{route('g.treinamentos.treinamento.index' )}}" parent="treinamento" key="carteira_etiquetas">
+                        <a href="{{route('g.treinamentos.treinamento.index' )}}" parent="treinamento"
+                           key="carteira_etiquetas">
                             Carteira/Etiquetas
                         </a>
                     </li>
                 @endcan
                 @can('treinamento_certificado')
                     <li>
-                        <a href="{{route('g.certificados.certificado.index' )}}" parent="treinamento" key="emissao_certificados">
+                        <a href="{{route('g.certificados.certificado.index' )}}" parent="treinamento"
+                           key="emissao_certificados">
                             Emissão Certificados (NR33/NR35)
                         </a>
                     </li>
@@ -583,28 +622,32 @@
             <ul aria-expanded="false">
                 @can('financeiro_classificacao-plano-conta')
                     <li>
-                        <a href="{{ (route('g.financeiro.classificacao-plano-conta.index')) }}" parent="financeiro" class="waves-effect">
+                        <a href="{{ (route('g.financeiro.classificacao-plano-conta.index')) }}" parent="financeiro"
+                           class="waves-effect">
                             <span>Classificação</span>
                         </a>
                     </li>
                 @endcan
                 @can('financeiro_plano-conta')
                     <li>
-                        <a href="{{ (route('g.financeiro.plano-conta.index')) }}" parent="financeiro" class="waves-effect">
+                        <a href="{{ (route('g.financeiro.plano-conta.index')) }}" parent="financeiro"
+                           class="waves-effect">
                             <span>Planos de conta</span>
                         </a>
                     </li>
                 @endcan
                 @can('financeiro_formas-pagamento')
                     <li>
-                        <a href="{{ (route('g.financeiro.formas-pagamento.index')) }}" parent="financeiro" class="waves-effect">
+                        <a href="{{ (route('g.financeiro.formas-pagamento.index')) }}" parent="financeiro"
+                           class="waves-effect">
                             <span>Formas de pagamento</span>
                         </a>
                     </li>
                 @endcan
                 @can('financeiro_fluxo-caixa')
                     <li>
-                        <a href="{{ (route('g.financeiro.fluxo-caixa.index')) }}" parent="financeiro" class="waves-effect">
+                        <a href="{{ (route('g.financeiro.fluxo-caixa.index')) }}" parent="financeiro"
+                           class="waves-effect">
                             <span>Fluxo de caixa</span>
                         </a>
                     </li>
@@ -626,7 +669,8 @@
 
                 @foreach(auth()->user()->CloudsAtivo as $cloud)
                     <li>
-                        <a href="{{route('g.cloud.cloud.single', [$cloud->id, $cloud->nome])}}" parent="cloud" key="{{$cloud->nome}}">
+                        <a href="{{route('g.cloud.cloud.single', [$cloud->id, $cloud->nome])}}" parent="cloud"
+                           key="{{$cloud->nome}}">
                             {{$cloud->nome}}
                         </a>
                     </li>
@@ -642,7 +686,8 @@
 
                 @can('cloud_configuracoes')
                     <li>
-                        <a href="{{ route('g.cloud.configuracoes.configuracoes.index') }}" parent="cloud" key="cloud_configuracoes">
+                        <a href="{{ route('g.cloud.configuracoes.configuracoes.index') }}" parent="cloud"
+                           key="cloud_configuracoes">
                             Configurações
                         </a>
                     </li>
@@ -667,7 +712,8 @@
                 @endcan
                 @can('site_cartela_cliente_site')
                     <li>
-                        <a href="{{route('g.site.cliente.cliente-logo.index')}}" parent="site" key="cartela_cliente_site">
+                        <a href="{{route('g.site.cliente.cliente-logo.index')}}" parent="site"
+                           key="cartela_cliente_site">
                             Cartela Cliente
                         </a>
                     </li>
@@ -683,7 +729,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias','relatorio_centro_de_custo','relatorio_aniversariantes'))
+    @if(\App\Models\Sistema::permitirLinks('relatorio_relatorios', 'relatorio_controleusuarios', 'relatorio_asos', 'relatorio_medidas_administrativas','relatorio_ferias','relatorio_centro_de_custo','relatorio_efetivo','relatorio_aniversariantes'))
         <li id="relatorios">
             <a href="javascript://" class="has-arrow waves-effect" parent="relatorios">
                 <i class="bx bx-chart"></i>
@@ -692,7 +738,8 @@
             <ul aria-expanded="false">
                 @can('relatorio_controleusuarios')
                     <li>
-                        <a href="{{route('g.relatorios.controleusuarios.index')}}" parent="relatorios" key="controleusuarios">
+                        <a href="{{route('g.relatorios.controleusuarios.index')}}" parent="relatorios"
+                           key="controleusuarios">
                             Controle de Usuários
                         </a>
                     </li>
@@ -702,7 +749,8 @@
             <ul aria-expanded="false">
                 @can('relatorio_asos')
                     <li>
-                        <a href="{{route('g.relatorios.vencimentoasos.index')}}" parent="relatorios" key="vencimentoasos">
+                        <a href="{{route('g.relatorios.vencimentoasos.index')}}" parent="relatorios"
+                           key="vencimentoasos">
                             Vencimento de Asos
                         </a>
                     </li>
@@ -712,7 +760,8 @@
             <ul aria-expanded="false">
                 @can('relatorio_treinamento')
                     <li>
-                        <a href="{{route('g.relatorios.vencimentotreinamento.index')}}" parent="relatorios" key="relatorio_treinamento">
+                        <a href="{{route('g.relatorios.vencimentotreinamento.index')}}" parent="relatorios"
+                           key="relatorio_treinamento">
                             Treinamentos
                         </a>
                     </li>
@@ -722,7 +771,8 @@
             <ul aria-expanded="false">
                 @can('relatorio_ferias')
                     <li>
-                        <a href="{{route('g.relatorios.vencimentoferias.index')}}" parent="relatorios" key="relatorio_ferias">
+                        <a href="{{route('g.relatorios.vencimentoferias.index')}}" parent="relatorios"
+                           key="relatorio_ferias">
                             Férias
                         </a>
                     </li>
@@ -732,7 +782,8 @@
             <ul aria-expanded="false">
                 @can('relatorio_medidas_administrativas')
                     <li>
-                        <a href="{{route('g.relatorios.medidasadministrativas.index')}}" parent="relatorios" key="medidasadministrativas">
+                        <a href="{{route('g.relatorios.medidasadministrativas.index')}}" parent="relatorios"
+                           key="medidasadministrativas">
                             Medidas Administrativas
                         </a>
                     </li>
@@ -747,12 +798,22 @@
                         </a>
                     </li>
                 @endcan
+            </ul>
 
+            <ul aria-expanded="false">
+                @can('relatorio_efetivo')
+                    <li>
+                        <a href="{{route('g.relatorios.efetivo.index')}}" parent="relatorios" key="efetivo">
+                            Efetivo
+                        </a>
+                    </li>
+                @endcan
             </ul>
             <ul aria-expanded="false">
                 @can('relatorio_aniversariantes')
                     <li>
-                        <a href="{{route('g.relatorios.aniversariantes.relatorioNivers')}}" parent="relatorios" key="aniversariantes">
+                        <a href="{{route('g.relatorios.aniversariantes.relatorioNivers')}}" parent="relatorios"
+                           key="aniversariantes">
                             Aniversariantes
                         </a>
                     </li>
@@ -815,7 +876,8 @@
             <ul aria-expanded="false">
                 @can('acesso_clinica')
                     <li>
-                        <a href="{{route('g.acesso-clinica.acesso-clinica.index')}}" parent="exames" key="acesso-clinica-colaboradores">
+                        <a href="{{route('g.acesso-clinica.acesso-clinica.index')}}" parent="exames"
+                           key="acesso-clinica-colaboradores">
                             Colaboradores
                         </a>
                     </li>
@@ -828,32 +890,32 @@
 @push('js')
     <script type="text/javascript">
 
-        $.expr[":"].contains = $.expr.createPseudo(function(arg) {
-            return function( elem ) {
+        $.expr[":"].contains = $.expr.createPseudo(function (arg) {
+            return function (elem) {
                 return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
             };
         });
 
-        $( "#filter-menu" ).keyup(function() {
+        $("#filter-menu").keyup(function () {
             let stringPesquisa = $("#filter-menu").val();
-            if(stringPesquisa.length ==0){
-                $('a').css("color","");
-            }else{
-                $('a').css("color","");
-                $('a:contains('+stringPesquisa+')').each(function( index ) {
-                    let id_parent = $( this ).attr('parent');
-                    let id_sub_parent = $( this ).attr('subparent');
-                    let a_parent = $("#"+id_parent+"").children().first();
-                    let a_sub_parent = $("#"+id_sub_parent+"").children().first();
+            if (stringPesquisa.length == 0) {
+                $('a').css("color", "");
+            } else {
+                $('a').css("color", "");
+                $('a:contains(' + stringPesquisa + ')').each(function (index) {
+                    let id_parent = $(this).attr('parent');
+                    let id_sub_parent = $(this).attr('subparent');
+                    let a_parent = $("#" + id_parent + "").children().first();
+                    let a_sub_parent = $("#" + id_sub_parent + "").children().first();
 
-                    if($("#"+id_parent+"").children().is('a')){
-                        a_parent.css("color","#FFFF00");
+                    if ($("#" + id_parent + "").children().is('a')) {
+                        a_parent.css("color", "#FFFF00");
                     }
-                    if($("#"+id_sub_parent+"").children().is('a')){
-                        a_sub_parent.css("color","#FFFF00");
+                    if ($("#" + id_sub_parent + "").children().is('a')) {
+                        a_sub_parent.css("color", "#FFFF00");
                     }
 
-                    $( this ).css("color","#FFFF00");
+                    $(this).css("color", "#FFFF00");
                 });
             }
         });

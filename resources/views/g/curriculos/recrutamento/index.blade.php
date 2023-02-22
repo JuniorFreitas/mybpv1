@@ -19,7 +19,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>CPF</label>
                                 <input type="text" class="form-control" v-model="form.cpf"
@@ -29,7 +29,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>RG</label>
                                 <input type="text" class="form-control" v-model="form.rg"
@@ -39,7 +39,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>Orgão Expeditor (RG)</label>
                                 <input type="text" class="form-control" v-model="form.orgao_expeditor"
@@ -48,7 +48,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>CNH</label>
                                 <input type="text" class="form-control" v-model="form.cnh"
@@ -57,13 +57,39 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                        <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label>Nascimento</label>
                                 <input type="text" class="form-control" v-model="form.nascimento"
                                        placeholder="Ex: 10/10/2010"
                                        v-mascara:data
                                        autocomplete="mastertag" onblur="valida_data_vazio(this)">
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>Sexo</label>
+                                <select
+                                    class="form-control"
+                                    v-model="form.sexo"
+                                >
+                                    <option value="">Selecione</option>
+                                    <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label>Estado Civil</label>
+                                <select
+                                    class="form-control"
+                                    v-model="form.estado_civil"
+                                >
+                                    <option value="">Selecione</option>
+                                    <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
+                                </select>
                             </div>
                         </div>
 
@@ -371,19 +397,19 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-4"
-                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
-                            <div class="form-group">
-                                <label for="">Selecione um cliente</label>
-                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete"
-                                              :valido="form_feedback.cliente_id !== ''"
-                                              v-model="form_feedback.autocomplete_label_cliente_modal"
-                                              :id="`cliente_modal_${hash}`"
-                                              placeholder="Digite o nome da empresa"
-                                              @onblur="resetaCampoClienteModal"
-                                              @onselect="selecionaClienteModal"></autocomplete>
-                            </div>
-                        </div>
+{{--                        <div class="col-12 col-md-4"--}}
+{{--                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">--}}
+{{--                            <div class="form-group">--}}
+{{--                                <label for="">Selecione um cliente</label>--}}
+{{--                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete"--}}
+{{--                                              :valido="form_feedback.cliente_id !== ''"--}}
+{{--                                              v-model="form_feedback.autocomplete_label_cliente_modal"--}}
+{{--                                              :id="`cliente_modal_${hash}`"--}}
+{{--                                              placeholder="Digite o nome da empresa"--}}
+{{--                                              @onblur="resetaCampoClienteModal"--}}
+{{--                                              @onselect="selecionaClienteModal"></autocomplete>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
                         <div class="col-12 col-md-12">
                             <div class="form-group">
                                 <label for="">Observações:</label>
@@ -637,7 +663,7 @@
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
 
-                        <a :href="`recrutamentos/${curriculo.id}`" target="_blank" class="btn btn-sm mb-2 btn-primary"
+                        <a :href="`recrutamentos/${curriculo.ctoken}`" target="_blank" class="btn btn-sm mb-2 btn-primary"
                            content="Gerar PDF" v-tippy>
                             <i class="far fa-file-pdf"></i>
                         </a>

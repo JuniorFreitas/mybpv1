@@ -5,7 +5,14 @@ const mix = require("laravel-mix");
 //     dist: "public/", // build files
 //     dist_assets: "public/assets/" //build assets files
 // };
-
+//
+// if (mix.inProduction()) {
+//     jsOutputDir = 'build/js';
+//     cssOutputDir = 'build/css';
+// } else {
+//     jsOutputDir = 'build/js/development';
+//     cssOutputDir = 'build/css/development';
+// }
 /*
  |--------------------------------------------------------------------------
  | Mix Asset Management
@@ -151,6 +158,7 @@ mix.js("resources/js/app.js", "public/js")
     .js("resources/js/g/controle-ponto/camera/app.js", "public/js/g/controle-ponto/camera/")
     .js("resources/js/g/controle-ponto/ajuste-jornadas/app.js", "public/js/g/controle-ponto/ajuste-jornadas/")
     .js("resources/js/g/controle-ponto/folha-ponto/app.js", "public/js/g/controle-ponto/folha-ponto/")
+    .js("resources/js/g/controle-ponto/folha-manual/app.js", "public/js/g/controle-ponto/folha-manual/")
     .copy("resources/js/g/controle-ponto/camera/adapter-latest.js", "public/js/g/controle-ponto/camera/")
     .copy("resources/js/g/controle-ponto/camera/face-api.min.js", "public/js/g/controle-ponto/camera/")
     .copy("resources/js/g/controle-ponto/ponto-eletronico/webcam.min.js", "public/js/g/controle-ponto/ponto-eletronico/")
@@ -171,6 +179,7 @@ mix.js("resources/js/app.js", "public/js")
     .js("resources/js/g/relatorios/treinamento/app.js", "public/js/g/relatorios/treinamento/")
     .js("resources/js/g/relatorios/ferias/app.js", "public/js/g/relatorios/ferias/")
     .js("resources/js/g/relatorios/centrodecusto/app.js", "public/js/g/relatorios/centrodecusto/")
+    .js("resources/js/g/relatorios/efetivo/app.js", "public/js/g/relatorios/efetivo/")
     .js("resources/js/g/relatorios/aniversariantes/app.js", "public/js/g/relatorios/aniversariantes/")
 
     //Site G/
@@ -223,3 +232,4 @@ mix.disableNotifications();
 if (mix.inProduction()) {
     mix.version();
 }
+

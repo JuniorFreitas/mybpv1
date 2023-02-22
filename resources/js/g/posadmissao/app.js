@@ -357,7 +357,7 @@ const app = new Vue({
                 mostraErro("", "Verifique os erros");
                 return false;
             }
-            this.form._method = "PUT";
+
             this.preload = true;
             axios.put(`${URL_ADMIN}/posadmissao/desmobilizar`, this.form)
                 .then(response => {

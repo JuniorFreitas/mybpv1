@@ -62,7 +62,7 @@ export default {
         dados: {
             type: Object,
             required: false,
-            default: () => []
+            default: () => {}
         },
 
         id: {

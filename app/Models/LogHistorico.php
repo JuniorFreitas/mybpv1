@@ -28,6 +28,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereUserId($value)
  * @mixin \Eloquent
+ * @property int $empresa_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereEmpresaId($value)
  */
 class LogHistorico extends Model
 {

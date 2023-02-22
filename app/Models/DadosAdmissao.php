@@ -29,6 +29,12 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorSessao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorZona($value)
  * @mixin \Eloquent
+ * @property string|null $ctps_uf
+ * @property string|null $cert_reservista_num
+ * @property string|null $cert_reservista_categoria
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCertReservistaCategoria($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCertReservistaNum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereCtpsUf($value)
  */
 class DadosAdmissao extends Model
 {
@@ -42,6 +48,9 @@ class DadosAdmissao extends Model
         'titulo_eleitor_numero',
         'titulo_eleitor_sessao',
         'titulo_eleitor_zona',
+        'ctps_uf',
+        'cert_reservista_num',
+        'cert_reservista_categoria',
     ];
 
     protected $casts = [
@@ -52,6 +61,9 @@ class DadosAdmissao extends Model
         'titulo_eleitor_numero' => 'string',
         'titulo_eleitor_sessao' => 'string',
         'titulo_eleitor_zona' => 'string',
+        'ctps_uf' => 'string',
+        'cert_reservista_num' => 'string',
+        'cert_reservista_categoria' => 'string',
     ];
 
     public $timestamps = false;

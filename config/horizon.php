@@ -173,6 +173,7 @@ return [
             'memory' => 128,
             'tries' => 1,
             'nice' => 0,
+            'timeout' => 60 * 60 // <<<<<<<< THIS - timeout in seconds
         ],
     ],
 
