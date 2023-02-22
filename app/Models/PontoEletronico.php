@@ -166,22 +166,6 @@ class PontoEletronico extends Model {
         return $date->format('Y-m-d H:i:s');
     }
 
-    protected static function booted() {
-        static::creating(function ($model) {
-            if (auth()->user()) { // esta assim pro conta do CRON
-                $model->empresa_id = auth()->user()->empresa_id;
-                $model->funcionario_id = auth()->id(); // se apagar isso, verificar os cruds na tela de ponto (PontoEletronicoController)
-            }
-        });
-
-        /*static::updated(function ($model) {
-
-
-        });*/
-
-        static::addGlobalScope(new ScopeEmpresa());
-    }
-
     //Relacionamentos --------------------------
     public function Funcionario() {
         return $this->hasOne(User::class, 'id', 'funcionario_id');
@@ -654,4 +638,14 @@ class PontoEletronico extends Model {
     public function Periodo(){
         return $this->hasOne(PeriodoJornada::class,'id','periodo_id');
     }*/
+
+    protected static function booted() {
+        static::creating(function ($model) {
+            if (auth()->user()) { // esta assim pro conta do CRON
+                $model->empresa_id = auth()->user()->empresa_id;
+                $model->funcionario_id = auth()->id(); // se apagar isso, verificar os cruds na tela de ponto (PontoEletronicoController)
+            }
+        });
+        static::addGlobalScope(new ScopeEmpresa());
+    }
 }

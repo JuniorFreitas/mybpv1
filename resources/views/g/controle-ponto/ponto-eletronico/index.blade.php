@@ -25,7 +25,7 @@
                             Foto da entrada
                         </td>
                         <td>
-                            <img :src="modelRegistro.foto_entrada.url" alt="" width="300">
+                            <img :src="modelRegistro.foto_entrada.url" alt="" style="width: 300px; border-radius: 6%;object-fit: cover;">
                         </td>
                     </tr>
                     <tr>
@@ -42,7 +42,7 @@
                             Foto da saída
                         </td>
                         <td>
-                            <img :src="modelRegistro.foto_saida.url" alt="" width="300">
+                            <img :src="modelRegistro.foto_saida.url" alt="" style="width: 300px; border-radius: 6%;object-fit: cover;">
                         </td>
                     </tr>
                     <tr>

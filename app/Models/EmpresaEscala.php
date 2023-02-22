@@ -7,6 +7,7 @@ use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -33,7 +34,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EmpresaEscala extends Model
 {
-    use HasFactory, LogsActivity, TenantTrait;
+    use HasFactory, LogsActivity, TenantTrait, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'EmpresaEscala';

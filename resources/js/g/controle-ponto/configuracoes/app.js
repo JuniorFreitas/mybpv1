@@ -59,6 +59,9 @@ const app = new Vue({
         },
         todosFuncionariosSelecionados:false,
 
+        listaTodosPerimetros:[],
+        listaTodosPerimetrosDefault:null,
+
         formPerimetroFuncionarios:{
             funcionariosSelecionados:[],
             perimetrosSelecionados:[],
@@ -149,7 +152,8 @@ const app = new Vue({
             this.paginacaoPerimetros.carregando = true;
         },
         carregouPerimetros: function (dados) {
-            this.listaPerimetros = dados;
+            this.listaPerimetros = dados.itens;
+            this.listaTodosPerimetros = dados.todos_perimetros;
             this.listaPerimetrosDefault = _.cloneDeep(dados);
             this.paginacaoPerimetros.carregando = false;
             this.formPerimetroFuncionarios.preload = false;
@@ -159,8 +163,6 @@ const app = new Vue({
             this.$refs.paginacaoPerimetros.buscar();
         },
         initMap(){
-
-
             // AutoCompletar
             let autocomplete = new google.maps.places.Autocomplete($(".enderecoGoogle")[0], {});
             google.maps.event.addListener(autocomplete, 'place_changed', () => {
@@ -467,7 +469,7 @@ const app = new Vue({
         },
 
         formAssociarPerimetro(){
-            this.listaPerimetros = _.cloneDeep(this.listaPerimetrosDefault);
+            // this.listaTodosPerimetros = _.cloneDeep(this.listaTodosPerimetrosDefault);
             this.formPerimetroFuncionarios.perimetro_id=0;
             this.formPerimetroFuncionarios.perimetrosSelecionados=[];
 
@@ -475,9 +477,7 @@ const app = new Vue({
                 let funcionarioId = this.formPerimetroFuncionarios.funcionariosSelecionados[0];
                 let perimetros = _.filter(this.listaFuncionarios, {'id':funcionarioId})[0].perimetros_funcionario;
 
-                console.log(perimetros);
-
-                this.listaPerimetros.forEach((item) => {
+                this.listaTodosPerimetros.forEach((item) => {
                     perimetros.forEach((perimetro) => {
                         if (item.id === perimetro.id){
                             this.formPerimetroFuncionarios.perimetrosSelecionados.push(perimetro.id);

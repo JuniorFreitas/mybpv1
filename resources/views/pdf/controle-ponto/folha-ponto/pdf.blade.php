@@ -5,6 +5,15 @@
 @endsection
 @push('style')
     <style type="text/css">
+        @page :first {
+            margin: -10px !important;
+            padding: 0px !important;
+        }
+
+        @page {
+            margin: -10px !important;
+            padding: 0px !important;
+        }
         .textoVermelho {
             color: #ff0000;
         }
@@ -12,95 +21,140 @@
         .textoVerde {
             color: #02660c;
         }
+
+        table.dados2, table.dados2 th, table.dados2 td {
+            border: 0.1px solid black;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            padding: 3px;
+        }
+
+        .dados2 {
+            width: 100%;
+        }
+
     </style>
 
 @endpush
 @section('conteudo')
-    <h5 class="text-center" style="text-transform: uppercase; text-decoration: underline">FICHA DE PONTO
-        - {{$intervaloText}}</h5>
-    <h5 style="margin-top: 5px; margin-bottom: 5px; text-decoration: underline">DADOS CADASTRAIS</h5>
-    <h5>
-        @if ($dados->tipo == \App\Models\Cliente::TIPO_PESSOA_JURIDICA)
-            Razão Social: <span
-                style="font-weight: normal; line-height: 20px">{{ $dados->razao_social }}</span> <br>
-            Nome Fantasia: <span
-                style="font-weight: normal; line-height: 20px">{{ $dados->razao_social }}</span> <br>
-            CNPJ: <span style="font-weight: normal; line-height: 20px">{{ $dados->cnpj }}</span> <br>
-        @else
-            Nome: <span style="font-weight: normal; line-height: 20px">{{ $dados->nome }}</span> <br>
-            CPF: <span style="font-weight: normal; line-height: 20px">{{ $dados->cpf }}</span> <br>
-        @endif
+    <p class="text-center" style="text-transform: uppercase; text-decoration: underline; margin-top: -20px">ESPELHO DE PONTO
+        - {{$intervaloText}}</p>
+    <table class="dados2" width="100%" style="margin-bottom: -6px">
+        <thead>
+        <tr style="text-transform: uppercase">
+            <th>
+                Nome: <span style="font-weight: normal; line-height: 20px">{{ $dados->nome }}</span>
+            </th>
+            <th>CPF: <span style="font-weight: normal; line-height: 20px">{{ $dados->cpf }}</span></th>
+            <th>Escala:
+                {{ $escala->descricao }}
+            </th>
+        </tr>
+        </thead>
 
-    </h5>
-
-    <h5 style="margin-top: 10px; margin-bottom: 5px; text-decoration: underline">FREQUÊNCIA</h5>
-    <h5>
-        Escala de trabalho atual: <span style="font-weight: normal; line-height: 20px">{{ $escala->descricao }}</span>
-        <br>
-    </h5>
+    </table>
     @if(count($lista)==0)
         <h5 style="margin-top: 10px; margin-bottom: 5px; text-decoration: underline">SEM DADOS PARA EXIBIR</h5>
     @else
-        <table width="100%">
+        <table class="dados2" width="100%">
             <thead>
             <tr>
-                <th scope="col">Data</th>
-                <th scope="col">Sem</th>
-                <th scope="col">Periodos trabalhados</th>
-                <!--                    <th scope="col">Escala</th>-->
-                <th scope="col">Prevista</th>
-                <th scope="col">Normal</th>
-                <th scope="col">Noturna</th>
-                <th scope="col">Extra</th>
-                <th scope="col">Negativa</th>
+                <th>Data</th>
+                <th>Periodos trabalhados</th>
+                <!--                    <th>Escala</th>-->
+                <th>Prevista</th>
+                <th>Normal</th>
+                <th>Noturna</th>
+                <th>Extra</th>
+                <th>Negativa</th>
             </tr>
             </thead>
             <tbody>
-            @foreach($lista as $ponto)
+            @foreach($lista as $calendar)
                 <tr>
-                    <td>{{ substr($ponto->dia,0,5) }}</td>
-                    <td>{{$ponto->diaSem }}</td>
-                    <td>
-                        @if(!$ponto->verificado) * @endif
-                        @foreach($ponto->periodos as $index =>$periodo)
-                            @if($ponto->ocorrencia->trabalhado)
-                                @if($index > 0)| @endif {{ $periodo->horaEntrada }}
-                                @if($periodo->horaSaida)-{{ $periodo->horaSaida }}@endif
-                                @if(!$periodo->horaSaida)- trabalhando @endif
-                            @else
-                                @if(!$ponto->ocorrencia->trabalhado) {{ $ponto->ocorrencia->descricao }}@endif
-                            @endif
-                        @endforeach
+                    <td>{{ substr($calendar['dia'],0,5) }} -
+                        {{substr($calendar['diaSem'],0,$calendar['diaSem'] == 'Sábado' ? 4 : 3) }}
                     </td>
-                <!--                <td>
-                    {{ $ponto->jornada->escala->descricao }}
+                    <td>
+
+                        @if($calendar['ponto'] && $calendar['ponto']->verificado)
+                            *
+                        @else
+                            @if($calendar['ponto'])
+                                @foreach($calendar['ponto']->periodos as $index =>$periodo)
+                                    @if($calendar['ponto']->ocorrencia->trabalhado)
+                                        @if($index > 0)
+                                            |
+                                        @endif {{ $periodo->horaEntrada }}
+                                        @if($periodo->horaSaida)
+                                            -{{ $periodo->horaSaida }}
+                                        @endif
+                                        @if(!$periodo->horaSaida)
+                                            - trabalhando
+                                        @endif
+                                    @else
+                                        @if(!$calendar['ponto']->ocorrencia->trabalhado)
+                                            {{ $calendar['ponto']->ocorrencia->descricao }}
+                                        @endif
+                                    @endif
+                                @endforeach
+                            @endif
+                        @endif
+                    </td>
+                    <!--                <td>
+                    @if($calendar['ponto'])
+                        {{ $calendar['ponto']->jornada->escala->descricao }}
+                    @endif
                     </td>-->
                     <td>
-                        @if($ponto->jornada->ocorrencia->trabalhado && $ponto->ocorrencia->conta_horas)
-                            {{ $ponto->horasNormalOriginalFormat }}
-                        @else -- @endif
+
+                        @if($calendar['ponto'] && $calendar['ponto']->jornada->ocorrencia->trabalhado && $calendar['ponto']->ocorrencia->conta_horas)
+                            {{ $calendar['ponto']->horasNormalOriginalFormat }}
+                        @else
+                            --
+                        @endif
                     </td>
                     <td>
-                        @if($ponto->jornada->ocorrencia->trabalhado && $ponto->ocorrencia->conta_horas && $ponto->PeriodosEmAberto()->count() ===0)
-                            {{ $ponto->horasNormalFormat }}
-                        @else -- @endif
+                        @if($calendar['ponto'] && $calendar['ponto']->jornada->ocorrencia->trabalhado && $calendar['ponto']->ocorrencia->conta_horas && $calendar['ponto']->PeriodosEmAberto()->count() ===0)
+                            {{ $calendar['ponto']->horasNormalFormat }}
+                        @else
+                            --
+                        @endif
                     </td>
                     <td>
-                        @if($ponto->jornada->ocorrencia->trabalhado && $ponto->ocorrencia->conta_horas && $ponto->PeriodosEmAberto()->count() ===0)
-                            @if($ponto->horasNoturna>0){{ $ponto->horasNoturnaFormat }}@else 00h:00m @endif
-                        @else -- @endif
+                        @if($calendar['ponto'] && $calendar['ponto']->jornada->ocorrencia->trabalhado && $calendar['ponto']->ocorrencia->conta_horas && $calendar['ponto']->PeriodosEmAberto()->count() ===0)
+                            @if($calendar['ponto']->horasNoturna>0)
+                                {{ $calendar['ponto']->horasNoturnaFormat }}
+                            @else
+                                00h:00m
+                            @endif
+                        @else
+                            --
+                        @endif
                     </td>
                     <td>
-                        @if($ponto->jornada->ocorrencia->trabalhado && $ponto->ocorrencia->conta_horas && $ponto->PeriodosEmAberto()->count() ===0)
-                            @if($ponto->horasExtra>0) <span
-                                class="textoVerde">{{ $ponto->horasExtraFormat }} </span>@else 00h:00m @endif
-                        @else -- @endif
+                        @if($calendar['ponto'] && $calendar['ponto']->jornada->ocorrencia->trabalhado && $calendar['ponto']->ocorrencia->conta_horas && $calendar['ponto']->PeriodosEmAberto()->count() ===0)
+                            @if($calendar['ponto']->horasExtra>0)
+                                <span
+                                    class="textoVerde">{{ $calendar['ponto']->horasExtraFormat }} </span>
+                            @else
+                                00h:00m
+                            @endif
+                        @else
+                            --
+                        @endif
                     </td>
                     <td>
-                        @if($ponto->jornada->ocorrencia->trabalhado && $ponto->ocorrencia->conta_horas && $ponto->PeriodosEmAberto()->count() ===0)
-                            @if($ponto->horasExtra<0) <span
-                                class="textoVermelho">{{ $ponto->horasExtraFormat }} </span> @else 00h:00m @endif
-                        @else -- @endif
+                        @if($calendar['ponto'] && $calendar['ponto']->jornada->ocorrencia->trabalhado && $calendar['ponto']->ocorrencia->conta_horas && $calendar['ponto']->PeriodosEmAberto()->count() ===0)
+                            @if($calendar['ponto']->horasExtra<0)
+                                <span
+                                    class="textoVermelho">{{ $calendar['ponto']->horasExtraFormat }} </span>
+                            @else
+                                00h:00m
+                            @endif
+                        @else
+                            --
+                        @endif
                     </td>
 
 
@@ -108,14 +162,14 @@
             @endforeach
             </tbody>
         </table>
-        <table width="100%">
+        <table class="dados2" width="100%"  style="margin-top: -6px">
             <thead>
             <tr>
-                <th scope="col">Horas normais</th>
-                <th scope="col">Horas noturnas</th>
-                <th scope="col">Horas extras</th>
-                <th scope="col">Horas negativas</th>
-                <th scope="col">Saldo</th>
+                <th>Horas normais</th>
+                <th>Horas noturnas</th>
+                <th>Horas extras</th>
+                <th>Horas negativas</th>
+                <th>Saldo</th>
             </tr>
             </thead>
 
@@ -133,23 +187,19 @@
                     {{$totalHorasNegativas}}
                 </td>
                 <td align="center">
-                    @if($saldoValor < 0)<span class="textoVermelho">-{{$saldoDeHoras}}</span> @else <span
-                        class="textoVerde"> + {{$saldoDeHoras}}</span>@endif
+                    @if($saldoValor < 0)
+                        <span class="textoVermelho">-{{$saldoDeHoras}}</span>
+                    @else
+                        <span
+                            class="textoVerde"> + {{$saldoDeHoras}}</span>
+                    @endif
                 </td>
             </tr>
         </table>
 
-        <br>
-        <br>
         <p>
             * Não verificado
         </p>
     @endif
-
-
-
-
-
-
     @include('layouts.rodapePdf')
 @endsection

@@ -171,16 +171,22 @@ class PerimetroController extends Controller {
         ]);*/
 
         $resultado = $resultado->paginate($porPagina);
-        $perimetrosSelecionados = collect($resultado->items())->transform(function ($item){
-            $item->selecionado = false;
-            return $item;
+        $perimetrosSelecionados = auth()->user()->PerimetrosEmpresa->map(function ($item){
+            return [
+                'id' => $item->id,
+                'descricao' => $item->descricao,
+                'selecionado' => false
+            ];
         });
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $perimetrosSelecionados,
+            'dados' => [
+                'itens' => $resultado->items(),
+                'todos_perimetros' => $perimetrosSelecionados
+            ],
         ]);
     }
 

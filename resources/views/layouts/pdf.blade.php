@@ -14,9 +14,15 @@
             font-family: 'Arial', Verdana, sans-serif;
         }
 
+
+        @page :first {
+            margin: 0;
+            padding: 12px;
+        }
+
         @page {
-            margin: 0cm 0cm;
-            height: 22cm;
+            margin: 30px 0px 30px 0px;
+            padding: 20px;
         }
 
         /** Define now the real margins of every page in the PDF **/
@@ -89,6 +95,7 @@
         p {
             font-size: 9pt;
         }
+
         .footer {
             font-size: 50px;
             position: fixed;
@@ -104,9 +111,11 @@
             font-size: 8.5pt;
             padding: 5px;
         }
-        .dados{
+
+        .dados {
             width: 100%;
         }
+
         .f12 {
             font-size: 12pt;
         }
