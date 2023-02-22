@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Admissao;
 use App\Models\EmpresaEscala;
+use App\Models\FeedbackCurriculo;
 use App\Models\Feriado;
 use App\Models\OcorrenciaJornada;
 use App\Models\PontoEletronico;
@@ -65,12 +66,10 @@ class FolhaDePontoController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
+     * @param User $user
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function edit(Request $request, User $user)
+    public function edit(User $user)
     {
         $funcionario = User::select(['id', 'nome', 'empresa_id', 'login as email'])
             ->whereEmpresaId(auth()->user()->empresa_id)
@@ -81,8 +80,35 @@ class FolhaDePontoController extends Controller
             return response()->json(['msg' => 'Funcionário não encontrado'], 400);
         }
 
+        $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($funcionario->id)
+            ->whereEmpresaId($funcionario->empresa_id)
+            ->first();
 
-        return response()->json($funcionario, 200);
+        $dadosDoFuncionario = [
+            'nome' => $funcionario->nome,
+            'matricula' => 'NÃO INFORMADO',
+            'data_admissao' => 'NÃO INFORMADO',
+            'cargo' => 'NÃO INFORMADO',
+            'centro_custo' => 'NÃO INFORMADO',
+            'area' => 'NÃO INFORMADO',
+            'u_token' => ''
+        ];
+
+        if ($feedbackCurriculo) {
+            $admissao = $feedbackCurriculo->Admissao;
+            $dadosDoFuncionario = [
+                'nome' => $funcionario->nome,
+                'matricula' => $admissao->matricula ?: "NÃO INFORMADO",
+                'data_admissao' => $admissao->data_admissao,
+                'cargo' => $admissao->cargo,
+                'centro_custo' => $admissao->CentroCusto ? $admissao->CentroCusto->label : "NÃO INFORMADO",
+                'area' => $admissao->AreaEtiqueta ? $admissao->AreaEtiqueta->label : "NÃO INFORMADO",
+                'u_token' => \Crypt::encrypt($funcionario->id)
+            ];
+        }
+
+       return $funcionario->dados_funcionario = $dadosDoFuncionario;
+
     }
 
     /**
@@ -125,10 +151,12 @@ class FolhaDePontoController extends Controller
             ->with([
                 'Ocorrencia:id,descricao,trabalhado,conta_horas',
                 'Periodos' => function ($q) {
-                    $q->select(['id', 'ponto_id', 'entrada', 'saida'])->withTrashed()->orderBy('created_at');
+                    $q->select(['id', 'arquivo_id_entrada', 'arquivo_id_saida', 'ponto_id', 'entrada', 'saida'])
+                        ->with(['FotoEntrada','FotoSaida'])
+                        ->withTrashed()->orderBy('created_at');
                 },
                 'PeriodosEmAberto' => function ($q) {
-                    $q->select(['id','ponto_id'])->withTrashed();
+                    $q->select(['id','ponto_id'])->with(['FotoEntrada','FotoSaida'])->withTrashed();
                 },
                 'Jornada' => function ($q) {
                     $q->withTrashed()
@@ -177,10 +205,10 @@ class FolhaDePontoController extends Controller
         ], 200);
     }
 
-    public function imprimir(Request $request, User $user)
+    public function imprimir(Request $request, $user)
     {
-
-        $funcionario = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($user->id)->first();
+        $u_token = \Crypt::decrypt($user);
+        $funcionario = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($u_token)->first();
         if (!$funcionario) {
             return response()->json(['msg' => 'Funcionário não encontrado'], 400);
         }
@@ -210,15 +238,6 @@ class FolhaDePontoController extends Controller
                         ]);
                 },
             ])
-//            ->with([
-//                'PeriodosEmAberto:id,ponto_id',
-//                'Jornada.Ocorrencia:id,descricao,trabalhado,conta_horas',
-//                'Jornada.Escala',
-//                'Ocorrencia:id,descricao,trabalhado,conta_horas',
-//                'Periodos' => function ($q) {
-//                    $q->orderBy('created_at')->select(['id', 'ponto_id', 'entrada', 'saida']);
-//                },
-//            ])
             ->orderBy('created_at');
 
         //Total horas normais
@@ -231,9 +250,6 @@ class FolhaDePontoController extends Controller
         $totalHorasNoturnas = $totalHorasNoturnas->whereDoesntHave('PeriodosEmAberto')->sum('duracao_noturna');
         $totalHorasExtra = $totalHorasExtra->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '>', 0)->sum('duracao_extra');
         $totalHorasNegativas = abs($totalHorasNegativas->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '<', 0)->sum('duracao_extra'));
-
-        $dados = $user;
-
 
         $dias = [];
 
@@ -254,7 +270,7 @@ class FolhaDePontoController extends Controller
         }
 
         $pdf = PDF::loadView('pdf.controle-ponto.folha-ponto.pdf', [
-            'dados' => $dados,
+            'dados' => $funcionario,
             'lista' => $dias,
             'intervaloText' => $intervaloText,
             'totalHorasNormais' => PontoEletronico::formataTempo($totalHorasNormais),
@@ -263,11 +279,11 @@ class FolhaDePontoController extends Controller
             'totalHorasNegativas' => PontoEletronico::formataTempo($totalHorasNegativas),
             'saldoValor' => ($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas,
             'saldoDeHoras' => PontoEletronico::formataTempo(($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas),
-            'escala' => $user->EmpresaEscalas[0]
+            'escala' => $funcionario->EmpresaEscalas[0]
 
         ]);
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("Folha de ponto" . STR::slug($dados->tipo == 'Pessoa Jurídica' ? $dados->razao_social : $dados->nome) . ".pdf");
+        return $pdf->stream("Folha de ponto" . STR::slug($funcionario->nome) . ".pdf");
 
     }
 

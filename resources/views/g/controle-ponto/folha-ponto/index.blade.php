@@ -2,27 +2,91 @@
 @section('title', 'Controle de ponto: Folha de ponto')
 @section('content_header', 'Controle de ponto: Folha de ponto')
 @section('content')
-
-    <!--Janela de detalhes-->
-    <modal id="janelaFormDetalhes" titulo="Folha de ponto" :size="90" :fechar="!formPonto.preload">
+    <modal id="janelaDetalhesFoto" titulo="Detalhes do ponto" modal-pai="janelaFormDetalhes" size="g">
         <template slot="conteudo">
             <p class="text-center">
-                <preload v-if="formPonto.preload" label="Aguarde..."></preload>
+                <preload v-if="preloadDetalheFoto" label="Aguarde..."></preload>
             </p>
+            <div v-if="!preloadDetalheFoto && dadosDetalheFoto">
+                <table class="tabela">
+                    <tbody>
+                    <tr>
+                        <td>
+                            Data/hora @{{ dadosDetalheFotoTipo }}
+                        </td>
+                        <td>
+                            <div v-if="dadosDetalheFotoTipo === 'Entrada'">
+                                @{{ dadosDetalheFoto.entrada }}
+                            </div>
+                            <div v-else>
+                                @{{ dadosDetalheFoto.saida }}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Foto da @{{ dadosDetalheFotoTipo }}
+                        </td>
+                        <td>
+                            <div v-if="dadosDetalheFotoTipo === 'Entrada'">
+                                <img :src="dadosDetalheFoto.foto_entrada.url" alt="" style="width: 300px; border-radius: 6%;object-fit: cover;">
+                            </div>
+                            <div v-else>
+                                <img :src="dadosDetalheFoto.foto_saida.url" alt=""  style="width: 300px; border-radius: 6%;object-fit: cover;">
+                            </div>
+                            {{--                            <img :src="modelRegistro.foto_entrada.url" alt="" width="300">--}}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </template>
+        <template slot="rodape"></template>
+    </modal>
+
+    <!--Janela de detalhes-->
+    <modal id="janelaFormDetalhes" titulo="Folha de ponto" :size="95" :fechar="!formPonto.preload">
+        <template slot="conteudo">
             <div v-if="!formPonto.preload && !formPonto.save">
                 <div class="row">
-                    <div class="col-6 col-sm-4">
-                        <datepicker label="Intervalo" :range="true" v-model="formPonto.intervalo"
-                                    :disabled="formPonto.preload" @onselect="buscarFrequencia"></datepicker>
+                    <div class="col-12" style="margin-top: -20px">
+                        <fieldset>
+                            <legend class="text-uppercase">Dados Pessoais</legend>
+                            <div class="row">
+                                <div class="col-12">
+                                    <p>
+                                        Nome: <strong>@{{ formPonto.nome }}</strong> <br>
+                                        Matrícula: <strong>@{{ formPonto.matricula }}</strong> |
+                                        Data admissão: <strong>@{{ formPonto.data_admissao }}</strong> <br>
+                                        Cargo: <strong>@{{ formPonto.cargo }}</strong> <br>
+                                        Centro de custo: <strong>@{{ formPonto.centro_custo }}</strong> | Área: <strong>@{{
+                                            formPonto.area }}</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
-                    <div class="col-6 col-sm-8 d-flex align-items-start align-self-end justify-content-end ">
-                        <form :action="urlImprimir" method="post" target="_blank">
-                            @csrf
-                            <button type="submit" class="btn btn-primary mb-3"><i class="fas fa-print"></i> Imprimir
-                            </button>
-                            <input type="hidden" name="intervalo" v-model="formPonto.intervalo">
-                        </form>
 
+                    <div class="col-12" style="margin-top: -20px">
+                        <fieldset>
+                            <legend>Filtro</legend>
+                            <div class="row">
+                                <div class="col-6 col-sm-4">
+                                    <datepicker label="Intervalo" formsm :range="true" v-model="formPonto.intervalo"
+                                                :disabled="formPonto.preload" @onselect="buscarFrequencia"></datepicker>
+                                </div>
+                                <div class="col-12">
+                                    <form :action="urlImprimir" method="post" target="_blank">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary btn-sm mb-3"><i
+                                                class="fas fa-print"></i> Imprimir
+                                        </button>
+                                        <input type="hidden" name="intervalo" v-model="formPonto.intervalo">
+                                    </form>
+                                </div>
+                            </div>
+                        </fieldset>
                     </div>
                 </div>
                 <preload v-if="this.formPonto.preloadFrequencia"></preload>
@@ -32,12 +96,12 @@
                         @{{ formPonto.intervalo }}
                     </h5>
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover table-sm" v-if="formPonto.pontos.length > 0">
+                        <table class="table table-bordered table-hover table-sm">
                             <thead>
                             <tr>
                                 <th scope="col">Data</th>
-                                <th scope="col">Periodos trabalhados</th>
                                 <th scope="col">Escala</th>
+                                <th scope="col">Periodos trabalhados</th>
                                 <th scope="col">Prevista</th>
                                 <th scope="col">Normal</th>
                                 <th scope="col">Noturna</th>
@@ -50,8 +114,18 @@
                             <tr v-for="calend in calendario">
                                 <td>
                                     @{{ calend.dia }}<br><small>@{{ calend.diaSem }}</small>
-                                    <small class="text-danger" v-if="calend.feriado">(@{{ calend.feriado.descricao
-                                        }})</small>
+                                    <small class="text-danger" v-if="calend.feriado">
+                                        (@{{ calend.feriado.descricao}})
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <div v-if="calend.ponto">
+                                        @{{ calend.ponto.jornada.escala.descricao }}
+                                    </div>
+                                    <div v-else>
+                                        --
+                                    </div>
                                 </td>
 
                                 <td>
@@ -62,19 +136,22 @@
                                         <span v-for="(periodo,index) in calend.ponto.periodos"
                                               v-if="calend.ponto.ocorrencia.trabalhado">
                                     <span v-show="index > 0">|</span>
-                                    @{{ periodo.horaEntrada }}<span
-                                                v-if="periodo.horaSaida">-@{{ periodo.horaSaida }}</span>
+                                    <a href="javascript://" data-toggle="modal"
+                                       data-target="#janelaDetalhesFoto" v-tippy content="Detalhes"
+                                       @click="mostraDetalheFoto(periodo,'Entrada')">
+                                        @{{ periodo.horaEntrada }}
+                                    </a>
+                                            <span
+                                                v-if="periodo.horaSaida">-
+                                                <a href="javascript://" data-toggle="modal"
+                                                   data-target="#janelaDetalhesFoto" v-tippy content="Detalhes"
+                                                   @click="mostraDetalheFoto(periodo,'Saida')">
+                                                    @{{ periodo.horaSaida }}
+                                                </a>
+                                            </span>
                                     <span v-if="!periodo.horaSaida">-<span
                                             class="badge badge-warning">trabalhando</span></span>
                                         </span>
-                                    </div>
-                                    <div v-else>
-                                        --
-                                    </div>
-
-                                <td>
-                                    <div v-if="calend.ponto">
-                                        @{{ calend.ponto.jornada.escala.descricao }}
                                     </div>
                                     <div v-else>
                                         --
@@ -141,7 +218,7 @@
                                                   v-if="calend.ponto.horasExtra<0">@{{ calend.ponto.horasExtraFormat }}</span>
                                             <span v-else>00h:00m</span>
                                         </span>
-                                            <span v-else> -- </span>
+                                        <span v-else> -- </span>
                                     </div>
                                     <div v-else>
                                         --
@@ -221,7 +298,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-2 col-12">
+                        <div class="col-md-4 col-12">
                             <fieldset>
                                 <legend>Faltas</legend>
                                 <h4 class="text-center text-primary">
@@ -229,7 +306,7 @@
                                 </h4>
                             </fieldset>
                         </div>
-                        <div class="col-md-2 col-12">
+                        <div class="col-md-4 col-12">
                             <fieldset>
                                 <legend>Horas normais</legend>
                                 <h4 class="text-center text-primary">
@@ -237,7 +314,7 @@
                                 </h4>
                             </fieldset>
                         </div>
-                        <div class="col-md-2 col-12">
+                        <div class="col-md-4 col-12">
                             <fieldset>
                                 <legend>Horas noturnas</legend>
                                 <h4 class="text-center text-primary">
@@ -245,7 +322,7 @@
                                 </h4>
                             </fieldset>
                         </div>
-                        <div class="col-md-2 col-12">
+                        <div class="col-md-4 col-12">
                             <fieldset>
                                 <legend>Horas extra</legend>
                                 <h4 class="text-center text-primary">
@@ -253,7 +330,7 @@
                                 </h4>
                             </fieldset>
                         </div>
-                        <div class="col-md-2 col-12">
+                        <div class="col-md-4 col-12">
                             <fieldset>
                                 <legend>Horas negativas</legend>
                                 <h4 class="text-center text-primary">
@@ -261,7 +338,7 @@
                                 </h4>
                             </fieldset>
                         </div>
-                        <div class="col-md-2 col-12">
+                        <div class="col-md-4 col-12">
                             <fieldset>
                                 <legend>Saldo</legend>
                                 <h4 class="text-center"

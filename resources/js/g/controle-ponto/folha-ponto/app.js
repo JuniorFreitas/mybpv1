@@ -20,6 +20,12 @@ const app = new Vue({
         URL_ADMIN,
         EMPRESA_ID: null,
         preload: true,
+
+        preloadDetalheFoto: false,
+        dadosDetalheFoto: null,
+        dadosDetalheFotoTipo: 'Entrada',
+
+
         formBusca: {
             preload: false,
             funcionarioNome: '',
@@ -30,7 +36,13 @@ const app = new Vue({
         formPonto: {
             intervalo: `${moment().startOf('month').format('DD/MM/YYYY')} até ${moment().endOf('month').format('DD/MM/YYYY')}`,
             preload: true,
-            id: null,
+            nome: '',
+            matricula: '',
+            data_admissao: '',
+            cargo: '',
+            centro_custo: '',
+            area: '',
+            u_token: '',
             preloadFrequencia: false,
             pontos: [],
         },
@@ -88,7 +100,7 @@ const app = new Vue({
             return (this.totalHorasExtra + this.totalHorasNoturnas) - this.totalHorasNegativas;
         },
         urlImprimir() {
-            return `${URL_ADMIN}/controle-ponto/folha-ponto/${this.formPonto.id}/imprimir`
+            return `${URL_ADMIN}/controle-ponto/folha-ponto/${this.formPonto.u_token}/imprimir`
         }
     },
     methods: {
@@ -150,6 +162,12 @@ const app = new Vue({
             });
         },
 
+        mostraDetalheFoto(obj, tipo) {
+            this.preloadDetalheFoto = true;
+            this.dadosDetalheFoto = obj;
+            this.dadosDetalheFotoTipo = tipo;
+            this.preloadDetalheFoto = false;
+        }
 
     }
 });

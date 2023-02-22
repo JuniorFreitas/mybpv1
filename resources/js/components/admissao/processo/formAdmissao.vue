@@ -180,9 +180,8 @@
                         onblur="valida_campo(this,1)"
                         v-model="form.status_carteira_treinamento">
                     <option value="">Selecione</option>
-                    <option v-for="item in listSelects.status_carteira_treinamento" :key="item" :value="item">{{
-                            item
-                        }}
+                    <option v-for="item in listSelects.status_carteira_treinamento" :key="item" :value="item">
+                        {{ item }}
                     </option>
                 </select>
             </div>

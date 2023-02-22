@@ -5,6 +5,15 @@
 @endsection
 @push('style')
     <style type="text/css">
+        @page :first {
+            margin: -10px !important;
+            padding: 0px !important;
+        }
+
+        @page {
+            margin: -10px !important;
+            padding: 0px !important;
+        }
         .textoVermelho {
             color: #ff0000;
         }
@@ -12,20 +21,34 @@
         .textoVerde {
             color: #02660c;
         }
+
+        table.dados2, table.dados2 th, table.dados2 td {
+            border: 0.1px solid black;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            padding: 3px;
+        }
+
+        .dados2 {
+            width: 100%;
+        }
+
     </style>
 
 @endpush
 @section('conteudo')
-    <h5 class="text-center" style="text-transform: uppercase; text-decoration: underline">ESPELHO DE PONTO
-        - {{$intervaloText}}</h5>
-    <table class="dados" width="100%">
+    <p class="text-center" style="text-transform: uppercase; text-decoration: underline; margin-top: -20px">ESPELHO DE PONTO
+        - {{$intervaloText}}</p>
+    <table class="dados2" width="100%" style="margin-bottom: -6px">
         <thead>
-        <tr>
+        <tr style="text-transform: uppercase">
             <th>
-                Nome: <br><span style="font-weight: normal; line-height: 20px">{{ $dados->nome }}</span>
+                Nome: <span style="font-weight: normal; line-height: 20px">{{ $dados->nome }}</span>
             </th>
             <th>CPF: <span style="font-weight: normal; line-height: 20px">{{ $dados->cpf }}</span></th>
-            <th>Escala de trabalho atual {{ $escala->descricao }}</th>
+            <th>Escala:
+                {{ $escala->descricao }}
+            </th>
         </tr>
         </thead>
 
@@ -33,11 +56,10 @@
     @if(count($lista)==0)
         <h5 style="margin-top: 10px; margin-bottom: 5px; text-decoration: underline">SEM DADOS PARA EXIBIR</h5>
     @else
-        <table class="dados" width="100%">
+        <table class="dados2" width="100%">
             <thead>
             <tr>
                 <th>Data</th>
-                <th>Sem</th>
                 <th>Periodos trabalhados</th>
                 <!--                    <th>Escala</th>-->
                 <th>Prevista</th>
@@ -50,14 +72,15 @@
             <tbody>
             @foreach($lista as $calendar)
                 <tr>
-                    <td>{{ substr($calendar['dia'],0,5) }}</td>
-                    <td>{{$calendar['diaSem'] }}</td>
+                    <td>{{ substr($calendar['dia'],0,5) }} -
+                        {{substr($calendar['diaSem'],0,$calendar['diaSem'] == 'Sábado' ? 4 : 3) }}
+                    </td>
                     <td>
-                        @if($calendar['ponto'] && !$calendar['ponto']->verificado)
+
+                        @if($calendar['ponto'] && $calendar['ponto']->verificado)
                             *
                         @else
                             @if($calendar['ponto'])
-                               {{dd($calendar['ponto'])}}
                                 @foreach($calendar['ponto']->periodos as $index =>$periodo)
                                     @if($calendar['ponto']->ocorrencia->trabalhado)
                                         @if($index > 0)
@@ -139,7 +162,7 @@
             @endforeach
             </tbody>
         </table>
-        <table class="dados" width="100%">
+        <table class="dados2" width="100%"  style="margin-top: -6px">
             <thead>
             <tr>
                 <th>Horas normais</th>
@@ -174,17 +197,9 @@
             </tr>
         </table>
 
-        <br>
-        <br>
         <p>
             * Não verificado
         </p>
     @endif
-
-
-
-
-
-
     @include('layouts.rodapePdf')
 @endsection

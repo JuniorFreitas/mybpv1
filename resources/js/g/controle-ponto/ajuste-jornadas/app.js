@@ -90,6 +90,7 @@ const app = new Vue({
             this.formBusca.funcionario_id = obj.id;
             this.formBusca.funcionarioNomeAnterior = obj.nome;
             this.formBusca.funcionarioNome = obj.nome
+            this.atualizarTudo()
             /*
             this.form.autocomplete_label_cliente_modal = obj.label;
             this.form.autocomplete_label_cliente_modal_anterior = obj.label;
@@ -107,12 +108,14 @@ const app = new Vue({
                 this.formBusca.funcionarioNomeAnterior = '';
                 this.formBusca.funcionarioNome = '';
                 this.formBusca.funcionario_id = null;
+                this.atualizarTudo();
             }
         },
         botaoResetCampos() {
             this.formBusca.funcionarioNomeAnterior = '';
             this.formBusca.funcionarioNome = '';
             this.formBusca.funcionario_id = null;
+            this.atualizarTudo();
         },
 
         atualizarTudo() {
