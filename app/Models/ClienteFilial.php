@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-
 /**
  * App\Models\ClienteFilial
  *
@@ -22,11 +21,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Cliente $Empresa
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial empresa()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial newQuery()
  * @method static \Illuminate\Database\Query\Builder|ClienteFilial onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial query()
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial userEmpresa()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial whereDados($value)
@@ -115,7 +114,7 @@ class ClienteFilial extends Model
         ];
     }
 
-    public function scopeEmpresa($query)
+    public function scopeUserEmpresa($query)
     {
         return $query->where('empresa_id', auth()->user()->empresa_id);
     }
