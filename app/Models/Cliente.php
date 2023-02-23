@@ -114,6 +114,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\EmpresaTemporaria|null $Temporaria
  * @property-read \App\Models\CarteiraAssinatura|null $CarteiraAssinatura
  * @property-read \App\Models\Papel|null $Papel
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ClienteFilial[] $Filiais
+ * @property-read int|null $filiais_count
  */
 class Cliente extends Model
 {
@@ -432,6 +434,11 @@ class Cliente extends Model
     public function Papel()
     {
         return $this->hasOne(Papel::class, 'empresa_id', 'id')->where('master', true);
+    }
+
+    public function Filiais()
+    {
+        return $this->hasMany(ClienteFilial::class, 'empresa_id', 'id');
     }
 
 //    public function EmpresaHabilidades()

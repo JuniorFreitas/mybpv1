@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 Route::redirect('/', 'g/login');
 
 Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
@@ -165,7 +166,17 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('clientes/search', [\App\Http\Controllers\ClientesController::class, 'searchCliente'])->name('search')->middleware('can:administracao_clientes');
             Route::post('clientes/atualizar', [\App\Http\Controllers\ClientesController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_clientes');
             Route::resource('clientes', \App\Http\Controllers\ClientesController::class)->middleware('can:administracao_clientes');
+
+            Route::group(['as' => 'filial.', 'prefix' => 'clientes'], function () {
+                Route::post('filial', [\App\Http\Controllers\FilialController::class, 'store'])->name('store');
+                Route::put('filial/{filial}/ativa-desativa', [\App\Http\Controllers\FilialController::class, 'ativaDesativa'])->name('ativaDesativa');
+                Route::get('filial/{filial}/editar', [\App\Http\Controllers\FilialController::class, 'edit'])->name('edit');
+                Route::put('filial/{filial}', [\App\Http\Controllers\FilialController::class, 'update'])->name('update');
+                Route::post('filial/atualizar', [\App\Http\Controllers\FilialController::class, 'atualizar'])->name('atualizar');
+            });
+
         });
+
 
         Route::group(['as' => 'documentoslegais.', 'prefix' => 'documentoslegais'], function () {
 
@@ -1135,10 +1146,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
         Route::resource('folha-ponto', \App\Http\Controllers\FolhaDePontoController::class, ['parameters' => ['folha-ponto' => 'user']])->middleware('can:controle_ponto_folha-ponto');
 
-        Route::group(['as' => 'folha-manual.','prefix' => 'folha-manual'], function (){
-            Route::post('atualizar', [\App\Http\Controllers\FolhaManualController::class,'atualizar'])->name('folha-manual')->middleware('can:controle_ponto_folha_ponto_manual');
-            Route::post('imprimir', [\App\Http\Controllers\FolhaManualController::class,'imprimir'])->name('folha-manual_imprimir')->middleware('can:controle_ponto_folha_ponto_manual');
-            Route::get('', [\App\Http\Controllers\FolhaManualController::class,'index'])->name('index')->middleware('can:controle_ponto_folha_ponto_manual');
+        Route::group(['as' => 'folha-manual.', 'prefix' => 'folha-manual'], function () {
+            Route::post('atualizar', [\App\Http\Controllers\FolhaManualController::class, 'atualizar'])->name('folha-manual')->middleware('can:controle_ponto_folha_ponto_manual');
+            Route::post('imprimir', [\App\Http\Controllers\FolhaManualController::class, 'imprimir'])->name('folha-manual_imprimir')->middleware('can:controle_ponto_folha_ponto_manual');
+            Route::get('', [\App\Http\Controllers\FolhaManualController::class, 'index'])->name('index')->middleware('can:controle_ponto_folha_ponto_manual');
         });
 
     });

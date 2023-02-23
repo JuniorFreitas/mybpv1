@@ -2,6 +2,7 @@ import telefone from '../../../components/Telefones';
 import endereco from '../../../components/Endereco';
 import datepicker from '../../../components/DatePicker';
 import upload from '../../../components/Upload';
+import Filial from "../../../components/administracao/clientes/Filial";
 
 const app = new Vue({
     el: '#app',
@@ -9,7 +10,8 @@ const app = new Vue({
         telefone,
         endereco,
         datepicker,
-        upload
+        upload,
+        Filial
     },
     data: {
         tituloJanela: 'Cadastrando Cliente',

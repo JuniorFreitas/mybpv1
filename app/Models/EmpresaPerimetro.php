@@ -39,6 +39,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereUpdatedAt($value)
  * @property bool $obrigatorio
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereObrigatorio($value)
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereUserDeletouId($value)
+ * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro withoutTrashed()
  */
 class EmpresaPerimetro extends Model
 {

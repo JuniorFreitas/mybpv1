@@ -89,6 +89,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Query\Builder|Cih onlyTrashed()
  * @method static \Illuminate\Database\Query\Builder|Cih withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Cih withoutTrashed()
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @method static Builder|Cih whereDeletedAt($value)
+ * @method static Builder|Cih whereUserDeletouId($value)
  */
 class Cih extends Model
 {
