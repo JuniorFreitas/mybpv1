@@ -4,7 +4,7 @@
         <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
             <template slot="conteudo">
                 <p class=" mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
-                <fieldset v-if="!preload">
+                <fieldset class="mt-0" v-if="!preload">
                     <legend>Cadastro de Centro de Custo</legend>
                     <div class="row">
                         <div class="col-12 mb-2">
@@ -20,6 +20,25 @@
                                 <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
                                 <label class="custom-control-label"
                                        for="ativo">{{ form.ativo ? "Ativo" : "Inativo" }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset v-if="!preload && temFilial">
+                    <legend>Associar Filial</legend>
+                    <div class="row">
+                        <div class="col-12"
+                             v-for="(item, key) in form.filiais" :key="item.id">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input mb-1"
+                                       v-model="form.filiais[key].selecionado"
+                                       :value="item.selecionado"
+                                       :id="`item_${item.id}`">
+                                <label class="custom-control-label" style="cursor: pointer"
+                                       :for="`item_${item.id}`">
+                                    {{ item.dados.razao_social }}
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -57,7 +76,8 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
+                        <select class="form-control form-control-sm" :disabled="controle.carregando"
+                                v-model="controle.dados.campoStatus" @change="atualizar()">
                             <option value="">Todos os Status</option>
                             <option :value="true">Apenas Ativos</option>
                             <option :value="false">Apenas Inativos</option>
@@ -139,8 +159,10 @@ import gestor from "../../GestorAprovacao";
 import controlePaginacao from '../../ControlePaginacao';
 import modal from '../../Modal';
 import editor from '@tinymce/tinymce-vue';
+import configuracoes from "../../../mixins/Configuracoes";
 
 export default {
+    mixins: [configuracoes],
     components: {
         modal,
         controlePaginacao,
@@ -193,12 +215,14 @@ export default {
                 autocomplete_label_gestor_modal: '',
                 autocomplete_label_gestor_modal_anterior: '',
                 label: '',
+                filiais: [],
                 ativo: true,
             },
             formDefault: null,
 
             //Paginacao
             lista: [],
+            listaFilial: [],
 
             urlPaginacao: `${URL_ADMIN}/cadastro/centrocusto/atualizar`,
             controle: {
@@ -217,6 +241,13 @@ export default {
             this.cadastrado = false;
             this.atualizado = false;
             this.form = _.cloneDeep(this.formDefault) //copia
+
+            this.listaFilial.forEach((filial) => {
+                filial.selecionado = false;
+                filial.cliente_filial_id = filial.id;
+                this.form.filiais.push(filial);
+            });
+
             formReset();
         },
         cadastra() {
@@ -254,6 +285,23 @@ export default {
                 .then(response => {
                     let data = response.data;
                     Object.assign(this.form, data);
+
+                    if (this.temFilial) {
+                        let fl = [];
+                        this.listaFilial.forEach((filial) => {
+                            if (_.find(data.filiais, {cliente_filial_id: filial.id, ativo: true})) {
+                                filial.selecionado = true;
+                                filial.cliente_filial_id = filial.id;
+                                fl.push(filial);
+                            } else {
+                                filial.selecionado = false;
+                                filial.cliente_filial_id = filial.id;
+                                fl.push(filial);
+                            }
+                        });
+                        this.form.filiais = fl;
+                    }
+
                     this.editando = true;
                     this.preload = false;
                     setupCampo();
@@ -285,6 +333,7 @@ export default {
         carregou(dados) {
             this.lista = dados.items;
             this.clientes = dados.clientes;
+            this.listaFilial = dados.listaFilial;
             this.controle.carregando = false;
         },
         carregando() {

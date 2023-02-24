@@ -7,6 +7,7 @@ use App\Jobs\JobRecuperaSenha;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\ClienteConfig;
+use App\Models\ClienteFilial;
 use App\Models\GrupoCloud;
 use App\Models\Papel;
 use App\Models\RecuperacaoSenha;
@@ -172,9 +173,13 @@ class UserController extends Controller
 
     public function getUsuario()
     {
+
 //        $usuario = User::find(auth()->id(), ['id', 'cliente_id'])->load('Cliente:id,area_id');
         $cliente = auth()->user()->ClienteFuncionarios->first();
         //$cliente = auth()->user()->ClienteFuncionarios()->where('cliente_id',auth()->id())->first();
+
+        $whatsappLiberado = ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first();
+        $temfilial = ClienteFilial::select('id')->whereEmpresaId(auth()->user()->empresa_id)->whereAtivo(true)->first();
 
         if ($cliente) {
             $usuario = [
@@ -184,7 +189,8 @@ class UserController extends Controller
                 'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id(),
-                'whatsappLiberado' => ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first()->envia_whatsapp
+                'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
+                'temFilial' => (bool)$temfilial,
             ];
 
         } else {
@@ -195,7 +201,8 @@ class UserController extends Controller
                 'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id(),
-                'whatsappLiberado' => ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first()->envia_whatsapp
+                'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
+                'temFilial' => (bool)$temfilial,
             ];
         }
 
@@ -235,7 +242,7 @@ class UserController extends Controller
 
         if (auth()->user()->empresa_id === User::MYBP_EMPRESA_ID) {
             $resultado = User::with('Papel:id,nome', 'Empresa')
-                ->whereNotIn('tipo',[User::CANDIDATO, User::EMPRESA]);
+                ->whereNotIn('tipo', [User::CANDIDATO, User::EMPRESA]);
         }
 
         if ($request->filled('campoBusca')) {

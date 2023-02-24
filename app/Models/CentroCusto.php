@@ -58,4 +58,9 @@ class CentroCusto extends Model
         return $this->hasMany(Admissao::class, 'centro_custo_id', 'id');
     }
 
+    public function Filiais()
+    {
+        return $this->hasMany(CentroCustoFilial::class, 'centro_custo_id', 'id');
+    }
+
 }

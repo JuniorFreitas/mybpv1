@@ -56,11 +56,6 @@ class ClienteFilial extends Model
         $activity->descricao = "";
     }
 
-    public function usesTimestamps()
-    {
-        return false;
-    }
-
     protected $fillable = [
         'empresa_id',
         'dados',
@@ -112,6 +107,22 @@ class ClienteFilial extends Model
             'contato' => '',
             'email' => '',
         ];
+    }
+
+    /**
+     * @param null $empresa_id
+     * @return bool
+     */
+    public function temFilial($empresa_id = null)
+    {
+        $empresa_id = $empresa_id ?? auth()->user()->empresa_id;
+        return $this->where('empresa_id', $empresa_id)->where('ativo',true)->count() > 0;
+    }
+
+    public function getListaFilialAtiva($empresa_id = null)
+    {
+        $empresa_id = $empresa_id ?? auth()->user()->empresa_id;
+        return $this->select(['id','dados','ativo'])->where('empresa_id', $empresa_id)->where('ativo',true)->orderBy('dados->razao_social')->get();
     }
 
     public function scopeUserEmpresa($query)
