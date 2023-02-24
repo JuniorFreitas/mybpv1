@@ -9,6 +9,38 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\CentroCustoFilial
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int $centro_custo_id
+ * @property int $cliente_filial_id
+ * @property bool $ativo
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\CentroCusto $CentroCusto
+ * @property-read \App\Models\Cliente $Empresa
+ * @property-read \App\Models\ClienteFilial $Filial
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial newQuery()
+ * @method static \Illuminate\Database\Query\Builder|CentroCustoFilial onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial query()
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereClienteFilialId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|CentroCustoFilial withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|CentroCustoFilial withoutTrashed()
+ * @mixin \Eloquent
+ */
 class CentroCustoFilial extends Model
 {
     use HasFactory, SoftDeletes, TenantTrait, LogsActivity;

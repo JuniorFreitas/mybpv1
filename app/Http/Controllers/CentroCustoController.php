@@ -192,8 +192,9 @@ class CentroCustoController extends Controller
     {
         $this->authorize('cadastro_centrocusto');
         $porPagina = $request->get('porPagina');
-        $resultado = CentroCusto::with('Empresa','Gestor')->orderBy('id');
-
+        $resultado = CentroCusto::with('Empresa','Gestor')
+            ->withCount('Filiais')
+            ->orderBy('id');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');

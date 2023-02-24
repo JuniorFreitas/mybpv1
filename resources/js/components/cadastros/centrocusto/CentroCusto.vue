@@ -1,11 +1,11 @@
 <template>
     <div id="componente">
 
-        <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form" size="g" :fechar="!preload" id="janelaForm">
             <template slot="conteudo">
                 <p class=" mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset class="mt-0" v-if="!preload">
-                    <legend>Cadastro de Centro de Custo</legend>
+                    <legend>Dados do Centro de Custo</legend>
                     <div class="row">
                         <div class="col-12 mb-2">
                             <label>Nome</label>
@@ -28,7 +28,7 @@
                 <fieldset v-if="!preload && temFilial">
                     <legend>Associar Filial</legend>
                     <div class="row">
-                        <div class="col-12"
+                        <div class="col-12 mb-2"
                              v-for="(item, key) in form.filiais" :key="item.id">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input mb-1"
@@ -118,6 +118,7 @@
                         <td class="text-center">ID</td>
                         <td class="text-center">Nome</td>
                         <td class="text-center">Gestor</td>
+                        <td class="text-center" v-if="temFilial">Possui Filial</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Opções</td>
                     </tr>
@@ -128,6 +129,7 @@
                         <td class="text-center">{{ centrocusto.label }}</td>
                         <td class="text-center">{{ centrocusto.gestor ? centrocusto.gestor.nome : "Não informado" }}
                         </td>
+                        <td class="text-center" v-if="temFilial">{{ centrocusto.filiais_count > 0 ? 'Sim' : 'Não' }}</td>
                         <td class="text-center">
                             <bt-ativo :rota="`cadastro/centrocusto/${centrocusto.id}/ativa-desativa`"
                                       :model="centrocusto"></bt-ativo>
