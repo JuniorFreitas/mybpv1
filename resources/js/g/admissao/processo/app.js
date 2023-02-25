@@ -200,6 +200,8 @@ const app = new Vue({
             },
 
             admissao: {
+                filial: false,
+                centro_custo_filial_id: "",
                 area_etiqueta_id: "",
                 centro_custo_id: "",
                 contrato: "",
@@ -424,6 +426,8 @@ const app = new Vue({
             },
 
             admissao: {
+                filial: false,
+                centro_custo_filial_id: "",
                 feedback_id: "",
                 area_etiqueta_id: "",
                 centro_custo_id: "",

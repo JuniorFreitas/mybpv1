@@ -15,7 +15,10 @@ const configuracoes = {
     computed: {
         whatsappLiberado() {
             return this.authconfiguracao?.whatsappLiberado
-        }
+        },
+        temFilial() {
+            return this.authconfiguracao?.temFilial
+        },
     }
 };
 

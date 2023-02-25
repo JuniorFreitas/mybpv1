@@ -54,13 +54,18 @@
                                href="#nav-dados-cadastrais"
                                role="tab" aria-controls="nav-dados-cadastrais" aria-selected="true">DADOS CADASTRAIS</a>
                         </li>
-                        <li class="nav-item" v-if="form.tipo_cliente === 'Cliente'">
+                        <li class="nav-item" v-if="form.tipo_cliente === 'Cliente' && false">
                             <a class="nav-item nav-link" id="nav-servicos-tab" data-toggle="tab" href="#nav-servicos"
                                role="tab" aria-controls="nav-servicos" aria-selected="false">SERVIÇOS</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" v-if="false">
                             <a class="nav-item nav-link" id="nav-proposta-tab" data-toggle="tab" href="#nav-proposta"
                                role="tab" aria-controls="nav-proposta" aria-selected="false">PROPOSTAS</a>
+                        </li>
+                        <li class="nav-item" v-if="editando">
+                            <a class="nav-item nav-link" id="nav-dados-filiais-tab" data-toggle="tab"
+                               href="#nav-dados-filiais"
+                               role="tab" aria-controls="nav-dados-filiais" aria-selected="true">FILIAIS</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-item nav-link" id="nav-config-tab" data-toggle="tab" href="#nav-config"
@@ -356,7 +361,7 @@
 
                         </div>
 
-                        <div v-if="form.tipo_cliente === 'Cliente'" class="tab-pane fade" id="nav-servicos"
+                        <div v-if="form.tipo_cliente === 'Cliente' && false" class="tab-pane fade" id="nav-servicos"
                              role="tabpanel" aria-labelledby="nav-servicos-tab">
 
                             <fieldset>
@@ -504,7 +509,7 @@
 
                         </div>
 
-                        <div class="tab-pane fade" id="nav-proposta"
+                        <div v-if="false" class="tab-pane fade" id="nav-proposta"
                              role="tabpanel" aria-labelledby="nav-proposta-tab">
                             <fieldset>
                                 <legend class="text-uppercase">
@@ -601,6 +606,12 @@
                                     </div>
                                 </div>
                             </fieldset>
+                        </div>
+
+                        <div class="tab-pane fade" id="nav-dados-filiais" role="tabpanel" v-if="editando"
+                             aria-labelledby="nav-dados-filiais-tab">
+                            <filial :empresa_id="form.id"></filial>
+
                         </div>
 
                         <div class="tab-pane fade" id="nav-config"

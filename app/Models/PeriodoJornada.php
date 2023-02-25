@@ -27,6 +27,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereJornadaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereSaida($value)
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @method static \Illuminate\Database\Query\Builder|PeriodoJornada onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereUserDeletouId($value)
+ * @method static \Illuminate\Database\Query\Builder|PeriodoJornada withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|PeriodoJornada withoutTrashed()
  */
 class PeriodoJornada extends Model
 {

@@ -31,6 +31,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereInicio($value)
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EscalaJornada[] $Jornadas
  * @property-read int|null $jornadas_count
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @method static \Illuminate\Database\Query\Builder|EmpresaEscala onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereUserDeletouId($value)
+ * @method static \Illuminate\Database\Query\Builder|EmpresaEscala withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|EmpresaEscala withoutTrashed()
  */
 class EmpresaEscala extends Model
 {
