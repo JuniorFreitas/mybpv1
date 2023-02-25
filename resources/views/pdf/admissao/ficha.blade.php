@@ -37,9 +37,7 @@
                         | Indicado por: <strong>{{ $dados->ParecerRh->indicado_por}}</strong>
                     @endif
                     | Indicado para qual área: <strong>{{ $dados->ParecerTecnica->indicado_area ?? 'Não informado' }}</strong>
-                    | Endereço: <strong>{{ $dados->Curriculo->cep }}, {{ $dados->Curriculo->logradouro }}
-                        , {{ $dados->Curriculo->bairro }}
-                        , {{ $dados->Curriculo->municipio }}/{{ $dados->Curriculo->uf }}</strong>
+                    | Endereço: <strong>{{ $dados->Curriculo->endereco_completo }}</strong>
                     | Bairro Rota: <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->bairro_rota : 'Não Informado' }}</strong>
                     | Ponto Referência Rota: <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_rota : 'Não Informado' }}</strong>
                     | Ponto Referência Bairro: <strong>{{ $dados->ParecerRota ? $dados->ParecerRota->ponto_referencia_residencia : 'Não Informado' }}</strong>
