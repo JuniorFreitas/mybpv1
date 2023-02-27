@@ -54,11 +54,11 @@
                                href="#nav-dados-cadastrais"
                                role="tab" aria-controls="nav-dados-cadastrais" aria-selected="true">DADOS CADASTRAIS</a>
                         </li>
-                        <li class="nav-item" v-if="form.tipo_cliente === 'Cliente' && false">
+                        <li class="nav-item" v-if="form.tipo_cliente === 'Cliente'">
                             <a class="nav-item nav-link" id="nav-servicos-tab" data-toggle="tab" href="#nav-servicos"
                                role="tab" aria-controls="nav-servicos" aria-selected="false">SERVIÇOS</a>
                         </li>
-                        <li class="nav-item" v-if="false">
+                        <li class="nav-item">
                             <a class="nav-item nav-link" id="nav-proposta-tab" data-toggle="tab" href="#nav-proposta"
                                role="tab" aria-controls="nav-proposta" aria-selected="false">PROPOSTAS</a>
                         </li>
@@ -260,30 +260,6 @@
                                            v-model="form.tel_principal">
                                 </div>
 
-                                <fieldset>
-                                    <legend class="text-uppercase">Áreas<span
-                                            class="small text-warning">(* áreas selecionada na hora da admissão)</span>
-                                    </legend>
-                                    <div class="row">
-                                        <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                                            <button class="btn btn-sm btn-secondary mb-2"
-                                                    @click="addLIArea($event.target)">
-                                                <span class="fas fa-plus" aria-hidden="true"></span>
-                                                Adicionar área
-                                            </button>
-                                        </div>
-
-                                        <div class="col-12" v-if="form.areas_etiquetas.length>0"
-                                             v-for="(obj, index) in form.areas_etiquetas" :key="obj.id">
-                                            <div class="row py-3">
-                                                <div class="col-12 col-sm-4">
-
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </fieldset>
 
                                 <fieldset>
                                     <legend class="text-uppercase">Upload da Logo</legend>
@@ -361,7 +337,7 @@
 
                         </div>
 
-                        <div v-if="form.tipo_cliente === 'Cliente' && false" class="tab-pane fade" id="nav-servicos"
+                        <div v-if="form.tipo_cliente === 'Cliente'" class="tab-pane fade" id="nav-servicos"
                              role="tabpanel" aria-labelledby="nav-servicos-tab">
 
                             <fieldset>
@@ -509,7 +485,7 @@
 
                         </div>
 
-                        <div v-if="false" class="tab-pane fade" id="nav-proposta"
+                        <div class="tab-pane fade" id="nav-proposta"
                              role="tabpanel" aria-labelledby="nav-proposta-tab">
                             <fieldset>
                                 <legend class="text-uppercase">
@@ -611,7 +587,6 @@
                         <div class="tab-pane fade" id="nav-dados-filiais" role="tabpanel" v-if="editando"
                              aria-labelledby="nav-dados-filiais-tab">
                             <filial :empresa_id="form.id"></filial>
-
                         </div>
 
                         <div class="tab-pane fade" id="nav-config"
