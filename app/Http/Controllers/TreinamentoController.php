@@ -506,12 +506,19 @@ class TreinamentoController extends Controller
 
         $treinamentos_selecionados = $request->treinamentos_selecionados;
 
-        $resultado = collect($resultado)->map(function ($item) use ($treinamentos_selecionados) {
-            $item['treinamento']['vencimentos'] = collect($item['treinamento']['vencimentos'])->filter(function ($vencimento) use ($treinamentos_selecionados) {
-                return in_array($vencimento['label'], $treinamentos_selecionados);
-            })->toArray();
+        $resultado = collect($resultado)->map(function ($item) {
+            $item['treinamento']['vencimentos'] = collect($item['treinamento']['vencimentos'])->toArray();
             return $item;
         })->toArray();
+
+        if (count($treinamentos_selecionados) > 0) {
+            $resultado = collect($resultado)->map(function ($item) use ($treinamentos_selecionados) {
+                $item['treinamento']['vencimentos'] = collect($item['treinamento']['vencimentos'])->filter(function ($vencimento) use ($treinamentos_selecionados) {
+                    return in_array($vencimento['label'], $treinamentos_selecionados);
+                })->toArray();
+                return $item;
+            })->toArray();
+        }
 
         $head = [
             "Nome",
