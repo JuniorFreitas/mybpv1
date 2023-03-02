@@ -403,7 +403,7 @@ class PontoEletronico extends Model {
             }
             //inicia noturno e termina normal
             if ($inicioDentroNoturno && !$fimDentroNoturno) { // iniciou no noturno e termindou fora do noturno
-                $dados['total_minutos_noturno'] += DataHora::diferencaMinutos($inicio->dataHoraInsert(), $fimDentroNoturno->format('d/m/Y H:i:s'));
+//                $dados['total_minutos_noturno'] += DataHora::diferencaMinutos($inicio->dataHoraInsert(), $fimDentroNoturno->format('d/m/Y H:i:s'));
             }
             //inicio e o fim é muito maior que a duração noturna inteira
             if ($inicioNoturnoLei->between($periodo->entrada, $periodo->saida, false) && $fimNoturnoLei->between($periodo->entrada, $periodo->saida, false)) {
