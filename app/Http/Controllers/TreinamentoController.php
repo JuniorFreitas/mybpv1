@@ -502,42 +502,52 @@ class TreinamentoController extends Controller
             $resultado = $this->filtro($request);
         }
 
-        $resultado = $resultado->get()
-            ->toArray();
+        $resultado = $resultado->get()->toArray();
+
+        $treinamentos_selecionados = $request->treinamentos_selecionados;
+
+        $resultado = collect($resultado)->map(function ($item) use ($treinamentos_selecionados) {
+            $item['treinamento']['vencimentos'] = collect($item['treinamento']['vencimentos'])->filter(function ($vencimento) use ($treinamentos_selecionados) {
+                return in_array($vencimento['label'], $treinamentos_selecionados);
+            })->toArray();
+            return $item;
+        })->toArray();
 
         $head = [
             "Nome",
-            "Vaga",
+//            "Vaga",
             "Cargo",
             "Status",
             "Data Admissão",
             "PCD",
             "Área",
             "Foto 3x4",
-            "Treinamentos",
+            "Treinamento",
+            "Data do treinamento",
+            "Data do vencimento",
             "Ultima Atualização",
         ];
 
         $rows = [];
 
         foreach ($resultado as $row) {
-            $treinamentos = "";
             foreach ($row['treinamento']['vencimentos'] as $vencimento) {
-                $treinamentos .= $vencimento['label'] . " - Treinado em: " . $vencimento['pivot']['data_treinamento'] . " - Vence em: " . $vencimento['pivot']['data_vencimento'] . "\n";
-            }
-            $rows[] = [
-                $row['curriculo']['nome'],
-                $row['vaga_aberta']['titulo'],
-                $row['admissao'] ? $row['admissao']['cargo'] : "",
-                $row['admissao'] ? $row['admissao']['status'] : "",
-                $row['admissao'] ? $row['admissao']['data_admissao'] : "",
+                $rows[] = [
+                    $row['curriculo']['nome'],
+//                    $row['vaga_aberta']['titulo'],
+                    $row['admissao'] ? $row['admissao']['cargo'] : "",
+                    $row['admissao'] ? $row['admissao']['status'] : "",
+                    $row['admissao'] ? $row['admissao']['data_admissao'] : "",
 
-                $row['curriculo']['pcd'] ? 'Sim' : 'Não',
-                $row['admissao']['area_etiqueta'] ? $row['admissao']['area_etiqueta']['label'] : 'Não informado',
-                $row['curriculo']['foto_tres'] ? 'Sim' : 'Não',
-                $treinamentos,
-                $row['treinamento']['updated_at'],
-            ];
+                    $row['curriculo']['pcd'] ? 'Sim' : 'Não',
+                    $row['admissao']['area_etiqueta'] ? $row['admissao']['area_etiqueta']['label'] : 'Não informado',
+                    $row['curriculo']['foto_tres'] ? 'Sim' : 'Não',
+                    $vencimento['label'],
+                    $vencimento['pivot']['data_treinamento'],
+                    $vencimento['pivot']['data_vencimento'],
+                    $row['treinamento']['updated_at'],
+                ];
+            }
         }
 
         $nameArquivo = "treinamentos" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
