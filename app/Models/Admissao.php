@@ -847,6 +847,11 @@ class Admissao extends Model
         return ClienteAreaEtiqueta::whereClienteId($cliente_id)->whereAreaEtiquetaId($area_etiqueta_id)->first()->numero_supervisor;
     }
 
+    public function CentroCustoFilial()
+    {
+        return $this->hasOne(CentroCustoFilial::class, 'id', 'centro_custo_filial_id');
+    }
+
     public function UltimoAsoAtivo()
     {
         return $this->hasOne(AdmissaoAso::class, 'admissao_id', 'id')->whereAtivo(true);

@@ -594,7 +594,7 @@ class PontoEletronico extends Model {
         $minutos = $objeto->i;
         //$horas = $horas < 10 ? "0".$horas:$horas;
         $minutos = $minutos < 10 ? "0" . $minutos : $minutos;
-        return "{$horas}h:$minutos:m";
+        return "{$horas}h:{$minutos}m";
 
     }
 

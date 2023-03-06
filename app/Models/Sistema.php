@@ -759,7 +759,154 @@ class Sistema
 
     public static function LogFormatado($dados)
     {
-        \Log::debug(print_r(json_encode($dados, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE), 1));
+        \Log::debug(print_r(json_encode($dados, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 1));
+    }
+
+//    public function getEmpresaFilialMatriz($empresa_id, $centro_custo_filial_id = null)
+//    {
+//        if ($centro_custo_filial_id) {
+//            $CCF = CentroCustoFilial::find($centro_custo_filial_id)->load('Filial');
+//            $Empresa = (array)$CCF->Filial->dados;
+//
+//            $dadosEmpresa = [
+//                'id' => $CCF->Filial->id,
+//                'empresa_id' => $empresa_id,
+//                'razao_social' => $Empresa['razao_social'] ?? null,
+//                'cnpj' => $Empresa['cnpj'] ?? null,
+//                'nome_fantasia' => $Empresa['nome_fantasia'] ?? null,
+//                'endereco_completo' => $CCF->Filial->getEnderecoCompletoAttribute() ?? null,
+//                'filial' => true,
+//            ];
+//        } else {
+//            $empresaCliente = Cliente::select([
+//                'id',
+//                'razao_social',
+//                'cnpj',
+//                'nome_fantasia',
+//                'cep',
+//                'logradouro',
+//                'numero',
+//                'complemento',
+//                'bairro',
+//                'municipio',
+//                'uf'])->find($empresa_id);
+//
+//            $dadosEmpresa = [
+//                'id' => $empresaCliente->id,
+//                'empresa_id' => $empresa_id,
+//                'razao_social' => $empresaCliente->razao_social ?? null,
+//                'cnpj' => $empresaCliente->cnpj ?? null,
+//                'nome_fantasia' => $empresaCliente->nome_fantasia ?? null,
+//                'endereco_completo' => $empresaCliente->endereco_completo ?? null,
+//                'filial' => false,
+//            ];
+//        }
+//        return $dadosEmpresa;
+//    }
+
+    /**
+     * @param $empresa_id
+     * @return array
+     */
+    public static function getEmpresa($empresa_id): array
+    {
+        $cliente = Cliente::select([
+            'id',
+            'razao_social',
+            'cnpj',
+            'nome_fantasia',
+            'cep',
+            'logradouro',
+            'numero',
+            'complemento',
+            'bairro',
+            'municipio',
+            'uf'
+        ])->find($empresa_id);
+
+        if (!$cliente) {
+            return [];
+        }
+
+        return [
+            'id' => $cliente->id,
+            'empresa_id' => $empresa_id,
+            'razao_social' => $cliente->razao_social,
+            'cnpj' => $cliente->cnpj,
+            'nome_fantasia' => $cliente->nome_fantasia,
+            'endereco_completo' => mb_strtoupper($cliente->endereco_completo),
+            'logo' => self::convertBase3($cliente->Logo->first()->urlThumb, true),
+            'filial' => false,
+        ];
+    }
+
+    /**
+     * @param $empresa_id
+     * @param $centro_custo_filial_id
+     * @return array
+     */
+    public static function getFilial($empresa_id, $centro_custo_filial_id): array
+    {
+        $centroCustoFilial = CentroCustoFilial::with('Filial:id,empresa_id,dados')->find($centro_custo_filial_id);
+
+        if (!$centroCustoFilial) {
+            return [];
+        }
+
+        $filial = $centroCustoFilial->Filial;
+        $dados = (object)$filial->dados;
+
+        $logo = isset($dados->logo) ? self::convertBase3($dados->Logo->first()->urlThumb, true) : self::convertBase3(Cliente::find($empresa_id)->Logo->first()->urlThumb, true);
+
+        return [
+            'id' => $filial->id,
+            'empresa_id' => $empresa_id,
+            'razao_social' => $dados->razao_social,
+            'cnpj' => $dados->cnpj,
+            'nome_fantasia' => $dados->nome_fantasia,
+            'endereco_completo' => mb_strtoupper($filial->getEnderecoCompletoAttribute()),
+            'logo' => $logo,
+            'filial' => true,
+        ];
+    }
+
+    /**
+     * @param $funcionario_id
+     * @param $empresa_id
+     * @return object
+     */
+    public static function getColaboradorDados($funcionario_id, $empresa_id): object
+    {
+        $feedbackCurriculo = FeedbackCurriculo::select(['id', 'curriculo_id'])
+            ->whereCurriculoId($funcionario_id)
+            ->whereEmpresaId($empresa_id)
+            ->with([
+                'Curriculo:id,nome,nascimento,rg,orgao_expeditor,cpf',
+                'Admissao:id,centro_custo_id,filial,centro_custo_filial_id,cargo,funcao,matricula,data_admissao,feedback_id',
+                'Admissao.CentroCusto:id,label',
+                'Admissao.AreaEtiqueta:id,label',
+                'Admissao.DadosAdmissoes',
+                'Admissao.CentroCustoFilial:id,empresa_id,centro_custo_id,cliente_filial_id',
+            ])
+            ->first();
+
+        $ctps_numero = $feedbackCurriculo->Admissao->DadosAdmissoes->ctps_numero ?? '';
+        $ctps_serie = $feedbackCurriculo->Admissao->DadosAdmissoes->ctps_serie ?? '';
+
+        return (object)[
+            'nome' => mb_strtoupper(User::select(['nome'])->whereId($funcionario_id)->first()->nome ?? "NÃO INFORMADO {$funcionario_id}"),
+            'nascimento' => $feedbackCurriculo->Curriculo->nascimento ?? "NÃO INFORMADO",
+            'cpf' => $feedbackCurriculo->Curriculo->cpf ?? "NÃO INFORMADO",
+            'matricula' => $feedbackCurriculo->Admissao->matricula ?? "NÃO INFORMADO",
+            'data_admissao' => $feedbackCurriculo->Admissao->data_admissao ?? "NÃO INFORMADO",
+            'cargo' => $feedbackCurriculo->Admissao->cargo ?? "NÃO INFORMADO",
+            'funcao' => $feedbackCurriculo->Admissao->funcao ?? "NÃO INFORMADO",
+            'centro_custo' => $feedbackCurriculo->Admissao->CentroCusto->label ?? "NÃO INFORMADO",
+            'area' => $feedbackCurriculo->Admissao->AreaEtiqueta->label ?? "NÃO INFORMADO",
+            'pertence_filial' => $feedbackCurriculo->Admissao->filial ?? "NÃO INFORMADO",
+            'ctps' => $ctps_numero . '-' . $ctps_serie,
+            'centro_custo_filial' => self::getFilial($empresa_id, $feedbackCurriculo->Admissao->centro_custo_filial_id) ?: null,
+        ];
     }
 
 

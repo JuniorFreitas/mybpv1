@@ -414,7 +414,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('controle_ponto_config_empresa','controle_ponto_ocorrencias_jornadas','controle_ponto_escalas','controle_ponto_folha_ponto_manual'))
+    @if(\App\Models\Sistema::permitirLinks('controle_ponto_config_empresa','controle_ponto_ocorrencias_jornadas','controle_ponto_escalas','controle_ponto_folha_ponto_manual','controle_ponto_relatorio_sintetico'))
         <li id="ponto">
             <a href="javascript://" class="has-arrow waves-effect" parent="ponto">
                 <i class="bx bx-time"></i>
@@ -474,6 +474,14 @@
                     <li>
                         <a href="{{route('g.controle-ponto.folha-manual.index')}}" parent="ponto">
                             FOLHA DE PONTO MANUAL
+                        </a>
+                    </li>
+                @endcan
+
+                @can('controle_ponto_relatorio_sintetico')
+                    <li>
+                        <a href="{{route('g.controle-ponto.folha-ponto.index')}}" parent="ponto">
+                            RELATORIO SINTÉTICO
                         </a>
                     </li>
                 @endcan

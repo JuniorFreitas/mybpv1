@@ -67,6 +67,22 @@ class ClienteFilial extends Model
         'dados' => 'json',
         'ativo' => 'boolean'
     ];
+    public function getEnderecoCompletoAttribute()
+    {
+        $endereco = $this->dados->logradouro;
+        $bairro = $this->dados->bairro;
+        $cep = $this->dados->cep;
+        $numero = $this->dados->numero ?? 'S/N';
+        $complemento = $this->dados->complemento;
+
+        if ($complemento) {
+            $endereco_completo = "{$endereco}, {$complemento}, {$numero}, {$bairro}, {$cep}, {$this->dados->municipio}-{$this->dados->uf}";
+        } else {
+            $endereco_completo = "{$endereco}, {$numero}, {$bairro}, {$cep}, {$this->dados->municipio}-{$this->dados->uf}";
+        }
+
+        return $endereco_completo;
+    }
 
     /**
      * @param $value
