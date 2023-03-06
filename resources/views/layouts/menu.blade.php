@@ -480,7 +480,7 @@
 
                 @can('controle_ponto_relatorio_sintetico')
                     <li>
-                        <a href="{{route('g.controle-ponto.folha-ponto.index')}}" parent="ponto">
+                        <a href="{{route('g.controle-ponto.folha-ponto.relatoriosintetico')}}" parent="ponto">
                             RELATORIO SINTÉTICO
                         </a>
                     </li>
