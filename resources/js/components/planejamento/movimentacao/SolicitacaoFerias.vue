@@ -86,7 +86,7 @@
                                        disabled="disabled">
                             </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-4 mb-3">
                                 <label>Dias de férias:</label>
                                 <select class="form-control form-control-sm" v-model="form.qnt_dias"
                                         :disabled="visualizar || aprovandoRh || aprovando">
@@ -114,6 +114,24 @@
                                 <input type="text" class="form-control form-control-sm" v-model="qntSaldo"
                                        readonly="readonly"
                                        disabled="disabled">
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label>Abono Pecuniário</label>
+                                <select type="text" class="form-control form-control-sm" v-model="form.abono_pecuniario"
+                                        :disabled="visualizar || aprovandoRh || aprovando">
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-4 mb-3">
+                                <label>Adiantamento Décimo Terceiros</label>
+                                <select type="text" class="form-control form-control-sm" v-model="form.adiantamento_decimo_terceiro"
+                                        :disabled="visualizar || aprovandoRh || aprovando">
+                                    <option :value="true">Sim</option>
+                                    <option :value="false">Não</option>
+                                </select>
                             </div>
 
                             <gestoraprovacao formsm :model="form" :verifica="visualizar || aprovando" :hash="hash"></gestoraprovacao>
@@ -640,6 +658,8 @@ export default {
                 obs_rh: "",
                 status_aprovacao_rh: "",
                 aprovado_via_script: false,
+                abono_pecuniario: false,
+                adiantamento_decimo_terceiro: false,
                 gestor_id: "",
                 autocomplete_label_gestor_modal: "",
                 autocomplete_label_gestor_modal_anterior: "",

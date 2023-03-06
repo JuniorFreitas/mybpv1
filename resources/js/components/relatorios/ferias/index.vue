@@ -128,7 +128,7 @@ export default {
             dados: [],
             filtro: [],
             periodo: "",
-            urlExportacao: `${URL_ADMIN}/relatorios/vencimento-ferias/export-excel`,
+            urlExportacao: `${URL_ADMIN}/relatorios/ferias/export-excel`,
             filtrar: {
                 tipo: 'aquisitivo',
                 periodo: '',
@@ -158,7 +158,7 @@ export default {
     },
     methods: {
         async periodosAquisitivosList() {
-            await axios.post(`${URL_ADMIN}/relatorios/vencimento-ferias/listaperiodos`)
+            await axios.post(`${URL_ADMIN}/relatorios/ferias/listaperiodos`)
                 .then(({data}) => {
                     console.log(data)
                     this.filtro = data.filtro;
@@ -166,7 +166,7 @@ export default {
         },
         async buscarDados() {
             this.preload = true;
-            await axios.post(`${URL_ADMIN}/relatorios/vencimento-ferias`, this.filtrar)
+            await axios.post(`${URL_ADMIN}/relatorios/ferias`, this.filtrar)
                 .then(({data}) => {
                     this.dados = data.dados;
                     this.preload = false;
