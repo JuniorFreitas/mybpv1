@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admissao;
+use App\Models\EmpresaConfig;
 use App\Models\EmpresaEscala;
 use App\Models\FeedbackCurriculo;
 use App\Models\Feriado;
 use App\Models\OcorrenciaJornada;
 use App\Models\PontoEletronico;
+use App\Models\Sistema;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -107,7 +108,7 @@ class FolhaDePontoController extends Controller
             ];
         }
 
-       return $funcionario->dados_funcionario = $dadosDoFuncionario;
+        return $funcionario->dados_funcionario = $dadosDoFuncionario;
 
     }
 
@@ -152,11 +153,11 @@ class FolhaDePontoController extends Controller
                 'Ocorrencia:id,descricao,trabalhado,conta_horas',
                 'Periodos' => function ($q) {
                     $q->select(['id', 'arquivo_id_entrada', 'arquivo_id_saida', 'ponto_id', 'entrada', 'saida'])
-                        ->with(['FotoEntrada','FotoSaida'])
+                        ->with(['FotoEntrada', 'FotoSaida'])
                         ->withTrashed()->orderBy('created_at');
                 },
                 'PeriodosEmAberto' => function ($q) {
-                    $q->select(['id','ponto_id'])->with(['FotoEntrada','FotoSaida'])->withTrashed();
+                    $q->select(['id', 'ponto_id'])->with(['FotoEntrada', 'FotoSaida'])->withTrashed();
                 },
                 'Jornada' => function ($q) {
                     $q->withTrashed()
@@ -226,7 +227,7 @@ class FolhaDePontoController extends Controller
                     $q->select(['id', 'ponto_id', 'entrada', 'saida'])->withTrashed()->orderBy('created_at');
                 },
                 'PeriodosEmAberto' => function ($q) {
-                    $q->select(['id','ponto_id'])->withTrashed();
+                    $q->select(['id', 'ponto_id'])->withTrashed();
                 },
                 'Jornada' => function ($q) {
                     $q->withTrashed()
@@ -353,5 +354,101 @@ class FolhaDePontoController extends Controller
                 'controle_ponto_adm' => (auth()->user()->can('controle_ponto_folha-ponto_adm'))
             ],
         ]);
+    }
+
+    public function relatoriosintetico(Request $request)
+    {
+        return view('g.controle-ponto.relatorio-sintetico.index');
+    }
+
+    public function relatoriosinteticoexportacao(Request $request)
+    {
+
+        $empresa_id = auth()->user()->empresa_id;
+        $usuario_id = auth()->id();
+        $request->status = 'admitidos';
+
+
+        $dia_inicial_frequencia = EmpresaConfig::whereEmpresaId($empresa_id)->first(['dia_nova_frequencia'])->dia_nova_frequencia;
+
+        $correlation_id = "{$empresa_id}_{$usuario_id}_{$dia_inicial_frequencia}_" . date('m_Y') . "_{$request->status}_{$request->centro_custo_filial_id}";
+
+        $dataInicialMes = new DataHora("{$dia_inicial_frequencia}/" . $request->mes . "/" . $request->ano . " 00:00:00");
+        $dataFimMes = clone $dataInicialMes;
+        $dataFimMes->addDia(30);
+
+        $request->intervalo = "{$dataInicialMes->dataCompleta()} até {$dataFimMes->dataCompleta()}";
+        $intervalo = explode(" até ", $request->intervalo);
+        $inicio = new DataHora($intervalo[0] . " 00:00:00");
+        $fim = new DataHora($intervalo[1] . " 23:59:59");
+
+        $dadosDaEmpresa = !is_null($request->centro_custo_filial_id) ? Sistema::getFilial($empresa_id, $request->centro_custo_filial_id) : Sistema::getEmpresa($empresa_id);
+
+        $funcionarios = PontoEletronico::select('funcionario_id')
+            ->whereBetween('created_at', [$inicio->dataHoraInsert(), $fim->dataHoraInsert()])
+            ->where('empresa_id', $empresa_id)
+            ->whereHas('Funcionario.Feedback', function ($q) use ($request) {
+                if ($request->filled('status')) {
+                    $request->status == 'admitidos' ? $q->admitidos() : $q->demitidos();
+                }
+                $q->whereHas('Admissao', function ($q) use ($request) {
+                    if ($request->filled('centro_custo_filial_id')) {
+                        $q->where('centro_custo_filial_id', $request->centro_custo_filial_id);
+                    }
+                });
+            })
+            ->groupBy('funcionario_id')
+            ->havingRaw('COUNT(funcionario_id) > 1')
+            ->orderBy('funcionario_id')
+            ->pluck('funcionario_id');
+
+        $ll = [];
+
+        foreach ($funcionarios as $funcionario_id) {
+            $consulta = PontoEletronico::whereBetween('created_at', [$inicio->dataHoraInsert(), $fim->dataHoraInsert()])
+                ->whereFuncionarioId($funcionario_id)
+                ->orderBy('created_at');
+
+            //Total horas normais
+            $totalFaltas = clone $consulta;
+            $totalDiasTrabalhados = clone $consulta;
+            $totalHorasNormais = clone $consulta;
+            $totalHorasNoturnas = clone $consulta;
+            $totalHorasExtra = clone $consulta;
+            $totalHorasNegativas = clone $consulta;
+
+            $totalHorasNormais = $totalHorasNormais->whereDoesntHave('PeriodosEmAberto')->sum('duracao_normal');
+            $totalHorasNoturnas = $totalHorasNoturnas->whereDoesntHave('PeriodosEmAberto')->sum('duracao_noturna');
+            $totalHorasExtra = $totalHorasExtra->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '>', 0)->sum('duracao_extra');
+            $totalHorasNegativas = abs($totalHorasNegativas->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '<', 0)->sum('duracao_extra'));
+
+            $dadosDoFuncionario = Sistema::getColaboradorDados($funcionario_id, $empresa_id);
+
+            $ll[] = [
+                'funcionario_id' => (int)$funcionario_id,
+                'empresa_id' => (int)$empresa_id,
+                'funcionario' => $dadosDoFuncionario,
+                'total_faltas' => $totalFaltas->whereOcorrenciaId(OcorrenciaJornada::FALTA)->count(),
+                'total_dias_trabalhados' => $totalDiasTrabalhados->whereOcorrenciaId(OcorrenciaJornada::DIA_TRABALHADO)->count(),
+                'total_horas_normais' => PontoEletronico::formataTempo($totalHorasNormais),
+                'total_horas_noturnas' => PontoEletronico::formataTempo($totalHorasNoturnas),
+                'total_horas_extra' => PontoEletronico::formataTempo($totalHorasExtra),
+                'total_horas_negativas' => PontoEletronico::formataTempo($totalHorasNegativas),
+                'saldo_horas' => PontoEletronico::formataTempo(($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas),
+            ];
+        }
+
+        $dados = [
+            'periodo' => $inicio->dataCompleta() . " até " . $fim->dataCompleta(),
+            'dados_empresa' => $dadosDaEmpresa,
+            'dados_ponto' => collect($ll)->sortBy('funcionario.nome')->values()->all(),
+            'total_funcionarios' => count($ll),
+            'correlation_id' => $correlation_id,
+            'solicitante' => User::select('nome')->find(auth()->id())->nome
+        ];
+
+        return PDF::loadView('pdf.controle-ponto.folha-ponto.relatoriosintetico', compact('dados'))->setPaper('a4', 'landscape')->stream('relatorio_sintetico.pdf');
+
+//        return view('pdf.controle-ponto.folha-ponto.relatoriosintetico', compact('dados'));
     }
 }

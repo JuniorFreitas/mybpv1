@@ -181,7 +181,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Início de nova frequência</label>
-                                <input :disabled="preloadConfig" type="number" class="form-control" placeholder="Dia do mês" v-mascara:numero value="1" v-model="formConfig.dia_nova_frequencia" onblur="valida_campo_vazio(this,1)">
+                                <input :disabled="preloadConfig" type="number" max="25" min="1" class="form-control" placeholder="Dia do mês" v-mascara:numero value="1" v-model="formConfig.dia_nova_frequencia" onblur="valida_campo_vazio(this,1)">
                                 <small class="text-muted">Dia do mês em que incia uma nova ficha de frequência</small>
                             </div>
                             <button v-if="config_empresa" type="button" class="btn btn-success btn-sm" :disabled="preloadConfig" @click="salvarConfiguracoes">

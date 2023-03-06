@@ -1143,6 +1143,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('folha-ponto/atualizarLista', [\App\Http\Controllers\FolhaDePontoController::class, 'atualizarLista'])->name('atualizarLista')->middleware('can:controle_ponto_folha-ponto');
             Route::post('folha-ponto/{user}/frequencia', [\App\Http\Controllers\FolhaDePontoController::class, 'buscarFrequencia'])->name('buscarFrequencia')->middleware('can:controle_ponto_folha-ponto');
             Route::post('folha-ponto/{user}/imprimir', [\App\Http\Controllers\FolhaDePontoController::class, 'imprimir'])->name('imprimir')->middleware('can:controle_ponto_folha-ponto');
+            Route::get('folha-ponto/relatorio-sintetico', [\App\Http\Controllers\FolhaDePontoController::class, 'relatoriosintetico'])->name('relatoriosintetico')->middleware('can:controle_ponto_folha-ponto');
+            Route::get('folha-ponto/relatorio-sintetico/exportacao', [\App\Http\Controllers\FolhaDePontoController::class, 'relatoriosinteticoexportacao'])->name('relatoriosinteticoexportacao')->middleware('can:controle_ponto_relatorio_sintetico');
         });
         Route::resource('folha-ponto', \App\Http\Controllers\FolhaDePontoController::class, ['parameters' => ['folha-ponto' => 'user']])->middleware('can:controle_ponto_folha-ponto');
 

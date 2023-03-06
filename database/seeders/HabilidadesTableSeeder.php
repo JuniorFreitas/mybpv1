@@ -392,6 +392,7 @@ class HabilidadesTableSeeder extends Seeder
 
         //PONTO MANUAL
         $lista[] = ['nome' => 'controle_ponto_folha_ponto_manual', 'descricao' => 'Acesso a tela de folha de ponto manual'];
+        $lista[] = ['nome' => 'controle_ponto_relatorio_sintetico', 'descricao' => 'Acesso a tela de relatorio sintetico'];
 
 
         //Perimetros
