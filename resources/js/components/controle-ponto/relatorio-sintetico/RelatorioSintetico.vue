@@ -1,51 +1,45 @@
 <template>
     <div id="componenteRelatorioSintetico">
-
+        <preload v-show="preload"></preload>
         <fieldset class="mt-3">
             <legend>Filtro</legend>
             <div class="row">
-
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-5" v-if="temFilial">
                     <div class="form-group">
-                        <label for="">Mes</label>
+                        <label for="">CNPJ</label>
                         <select class="form-control form-control-sm"
-                                :disabled="controle.carregando"
+                                v-model="form.centro_custo_filial_id">
+                            <option value="">MATRIZ</option>
+                            <option v-for="item in lista" :value="item.id">{{ item.razao_social }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-2">
+                    <div class="form-group">
+                        <label for="">Mês</label>
+                        <select class="form-control form-control-sm"
                                 v-model="form.mes">
-                            <option value="">Selecione</option>
                             <option v-for="item in meses" :value="item.value">{{ item.label }}</option>
                         </select>
                     </div>
                 </div>
 
-
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-2">
                     <div class="form-group">
                         <label for="">Ano</label>
                         <select class="form-control form-control-sm"
-                                :disabled="controle.carregando"
                                 v-model="form.ano">
                             <option v-for="item in anos" :value="item.label">{{ item.label }}</option>
                         </select>
                     </div>
                 </div>
 
-                <!--                <div class="col-12 col-md-3">-->
-                <!--                    <div class="form-group">-->
-                <!--                        <label for="">Exibir</label>-->
-                <!--                        <select class="form-control form-control-sm" @change="atualizar()"-->
-                <!--                                :disabled="controle.carregando"-->
-                <!--                                v-model="controle.dados.pages">-->
-                <!--                            <option v-for="item in por_pagina" :value="item">{{ item }}</option>-->
-                <!--                        </select>-->
-                <!--                    </div>-->
-                <!--                </div>-->
-
-                <div class="col-12"></div>
 
                 <div class="col-12 col-md-9">
 
                     <button type="button" class="btn btn-sm btn-primary mr-1" @click.prevent="geraRealatorio()">
-                        GERAR RELATORIO
+                        GERAR RELATÓRIO
                     </button>
 
                 </div>
@@ -57,55 +51,27 @@
 </template>
 
 <script>
-import modal from '../../Modal';
-import DatePicker from "../../DatePicker";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
+import Configuracoes from "../../../mixins/Configuracoes";
 
 export default {
     name: 'RelatorioSintetico',
-    mixins: [ExportacaoMixin],
-    components: {
-        modal
-    },
+    mixins: [ExportacaoMixin, Configuracoes],
     data() {
         return {
             hash: String(Math.random()).substr(2),
-
-            tituloJanela: "Demissão",
-            preload: false,
-            preloadExportacao: false,
-            editando: false,
-            apagado: false,
-            cadastrado: false,
-            cadastrando: false,
-            atualizado: false,
-            visualizar: false,
-            aprovando: false,
-            aprovar_por_gestor: false,
             URL_ADMIN,
-
             lista: [],
-
+            preload: false,
             selecionaTudo: false,
-
             form: {
                 mes: '',
                 ano: '',
-                selecionados: [],
+                centro_custo_filial_id: '',
             },
             formDefault: null,
 
             urlPdf: `${URL_ADMIN}/controle-ponto/folha-ponto/relatorio-sintetico/exportacao`,
-            controle: {
-                carregando: false,
-                dados: {
-                    pages: 20,
-                    campoBusca: "",
-                    campoStatus: "",
-                    filtroPeriodo: false,
-                    periodo: "",
-                }
-            }
         }
     },
     mounted() {
@@ -115,6 +81,7 @@ export default {
             mes = '0' + mes;
         }
         this.form.mes = mes;
+        this.getCentroCustoFilial();
     },
     computed: {
         meses() {
@@ -144,61 +111,24 @@ export default {
         },
         paramsExport() {
             return this.form
-        },
-        listaCheck() {
-            return this.lista.filter(item => item.id)
-        },
-        tudoMarcado() {
-            let total = this.listaCheck.length
-            let totalEncontrado = 0
-
-            if (total === 0) {
-                return false
-            }
-
-            this.listaCheck.forEach(item => {
-                let id = item.id
-                if (this.form.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++
-                } else {
-                    return false
-                }
-            })
-            let resultado = total === totalEncontrado
-            this.selecionaTudo = resultado
-            return resultado
-        },
-        por_pagina() {
-            return [20, 50, 100, 150];
         }
     },
     methods: {
-        selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo
-            if (this.selecionaTudo) {
-                this.listaCheck.map(item => {
-                    let id = item.id
-                    if (this.form.selecionados.indexOf(id) === -1) {
-                        this.form.selecionados.push(id)
-                    }
-                })
-            } else {
-                this.listaCheck.map(item => {
-                    let id = item.id
-                    let index = this.form.selecionados.indexOf(id)
-                    if (index >= 0) {
-                        this.form.selecionados.splice(index, 1)
-                    }
-                })
-            }
-        },
-
         geraRealatorio(){
-            let url = `${URL_ADMIN}/controle-ponto/folha-ponto/relatorio-sintetico/exportacao?mes=${this.form.mes}&ano=${this.form.ano}`;
+            let url = `${URL_ADMIN}/controle-ponto/folha-ponto/relatorio-sintetico/exportacao?mes=${this.form.mes}&ano=${this.form.ano}&centro_custo_filial_id=${this.form.centro_custo_filial_id}`;
             window.open(url, '_blank');
-        }
-
-
+        },
+        getCentroCustoFilial() {
+            let url = `${URL_ADMIN}/get-filiais?ativo=1`;
+            this.preload = true;
+            axios.get(url).then(response => {
+                this.lista = response.data;
+                this.preload = false;
+            }).catch(error => {
+                console.log(error);
+                this.preload = false;
+            });
+        },
     }
 
 }

@@ -86,6 +86,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::get('periodos-aquisitivos', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaPeriodosAquisitivos'])->name('buscaPeriodosAquisitivos');
     Route::get('get-pcmso', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getPcmos'])->name('getPcmos');
     Route::get('get-empresa-exames', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getEmpresaExames'])->name('getEmpresaExames');
+    Route::get('get-filiais', [\App\Http\Controllers\CentroCustoController::class, 'getFiliais'])->name('getFiliais');
 
     // AutoCompletes
     Route::group(['as' => 'autocompletes.', 'prefix' => 'autocomplete'], function () {
