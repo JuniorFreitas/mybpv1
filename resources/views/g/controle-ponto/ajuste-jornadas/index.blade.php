@@ -158,20 +158,25 @@
                 <div class="col-12 mt-3">
                     <form>
                         <div class="form-row">
-                            <div class="col">
-                                <datepicker label="Intervalo" :range="true" v-model="formBusca.intervalo" :disabled="formBusca.preload" @onselect="atualizarTudo"></datepicker>
+                            <div class="col-3">
+                                <datepicker label="Intervalo" formsm :range="true" v-model="formBusca.intervalo" :disabled="formBusca.preload" @onselect="atualizarTudo()"></datepicker>
                             </div>
                             <div class="col">
                                 <label>Colaborador</label>
-                                <autocomplete :formsm="false" caminho="autocomplete/funcionarios"
+                                <autocomplete formsm caminho="autocomplete/funcionarios"
                                               :valido="formBusca.funcionario_id!=null"
                                               v-model="formBusca.funcionarioNome"
                                               placeholder="Nome do funcionário"
                                               @onblur="resetaCampoFunccionario"
                                               @onselect="selecionaFuncionario"></autocomplete>
                             </div>
-                            <div class="col">
-                                <button type="button" class="btn btn-primary mt-4" @click="botaoResetCampos">Limpar</button>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-sm btn-success mr-1 mb-2" :disabled="formBusca.preload"
+                                        @click="atualizarTudo()"><i
+                                        :class="formBusca.preload ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                                    Buscar
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm mr-1 mb-2" @click="botaoResetCampos()">Limpar</button>
                             </div>
                         </div>
                     </form>
@@ -179,13 +184,13 @@
             </div>
             <ul class="nav nav-pills nav-fill mt-3">
                 <li class="nav-item">
-                    <a class="nav-link show active" id="pendentes-tab" data-toggle="tab" href="#jornadas_pendentes" role="tab" aria-controls="home" aria-selected="true">Jornadas pendentes</a>
+                    <a class="nav-link show active" id="pendentes-tab" data-toggle="tab" href="#jornadas_pendentes" @click.prevent="atualizarPendentes()" role="tab" aria-controls="home" aria-selected="true">Jornadas pendentes</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="incompletas-tab" data-toggle="tab" href="#jornadas_incompletas" role="tab" aria-controls="profile" aria-selected="false">Jornadas incompletas</a>
+                    <a class="nav-link" id="incompletas-tab" data-toggle="tab" href="#jornadas_incompletas" role="tab" @click.prevent="atualizarIncompletas()" aria-controls="profile" aria-selected="false">Jornadas incompletas</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="verificadas-tab" data-toggle="tab" href="#jornadas_verificadas" role="tab" aria-controls="profile" aria-selected="false">Jornadas verificadas</a>
+                    <a class="nav-link" id="verificadas-tab" data-toggle="tab" href="#jornadas_verificadas" role="tab" @click.prevent="atualizarVerificadas()" aria-controls="profile" aria-selected="false">Jornadas verificadas</a>
                 </li>
             </ul>
             <div class="tab-content">

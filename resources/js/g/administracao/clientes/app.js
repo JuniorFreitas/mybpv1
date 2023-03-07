@@ -2,6 +2,7 @@ import telefone from '../../../components/Telefones';
 import endereco from '../../../components/Endereco';
 import datepicker from '../../../components/DatePicker';
 import upload from '../../../components/Upload';
+import Filial from "../../../components/administracao/clientes/Filial";
 
 const app = new Vue({
     el: '#app',
@@ -9,7 +10,8 @@ const app = new Vue({
         telefone,
         endereco,
         datepicker,
-        upload
+        upload,
+        Filial
     },
     data: {
         tituloJanela: 'Cadastrando Cliente',
@@ -204,8 +206,20 @@ const app = new Vue({
 
             $('#janelaCadastrar :input:enabled').trigger('blur');
             // Validações de abas
-            $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0 ? $('#nav-dados-cadastrais-tab').addClass('bg-danger text-white') : $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
-            $('#nav-servicos :input:enabled.is-invalid').length > 0 ? $('#nav-servicos-tab').addClass('bg-danger text-white') : $('#nav-servicos-tab').removeClass('bg-danger text-white');
+            // $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0 ? $('#nav-dados-cadastrais-tab').addClass('bg-danger text-white') : $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
+            // $('#nav-servicos :input:enabled.is-invalid').length > 0 ? $('#nav-servicos-tab').addClass('bg-danger text-white') : $('#nav-servicos-tab').removeClass('bg-danger text-white');
+
+            let abas = [
+                'nav-dados-cadastrais',
+                'nav-servicos',
+                'nav-proposta',
+                'nav-config',
+                'nav-proposta'
+            ];
+
+            abas.forEach(aba => {
+                $(`#${aba} :input:enabled.is-invalid`).length > 0 ? $(`#${aba}-tab`).addClass('bg-danger text-white') : $(`#${aba}-tab`).removeClass('bg-danger text-white');
+            });
 
             if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
                 mostraErro('', 'Verificar os erros');
@@ -277,13 +291,32 @@ const app = new Vue({
             formReset();
             $('#janelaCadastrar :input:enabled').trigger('blur');
             // Validações de abas
-            $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0 ? $('#nav-dados-cadastrais-tab').addClass('bg-danger text-white') : $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
-            $('#nav-servicos :input:enabled.is-invalid').length > 0 ? $('#nav-servicos-tab').addClass('bg-danger text-white') : $('#nav-servicos-tab').removeClass('bg-danger text-white');
+            let abas = [
+                'nav-dados-cadastrais',
+                'nav-servicos',
+                'nav-proposta',
+                'nav-config',
+                'nav-proposta'
+            ];
 
-            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+            abas.forEach(aba => {
+                $(`#${aba} :input:enabled.is-invalid`).length > 0 ? $(`#${aba}-tab`).addClass('bg-danger text-white') : $(`#${aba}-tab`).removeClass('bg-danger text-white');
+            });
+
+            // $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0 ? $('#nav-dados-cadastrais-tab').addClass('bg-danger text-white') : $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
+            // $('#nav-config :input:enabled.is-invalid').length > 0 ? $('#nav-config-tab').addClass('bg-danger text-white') : $('#nav-config-tab').removeClass('bg-danger text-white');
+            // $('#nav-servicos :input:enabled.is-invalid').length > 0 ? $('#nav-servicos-tab').addClass('bg-danger text-white') : $('#nav-servicos-tab').removeClass('bg-danger text-white');
+            // $('#nav-servicos :input:enabled.is-invalid').length > 0 ? $('#nav-servicos-tab').addClass('bg-danger text-white') : $('#nav-servicos-tab').removeClass('bg-danger text-white');
+
+            if ($('#nav-dados-cadastrais :input:enabled.is-invalid,#nav-config :input:enabled.is-invalid').length) {
                 mostraErro('', 'Verificar os erros');
                 return false;
             }
+
+            // if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+            //     mostraErro('', 'Verificar os erros');
+            //     return false;
+            // }
 
             if (this.form.telefones.length === 0) {
                 mostraErro('', 'Por favor insira um Telefone');

@@ -166,22 +166,6 @@ class PontoEletronico extends Model {
         return $date->format('Y-m-d H:i:s');
     }
 
-    protected static function booted() {
-        static::creating(function ($model) {
-            if (auth()->user()) { // esta assim pro conta do CRON
-                $model->empresa_id = auth()->user()->empresa_id;
-                $model->funcionario_id = auth()->id(); // se apagar isso, verificar os cruds na tela de ponto (PontoEletronicoController)
-            }
-        });
-
-        /*static::updated(function ($model) {
-
-
-        });*/
-
-        static::addGlobalScope(new ScopeEmpresa());
-    }
-
     //Relacionamentos --------------------------
     public function Funcionario() {
         return $this->hasOne(User::class, 'id', 'funcionario_id');
@@ -419,7 +403,7 @@ class PontoEletronico extends Model {
             }
             //inicia noturno e termina normal
             if ($inicioDentroNoturno && !$fimDentroNoturno) { // iniciou no noturno e termindou fora do noturno
-                $dados['total_minutos_noturno'] += DataHora::diferencaMinutos($inicio->dataHoraInsert(), $fimDentroNoturno->format('d/m/Y H:i:s'));
+//                $dados['total_minutos_noturno'] += DataHora::diferencaMinutos($inicio->dataHoraInsert(), $fimDentroNoturno->format('d/m/Y H:i:s'));
             }
             //inicio e o fim é muito maior que a duração noturna inteira
             if ($inicioNoturnoLei->between($periodo->entrada, $periodo->saida, false) && $fimNoturnoLei->between($periodo->entrada, $periodo->saida, false)) {
@@ -610,7 +594,7 @@ class PontoEletronico extends Model {
         $minutos = $objeto->i;
         //$horas = $horas < 10 ? "0".$horas:$horas;
         $minutos = $minutos < 10 ? "0" . $minutos : $minutos;
-        return "{$horas}h:$minutos:m";
+        return "{$horas}h:{$minutos}m";
 
     }
 
@@ -654,4 +638,14 @@ class PontoEletronico extends Model {
     public function Periodo(){
         return $this->hasOne(PeriodoJornada::class,'id','periodo_id');
     }*/
+
+    protected static function booted() {
+        static::creating(function ($model) {
+            if (auth()->user()) { // esta assim pro conta do CRON
+                $model->empresa_id = auth()->user()->empresa_id;
+                $model->funcionario_id = auth()->id(); // se apagar isso, verificar os cruds na tela de ponto (PontoEletronicoController)
+            }
+        });
+        static::addGlobalScope(new ScopeEmpresa());
+    }
 }

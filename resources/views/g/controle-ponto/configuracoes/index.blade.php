@@ -84,7 +84,7 @@
     </modal>
 
     <!--Janela de Associar Perimetro-->
-    <modal id="janelaAssociarPerimetro"  titulo="Associar perímetros" :fechar="!formPerimetroFuncionarios.preload" @fechou="resetFuncionariosSelecionados">
+    <modal id="janelaAssociarPerimetro" titulo="Associar perímetros" :fechar="!formPerimetroFuncionarios.preload" @fechou="resetFuncionariosSelecionados">
         <template slot="conteudo">
             <h4 class="text-success text-center" v-if="!formPerimetroFuncionarios.preload && formPerimetroFuncionarios.update">
                 <i class="fas fa-check fa-2x"></i><br>
@@ -106,7 +106,7 @@
                 </h5>
                 <div class="form-group">
                     <h4>Selecione um ou mais perímetros para associar:</h4>
-                    <div class="custom-control custom-switch mt-2" v-for="(p,index) in listaPerimetros" :key="index">
+                    <div class="custom-control custom-switch mt-2" v-for="(p,index) in listaTodosPerimetros" :key="index">
                         <input type="checkbox" v-model="p['selecionado']" :value="p.id" :id="index" class="custom-control-input" @click="selecionarPerimetro(p)">
                         <label :for="index" class="custom-control-label">@{{ p.descricao }}</label>
                     </div>
@@ -181,7 +181,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Início de nova frequência</label>
-                                <input :disabled="preloadConfig" type="number" class="form-control" placeholder="Dia do mês" v-mascara:numero value="1" v-model="formConfig.dia_nova_frequencia" onblur="valida_campo_vazio(this,1)">
+                                <input :disabled="preloadConfig" type="number" max="25" min="1" class="form-control" placeholder="Dia do mês" v-mascara:numero value="1" v-model="formConfig.dia_nova_frequencia" onblur="valida_campo_vazio(this,1)">
                                 <small class="text-muted">Dia do mês em que incia uma nova ficha de frequência</small>
                             </div>
                             <button v-if="config_empresa" type="button" class="btn btn-success btn-sm" :disabled="preloadConfig" @click="salvarConfiguracoes">

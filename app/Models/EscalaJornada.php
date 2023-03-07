@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -31,10 +32,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PeriodoJornada[] $Periodos
  * @property-read int|null $periodos_count
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada whereOcorrenciaId($value)
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @method static \Illuminate\Database\Query\Builder|EscalaJornada onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada whereUserDeletouId($value)
+ * @method static \Illuminate\Database\Query\Builder|EscalaJornada withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|EscalaJornada withoutTrashed()
  */
 class EscalaJornada extends Model
 {
-    use HasFactory,LogsActivity;
+    use HasFactory,LogsActivity, SoftDeletes;
     protected static $logFillable = true;
     protected static $logName = 'EmpresaJornada';
     protected static $logOnlyDirty = true;

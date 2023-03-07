@@ -1,19 +1,19 @@
 <template>
     <div id="componenteAniversariante">
-        <modal id="janelaParabensMassa" :fechar="!this.preload"
+        <modal id="janelaParabensMassa" :fechar="!preload"
                titulo="Enviar Parabéns">
             <template slot="conteudo">
-                <div class="row" v-show="!this.enviado && !this.preload">
+                <div class="row" v-show="!enviado && !preload">
                     <div class="col-12">
-                        <h5>Enviar os parabéns para os <strong>{{ this.selecionadosMassa.length }}</strong> funcionário(s) selecionado(s)?</h5>
+                        <h5>Enviar os parabéns para os <strong>{{ selecionadosMassa.length }}</strong> funcionário(s) selecionado(s)?</h5>
                     </div>
                 </div>
             </template>
             <template slot="rodape">
-                <div v-show="!this.preload">
+                <div v-show="!preload">
                     <button type="button" class="btn btn-sm btn-primary"
                             @click="enviar()"
-                            v-show="!this.enviado">
+                            v-show="!enviado">
                         <i class="fa fa-envelope"></i> Enviar
                     </button>
                 </div>

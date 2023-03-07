@@ -434,7 +434,7 @@ class Curriculo extends Model
     {
         $endereco = $this->logradouro;
         $cep = $this->cep;
-        $numero = $this->numero == '' ? 'S/N' : $this->numero;
+        $numero = $this->end_numero == '' ? 'S/N' : $this->end_numero;
         $complemento = $this->complemento;
 
         if ($complemento) {

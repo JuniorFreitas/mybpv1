@@ -1,7 +1,7 @@
-<table class="table" style="width: 100%; border-bottom: 2px black double">
+<table class="table" id="topo" style="width: 100%; border-bottom: 2px black double">
     <thead>
     <tr>
-        <th style="font-size: 17pt; font-weight: normal !important; padding-right: 10px; width: 60px">
+        <th style="text-align: center; font-weight: normal !important; padding-right: 10px; width: 60px">
             @if(count(auth()->user()->ClientesLogo) > 0)
                 <img
                     src="{{auth()->user()->ClientesLogo[0]->urlThumb}}"

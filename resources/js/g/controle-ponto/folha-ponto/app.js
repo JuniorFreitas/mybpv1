@@ -20,6 +20,12 @@ const app = new Vue({
         URL_ADMIN,
         EMPRESA_ID: null,
         preload: true,
+
+        preloadDetalheFoto: false,
+        dadosDetalheFoto: null,
+        dadosDetalheFotoTipo: 'Entrada',
+
+
         formBusca: {
             preload: false,
             funcionarioNome: '',
@@ -30,12 +36,19 @@ const app = new Vue({
         formPonto: {
             intervalo: `${moment().startOf('month').format('DD/MM/YYYY')} até ${moment().endOf('month').format('DD/MM/YYYY')}`,
             preload: true,
-            id: null,
+            nome: '',
+            matricula: '',
+            data_admissao: '',
+            cargo: '',
+            centro_custo: '',
+            area: '',
+            u_token: '',
             preloadFrequencia: false,
             pontos: [],
         },
         todas_escalas: [],
         controle_ponto_adm: false,
+        calendario: [],
 
         formPontoDefault: null,
         OCORRENCIA_FALTA: null,
@@ -87,7 +100,7 @@ const app = new Vue({
             return (this.totalHorasExtra + this.totalHorasNoturnas) - this.totalHorasNegativas;
         },
         urlImprimir() {
-            return `${URL_ADMIN}/controle-ponto/folha-ponto/${this.formPonto.id}/imprimir`
+            return `${URL_ADMIN}/controle-ponto/folha-ponto/${this.formPonto.u_token}/imprimir`
         }
     },
     methods: {
@@ -139,15 +152,22 @@ const app = new Vue({
         buscarFrequencia() {
             this.formPonto.preloadFrequencia = true;
             axios.post(`${URL_ADMIN}/controle-ponto/folha-ponto/${this.USER_ID}/frequencia`, {intervalo: this.formPonto.intervalo})
-                .then(response => {
+                .then(({data}) => {
                     this.formPonto.preloadFrequencia = false;
-                    this.formPonto.pontos = response.data.pontos
-                    this.OCORRENCIA_FALTA = response.data.ocorrencia_falta
+                    this.formPonto.pontos = data.pontos
+                    this.OCORRENCIA_FALTA = data.ocorrencia_falta
+                    this.calendario = data.calendario
                 }).catch(error => {
                 this.formPonto.preloadFrequencia = false;
             });
         },
 
+        mostraDetalheFoto(obj, tipo) {
+            this.preloadDetalheFoto = true;
+            this.dadosDetalheFoto = obj;
+            this.dadosDetalheFotoTipo = tipo;
+            this.preloadDetalheFoto = false;
+        }
 
     }
 });

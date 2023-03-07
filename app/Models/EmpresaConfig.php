@@ -71,6 +71,19 @@ class EmpresaConfig extends Model
         'limite_tolerancia' => 'int',
     ];
 
+    public function setDiaNovaFrequenciaAttribute($value)
+    {
+        if ($value > 25){
+            $value = 25;
+        }
+        $this->attributes['dia_nova_frequencia'] = (int)$value;
+    }
+    public function getDiaNovaFrequenciaAttribute($value): string
+    {
+        if ($value < 10) return '0' . $value;
+        return (string)$value;
+    }
+
     const TIPO_HORA_EXTRA = 'hora_extra';
     const TIPO_BANCO_HORAS = 'banco_horas';
     const TIPO_HIBRIDO = 'hibrido';

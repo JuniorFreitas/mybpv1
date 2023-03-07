@@ -1,8 +1,6 @@
 <template>
     <div>
-
-        <div ref="listaDeNotificoes" style="position: absolute; top: 10px; right: 10px;" :style="Z_INDEX > 0 ? `z-index: ${Z_INDEX}`:''">
-
+        <div ref="listaDeNotificoes" style="position: absolute; top: 10px; right: 10px;" v-show="Z_INDEX > 0" :style="Z_INDEX > 0 ? `z-index: ${Z_INDEX}`:''">
             <div class="toast bg-white" role="alert" aria-live="assertive" aria-atomic="true"
                  v-for="(not,index) in lista" :id="`notificacaoID${not.id}`" v-if="!not.visto">
                 <div class="toast-header">
@@ -14,14 +12,8 @@
                 </div>
                 <div class="toast-body">
                     {{ not.payload.descricao }}
-
                 </div>
-                <!--                <div class="toast-body">
-                                    <small>11 mins ago</small>
-                                </div>-->
-
             </div>
-
         </div>
 
 
@@ -126,8 +118,6 @@ export default {
         }
     },
     mounted() {
-
-
         axios.get(`${URL_ADMIN}/notificacoes/${this.usuario.id}`)
             .then(res => {
                 res.data.forEach((not) => {
@@ -166,6 +156,7 @@ export default {
             this.Z_INDEX=2000;
             setTimeout(() => {
                 this.lista.forEach((not) => {
+
                     $(`#notificacaoID${not.id}`).toast({
                         delay: 10000
                     });

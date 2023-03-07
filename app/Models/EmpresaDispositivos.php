@@ -35,6 +35,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereUpdatedAt($value)
  * @property int $obrigatorio
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereObrigatorio($value)
+ * @property string|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereUserDeletouId($value)
  */
 class EmpresaDispositivos extends Model
 {

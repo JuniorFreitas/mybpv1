@@ -200,6 +200,8 @@ class Admissao extends Model
 
     protected $fillable = [
         'feedback_id',
+        'centro_custo_filial_id',
+        'filial',
         'formulario_id',
         'centro_custo_id',
         'funcao',
@@ -258,6 +260,8 @@ class Admissao extends Model
     ];
     protected $casts = [
         'id' => 'int',
+        'centro_custo_filial_id' => 'int',
+        'filial' => 'boolean',
         'feedback_id' => 'int',
         'formulario_id' => 'int',
         'centro_custo_id' => 'int',
@@ -841,6 +845,11 @@ class Admissao extends Model
     public static function getNumeroSupervisor($cliente_id, $area_etiqueta_id)
     {
         return ClienteAreaEtiqueta::whereClienteId($cliente_id)->whereAreaEtiquetaId($area_etiqueta_id)->first()->numero_supervisor;
+    }
+
+    public function CentroCustoFilial()
+    {
+        return $this->hasOne(CentroCustoFilial::class, 'id', 'centro_custo_filial_id');
     }
 
     public function UltimoAsoAtivo()

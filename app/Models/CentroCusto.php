@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereGestorId($value)
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Admissao[] $Admissao
  * @property-read int|null $admissao_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CentroCustoFilial[] $Filiais
+ * @property-read int|null $filiais_count
  */
 class CentroCusto extends Model
 {
@@ -56,6 +58,11 @@ class CentroCusto extends Model
     public function Admissao()
     {
         return $this->hasMany(Admissao::class, 'centro_custo_id', 'id');
+    }
+
+    public function Filiais()
+    {
+        return $this->hasMany(CentroCustoFilial::class, 'centro_custo_id', 'id');
     }
 
 }

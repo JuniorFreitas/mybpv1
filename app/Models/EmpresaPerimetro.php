@@ -7,6 +7,7 @@ use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -38,10 +39,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereUpdatedAt($value)
  * @property bool $obrigatorio
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereObrigatorio($value)
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereUserDeletouId($value)
+ * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro withoutTrashed()
  */
 class EmpresaPerimetro extends Model
 {
-    use HasFactory,LogsActivity, TenantTrait;
+    use HasFactory,LogsActivity, TenantTrait,SoftDeletes;
     protected static $logFillable = true;
     protected static $logName = 'EmpresaPerimetros';
     protected static $logOnlyDirty = true;
