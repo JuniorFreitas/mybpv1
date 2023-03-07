@@ -1,6 +1,6 @@
 @extends('layouts.sistema')
-@section('title', 'Relatorio Sintetico')
-@section('content_header', "Relatorio Sintetico")
+@section('title', 'Relatório Sintético')
+@section('content_header', "Relatorio Sintético")
 @section('content')
     <relatorio-sintetico></relatorio-sintetico>
 @stop

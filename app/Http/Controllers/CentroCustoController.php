@@ -64,8 +64,8 @@ class CentroCustoController extends Controller
                 $centro = CentroCusto::create($dados);
 
                 $filial = new ClienteFilial();
-                if ($filial->temFilial()){
-                    foreach ($dados['filiais'] as $filial){
+                if ($filial->temFilial()) {
+                    foreach ($dados['filiais'] as $filial) {
                         $filial['empresa_id'] = auth()->user()->empresa_id;
                         $filial['centro_custo_id'] = $centro->id;
                         $filial['ativo'] = $filial['selecionado'];
@@ -106,7 +106,7 @@ class CentroCustoController extends Controller
      */
     public function edit($id)
     {
-        $centro = CentroCusto::find($id)->load('Gestor','Filiais:id,centro_custo_id,cliente_filial_id,empresa_id,ativo');
+        $centro = CentroCusto::find($id)->load('Gestor', 'Filiais:id,centro_custo_id,cliente_filial_id,empresa_id,ativo');
 
         $centro->autocomplete_label_gestor_modal = $centro->Gestor ? $centro->Gestor->nome : '';
         $centro->autocomplete_label_gestor_modal_anterior = $centro->Gestor ? $centro->Gestor->nome : '';
@@ -147,13 +147,13 @@ class CentroCustoController extends Controller
                 DB::beginTransaction();
                 $centro->update($dados);
                 $filial = new ClienteFilial();
-                if ($filial->temFilial()){
-                    foreach ($dados['filiais'] as $filial){
+                if ($filial->temFilial()) {
+                    foreach ($dados['filiais'] as $filial) {
                         $filial['empresa_id'] = auth()->user()->empresa_id;
                         $filial['centro_custo_id'] = $centro->id;
                         $filial['ativo'] = $filial['selecionado'];
 
-                        $centroCustoFilial = CentroCustoFilial::where('empresa_id',$filial['empresa_id'])->where('centro_custo_id',$filial['centro_custo_id'])->where('cliente_filial_id',$filial['id']);
+                        $centroCustoFilial = CentroCustoFilial::where('empresa_id', $filial['empresa_id'])->where('centro_custo_id', $filial['centro_custo_id'])->where('cliente_filial_id', $filial['id']);
 
                         if ($centroCustoFilial->count() == 0 && $filial['selecionado']) {
                             CentroCustoFilial::create($filial);
@@ -192,7 +192,7 @@ class CentroCustoController extends Controller
     {
         $this->authorize('cadastro_centrocusto');
         $porPagina = $request->get('porPagina');
-        $resultado = CentroCusto::with('Empresa','Gestor')
+        $resultado = CentroCusto::with('Empresa', 'Gestor')
             ->withCount('Filiais')
             ->orderBy('id');
 
@@ -208,7 +208,7 @@ class CentroCustoController extends Controller
         $resultado = $resultado->paginate($porPagina);
 
         $filial = new ClienteFilial();
-        if ($filial->temFilial()){
+        if ($filial->temFilial()) {
             $listaFilial = $filial->getListaFilialAtiva();
         }
 
@@ -232,5 +232,20 @@ class CentroCustoController extends Controller
         $centro->save();
         $centro->refresh();
         return response()->json(['ativo' => $centro->ativo], 201);
+    }
+
+    public function getFiliais(Request $request)
+    {
+        $resposta = CentroCustoFilial::where('ativo', $request->ativo ?? true)
+            ->where('empresa_id', auth()->user()->empresa_id ?? $request->empresa_id)
+            ->with('Filial')
+            ->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'razao_social' => $item->Filial->dados->razao_social,
+                ];
+            });
+
+        return response()->json($resposta, 200);
     }
 }
