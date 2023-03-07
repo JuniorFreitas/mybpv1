@@ -160,7 +160,9 @@ class Ferias extends Model
         'status_ferias',
         'data_status_ferias',
         'ferias_prevista_id',
-        'aprovado_via_script'
+        'aprovado_via_script',
+        'abono_pecuniario',
+        'adiantamento_decimo_terceiro'
     ];
 
     protected $casts = [
@@ -191,6 +193,8 @@ class Ferias extends Model
         'data_status_ferias' => 'datetime:d/m/Y à\s H:i:s',
         'ferias_prevista_id' => 'int',
         'aprovado_via_script' => 'boolean',
+        'abono_pecuniario' => 'boolean',
+        'adiantamento_decimo_terceiro' => 'boolean',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s'
     ];

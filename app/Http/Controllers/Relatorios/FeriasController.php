@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\Excel\Relatorios\JobExportaFeriasExcel;
+use App\Jobs\Excel\Relatorios\JobExportaVencimentoFeriasExcel;
 use App\Models\ClienteConfig;
 use App\Models\Ferias;
+use App\Models\FeriasCalculoAvos;
 use App\Models\PeriodoAquisitivo;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -17,6 +19,11 @@ class FeriasController extends Controller
         return view('g.relatorios.ferias.index');
     }
 
+    public function indexVencimentoFerias()
+    {
+        return view('g.relatorios.vencimentoferias.index');
+    }
+
     public function listaperiodos()
     {
         $periodosAquisitivos = PeriodoAquisitivo::orderByDesc('ano_final')->limit(3)->get()->toArray();
@@ -26,6 +33,49 @@ class FeriasController extends Controller
                 'status_ferias' => Ferias::LISTA_RELATORIO_VENCIMENTO_FERIAS,
             ]
         ];
+    }
+
+    public function showVencimentoFerias(Request $request)
+    {
+        $queryResult = FeriasCalculoAvos::with(
+            'PeriodoAquisitivo',
+            'Admissao:id,centro_custo_id,cargo,funcao,data_admissao,feedback_id',
+            'Admissao.CentroCusto',
+            'Admissao.Feedback:id,curriculo_id,vagas_abertas_id',
+            'Admissao.Feedback.VagaSelecionada',
+            'Admissao.Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+            'Admissao.CentroCusto:id,label'
+        )->whereHas('Admissao', function ($query) {
+            $query->admitidos();
+        })->where('total_avos', '>=', 25 );
+
+        if ($request->filled('periodo')) {
+            $queryResult->where('periodo_aquisitivo_id', $request->periodo);
+        }
+
+        $queryResult = $queryResult->orderBy('total_avos', 'desc')->get()->toArray();
+
+        $resultado = collect();
+
+        foreach ($queryResult as $avos) {
+            $resultado->push([
+                'atualizado_via_script' => $avos['atualizado_via_script'] ? 'Sim' : 'Não',
+                'avos_id' => $avos['id'],
+                'nome' => $avos['admissao']['feedback']['curriculo']['nome'],
+                'cargo' => $avos['admissao']['cargo'],
+                'funcao' => $avos['admissao']['funcao'],
+                'data_admissao' => $avos['admissao']['data_admissao'],
+                'ultima_atualizacao' => $avos['ultima_atualizacao'],
+                'centro_custo' => !is_null($avos['admissao']['centro_custo_id']) ? $avos['admissao']['centro_custo']['label'] : 'Não informado',
+                'periodo_aquisitivo' => $avos['periodo_aquisitivo']['label'],
+                'total_avos' => $avos['total_avos']
+            ]);
+        }
+
+        return [
+            'dados' => $resultado->values()->all(),
+        ];
+
     }
 
     public function show(Request $request)
@@ -116,8 +166,16 @@ class FeriasController extends Controller
     public function exportExcel(Request $request)
     {
         $ferias = $this->show($request)['dados'];
+        $nameArquivo = "ferias_" . \Str::slug('Ferias') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaFeriasExcel::dispatch(auth()->id(), "Ferias ", $ferias, $nameArquivo);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+    }
+
+    public function exportExcelVencimentoFerias(Request $request)
+    {
+        $vencimentoFerias = $this->showVencimentoFerias($request)['dados'];
         $nameArquivo = "vencimento_ferias_" . \Str::slug('Vencimento Ferias') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaFeriasExcel::dispatch(auth()->id(), "Vencimento Ferias ", $ferias, $nameArquivo);
+        JobExportaVencimentoFeriasExcel::dispatch(auth()->id(), "Vencimento Ferias ", $vencimentoFerias, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 }

@@ -631,6 +631,8 @@ class FeriasPrevistaController extends Controller
             'Data Retorno',
             'Quantidade de Dias',
             'Saldo de Dias',
+            'Abono Pecuniário',
+            'Adiantamento Décimo Terceiro',
             'Quem Cadastrou',
             'Gestor Indicado',
             'Gestor Aprovação',
@@ -648,7 +650,7 @@ class FeriasPrevistaController extends Controller
                 $row->Admissao->Feedback->Curriculo->nome,
                 $row->Admissao->FeedBack->VagaSelecionada->nome,
                 $row->Admissao->data_admissao,
-                $row->FeriasPrevista->CentroCusto->label,
+                $row->Admissao->CentroCusto ? $row->Admissao->CentroCusto->label : 'Não Informado',
                 $row->PeriodoAquisitivo->label,
                 $row->ultima_data,
                 (string)$row->qnt_faltas,
@@ -656,6 +658,8 @@ class FeriasPrevistaController extends Controller
                 $row->data_retorno,
                 (string)$row->qnt_dias,
                 (string)$row->dias_saldo,
+                $row->abono_pecuniario ? 'Sim' : 'Não',
+                $row->adiantamento_decimo_terceiro ? 'Sim' : 'Não',
                 $row->Solicitante->nome,
                 $row->Gestor->nome,
                 $row->GestorAprovacao ? $row->GestorAprovacao->nome : '',
@@ -667,7 +671,7 @@ class FeriasPrevistaController extends Controller
             );
         }
 
-        $nameArquivo = "ferias_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        $nameArquivo = "movimentacao_ferias_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
         JobExportaExcel::dispatch(auth()->id(), "Ferias", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 

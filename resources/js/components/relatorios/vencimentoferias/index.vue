@@ -4,35 +4,12 @@
             <fieldset>
                 <legend>Filtro</legend>
                 <form class="row">
-                    <div class="col-12 col-md-3">
-                        <label for="">Filtrar por:</label>
-                        <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.tipo"
-                                @change="buscarDados()">
-                            <option value="aquisitivo">Período aquisitivo</option>
-                            <option value="data">Por data</option>
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-md-3" v-if="filtrar.tipo === 'aquisitivo'">
+                    <div class="col-12 col-md-3 pb-3">
                         <label for="">Escolha o período:</label>
                         <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.periodo"
                                 @change="buscarDados()">
                             <option v-for="(item, key) in filtro.periodo_aquisitivo" :value="item.id">{{ item.label }}
                             </option>
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-md-3" v-if="filtrar.tipo === 'data'">
-                        <datepicker range formsm label="Escolha a data:" :disabled="preload" @onselect="buscarDados()"
-                                    v-model="filtrar.periodo_range"></datepicker>
-                    </div>
-
-                    <div class="col-12 col-md-3 mb-2">
-                        <label for="">Por status:</label>
-                        <select class="form-control form-control-sm" :disabled="preload" @change="buscarDados()"
-                                v-model="filtrar.status_ferias">
-                            <option value="">Todos</option>
-                            <option v-for="item in filtro.status_ferias" :value="item">{{ item | letterCase }}</option>
                         </select>
                     </div>
 
@@ -74,37 +51,16 @@
                                 </tr>
                                 <tr class="bg-white">
                                     <th style="text-align: center">Centro de custo</th>
-                                    <th style="text-align: center">Qnt dias</th>
-                                    <th style="text-align: center">Férias</th>
-                                    <!--                                    <th style="text-align: center">Faltas</th>-->
-                                    <!--                                    <th style="text-align: center">Saldo</th>-->
                                     <th style="text-align: center">Período Aquisitivo</th>
-                                    <th style="text-align: center">Data Limite</th>
-                                    <th style="text-align: center">Status</th>
+                                    <th style="text-align: center">Última Atualização</th>
+                                    <th style="text-align: center">QTD. Avos</th>
                                 </tr>
-                                <tr
-                                    :class="{
-                                    'table-danger': item.pintar && item.status === 'aguardando',
-                                    'table-success': item.status === 'gozando',
-                                    }
-                                    ">
+                                <tr class="bg-white">
                                     <th style="text-align: center">{{ item.centro_custo }}</th>
-                                    <th style="text-align: center">{{ item.qnt_dias }}</th>
-                                    <th style="text-align: center">{{ item.data_saida }} à {{ item.data_retorno }}</th>
-                                    <!--                                    <th style="text-align: center">{{ item.qnt_faltas }}</th>-->
-                                    <!--                                    <th style="text-align: center">{{ item.dias_saldo }}</th>-->
                                     <th style="text-align: center">{{ item.periodo_aquisitivo }}</th>
-                                    <th style="text-align: center">{{ item.ultima_data }}</th>
+                                    <th style="text-align: center">{{ item.ultima_atualizacao }}</th>
                                     <th style="text-align: center">
-                                        <span class="text-uppercase">{{ item.status }}</span>
-                                        <!--                                        <span v-if="item.status === 'aguardando'">{{-->
-                                        <!--                                                item.dias_vencer < 0 ? Math.abs(item.dias_vencer) + ' dia(s) vencido(s)' : item.dias_vencer + ' dia(s) à vencer'-->
-                                        <!--                                            }}-->
-                                        <!--                                        </span> -->
-                                        <!--                                        <span v-if="item.status === 'aguardando'">-->
-                                        <!--                                            Aguardando-->
-                                        <!--                                        </span>-->
-                                        <!--                                        <span v-if="item.status === 'gozando'">Gozando</span>-->
+                                        <span class="text-uppercase">{{ item.total_avos }}</span>
                                     </th>
 
                                 </tr>
@@ -128,19 +84,14 @@ export default {
             dados: [],
             filtro: [],
             periodo: "",
-            urlExportacao: `${URL_ADMIN}/relatorios/ferias/export-excel`,
+            urlExportacao: `${URL_ADMIN}/relatorios/vencimento-ferias/export-excel`,
             filtrar: {
-                tipo: 'aquisitivo',
                 periodo: '',
-                periodo_range: '',
                 status_ferias: ''
             }
         };
     },
     async mounted() {
-        let inicio_de_mes = moment().startOf("month").format("DD/MM/YYYY");
-        let fim_de_mes = moment().add(1, "M").endOf("month").format("DD/MM/YYYY");
-        this.filtrar.periodo_range = `${inicio_de_mes} até ${fim_de_mes}`;
         await this.periodosAquisitivosList();
 
         this.filtrar.periodo = this.filtro.periodo_aquisitivo[1].id
@@ -166,7 +117,7 @@ export default {
         },
         async buscarDados() {
             this.preload = true;
-            await axios.post(`${URL_ADMIN}/relatorios/ferias`, this.filtrar)
+            await axios.post(`${URL_ADMIN}/relatorios/vencimento-ferias`, this.filtrar)
                 .then(({data}) => {
                     this.dados = data.dados;
                     this.preload = false;

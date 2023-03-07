@@ -779,9 +779,19 @@
             <ul aria-expanded="false">
                 @can('relatorio_ferias')
                     <li>
-                        <a href="{{route('g.relatorios.vencimentoferias.index')}}" parent="relatorios"
+                        <a href="{{route('g.relatorios.ferias.index')}}" parent="relatorios"
                            key="relatorio_ferias">
                             Férias
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+
+            <ul aria-expanded="false">
+                @can('relatorio_ferias')
+                    <li>
+                        <a href="{{route('g.relatorios.vencimentoferias.indexVencimentoFerias')}}" parent="relatorios" key="relatorio_ferias">
+                            Vencimento Férias
                         </a>
                     </li>
                 @endcan

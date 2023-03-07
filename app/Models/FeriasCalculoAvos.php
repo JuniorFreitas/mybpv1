@@ -1,0 +1,614 @@
+<?php
+
+namespace App\Models;
+
+use App\Tenant\Traits\TenantTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use MasterTag\DataHora;
+use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Traits\LogsActivity;
+use function Symfony\Component\String\s;
+
+class FeriasCalculoAvos extends Model
+{
+    use HasFactory, LogsActivity, TenantTrait;
+
+    protected static $logFillable = true;
+    protected static $logName = 'ferias_calculo_avos';
+    protected static $logOnlyDirty = true;
+    protected static $submitEmptyLogs = false;
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = "";
+    }
+
+    protected $table = 'ferias_calculo_avos';
+    public $timestamps = false;
+
+    protected $fillable = [
+        'admissao_id',
+        'empresa_id',
+        'periodo_aquisitivo_id',
+        'avos',
+        'historico',
+        'ultima_atualizacao',
+    ];
+
+    protected $casts = [
+        'id' => 'int',
+        'admissao_id' => 'int',
+        'empresa_id' => 'int',
+        'periodo_aquisitivo_id' => 'int',
+        'avos' => 'float',
+        'historico' => 'json',
+        'ultima_atualizacao' => 'date:d/m/Y',
+    ];
+
+    public function setUltimaAtualiazaoAttribute($value)
+    {
+        $data = new DataHora($value);
+        $this->attributes['ultima_atualizacao'] = $data->dataInsert();
+    }
+
+    public function Empresa()
+    {
+        return $this->hasOne(User::class, 'id', 'empresa_id');
+    }
+
+    public function PeriodoAquisitivo()
+    {
+        return $this->hasOne(PeriodoAquisitivo::class, 'id', 'periodo_aquisitivo_id');
+    }
+
+    public function Admissao()
+    {
+        return $this->hasOne(Admissao::class, 'id', 'admissao_id');
+    }
+
+    public static function somaAvosScript($dia_admissao, $mes_admissao, $ano_admissao, $periodo_aquisitivo) {
+
+        $ano_atual = (int) date('Y');
+        $mes_hoje = (int) date('m');
+        $hoje = (new DataHora())->dataInsert();
+
+        $avos = 2.5;
+        $total_avos_admissao = 0;
+        $ultima_data = "";
+        $data_admissao = $ano_admissao . '-' . $mes_admissao . '-' . $dia_admissao;
+        $data_admissao = (new DataHora($data_admissao))->dataInsert();
+
+        for($i = (int) $mes_admissao; $i <= 12; $i++) {
+            if((int) $mes_admissao == $i){
+                $data_mes_base = (new DataHora($data_admissao));
+            }else{
+                $data_mes_base = (new DataHora($ultima_data));
+            }
+
+            $data_mes = $data_mes_base->dataInsert();
+            $ultimoDiaMes = (int)(new DataHora($data_mes_base->dataInsert()))->ultimoDiaMes();
+
+            $mes_data_mes = $i;
+            if($mes_data_mes < 10){
+                $mes_data_mes = '0'.$mes_data_mes;
+            }
+
+            switch ((int)$ultimoDiaMes) {
+                case 31:
+                    if($ano_admissao == ($ano_atual-1)){
+                        if((int) $mes_admissao == (int)$mes_data_mes){
+                            if ($dia_admissao <= 16) {
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            }else {
+                                if ((int) $mes_admissao == 12 && (int) $mes_data_mes == 12) {
+                                    $data_mes = $ano_atual . '-01-' . $dia_admissao;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM().'/'.$ano_atual,
+                                        'avos' => $avos,
+                                        'total_avos' => 2.5,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                } else {
+                                    if($mes_data_mes < 12) {
+                                        $data_mes = $data_mes_base->addMes(1);
+                                        $data_mes = (new DataHora($data_mes))->dataInsert();
+                                        $total_avos_admissao += 2.5;
+                                        $historico[$ano_admissao][] = [
+                                            'data_mes' => $data_mes,
+                                            'data_admissao' => $data_admissao,
+                                            'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                            'avos' => $avos,
+                                            'total_avos' => $total_avos_admissao,
+                                            'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                            'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                        ];
+                                    }
+                                }
+                            }
+                        }else{
+                            $total_avos_admissao += 2.5;
+                            $historico[$ano_admissao][] = [
+                                'data_mes' => $data_mes,
+                                'data_admissao' => $data_admissao,
+                                'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                'avos' => $avos,
+                                'total_avos' => $total_avos_admissao,
+                                'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                            ];
+                        }
+                    }
+                    break;
+                case 30:
+                    if($ano_admissao == ($ano_atual-1)) {
+                        if ((int)$mes_admissao == (int)$mes_data_mes) {
+                            if ($dia_admissao <= 15) {
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            } else {
+                                $data_mes = $data_mes_base->addMes(1);
+                                $data_mes = (new DataHora($data_mes))->dataInsert();
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            }
+                        } else {
+                            $total_avos_admissao += 2.5;
+                            $historico[$ano_admissao][] = [
+                                'data_mes' => $data_mes,
+                                'data_admissao' => $data_admissao,
+                                'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                'avos' => $avos,
+                                'total_avos' => $total_avos_admissao,
+                                'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                            ];
+                        }
+                    }
+                    break;
+                case 28 :
+                case 29 :
+                if($ano_admissao == ($ano_atual-1)) {
+                    if ((int)$mes_admissao == (int)$mes_data_mes) {
+                        if ($dia_admissao <= 14) {
+                            $total_avos_admissao += 2.5;
+                            $historico[$ano_admissao][] = [
+                                'data_mes' => $data_mes,
+                                'data_admissao' => $data_admissao,
+                                'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                'avos' => $avos,
+                                'total_avos' => $total_avos_admissao,
+                                'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                            ];
+                        } else {
+                            $data_mes = $data_mes_base->addMes(1);
+                            $data_mes = (new DataHora($data_mes))->dataInsert();
+                            $total_avos_admissao += 2.5;
+                            $historico[$ano_admissao][] = [
+                                'data_mes' => $data_mes,
+                                'data_admissao' => $data_admissao,
+                                'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                'avos' => $avos,
+                                'total_avos' => $total_avos_admissao,
+                                'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                            ];
+                        }
+                    }else {
+                            $total_avos_admissao += 2.5;
+                            $historico[$ano_admissao][] = [
+                                'data_mes' => $data_mes,
+                                'data_admissao' => $data_admissao,
+                                'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                'avos' => $avos,
+                                'total_avos' => $total_avos_admissao,
+                                'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                            ];
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            $ultima_data = (new DataHora($data_mes))->addMes(1);
+        }
+
+        for($j = 1; $j <= (int)$mes_hoje; $j++) {
+
+            if($total_avos_admissao < 30) {
+                if((int) $mes_admissao == $j){
+                    $data_mes_base = (new DataHora($data_admissao));
+                }else{
+                    $data_mes_base = (new DataHora($ultima_data));
+                }
+
+                $data_mes = $data_mes_base->dataInsert();
+                $ultimoDiaMes = (int)(new DataHora($data_mes_base->dataInsert()))->ultimoDiaMes();
+                $mes_data_mes = $j;
+
+                if($mes_data_mes < 10){
+                    $mes_data_mes = '0'.$mes_data_mes;
+                }
+
+                switch ((int) $ultimoDiaMes) {
+                    case 31:
+                        if((int) $mes_admissao == (int)$mes_data_mes && $ano_admissao == $ano_atual){
+                            if ($dia_admissao <= 16) {
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            }else {
+                                if ((int) $mes_admissao == 12 && (int) $mes_data_mes == 12) {
+                                    $data_mes = $ano_atual . '-01-' . $dia_admissao;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM().'/'.($ano_atual+1),
+                                        'avos' => $avos,
+                                        'total_avos' => 2.5,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                } else {
+                                    if($mes_data_mes < 12) {
+                                        $data_mes = $data_mes_base->addMes(1);
+                                        $data_mes = (new DataHora($data_mes))->dataInsert();
+                                        $total_avos_admissao += 2.5;
+                                        $historico[$ano_admissao][] = [
+                                            'data_mes' => $data_mes,
+                                            'data_admissao' => $data_admissao,
+                                            'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                            'avos' => $avos,
+                                            'total_avos' => $total_avos_admissao,
+                                            'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                            'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                        ];
+                                    }
+                                }
+                            }
+                        }else {
+                            if($data_mes <= $hoje){
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            }
+                        }
+                        break;
+                    case 30:
+                        if((int) $mes_admissao == (int)$mes_data_mes && $ano_admissao == $ano_atual) {
+                            if ($dia_admissao <= 15) {
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            } else {
+                                $data_mes = $data_mes_base->addMes(1);
+                                $data_mes = (new DataHora($data_mes))->dataInsert();
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            }
+                        }else{
+                            if($data_mes <= $hoje){
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            }
+                        }
+                        break;
+                    case 28 :
+                    case 29 :
+                        if((int) $mes_admissao == (int)$mes_data_mes && $ano_admissao == $ano_atual) {
+                            if ($dia_admissao <= 14) {
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            } else {
+                                $data_mes = $data_mes_base->addMes(1);
+                                $data_mes = (new DataHora($data_mes))->dataInsert();
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            }
+                        }else{
+                            if($data_mes <= $hoje){
+                                $total_avos_admissao += 2.5;
+                                $historico[$ano_admissao][] = [
+                                    'data_mes' => $data_mes,
+                                    'data_admissao' => $data_admissao,
+                                    'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                    'avos' => $avos,
+                                    'total_avos' => $total_avos_admissao,
+                                    'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                    'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                ];
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            $ultima_data = (new DataHora($data_mes))->addMes(1);
+        }
+
+        $historico[($ano_admissao)]['total_avos'] = $total_avos_admissao;
+        return $historico;
+
+    }
+
+
+    public static function somaAvosSchedule($dia_admissao, $mes_admissao, $ano_admissao, $periodo_aquisitivo, $data_ultima_atualizacao, $total_avos) {
+
+        $ano_atual = (int) date('Y');
+        $mes_hoje = (int) date('m');
+        $hoje = (new DataHora())->dataInsert();
+
+        $avos = 2.5;
+        $total_avos_admissao = $total_avos;
+        $ultima_data = (new DataHora($data_ultima_atualizacao))->addMes(1);
+        $ultima_data = (new DataHora($ultima_data))->dataInsert();
+        $data_admissao = $ano_admissao . '-' . $mes_admissao . '-' . $dia_admissao;
+        $data_admissao = (new DataHora($data_admissao))->dataInsert();
+        $mes_ultima_atualizacao = (new DataHora($ultima_data))->mes();
+
+        $historico = [];
+
+        if($ultima_data <= $hoje){
+            for($j = (int) $mes_ultima_atualizacao; $j <= (int)$mes_hoje; $j++) {
+
+                if($total_avos_admissao < 30) {
+                    if((int) $mes_admissao == $j){
+                        $data_mes_base = (new DataHora($data_admissao));
+                    }else{
+                        $data_mes_base = (new DataHora($ultima_data));
+                    }
+
+                    $data_mes = $data_mes_base->dataInsert();
+                    $ultimoDiaMes = (int)(new DataHora($data_mes_base->dataInsert()))->ultimoDiaMes();
+                    $mes_data_mes = $j;
+
+                    if($mes_data_mes < 10){
+                        $mes_data_mes = '0'.$mes_data_mes;
+                    }
+
+                    switch ((int) $ultimoDiaMes) {
+                        case 31:
+                            if((int) $mes_admissao == (int)$mes_data_mes && $ano_admissao == $ano_atual){
+                                if ($dia_admissao <= 16) {
+                                    $total_avos_admissao += 2.5;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                        'avos' => $avos,
+                                        'total_avos' => $total_avos_admissao,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                }else {
+                                    if ((int) $mes_admissao == 12 && (int) $mes_data_mes == 12) {
+                                        $data_mes = $ano_atual . '-01-' . $dia_admissao;
+                                        $historico[$ano_admissao][] = [
+                                            'data_mes' => $data_mes,
+                                            'data_admissao' => $data_admissao,
+                                            'mes' => (new DataHora($data_mes))->mesExtM().'/'.($ano_atual+1),
+                                            'avos' => $avos,
+                                            'total_avos' => 2.5,
+                                            'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                            'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                        ];
+                                    } else {
+                                        if($mes_data_mes < 12) {
+                                            $data_mes = $data_mes_base->addMes(1);
+                                            $data_mes = (new DataHora($data_mes))->dataInsert();
+                                            $total_avos_admissao += 2.5;
+                                            $historico[$ano_admissao][] = [
+                                                'data_mes' => $data_mes,
+                                                'data_admissao' => $data_admissao,
+                                                'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                                'avos' => $avos,
+                                                'total_avos' => $total_avos_admissao,
+                                                'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                                'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                            ];
+                                        }
+                                    }
+                                }
+                            }else {
+                                if($data_mes <= $hoje){
+                                    $total_avos_admissao += 2.5;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                        'avos' => $avos,
+                                        'total_avos' => $total_avos_admissao,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                }
+                            }
+                            break;
+                        case 30:
+                            if((int) $mes_admissao == (int)$mes_data_mes && $ano_admissao == $ano_atual) {
+                                if ($dia_admissao <= 15) {
+                                    $total_avos_admissao += 2.5;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                        'avos' => $avos,
+                                        'total_avos' => $total_avos_admissao,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                } else {
+                                    $data_mes = $data_mes_base->addMes(1);
+                                    $data_mes = (new DataHora($data_mes))->dataInsert();
+                                    $total_avos_admissao += 2.5;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                        'avos' => $avos,
+                                        'total_avos' => $total_avos_admissao,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                }
+                            }else{
+                                if($data_mes <= $hoje){
+                                    $total_avos_admissao += 2.5;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                        'avos' => $avos,
+                                        'total_avos' => $total_avos_admissao,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                }
+                            }
+                            break;
+                        case 28 :
+                        case 29 :
+                            if((int) $mes_admissao == (int)$mes_data_mes && $ano_admissao == $ano_atual) {
+                                if ($dia_admissao <= 14) {
+                                    $total_avos_admissao += 2.5;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                        'avos' => $avos,
+                                        'total_avos' => $total_avos_admissao,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                } else {
+                                    $data_mes = $data_mes_base->addMes(1);
+                                    $data_mes = (new DataHora($data_mes))->dataInsert();
+                                    $total_avos_admissao += 2.5;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM() . '/' . $data_mes_base->ano(),
+                                        'avos' => $avos,
+                                        'total_avos' => $total_avos_admissao,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                }
+                            }else{
+                                if($data_mes <= $hoje){
+                                    $total_avos_admissao += 2.5;
+                                    $historico[$ano_admissao][] = [
+                                        'data_mes' => $data_mes,
+                                        'data_admissao' => $data_admissao,
+                                        'mes' => (new DataHora($data_mes))->mesExtM().'/'.$data_mes_base->ano(),
+                                        'avos' => $avos,
+                                        'total_avos' => $total_avos_admissao,
+                                        'periodo_aquisitivo' => $periodo_aquisitivo[$ano_admissao]['label'],
+                                        'data_atualizacao' => (new DataHora())->dataHoraInsert(),
+                                    ];
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                $ultima_data = (new DataHora($data_mes))->addMes(1);
+            }
+
+            $historico[($ano_admissao)]['total_avos'] = $total_avos_admissao;
+        }
+
+        return $historico;
+
+    }
+}
