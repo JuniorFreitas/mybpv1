@@ -398,6 +398,8 @@ class AvaliacaoController extends Controller
                     $dados_job = [];
                 }
             }
+            DB::commit();
+            return response()->json(['msg' => 'Avaliação concluída com sucesso']);
         }catch(\Exception $e){
             DB::rollBack();
             $msg = "error UPDATE AVALIAR:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
