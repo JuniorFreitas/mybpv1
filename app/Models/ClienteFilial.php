@@ -36,6 +36,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Query\Builder|ClienteFilial withTrashed()
  * @method static \Illuminate\Database\Query\Builder|ClienteFilial withoutTrashed()
  * @mixin \Eloquent
+ * @property-read mixed $endereco_completo
  */
 class ClienteFilial extends Model
 {

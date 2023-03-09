@@ -10,6 +10,36 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use function Symfony\Component\String\s;
 
+/**
+ * App\Models\FeriasCalculoAvos
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int $admissao_id
+ * @property int $periodo_aquisitivo_id
+ * @property string $total_avos
+ * @property array|null $historico
+ * @property int $atualizado_via_script
+ * @property mixed $ultima_atualizacao
+ * @property-read \App\Models\Admissao|null $Admissao
+ * @property-read \App\Models\User|null $Empresa
+ * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @property-write mixed $ultima_atualiazao
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos query()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos whereAdmissaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos whereAtualizadoViaScript($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos whereHistorico($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos wherePeriodoAquisitivoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos whereTotalAvos($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos whereUltimaAtualizacao($value)
+ * @mixin \Eloquent
+ */
 class FeriasCalculoAvos extends Model
 {
     use HasFactory, LogsActivity, TenantTrait;
