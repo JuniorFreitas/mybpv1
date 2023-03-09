@@ -129,6 +129,10 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereQuemDeletouId($value)
  * @method static \Illuminate\Database\Query\Builder|Ferias withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Ferias withoutTrashed()
+ * @property bool $abono_pecuniario
+ * @property bool $adiantamento_decimo_terceiro
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAbonoPecuniario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAdiantamentoDecimoTerceiro($value)
  */
 class Ferias extends Model
 {
