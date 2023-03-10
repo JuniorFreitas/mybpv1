@@ -26,7 +26,6 @@ const app = new Vue({
         hash: `mastertag_${parseInt(Math.random() * 999999)}`,
 
         resposta_id: 0,
-        formulario_id: 2,
         tipo: "Exames",
 
         dados: {
@@ -111,6 +110,9 @@ const app = new Vue({
         this.abasesmt.formDefault = _.cloneDeep(this.abasesmt.form);
     },
     computed: {
+        formulario_id() {
+            return this.form.formulario.id;
+        },
         comResultado() {
             return this.lista.filter(item => {
                 return item.resultado_integrado;

@@ -71,8 +71,9 @@ class ControleExameController extends Controller
                 ]);
 
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
-                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
-                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;;
+                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
+                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->label;
+//                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;;
                 $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id'])->find($request->feedback_id);
 
                 if ($request->envia_email) {
@@ -119,8 +120,11 @@ class ControleExameController extends Controller
             }
         } catch (\ErrorException $e) {
             $msg = "Erro ao Encaminhar para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-            \Log::debug($msg);
+            Sistema::LogFormatado($request->input());
             \DB::rollback();
+            return response()->json(['msg' => $msg,
+                'request' => $request->input(),
+                ], 400);
             return response()->json(['msg' => 'Houve um erro ao encaminhar!'], 400);
         }
     }

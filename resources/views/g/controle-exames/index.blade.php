@@ -244,7 +244,7 @@
                             </div>
                         </fieldset>
 
-                        <formulario :model='form' :formulario_id='2' v-if='form.formulario'
+                        <formulario :model='form' :formulario_id='form.formulario.id' v-if='form.formulario'
                                     :mostra_titulo='false'></formulario>
 
 
