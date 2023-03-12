@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\Rules\Recaptcha;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use MasterTag\DataHora;
 
 class LoginController extends Controller
 {
@@ -48,10 +50,11 @@ class LoginController extends Controller
     protected function credentials(Request $request)
     {
         $request->request->add([
-            'ativo'=>true
+            'ativo'=>true,
+            'temp'=>false,
         ]);
 
-        return $request->only($this->username(), 'password','ativo');
+        return $request->only($this->username(), 'password','ativo','temp');
     }
 
     protected function validateLogin(Request $request)
@@ -63,6 +66,28 @@ class LoginController extends Controller
         ]);
     }
 
+    protected function sendLoginResponse(Request $request)
+    {
+        $request->session()->regenerate();
+
+        $this->clearLoginAttempts($request);
+
+        if ($response = $this->authenticated($request, $this->guard()->user())) {
+            return $response;
+        }
+
+        \DB::table('acessos')->insert([
+            'user_id' => \Auth::user()->id,
+            'ip' => $request->ip(),
+            'created_at' => (new DataHora())->dataHoraInsert(),
+            'updated_at' => (new DataHora())->dataHoraInsert(),
+        ]);
+        \Auth::user()->update(['ultimo_acesso' => (new DataHora())->dataHoraInsert()]);
+
+        return $request->wantsJson()
+            ? new JsonResponse([], 204)
+            : redirect()->intended($this->redirectPath());
+    }
     public function teste(Request $request){
         return view('teste');
     }
