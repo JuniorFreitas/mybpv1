@@ -9,8 +9,12 @@ use App\Models\Admissao;
 use App\Models\AdmissaoAso;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaVencimento;
+use App\Models\Cliente;
+use App\Models\ClienteConfig;
+use App\Models\ClienteFilial;
 use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
+use App\Models\EmpresaConfig;
 use App\Models\EmpresaExame;
 use App\Models\FeedbackCurriculo;
 use App\Models\Pcmso;
@@ -143,12 +147,12 @@ class AdmissaoController extends Controller
         }
 
         if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
-            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) ==  0){
+            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) == 0) {
                 return response()->json([
                     'msg' => 'Informe a data do ASO'
                 ], 400);
             }
-            if (trim($dados['admissao']['data_admissao']) ==  0){
+            if (trim($dados['admissao']['data_admissao']) == 0) {
                 return response()->json([
                     'msg' => 'Informe a data do ASO'
                 ], 400);
@@ -924,12 +928,12 @@ class AdmissaoController extends Controller
         $dados['curriculo']['nascimento'] = $data_nascimento->dataInsert();
 
         if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
-            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) ==  0){
+            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) == 0) {
                 return response()->json([
                     'msg' => 'Informe a data do ASO'
                 ], 400);
             }
-            if (trim($dados['admissao']['data_admissao']) ==  0){
+            if (trim($dados['admissao']['data_admissao']) == 0) {
                 return response()->json([
                     'msg' => 'Informe a data do ASO'
                 ], 400);
@@ -1310,7 +1314,7 @@ class AdmissaoController extends Controller
 
         $ultimo_aso_ativo_dados = $dados['ultimo_aso_ativo'];
 
-        if (in_array($dados['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO]) && trim($dados['ultimo_aso_ativo']['data_aso']) ==  0) {
+        if (in_array($dados['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO]) && trim($dados['ultimo_aso_ativo']['data_aso']) == 0) {
             return response()->json(['message' => 'Informe a data do Aso'], 422);
         }
 
@@ -1661,20 +1665,23 @@ class AdmissaoController extends Controller
 
         $pdf = PDF::loadView('pdf.admissao.ficha', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("ficha_admissao_" . ($dados->Curriculo->nome).'_'.(new DataHora())->nomeUnico(). ".pdf");
+        return $pdf->stream("ficha_admissao_" . ($dados->Curriculo->nome) . '_' . (new DataHora())->nomeUnico() . ".pdf");
     }
 
 //Excel
     public function export(Request $request)
     {
-        if ($request->selecionados) {
-            $resultado = $this->filtro($request)->whereIn('id', $request->selecionados)->get();
-        } else {
-            $resultado = $this->filtro($request)->get();
-        }
+        $resultado = $this->filtro($request)->when($request->selecionados, function ($query) use ($request) {
+            return $query->whereIn('id', $request->selecionados);
+        })->get();
+
+       $clienteFilial = new ClienteFilial();
+       $clienteTemFilial = $clienteFilial->temFilial(auth()->user()->empresa_id);
 
         $head = [
             "Nome",
+            "Estado Civil",
+            "Sexo",
             "CPF",
             "Pai",
             "Mãe",
@@ -1715,6 +1722,10 @@ class AdmissaoController extends Controller
             "Data Encaminhado para Exame",
             "Encaminhado para treinamento",
             "Data Encaminhado para Treinamento",
+            "Área",
+            "Centro de Custo",
+            "CNPJ Filial",
+            "Centro de custo filial",
             "Função",
             "Cargo",
             "Salário R$",
@@ -1724,22 +1735,22 @@ class AdmissaoController extends Controller
             "Treinamento",
             "Tipo de Treinamento",
             "Data Treinamento",
-            "NR 33",
-            "Data NR 33",
-            "NR 35",
-            "Data NR 35",
-            "3260",
-            "Data 3260",
             "Número Crachá",
             "Data do ASO",
             "PIS",
             "CTPS",
             "CTPS Série",
             "CTPS Data Emissão",
+            "CTPS UF",
             "Título de Eleitor",
             "Título de Eleitor Sessão",
             "Título de Eleitor Zona",
+            "Certificado de Reservista",
+            "Certificado de Reservista Categoria",
             "Dependentes",
+            "Conta PIX",
+            "Tipo de Chave PIX",
+            "Chave PIX",
             "Banco",
             "Agência",
             "Conta",
@@ -1756,98 +1767,101 @@ class AdmissaoController extends Controller
         foreach ($resultado as $row) {
             $dependentes = "";
 
-            foreach ($row->Curriculo->Dependentes as $item) {
-                $cpf = $item->cpf ?: "Não informado";
-                $nascimento = $item->nascimento ?: 'Não informado';
-                $dependentes .= "Tipo: ";
-                $dependentes .= $item->tipo == 'outro' ? $item->outro_tipo : \App\Models\UsuarioDependente::TIPOS_DEPENDENTES[$item->tipo];
-                $dependentes .= "\nNome: " . $item->nome;
-                $dependentes .= "\nCPF: " . $cpf;
-                $dependentes .= "\nData de Nascimento: " . $nascimento;
-                $dependentes .= "\n\n";
+            if (count($row->Curriculo->Dependentes) > 0) {
+                $row->Curriculo->Dependentes->each(function ($item) use (&$dependentes) {
+                    $cpf = $item->cpf ?: "Não informado";
+                    $nascimento = $item->nascimento ?: 'Não informado';
+                    $dependentes .= "Tipo: ";
+                    $dependentes .= $item->tipo == 'outro' ? $item->outro_tipo : \App\Models\UsuarioDependente::TIPOS_DEPENDENTES[$item->tipo];
+                    $dependentes .= "\nNome: " . $item->nome;
+                    $dependentes .= "\nCPF: " . $cpf;
+                    $dependentes .= "\nData de Nascimento: " . $nascimento;
+                    $dependentes .= "\n\n";
+                });
             }
 
             $rows[] = array(
                 $row->Curriculo->nome,
+                $row->Curriculo->estado_civil ?? 'NÃO INFORMADO',
+                $row->Curriculo->sexo ?? 'NÃO INFORMADO',
                 $row->Curriculo->cpf,
-                $row->Curriculo->estado_civil ?? '',
-                $row->Curriculo->sexo ?? '',
-                $row->Curriculo->filiacao_pai,
+                $row->Curriculo->filiacao_pai ?? "",
                 $row->Curriculo->filiacao_mae,
-                $row->Curriculo->pcd ? 'Sim' : 'Não',
-                $row->parecerRh ? $row->parecerRh->destro ?: '' : '',
-                $row->parecerRh ? $row->parecerRh->cnh_tipo ?: '' : '',
+                $row->Curriculo->pcd ? 'SIM' : 'NÃO',
+                $row->parecerRh->destro ?? 'NÃO INFORMADO',
+                $row->parecerRh->cnh_tipo ?? 'NÃO INFORMADO',
                 $row->Curriculo->nascimento,
                 $row->Curriculo->idade,
-                $row->parecerRh ? $row->parecerRh->calca : '',
-                $row->parecerRh ? $row->parecerRh->bota : '',
-                $row->parecerRh ? $row->parecerRh->camisa_meia : '',
-                $row->parecerRh ? $row->parecerRh->camisa_protecao : '',
-                $row->Empresa->cnpj ? $row->Empresa->nome_fantasia : $row->Empresa->nome,
+                $row->parecerRh->calca ?? 'NÃO INFORMADO',
+                $row->parecerRh->bota ?? 'NÃO INFORMADO',
+                $row->parecerRh->camisa_meia ?? 'NÃO INFORMADO',
+                $row->parecerRh->camisa_protecao ?? 'NÃO INFORMADO',
+                $row->empresa->cnpj ? $row->empresa->razao_social : $row->empresa->nome,
                 $row->VagaAberta->VagaSelecionada->nome . ' - ' . $row->VagaAberta->Municipio->uf,
-                $row->parecerRh->ex_funcionario ? 'Sim' : 'Não',
-                $row->TelPrincipal ? $row->TelPrincipal->numero : 'não informado',
+                $row->parecerRh->ex_funcionario ? 'SIM' : 'NÃO',
+                $row->TelPrincipal ? $row->TelPrincipal->numero : 'NÃO INFORMADO',
                 $row->Curriculo->email,
-                $row->parecerRh ? $row->parecerRh->turnos_seis_por_dois ? 'Sim' : 'Não' : 'NÃO INFORMADO',
-                $row->parecerRh ? $row->parecerRh->indicado_por ?: "" : "",
-                $row->parecerTecnica ? $row->parecerTecnica->indicado_area ?: "" : "",
+                $row->parecerRh ? $row->parecerRh->turnos_seis_por_dois ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
+                $row->parecerRh->indicado_por ?? "",
+                $row->parecerTecnica->indicado_area ?? "",
                 $row->Curriculo->endereco_completo,
-                $row->parecerRota ? $row->parecerRota->tem_rota ? 'Sim' : 'Não' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->tem_rota ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
                 $row->parecerRota ? $row->parecerRota->qual ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
                 $row->parecerRota ? $row->parecerRota->bairro_rota ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
                 $row->parecerRota ? $row->parecerRota->ponto_referencia_rota ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
-                $row->parecerRota ? $row->parecerRota->pega_onibus ? 'Sim' : 'Não' : 'NÃO INFORMADO',
+                $row->parecerRota ? $row->parecerRota->pega_onibus ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
                 $row->parecerRota ? $row->parecerRota->pega_onibus_qual_ponto ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
                 $row->parecerRota ? $row->parecerRota->bairro_residencia ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
                 $row->parecerRota ? $row->parecerRota->ponto_referencia_residencia ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
-                $row->parecerTeste ? $row->parecerTeste->qual_teste ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
+                $row->parecerTeste->qual_teste ?? 'NÃO INFORMADO',
                 $row->parecerTeste ? $row->parecerTeste->nota_teste == 0 ? 'Não se Aplica' : $row->parecerTeste->nota_teste : 'Aguardando',
-                $row->parecerTecnica ? $row->parecerTecnica->experiencia_cargas_rigger ? 'Sim' : 'Não' : 'NÃO INFORMADO',
-                $row->parecerTecnica ? $row->parecerTecnica->opera_plat_movel ? 'Sim' : 'Não' : 'NÃO INFORMADO',
-                $row->parecerTecnica ? $row->parecerTecnica->opera_plat_ponte ? 'Sim' : 'Não' : 'NÃO INFORMADO',
-                $row->ResultadoIntegrado->documentos_entregue ? 'Sim' : 'Não',
+                $row->parecerTecnica ? $row->parecerTecnica->experiencia_cargas_rigger ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
+                $row->parecerTecnica ? $row->parecerTecnica->opera_plat_movel ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
+                $row->parecerTecnica ? $row->parecerTecnica->opera_plat_ponte ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
+                $row->ResultadoIntegrado->documentos_entregue ? 'SIM' : 'NÃO',
                 $row->ResultadoIntegrado->documentos_entregue ? (new \MasterTag\DataHora($row->ResultadoIntegrado->documentos_entregue_data))->dataCompleta() : '',
-                $row->ResultadoIntegrado->encaminhado_exame ? 'Sim' : 'Não',
+                $row->ResultadoIntegrado->encaminhado_exame ? 'SIM' : 'NÃO',
                 $row->ResultadoIntegrado->encaminhado_exame ? (new \MasterTag\DataHora($row->ResultadoIntegrado->encaminhado_exame_data))->dataCompleta() : '',
-                $row->ResultadoIntegrado->encaminhado_treinamento ? 'Sim' : 'Não',
+                $row->ResultadoIntegrado->encaminhado_treinamento ? 'SIM' : 'NÃO',
                 $row->ResultadoIntegrado->encaminhado_treinamento ? (new \MasterTag\DataHora($row->ResultadoIntegrado->encaminhado_treinamento_data))->dataCompleta() : '',
-                $row->Admissao ? $row->Admissao->funcao ?: "" : "",
-                $row->Admissao ? $row->Admissao->cargo ?: "" : "",
-                $row->Admissao ? $row->Admissao->salario ?: "" : "",
-                $row->Admissao ? $row->Admissao->documento ?: "" : "",
-                $row->Admissao ? $row->Admissao->documento_portaria ?: "" : "",
-                $row->Admissao ? $row->Admissao->tipo_admissao ?: "" : "",
-                $row->Admissao ? $row->Admissao->treinamento ?: "" : "",
-                $row->Admissao ? $row->Admissao->tipo_treinamento ?: "" : "",
-                $row->Admissao ? $row->Admissao->data_treinamento ?: "" : "",
-                $row->Admissao ? $row->Admissao->nr_trinta_tres ?: "" : "",
-                $row->Admissao ? $row->Admissao->data_nr_trinta_tres ?: "" : "",
-                $row->Admissao ? $row->Admissao->nr_trinta_cinco ?: "" : "",
-                $row->Admissao ? $row->Admissao->data_nr_trinta_cinco ?: "" : "",
-                $row->Admissao ? $row->Admissao->trinta_dois_sessenta ?: "" : "",
-                $row->Admissao ? $row->Admissao->data_trinta_dois_sessenta ?: "" : "",
-                $row->Admissao ? $row->Admissao->numero_cracha ?: "" : "",
-                $row->Admissao ? $row->Admissao->UltimoAsoAtivo ? $row->Admissao->UltimoAsoAtivo->data_aso : "" : "",
-                $row->Admissao ? $row->Admissao->pis ?: "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_numero : "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_serie : "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_data_emissao : "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->ctps_uf : "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_numero : "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_sessao : "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->titulo_eleitor_zona : "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->cert_reservista_num : "" : "",
-                $row->Admissao ? $row->Admissao->DadosAdmissoes ? $row->Admissao->DadosAdmissoes->cert_reservista_categoria : "" : "",
+                $row->Admissao->AreaEtiqueta->label ?? "NÃO INFORMADO",
+                $row->Admissao->CentroCusto->label ?? "NÃO INFORMADO",
+                $row->Admissao->filial ? 'SIM' : 'NÃO',
+                $row->Admissao->CentroCustoFilial->Filial->dados->razao_social ?? "",
+                $row->Admissao->funcao ?? "NÃO INFORMADO",
+                $row->Admissao->cargo ?? "NÃO INFORMADO",
+                $row->Admissao->salario ?? "NÃO INFORMADO",
+                $row->Admissao->documento ?? "NÃO INFORMADO",
+                $row->Admissao->documento_portaria ?? "NÃO INFORMADO",
+                $row->Admissao->tipo_admissao ?? "NÃO INFORMADO",
+                $row->Admissao->treinamento ?? "NÃO INFORMADO",
+                $row->Admissao->tipo_treinamento ?? "NÃO INFORMADO",
+                $row->Admissao->data_treinamento ?? "NÃO INFORMADO",
+                $row->Admissao->numero_cracha ?? "NÃO INFORMADO",
+                $row->Admissao->UltimoAsoAtivo->data_aso ?? "NÃO INFORMADO",
+                $row->Admissao->pis ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->ctps_numero ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->ctps_serie ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->ctps_data_emissao ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->ctps_uf ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->titulo_eleitor_numero ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->titulo_eleitor_sessao ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->titulo_eleitor_zona ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->cert_reservista_num ?? "NÃO INFORMADO",
+                $row->Admissao->DadosAdmissoes->cert_reservista_categoria ?? "NÃO INFORMADO",
                 $dependentes,
-                $row->BancoConta ? $row->BancoConta->banco : "",
-                $row->BancoConta ? $row->BancoConta->agencia : "",
-                $row->BancoConta ? $row->BancoConta->conta : "",
-                $row->Admissao ? $row->Admissao->status_carteira_treinamento ?: "" : "",
-                $row->Admissao ? $row->Admissao->status ?: "" : "",
-                $row->Admissao ? $row->Admissao->data_admissao ?: "" : "",
-                $row->Curriculo ? $row->Curriculo->FotoTres ? $row->Curriculo->FotoTres->count() > 0 ? 'Sim' : 'Não' : 'Não' : 'Não',
-                $row->Admissao ? $row->Admissao->usuario_id ? $row->Admissao->QuemAdmitiu->nome : "" : "",
-                $row->Admissao ? $row->Admissao->editado_usuario_id ? $row->Admissao->QuemAlterou->nome : "" : "",
+                $row->BancoConta ? $row->BancoConta->pix ? 'SIM' : 'NÃO' :"NÃO INFORMADO",
+                $row->BancoConta->tipochavepix ?? "",
+                $row->BancoConta->chavepix ?? "",
+                $row->BancoConta->banco ?? "NÃO INFORMADO",
+                $row->BancoConta->agencia ?? "NÃO INFORMADO",
+                $row->BancoConta->conta ?? "NÃO INFORMADO",
+                $row->Admissao->status_carteira_treinamento ?? "NÃO INFORMADO",
+                $row->Admissao->status ?? "NÃO INFORMADO",
+                $row->Admissao->data_admissao ?? "NÃO INFORMADO",
+                $row->Curriculo ? $row->Curriculo->FotoTres ? $row->Curriculo->FotoTres->count() > 0 ? 'SIM' : 'NÃO' : 'NÃO' : 'NÃO',
+                $row->Admissao->QuemAdmitiu->nome ?? "",
+                $row->Admissao->QuemAlterou->nome ?? "",
             );
         }
 

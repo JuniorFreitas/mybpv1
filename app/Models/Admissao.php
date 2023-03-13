@@ -175,6 +175,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAvaliacaoPsicologica($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereMovimentacoes($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsarSalarioBase($value)
+ * @property bool $filial
+ * @property int|null $centro_custo_filial_id
+ * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilial
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereCentroCustoFilialId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereFilial($value)
  */
 class Admissao extends Model
 {

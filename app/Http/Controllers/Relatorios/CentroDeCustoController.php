@@ -96,16 +96,21 @@ class CentroDeCustoController extends Controller
      */
     protected function filtro(Request $request)
     {
-        $resultado = CentroCusto::select(['id', 'label', 'empresa_id'])->with(['Admissao' => function ($query) use ($request) {
-            $query->whereNotNull('centro_custo_id')
-                ->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO)
-                ->with('Feedback:id,curriculo_id,vagas_abertas_id',
-                    'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
-                    'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id',
-                    'Feedback.VagaAberta.VagaSelecionada:id,nome',
-                    'Feedback.VagaAberta.Municipio')
-                ->select(['id', 'feedback_id', 'tipo_admissao', 'centro_custo_id', 'status', 'data_admissao']);
-        }])->whereAtivo(true);
+        $resultado = CentroCusto::select(['id', 'label', 'empresa_id'])
+            ->whereHas('Admissao',function ($q){
+                $q->admitidos();
+            })
+            ->with(['Admissao' => function ($query) use ($request) {
+                $query->whereNotNull('centro_custo_id')
+                    ->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO)
+                    ->admitidos()
+                    ->with('Feedback:id,curriculo_id,vagas_abertas_id',
+                        'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
+                        'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id',
+                        'Feedback.VagaAberta.VagaSelecionada:id,nome',
+                        'Feedback.VagaAberta.Municipio')
+                    ->select(['id', 'feedback_id', 'tipo_admissao', 'centro_custo_id', 'status', 'data_admissao']);
+            }])->whereAtivo(true);
 
         if ($request->filled('campoCentrosDeCusto')) {
             $resultado->whereId($request->campoCentrosDeCusto);

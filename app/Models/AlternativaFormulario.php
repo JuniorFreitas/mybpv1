@@ -31,9 +31,7 @@ class AlternativaFormulario extends Model
     protected $fillable = ['nome', 'tipo'];
     protected $casts = ['id' => 'int', 'nome' => 'string', 'tipo' => 'string'];
 
-    public function usesTimestamps() : bool{
-        return false;
-    }
+    public $timestamps = false;
 
     public function Opcoes()
     {
