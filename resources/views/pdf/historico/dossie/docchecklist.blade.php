@@ -7,19 +7,18 @@
     <div style="margin-left: 9px">
         <p class="f12"
            style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase">
-            <b>DOCUMENTOS PARA ADMISSÃO</b><br>
+            <b>DOCUMENTOS PARA ADMISSÃO</b>
         </p>
-        <br>
         <table border="1" cellpadding="0" cellspacing="0" class="dados2" style="font-size: 0.85em; width: 97%">
             <thead>
-            <tr class="">
+            <tr class="f10">
                 <th class="text-center"></th>
                 <th class="text-center">Status</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody class="f10">
             <tr>
-                <td class="f12">Carteira Profissional (Somente no dia da ADMISSÃO)</td>
+                <td>Carteira Profissional (Somente no dia da ADMISSÃO)</td>
                 <td></td>
             </tr>
             <tr>
@@ -76,16 +75,15 @@
             </tr>
             </tbody>
         </table>
-        <br>
-        <div class="f11" style="line-height: 26pt;text-align: center">
+        <div class="f10" style="line-height: 26pt;text-align: center">
             <br>
             Favor aprensentar todos os documentos no dia ____/____ /_______.<br><br>
         </div>
-        <p class="f11">
+        <p class="f10">
             Recebido por: __________________________________________________<br><br>
             Em: ________________________________________________________
         </p><br><br>
-        <p class="f11" style="line-height: 22pt;text-align: justify; width: 96.7%">
+        <p class="f10" style="line-height: 22pt;text-align: justify; width: 96.7%">
             * Em atendimento a Lei nº 13.709/2018, Lei Geral de Proteção de Dados, viemos através deste solicitar o
             consentimento do uso dos dados acima para fins de processsamento da admissão
             na {{ auth()->user()->DadosEmpresa->razao_social  }} por prazo
