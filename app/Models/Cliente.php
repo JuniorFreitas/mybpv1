@@ -423,12 +423,12 @@ class Cliente extends Model
 
     public function CarteiraAssinaturaGestorRh()
     {
-        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_GERENTE_OU_RH)->first();
+        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_GERENTE_OU_RH)->with('Anexos')->first();
     }
 
     public function CarteiraAssinaturaSesmt()
     {
-        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_SESMT)->first();
+        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_SESMT)->with('Anexos')->first();
     }
 
     public function Papel()

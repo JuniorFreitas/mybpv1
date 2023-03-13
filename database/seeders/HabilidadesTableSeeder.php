@@ -338,6 +338,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_treinamento_sgi', 'descricao' => 'Acessar Cadastro Treinamento SGI'];
         $lista[] = ['nome' => 'cadastro_treinamento_sgi_insert', 'descricao' => 'Inseri Cadastro Treinamento SGI Insert'];
         $lista[] = ['nome' => 'cadastro_treinamento_sgi_update', 'descricao' => 'Atualiza Cadastro Treinamento SGI Update'];
+        $lista[] = ['nome' => 'cadastro_carteira_assinatura', 'descricao' => 'Cadastro Assinatura Carteira'];
 
         $lista[] = ['nome' => 'cadastro_empresa_treinamento', 'descricao' => 'Acessar Cadastro Empresa Treinamento'];
         $lista[] = ['nome' => 'cadastro_empresa_treinamento_insert', 'descricao' => 'Inseri Cadastro Empresa Treinamento Insert'];

@@ -167,6 +167,7 @@ class Arquivo extends Model
     const DISCO_FORNECEDOR = 'disco-fornecedor';
     const DISCO_SERVICO_FORNECEDOR = 'disco-servicofornecedor';
     const DISCO_OCORRENCIA = 'disco-ocorrencia';
+    const DISCO_TREINAMENTO = 'disco-treinamento';
     const DISCO_CIH = 'evidencia-cih';
     const DISCO_MEDIDAS = 'evidencia-medidas';
     const DISCO_DOCUMENTOS_PRE_ADMISSAO = 'disco-documentospreadmissao';
@@ -185,6 +186,7 @@ class Arquivo extends Model
     const DISCO_DOCUMENTO_EMPRESA = 'disco-documento-empresa';
     const DISCO_DOCUMENTO_SSMA = 'disco-documento-ssma';
     const DISCO_MOVIMENTACAO = 'disco-movimentacao';
+    const DISCO_ASSINATURA = 'disco-assinatura';
 
     const LISTAGEM_DISCOS = [
         self::DISCO_CLOUD,
@@ -194,6 +196,7 @@ class Arquivo extends Model
         self::DISCO_FORNECEDOR,
         self::DISCO_SERVICO_FORNECEDOR,
         self::DISCO_OCORRENCIA,
+        self::DISCO_TREINAMENTO,
         self::DISCO_CIH,
         self::DISCO_MEDIDAS,
         self::DISCO_DOCUMENTOS_PRE_ADMISSAO,
@@ -212,6 +215,7 @@ class Arquivo extends Model
         self::DISCO_DOCUMENTO_EMPRESA,
         self::DISCO_DOCUMENTO_SSMA,
         self::DISCO_MOVIMENTACAO,
+        self::DISCO_ASSINATURA,
     ];
 
     /**

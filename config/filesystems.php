@@ -87,6 +87,17 @@ return [
             ]
         ),
 
+        'disco-assinatura' => array_merge($default,
+            [
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-assinatura') : 'arquivos/disco-assinatura',
+                'urlShow' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/assinaturacarteira/anexo" : env('AWS_URL') . '/arquivos/disco-assinatura',
+                'urlDownload' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/assinaturacarteira/anexo" : env('AWS_URL') . '/arquivos/disco-assinatura',
+                'urlThumb' => env('FILESYSTEM_DRIVER') == 'local' ? env('APP_URL') . "/g/assinaturacarteira/anexo" : env('AWS_URL') . '/arquivos/disco-assinatura',
+                'urlDelete' => env('APP_URL') . '/g/assinaturacarteira/anexo',
+                'visibility' => 'public',
+            ]
+        ),
+
         'disco-fotocurriculo' => array_merge($default,
             [
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-fotocurriculo') : 'arquivos/disco-fotocurriculo',

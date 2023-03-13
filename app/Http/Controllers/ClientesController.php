@@ -222,7 +222,8 @@ class ClientesController extends Controller
                         'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                         'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-                        'cliente_id' => $cliente->id
+                        'cliente_id' => $cliente->id,
+                        'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
                     ];
                     ClienteConfig::create($dadosClienteConfig);
 
@@ -569,6 +570,7 @@ class ClientesController extends Controller
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                         'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                         'modelo_cih' => $dados['cliente_config']['modelo_cih'],
+                        'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
                     ]);
                 } else {
                     $dadosClienteConfig = [
@@ -576,6 +578,7 @@ class ClientesController extends Controller
                         'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                         'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                         'modelo_cih' => $dados['cliente_config']['modelo_cih'],
+                        'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
                         'cliente_id' => $cliente->id
                     ];
                     ClienteConfig::create($dadosClienteConfig);
