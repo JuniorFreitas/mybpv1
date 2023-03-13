@@ -1661,11 +1661,26 @@ class AdmissaoController extends Controller
 //PDF
     public function getFichaPdf($fc_token)
     {
-        $dados = FeedbackCurriculo::find(\Crypt::decrypt($fc_token))->load('ResultadoIntegrado');
+        $feedback = FeedbackCurriculo::select([
+            'id',
+            'curriculo_id',
+            'vagas_abertas_id',
+            'empresa_id'
+        ])->find(\Crypt::decrypt($fc_token))
+            ->load(
+                'ResultadoIntegrado:id,feedback_id',
+                'Admissao:id,filial,centro_custo_filial_id,feedback_id'
+            );
+
+        $dados = [
+            'dados_empresa' => Sistema::getEmpresaFilialMatriz($feedback->Admissao->centro_custo_filial_id, $feedback['empresa_id']),
+            'dados_colaborador' => $feedback,
+            'solicitante' => User::select('nome')->find(auth()->id())->nome
+        ];
 
         $pdf = PDF::loadView('pdf.admissao.ficha', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("ficha_admissao_" . ($dados->Curriculo->nome) . '_' . (new DataHora())->nomeUnico() . ".pdf");
+        return $pdf->stream("ficha_admissao_" . ($dados['dados_colaborador']->Curriculo->nome) . '_' . (new DataHora())->nomeUnico() . ".pdf");
     }
 
 //Excel
@@ -1675,8 +1690,8 @@ class AdmissaoController extends Controller
             return $query->whereIn('id', $request->selecionados);
         })->get();
 
-       $clienteFilial = new ClienteFilial();
-       $clienteTemFilial = $clienteFilial->temFilial(auth()->user()->empresa_id);
+        $clienteFilial = new ClienteFilial();
+        $clienteTemFilial = $clienteFilial->temFilial(auth()->user()->empresa_id);
 
         $head = [
             "Nome",
@@ -1850,7 +1865,7 @@ class AdmissaoController extends Controller
                 $row->Admissao->DadosAdmissoes->cert_reservista_num ?? "NÃO INFORMADO",
                 $row->Admissao->DadosAdmissoes->cert_reservista_categoria ?? "NÃO INFORMADO",
                 $dependentes,
-                $row->BancoConta ? $row->BancoConta->pix ? 'SIM' : 'NÃO' :"NÃO INFORMADO",
+                $row->BancoConta ? $row->BancoConta->pix ? 'SIM' : 'NÃO' : "NÃO INFORMADO",
                 $row->BancoConta->tipochavepix ?? "",
                 $row->BancoConta->chavepix ?? "",
                 $row->BancoConta->banco ?? "NÃO INFORMADO",

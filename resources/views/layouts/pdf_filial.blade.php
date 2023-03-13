@@ -107,17 +107,28 @@
         }
 
         .f14 {
-            font-size: 14pt;
+            font-size: 14pt !important
+        }
+
+        .f11 {
+            font-size: 11pt !important
         }
 
         .f12 {
-            font-size: 12pt;
+            font-size: 12pt !important;
+        }
+
+        .f10 {
+            font-size: 10pt !important;
         }
 
         .obs {
             font-size: 8.4pt;
             color: #444444;
             margin-bottom: 10px;
+        }
+        .text-justify {
+            text-align: justify;
         }
 
     </style>

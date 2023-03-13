@@ -766,47 +766,16 @@ class Sistema
         \Log::debug(print_r(json_encode($dados, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 1));
     }
 
-//    public function getEmpresaFilialMatriz($empresa_id, $centro_custo_filial_id = null)
-//    {
-//        if ($centro_custo_filial_id) {
-//            $CCF = CentroCustoFilial::find($centro_custo_filial_id)->load('Filial');
-//            $Empresa = (array)$CCF->Filial->dados;
-//
-//            $dadosEmpresa = [
-//                'id' => $CCF->Filial->id,
-//                'empresa_id' => $empresa_id,
-//                'razao_social' => $Empresa['razao_social'] ?? null,
-//                'cnpj' => $Empresa['cnpj'] ?? null,
-//                'nome_fantasia' => $Empresa['nome_fantasia'] ?? null,
-//                'endereco_completo' => $CCF->Filial->getEnderecoCompletoAttribute() ?? null,
-//                'filial' => true,
-//            ];
-//        } else {
-//            $empresaCliente = Cliente::select([
-//                'id',
-//                'razao_social',
-//                'cnpj',
-//                'nome_fantasia',
-//                'cep',
-//                'logradouro',
-//                'numero',
-//                'complemento',
-//                'bairro',
-//                'municipio',
-//                'uf'])->find($empresa_id);
-//
-//            $dadosEmpresa = [
-//                'id' => $empresaCliente->id,
-//                'empresa_id' => $empresa_id,
-//                'razao_social' => $empresaCliente->razao_social ?? null,
-//                'cnpj' => $empresaCliente->cnpj ?? null,
-//                'nome_fantasia' => $empresaCliente->nome_fantasia ?? null,
-//                'endereco_completo' => $empresaCliente->endereco_completo ?? null,
-//                'filial' => false,
-//            ];
-//        }
-//        return $dadosEmpresa;
-//    }
+    /**
+     * Busca a empresa ou filial
+     * @param $centro_custo_filial_id
+     * @param $empresa_id
+     * @return array
+     */
+    public static function getEmpresaFilialMatriz($centro_custo_filial_id, $empresa_id)
+    {
+        return !is_null($centro_custo_filial_id) ? Sistema::getFilial($empresa_id, $centro_custo_filial_id) : Sistema::getEmpresa($empresa_id);
+    }
 
     /**
      * @param $empresa_id
