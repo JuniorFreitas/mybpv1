@@ -9,6 +9,7 @@ use App\Models\Curriculo;
 use App\Models\EmpresaTemporaria;
 use App\Models\FeedbackCurriculo;
 use App\Models\LogHistorico;
+use App\Models\Sistema;
 use App\Models\User;
 use Barryvdh\DomPDF\PDF;
 use DB;
@@ -922,13 +923,19 @@ class DossieController extends Controller
 
     public function downloadModelo($tipo_modelo, $curriculo_id)
     {
-        $dados = Curriculo::whereId($curriculo_id)->first();
-        $cliente = Cliente::whereId($dados->User->empresa_id)->first();
-        $tipo_admissao = \Str::slug($dados->FeedBack->Admissao->tipo_admissao);
+        $colaborador = Curriculo::whereId($curriculo_id)->first();
+        $cliente = Cliente::whereId($colaborador->User->empresa_id)->first();
+        $tipo_admissao = \Str::slug($colaborador->FeedBack->Admissao->tipo_admissao);
+
+        $dados = [
+            'dados_empresa' => Sistema::getEmpresaFilialMatriz($colaborador->FeedBack->Admissao->centro_custo_filial_id, $colaborador->FeedBack->empresa_id),
+            'dados_colaborador' => $colaborador,
+            'solicitante' => User::select('nome')->find(auth()->id())->nome
+        ];
 
         if ($tipo_modelo == 'contratotrabalhoassinado') {
-            if (in_array($dados->FeedBack->Admissao->tipo_admissao, [Admissao::TIPO_ADMISSAO_TEMPORARIO, Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO])) {
-                $temporaria = EmpresaTemporaria::whereEmpresaId($dados->User->empresa_id)->first();
+            if (in_array($colaborador->FeedBack->Admissao->tipo_admissao, [Admissao::TIPO_ADMISSAO_TEMPORARIO, Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO])) {
+                $temporaria = EmpresaTemporaria::whereEmpresaId($colaborador->User->empresa_id)->first();
                 $pdf = \PDF::loadView('pdf.historico.dossie.contratos.' . $tipo_admissao, compact('dados', 'cliente', 'temporaria'));
             } else {
                 $pdf = \PDF::loadView('pdf.historico.dossie.' . $tipo_modelo, compact('dados', 'cliente'));

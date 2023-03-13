@@ -145,14 +145,14 @@
     <div class="f11">
         <strong>QUADRO II - TRABALHADOR TEMPORÁRIO</strong><br>
         <hr>
-        Nome: {{$dados->nome}}<br>
-        Endereço: {{ $dados->endereco_completo }}<br>
-        CTPS: {{ $dados->FeedBack->Admissao->DadosAdmissoes ? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_numero: 'Não Informado' }}
+        Nome: {{$dados['dados_colaborador']->nome}}<br>
+        Endereço: {{ $dados['dados_colaborador']->endereco_completo }}<br>
+        CTPS: {{ $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes ? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_numero: 'Não Informado' }}
         ,
-        Serie: {{ $dados->FeedBack->Admissao->DadosAdmissoes ? $dados->FeedBack->Admissao->DadosAdmissoes->ctps_serie: 'Não Informado' }}
+        Serie: {{ $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes ? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_serie: 'Não Informado' }}
         <br>
-        Função: {{  $dados->FeedBack->Admissao->funcao }}<br>
-        Salario: R$ {{ $dados->FeedBack->Admissao->salario }}<br>
+        Função: {{  $dados['dados_colaborador']->FeedBack->Admissao->funcao }}<br>
+        Salario: R$ {{ $dados['dados_colaborador']->FeedBack->Admissao->salario }}<br>
         Neste ato designado simplesmente como <strong>CONTRATANTE</strong>
         <hr>
     </div>
@@ -259,7 +259,7 @@
 </div>
 <br>
 <div class="f11" style="line-height: 26pt; text-align: right">
-    São Luís, MA. {{ (new \MasterTag\DataHora($dados->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}.
+    São Luís, MA. {{ (new \MasterTag\DataHora($dados['dados_colaborador']->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}.
     <br>
     <br>
 </div>
