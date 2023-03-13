@@ -643,6 +643,17 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Etiqueta Bloqueio (Número do Supervisor)</label>
+                                            <select v-model="form.cliente_config.supervisor_etiqueta_bloqueio" class="form-control"
+                                                    onblur="valida_campo_vazio(this,1)">
+                                                <option value="">Selecione ...</option>
+                                                <option :value="true">Sim</option>
+                                                <option :value="false">Não</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </fieldset>
                             <fieldset>

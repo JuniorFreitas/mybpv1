@@ -5,72 +5,110 @@
     <div style="padding: 20px">
         <?php $cont = 0; ?>
         @foreach($treinamentos as $treinamento)
+                <table style="border: 0.1mm solid; width:14.80cm;">
+                    <tr>
+                        <td style="width: 50%; height: 8.30cm; vertical-align: top;">
+                            <table>
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <img src="{{asset('images/carteira/cabecalho_carteira_alumar.webp')}}" style="width: 5.7cm; margin-bottom: -1mm;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: left; height: 6cm; vertical-align: top">
+                                        <ul style="list-style: none; top: 29px; padding-left: 0.6mm">
+                                            <li style="font-size: 5.5pt; margin-top: 1.5px; margin-bottom: 0.7mm; display: flex; align-items: center;">
+                                                <div style="float: left; width: 100%; margin-bottom: 0px; background: #d9d9d9; padding: 4px; border-radius: 6px">
+                                                    <strong>Nome:</strong> {{ mb_strtoupper($treinamento->FeedbackCurriculo->Curriculo->nome) }}
+                                                </div>
+                                            </li>
+                                            <li style="font-size: 5.5pt; margin-top: 1.5px; margin-bottom: 0px; display: flex; align-items: center;">
+                                                <div style="float: left; width: 76%; margin-bottom: 0px; background: #d9d9d9; padding: 4px; border-radius: 6px">
+                                                    <strong>Função:</strong> {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->cargo : null) }}
+                                                </div>
+                                                <div style="float: left; width: 23%; margin-bottom: 0px; margin-left: 1%; background: #d9d9d9; padding: 4px; border-radius: 6px">
+                                                    <strong>Chapa:</strong> {!!  $treinamento->FeedbackCurriculo->Admissao->numero_cracha ?:"&nbsp" !!}
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        <div style="
+                                        background: white;height: 9px;width: 269px; padding-top: 0.7mm; padding-bottom: 0.3mm; font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;font-weight: bold;display: flex;justify-content: space-between;">
+                                            <p style="width: 180px; text-align: center;">Treinamentos</p>
+                                            <p style="width: 60px; text-align: center;">Data</p>
+                                            <p style="width: 48px; text-align: center;">Reciclagem</p>
+                                        </div>
+                                        <ul style="list-style: none; top: 29px; padding-left: 0.6mm">
+                                            @foreach($treinamento->Vencimentos as $key => $vencimento)
+                                                @if($vencimento->exibir_na_carteira)
+                                                    <li style="font-size: {!! strlen($vencimento->label_reduzida) <= 20 ? '5pt' : '4.7pt' !!}; margin-top: 1.5px; margin-bottom: 0px; display: flex; align-items: center;">
+                                                        <div
+                                                            style="float: left; width: 164px; margin-bottom: 0px; background: #d9d9d9; padding: 2px; border-radius: 2px"> {{ $vencimento->label_reduzida ? mb_strimwidth($vencimento->label_reduzida, 0, 58) : "Não informada" }}</div>
+                                                        <div
+                                                            style="float: left; margin-bottom: 0px; font-size: 5pt; margin-left: 3px; margin-top: 0px; width:42px; background: #d9d9d9; padding: 2px; border-radius: 2px; text-align: center"> {{ $vencimento->pivot->data_treinamento  }}</div>
+                                                        <div
+                                                            style="float: left; margin-bottom: 0px; font-size: 5pt; margin-left: 3px; margin-top: 0px;  width:43px; background: #d9d9d9; padding: 2px; border-radius: 2px; text-align: center"> {{ $vencimento->pivot->data_vencimento  }}</div>
+                                                        <div style="clear: both"></div>
+                                                    </li>
+                                                @endif
+                                            @endforeach
+                                        </ul>
+                                    </td>
+                                </tr>
+{{--                                <tr style="background: url({{asset('images/carteira/rodape_carteira_alumar.webp')}});--}}
+{{--                                           background-size: 100%;--}}
+{{--                                           background-repeat: no-repeat;--}}
+{{--                                           background-position-x: 0mm;--}}
+{{--                                           background-position-y: 1.6mm">--}}
+                                <tr>
+                                    <td style="padding-bottom: 1mm;
+                                               padding-top: 1mm;">
+                                        <div style="width: 50%; font-size: 5.5pt; text-align: right; float: left;">
+                                            @if(count(auth()->user()->Empresa->CarteiraAssinaturaSesmt()->Anexos) > 0)
+                                                <img src="{{ \App\Models\Sistema::convertBase3(auth()->user()->Empresa->CarteiraAssinaturaSesmt()->Anexos[0]->urlThumb,true) }}" alt="" style="width: 63%; margin-right: 0.5cm">
+                                            @else
+                                                <table style="width: 100%; padding: 2mm">
+                                                    <tr>
+                                                        <td style="text-align: center">
+                                                            <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome : 'Não informado' }}</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="text-align: center; border-top: 0.3mm solid; padding-bottom: -50px !important;">
+                                                            {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo : 'Não informado' }}
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            @endif
+                                        </div>
 
-            <div style="width: 14.80cm; height: 8.30cm; float:left; margin-top: 35px;
-            background: url({{asset('images/carteira/carteira_alumar_2022_limpa.webp')}});
-            background-size: 14.80cm 8.30cm;
-            border: 0.1mm black solid;
-            margin-right: 2px;
-            ">
-                <div
-                    style="background: #d9d9d9;width: 262px;position: relative;top: 42px;font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;left: 5px;border-radius: 6px;padding: 4px;">
-                    <p><strong>Nome:</strong> {{ mb_strtoupper($treinamento->FeedbackCurriculo->Curriculo->nome) }}</p>
-                </div>
-
-                <div style="position: relative; display: flex; width: 269px; top: 44px; left: 5px; justify-content: space-between;">
-                    <div style="background: #d9d9d9;width: 200px;font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;border-radius: 3px;padding: 3px;">
-                        <p><strong>Função:</strong> {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->cargo : null) }}</p>
-                    </div>
-
-                    <div style="background: #d9d9d9;width: 69px;font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;border-radius: 3px;padding: 3px;margin-left: 2px;">
-                        <p><strong>Chapa:</strong> {!!  $treinamento->FeedbackCurriculo->Admissao->numero_cracha ?:"&nbsp" !!}</p>
-                    </div>
-                </div>
-                <div style="
-                background: white;height: 9px;width: 269px;position: relative;top: 47.5px;font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;font-weight: bold;display: flex;justify-content: space-between;">
-                    <p style="width: 213px; text-align: center;">Treinamentos</p>
-                    <p style="width: 65px; text-align: center;">Data</p>
-                    <p style="width: 48px; text-align: center;">Reciclagem</p>
-                </div>
-                <div style=" position: relative; top: 20px; left: 0.25cm; height: 215px;">
-                    <ul style="list-style: none; position: relative; top: 29px; left: -3px;">
-                        @foreach($treinamento->Vencimentos as $key => $vencimento)
-                            @if($key <= 13 && $vencimento->exibir_na_carteira)
-                                <li style="font-size: {!! strlen($vencimento->label_reduzida) <= 20 ? '5pt' : '4.7pt' !!}; margin-top: 1.5px; margin-bottom: 0px; display: flex; align-items: center;">
-                                    <div
-                                        style="float: left; width: 164px; margin-bottom: 0px; background: #d9d9d9; padding: 2px; border-radius: 2px"> {{ $vencimento->label_reduzida ? mb_strimwidth($vencimento->label_reduzida, 0, 58) : "Não informada" }}</div>
-                                    <div
-                                        style="float: left; margin-bottom: 0px; font-size: 5pt; margin-left: 3px; margin-top: 0px; width:42px; background: #d9d9d9; padding: 2px; border-radius: 2px; text-align: center"> {{ $vencimento->pivot->data_treinamento  }}</div>
-                                    <div
-                                        style="float: left; margin-bottom: 0px; font-size: 5pt; margin-left: 3px; margin-top: 0px;  width:43px; background: #d9d9d9; padding: 2px; border-radius: 2px; text-align: center"> {{ $vencimento->pivot->data_vencimento  }}</div>
-                                    <div style="clear: both"></div>
-                                </li>
-                            @endif
-                        @endforeach
-                    </ul>
-                </div>
-                <div style="margin-left: 55px; position: relative;bottom: -24.5px;">
-                    <p style="font-family: 'Sacramento', cursive; color: blue; width: 75px; font-size: 5.5pt; text-align: center; float: left;">
-                        {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome : 'Não informado' }}
-                    </p>
-
-                    <p style="font-family: 'Sacramento', cursive; color: blue; width: 75px; margin-left: 16.8px; font-size: 5.5pt; text-align: center; float: left;">
-                        @if(auth()->user()->Empresa->CarteiraAssinaturaGestorRh() && auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->arquivo_id)
-                            <img src="" alt="">
-                        @else
-                            {{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ?  auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}
-                        @endif
-                    </p>
-
-                </div>
-            </div>
-                <?php $cont++ ?>
-            @if ($cont==3)
-                    <?php $cont = 0; ?>
-                <div style="page-break-after: always"></div>
-            @endif
+                                        <div style="width: 50%; font-size: 5.5pt; text-align: left; float: left;">
+                                            @if(count(auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->Anexos) > 0)
+                                                <img src="{{ \App\Models\Sistema::convertBase3(auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->Anexos[0]->urlThumb,true) }}" alt="" style="width: 55%; margin-left: 0.5cm">
+                                            @else
+                                                <table style="width: 100%; padding: 2mm">
+                                                    <tr>
+                                                        <td style="text-align: center">
+                                                            <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ? auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="text-align: center; border-top: 0.3mm solid;">{{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ? auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo : 'Não informado' }}</td>
+                                                    </tr>
+                                                </table>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="width: 50%; min-height: 8.30cm; text-align: center; border-left: 0.1mm dashed #cccccc;">
+                            <img src="{{asset('images/carteira/verso_carteira_alumar.webp')}}" style="width: 4.4cm">
+                        </td>
+                    </tr>
+                </table>
         @endforeach
     </div>
+
 
     <div style="clear: both"></div>
     <div style="page-break-after: always"></div>
@@ -169,7 +207,7 @@
                     </h6>
                     <h6 style="margin-top: 5px;">FONE/RAMAL/<span class="colorRed">Extension: <span
                                 style="font-size: 6.8pt;">
-                                        {{ $treinamento->FeedbackCurriculo->Admissao ? $treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id ? \App\Models\Admissao::getNumeroSupervisor($treinamento->FeedbackCurriculo->empresa_id,$treinamento->FeedbackCurriculo->Admissao->area_etiqueta_id) : null : null }}
+                                        {{ $treinamento->telefone ?? "Não Informado" }}
                                     </span></span>
                     </h6>
                     <h6 style="margin-top: 5px;">DATA/<span class="colorRed">Date: <span

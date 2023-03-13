@@ -343,6 +343,14 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::resource('pcmso', \App\Http\Controllers\PcmsoController::class)->middleware('can:cadastro_empresa_pcmso');
         });
 
+        Route::group(['as' => 'assinaturacarteira.'], function () {
+            Route::post('assinaturacarteira/uploadAnexos', [\App\Http\Controllers\CarteiraAssinaturaController::class, 'uploadAnexos'])->name('assinaturacarteira.upload-anexos')->middleware('can:cadastro_carteira_assinatura');
+            Route::get('assinaturacarteira/anexo/{arquivo}', [\App\Http\Controllers\CarteiraAssinaturaController::class, 'anexoShow'])->name('assinaturacarteira.anexo-show')->middleware('can:cadastro_carteira_assinatura');;
+            Route::get('assinaturacarteira/anexoDownload/{arquivo}', [\App\Http\Controllers\CarteiraAssinaturaController::class, 'download'])->name('assinaturacarteira.anexo-download')->middleware('can:cadastro_carteira_assinatura');;
+            Route::delete('assinaturacarteira/anexo/{arquivo}', [\App\Http\Controllers\CarteiraAssinaturaController::class, 'anexoDelete'])->name('assinaturacarteira.anexo-delete')->middleware('can:cadastro_carteira_assinatura');;
+            Route::post('assinaturacarteira/atualizar', [\App\Http\Controllers\CarteiraAssinaturaController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_carteira_assinatura');;
+            Route::resource('assinaturacarteira', \App\Http\Controllers\CarteiraAssinaturaController::class)->middleware('can:cadastro_carteira_assinatura');;
+        });
 
         Route::group(['as' => 'empresatemporaria.'], function () {
             Route::post('empresa-temporaria/atualizar', [\App\Http\Controllers\EmpresaTemporariaController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_empresa_temporaria');

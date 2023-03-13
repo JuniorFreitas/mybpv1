@@ -53,8 +53,8 @@ class CarteiraAssinatura extends Model
         'ativo' => 'boolean',
     ];
 
-    const TIPO_GERENTE_OU_RH = 'GERENTE OU RH';
-    const TIPO_SESMT = 'SESMT';
+    const TIPO_GERENTE_OU_RH = 'Gerente/Rh';
+    const TIPO_SESMT = 'Técnico de Segurança';
 
     const TIPOS = [
         self::TIPO_GERENTE_OU_RH,
@@ -69,5 +69,21 @@ class CarteiraAssinatura extends Model
     public function Empresa()
     {
         return $this->belongsTo(Cliente::class, 'empresa_id');
+    }
+
+    public function Anexos()
+    {
+        return $this->belongsToMany(Arquivo::class, 'carteira_assinaturas_anexos', 'carteira_assinatura_id', 'arquivo_id');
+    }
+
+    public function AssinaturaSesmt()
+    {
+        $assinatura = $this->whereTipo(self::TIPO_SESMT)->first();
+//        $assinatura->
+    }
+
+    public function AssinaturaGerente()
+    {
+        return $this->whereTipo(self::TIPO_GERENTE_OU_RH)->with('Anexos')->first();
     }
 }

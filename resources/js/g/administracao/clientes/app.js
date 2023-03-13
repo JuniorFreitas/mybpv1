@@ -88,7 +88,8 @@ const app = new Vue({
                 verifica_mes_vencimento: '',
                 envia_whatsapp: '',
                 vencimento_aso: '',
-                modelo_cih: ''
+                modelo_cih: '',
+                supervisor_etiqueta_bloqueio: true,
             },
 
             listaDeHabilidades: '',

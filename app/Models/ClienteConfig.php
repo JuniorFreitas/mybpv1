@@ -36,7 +36,8 @@ class ClienteConfig extends Model
         'verifica_mes_vencimento',
         'cliente_id',
         'vencimento_aso',
-        'modelo_cih'
+        'modelo_cih',
+        'supervisor_etiqueta_bloqueio'
     ];
 
     protected $casts = [
@@ -44,7 +45,8 @@ class ClienteConfig extends Model
         'verifica_mes_vencimento' => 'int',
         'cliente_id' => 'int',
         'vencimento_aso' => 'int',
-        'modelo_cih'
+        'modelo_cih' => 'string',
+        'supervisor_etiqueta_bloqueio' => 'boolean'
     ];
 
     public $timestamps = false;

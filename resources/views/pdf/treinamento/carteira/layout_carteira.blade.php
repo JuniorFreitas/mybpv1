@@ -124,9 +124,11 @@
         }
 
         @media print {
-            #printPageButton {
+            #printPageButton, .observacao {
                 display: none;
             }
+
+
         }
 
         .etiqueta {
@@ -219,11 +221,23 @@
             clear: both;
             content: "";
         }
+
+        .observacao{
+            padding: 5px 13px 5px 13px;
+            width: 600px;
+            margin-top: 20px;
+            margin-left: 20px;
+            background-color: #ffe5d2;
+            color: #ff5c15;
+            border: #ff5c15;
+            border-radius: 5px;
+        }
     </style>
 
 </head>
 <body>
 <button id="printPageButton" onClick="window.print();">IMPRIMIR</button>
+<p class="observacao">OBS: Para carteiras com mais de 12 treinamentos, favor imprimí-la individualmente.</p>
 @yield('conteudo')
 
 </body>

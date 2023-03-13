@@ -1,5 +1,12 @@
 <template>
     <div id="componenteTreinamentoSgi">
+        <modal :modal-pai="modal" :titulo="titulo_janela_assinatura" :size='90'
+               id="janelaAssinatura">
+            <template slot="conteudo">
+                <assinatura-carteira></assinatura-carteira>
+            </template>
+        </modal>
+
         <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
             <template slot="conteudo">
                 <preload v-show="preload"></preload>
@@ -92,6 +99,12 @@
                             data-target="#janelaCadastrar">
                         <i class="fa fa-plus"></i> Treinamento
                     </button>
+
+                    <button type="button" class="btn btn-sm btn-secondary"
+                            data-toggle="modal"
+                            data-target="#janelaAssinatura">
+                        <i class="fa fa-plus"></i> Assinatura Carteira
+                    </button>
                 </div>
             </form>
         </fieldset>
@@ -151,9 +164,11 @@
 <script>
     import controlePaginacao from '../../ControlePaginacao';
     import modal from '../../Modal';
+    import AssinaturaCarteira from "./AssinaturaCarteira.vue";
 
     export default {
         components: {
+            AssinaturaCarteira,
             modal,
             controlePaginacao,
         },
@@ -182,6 +197,8 @@
             return {
                 hash: String(Math.random()).substr(2),
                 titulo_janela: '',
+                titulo_janela_assinatura: 'Assinatura Carteira',
+                titulo_janela_form_assinatura: 'Assinatura Carteira',
 
                 preload: false,
                 editando: false,
