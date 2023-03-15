@@ -32,11 +32,10 @@ ini_set('max_execution_time', '-1');
 
 unset($argv[0]);
 $import = new Admissaoimport;
-\Excel::import($import, public_path('modelo_importacao_14.09.22_o.xlsx'));
+\Excel::import($import, public_path('montisol_mig_2023.xlsx'));
 
-$empresa_id = 57861;
-
-$user_id = 58050;
+$empresa_id = 63122;
+$user_id = 63122;
 
 
 $dados = $import->dados->map(function ($line) {
@@ -51,7 +50,7 @@ $dados = $import->dados->map(function ($line) {
             "estado_civil" => (string)$line['estado_civil'],
             "rg" => (string)preg_replace("/[^0-9]/", "", $line['rg']),
             "rg_data_emissao" => $line['rg_emissao'] ? Date::excelToDateTimeObject($line['rg_emissao'])->format('d/m/Y') : null,
-            "nascimento" => $line['nascimento'] ? Date::excelToDateTimeObject($line['rg_emissao'])->format('d/m/Y') : null,
+            "nascimento" => $line['nascimento'] ? Date::excelToDateTimeObject($line['nascimento'])->format('d/m/Y') : null,
             "sexo" => ucwords($line['sexo']),
             "filiacao_pai" => (string)$line['pai'],
             "filiacao_mae" => (string)$line['mae'],
@@ -119,6 +118,8 @@ if ($dados->count() == 0) {
 }
 
 $dados = $dados->toArray();
+//return var_dump($dados);
+
 
 $dadosValidados = \Validator::make($dados, [
     '*.curriculo.cpf' => ['required',
@@ -187,12 +188,13 @@ $dadosValidados = \Validator::make($dados, [
 if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
     print_r([
         'msg' => 'Erro ao fazer importação',
-        'erros' => $dadosValidados->errors()
+        'erros' => $dadosValidados->errors(),
     ]);
     die();
 
 }
-
+var_dump('correu tudo certo');
+die();
 try {
     $count = 0;
     DB::beginTransaction();
