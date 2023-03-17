@@ -62,6 +62,8 @@ class TreinamentoVencimento extends Pivot
         'numero_fat' => 'string'
     ];
 
+    public $timestamps = false;
+
     protected function serializeDate(DateTimeInterface $date) {
         return $date->format('Y-m-d H:i:s');
     }

@@ -834,7 +834,7 @@
                         CPF: @{{resultado.curriculo.cpf}}
                     </td>
                     <td class="text-center">
-                        @{{resultado.vaga_selecionada.nome}}
+                        @{{resultado.vaga_aberta_municipio }}
                     </td>
 
                     <td class="text-center">
