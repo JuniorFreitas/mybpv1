@@ -45,6 +45,9 @@ const app = new Vue({
         btnBuscar: false,
         encontrou: false,
 
+        permissoes: [],
+        filtrarDemitidos: false,
+
         AUTENTICADO,
         cliente_id: "",
         cliente_area_id: 0,
@@ -562,7 +565,8 @@ const app = new Vue({
                 campoTipoAdmissao: "",
                 campoUf: "",
                 campoAso: "",
-                campoAdmissao: ""
+                campoAdmissao: "",
+                campoDemitido: false
             }
         }
     },
@@ -1063,6 +1067,7 @@ const app = new Vue({
             this.lista_sexos = dados.lista_sexos;
             this.lista_estados_civis = dados.lista_estados_civis;
             this.selecionaTudo = this.tudoMarcado;
+            this.permissoes = dados.permissoes;
             this.controle.carregando = false;
         },
         carregando() {

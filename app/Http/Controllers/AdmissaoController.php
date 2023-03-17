@@ -1499,7 +1499,6 @@ class AdmissaoController extends Controller
     protected function filtro(Request $request)
     {
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado')
-            ->Admitidos()
             ->with(
                 'Admissao',
                 'ResultadoIntegrado',
@@ -1523,6 +1522,11 @@ class AdmissaoController extends Controller
             });
         }
 
+        if ($request->campoDemitido) {
+            $resultado->Demitidos();
+        } else {
+            $resultado->Admitidos();
+        }
 
         $filtroAso = $request->filtroAso == 'true';
 
@@ -1611,6 +1615,9 @@ class AdmissaoController extends Controller
             'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
             'lista_sexos' => Curriculo::TIPOS_SEXOS,
             'lista_estados_civis' => Curriculo::ESTADOS_CIVIS,
+            'permissoes' => [
+                'filtrar_demitido' => auth()->user()->can('admissao_historico_filtrar_demitido')
+            ],
         ];
         return Sistema::pg($pg, $dados);
     }
