@@ -110,7 +110,7 @@
                     CNH: <br>
                     <strong>{{ $dados['dados_colaborador']->ParecerRh->cnh ? $dados['dados_colaborador']->ParecerRh->cnh_tipo : 'Não possui' }}</strong>
                 </td>
-                <td rowspan="4" style="width: 4cm; height: 3cm">
+                <td rowspan="4" style="width: 3cm; height: 4cm">
                     @if (count($dados['dados_colaborador']->Curriculo->FotoTres)>0)
                         <img
                             src="{{env('AWS_URL')}}/arquivos/{{  $dados['dados_colaborador']->Curriculo->FotoTres[0]->disco }}/{{ $dados['dados_colaborador']->Curriculo->FotoTres[0]->thumb }}"
