@@ -165,7 +165,7 @@
                     <strong>{{ $dados['dados_colaborador']->Curriculo->endereco_completo }}</strong></td>
             </tr>
 
-            @if(!empty($dados['dados_colaborador']->Curriculo->Dependentes))
+            @if(isset($dados['dados_colaborador']->Curriculo->Dependentes))
                 <tr>
                     <th colspan="4">DEPENDENTES</th>
                     <th></th>
