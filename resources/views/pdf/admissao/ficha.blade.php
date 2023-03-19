@@ -4,7 +4,7 @@
     <div style="margin-left: 9px">
         @include('layouts.cabecalioFilialEmpresaJob')
 
-        <h2 class="text-center">FICHA DO COLABORADOR</h2>
+        <h2 class="text-center">FICHA DO EMPREGADO</h2>
 
 
         {{--        <table width="97%" style="border: 1px solid #666666; padding: 8px 17px 15px">--}}
