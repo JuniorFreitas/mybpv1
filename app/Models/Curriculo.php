@@ -287,6 +287,7 @@ class Curriculo extends Model
     {
         return \Crypt::encrypt($this->id);
     }
+
     const ESTADO_CIVIL_SOLTEIRO = 'SOLTEIRO(A)';
     const ESTADO_CIVIL_CASADO = 'CASADO(A)';
     const ESTADO_CIVIL_DIVORCIADO = 'DIVORCIADO(A)';
@@ -635,6 +636,12 @@ class Curriculo extends Model
     public function EmailsPreAdmissao()
     {
         return $this->hasMany(EmailPreAdmissao::class, 'curriculo_id', 'id');
+    }
+
+    public static function getTelPrincipal($curriculo_id)
+    {
+        $TelPrincipal = TelefoneCurriculo::whereCurriculoId($curriculo_id)->wherePrincipal(true)->first();
+        return $TelPrincipal ? $TelPrincipal->numero . " ({$TelPrincipal->tipo})" : null;
     }
 
     //Scopo de ClienteID (Empresa)
