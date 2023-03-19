@@ -511,8 +511,8 @@
         }
 
         .table_ficha img {
-            width: 4cm;
-            height: 3cm;
+            height: 4cm;
+            width: 3cm;
             float: right;
             /*margin-right: 50px;*/
         }
