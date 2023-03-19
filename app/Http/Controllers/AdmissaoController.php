@@ -1676,7 +1676,7 @@ class AdmissaoController extends Controller
         ])->find(\Crypt::decrypt($fc_token))
             ->load(
                 'ResultadoIntegrado:id,feedback_id',
-                'Admissao:id,filial,centro_custo_filial_id,feedback_id'
+                'Admissao'
             );
 
         $dados = [
