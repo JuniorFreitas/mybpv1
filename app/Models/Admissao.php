@@ -849,7 +849,7 @@ class Admissao extends Model
 
     public static function getNumeroSupervisor($cliente_id, $area_etiqueta_id)
     {
-        return ClienteAreaEtiqueta::whereClienteId($cliente_id)->whereAreaEtiquetaId($area_etiqueta_id)->first()->numero_supervisor;
+        return ClienteAreaEtiqueta::select('numero_supervisor')->whereClienteId($cliente_id)->whereAreaEtiquetaId($area_etiqueta_id)->first()->numero_supervisor ?? 'NÃO ENCONTRADO';
     }
 
     public function CentroCustoFilial()

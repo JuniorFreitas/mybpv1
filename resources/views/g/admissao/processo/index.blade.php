@@ -1359,7 +1359,6 @@
                 </div>
             </div>
 
-
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <div class="form-group">
                     <label>Estado</label>
@@ -1381,6 +1380,18 @@
                     <label for="">Tipo admissão</label>
                     <select2 :settings="settings2" :options="listaTipoAdmissao" @change="atualizar"
                              :disabled="controle.carregando" v-model="controle.dados.campoTipoAdmissao"></select2>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-2" v-if="permissoes.filtrar_demitido">
+                <div class="form-group">
+                    <label>Por Demitido</label>
+                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                            @change.prevent="filtrarDemitidos=controle.dados.campoDemitido"
+                            v-model="controle.dados.campoDemitido">
+                        <option :value="true">Sim</option>
+                        <option :value="false">Não</option>
+                    </select>
                 </div>
             </div>
 
@@ -1568,6 +1579,7 @@
                     <td>
                         @can('admissao_pos_admissao_insert')
                             <button class="btn btn-sm btn-primary mb-2" content="Admitir" v-tippy
+                                    v-if="!filtrarDemitidos"
                                     @click.prevent="formEntrevistar(item.id); visualizar = false"
                                     data-toggle="modal"
                                     data-target="#janelaCadastrar">
