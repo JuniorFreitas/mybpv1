@@ -328,11 +328,12 @@ class ControleExameController extends Controller
         $resultado = $resultado->paginate($request->pages);
 
         $items = collect($resultado->items())->transform(function ($item) {
-            $exameFuncionario = \DB::table('exame_funcionarios')->where('feedback_id',$item->id)->orderByDesc('id')->first();
-//            $exameFuncionario = ExameFuncionario::whereFeedbackId($item->id)->orderByDesc('id')->first();
-//            dd($exameFuncionario);
-//            $item->ultimo_encaminhamento = is_null($exameFuncionario->encaminhamento_data) ? (new DataHora($exameFuncionario->created_at))->dataCompleta() : $exameFuncionario->encaminhamento_data;
-            $item->ultimo_encaminhamento = $exameFuncionario->encaminhamento_data;
+            $exameFuncionario = ExameFuncionario::whereFeedbackId($item->id)->orderByDesc('id')->first();
+            $item->ultimo_encaminhamento = 'Sem encaminhamento';
+            if (!is_null($exameFuncionario)) {
+                $item->ultimo_encaminhamento = is_null($exameFuncionario->encaminhamento_data) ? (new DataHora($exameFuncionario->created_at))->dataCompleta() : $exameFuncionario->encaminhamento_data;
+                return $item;
+            }
             return $item;
         });
 
