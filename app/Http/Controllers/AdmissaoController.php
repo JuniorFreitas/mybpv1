@@ -16,7 +16,9 @@ use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
 use App\Models\EmpresaConfig;
 use App\Models\EmpresaExame;
+use App\Models\ExameFuncionario;
 use App\Models\FeedbackCurriculo;
+use App\Models\Formulario;
 use App\Models\Pcmso;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
@@ -307,9 +309,38 @@ class AdmissaoController extends Controller
                 is_null($dados['resultado_integrado']['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
                 is_null($dados['resultado_integrado']['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
 
+                if(!is_null($empresaExame) && !is_null($tipo_pcmso)){
+                    $empresaExameId = $dados['resultado_integrado']['empresa_exame_id'];
+                    $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
+                    $token = Sistema::uuid();
+                    $exame_tipo_id = 1;
+                    $empresa_id = auth()->user()->empresa_id;
+                    $pcmso_id = $dados['resultado_integrado']['pcmso_id'];
+                    $encaminhamento_data = $dadosResultadoIntegrado['encaminhado_exame_data'];
+
+                    $temExameFuncionario = ExameFuncionario::whereFeedbackId($feedback->id)
+                                                           ->whereEmpresaExameId($empresaExameId)
+                                                           ->where('exame_tipo_id', $exame_tipo_id)
+                                                           ->where('pcmso_id', $pcmso_id)
+                                                           ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
+
+                    if(is_null($temExameFuncionario)) {
+                        $exameFuncionario = ExameFuncionario::create([
+                            'feedback_id' => $feedback->id,
+                            'empresa_id' => $empresa_id,
+                            'empresa_exame_id' => $empresaExameId,
+                            'formulario_id' => $formulario_id,
+                            'respostas' => (object) [],
+                            'token' => $token,
+                            'pcmso' => true,
+                            'pcmso_id' => $pcmso_id,
+                            'exame_tipo_id' => $exame_tipo_id,
+                            'encaminhamento_data' => $encaminhamento_data
+                        ]);
+                    }
+                }
+
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dadosResultadoIntegrado, $empresaExame, $tipo_pcmso);
-
-
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
 
                 //Cria Usuario na Empresa
@@ -374,7 +405,6 @@ class AdmissaoController extends Controller
                         'ativo' => true,
                         'user_alterou_id' => auth()->id()
                     ]);
-
                 }
 
                 $datas = [];
@@ -441,7 +471,6 @@ class AdmissaoController extends Controller
                     $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback['id'])->first();
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
-
 
             } else {
 
@@ -1083,6 +1112,37 @@ class AdmissaoController extends Controller
                 $dadosResultadoIntegrado = $dados['resultado_integrado'];
 
                 $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
+
+                if(!is_null($dados['resultado_integrado']['empresa_exame_id']) && !is_null($dados['resultado_integrado']['pcmso_id'])){
+                    $empresaExameId = $dados['resultado_integrado']['empresa_exame_id'];
+                    $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
+                    $token = Sistema::uuid();
+                    $exame_tipo_id = 1;
+                    $empresa_id = auth()->user()->empresa_id;
+                    $pcmso_id = $dados['resultado_integrado']['pcmso_id'];
+                    $encaminhamento_data = $dadosResultadoIntegrado['encaminhado_exame_data'];
+
+                    $temExameFuncionario = ExameFuncionario::whereFeedbackId($feedback->id)
+                        ->whereEmpresaExameId($empresaExameId)
+                        ->where('exame_tipo_id', $exame_tipo_id)
+                        ->where('pcmso_id', $pcmso_id)
+                        ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
+
+                    if(is_null($temExameFuncionario)) {
+                        $exameFuncionario = ExameFuncionario::create([
+                            'feedback_id' => $feedback->id,
+                            'empresa_id' => $empresa_id,
+                            'empresa_exame_id' => $empresaExameId,
+                            'formulario_id' => $formulario_id,
+                            'respostas' => (object) [],
+                            'token' => $token,
+                            'pcmso' => true,
+                            'pcmso_id' => $pcmso_id,
+                            'exame_tipo_id' => $exame_tipo_id,
+                            'encaminhamento_data' => $encaminhamento_data
+                        ]);
+                    }
+                }
 
                 $dadosAdmissao = $admissaoDados['dados_admissoes'];
                 unset($admissaoDados['dados_admissoes']);

@@ -351,7 +351,9 @@ class ControleExameController extends Controller
     {
         if ($token) {
             $exame = ExameFuncionario::withoutGlobalScope(new ScopeEmpresa())
-                ->with(['Formulario' => function ($query) {
+                ->with(['PcmsoDados' => function ($query) {
+                    $query->withoutGlobalScope(new ScopeEmpresa());
+                }])->with(['Formulario' => function ($query) {
                     $query->withoutGlobalScope(new ScopeEmpresa());
                 }])->with(['EmpresaExame' => function ($query) {
                     $query->withoutGlobalScope(new ScopeEmpresa());

@@ -13,38 +13,44 @@
             Estamos encaminhando   </span>{{ $exame->Feedback->Curriculo->nome }}
         , {{ $exame->Feedback->Curriculo->idade }} ANOS.<br /><br />
         <span>
-            Para fazer os seguintes exames</span>:
+            @if($exame->pcmso)
+                Para fazer os seguintes exames, conforme <strong>PCMSO: {{ $exame->PcmsoDados->label }}</strong>
+            @else
+                Para fazer os seguintes exames:
+            @endif
+        </span>
     </h5>
 
+    @if(!$exame->pcmso)
+        <div class="h5">
+            @foreach($exame->Formulario->Setores as $setor)
+                <br>
+                {{ $setor->nome == "EXAME DE ORDEM" ? "EXAMES" : $setor->nome}}
+                <br>
+                <div style='width: 100%; padding: 0.3cm 0 0 0.3cm; border: 1px solid #555555; line-height: 0.3cm'>
+                    @foreach($setor->Alternativas as $alternativa)
+                        @if($exame->respostas['alternativa_id_' . $alternativa->id]['valor'])
+                            @if($alternativa->tipo == 'select')
+                                {{ $alternativa->nome }}
+                                :  {{\App\Models\RespostaAlternativas::find($exame->respostas['alternativa_id_' . $alternativa->id]['valor'])->label}}
+                                <br>
+                            @endif
+                            @if($alternativa->tipo == 'checkbox')
+                                {{$exame->respostas['alternativa_id_' . $alternativa->id]['valor'] ? "(X)" : "( )"}} {{ $alternativa->nome }}
+                                <br>
+                            @endif
+                            @if($alternativa->tipo == 'text')
+                                    {{ $alternativa->nome }}: {{$exame->respostas['alternativa_id_' . $alternativa->id]['valor']}}
+                                <br>
+                            @endif
+                            <br>
+                        @endif
+                    @endforeach
+                </div>
+            @endforeach
 
-    <div class="h5">
-        @foreach($exame->Formulario->Setores as $setor)
-            <br>
-            {{ $setor->nome == "EXAME DE ORDEM" ? "EXAMES" : $setor->nome}}
-            <br>
-            <div style='width: 100%; padding: 0.3cm 0 0 0.3cm; border: 1px solid #555555; line-height: 0.3cm'>
-                @foreach($setor->Alternativas as $alternativa)
-                    @if($exame->respostas['alternativa_id_' . $alternativa->id]['valor'])
-                        @if($alternativa->tipo == 'select')
-                            {{ $alternativa->nome }}
-                            :  {{\App\Models\RespostaAlternativas::find($exame->respostas['alternativa_id_' . $alternativa->id]['valor'])->label}}
-                            <br>
-                        @endif
-                        @if($alternativa->tipo == 'checkbox')
-                            {{$exame->respostas['alternativa_id_' . $alternativa->id]['valor'] ? "(X)" : "( )"}} {{ $alternativa->nome }}
-                            <br>
-                        @endif
-                        @if($alternativa->tipo == 'text')
-                                {{ $alternativa->nome }}: {{$exame->respostas['alternativa_id_' . $alternativa->id]['valor']}}
-                            <br>
-                        @endif
-                        <br>
-                    @endif
-                @endforeach
-            </div>
-        @endforeach
-
-    </div>
+        </div>
+    @endif
 
 
     <h5 style='text-align: center; padding-top: 1.5cm'>
