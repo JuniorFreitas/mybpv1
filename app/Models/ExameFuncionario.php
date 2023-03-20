@@ -7,6 +7,7 @@ use App\Scopes\ScopeEmpresa;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use MasterTag\DataHora;
 
 /**
  * App\Models\ExameFuncionario
@@ -75,6 +76,24 @@ class ExameFuncionario extends Model
         "exame_tipo_id" => 'int',
         'encaminhamento_data' => 'date:d/m/Y',
     ];
+
+    public function getEncaminhamentoDataAttribute($value)
+    {
+        if ($value) {
+            $data = new DataHora($this->attributes['encaminhamento_data']);
+            return $data->dataCompleta();
+        }
+    }
+
+    //Modificador ->encaminhamento_data
+    public function setEncaminhamentoDataAttribute($value)
+    {
+        $this->attributes['encaminhamento_data'] = null;
+        if ($value) {
+            $data = new DataHora($value);
+            $this->attributes['encaminhamento_data'] = $data->dataInsert();
+        }
+    }
 
     protected function serializeDate(DateTimeInterface $date) {
         return $date->format('Y-m-d H:i:s');
