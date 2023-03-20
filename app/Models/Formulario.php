@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Formulario extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
 
     protected $table = 'formularios';
     protected $fillable = ['titulo', 'descricao', 'empresa_id'];
@@ -51,6 +52,6 @@ class Formulario extends Model
             $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
         });
 
-        static::addGlobalScope(new ScopeEmpresa());
+//        static::addGlobalScope(new ScopeEmpresa());
     }
 }

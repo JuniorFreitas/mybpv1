@@ -2,13 +2,15 @@ import Dados from "../../components/entrevistas/DadosPessoaisTexto";
 import Formulario from "../../components/FormularioDefault";
 import Upload from "../../components/Upload";
 import validacoes from "../../mixins/Validacoes";
+import DatePicker from "../../components/DatePicker.vue";
 
 const app = new Vue({
     el: "#app",
     components: {
         Formulario,
         Dados,
-        Upload
+        Upload,
+        DatePicker
     },
     mixins: [validacoes],
     data: {
@@ -66,6 +68,9 @@ const app = new Vue({
             empresa_exame_id: "",
             empresa_id: 0,
             envia_email: false,
+            pcmso_id: "",
+            exame_tipo_id: "",
+            encaminhamento_data: "",
         },
 
         formDefault: null,
@@ -88,6 +93,8 @@ const app = new Vue({
         lista: [],
         listaEmpresasExames: [],
         historico: [],
+        listaPcmsos: [],
+        listaExameTipos: [],
 
         controle: {
             carregando: true,
@@ -137,6 +144,10 @@ const app = new Vue({
             let resultado = totalItens === totalEncontrado;
             this.selecionaTudo = resultado;
             return resultado;
+        },
+
+        dataHoje() {
+            return new Date(Date.now()).toLocaleString().split(',')[0];
         }
     },
     methods: {
@@ -188,6 +199,8 @@ const app = new Vue({
                 this.cadastrando = true;
                 this.editando = false;
                 this.historico = data.historico;
+                this.listaPcmsos = data.pcmsos;
+                this.listaExameTipos = data.exame_tipos;
                 // } else {
                 //     this.editando = true
                 //     this.cadastrando = false
@@ -217,6 +230,9 @@ const app = new Vue({
                     respostas: this.form.respostas,
                     tipo: "store",
                     envia_email: this.form.envia_email,
+                    pcmso_id: this.form.pcmso_id,
+                    exame_tipo_id: this.form.exame_tipo_id,
+                    encaminhamento_data: this.form.encaminhamento_data,
                 }).then(res => {
                     let data = res.data;
                     mostraSucesso("", "Exame cadastrado com sucesso!");

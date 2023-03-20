@@ -244,7 +244,57 @@
                             </div>
                         </fieldset>
 
-                        <formulario :model='form' :formulario_id='form.formulario.id' v-if='form.formulario'
+                        <fieldset>
+                            <legend class="text-uppercase">DATA DO ENCAMINHAMENTO</legend>
+                            <div class='row'>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                                    <datepicker
+                                        label=""
+                                        style="margin-top: -19px;"
+                                        :disabled="visualizar || disabled"
+                                        v-model="form.encaminhado_exame_data"
+                                        :min="dataHoje"
+                                    ></datepicker>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend class="text-uppercase">PCMSO</legend>
+                            <div class='row'>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                                    <div class="form-group">
+                                        <select class='form-control' v-model='form.pcmso_id'>
+                                            <option value=''>Nenhum</option>
+                                            <option v-for='pcmso in listaPcmsos' :value='pcmso.id'>
+                                                @{{ pcmso.label }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset v-if='form.pcmso_id'>
+                            <legend class="text-uppercase">Tipo de Ordem</legend>
+                            <div class='row'>
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                                    <div class="form-group">
+                                        <select class='form-control' v-model='form.exame_tipo_id'
+                                                onblur='valida_campo_vazio(this,1)'
+                                                onchange='valida_campo_vazio(this,1)'
+                                        >
+                                            <option value=''>Selecione</option>
+                                            <option v-for='exame_tipo in listaExameTipos' :value='exame_tipo.id'>
+                                                @{{ exame_tipo.label }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <formulario :model='form' :formulario_id='form.formulario.id' v-if='form.formulario && form.pcmso_id.length===0'
                                     :mostra_titulo='false'></formulario>
 
 
@@ -263,6 +313,7 @@
                                 <th>CÓD</th>
                                 <th>Tipo de exame</th>
                                 <th>Clinica</th>
+                                <th>PCSMO</th>
                                 <th>Encaminhado Por</th>
                                 <th>Data do Encaminhamento</th>
                                 <th></th>
@@ -273,8 +324,9 @@
                                 <td>@{{ item.id }}</td>
                                 <td>@{{ item.tipo_exame }}</td>
                                 <td>@{{ item.empresa_exame.nome }}</td>
+                                <td>@{{ item.pcmso_label }}</td>
                                 <td>@{{ item.quem_encaminhou.nome }}</td>
-                                <td>@{{ item.created_at }}</td>
+                                <td>@{{ item.encaminhamento_data }}</td>
                                 <td>
                                     <form :action="`${URL_ADMIN}/controle-exames/ficha-encaminhamento/${item.id}`"
                                           target="_blank" method="post">

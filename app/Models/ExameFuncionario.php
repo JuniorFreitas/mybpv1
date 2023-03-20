@@ -52,7 +52,11 @@ class ExameFuncionario extends Model
         "respostas",
         "empresa_exame_id",
         "user_encaminhou_id",
-        "token"
+        "token",
+        "pcmso",
+        "pcmso_id",
+        "exame_tipo_id",
+        "encaminhamento_data",
     ];
 
     protected $casts = [
@@ -66,6 +70,10 @@ class ExameFuncionario extends Model
         "token" => 'string',
         'created_at' => 'datetime:d/m/Y à\s H:i\h',
         'updated_at' => 'datetime:d/m/Y à\s H:i\h',
+        "pcmso" => 'boolean',
+        "pcmso_id" => 'int',
+        "exame_tipo_id" => 'int',
+        'encaminhamento_data' => 'date:d/m/Y',
     ];
 
     protected function serializeDate(DateTimeInterface $date) {
@@ -94,6 +102,16 @@ class ExameFuncionario extends Model
     public function Feedback()
     {
         return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
+    }
+
+    public function PcmsoDados()
+    {
+        return $this->hasOne(Pcmso::class, 'id', 'pcmso_id');
+    }
+
+    public function ExameTipo()
+    {
+        return $this->hasOne(ExameTipo::class, 'id', 'exame_tipo_id');
     }
 
 

@@ -12,8 +12,10 @@ use App\Models\Curriculo;
 use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
 use App\Models\Examesesmt;
+use App\Models\ExameTipo;
 use App\Models\FeedbackCurriculo;
 use App\Models\Formulario;
+use App\Models\Pcmso;
 use App\Models\RespostaAlternativas;
 use App\Models\Sistema;
 use App\Models\User;
@@ -36,19 +38,30 @@ class ControleExameController extends Controller
         if ($request->filled('feedback_id') && $request->filled('formulario')) {
             $resposta = ExameFuncionario::whereFeedbackId($request->feedback_id)
                 ->whereFormularioId($request->formulario)
-                ->with('EmpresaExame:id,nome', 'QuemEncaminhou:id,nome','Formulario.Setores.Alternativas.Opcoes')
+                ->with('EmpresaExame:id,nome', 'QuemEncaminhou:id,nome','Formulario.Setores.Alternativas.Opcoes', 'PcmsoDados:id,label')
                 ->orderByDesc('created_at')->get();
 
             $resposta->transform(function ($item) {
-                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
-                $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;
+                if(is_null($item->exame_tipo_id)){
+                    $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
+                    $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;
+                }else{
+                    $item->tipo_exame = ExameTipo::find($item->exame_tipo_id)->label;
+                }
+                $item->encaminhamento_data = is_null($item->encaminhamento_data) ? (new DataHora($item->created_at))->dataCompleta() : (new DataHora($item->encaminhamento_data))->dataCompleta();
+                $item->pcmso_label = $item->pcmso ? $item->PcmsoDados->label : 'Não se aplica';
                 $item->resultado = Examesesmt::whereExameFuncionarioId($item->id)->first();
                 return $item;
             });
 
+            $pcmos = Pcmso::whereAtivo(true)->get();
+            $exame_tipos = ExameTipo::whereAtivo(true)->get();
+
             return [
                 'tipo' => 'cadastrar',
-                'historico' => $resposta
+                'historico' => $resposta,
+                'pcmsos' => $pcmos,
+                'exame_tipos' => $exame_tipos,
             ];
         } else {
             return response()->json(['msg' => "Erro -> Faltando parametros"], 400);
@@ -62,18 +75,40 @@ class ControleExameController extends Controller
             $token = Sistema::uuid();
 
             if ($request->tipo == 'store') {
-                $exame = ExameFuncionario::create([
-                    'feedback_id' => $request->feedback_id,
-                    'empresa_exame_id' => $request->empresa_exame_id,
-                    'formulario_id' => $request->formulario_id,
-                    'respostas' => $request->respostas,
-                    'token' => $token
-                ]);
-
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
-                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
-                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->label;
-//                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;;
+                $pcmso_id = $request->pcmso_id;
+
+                if(!$pcmso_id == ""){
+                    $exame_tipo_id = $request->exame_tipo_id;
+
+                    $exame = ExameFuncionario::create([
+                        'feedback_id' => $request->feedback_id,
+                        'empresa_exame_id' => $request->empresa_exame_id,
+                        'formulario_id' => $request->formulario_id,
+                        'respostas' => (object) [],
+                        'token' => $token,
+                        'pcmso' => true,
+                        'pcmso_id' => $pcmso_id,
+                        'exame_tipo_id' => $exame_tipo_id,
+                        'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert()
+                    ]);
+
+                    $tipoExame = ExameTipo::find($exame_tipo_id)->label;
+                }else {
+                    $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
+                    $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->label;
+
+                    $exame = ExameFuncionario::create([
+                        'feedback_id' => $request->feedback_id,
+                        'empresa_exame_id' => $request->empresa_exame_id,
+                        'formulario_id' => $request->formulario_id,
+                        'respostas' => $request->respostas,
+                        'token' => $token,
+                        'pcmso' => false,
+                        'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert()
+                    ]);
+                }
+
                 $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id'])->find($request->feedback_id);
 
                 if ($request->envia_email) {
@@ -105,7 +140,6 @@ class ControleExameController extends Controller
                     ];
 
                     JobExame::dispatch($dados_email);
-
                 }
 
                 \DB::commit();
@@ -293,13 +327,22 @@ class ControleExameController extends Controller
 
         $resultado = $resultado->paginate($request->pages);
 
+        $items = collect($resultado->items())->transform(function ($item) {
+            $exameFuncionario = \DB::table('exame_funcionarios')->where('feedback_id',$item->id)->orderByDesc('id')->first();
+//            $exameFuncionario = ExameFuncionario::whereFeedbackId($item->id)->orderByDesc('id')->first();
+//            dd($exameFuncionario);
+//            $item->ultimo_encaminhamento = is_null($exameFuncionario->encaminhamento_data) ? (new DataHora($exameFuncionario->created_at))->dataCompleta() : $exameFuncionario->encaminhamento_data;
+            $item->ultimo_encaminhamento = $exameFuncionario->encaminhamento_data;
+            return $item;
+        });
+
         $empresaExames = EmpresaExame::whereAtivo(true)->get();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items(), 'emp_exames' => $empresaExames]
+            'dados' => ['itens' => $items, 'emp_exames' => $empresaExames]
         ]);
     }
 
