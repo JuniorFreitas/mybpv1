@@ -141,6 +141,8 @@ const app = new Vue({
                 vencimento: '',
                 treinamentos: '',
                 treinamentos_selecionados: [],
+                campoPeriodoTreinado: false,
+                periodoTreinado: '',
             }
         }
     },
