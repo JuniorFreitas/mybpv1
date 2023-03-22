@@ -112,11 +112,7 @@ class AvaliacaoResultado extends Model
     //Modificador ->data_inicio
     public function setInicioAttribute($value)
     {
-        if ($value) {
-            $dt = $value.' 00:00:00';
-            $data = new DataHora($dt);
-            $this->attributes['inicio'] = $data->dataInsert();
-        }
+        $this->attributes['inicio'] = (new DataHora($value))->dataInsert();
     }
 
     //Acessor ->data_fim
@@ -134,7 +130,8 @@ class AvaliacaoResultado extends Model
         $this->attributes['termino'] = (new DataHora($value))->dataInsert();
     }
 
-    public function Topico(){
+    public function Topico()
+    {
         return $this->hasOne(AvaliacaoTopico::class, 'id', 'topico_id');
     }
 
