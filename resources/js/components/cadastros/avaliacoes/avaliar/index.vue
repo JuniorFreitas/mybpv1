@@ -120,10 +120,10 @@
                                     </div>
                                 </div>
 
-                                <div class="col-lg-4">
+                                <div class="col-lg-12">
                                     <div class="form-group">
                                         <label for="">Plano de Ação</label>
-                                        <textarea rows="3" class="form-control form-control-sm validacampo"
+                                        <textarea rows="5" class="form-control form-control-sm validacampo"
                                                   v-model="item.plano_de_acao"
                                                   @blur.prevent="valida_campo_vazio($event.target, 1)"
                                                   :disabled="visualizando"></textarea>
