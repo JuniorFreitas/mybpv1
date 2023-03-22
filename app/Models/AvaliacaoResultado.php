@@ -131,11 +131,7 @@ class AvaliacaoResultado extends Model
     //Modificador ->data_fim
     public function setTerminoAttribute($value)
     {
-        if ($value) {
-            $dt = $value.' 00:00:00';
-            $data = new DataHora($dt);
-            $this->attributes['termino'] = $data->dataInsert();
-        }
+        $this->attributes['termino'] = (new DataHora($value))->dataInsert();
     }
 
     public function Topico(){
