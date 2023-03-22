@@ -85,8 +85,8 @@ class AvaliacaoResultado extends Model
         'plano_de_acao' => 'string',
         'responsavel' => 'string',
         'empresa_id' => 'int',
-        'inicio' => 'date:d/m/Y',
-        'termino' => 'date:d/m/Y',
+        'inicio' => 'string',
+        'termino' => 'string',
         'status' => 'string',
         'dados_extras' => 'json',
     ];
