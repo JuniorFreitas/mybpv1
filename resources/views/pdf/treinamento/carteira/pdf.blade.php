@@ -5,7 +5,7 @@
     <div style="padding: 20px">
         <?php $cont = 0; ?>
         @foreach($treinamentos as $treinamento)
-                <table style="border: 0.1mm solid; width:14.80cm;">
+                <table style="border: 0.1mm solid; width:14.80cm; margin-bottom: 3px;">
                     <tr>
                         <td style="width: 50%; height: 8.30cm; vertical-align: top;">
                             <table>
@@ -54,27 +54,23 @@
                                         </ul>
                                     </td>
                                 </tr>
-{{--                                <tr style="background: url({{asset('images/carteira/rodape_carteira_alumar.webp')}});--}}
-{{--                                           background-size: 100%;--}}
-{{--                                           background-repeat: no-repeat;--}}
-{{--                                           background-position-x: 0mm;--}}
-{{--                                           background-position-y: 1.6mm">--}}
+
                                 <tr>
                                     <td style="padding-bottom: 1mm;
                                                padding-top: 1mm;">
                                         <div style="width: 50%; font-size: 5.5pt; text-align: right; float: left;">
-                                            @if(count(auth()->user()->Empresa->CarteiraAssinaturaSesmt()->Anexos) > 0)
+                                            @if(auth()->user()->Empresa->CarteiraAssinaturaSesmt() && count(auth()->user()->Empresa->CarteiraAssinaturaSesmt()->Anexos) > 0)
                                                 <img src="{{ \App\Models\Sistema::convertBase3(auth()->user()->Empresa->CarteiraAssinaturaSesmt()->Anexos[0]->urlThumb,true) }}" alt="" style="width: 63%; margin-right: 0.5cm">
                                             @else
                                                 <table style="width: 100%; padding: 2mm">
                                                     <tr>
                                                         <td style="text-align: center">
-                                                            <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome : 'Não informado' }}</span>
+                                                            <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome ?? 'Não informado' }}</span>
                                                         </td>
                                                     </tr>
                                                     <tr>
                                                         <td style="text-align: center; border-top: 0.3mm solid; padding-bottom: -50px !important;">
-                                                            {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt() ? auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo : 'Não informado' }}
+                                                            {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo ?? 'Não informado' }}
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -82,17 +78,17 @@
                                         </div>
 
                                         <div style="width: 50%; font-size: 5.5pt; text-align: left; float: left;">
-                                            @if(count(auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->Anexos) > 0)
+                                            @if(auth()->user()->Empresa->CarteiraAssinaturaGestorRh() && count(auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->Anexos) > 0)
                                                 <img src="{{ \App\Models\Sistema::convertBase3(auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->Anexos[0]->urlThumb,true) }}" alt="" style="width: 55%; margin-left: 0.5cm">
                                             @else
                                                 <table style="width: 100%; padding: 2mm">
                                                     <tr>
                                                         <td style="text-align: center">
-                                                            <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ? auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome : 'Não informado' }}</span>
+                                                            <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome ?? 'Não informado' }}</span>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td style="text-align: center; border-top: 0.3mm solid;">{{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh() ? auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo : 'Não informado' }}</td>
+                                                        <td style="text-align: center; border-top: 0.3mm solid;">{{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo ?? 'Não informado' }}</td>
                                                     </tr>
                                                 </table>
                                             @endif

@@ -75,7 +75,6 @@ class Treinamento extends Model
 
     protected $fillable = [
         'feedback_id',
-        'treinamento_id',
         'cadastrou',
         'tipo',
         'gerou_id',
@@ -91,7 +90,6 @@ class Treinamento extends Model
     protected $casts = [
         'id' => 'int',
         'feedback_id' => 'int',
-        'treinamento_id' => 'int',
         'cadastrou' => 'int',
         'tipo' => 'string',
         'gerou_id' => 'int',
