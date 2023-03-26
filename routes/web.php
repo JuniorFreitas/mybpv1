@@ -971,6 +971,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
         Route::group(['as' => 'vencimentoasos.'], function () {
             Route::get('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'index'])->name('index')->middleware('can:relatorio_asos');
+            Route::get('tipos-exames', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'tiposExames'])->name('tiposExames')->middleware('can:relatorio_asos');
             Route::post('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'show'])->name('show')->middleware('can:relatorio_asos');
         });
         Route::group(['as' => 'medidasadministrativas.'], function () {

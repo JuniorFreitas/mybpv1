@@ -355,9 +355,7 @@ class AdmissaoController extends Controller
                 if ($feedback->Admissao) {
                     $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
                     if (!empty($ultimo_aso_ativo_dados['data_aso'])) {
-
                         $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
-
                         if ($tem_aso->count() > 0) {
                             $UltimoAsoColaborador = $tem_aso->where('data_aso',
                                 (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);

@@ -110,7 +110,7 @@ class ExameFuncionario extends Model
     }
 
     public function Sesmt(){
-        return $this->hasOne(Examesesmt::class, 'id', 'exame_funcionario_id');
+        return $this->hasOne(Examesesmt::class, 'exame_funcionario_id', 'id');
     }
 
     public function QuemEncaminhou()

@@ -816,6 +816,22 @@ class FeedbackCurriculo extends Model
         return $this->belongsToMany(Cih::class, 'cih_feedback', 'feedback_id', 'cih_id');
     }
 
+    public function ExamesFuncionario()
+    {
+        return $this->hasOne(ExameFuncionario::class, 'feedback_id', 'id');
+    }
+
+    public function Sesmt(){
+        return $this->hasMany(Examesesmt::class, 'feedback_id', 'id');
+    }
+
+    public function UltimoAso(){
+        return $this->hasOne(Examesesmt::class, 'feedback_id', 'id')
+                    ->whereJsonContains('resultado->aprovado', 'Sim')
+                    ->whereExameRealizado(true)
+                    ->orderByDesc('data_vencimento');
+    }
+
 
     /**/
     //scopeManual

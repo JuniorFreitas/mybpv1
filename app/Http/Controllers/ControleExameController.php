@@ -44,7 +44,7 @@ class ControleExameController extends Controller
             $resposta->transform(function ($item) {
                 if(is_null($item->exame_tipo_id)){
                     $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
-                    $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;
+                    $item->tipo_exame = RespostaAlternativas::whereValue($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->first()->label;
                 }else{
                     $item->tipo_exame = ExameTipo::find($item->exame_tipo_id)->label;
                 }
@@ -78,6 +78,8 @@ class ControleExameController extends Controller
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
                 $pcmso_id = $request->pcmso_id;
 
+                // Select se tem
+
                 if(!$pcmso_id == ""){
                     $exame_tipo_id = $request->exame_tipo_id;
 
@@ -96,7 +98,7 @@ class ControleExameController extends Controller
                     $tipoExame = ExameTipo::find($exame_tipo_id)->label;
                 }else {
                     $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
-                    $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->label;
+                    $tipoExame = RespostaAlternativas::whereValue($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->first();
 
                     $exame = ExameFuncionario::create([
                         'feedback_id' => $request->feedback_id,
@@ -105,7 +107,8 @@ class ControleExameController extends Controller
                         'respostas' => $request->respostas,
                         'token' => $token,
                         'pcmso' => false,
-                        'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert()
+                        'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert(),
+                        'exame_tipo_id' => (int) $tipoExame->value,
                     ]);
                 }
 
@@ -115,11 +118,11 @@ class ControleExameController extends Controller
                     $dtEmailClinica = [
                         'clinica' => $empExame->nome,
                         'email' => trim(mb_strtolower($empExame->dados['email'])),
-                        'assunto' => "Encaminhamento de Exame {$tipoExame} colaborador {$colaborador->Curriculo->nome}",
+                        'assunto' => "Encaminhamento de Exame {$tipoExame->label} colaborador {$colaborador->Curriculo->nome}",
                         'colaborador' => $colaborador->Curriculo->nome,
                         'colaborador_email' => trim(mb_strtolower($colaborador->Curriculo->email)),
                         'idade' => $colaborador->Curriculo->idade,
-                        'tipoExame' => $tipoExame,
+                        'tipoExame' => $tipoExame->label,
                         'empresa_id' => $empExame->id,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
@@ -127,9 +130,9 @@ class ControleExameController extends Controller
                     $dtEmailColaborador = [
                         'clinica' => $empExame,
                         'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
-                        'assunto' => "Encaminhamento de Exame {$tipoExame}",
+                        'assunto' => "Encaminhamento de Exame {$tipoExame->label}",
                         'colaborador' => $colaborador->Curriculo->nome,
-                        'tipoExame' => $tipoExame,
+                        'tipoExame' => $tipoExame->label,
                         'empresa_id' => $empExame->id,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
@@ -186,6 +189,9 @@ class ControleExameController extends Controller
         $dados['data_vencimento'] = (new DataHora($dados['data_realizacao']))->addAno(1);
         $dados['vencido'] = false;
 
+        $feedback_id = ExameFuncionario::find($dados['exame_funcionario_id'])->feedback_id;
+        $dados['feedback_id'] = $feedback_id;
+
         $dadosValidados = \Validator::make($dados, []);
 
         if ($dados['exame_realizado']) {
@@ -210,6 +216,17 @@ class ControleExameController extends Controller
         try {
             \DB::beginTransaction();
             $Examesesmt = Examesesmt::create($dados);
+
+            if($dados['resultado']['aprovado'] == "Sim"){
+                Examesesmt::whereFeedbackId($feedback_id)->update([
+                    'atual' => 0
+                ]);
+
+                $Examesesmt->update([
+                    'atual' => 1
+                ]);
+            }
+
             foreach ($dados['anexos'] as $item) {
                 $Examesesmt->Anexos()->attach($item['id']);
                 $Examesesmt->Anexos()->where('id', $item['id'])
@@ -284,6 +301,17 @@ class ControleExameController extends Controller
             }
 
             $resultado->update($dados);
+
+            if($dados['resultado']['aprovado'] == "Sim") {
+
+                Examesesmt::whereFeedbackId($resultado->feedback_id)->update([
+                    'atual' => 0
+                ]);
+
+                $resultado->update([
+                    'atual' => 1
+                ]);
+            }
 
             \DB::commit();
             return response()->json([], 201);

@@ -1,5 +1,70 @@
 <template>
     <div>
+        <fieldset class="mt-2">
+            <legend>Filtro</legend>
+            <form class="row" @submit.prevent="$refs.componente.buscar()">
+                <div class="col-12 col-md-6">
+                    <div class="form-check" style="margin-bottom: -11px;">
+                        <input type="checkbox" class="form-check-input" @change="buscarDados()"
+                               :disabled="preload"
+                               id="filtroVencimento"
+                               v-model="controle.dados.filtroVencimento">
+                        <label class="form-check-label cursor-pointer" for="filtroVencimento">Por período de
+                            vencimento</label>
+                    </div>
+                    <div class="form-group">
+                        <datepicker range formsm label="" @onselect="buscarDados()"
+                                    :disabled="controle.carregando || !controle.dados.filtroVencimento"
+                                    v-model="controle.dados.campoVencimento"></datepicker>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        <label>Pesquisar</label>
+                        <input type="text"
+                               placeholder="Buscar por colaborador"
+                               autocomplete="off"
+                               class="form-control form-control-sm" :disabled="preload"
+                               v-model="controle.dados.campoBusca">
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        <label>Tipos de Exame</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoTipoExame"
+                                :disabled="preload" @change="buscarDados()">
+                            <option value="">Todos os tipos</option>
+                            <option v-for="item in listaTiposExame" :value="item.id">{{ item.label }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        <label>Vencido</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoVencido"
+                                :disabled="preload" @change="buscarDados()">
+                            <option value="">Indiferente</option>
+                            <option :value="true">Sim</option>
+                            <option :value="false">Não</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12"></div>
+            </form>
+
+            <div class="d-flex">
+                <button type="button" class="btn btn-sm btn-success mr-1" :disabled="preload"
+                        @click="buscarDados()">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                    Atualizar
+                </button>
+            </div>
+        </fieldset>
+        <preload v-show="preload" class="text-center"></preload>
         <div v-if="!preload">
            <p class="py-3 mt-3">
                <i class="fas fa-circle text-danger ml-2"></i>
@@ -17,6 +82,7 @@
                     <th style="text-align: center">Nome</th>
                     <th style="text-align: center">Cargo</th>
                     <th style="text-align: center">Data da Admissão</th>
+                    <th style="text-align: center">Tipo de Exame</th>
                     <th style="text-align: center">Data do ASO</th>
                     <th style="text-align: center">Data de Vencimento</th>
                     <th style="text-align: center">Dias</th>
@@ -28,14 +94,14 @@
                     <td style="text-align: center">{{ vencimento.colaborador }}</td>
                     <td style="text-align: center">{{ vencimento.cargo }}</td>
                     <td style="text-align: center">{{ vencimento.data_admissao }}</td>
-                    <td style="text-align: center">{{ vencimento.data_aso === vencimento.data_aso_adm ? vencimento.data_aso :'Entrar em contato com suporte'  }}</td>
+                    <td style="text-align: center">{{ vencimento.exame_tipo }}</td>
+                    <td style="text-align: center">{{ vencimento.data_aso }}</td>
                     <td style="text-align: center">{{ vencimento.data_vencimento }}</td>
                     <td style="text-align: center">
                         {{ Math.abs(vencimento.dias_vencer) }}
                         <span class="p-1 badge badge-danger" v-if="vencimento.dias_vencer < 0">VENCIDO</span>
                         <span class="p-1 badge badge-info" v-else>A VENCER</span>
                     </td>
-
                 </tr>
                 </tbody>
             </table>
@@ -44,24 +110,42 @@
 </template>
 
 <script>
+import configselect2 from "../../Select2/mixSelec2";
+import ExportacaoMixin from "../../../mixins/Exportacoes";
+import Utils from "../../../mixins/Utils";
+import Validacoes from "../../../mixins/Validacoes";
 
     export default {
+        mixins: [configselect2, ExportacaoMixin, Utils, Validacoes],
         data() {
             return {
                 hash: String(Math.random()).substr(2),
 
                 preload: false,
-                dados: []
+                dados: [],
+                listaTiposExame: [],
+                controle: {
+                    carregando: false,
+                    dados: {
+                        campoBusca: "",
+                        campoTipoExame: "",
+                        campoVencido: "",
+                        filtroVencimento: false,
+                        campoVencimento: "",
+                    }
+                }
             }
         },
         mounted() {
             this.buscarDados();
+            this.tiposExames();
         },
         methods: {
             buscarDados() {
                 this.preload = true;
-                axios.post(`${URL_ADMIN}/relatorios/vencimentoasos`).then(res => {
+                axios.post(`${URL_ADMIN}/relatorios/vencimentoasos`, this.controle.dados).then(res => {
                     this.dados = res.data;
+                    // this.listaTiposExame = this.dados.lista_tipos_exame;
                     this.preload = false;
                 })
             },
@@ -69,8 +153,12 @@
                 // let link = `${URL_ADMIN}/relatorios/controleusuarios/pdf/${this.form}`;
                 // open(link, '_blank');
             },
+            tiposExames() {
+                axios.get(`${URL_ADMIN}/relatorios/tipos-exames`).then(response => {
+                    this.listaTiposExame = response.data;
+                });
+            },
         }
-
     }
 </script>
 

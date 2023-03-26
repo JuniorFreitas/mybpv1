@@ -52,7 +52,9 @@ class Examesesmt extends Model
         'data_realizacao',
         'data_vencimento',
         'vencido',
+        'atual',
         'user_id',
+        'feedback_id'
     ];
 
     protected $casts = [
@@ -64,7 +66,9 @@ class Examesesmt extends Model
         'data_realizacao' => 'string',
         'data_vencimento' => 'string',
         'vencido' => 'boolean',
+        'atual' => 'boolean',
         'user_id' => 'int',
+        'feedback_id' => 'int',
     ];
 
     //Modificador ->data_realizacao
@@ -105,6 +109,11 @@ class Examesesmt extends Model
     public function Anexos()
     {
         return $this->belongsToMany(Arquivo::class, 'controle_exame_sesmt_anexos', 'examesesmt_id', 'arquivo_id');
+    }
+
+    public function ExameFuncionario()
+    {
+        return $this->hasMany(ExameFuncionario::class, 'id', 'exame_funcionario_id');
     }
 
     protected static function booted()
