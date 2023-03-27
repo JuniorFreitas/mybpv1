@@ -5,6 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('titulo','PDF MYBP')</title>
     <style>
         table.dados, table.dados th, table.dados td {
@@ -132,10 +133,10 @@
         }
 
     </style>
-
     @stack('style')
 </head>
 <body>
 @yield('conteudo')
+@stack('script')
 </body>
 </html>

@@ -15,7 +15,9 @@ use App\Models\User;
 use App\Rules\TenantUniqueRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MasterTag\DataHora;
+use PDF;
 
 class AvaliacaoController extends Controller
 {
@@ -208,7 +210,7 @@ class AvaliacaoController extends Controller
         $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
             $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
             $avaliacaoPar = clone $avaliacaoFeedbackFunc;
-            $avaliacaoPar = $avaliacaoPar->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->where('principal',false);
+            $avaliacaoPar = $avaliacaoPar->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->where('principal', false);
             $totalAvaliacaoPar = $avaliacaoPar->count();
             $totalAvaliacaoParConcluida = $avaliacaoPar->where('status', AvaliacaoFeedback::STATUS_CONCLUIDA)->count();
 
@@ -222,6 +224,10 @@ class AvaliacaoController extends Controller
             $item->pendente_autoavaliacao_colaborador = $item->avaliador_id != $item->funcionario_id && $item->status == 'Pendente' && !$item->fez_auto_avaliacao;
             $item->pendente_avaliacao_par = $totalAvaliacaoPar != $totalAvaliacaoParConcluida;
             $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
+            $item->token = \Crypt::encrypt($item->id);
+            $item->titulo_avaliacao = $item->Avaliacao->titulo;
+            $item->tipo_avaliacao = $item->Avaliacao->AvaliacaoTipo->nome;
+
             return $item;
         });
 
@@ -400,7 +406,7 @@ class AvaliacaoController extends Controller
             }
             DB::commit();
             return response()->json(['msg' => 'Avaliação concluída com sucesso']);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             $msg = "error UPDATE AVALIAR:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
@@ -409,9 +415,11 @@ class AvaliacaoController extends Controller
         }
     }
 
-    public function avaliarFinal(AvaliacaoFeedback $avaliacaoFeedback)
+    public function avaliarFinal($avaliacaoFeedback)
     {
         $this->authorize('avaliacoes_final');
+
+        $avaliacaoFeedback = AvaliacaoFeedback::find($avaliacaoFeedback);
 
         if (!$avaliacaoFeedback->principal || $avaliacaoFeedback->avaliador_id != auth()->id()) {
             return response()->json([
@@ -453,7 +461,7 @@ class AvaliacaoController extends Controller
                 'media' => array_sum($item) / count($item),
                 'avaliadores' => $avaliacoesFeedbacks->map(function ($item) use ($key) {
                     $nome_exp = explode(' ', $item->Avaliador->nome);
-                    $nome_avaliador = $nome_exp[0].' '.$nome_exp[count($nome_exp)-1];
+                    $nome_avaliador = $nome_exp[0] . ' ' . $nome_exp[count($nome_exp) - 1];
                     return [
                         'id' => $item->avaliador_id,
                         'comentario' => $item->comentario,
@@ -461,7 +469,6 @@ class AvaliacaoController extends Controller
                         'nota' => $item->respostas->where('topico_id', $key)->first()->nota
                     ];
                 }),
-                'media' => array_sum($item) / count($item),
                 'media_redonda' => round(array_sum($item) / count($item)),
             ];
         });
@@ -527,6 +534,7 @@ class AvaliacaoController extends Controller
             'area' => 'NÃO INFORMADO',
         ];
 
+
         if ($feedbackCurriculo) {
             $admissao = $feedbackCurriculo->Admissao;
             $dadosDoFuncionario = [
@@ -539,12 +547,14 @@ class AvaliacaoController extends Controller
         }
 
 
-        return response()->json([
+        return [
             'dados_do_funcionario' => $dadosDoFuncionario,
+            'dados_empresa' => Sistema::getEmpresaFilialMatriz($feedbackCurriculo->Admissao->centro_custo_filial_id, $feedbackCurriculo->empresa_id),
+            'solicitante' => User::select('nome')->find(auth()->id())->nome,
             'avaliador_principal' => $avaliacaoFeedback->wherePrincipal(true)->first()->Avaliador->nome,
             'status_avaliacao' => $avaliacaoFeedback->status,
             'total_aval' => $totalAval,
-            'nota_final' => (($totalAval / count($avaliacoesFeedbacks))/10)/2,
+            'nota_final' => (($totalAval / count($avaliacoesFeedbacks)) / 10) / 2,
             'resultado_topico_pai' => $topico_pai,
             'result_topico_pai_agrupado' => $result_topico_agrupado,
             'result_topico' => $resultTopico,
@@ -555,7 +565,22 @@ class AvaliacaoController extends Controller
             'gestor_id' => $avaliacaoFeedback->wherePrincipal(true)->first()->avaliador_id,
             'planos_acoes' => AvaliacaoResultado::with('Topico')->where('avaliacao_feedback_id', $avaliacaoFeedbackFuncionario->id)->where('gestor_id', $avaliacaoFeedback->wherePrincipal(true)->first()->avaliador_id)->get(),
             'planos_acoes_delete' => [],
-        ]);
+            'token' => \Crypt::encrypt($avaliacaoFeedback->id),
+            'titulo_avaliacao' => $avaliacaoFeedback->Avaliacao->titulo,
+            'tipo_avaliacao' => $avaliacaoFeedback->Avaliacao->AvaliacaoTipo->nome,
+        ];
+    }
+
+    public function imprimir($token)
+    {
+        $token = \Crypt::decrypt($token);
+        $dados = $this->avaliarFinal($token);
+
+        return view('pdf.avaliacoes.desempenho', compact('dados'));
+        $pdf = PDF::loadView('pdf.avaliacoes.desempenho', compact('dados'));
+        $pdf->setPaper('A4', 'portrait');
+        return $pdf->stream("desempenho_" . (new DataHora())->nomeUnico() . ".pdf");
+//        return view('g.avaliacoes.impressao', compact('dados'));
     }
 
     public function salvaAvaliacao(Request $request, AvaliacaoFeedback $avaliacaoFeedback)
@@ -583,17 +608,17 @@ class AvaliacaoController extends Controller
 
         }
 
-        try{
+        try {
             DB::beginTransaction();
 
-            if(isset($dados['planos_acoes_delete'])){
+            if (isset($dados['planos_acoes_delete'])) {
                 foreach ($dados['planos_acoes_delete'] as $lin) {
                     AvaliacaoResultado::find($lin)->delete();
                 }
             }
 
-            foreach($dados['planos_acoes'] as $item){
-                if(isset($item['nova'])){
+            foreach ($dados['planos_acoes'] as $item) {
+                if (isset($item['nova'])) {
                     //criar
                     $aval = AvaliacaoResultado::create([
                         'avaliacao_feedback_id' => $dados['avaliacao_feedback_id'],
@@ -607,7 +632,7 @@ class AvaliacaoController extends Controller
                     ]);
 
 
-                }else{
+                } else {
                     //atualizar
                     $aval = AvaliacaoResultado::find($item['id'])->update([
                         'topico_id' => $item['topico_id'],
@@ -621,16 +646,16 @@ class AvaliacaoController extends Controller
             }
 
             AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
-                             ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
-                             ->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA)
-                             ->update([
-                                'status' => AvaliacaoFeedback::STATUS_FINAL,
-                                'fim_feedback' => (new DataHora())->dataHoraInsert()
-                             ]);
+                ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
+                ->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA)
+                ->update([
+                    'status' => AvaliacaoFeedback::STATUS_FINAL,
+                    'fim_feedback' => (new DataHora())->dataHoraInsert()
+                ]);
 
             DB::commit();
             return response()->json([], 201);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             $msg = "error SALVAR AVALIAÇÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);

@@ -445,6 +445,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::get('avaliar/{avaliacaoFeedback}/edit', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarEdit'])->name('avaliarEdit')->middleware('can:avaliacoes_listar');
                 Route::put('avaliar/{avaliacaoFeedback}', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarUpdate'])->name('avaliarUpdate')->middleware('can:avaliacoes_listar');
                 Route::get('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarFinal'])->name('avaliarFinal')->middleware('can:avaliacoes_listar');
+                Route::get('avaliar/impressao/{token}', [\App\Http\Controllers\AvaliacaoController::class, 'imprimir'])->name('avaliarImprimir')->middleware('can:avaliacoes_listar');
                 Route::put('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'salvaAvaliacao'])->name('salvarAvaliacao')->middleware('can:avaliacoes_listar');
                 Route::get('avaliar', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarIndex'])->name('avaliarIndex')->middleware('can:avaliacoes_listar');
             });
