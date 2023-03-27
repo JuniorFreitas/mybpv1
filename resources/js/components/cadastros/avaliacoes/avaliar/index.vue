@@ -294,14 +294,14 @@
                         <td class="text-center">{{ item.avaliacao.titulo }}</td>
                         <td class="text-center">{{ item.avaliacao.avaliacao_tipo.nome }}</td>
                         <td class="text-center">{{ item.avaliacao.data_fim_prazo }}</td>
-                        <td class="text-center"><i class="fa fa-user"
-                                                   v-if="item.avaliador_id === item.funcionario_id"></i>
+                        <td class="text-center">
+                            <i class="fa fa-user" v-if="item.avaliador_id === item.funcionario_id"></i>
                             {{ item.funcionario.nome }}
                         </td>
                         <td class="text-center">
-                            <span v-show="item.origem_feedback == 'Funcionario' && !item.principal">Autoavaliação</span>
-                            <span v-show="item.origem_feedback == 'Avaliador' && !item.principal">Avaliador Par</span>
-                            <span v-show="item.origem_feedback == 'Avaliador' && item.principal">Avaliador Gestor (Principal)</span>
+                            <span v-show="item.origem_feedback === 'Funcionario' && !item.principal">Autoavaliação</span>
+                            <span v-show="item.origem_feedback === 'Avaliador' && !item.principal">Avaliador Par</span>
+                            <span v-show="item.origem_feedback === 'Avaliador' && item.principal">Avaliador Gestor (Principal)</span>
                         </td>
                         <td class="text-center">
 
@@ -357,6 +357,11 @@
                                        @click="avaliarFinalForm(item, true)"
                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">
                                         Visualizar Avaliação Final
+                                    </a>
+
+                                    <a class="dropdown-item" :href="`${urlImpressao}/${item.token}`" target="_blank" title="Imprimir Avaliação Final"
+                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">
+                                        Imprimir Avaliação Final
                                     </a>
                                 </div>
                             </div>
@@ -458,6 +463,8 @@ export default {
             avaliacaoSelecionada: null,
 
             urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/atualizar`,
+            urlImpressao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/impressao`,
+
             controle: {
                 carregando: false,
                 dados: {
