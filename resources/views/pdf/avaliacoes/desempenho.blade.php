@@ -94,9 +94,9 @@
             <div style="page-break-before: always"></div>
 
             <h2>OPORTUNIDADES DE MELHORIA / PLANO DE AÇÃO</h2>
-            <table class="table" style="width: 100%" v-if="formAvaliarFinal.result_topico_pai_agrupado.length > 0">
+            <table class="table" style="width: 100%; background:white;" v-for="(item, index) in formAvaliarFinal.planos_acoes" :key="index">
                 <tr>
-                    <td v-for="(item, index) in formAvaliarFinal.planos_acoes" :key="index"
+                    <td
                         style="border-bottom: 1px solid black">
                         <p class="texto">
                             <strong>COMPETÊNCIA/DESEMPENHO:</strong> @{{
@@ -145,7 +145,7 @@
 
         </div>
 
-        <div style="position:fixed; bottom: 5px">
+        <div style="position:relative; bottom: 5px">
             @include('layouts.rodapePdfFilialJob')
         </div>
     </div>
@@ -215,7 +215,7 @@
         }
 
         @page {
-            margin: 0cm 0cm;
+            margin: 0cm 0cm 0cm 0cm;
             margin-top: 15px;
             margin-left: 10px;
             margin-bottom: 10px;

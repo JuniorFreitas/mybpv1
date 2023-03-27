@@ -546,6 +546,8 @@ class AvaliacaoController extends Controller
             ];
         }
 
+        $total_questoes = collect($result_topico_agrupado)->collapse()->count();
+        $nota_final = (float)number_format((($totalAval / count($avaliacoesFeedbacks)) / $total_questoes) / count($result_topico_agrupado),2,'.','.');// total de avaliações / total de avaliadores / total de questoes / total de topicos
 
         return [
             'dados_do_funcionario' => $dadosDoFuncionario,
@@ -554,7 +556,8 @@ class AvaliacaoController extends Controller
             'avaliador_principal' => $avaliacaoFeedback->wherePrincipal(true)->first()->Avaliador->nome,
             'status_avaliacao' => $avaliacaoFeedback->status,
             'total_aval' => $totalAval,
-            'nota_final' => (($totalAval / count($avaliacoesFeedbacks)) / 10) / 2,
+            'total_aval_feed' => count($avaliacoesFeedbacks),
+            'nota_final' => $nota_final,
             'resultado_topico_pai' => $topico_pai,
             'result_topico_pai_agrupado' => $result_topico_agrupado,
             'result_topico' => $resultTopico,
