@@ -355,6 +355,21 @@
                 </div>
             </div>
 
+            <div class="col-12 col-md-3 ">
+                <div class="form-check" style="margin-bottom: -11px;">
+                    <input type="checkbox" class="form-check-input" @change="atualizar()"
+                           :disabled="controle.carregando"
+                           id="filtroPeriodoTreinado"
+                           v-model="controle.dados.campoPeriodoTreinado">
+                    <label class="form-check-label cursor-pointer" for="filtroPeriodoTreinado">Por período treinado</label>
+                </div>
+                <div class="form-group">
+                    <datepicker range formsm label="" @onselect="atualizar()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.periodoTreinado"></datepicker>
+                </div>
+            </div>
+
             <div class="col-12 col-md-2">
                 <label>CPF</label>
                 <input type="text"

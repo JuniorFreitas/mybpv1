@@ -342,6 +342,33 @@ class TreinamentoController extends Controller
             'Treinamento.QuemCadastrou:id,nome'
         );
 
+        $campoVencimento = $request->campoVencimento == 'true';
+        if ($campoVencimento) {
+            $periodo = explode(' até ', $request->vencimento);
+            $dataInicio = new DataHora($periodo[0]);
+            $dataFim = new DataHora($periodo[1]);
+            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
+                $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
+                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert())->where('data_vencimento', '<=', $dataFim->dataInsert());
+                });
+            });
+        }
+
+        $campoPeriodoTreinado = $request->campoPeriodoTreinado == 'true';
+        if ($campoPeriodoTreinado) {
+            $periodo_treinado = explode(' até ', $request->periodoTreinado);
+            $dataInicio_treinado = new DataHora($periodo_treinado[0].' 00:00:00');
+            $dataFim_treinado = new DataHora($periodo_treinado[1]. '23:59:59');
+            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio_treinado, $dataFim_treinado) {
+                $query->where('created_at', '>=', $dataInicio_treinado->dataInsert())->where('created_at', '<=', $dataFim_treinado->dataInsert());
+            });
+//            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio_treinado, $dataFim_treinado) {
+//                $query->whereHas('Vencimentos', function ($q) use ($dataInicio_treinado, $dataFim_treinado) {
+//                    $q->where('data_treinamento', '>=', $dataInicio_treinado->dataInsert())->where('data_treinamento', '<=', $dataFim_treinado->dataInsert());
+//                });
+//            });
+        }
+
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
                 $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
@@ -482,17 +509,7 @@ class TreinamentoController extends Controller
             });
         }
 
-        $campoVencimento = $request->campoVencimento == 'true' ? true : false;
-        if ($campoVencimento) {
-            $periodo = explode(' até ', $request->vencimento);
-            $dataInicio = new DataHora($periodo[0]);
-            $dataFim = new DataHora($periodo[1]);
-            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
-                $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
-                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert())->where('data_vencimento', '<=', $dataFim->dataInsert());
-                });
-            });
-        }
+
 
         return $resultado->orderByDesc('created_at');
     }

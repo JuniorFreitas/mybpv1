@@ -42,7 +42,7 @@
 
 
         .principal {
-            height: 13.05cm;
+            height: 14.7cm;
             width: 19.70cm;
             margin-left: 10px;
             border: 2px solid black;
@@ -163,7 +163,7 @@
             float: right !important;
         }
 
-        .caixaSelecao{
+        .caixaSelecao {
             width: 16px;
             height: 16px;
             border: 1px solid black;
@@ -313,27 +313,51 @@
                 </div>
 
                 <div class="b-bottom b-right float-left linhaComum" style="width: 275px">
-                    <div class="txtComum" style="width: 100%; margin-bottom: 4px;">O colaborador acessará a área do porto?</div>
+                    <div class="txtComum" style="width: 100%; margin-bottom: 4px;">O colaborador acessará a área do
+                        porto?
+                    </div>
                     <div class="rsptxtComum" style="display: inline-flex; margin: -5px 0px 0px 65px;">
-                        <div class="caixaSelecao">{{ $candidato->Admissao->acessar_area_porto == 'Sim' ? 'X' : '' }}</div>Sim
-                        <div class="caixaSelecao">{{ $candidato->Admissao->acessar_area_porto == 'Não' ? 'X' : '' }}</div>Não
+                        <div
+                            class="caixaSelecao">{{ $candidato->Admissao->acessar_area_porto == 'Sim' ? 'X' : '' }}</div>
+                        Sim
+                        <div
+                            class="caixaSelecao">{{ $candidato->Admissao->acessar_area_porto == 'Não' ? 'X' : '' }}</div>
+                        Não
                     </div>
                 </div>
 
                 <div class="b-bottom b-right float-left linhaComum" style="width: 206px;">
-                    <div class="txtComum" style="width: 100%; margin-bottom: 4px; margin-left: 30px;">Avaliação Psicológica</div>
+                    <div class="txtComum" style="width: 100%; margin-bottom: 4px; margin-left: 30px;">Avaliação
+                        Psicológica
+                    </div>
                     <div class="rsptxtComum" style="display: inline-flex; margin: -5px 0px 0px 35px;">
-                        <div class="caixaSelecao">{{ $candidato->Admissao->avaliacao_psicologica == 'Sim' ? 'X' : '' }}</div>Sim
-                        <div class="caixaSelecao">{{ $candidato->Admissao->avaliacao_psicologica == 'Não' ? 'X' : '' }}</div>Não
+                        <div
+                            class="caixaSelecao">{{ $candidato->Admissao->avaliacao_psicologica == 'Sim' ? 'X' : '' }}</div>
+                        Sim
+                        <div
+                            class="caixaSelecao">{{ $candidato->Admissao->avaliacao_psicologica == 'Não' ? 'X' : '' }}</div>
+                        Não
                     </div>
                 </div>
 
-                <div class="b-bottom b-left float-left"
-                     style="width: 50%; height: 113px; border-bottom-left-radius: 9px;">
-                    <div class="txtComum">Uso Exclusivo da ALUMAR:</div>
+                <div class="b-left b-right float-left"
+                     style="width: 100%;">
+                    <div class="txtComum" style="margin-top: 5px">Uso Exclusivo da ALUMAR:</div>
                     <div class="rsptxtComum"></div>
+                    <div class=" float-left"
+                         style="width: 71%;">
+                        <div class="txtComum" style="color: white"></div>
+                        <div class="rsptxtComum"><strong>CENTRO DE
+                                CUSTO:</strong> {{ $candidato->Admissao->CentroCusto->label ?? "" }}</div>
+                    </div>
+                </div>
 
-                    <div class="txtComum" style="margin-top: 10px;">1. Vinculo Empregatício</div>
+
+
+                <div class="b-bottom b-left float-left"
+                     style="width: 50%; height: 143px; border-bottom-left-radius: 9px;">
+
+                    <div class="txtComum" style="margin-top: 30px;">1. Vinculo Empregatício</div>
                     <div class="rsptxtComum" style="margin-top: 22px; margin-left: 216px;"> ____/____/________
                     </div>
 
@@ -347,10 +371,7 @@
                 </div>
 
                 <div class="b-bottom b-right float-left"
-                     style="width: 50%; height: 113px; border-bottom-right-radius: 9px;">
-                    <div class="txtComum" style="color: white"></div>
-                    <div class="rsptxtComum"></div>
-
+                     style="width: 50%; height: 143px; border-bottom-right-radius: 9px;">
                     <div class="txtComum" style="margin-top: 22px; margin-right: 0px">4. ASO <span
                             style="color: white"></span></div>
                     <div class="rsptxtComum b-bottom" style="margin-top: 33px; margin-left: 61px; width: 299px;"></div>
@@ -369,9 +390,9 @@
             </div>
         </div>
     </div>
-    <?php $cont++ ?>
+        <?php $cont++ ?>
     @if ($cont==2)
-        <?php $cont = 0; ?>
+            <?php $cont = 0; ?>
         <div style="page-break-after: always"></div>
     @endif
 @endforeach

@@ -214,6 +214,9 @@ mix.js("resources/js/app.js", "public/js")
     //Perfil Usuário
     .js("resources/js/g/perfil/app.js", "public/js/g/perfil")
 
+    //Impressao
+    .js("resources/js/g/impressao/avaliacao/app.js", "public/js/g/impressao/avaliacao")
+
     .copyDirectory("resources/js/tinymce", "public/js/tinymce")
 ;
 
