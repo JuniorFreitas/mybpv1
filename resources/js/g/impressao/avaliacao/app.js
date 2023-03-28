@@ -44,5 +44,9 @@ const app = new Vue({
         this.formAvaliarFinal.planos_acoes = dados.planos_acoes;
 
         window.print();
+
+        // window.addEventListener("afterprint", function() {
+        //     window.close();
+        // });
     }
 });
