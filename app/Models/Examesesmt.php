@@ -39,6 +39,12 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereVencido($value)
  * @mixin \Eloquent
+ * @property bool|null $atual
+ * @property int|null $feedback_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ExameFuncionario[] $ExameFuncionario
+ * @property-read int|null $exame_funcionario_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereAtual($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereFeedbackId($value)
  */
 class Examesesmt extends Model
 {
@@ -119,8 +125,8 @@ class Examesesmt extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-            $model->user_id = auth()->user()->id;
+            $model->empresa_id = auth()->user()->empresa_id ?? $model->empresa_id;
+            $model->user_id = auth()->user()->id ?? $model->user_id;
         });
 
         static::updating(function ($model) {

@@ -64,19 +64,12 @@ class VencimentoAsosController extends Controller
             ->groupBy('id')->get();
 
         $examesFuncionarios = $examesFuncionarios->map(function ($item){
-
-            if(is_null($item->UltimoAso->ExameFuncionario[0]->exame_tipo_id)){
-                $respostas = ExameFuncionario::select('respostas')->whereId($item->UltimoAso->ExameFuncionario[0]->id)->first()->respostas;
-                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
-                $tipoExame = RespostaAlternativas::whereValue($respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->first()->label;
-            }
-
             return [
                 'feedback_id' => $item->id,
                 'colaborador' => $item->Curriculo->nome,
                 'cargo' => $item->VagaAberta->VagaSelecionada->nome,
                 'data_admissao' => $item->Admissao->data_admissao ?? 'Não informada',
-                'exame_tipo' => $item->UltimoAso->ExameFuncionario[0]->ExameTipo->label ?? $tipoExame,
+                'exame_tipo' => $item->UltimoAso->ExameFuncionario[0]->ExameTipo->label,
                 'data_aso' => $item->UltimoAso->data_realizacao,
                 'data_vencimento' => $item->UltimoAso->data_vencimento,
                 'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert(), (new DataHora($item->UltimoAso->data_vencimento))->dataInsert())

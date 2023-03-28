@@ -229,11 +229,10 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Data do ASO</label>
-                    <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                    <input type="text" class="form-control" placeholder="dd/mm/aaaa"
                            :disabled="visualizar || disabled"
-                           v-model="form.ultimo_aso_ativo.data_aso" v-mascara:data
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_data_vazio($event.target) :valida_data($event.target)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_data_vazio($event.target) :valida_data($event.target)">
+                           v-model="form.data_aso" v-mascara:data
+                           readonly>
                 </div>
             </div>
 
@@ -475,7 +474,7 @@ export default {
                     cert_reservista_num: "",
                     cert_reservista_categoria: "",
                 },
-                ultimo_aso_ativo: {
+                ultimo_aso: {
                     data_aso: ""
                 },
                 ferias_adquiridas: [],
@@ -563,15 +562,6 @@ export default {
             if (!value) return ''
             value = value.toString()
             return value.toUpperCase()
-        },
-        validaData() {
-            if (this.form.ultimo_aso_ativo.data_aso.length >= 10) {
-                let dataCorreta = moment(this.form.ultimo_aso_ativo.data_aso, "DD/MM/YYYY");
-                if (!dataCorreta.isValid()) {
-                    mostraErro("", "A data do ASO inserida é inválida");
-                    this.form.ultimo_aso_ativo.data_aso = "";
-                }
-            }
         },
 
         validaDataAdmissao() {

@@ -353,6 +353,29 @@ class ControleExameController extends Controller
             }
         }
 
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
+
+        if ($filtroPeriodo) {
+            $periodo = explode(' até ', $request->periodo);
+            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
+            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
+                $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+            });
+        }
+
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Curriculo', function ($query) use ($request) {
+                $query->where('nome', 'like', '%' . $request->campoBusca . '%');
+            });
+        }
+
+        if ($request->filled('campoCPF')) {
+            $resultado->whereHas('Curriculo', function ($query) use ($request) {
+                $query->whereCpf($request->campoCPF);
+            });
+        }
+
         $resultado = $resultado->paginate($request->pages);
 
         $items = collect($resultado->items())->transform(function ($item) {

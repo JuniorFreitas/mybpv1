@@ -41,6 +41,16 @@ use MasterTag\DataHora;
  * @property string $token
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereToken($value)
  * @property-read \App\Models\Examesesmt|null $Sesmt
+ * @property bool|null $pcmso
+ * @property int|null $pcmso_id
+ * @property int|null $exame_tipo_id
+ * @property mixed|null $encaminhamento_data
+ * @property-read \App\Models\ExameTipo|null $ExameTipo
+ * @property-read \App\Models\Pcmso|null $PcmsoDados
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereEncaminhamentoData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereExameTipoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario wherePcmso($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario wherePcmsoId($value)
  */
 class ExameFuncionario extends Model
 {
@@ -143,16 +153,12 @@ class ExameFuncionario extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-        });
-
-
-        static::creating(function ($model) {
-            $model->user_encaminhou_id = auth()->id();
+            $model->empresa_id = auth()->user()->empresa_id ?? $model->empresa_id;
+            $model->user_encaminhou_id = auth()->id() ?? $model->user_encaminhou_id;
         });
 
         static::updating(function ($model) {
-            $model->user_encaminhou_id = auth()->id();
+            $model->user_encaminhou_id = $model->user_encaminhou_id ?? auth()->id();
         });
 
         static::addGlobalScope(new ScopeEmpresa());
