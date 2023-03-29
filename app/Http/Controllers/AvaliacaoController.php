@@ -580,10 +580,6 @@ class AvaliacaoController extends Controller
         $dados = $this->avaliarFinal($token);
 
         return view('pdf.avaliacoes.desempenho', compact('dados'));
-        $pdf = PDF::loadView('pdf.avaliacoes.desempenho', compact('dados'));
-        $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("desempenho_" . (new DataHora())->nomeUnico() . ".pdf");
-//        return view('g.avaliacoes.impressao', compact('dados'));
     }
 
     public function salvaAvaliacao(Request $request, AvaliacaoFeedback $avaliacaoFeedback)

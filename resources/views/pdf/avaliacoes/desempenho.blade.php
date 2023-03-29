@@ -2,8 +2,8 @@
 @section('title','Avaliacao Desempenho')
 @section('conteudo')
     <div style="margin-top: 20px; margin-bottom: 20px">
-        <p class="observacao">OBS: Se o download nao iniciar automaticamente clique no botão.</p>
-        <button id="printPageButton" onClick="window.print();">IMPRIMIR</button>
+{{--        <p class="observacao">OBS: Se o download nao iniciar automaticamente clique no botão.</p>--}}
+{{--        <button id="printPageButton" onClick="window.print();">IMPRIMIR</button>--}}
     </div>
 
     <div id="app">
