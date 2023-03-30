@@ -837,6 +837,16 @@ class FeedbackCurriculo extends Model
                     ->orderByDesc('data_vencimento');
     }
 
+    public function AsoAdmissional(){
+        return $this->hasOne(Examesesmt::class, 'feedback_id', 'id')
+                    ->whereJsonContains('resultado->aprovado', 'Sim')
+                    ->whereExameRealizado(true)
+                    ->whereHas('ExameFuncionario.ExameTipo', function($query){
+                        $query->where('label', 'Admissional');
+                    })
+                    ->orderByDesc('data_vencimento');
+    }
+
 
     /**/
     //scopeManual

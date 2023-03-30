@@ -1,4 +1,7 @@
 <?php
+
+use MasterTag\DataHora;
+
 function sdd()
 {
     $data = new \MasterTag\DataHora();
@@ -102,3 +105,12 @@ Artisan::command('mybp:syncAso', function () {
     $this->info('Sincronizando data ASOs');
     \App\Models\Sistema::syncAso();
 })->describe("Sincronizando data ASOs");
+
+Artisan::command('mybp:vencimentoAso', function () {
+    set_time_limit(0);
+    \DB::table('examesesmts')
+        ->where('data_vencimento','<',(new DataHora())->dataInsert())
+        ->update([
+            'vencido' => 1,
+        ]);
+})->describe("Vencimento de Aso");
