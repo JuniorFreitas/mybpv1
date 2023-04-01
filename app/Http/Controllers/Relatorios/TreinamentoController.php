@@ -32,8 +32,8 @@ class TreinamentoController extends Controller
             })->with(['Vencimentos' => function ($q) use ($dataInicio, $dataFim) {
                 $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataInsert())
                     ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataInsert());
-            }, 'FeedbackCurriculo:id,empresa_id,vaga_id,curriculo_id',
-                'FeedbackCurriculo.VagaSelecionada:id,nome',
+            }, 'FeedbackCurriculo:id,empresa_id,vaga_id,vagas_abertas_id,curriculo_id',
+                'FeedbackCurriculo.VagaAberta:id,vaga_id,titulo',
                 'FeedbackCurriculo.Curriculo:id,nome,nascimento,rg,orgao_expeditor'])
             ->get();
 
@@ -54,7 +54,7 @@ class TreinamentoController extends Controller
 
             $resultado->push([
                 'nome' => $treinamento->FeedbackCurriculo->Curriculo->nome,
-                'cargo' => $treinamento->FeedbackCurriculo->VagaSelecionada->nome,
+                'cargo' => $treinamento->FeedbackCurriculo->VagaAberta->Vaga->nome ?? 'NÃO ENCONTRADO',
                 'tipo' => $treinamento->tipo,
                 'treinamentos' => $vencimentos,
             ]);
