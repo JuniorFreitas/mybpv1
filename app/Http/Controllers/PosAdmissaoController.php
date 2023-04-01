@@ -349,7 +349,7 @@ class PosAdmissaoController extends Controller
         $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
         $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
         $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
-        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissao')->first();
+        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissão')->first();
         $formulario->load('Setores.Alternativas');
 
         $ids_form = array();
@@ -372,9 +372,9 @@ class PosAdmissaoController extends Controller
                 'formulario' => $formulario,
                 'form_limpo' => $formulario_vazio,
                 // ToDO ajustar na branch que vai ser feito a modificação de formulario por tabela
-//                'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
-//                'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
-//                'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
+                'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
+                'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
+                'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
             ]
         ]);
     }
