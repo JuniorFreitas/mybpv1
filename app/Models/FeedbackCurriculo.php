@@ -431,7 +431,6 @@ class FeedbackCurriculo extends Model
 
     public function getVagaAbertaMunicipioAttribute()
     {
-
         return $this->VagaAberta ? $this->VagaAberta->Vaga->nome . ' - ' . $this->VagaAberta->Municipio->nome . ' - ' . $this->VagaAberta->Municipio->uf : null;
     }
 

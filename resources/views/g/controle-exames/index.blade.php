@@ -720,7 +720,7 @@
             <tr style="background: white !important; border-bottom: none">
                 <td>@{{ colaborador.id }}</td>
                 <td>@{{ colaborador.curriculo.nome }}</td>
-                <td>@{{ colaborador.vaga_selecionada.nome }}</td>
+                <td>@{{ colaborador.vaga_aberta.vaga.nome }}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-primary mb-2" content="Encaminhar/historico" v-tippy
                             v-show="!colaborador.resultado_integrado"
