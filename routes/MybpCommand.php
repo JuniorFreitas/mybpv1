@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\Ferias;
+use MasterTag\DataHora;
+
 function sdd()
 {
     $data = new \MasterTag\DataHora();
@@ -94,7 +98,7 @@ Artisan::command('mybp:syncfuncionarios', function () {
 
 Artisan::command('mybp:grupoClinicaExame {empresa_id?}', function () {
     $this->info('Sincronizando Clinica');
-    $empresa_id = (int) $this->arguments()['empresa_id'];
+    $empresa_id = (int)$this->arguments()['empresa_id'];
     \App\Models\Sistema::grupoClinicaExame($empresa_id);
 })->describe("Sincronizando Funcionarios");
 
@@ -102,3 +106,53 @@ Artisan::command('mybp:syncAso', function () {
     $this->info('Sincronizando data ASOs');
     \App\Models\Sistema::syncAso();
 })->describe("Sincronizando data ASOs");
+
+Artisan::command('mybp:ferias', function () {
+    try {
+        $ferias_gozando_sistema = \DB::table('ferias')
+            ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
+            ->where('aprovado_via_script', true)
+            ->where('data_saida', '<=', (new DataHora())->dataInsert())
+            ->where('data_retorno', '>=', (new DataHora())->dataInsert())
+            ->update([
+                'status_ferias' => Ferias::STATUS_GOZANDO,
+                'data_status_ferias' => (new DataHora())->dataInsert()
+            ]);
+        Log::info("Ferias gozando");
+
+        $ferias_gozando_rh = \DB::table('ferias')
+            ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
+            ->where('data_saida', '<=', (new DataHora())->dataInsert())
+            ->where('data_retorno', '>=', (new DataHora())->dataInsert())
+            ->update([
+                'status_ferias' => Ferias::STATUS_GOZANDO,
+                'data_status_ferias' => (new DataHora())->dataInsert()
+            ]);
+        Log::info("Ferias gozando rh");
+
+        $ferias_gozadas_sistema = \DB::table('ferias')
+            ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
+            ->where('aprovado_via_script', true)
+            ->where('data_retorno', '<', (new DataHora())->dataInsert())
+            ->update([
+                'status_ferias' => Ferias::STATUS_GOZADA,
+                'data_status_ferias' => (new DataHora())->dataInsert()
+            ]);
+
+        Log::info("Ferias gozadas");
+
+        $ferias_gozadas_rh = \DB::table('ferias')
+            ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
+            ->where('data_retorno', '<', (new DataHora())->dataInsert())
+            ->update([
+                'status_ferias' => Ferias::STATUS_GOZADA,
+                'data_status_ferias' => (new DataHora())->dataInsert()
+            ]);
+
+        Log::info("Ferias gozando rh");
+
+        // NAO FAZER AGORA - AGUARDANDO DEFINICAO DE REGRAS DE NEGOCIO (DANY)
+    } catch (\Exception $e) {
+        \Log::error($e->getMessage());
+    }
+})->describe("Sincronizando Ferias");
