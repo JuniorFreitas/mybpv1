@@ -108,8 +108,7 @@
         por vontade de uma das partes; rescindindo-se por vontade do <strong>EMPREGADO</strong> ou pela <strong>EMPREGADORA</strong>
         com justa causa, nenhuma indenização é devida; rescindindo-se antes do prazo, pela <strong>EMPREGADORA</strong>,
         fica esta obrigada a pagar 50% dos salários devidos até o final (metade do tempo combinado restante), nos termos
-        do Artigo 479 da CLT, sem prejuízo do disposto no Regimento do FGTS. Nenhum aviso prévio é devido pela rescisão
-        do devido contrato.
+        do Artigo 479 da CLT, sem prejuízo do disposto no Regimento do FGTS.
     </p>
     <p class="f11 text-justify">
         <strong>12ª (Proteção de Dados Pessoais)</strong> – O <strong>EMPREGADO</strong> está ciente de que informa os
@@ -203,7 +202,7 @@
     </p>
     <p class="f11 text-justify">
         <strong>13ª (Vigência)</strong> – Na hipótese deste ajuste transformar-se em contrato de prazo indeterminado,
-        pelo decurso do tempo, continuarão em plena vigência às clausulas de 01 (Um) a 06 (Seis), enquanto durarem as
+        pelo decurso do tempo, continuarão em plena vigência às clausulas de 01 (Um) a 12 (Doze), enquanto durarem as
         relações do <strong>EMPREGADO</strong> com a <strong>EMPREGADORA</strong>.
     </p>
     <p class="f11 text-justify">
