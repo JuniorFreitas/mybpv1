@@ -37,23 +37,35 @@ class FeriasController extends Controller
 
     public function showVencimentoFerias(Request $request)
     {
-        $queryResult = FeriasCalculoAvos::with(
-            'PeriodoAquisitivo',
-            'Admissao:id,centro_custo_id,cargo,funcao,data_admissao,feedback_id',
-            'Admissao.CentroCusto',
-            'Admissao.Feedback:id,curriculo_id,vagas_abertas_id',
-            'Admissao.Feedback.VagaSelecionada',
-            'Admissao.Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'Admissao.CentroCusto:id,label'
-        )->whereHas('Admissao', function ($query) {
-            $query->admitidos();
-        })->where('total_avos', '>=', 25 );
+//        $queryResult = FeriasCalculoAvos::with(
+//            'PeriodoAquisitivo',
+//            'Admissao:id,centro_custo_id,cargo,funcao,data_admissao,feedback_id',
+//            'Admissao.CentroCusto',
+//            'Admissao.Feedback:id,curriculo_id,vagas_abertas_id',
+//            'Admissao.Feedback.VagaSelecionada',
+//            'Admissao.Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+//            'Admissao.CentroCusto:id,label'
+//        )->whereHas('Admissao', function ($query) {
+//            $query->admitidos();
+//        })
+//            ->where('total_avos', '>=', 25 )
+        ;
 
-        if ($request->filled('periodo')) {
-            $queryResult->where('periodo_aquisitivo_id', $request->periodo);
-        }
+//        if ($request->filled('periodo')) {
+//            $queryResult->where('periodo_aquisitivo_id', $request->periodo);
+//        }
 
-        $queryResult = $queryResult->orderBy('total_avos', 'desc')->get()->toArray();
+//        $queryResult = $queryResult->orderBy('total_avos', 'desc')->get()->toArray();
+
+
+//        $queryResult = $queryResult->orderBy('total_avos', 'desc')->get();
+
+        $queryResult = FeriasCalculoAvos::selectRaw('count(admissao_id) as total, admissao_id')
+            ->groupBy('admissao_id')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        return $queryResult;
 
         $resultado = collect();
 

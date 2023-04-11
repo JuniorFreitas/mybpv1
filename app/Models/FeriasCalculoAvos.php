@@ -66,8 +66,9 @@ class FeriasCalculoAvos extends Model
         'admissao_id',
         'empresa_id',
         'periodo_aquisitivo_id',
-        'avos',
+        'total_avos',
         'historico',
+        'atualizado_via_script',
         'ultima_atualizacao',
     ];
 
@@ -76,8 +77,9 @@ class FeriasCalculoAvos extends Model
         'admissao_id' => 'int',
         'empresa_id' => 'int',
         'periodo_aquisitivo_id' => 'int',
-        'avos' => 'float',
+        'total_avos' => 'float',
         'historico' => 'json',
+        'atualizado_via_script' => 'boolean',
         'ultima_atualizacao' => 'date:d/m/Y',
     ];
 
