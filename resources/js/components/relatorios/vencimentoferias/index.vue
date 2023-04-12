@@ -4,14 +4,14 @@
             <fieldset>
                 <legend>Filtro</legend>
                 <form class="row">
-                    <div class="col-12 col-md-3 pb-3">
-                        <label for="">Escolha o período:</label>
-                        <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.periodo"
-                                @change="buscarDados()">
-                            <option v-for="(item, key) in filtro.periodo_aquisitivo" :value="item.id">{{ item.label }}
-                            </option>
-                        </select>
-                    </div>
+<!--                    <div class="col-12 col-md-3 pb-3">-->
+<!--                        <label for="">Escolha o período:</label>-->
+<!--                        <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.periodo"-->
+<!--                                @change="buscarDados()">-->
+<!--                            <option v-for="(item, key) in filtro.periodo_aquisitivo" :value="item.id">{{ item.label }}-->
+<!--                            </option>-->
+<!--                        </select>-->
+<!--                    </div>-->
 
                     <div class="clearfix"></div>
 
@@ -37,33 +37,35 @@
                 <div v-for="(item, index) in dados" :key="index" class="mb-3" v-show="dados.length">
                     <div class="row">
                         <div class="col-md-12">
-                            <table class="mt-4 table table-bordered table-striped">
+                            <table :class="item.pintar" class="mt-4 table table-bordered">
                                 <thead>
-                                <tr class="bg-white text-center">
-                                    <th rowspan="4"
-                                        style="display: table-cell; vertical-align: middle; text-align: center; /* Não necessário */">
-                                        {{ index + 1 }}
-                                    </th>
-                                    <th colspan="6">{{ item.nome }}<br>(Admitido em: {{ item.data_admissao }})</th>
-                                </tr>
-                                <tr class="bg-white text-center">
-                                    <th colspan="6">{{ item.cargo }}</th>
-                                </tr>
-                                <tr class="bg-white">
-                                    <th style="text-align: center">Centro de custo</th>
-                                    <th style="text-align: center">Período Aquisitivo</th>
-                                    <th style="text-align: center">Última Atualização</th>
-                                    <th style="text-align: center">QTD. Avos</th>
-                                </tr>
-                                <tr class="bg-white">
-                                    <th style="text-align: center">{{ item.centro_custo }}</th>
-                                    <th style="text-align: center">{{ item.periodo_aquisitivo }}</th>
-                                    <th style="text-align: center">{{ item.ultima_atualizacao }}</th>
-                                    <th style="text-align: center">
-                                        <span class="text-uppercase">{{ item.total_avos }}</span>
-                                    </th>
+                                    <tr class="text-center">
+                                        <th :rowspan="item.periodos.length + 3"
+                                            style="display: table-cell; vertical-align: middle; text-align: center; /* Não necessário */">
+                                            {{ index + 1 }}
+                                        </th>
+                                        <th colspan="6">{{ item.nome }}<br>(Admitido em: {{ item.data_admissao }}) - (Centro de Custo: {{ item.centro_custo }})
+                                            <br><span v-if="item.dias_atraso >= 546" class="text-white">Férias atrasadas {{item.tempo_atrasado}}</span>
+                                        </th>
+                                    </tr>
 
-                                </tr>
+                                    <tr :class="item.pintar" class="text-center">
+                                        <th colspan="6">{{ item.cargo }}</th>
+                                    </tr>
+
+                                    <tr :class="item.pintar">
+                                        <th style="text-align: center">Período Aquisitivo</th>
+                                        <th style="text-align: center">QTD. dias</th>
+                                        <th style="text-align: center">Última Atualização</th>
+                                        <th style="text-align: center">Status</th>
+                                    </tr>
+
+                                    <tr v-for="(periodo, ind) in item.periodos">
+                                        <th style="text-align: center">{{periodo.periodo_aquisitivo}}</th>
+                                        <th style="text-align: center">{{periodo.avos ? periodo.avos.total_avos : 'Nada encontrado'}}</th>
+                                        <th style="text-align: center">{{periodo.avos ? periodo.avos.ultima_atualizacao : 'Sem atualizacao'}}</th>
+                                        <th style="text-align: center; text-transform: capitalize">{{periodo.status_ferias ? periodo.status_ferias : 'Aguardando'}}</th>
+                                    </tr>
                                 </thead>
                             </table>
                         </div>
@@ -94,7 +96,7 @@ export default {
     async mounted() {
         await this.periodosAquisitivosList();
 
-        this.filtrar.periodo = this.filtro.periodo_aquisitivo[1].id
+        // this.filtrar.periodo = this.filtro.periodo_aquisitivo[1].id
         await this.buscarDados();
     },
     filters:{
@@ -111,7 +113,6 @@ export default {
         async periodosAquisitivosList() {
             await axios.post(`${URL_ADMIN}/relatorios/ferias/listaperiodos`)
                 .then(({data}) => {
-                    console.log(data)
                     this.filtro = data.filtro;
                 });
         },
@@ -119,7 +120,7 @@ export default {
             this.preload = true;
             await axios.post(`${URL_ADMIN}/relatorios/vencimento-ferias`, this.filtrar)
                 .then(({data}) => {
-                    this.dados = data.dados;
+                    this.dados = data;
                     this.preload = false;
                 });
         }

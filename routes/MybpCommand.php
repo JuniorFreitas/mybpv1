@@ -158,108 +158,72 @@ Artisan::command('mybp:ferias', function () {
 })->describe("Sincronizando Ferias");
 
 Artisan::command('mybp:calculoAvos', function () {
-    try {
-        $ano_atual = (int) date('Y');
-        $mes_hoje = (int) date('m');
-        $hoje = (new DataHora())->dataInsert();
-        $primeiro_dia_ano = $ano_atual.'-01-01';
+    $admissoes = DB::select("SELECT
+            a.id as admissao_id, a.feedback_id, a.data_admissao, fc.empresa_id
+        FROM admissoes a
+            INNER JOIN feedback_curriculos fc on a.feedback_id = fc.id
+        WHERE a.data_admissao >= '1996-01-01'
+        AND a.feedback_id not in (SELECT
+                feedback_id
+            FROM demissaos)
+        AND fc.deleted_at is null
+        ORDER BY a.data_admissao ASC");
 
-        $admitidos = \DB::select("SELECT
-                    a.id as admissao_id, a.feedback_id, a.data_admissao
-                FROM admissoes a
-                    INNER JOIN feedback_curriculos fc on a.feedback_id = fc.id
-                WHERE a.data_admissao >= $primeiro_dia_ano
-                AND a.feedback_id not in (SELECT
-                        feedback_id
-                    FROM demissaos)
-                AND fc.deleted_at is null
-                ORDER BY a.data_admissao ASC");
+    $periodos_aquisitivos = DB::select("SELECT * FROM periodos_aquisitivos WHERE ano_inicial >= 1996 ORDER BY ano_inicial ASC");
+    $periodo_aquisitivo = [];
+    foreach ($periodos_aquisitivos as $pa) {
+        $periodo_aquisitivo[$pa->ano_inicial] = [
+            'id' => $pa->id,
+            'label' => $pa->label,
+            'ano_inicial' => $pa->ano_inicial,
+            'ano_final' => $pa->ano_final,
+        ];
+    }
 
-        $todosPeriodosAquisitivos = \DB::select("SELECT * FROM periodos_aquisitivos WHERE ano_inicial >= $ano_atual");
-        $periodo_aquisitivo = [];
-        foreach ($todosPeriodosAquisitivos as $pa){
-            $periodo_aquisitivo[$pa->ano_inicial] = [
-                'id' => $pa->id,
-                'label' => $pa->label,
-                'ano_inicial' => $pa->ano_inicial,
-                'ano_final' => $pa->ano_final,
+    foreach ($admissoes as $key => $linha) {
+        $admissao_id = $linha->admissao_id;
+        $data_admissao = $linha->data_admissao;
+        $dia_admissao = (new DataHora($data_admissao))->dia();
+        $mes_admissao = (new DataHora($data_admissao))->mes();
+        $ano_admissao = (new DataHora($data_admissao))->ano();
+        $empresa_id = $linha->empresa_id;
+
+        $historico_avos = \App\Models\FeriasCalculoAvos::somaAvosScriptNew($dia_admissao, $mes_admissao, $ano_admissao, $periodo_aquisitivo);
+
+        foreach ($historico_avos as $chave => $historico) {
+            $ultimo_total_avos_admissao = $historico_avos[$chave]['total_avos'];
+            $historico_avos_admissao = $historico_avos[$chave];
+            unset($historico_avos_admissao['total_avos']);
+            $historico_avos_cad_admissao = json_encode(array_values(json_decode(json_encode($historico_avos_admissao), true)));
+            $calculo_avos_admissao = [
+                'empresa_id' => $empresa_id,
+                'admissao_id' => $admissao_id,
+                'periodo_aquisitivo_id' => $periodo_aquisitivo[$chave]['id'],
+                'total_avos' => $ultimo_total_avos_admissao,
+                'historico' => $historico_avos_cad_admissao,
+                'atualizado_via_script' => true,
+                'ultima_atualizacao' => (new DataHora())->dataHoraInsert(),
             ];
-        }
 
-        $periodo_aquisitivo_atual = $periodo_aquisitivo[$ano_atual]['id'];
+            try {
+                $periodo_aquisitivo_id = (int)$periodo_aquisitivo[$chave]['id'];
+                $cadastrado = DB::table('ferias_calculo_avos')
+                    ->where('admissao_id', $admissao_id)
+                    ->where('periodo_aquisitivo_id', $periodo_aquisitivo_id)
+                    ->get();
 
-        foreach ($admitidos as $a){
-            $data_admissao = (new DataHora($a->data_admissao));
-
-            $avos = \DB::select("SELECT fca.id, fca.historico, fca.total_avos, fca.ultima_atualizacao
-                    FROM ferias_calculo_avos fca
-                        WHERE fca.admissao_id = $a->admissao_id
-                        AND fca.periodo_aquisitivo_id = $periodo_aquisitivo_atual
-                        AND fca.total_avos > 0
-                    ORDER BY ultima_atualizacao DESC");
-
-            if(count($avos) > 0) {
-                foreach ($avos as $avo){
-                    $historico = json_decode($avo->historico, true);
-                    $ultima_atualizacao = end($historico);
-                    $data_mes = $ultima_atualizacao['data_mes'];
-                    $total_avos = $ultima_atualizacao['total_avos'];
-                    $dia_admissao = $data_admissao->dia();
-                    $mes_admissao = $data_admissao->mes();
-                    $ano_admissao = $data_admissao->ano();
-
-                    $historico_avos = \App\Models\FeriasCalculoAvos::somaAvosSchedule($dia_admissao, $mes_admissao, $ano_admissao, $periodo_aquisitivo, $data_mes, $total_avos);
-
-                    if(!empty($historico_avos)){
-                        $historico = json_decode($avo->historico, JSON_UNESCAPED_SLASHES);
-                        $ultimo_total_avos_admissao = $historico_avos[$ano_admissao]['total_avos'];
-                        unset($historico_avos[$ano_admissao]['total_avos']);
-                        $novo_historico = json_decode(json_encode(array_values(json_decode(json_encode($historico_avos[$ano_admissao]), true))));
-                        $historico_avos_cad_admissao = array_merge($historico, $novo_historico);
-                        $historico_avos_cad_admissao = json_encode($historico_avos_cad_admissao, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-
-                        $calculo_avos_admissao = [
-                            'total_avos' => $ultimo_total_avos_admissao,
-                            'historico' => $historico_avos_cad_admissao,
-                            'ultima_atualizacao' => (new DataHora())->dataHoraInsert(),
-                        ];
-
-                        \DB::table('ferias_calculo_avos')->where('id', $avo->id) ->update($calculo_avos_admissao);
-                    }
+                if (count($cadastrado) == 0 && $ultimo_total_avos_admissao > 0) {
+                    DB::table('ferias_calculo_avos')->insert($calculo_avos_admissao);
+                    echo "ID : " . $linha->admissao_id . " | " . $cont++ . " CADASTRADA\n";
                 }
+
+            } catch (Exception $exception) {
+                echo $exception->getMessage();
+                Log::error("ERRO AO RODAR O CALCULO DE AVOS " . print_r($exception->getTrace(), true));
             }
         }
-
-
-//            $ferias_gozando_rh = \DB::table('ferias')
-//                ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
-//                ->where('data_saida','<=',(new DataHora())->dataInsert())
-//                ->where('data_retorno','>=',(new DataHora())->dataInsert())
-//                ->update([
-//                    'status_ferias' => Ferias::STATUS_GOZANDO,
-//                    'data_status_ferias' => (new DataHora())->dataInsert()
-//                ]);
-//
-//            $ferias_gozadas_sistema = \DB::table('ferias')
-//                ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
-//                ->where('aprovado_via_script', true)
-//                ->where('data_retorno','<',(new DataHora())->dataInsert())
-//                ->update([
-//                    'status_ferias' => Ferias::STATUS_GOZADA,
-//                    'data_status_ferias' => (new DataHora())->dataInsert()
-//                ]);
-//
-//            $ferias_gozadas_rh = \DB::table('ferias')
-//                ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
-//                ->where('data_retorno','<',(new DataHora())->dataInsert())
-//                ->update([
-//                    'status_ferias' => Ferias::STATUS_GOZADA,
-//                    'data_status_ferias' => (new DataHora())->dataInsert()
-//                ]);
-
-
-        // NAO FAZER AGORA - AGUARDANDO DEFINICAO DE REGRAS DE NEGOCIO (DANY)
-    } catch (\Exception $e) {
-        \Log::error($e->getMessage());
     }
+
+    Log::info("Fim do script de calculo de avos");
+
 })->describe("calculoAvos");
