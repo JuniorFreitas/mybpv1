@@ -348,7 +348,7 @@ class FeriasPrevistaController extends Controller
                     $periodo_aquisitivo[$pa->id] = $pa->label;
                 }
 
-                if((new DataHora($ferias->data_saida))->dataInsert() <= $hoje && (new DataHora($ferias->data_saida))->dataInsert($ferias->data_retorno) >= $hoje){
+                if((new DataHora($ferias->data_saida))->dataInsert() <= $hoje && (new DataHora($ferias->data_retorno))->dataInsert() >= $hoje){
                     $status = 'gozando';
                 }
 
