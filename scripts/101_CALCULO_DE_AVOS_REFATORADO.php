@@ -19,4 +19,16 @@ ini_set('max_execution_time', '-1');
 
 //unset($argv[0]);
 
+//if ($argv[1]) {
+//    foreach (range(1996, 2017) as $n) {
+//        DB::table('periodos_aquisitivos')->insert([
+//            'label' => $n . '/' . ($n + 1),
+//            'ano_inicial' => $n,
+//            'ano_final' => ($n + 1),
+//        ]);
+//    }
+//    echo "Periodos aquisitivos criados com sucesso!\n";
+//    Log::info("Periodos aquisitivos criados com sucesso!");
+//}
+
 Artisan::call('mybp:calculoAvos');

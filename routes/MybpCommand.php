@@ -163,11 +163,12 @@ Artisan::command('mybp:calculoAvos', function () {
         FROM admissoes a
             INNER JOIN feedback_curriculos fc on a.feedback_id = fc.id
         WHERE a.data_admissao >= '1996-01-01'
-        AND a.feedback_id not in (SELECT
-                feedback_id
-            FROM demissaos)
+        AND a.feedback_id not in (SELECT feedback_id FROM demissaos)
         AND fc.deleted_at is null
+        AND fc.empresa_id = 104
         ORDER BY a.data_admissao ASC");
+
+//    dd($admissoes);
 
     $periodos_aquisitivos = DB::select("SELECT * FROM periodos_aquisitivos WHERE ano_inicial >= 1996 ORDER BY ano_inicial ASC");
     $periodo_aquisitivo = [];
@@ -215,6 +216,8 @@ Artisan::command('mybp:calculoAvos', function () {
                 if (count($cadastrado) == 0 && $ultimo_total_avos_admissao > 0) {
                     DB::table('ferias_calculo_avos')->insert($calculo_avos_admissao);
                     echo "ID : " . $linha->admissao_id . " | " . $cont++ . " CADASTRADA\n";
+                }else{
+                    echo "ID : " . $linha->admissao_id . " | " . $cont++ . " JÁ CADASTRADA\n";
                 }
 
             } catch (Exception $exception) {

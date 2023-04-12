@@ -16,8 +16,8 @@ use MasterTag\DataHora;
 
 class FeriasController extends Controller
 {
-    const UmAno8Meses = 546;
-    const UmAno10Meses = 607;
+    const DEZOITOMESES = 546;
+    const VINTEMESES = 607;
 
     public function index()
     {
@@ -42,6 +42,28 @@ class FeriasController extends Controller
 
     public function showVencimentoFerias(Request $request)
     {
+
+//        $result = FeriasCalculoAvos::select(['admissao_id', 'empresa_id', 'total_avos', 'periodo_aquisitivo_id','historico'])
+//            ->whereHas('admissao', function ($query) {
+//                $query->admitidos();
+//            })
+//            ->with([
+//                'admissao' => function ($query) {
+//                    $query->admitidos()
+//                        ->select(['id','feedback_id','data_admissao','status','centro_custo_id','centro_custo_filial_id','cargo','funcao'])
+//                        ->with([
+//                            'Feedback:id,curriculo_id,empresa_id',
+//                            'Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+//                        ])
+//                    ;
+//                },
+//            ])
+//            ->groupBy('admissao_id', 'empresa_id', 'total_avos', 'periodo_aquisitivo_id', 'historico')
+//            ->orderBy('admissao_id', 'asc')
+//            ->get()->groupBy('admissao_id')->values()->toArray();
+//
+//        return $result;
+
         $result = Admissao::select(['ferias.id as ferias_id', 'admissoes.id as admissao_id', 'users.nome', 'curriculos.nome',
             'admissoes.feedback_id', 'admissoes.data_admissao', 'admissoes.cargo', 'admissoes.centro_custo_id', 'centro_custos.label as centro_custo_label', 'admissoes.funcao',
             'feedback_curriculos.empresa_id', 'ferias.periodo_aquisitivo_id',
@@ -73,22 +95,22 @@ class FeriasController extends Controller
             ->orderBy('admissoes.id', 'asc')
             ->get()->groupBy('admissao_id')->values()
             ->map(function ($item) {
-                $dias_atraso = 0;
                 $todos_periodos = FeriasCalculoAvos::select(['ferias_calculo_avos.id', 'ferias_calculo_avos.admissao_id', 'ferias_calculo_avos.periodo_aquisitivo_id',
                     'ferias_calculo_avos.empresa_id', 'ferias_calculo_avos.total_avos', 'ferias_calculo_avos.ultima_atualizacao', 'ferias_calculo_avos.atualizado_via_script',
                     'ferias_calculo_avos.historico',
                     'periodos_aquisitivos.label', 'periodos_aquisitivos.ano_inicial'])
                     ->join('periodos_aquisitivos', 'ferias_calculo_avos.periodo_aquisitivo_id', '=', 'periodos_aquisitivos.id')
-                    ->whereAdmissaoId($item->first()->admissao_id)->orderByDesc('periodos_aquisitivos.ano_inicial')->get()->map(function ($t) use ($item) {
-                        $ferias = $item->where('admissao_id', $t->admissao_id)->where('periodo_aquisitivo_id', $t->periodo_aquisitivo_id)->first();
+                    ->whereAdmissaoId($item->first()->admissao_id)->orderByDesc('periodos_aquisitivos.ano_inicial')->limit(5)->get()->map(function ($t) use ($item) {
 
+                        $ferias = $item->where('admissao_id', $t->admissao_id)->where('periodo_aquisitivo_id', $t->periodo_aquisitivo_id)->first();
                         if ($t->total_avos < 30) {
                             $status_ferias = 'Saldo insuficiente';
                         } elseif (is_null($ferias) && (int)$t->ano_inicial <= 2020) {
                             $status_ferias = 'Gozada';
                         } else {
-                            $status_ferias = isset($ferias->status_ferias) ? ucfirst($ferias->status_ferias) : 'Aguardando';
+                            $status_ferias = isset($ferias->status_ferias) ? ucfirst($ferias->status_ferias == 'aguardando' ? 'Solicitada' : $ferias->status_ferias) : 'Disponivel';
                         }
+
 
                         return [
                             'id' => $t->id,
@@ -96,6 +118,7 @@ class FeriasController extends Controller
                             'empresa_id' => $t->empresa_id,
                             'total_avos' => $t->total_avos,
                             'periodo_aquisitivo' => $t->label,
+                            'periodo_aquisitivo_id' => $t->periodo_aquisitivo_id,
                             'ultimo_dia_avo' => collect($t->historico)->sortByDesc('data_mes')->first()['data_mes'],
                             'data_saida' => isset($ferias->data_saida) ? (new DataHora($ferias->data_saida))->dataCompleta() : null,
                             'data_retorno' => isset($ferias->data_retorno) ? (new DataHora($ferias->data_retorno))->dataCompleta() : null,
@@ -105,35 +128,25 @@ class FeriasController extends Controller
                             'tem_tb_ferias' => (bool)$ferias
                         ];
                     });
-//                $atraso = $item->map(function ($item) use (&$dias_atraso) {
-//                    if (is_null($item->status_ferias)) {
-//                        $dias_atraso = Carbon::now()->diffInDays($item->data_saida);
-//                    }
-//                    return $dias_atraso;
-//                });
 
-//                $atraso = collect($todos_periodos)->where('status_ferias', 'Aguardando')->map(function ($item) {
-//                    return Carbon::now()->diffInDays((new DataHora($item['ultimo_dia_avo']))->dataInsert());
-//                });
-
-                $atraso = collect($todos_periodos)->where('status_ferias', 'Aguardando')->sortBy('ultimo_dia_avo')->first();
-                if ($atraso){
+                $atraso = collect($todos_periodos)->where('status_ferias', 'Disponivel')->sortBy('ultimo_dia_avo')->first();
+                if ($atraso) {
                     $atraso = Carbon::now()->diffInDays((new DataHora($atraso['ultimo_dia_avo']))->dataInsert());
-                }else{
+                } else {
                     $atraso = 0;
-                    $info = null;
                 }
 
-                switch ($atraso) {
-                    case $atraso <= self::UmAno8Meses:
-                        $colorir = 'bg-white';
-                        break;
-                    case $atraso >= self::UmAno8Meses + 1 && $atraso <= self::UmAno10Meses:
-                        $colorir = 'bg-warning';
-                        break;
-                    default:
-                        $colorir = 'bg-danger text-white';
-                        break;
+                // Se for maior que 18meses de atraso
+                if ($atraso >= self::VINTEMESES){
+                    $colorir = 'bg-danger text-white';
+                }
+
+                if ($atraso >= self::DEZOITOMESES && $atraso < self::VINTEMESES){
+                    $colorir = 'bg-warning text-black';
+                }
+
+                if ($atraso < self::DEZOITOMESES){
+                    $colorir = 'bg-white';
                 }
 
                 return [
@@ -146,27 +159,6 @@ class FeriasController extends Controller
                     'data_admissao' => $item->first()->data_admissao,
                     'centro_custo' => !is_null($item->first()->centro_custo_id) ? $item->first()->centro_custo_label : 'Não informado',
                     'todos_periodos' => $todos_periodos,
-                    'periodos' => $item->map(function ($item) {
-                        return [
-                            'id' => $item->ferias_id,
-                            'periodo_aquisitivo' => $item->periodo_aquisitivo_label,
-                            'periodo_aquisitivo_ano_inicial' => $item->periodo_aquisitivo_ano_inicial,
-                            'qnt_dias' => $item->qnt_dias,
-                            'qnt_faltas' => $item->qnt_faltas,
-                            'dias_saldo' => $item->dias_saldo,
-                            'data_saida' => $item->data_saida,
-                            'data_retorno' => $item->data_retorno,
-                            'status_ferias' => $item->status_ferias,
-                            'aprovado_via_script' => $item->aprovado_via_script,
-                            'status_aprovacao_gestor' => $item->status_aprovacao_gestor,
-                            'gestor_aprovacao_id' => $item->gestor_aprovacao_id,
-                            'gestor_aprovacao_nome' => $item->gestor_aprovacao_nome,
-                            'deleted_at' => $item->deleted_at,
-                            'avos' => FeriasCalculoAvos::select(['total_avos', 'ultima_atualizacao'])->where('admissao_id', $item->admissao_id)
-                                ->where('periodo_aquisitivo_id', $item->periodo_aquisitivo_id)
-                                ->first()
-                        ];
-                    })->sortByDesc('periodo_aquisitivo_ano_inicial')->values(),
                 ];
             });
 

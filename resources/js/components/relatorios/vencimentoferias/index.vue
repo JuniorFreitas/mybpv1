@@ -45,7 +45,7 @@
                                             {{ index + 1 }}
                                         </th>
                                         <th colspan="6">{{ item.nome }}<br>(Admitido em: {{ item.data_admissao }}) - (Centro de Custo: {{ item.centro_custo }})
-                                            <br><span >Férias atrasadas {{item.tempo_atrasado}}</span>
+                                            <br><span v-if="item.dias_atraso > 0">Férias atrasadas {{item.tempo_atrasado}}</span>
                                         </th>
                                     </tr>
 
