@@ -76,46 +76,59 @@ class FeriasController extends Controller
                 $dias_atraso = 0;
                 $todos_periodos = FeriasCalculoAvos::select(['ferias_calculo_avos.id', 'ferias_calculo_avos.admissao_id', 'ferias_calculo_avos.periodo_aquisitivo_id',
                     'ferias_calculo_avos.empresa_id', 'ferias_calculo_avos.total_avos', 'ferias_calculo_avos.ultima_atualizacao', 'ferias_calculo_avos.atualizado_via_script',
+                    'ferias_calculo_avos.historico',
                     'periodos_aquisitivos.label', 'periodos_aquisitivos.ano_inicial'])
                     ->join('periodos_aquisitivos', 'ferias_calculo_avos.periodo_aquisitivo_id', '=', 'periodos_aquisitivos.id')
                     ->whereAdmissaoId($item->first()->admissao_id)->orderByDesc('periodos_aquisitivos.ano_inicial')->get()->map(function ($t) use ($item) {
                         $ferias = $item->where('admissao_id', $t->admissao_id)->where('periodo_aquisitivo_id', $t->periodo_aquisitivo_id)->first();
 
-                        $status_ferias = 'Aguardando';
                         if ($t->total_avos < 30) {
                             $status_ferias = 'Saldo insuficiente';
                         } elseif (is_null($ferias) && (int)$t->ano_inicial <= 2020) {
-                            $status_ferias =  'Gozada';
-                        }else{
-                            $status_ferias = $ferias->status_ferias ?? 'Aguardando';
+                            $status_ferias = 'Gozada';
+                        } else {
+                            $status_ferias = isset($ferias->status_ferias) ? ucfirst($ferias->status_ferias) : 'Aguardando';
                         }
+
                         return [
                             'id' => $t->id,
                             'admissao_id' => $t->admissao_id,
                             'empresa_id' => $t->empresa_id,
                             'total_avos' => $t->total_avos,
                             'periodo_aquisitivo' => $t->label,
-                            'data_saida' => $ferias->data_saida ?? null,
-                            'data_retorno' => $ferias->data_retorno ?? null,
-                            'ultima_atualizacao' => (new DataHora($t->ultima_atualizacao))->dataCompleta(),
+                            'ultimo_dia_avo' => collect($t->historico)->sortByDesc('data_mes')->first()['data_mes'],
+                            'data_saida' => isset($ferias->data_saida) ? (new DataHora($ferias->data_saida))->dataCompleta() : null,
+                            'data_retorno' => isset($ferias->data_retorno) ? (new DataHora($ferias->data_retorno))->dataCompleta() : null,
+                            'ultima_atualizacao' => (new DataHora(collect($t->historico)->sortByDesc('data_mes')->first()['data_mes']))->dataCompleta(),
                             'atualizado_via_script' => $t->atualizado_via_script,
                             'status_ferias' => $status_ferias,
                             'tem_tb_ferias' => (bool)$ferias
                         ];
                     });
-                $atraso = $item->map(function ($item) use (&$dias_atraso) {
-                    if (is_null($item->status_ferias)) {
-                        $dias_atraso = Carbon::now()->diffInDays($item->data_saida);
-                    }
-                    return $dias_atraso;
-                });
+//                $atraso = $item->map(function ($item) use (&$dias_atraso) {
+//                    if (is_null($item->status_ferias)) {
+//                        $dias_atraso = Carbon::now()->diffInDays($item->data_saida);
+//                    }
+//                    return $dias_atraso;
+//                });
 
+//                $atraso = collect($todos_periodos)->where('status_ferias', 'Aguardando')->map(function ($item) {
+//                    return Carbon::now()->diffInDays((new DataHora($item['ultimo_dia_avo']))->dataInsert());
+//                });
 
-                switch ($atraso->sum) {
-                    case $atraso->sum() <= self::UmAno8Meses:
+                $atraso = collect($todos_periodos)->where('status_ferias', 'Aguardando')->sortBy('ultimo_dia_avo')->first();
+                if ($atraso){
+                    $atraso = Carbon::now()->diffInDays((new DataHora($atraso['ultimo_dia_avo']))->dataInsert());
+                }else{
+                    $atraso = 0;
+                    $info = null;
+                }
+
+                switch ($atraso) {
+                    case $atraso <= self::UmAno8Meses:
                         $colorir = 'bg-white';
                         break;
-                    case $atraso->sum() >= self::UmAno8Meses + 1 && $atraso->sum() <= self::UmAno10Meses:
+                    case $atraso >= self::UmAno8Meses + 1 && $atraso <= self::UmAno10Meses:
                         $colorir = 'bg-warning';
                         break;
                     default:
@@ -124,8 +137,8 @@ class FeriasController extends Controller
                 }
 
                 return [
-                    'dias_atraso' => $atraso->sum(),
-                    'tempo_atrasado' => Carbon::now()->subDays($atraso->sum())->diffForHumans(),
+                    'dias_atraso' => $atraso,
+                    'tempo_atrasado' => Carbon::now()->subDays($atraso)->diffForHumans(null, true, false, 2),
                     'pintar' => $colorir,
                     'nome' => $item->first()->nome,
                     'cargo' => $item->first()->cargo,
