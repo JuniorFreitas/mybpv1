@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\Ferias;
+use MasterTag\DataHora;
+
 function sdd()
 {
     $data = new \MasterTag\DataHora();
@@ -94,7 +98,7 @@ Artisan::command('mybp:syncfuncionarios', function () {
 
 Artisan::command('mybp:grupoClinicaExame {empresa_id?}', function () {
     $this->info('Sincronizando Clinica');
-    $empresa_id = (int) $this->arguments()['empresa_id'];
+    $empresa_id = (int)$this->arguments()['empresa_id'];
     \App\Models\Sistema::grupoClinicaExame($empresa_id);
 })->describe("Sincronizando Funcionarios");
 
@@ -102,3 +106,127 @@ Artisan::command('mybp:syncAso', function () {
     $this->info('Sincronizando data ASOs');
     \App\Models\Sistema::syncAso();
 })->describe("Sincronizando data ASOs");
+
+Artisan::command('mybp:ferias', function () {
+    try {
+        $ferias_gozando_sistema = \DB::table('ferias')
+            ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
+            ->where('aprovado_via_script', true)
+            ->where('data_saida', '<=', (new DataHora())->dataInsert())
+            ->where('data_retorno', '>=', (new DataHora())->dataInsert())
+            ->update([
+                'status_ferias' => Ferias::STATUS_GOZANDO,
+                'data_status_ferias' => (new DataHora())->dataInsert()
+            ]);
+        Log::info("Ferias gozando");
+
+        $ferias_gozando_rh = \DB::table('ferias')
+            ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
+            ->where('data_saida', '<=', (new DataHora())->dataInsert())
+            ->where('data_retorno', '>=', (new DataHora())->dataInsert())
+            ->update([
+                'status_ferias' => Ferias::STATUS_GOZANDO,
+                'data_status_ferias' => (new DataHora())->dataInsert()
+            ]);
+        Log::info("Ferias gozando rh");
+
+        $ferias_gozadas_sistema = \DB::table('ferias')
+            ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
+            ->where('aprovado_via_script', true)
+            ->where('data_retorno', '<', (new DataHora())->dataInsert())
+            ->update([
+                'status_ferias' => Ferias::STATUS_GOZADA,
+                'data_status_ferias' => (new DataHora())->dataInsert()
+            ]);
+
+        Log::info("Ferias gozadas");
+
+        $ferias_gozadas_rh = \DB::table('ferias')
+            ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
+            ->where('data_retorno', '<', (new DataHora())->dataInsert())
+            ->update([
+                'status_ferias' => Ferias::STATUS_GOZADA,
+                'data_status_ferias' => (new DataHora())->dataInsert()
+            ]);
+
+        Log::info("Ferias gozando rh");
+
+        // NAO FAZER AGORA - AGUARDANDO DEFINICAO DE REGRAS DE NEGOCIO (DANY)
+    } catch (\Exception $e) {
+        \Log::error($e->getMessage());
+    }
+})->describe("Sincronizando Ferias");
+
+Artisan::command('mybp:calculoAvos', function () {
+    $admissoes = DB::select("SELECT
+            a.id as admissao_id, a.feedback_id, a.data_admissao, fc.empresa_id
+        FROM admissoes a
+            INNER JOIN feedback_curriculos fc on a.feedback_id = fc.id
+        WHERE a.data_admissao >= '1996-01-01'
+        AND a.feedback_id not in (SELECT feedback_id FROM demissaos)
+        AND fc.deleted_at is null
+        AND fc.empresa_id = 104
+        ORDER BY a.data_admissao ASC");
+
+//    dd($admissoes);
+
+    $periodos_aquisitivos = DB::select("SELECT * FROM periodos_aquisitivos WHERE ano_inicial >= 1996 ORDER BY ano_inicial ASC");
+    $periodo_aquisitivo = [];
+    foreach ($periodos_aquisitivos as $pa) {
+        $periodo_aquisitivo[$pa->ano_inicial] = [
+            'id' => $pa->id,
+            'label' => $pa->label,
+            'ano_inicial' => $pa->ano_inicial,
+            'ano_final' => $pa->ano_final,
+        ];
+    }
+
+    foreach ($admissoes as $key => $linha) {
+        $admissao_id = $linha->admissao_id;
+        $data_admissao = $linha->data_admissao;
+        $dia_admissao = (new DataHora($data_admissao))->dia();
+        $mes_admissao = (new DataHora($data_admissao))->mes();
+        $ano_admissao = (new DataHora($data_admissao))->ano();
+        $empresa_id = $linha->empresa_id;
+
+        $historico_avos = \App\Models\FeriasCalculoAvos::somaAvosScriptNew($dia_admissao, $mes_admissao, $ano_admissao, $periodo_aquisitivo);
+
+        foreach ($historico_avos as $chave => $historico) {
+            $ultimo_total_avos_admissao = $historico_avos[$chave]['total_avos'];
+            $historico_avos_admissao = $historico_avos[$chave];
+            unset($historico_avos_admissao['total_avos']);
+            $historico_avos_cad_admissao = json_encode(array_values(json_decode(json_encode($historico_avos_admissao), true)));
+            $calculo_avos_admissao = [
+                'empresa_id' => $empresa_id,
+                'admissao_id' => $admissao_id,
+                'periodo_aquisitivo_id' => $periodo_aquisitivo[$chave]['id'],
+                'total_avos' => $ultimo_total_avos_admissao,
+                'historico' => $historico_avos_cad_admissao,
+                'atualizado_via_script' => true,
+                'ultima_atualizacao' => (new DataHora())->dataHoraInsert(),
+            ];
+
+            try {
+                $periodo_aquisitivo_id = (int)$periodo_aquisitivo[$chave]['id'];
+                $cadastrado = DB::table('ferias_calculo_avos')
+                    ->where('admissao_id', $admissao_id)
+                    ->where('periodo_aquisitivo_id', $periodo_aquisitivo_id)
+                    ->get();
+
+                if (count($cadastrado) == 0 && $ultimo_total_avos_admissao > 0) {
+                    DB::table('ferias_calculo_avos')->insert($calculo_avos_admissao);
+                    echo "ID : " . $linha->admissao_id . " | " . $cont++ . " CADASTRADA\n";
+                }else{
+                    echo "ID : " . $linha->admissao_id . " | " . $cont++ . " JÁ CADASTRADA\n";
+                }
+
+            } catch (Exception $exception) {
+                echo $exception->getMessage();
+                Log::error("ERRO AO RODAR O CALCULO DE AVOS " . print_r($exception->getTrace(), true));
+            }
+        }
+    }
+
+    Log::info("Fim do script de calculo de avos");
+
+})->describe("calculoAvos");
