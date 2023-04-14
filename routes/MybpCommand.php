@@ -165,7 +165,6 @@ Artisan::command('mybp:calculoAvos', function () {
         WHERE a.data_admissao >= '1996-01-01'
         AND a.feedback_id not in (SELECT feedback_id FROM demissaos)
         AND fc.deleted_at is null
-        AND fc.empresa_id = 104
         ORDER BY a.data_admissao ASC");
 
 //    dd($admissoes);
