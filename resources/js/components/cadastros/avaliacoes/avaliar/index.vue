@@ -287,7 +287,7 @@
                         'bg-danger text-white': item.pendente_autoavaliacao,
                         'bg-pink': item.pendente_autoavaliacao_colaborador,
                         'bg-warning': item.pendente_avaliacao_par && item.status !== 'Finalizada',
-                        'bg-info text-white': !item.pendente_avaliacao_par,
+                        'bg-info text-white': !item.pendente_avaliacao_par && item.status !== 'Finalizada',
                         'bg-success text-white': item.status === 'Finalizada'
                     }"
                     >
