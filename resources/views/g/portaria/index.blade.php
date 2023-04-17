@@ -361,7 +361,7 @@
 
 
                     <td class="text-center">
-                        @{{resultado.vaga_selecionada.nome}}
+                        @{{resultado.vaga_aberta.vaga.nome}}
                     </td>
 
                     <td class="text-center">
