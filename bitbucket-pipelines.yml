@@ -14,7 +14,7 @@ pipelines:
           - echo "${MYBPIN}" > ~/mybpin.pem
           - chmod 400 ~/mybpin.pem
           - cat ~/mybpin.pem
-          - ssh -i "~/mybpin.pem" ${USER_HOMOL}@${HOST_HOMOL}
+          - ssh -i "~/mybpin.pem" ${USER_MYBP}@${HOST_HOMOL} "ls -la"
     - step:
         name: Teste
         script:
