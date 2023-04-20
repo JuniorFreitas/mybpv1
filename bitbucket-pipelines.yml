@@ -10,4 +10,4 @@ pipelines:
           - mkdir -p ~/.ssh
           - echo "$MYBPIN" | base64 -d > ~/.ssh/aws.pem
           - chmod 400 ~/.ssh/aws.pem
-          - ssh -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem ubuntu@3.224.176.151 ls -la
+          - ssh -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem ubuntu@3.224.176.151 docker exec -t app composer dump
