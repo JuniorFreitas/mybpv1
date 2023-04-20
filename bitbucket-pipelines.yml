@@ -15,7 +15,7 @@ pipelines:
           - chmod 400 mybpin.pem
           - pwd
           - ls -la
-          - ssh -i "${PWD}/mybpin/pem" "${USER_MYBP}@${HOST_HOMOL}" ls -la
+          - ssh -i "${PWD}/mybpin.pem" "${USER_MYBP}@${HOST_HOMOL}" ls -la
     - step:
         name: Teste
         script:
