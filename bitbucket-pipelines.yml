@@ -1,22 +1,13 @@
-image: node:14
+image: atlassian/default-image:2
 
 pipelines:
   default:
     - step:
-        name: Acessar EC2 via SSH
-        services:
-          - docker
-        caches:
-          - docker
+        name: Download AWS pem file and list files on remote host
         script:
-          - apt-get update && apt-get install -y openssh-client curl
-          - cd ~
-          - curl -O https://mybp-dev.s3.amazonaws.com/mybpin.pem
-          - chmod 400 mybpin.pem
-          - pwd
-          - ls -la
-          - ssh -i "${PWD}/mybpin.pem" ${USER_MYBP}@${HOST_HOMOL} touch arquivobitbucket.txt
-    - step:
-        name: Teste
-        script:
-          - echo "Teste executado com sucesso"
+          - apt-get update
+          - apt-get install -yqq openssh-client
+          - mkdir -p ~/.ssh
+          - echo "$MYBPIN" | base64 -d > ~/.ssh/aws.pem
+          - chmod 400 ~/.ssh/aws.pem
+          - ssh -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem ubuntu@3.224.176.151 ls -la
