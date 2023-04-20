@@ -3,11 +3,16 @@ image: atlassian/default-image:2
 pipelines:
   default:
     - step:
-        name: Download AWS pem file and list files on remote host
+        name: Criando host
         script:
           - apt-get update
           - apt-get install -yqq openssh-client
           - mkdir -p ~/.ssh
           - echo "$MYBPIN" | base64 -d > ~/.ssh/aws.pem
-          - chmod 400 ~/.ssh/aws.pem
-          - ssh -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem ubuntu@3.224.176.151 docker exec -t app composer dump
+          - chmod 600 ~/.ssh/aws.pem
+          
+          #- ssh -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
+    - step:
+        name: Connecting to server
+        script:
+          - ssh -i ~/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
