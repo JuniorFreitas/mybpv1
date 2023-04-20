@@ -12,7 +12,7 @@ pipelines:
           - mkdir -p /root/.ssh
           - ls -la
           - echo "$MYBPIN" | base64 -d > /root/.ssh/aws.pem
-          - cd /root/.ssh/ ls -la
+          - ls -la
           - cat /root/.ssh/aws.pem
           - chmod 600 /root/.ssh/aws.pem
           - ls -la
