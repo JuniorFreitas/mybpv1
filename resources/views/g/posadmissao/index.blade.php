@@ -251,13 +251,12 @@
                         <div class="form-group">
                             <label for="">Superior Imediato:</label>
                             <input type="text" class="form-control"
-                                   v-model="form.entrevista_desligamento.superior_imediato"
-                                   onblur="valida_campo_vazio(this,1)">
+                                   v-model="form.entrevista_desligamento.superior_imediato">
                         </div>
 
                         <div class="form-group">
                             <label for="">Motivo do Desligamento ?</label>
-                            <textarea v-model="form.entrevista_desligamento.motivo" onblur="valida_campo_vazio(this,1)"
+                            <textarea v-model="form.entrevista_desligamento.motivo"
                                       class="form-control" cols="5"
                                       rows="5"></textarea>
                         </div>
@@ -265,7 +264,6 @@
                         <div class="form-group">
                             <label for="">Você trabalharia na empresa novamente? Por quê?</label>
                             <textarea v-model="form.entrevista_desligamento.trabalharia_novamente"
-                                      onblur="valida_campo_vazio(this,1)"
                                       class="form-control" cols="5"
                                       rows="5"></textarea>
                         </div>
@@ -274,7 +272,6 @@
                             <label for="">O que você deixaria como contribuição para o processo de melhoria da
                                 empresa?</label>
                             <textarea v-model="form.entrevista_desligamento.contr_melhoria"
-                                      onblur="valida_campo_vazio(this,1)"
                                       class="form-control" cols="5"
                                       rows="5"></textarea>
                         </div>
@@ -286,8 +283,7 @@
 
                         <div class="form-group">
                             <label>Relacionamento Interpessoal</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.relacao_interpessoal">
+                            <select class="form-control" v-model="form.entrevista_desligamento.relacao_interpessoal">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -299,8 +295,7 @@
 
                         <div class="form-group">
                             <label>Recursos físicos, materiais e tecnológicos (estrutura física para trabalhar):</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.recursos_fisicos">
+                            <select class="form-control" v-model="form.entrevista_desligamento.recursos_fisicos">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -312,8 +307,7 @@
 
                         <div class="form-group">
                             <label>Valores e normas da empresa</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.valores_normas">
+                            <select class="form-control" v-model="form.entrevista_desligamento.valores_normas">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -325,8 +319,7 @@
 
                         <div class="form-group">
                             <label>Planejamento, organização e metas estabelecidas:</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.planejamento">
+                            <select class="form-control" v-model="form.entrevista_desligamento.planejamento">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -338,8 +331,7 @@
 
                         <div class="form-group">
                             <label>Seu superior imediato</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.sob_superior_imediato">
+                            <select class="form-control" v-model="form.entrevista_desligamento.sob_superior_imediato">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -351,8 +343,7 @@
 
                         <div class="form-group">
                             <label>Da direção da empresa</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.direcao_empresa">
+                            <select class="form-control" v-model="form.entrevista_desligamento.direcao_empresa">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -364,8 +355,7 @@
 
                         <div class="form-group">
                             <label>Oportunidades de treinamento e de crescimento</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.oportunidades">
+                            <select class="form-control" v-model="form.entrevista_desligamento.oportunidades">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -377,8 +367,7 @@
 
                         <div class="form-group">
                             <label>Seu salário e Benefícios oferecidos</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.salario_beneficio">
+                            <select class="form-control" v-model="form.entrevista_desligamento.salario_beneficio">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -390,8 +379,7 @@
 
                         <div class="form-group">
                             <label>Sua atividade</label>
-                            <select onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)"
-                                    class="form-control" v-model="form.entrevista_desligamento.atividade">
+                            <select class="form-control" v-model="form.entrevista_desligamento.atividade">
                                 <option value="">Selecione</option>
                                 <option value="Excelente">Excelente</option>
                                 <option value="Ótimo">Ótimo</option>
@@ -411,7 +399,6 @@
                         <div class="form-group">
                             <label for="">Parecer do Entrevistador</label>
                             <textarea v-model="form.entrevista_desligamento.parecer_entrevistador"
-                                      onblur="valida_campo_vazio(this,1)"
                                       class="form-control" cols="5"
                                       rows="5"></textarea>
                         </div>
@@ -557,8 +544,8 @@
                         v-model="controle.dados.campoFeedback">
                     <option value="">Sem filtro</option>
                     {{--                            <option value="não">Não avaliado</option>--}}
-                    <option value="RETORNA">Sim</option>
-                    <option value="NÃO RETORNA">Não</option>
+                    <option value="sim">Sim</option>
+                    <option value="nao">Não</option>
                 </select>
             </div>
 
@@ -610,7 +597,7 @@
                     <th class="text-center">
                         <input type="checkbox"
                                :checked="tudoMarcado"
-                               :disabled="comAvaliacao.length === 0"
+                               :disabled="comDemissao.length === 0"
                                style="cursor: pointer"
                                @click="selecionaTodos">
                     </th>
@@ -628,18 +615,18 @@
                 <tbody>
                 <tr v-for="item in lista">
                     <td class="text-center">
-                        <label :for="item.curriculo_id">
+                        <label :for="item.id">
                             <input
                                 type="checkbox"
                                 v-model="selecionados"
-                                :value="item.feedback.curriculo_id"
-                                :id="item.feedback.curriculo_id"
-                                :style="item.avaliacao ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                :title="item.avaliacao ? null : 'Não possui cadastro em Avaliação'"
-                                v-if="item.avaliacao"
+                                :value="item.id"
+                                :id="item.id"
+                                :style="item.demissao ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                :title="item.demissao ? null : 'Não possui cadastro em Avaliação'"
+                                v-if="item.demissao"
                             >
                             <input type="checkbox" v-else disabled="disabled"
-                                   title="Sem Avaliação">
+                                   title="Sem Demissão">
 
                         </label>
                     </td>
