@@ -1,23 +1,21 @@
-# This is a sample build configuration for PHP.
-# Check our guides at https://confluence.atlassian.com/x/e8YWN for more examples.
-# Only use spaces to indent your .yml configuration.
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
-image: php:7.1.29
+image: node:14
 
 pipelines:
-
-  branches:
-    production:
-      - step:
-          name: Deploy em homologocao
-          deployment: production
-          script:
-            - echo "Deploying to production environment"
-            - pipe: atlassian/ssh-run:0.2.2
-              variables:
-                SSH_USER: $SSH_USER_HOMOL
-                SERVER: $SERVER_HOMOL
-                #SSH_KEY: $MYKEY
-                PORT: $PORT
-                COMMAND: "/var/www/deploy.sh"
+  default:
+    - step:
+        name: Acessar EC2 via SSH
+        services:
+          - docker
+        caches:
+          - docker
+        script:
+          - apt-get update && apt-get install -y openssh-client
+          - echo -e "Host ec2\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" >> ~/.ssh/config
+          - echo -e "${MYBPIN}" > ~/.ssh/aws_rsa
+          - chmod 400 ~/.ssh/aws_rsa
+          - echo -e "Host ec2\n\tHostName ${HOST_HOMOL}\n\tUser ${USER_MYBP}\n\tIdentityFile ~/.ssh/aws_rsa" > aws_ssh_config
+          - ssh -F aws_ssh_config ${USER_MYBP}@${HOST_HOMOL} ls -la
+    - step:
+        name: Teste
+        script:
+          - echo "Teste executado com sucesso"
