@@ -15,7 +15,7 @@ pipelines:
           - chmod 400 mybpin.pem
           - pwd
           - ls -la
-          - ssh -i "${PWD}/mybpin.pem" "${USER_MYBP}@${HOST_HOMOL}" touch arquivobitbucket.txt
+          - ssh -i "${PWD}/mybpin.pem" ${USER_MYBP}@${HOST_HOMOL} touch arquivobitbucket.txt
     - step:
         name: Teste
         script:
