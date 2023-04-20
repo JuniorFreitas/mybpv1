@@ -1,4 +1,4 @@
-image: atlassian/default-image:2
+image: node:14
 
 pipelines:
   default:
@@ -10,6 +10,7 @@ pipelines:
           - mkdir -p /root/.ssh
           - echo "$MYBPIN" | base64 -d > /root/.ssh/aws.pem
           - chmod 600 /root/.ssh/aws.pem
+          - pwd
           
           #- ssh -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
     - step:
