@@ -14,7 +14,7 @@
                         <legend>Informações</legend>
                         <div class="row">
 
-                            <colaborador :model="form" :verifica="visualizar" :hash="hash"></colaborador>
+<!--                            <colaborador :model="form" :verifica="visualizar" :hash="hash"></colaborador>-->
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
@@ -50,7 +50,7 @@
 
                             <div class="col-12 col-md-4">
                                 <label>Data para tranferência</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_transferencia"
+                                <datepicker label="" class="corrigiDatepicker" formsm v-model="form.data_transferencia"
                                             :disabled="visualizar"></datepicker>
                             </div>
 
@@ -395,7 +395,7 @@ export default {
     },
     data() {
         return {
-            tituloJanela: 'Solicitacao de admissão',
+            tituloJanela: 'Solicitacao de transferência',
             preload: false,
             editando: false,
             apagado: false,
@@ -569,7 +569,7 @@ export default {
             this.aprovando = false;
             this.visualizar = false;
             this.podeanexar = true;
-            this.tituloJanela = "Solicitação de admissão";
+            this.tituloJanela = "Solicitação de transferência";
 
             formReset();
             setupCampo();

@@ -141,14 +141,15 @@ const app = new Vue({
                 campoFiltro: "",
                 campoPcd: "",
                 campoUf: "",
-                campoFeedback: ""
+                campoFeedback: "",
+                campoCPF: ""
             }
         }
     },
     computed: {
-        comAvaliacao() {
+        comDemissao() {
             return this.lista.filter(item => {
-                return item.avaliacao;
+                return item.demissao;
             });
         },
         formulariosAtivos() {
@@ -171,14 +172,14 @@ const app = new Vue({
             return formularios;
         },
         tudoMarcado() {
-            let totalItens = this.comAvaliacao.length;
+            let totalItens = this.comDemissao.length;
             let totalEncontrado = 0;
 
             if (totalItens === 0) {
                 return false;
             }
-            this.comAvaliacao.forEach(item => {
-                let id = item.curriculo_id;
+            this.comDemissao.forEach(item => {
+                let id = item.id;
                 if (this.selecionados.indexOf(id) >= 0) {
                     totalEncontrado++;
                     //faz nada
@@ -189,8 +190,14 @@ const app = new Vue({
             let resultado = totalItens === totalEncontrado;
             this.selecionaTudo = resultado;
             return resultado;
-        }
+        },
 
+        paramsExport() {
+            let params = {
+                selecionados: this.selecionados,
+            }
+            return  _.merge(params, this.controle.dados);
+        }
     },
 
     mounted() {
@@ -211,15 +218,15 @@ const app = new Vue({
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
-                this.comAvaliacao.map(item => {
-                    let id = item.curriculo_id;
+                this.comDemissao.map(item => {
+                    let id = item.id;
                     if (this.selecionados.indexOf(id) === -1) {
                         this.selecionados.push(id);
                     }
                 });
             } else {
-                this.comAvaliacao.map(item => {
-                    let id = item.curriculo_id;
+                this.comDemissao.map(item => {
+                    let id = item.id;
                     let index = this.selecionados.indexOf(id);
                     if (index >= 0) {
                         this.selecionados.splice(index, 1);

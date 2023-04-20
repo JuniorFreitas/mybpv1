@@ -381,13 +381,19 @@ class PosAdmissaoController extends Controller
 
     public function filtro(Request $request)
     {
-        $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
+        $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) use ($request) {
             $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);
-        })->with('Admissao.AreaEtiqueta', 'Curriculo', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
+            if ($request->filled('campoArea')) {
+                $q->whereAreaEtiquetaId($request->campoArea);
+            }
+            if ($request->filled('campoCargo')) {
+                $q->where('cargo', 'like', '%' . $request->campoCargo . '%');
+            }
+        })->with('Admissao:id,feedback_id,area_etiqueta_id,cargo,data_admissao','Admissao.AreaEtiqueta', 'Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
+                $query->where('nome', 'like', '%' . $request->campoBusca . '%');
             });
         }
 
@@ -397,15 +403,24 @@ class PosAdmissaoController extends Controller
             });
         }
 
-
         if ($request->filled('campoUf')) {
             $resultado->whereHas('Curriculo', function ($q) use ($request) {
                 $q->whereUfVaga($request->campoUf);
             });
         }
 
+        if ($request->filled('campoCPF')) {
+            $resultado->whereHas('Curriculo', function ($q) use ($request) {
+                $q->whereCpf($request->campoCPF);
+            });
+        }
+
         if ($request->filled('campoFeedback')) {
-            $resultado->whereAvaliacao($request->campoFeedback);
+            if($request->campoFeedback == "nao"){
+                $resultado->whereDoesntHave('EntrevistaDesligamento');
+            }else{
+                $resultado->whereHas('EntrevistaDesligamento');
+            }
         }
 
         return $resultado->orderByDesc('updated_at');
@@ -414,7 +429,11 @@ class PosAdmissaoController extends Controller
 
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
+        if($request->filled('selecionados') && count($request->selecionados) > 0){
+            $resultado = $this->filtro($request)->whereIn('id',$request->selecionados)->get();
+        }else{
+            $resultado = $this->filtro($request)->get();
+        }
 
         $head = [
             'ID',
