@@ -10,11 +10,10 @@ pipelines:
           - docker
         script:
           - apt-get update && apt-get install -y openssh-client
-          - echo -e "Host ec2\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" >> ~/.ssh/config
-          - echo -e "${MYBPIN}" > ~/.ssh/aws_rsa
-          - chmod 400 ~/.ssh/aws_rsa
-          - echo -e "Host ec2\n\tHostName ${HOST_HOMOL}\n\tUser ${USER_MYBP}\n\tIdentityFile ~/.ssh/aws_rsa" > aws_ssh_config
-          - ssh -F aws_ssh_config ${USER_MYBP}@${HOST_HOMOL} ls -la
+          - touch ~/mybpin.pem
+          - echo "${MYBPIN}" > ~/mybpin.pem
+          - chmod 400 ~/mybpin.pem
+          - cat ~/mybpin.pem
     - step:
         name: Teste
         script:
