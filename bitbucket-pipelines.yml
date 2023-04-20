@@ -7,12 +7,12 @@ pipelines:
         script:
           - apt-get update
           - apt-get install -yqq openssh-client
-          - mkdir -p "/root/.ssh"
-          - echo "$MYBPIN" | base64 -d > "/root/.ssh/aws.pem"
-          - chmod 600 "${PWD}/.ssh/aws.pem"
+          - mkdir -p /root/.ssh
+          - echo "$MYBPIN" | base64 -d > /root/.ssh/aws.pem
+          - chmod 600 /root/.ssh/aws.pem
           
           #- ssh -o StrictHostKeyChecking=no -i ~/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
     - step:
         name: Connecting to server
         script:
-          - ssh -i "/root/.ssh/aws.pem" ubuntu@3.224.176.151 "ls -la"
+          - ssh -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
