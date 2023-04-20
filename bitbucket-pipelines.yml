@@ -11,8 +11,7 @@ pipelines:
         script:
           - apt-get update && apt-get install -y openssh-client curl
           - curl -O https://mybp-dev.s3.amazonaws.com/mybpin.pem
-          - chmod 400 ~/mybpin.pem
-          - ssh -i "~/mybpin.pem" ${USER_MYBP}@${HOST_HOMOL} "ls -la"
+          - pwd
     - step:
         name: Teste
         script:
