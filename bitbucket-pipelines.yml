@@ -10,8 +10,11 @@ pipelines:
           - docker
         script:
           - apt-get update && apt-get install -y openssh-client curl
+          - cd ~
           - curl -O https://mybp-dev.s3.amazonaws.com/mybpin.pem
+          - chmod 400 mybpin.pem
           - pwd
+          - ls -la
     - step:
         name: Teste
         script:
