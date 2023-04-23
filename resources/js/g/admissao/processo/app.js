@@ -598,18 +598,10 @@ const app = new Vue({
             return resultado;
         },
         paramsExport() {
-            return {
+            let params = {
                 selecionados: this.selecionados,
-                campoVaga: this.controle.dados.campoVaga,
-                campoCliente: this.controle.dados.campoCliente,
-                campoUf: this.controle.dados.campoUf,
-                campoRh: this.controle.dados.campoRh,
-                campoFinalRh: this.controle.dados.campoFinalRh,
-                campoRota: this.controle.dados.campoRota,
-                campoTecnica: this.controle.dados.campoTecnica,
-                campoTeste: this.controle.dados.campoTeste,
-                campoPcd: this.controle.dados.campoPcd
             }
+            return  _.merge(params, this.controle.dados);
         }
     },
     mounted() {
