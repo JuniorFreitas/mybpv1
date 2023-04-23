@@ -229,3 +229,7 @@ Artisan::command('mybp:calculoAvos', function () {
     Log::info("Fim do script de calculo de avos");
 
 })->describe("calculoAvos");
+
+//Artisan::command('mybp:exportExcel {dados} {arquivo}', function () {
+//    \App\Models\Sistema::exportaExcelPython($this->argument('dados'),$this->argument('arquivo'));
+//});

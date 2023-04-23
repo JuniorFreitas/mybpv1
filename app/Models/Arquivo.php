@@ -187,6 +187,7 @@ class Arquivo extends Model
     const DISCO_DOCUMENTO_SSMA = 'disco-documento-ssma';
     const DISCO_MOVIMENTACAO = 'disco-movimentacao';
     const DISCO_ASSINATURA = 'disco-assinatura';
+    const DISCO_EXPORTACAO = 'disco-exportacao';
 
     const LISTAGEM_DISCOS = [
         self::DISCO_CLOUD,
@@ -216,6 +217,7 @@ class Arquivo extends Model
         self::DISCO_DOCUMENTO_SSMA,
         self::DISCO_MOVIMENTACAO,
         self::DISCO_ASSINATURA,
+        self::DISCO_EXPORTACAO,
     ];
 
     /**
