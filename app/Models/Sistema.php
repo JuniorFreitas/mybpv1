@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Events\Notificacoes\NotificacaoEvent;
 use DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 use MasterTag\GExtenso;
@@ -882,5 +885,36 @@ class Sistema
         ];
     }
 
+
+    public static function exportaExcelPython($usuario, $local, $dados, $nome_arquivo)
+    {
+        try {
+            $caminho_script = base_path("scripts/python/export.py");
+            $autenticado = $usuario;
+            $jsonData = json_encode($dados);
+            Redis::set($nome_arquivo, $jsonData);
+            $resultado = exec("python3 $caminho_script $nome_arquivo");
+
+            if ($resultado != "") {
+                $nomedoarquivo = "$nome_arquivo.xls";
+                Exportacao::create([
+                    'user_id' => $autenticado->id,
+                    'arquivo' => $nomedoarquivo,
+                    'local' => $local,
+                    'removido' => false,
+                ]);
+                Event::dispatch(new NotificacaoEvent([
+                    'user_id' => $autenticado->id,
+                    'local' => $local,
+                ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
+            } else {
+                throw new \Exception("Erro ao gerar o arquivo");
+            }
+
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
+    }
 
 }
