@@ -13,7 +13,7 @@ disco = 'arquivos/disco-exportacao'
 arquivo_json = caminho_absoluto_arquivo + '.json'
 arquivo_xls = caminho_absoluto_arquivo + '.xls'
 arquivo_s3 = os.path.join(disco, nomedoarquivo + '.xls')
-chave_redis = f'mybp_database_{nomedoarquivo}'
+chave_redis = sys.argv[2]
 
 def buscar_credenciais_aws():
     arquivo_env = os.path.join(path_arquivo.split('scripts')[0], '.env')
