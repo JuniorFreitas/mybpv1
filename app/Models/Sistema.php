@@ -893,8 +893,8 @@ class Sistema
             $autenticado = $usuario;
             $jsonData = json_encode($dados);
             Redis::set($nome_arquivo, $jsonData);
-            $resultado = exec("python3 $caminho_script $nome_arquivo");
-
+            $redisNome = env('REDIS_PREFIX').$nome_arquivo;
+            $resultado = exec("python3 $caminho_script $nome_arquivo $redisNome");
             if ($resultado != "") {
                 $nomedoarquivo = "$nome_arquivo.xls";
                 Exportacao::create([
