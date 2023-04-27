@@ -36,17 +36,18 @@ class CarteiraAssinaturaController extends Controller
                 DB::beginTransaction();
                 $resposta = CarteiraAssinatura::create($dados);
 
-                foreach ($dados['assinatura'] as $item) {
-                    $resposta->Anexos()->attach($item['id']);
-                    $resposta->Anexos()->where('id', $item['id'])
-                        ->where('temporario', true)
-                        ->where('chave', $item['chave'])
-                        ->update([
-                            'temporario' => false,
-                            'chave' => '',
-                            'nome' => $item['nome']
-                        ]);
+                if (isset($dados['anexos'])) {
+                    foreach ($dados['anexos'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $resposta->Anexos()->attach($arquivo->id);
+                        }
+                    }
                 }
+
                 DB::commit();
                 return response()->json([], 201);
             } catch (\Exception $e) {
