@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Arquivo;
 use App\Models\CarteiraAssinatura;
+use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
 
