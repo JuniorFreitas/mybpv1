@@ -342,7 +342,7 @@
                         resultado.cliente.nome}}
                     </td>
                     <td class="text-center">
-                        @{{resultado.vaga_selecionada.nome}}
+                        @{{resultado.vaga_aberta_municipio}}
                     </td>
                     <td class="text-center">
                         @{{ resultado.curriculo.anexos_cpf_rg_count + resultado.curriculo.antecedentes_count +
