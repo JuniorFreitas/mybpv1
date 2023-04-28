@@ -68,11 +68,12 @@ class PreAdmissaoController extends Controller
                     'RgcpfFilho',
                     'CartaoVacinaFilho',
                     'DeclaracaoEscolarFilho']);
-        }])->with(
+        }])->with([
             'Cliente:id,nome,razao_social,nome_fantasia',
+            'VagaAberta',
             'VagaSelecionada:id,nome',
             'Admissao:feedback_id,data_admissao,funcao,cargo,status',
-        );
+        ]);
 
         $filtroPeriodo = $request->filtroPeriodo == 'true';
 
@@ -85,7 +86,7 @@ class PreAdmissaoController extends Controller
             });
         }
 
-        if ($request->filled('status')){
+        if ($request->filled('status')) {
             if ($request->status == 'em_processo') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
                     $q->whereDocumentosEntregue(true);
@@ -94,7 +95,7 @@ class PreAdmissaoController extends Controller
             if ($request->status == 'admitidos') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
                     $q->whereDocumentosEntregue(true);
-                })->whereHas('Admissao', function ($q){
+                })->whereHas('Admissao', function ($q) {
                     $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
                 })->whereDoesntHave('Demissao');
             }
