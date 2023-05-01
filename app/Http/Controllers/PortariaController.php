@@ -118,10 +118,11 @@ class PortariaController extends Controller
     {
         $resultado = FeedbackCurriculo::whereHas('ResultadoIntegrado', function ($q) {
             $q->whereEncaminhadoTreinamento(true);
-        })->with(
+        })->whereHas('Admissao', function ($q) {
+            $q->Admitidos();
+    }   )->with(
             'Curriculo.FotoTres:id',
-            'VagaSelecionada:id,nome',
-            'Admissao:id,feedback_id,funcao',
+            'Admissao:id,feedback_id,funcao,cargo',
         );
 
         if ($request->filled('campoBusca')) {
@@ -176,7 +177,7 @@ class PortariaController extends Controller
                 $row->Curriculo->cpf,
                 $row->Curriculo->rg .' '. $row->Curriculo->orgao_expeditor,
                 'Mãe: '.$row->Curriculo->filiacao_mae .' - Pai: '.$row->Curriculo->filiacao_pai,
-                $row->VagaSelecionada->nome,
+                $row->Admissao->cargo,
                 $row->Admissao->funcao,
                 $row->Curriculo->endereco_completo,
             ];
