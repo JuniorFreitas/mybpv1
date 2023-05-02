@@ -527,6 +527,11 @@ class User extends Authenticatable
         return $this->hasMany(AvaliacaoFeedback::class, 'funcionario_id', 'id')->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR);
     }
 
+    public function scopeAtivoNaoExcluido($query)
+    {
+        return $query->where('ativo', true)->whereNull('deleted_at');
+    }
+
     public function scopeTiposGerenciais($query)
     {
         return $query->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS);

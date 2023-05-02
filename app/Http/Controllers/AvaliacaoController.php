@@ -250,7 +250,12 @@ class AvaliacaoController extends Controller
      */
     private function filtroAvaliar(Request $request)
     {
-        $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'Funcionario:id,nome,login', 'Avaliador:id,nome,login')
+        $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'Funcionario:id,nome,login,temp,ativo,deleted_at', 'Avaliador:id,nome,login')
+            ->whereHas('Funcionario', function ($query) {
+                $query->ativoNaoExcluido();
+            })->whereHas('Avaliador', function ($query) {
+                $query->ativoNaoExcluido();
+            })
             ->whereAvaliadorId(auth()->user()->id);
 
         $resultado->whereHas('Avaliacao', function ($query) {
