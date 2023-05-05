@@ -600,7 +600,7 @@ class Sistema
 
     public static function syncAso()
     {
-        $Empresas = \App\Models\User::select('id', 'nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
+        $Empresas = \App\Models\User::select(['id', 'nome'])->whereNotIn('id', [100])->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
 
         try {
             echo "Iniciando Sincronização...\n";
@@ -608,29 +608,38 @@ class Sistema
             foreach ($Empresas as $Empresa) {
                 echo "Sincronizando $Empresa->nome...\n";
 
-                $admissoes = DB::table('feedback_curriculos as FC')
-                    ->select(['A.id', 'A.data_aso'])
-                    ->join('admissoes as A', 'A.feedback_id', '=', 'FC.id')
-                    ->where('FC.empresa_id', $Empresa->id)
-                    ->whereNotNull('A.data_aso')
-                    ->get();
+                $admissoes = Admissao::withoutGlobalScopes()->select(['id', 'data_aso'])
+                    ->whereHas('Feedback', function ($query) use ($Empresa) {
+                        $query->withoutGlobalScopes()->whereEmpresaId($Empresa->id);
+                    })->get();
 
                 foreach ($admissoes as $admissao) {
-                    DB::table('admissao_asos')->where('admissao_id', $admissao->id)->update(['ativo' => false]);
-                    $aso = AdmissaoAso::withoutGlobalScopes()->create([
-                        'empresa_id' => $Empresa->id,
-                        'admissao_id' => $admissao->id,
-                        'user_alterou_id' => 1,
-                        'data_aso' => $admissao->data_aso,
-                        'ativo' => 1
-                    ]);
-                    echo $aso->data_aso . " Criado \n";
+                    $admissaoAso = AdmissaoAso::where('admissao_id', $admissao->id)->whereAtivo(true)->first();
+
+                    if (!is_null($admissaoAso)) {
+                        if (($admissaoAso->data_aso && !$admissao->data_aso) || ($admissaoAso->data_aso && $admissao->data_aso)) {
+                            $admissao->update(['data_aso' => (new DataHora($admissaoAso->data_aso))->dataInsert()]);
+                        }
+                    }
+
+                    if ((!is_null($admissaoAso) && !$admissaoAso->data_aso && $admissao->data_aso)) {
+                        DB::table('admissao_asos')->where('admissao_id', $admissao->id)->update(['ativo' => false]);
+                        AdmissaoAso::updateOrCreate([
+                            'empresa_id' => $Empresa->id,
+                            'admissao_id' => $admissao->id,
+                            'user_alterou_id' => 1,
+                            'data_aso' => (new DataHora($admissaoAso->data_aso))->dataInsert(),
+                            'ativo' => 1
+                        ]);
+                        $admissao->update(['data_aso' => $admissaoAso->data_aso]);
+                    }
                 }
             }
             echo "Fim de Sincronização...\n";
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e->getMessage(), $e->getTraceAsString());
             echo $e->getTraceAsString();
         }
     }
@@ -893,7 +902,7 @@ class Sistema
             $autenticado = $usuario;
             $jsonData = json_encode($dados);
             Redis::set($nome_arquivo, $jsonData);
-            $redisNome = env('REDIS_PREFIX').$nome_arquivo;
+            $redisNome = env('REDIS_PREFIX') . $nome_arquivo;
             $resultado = exec("python3 $caminho_script $nome_arquivo $redisNome");
             if ($resultado != "") {
                 $nomedoarquivo = "$nome_arquivo.xls";
