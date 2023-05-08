@@ -1,13 +1,14 @@
 import {tinyPadrao} from "../../../utils";
 import autocomplete from "../../../components/AutoComplete";
 import Editor from "@tinymce/tinymce-vue";
-
+import MixinConfig from '../../../mixins/Configuracoes';
 const app = new Vue({
     el: "#app",
     components: {
         autocomplete,
         Editor,
     },
+    mixins: [MixinConfig],
     data: {
         tituloJanela: "Cadastrando Vaga",
         preloadAjax: false,
@@ -123,7 +124,7 @@ const app = new Vue({
         verificaQuantidadeVagas(qnt_disponivel, qnt_informado, projeto_id) {
             if (qnt_informado > qnt_disponivel) {
                 let projeto = _.find(this.listaProjetosAdicionais, {'id': projeto_id});
-                 mostraErro('', 'Não há quantidade disponível para o projeto: ' + projeto.nome);
+                mostraErro('', 'Não há quantidade disponível para o projeto: ' + projeto.nome);
                 return false;
             }
         },
