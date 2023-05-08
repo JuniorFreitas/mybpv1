@@ -281,8 +281,8 @@
                     </td>
 
                     <td>
-                        @{{vaga.vaga.nome}}
-                    </td>
+                        @{{vaga.vaga.nome}} <br>
+                        <small style="word-break: break-all">@{{ urlVaga }}/@{{ vaga.slug }}</small>
                     <td>
                         @{{vaga.titulo}}
                     </td>
@@ -294,6 +294,7 @@
                     <td>
                         @{{vaga.municipio.nome}} - @{{vaga.municipio.uf}}
                     </td>
+
 
                     <td class="text-center">
                         <bt-ativo :rota="`cadastro/vagas-abertas/${vaga.id}/ativa-desativa`" :model="vaga"></bt-ativo>

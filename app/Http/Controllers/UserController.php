@@ -191,6 +191,7 @@ class UserController extends Controller
                 'user_id' => auth()->id(),
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'temFilial' => (bool)$temfilial,
+                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido
             ];
 
         } else {
@@ -203,6 +204,7 @@ class UserController extends Controller
                 'user_id' => auth()->id(),
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'temFilial' => (bool)$temfilial,
+                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido
             ];
         }
 
