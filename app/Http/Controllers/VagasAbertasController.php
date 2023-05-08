@@ -9,6 +9,7 @@ use App\Models\VagasAbertas;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MasterTag\DataHora;
 
 class VagasAbertasController extends Controller
@@ -300,12 +301,17 @@ class VagasAbertasController extends Controller
         $simulados = Simulado::whereAtivo(true)->orderBy('titulo')->get();
         $projetos = Projeto::where('qnt_total_restante', '>=', 0)->get();
 
+        $items = collect($resultado->items())->transform(function($item){
+            $item->slug = "{$item->id}/".Str::slug($item->titulo);
+            return $item;
+        });
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $items,
                 'simulados' => $simulados,
                 'projetos' => $projetos,
             ]
