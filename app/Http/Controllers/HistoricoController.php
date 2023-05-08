@@ -37,6 +37,8 @@ class HistoricoController extends Controller
         $tabelaNoventa = AvaliacaoNoventaFeedbackQuantidade::with('Feedback')->whereFeedbackId($feedback_id)->get();
 
         $avNoventaVencimento = Admissao::whereFeedbackId($feedback_id)->with('Feedback.AvaliacaoNoventaVencimento')->first();
+        $restricao = new DataHora();
+        $restricao->addDia(2);
 
         return response()->json([
             'feedback' => $feedback,
@@ -46,7 +48,8 @@ class HistoricoController extends Controller
             'perguntas' => $perguntas,
             'tabelaNoventa' => $tabelaNoventa,
             'avNoventaVencimento' => $avNoventaVencimento,
-            'hoje' => (new DataHora())->dataCompleta()
+            'hoje' => (new DataHora())->dataCompleta(),
+            'restricao' => $restricao->dataCompleta()
         ], 200);
     }
 
