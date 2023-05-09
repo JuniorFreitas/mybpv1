@@ -22,6 +22,10 @@
             color: #02660c;
         }
 
+        .textoLaranja {
+            color: #af6700;
+        }
+
         table.dados2, table.dados2 th, table.dados2 td {
             border: 0.1px solid black;
             border-collapse: collapse;
@@ -98,26 +102,43 @@
                     <td>
 
                         @if($calendar['ponto'] && $calendar['ponto']->verificado)
-                            *
-                        @else
-                            @if($calendar['ponto'])
+                            <span class="textoVerde">
                                 @foreach($calendar['ponto']->periodos as $index =>$periodo)
                                     @if($calendar['ponto']->ocorrencia->trabalhado)
                                         @if($index > 0)
                                             |
                                         @endif {{ $periodo->horaEntrada }}
                                         @if($periodo->horaSaida)
-                                            -{{ $periodo->horaSaida }}
-                                        @endif
-                                        @if(!$periodo->horaSaida)
-                                            - trabalhando
-                                        @endif
-                                    @else
-                                        @if(!$calendar['ponto']->ocorrencia->trabalhado)
-                                            {{ $calendar['ponto']->ocorrencia->descricao }}
+                                            - {{ $periodo->horaSaida }}
                                         @endif
                                     @endif
                                 @endforeach
+
+                                @if(!$calendar['ponto']->ocorrencia->trabalhado)
+                                    {{ $calendar['ponto']->ocorrencia->descricao }}
+                                @endif
+                            </span>
+                        @else
+                            @if($calendar['ponto'])
+                                <span class="textoLaranja">
+                                    @foreach($calendar['ponto']->periodos as $index =>$periodo)
+                                        @if($calendar['ponto']->ocorrencia->trabalhado)
+                                            @if($index > 0)
+                                                |
+                                            @endif {{ $periodo->horaEntrada }}
+                                            @if($periodo->horaSaida)
+                                                - {{ $periodo->horaSaida }}
+                                            @endif
+                                            @if(!$periodo->horaSaida)
+                                                - trabalhando
+                                            @endif
+                                        @endif
+                                    @endforeach
+
+                                    @if(!$calendar['ponto']->ocorrencia->trabalhado)
+                                        {{ $calendar['ponto']->ocorrencia->descricao }}
+                                    @endif
+                                </span>
                             @endif
                         @endif
                     </td>
