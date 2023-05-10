@@ -7,9 +7,9 @@ use App\Jobs\JobExportaExcel;
 use App\Jobs\JobExportaPdf;
 use App\Models\Admissao;
 use App\Models\CentroCusto;
+use App\Models\ClienteFilial;
 use App\Models\FeedbackCurriculo;
 use App\Models\ResultadoIntegrado;
-use App\Models\Sistema;
 use Illuminate\Http\Request;
 
 class CentroDeCustoController extends Controller
@@ -90,6 +90,11 @@ class CentroDeCustoController extends Controller
         //
     }
 
+    public function nomeCache()
+    {
+        return 'centrodecusto_' . auth()->id() . '_' . auth()->user()->empresa_id;
+    }
+
     /**
      * @param Request $request
      * @return FeedbackCurriculo|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
@@ -97,19 +102,33 @@ class CentroDeCustoController extends Controller
     protected function filtro(Request $request)
     {
         $resultado = CentroCusto::select(['id', 'label', 'empresa_id'])
-            ->whereHas('Admissao',function ($q){
-                $q->admitidos();
+            ->whereHas('Admissao', function ($q) {
+                $q->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO);
             })
             ->with(['Admissao' => function ($query) use ($request) {
                 $query->whereNotNull('centro_custo_id')
-                    ->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO)
+                    ->where('admissoes.status',Admissao::STATUS_ADMISSAO_ADMITIDO)
                     ->admitidos()
+                    ->join('feedback_curriculos as feedback', 'feedback.id', '=', 'admissoes.feedback_id')
+                    ->join('curriculos as curriculo', 'curriculo.id', '=', 'feedback.curriculo_id')
                     ->with('Feedback:id,curriculo_id,vagas_abertas_id',
                         'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
                         'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id',
                         'Feedback.VagaAberta.VagaSelecionada:id,nome',
                         'Feedback.VagaAberta.Municipio')
-                    ->select(['id', 'feedback_id', 'tipo_admissao', 'centro_custo_id', 'status', 'data_admissao']);
+                    ->select([
+                        'admissoes.id',
+                        'admissoes.feedback_id',
+                        'admissoes.tipo_admissao',
+                        'admissoes.cargo',
+                        'admissoes.centro_custo_id',
+                        'admissoes.centro_custo_filial_id',
+                        'admissoes.filial',
+                        'admissoes.status',
+                        'admissoes.data_admissao'
+                    ])->orderBy('curriculo.nome')
+
+                ;
             }])->whereAtivo(true);
 
         if ($request->filled('campoCentrosDeCusto')) {
@@ -127,13 +146,23 @@ class CentroDeCustoController extends Controller
      */
     public function atualizar(Request $request)
     {
-        $pg = $this->filtro($request)->paginate($request->porPag ?: 50);
         $centros_de_custo = CentroCusto::whereAtivo(true)->orderBy('label')->get();
-        $dados = [
-            'centros_de_custo' => $centros_de_custo
-        ];
+        $resultado = $this->filtro($request)->paginate($request->porPag ?: 50);
+        $filial = new ClienteFilial();
+        if ($filial->temFilial()) {
+            $listaFilial = $filial->getListaFilialAtiva();
+        }
 
-        return Sistema::pg($pg, $dados);
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'listaFilial' => $listaFilial ?? null,
+                'centros_de_custo' => $centros_de_custo
+            ]
+        ], 200);
     }
 
     /**
@@ -169,7 +198,7 @@ class CentroDeCustoController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
+        $resultado = $this->filtro($request)->get()->toArray();
 
         $head = [
             "Código",
@@ -183,15 +212,15 @@ class CentroDeCustoController extends Controller
         $rows = [];
 
         foreach ($resultado as $row) {
-            if (count($row->admissao) > 0) {
-                foreach ($row->admissao as $admissao) {
+            if (count($row['admissao']) > 0) {
+                foreach ($row['admissao'] as $admissao) {
                     $rows[] = array(
-                        $admissao->Feedback->curriculo_id,
-                        $admissao->Feedback->Curriculo->nome,
-                        $row->label,
-                        $admissao->Feedback->VagaAberta ? $admissao->Feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $admissao->Feedback->VagaAberta->Municipio->uf ?: "" : "",
-                        $admissao ? $admissao->tipo_admissao ?: "" : "",
-                        $admissao ? $admissao->data_admissao ?: "" : "",
+                        $admissao['feedback']['curriculo_id'],
+                        $admissao['feedback']['curriculo']['nome'],
+                        $row['label'],
+                        $admissao['cargo'],
+                        $admissao ? $admissao['tipo_admissao'] ?: "" : "",
+                        $admissao ? $admissao['data_admissao'] ?: "" : "",
                     );
                 }
             }

@@ -80,8 +80,7 @@
                             @{{  item.feedback.curriculo.nome }}
                         </td>
                         <td>
-                            @{{item.feedback.vaga_aberta.vaga_selecionada.nome}} - @{{item.feedback.vaga_aberta.municipio.nome}} -
-                            @{{item.feedback.vaga_aberta.municipio.uf}}
+                            @{{item.cargo}}
                         </td>
                         <td>
                             @{{item ? item.tipo_admissao : '' }}
