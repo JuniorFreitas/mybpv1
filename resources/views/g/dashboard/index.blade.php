@@ -330,7 +330,7 @@
         </template>
     </modal>
 
-    <modal id="celebration" titulo="Menção honrosa por inovação no Maranhão" size="g">
+<!--    <modal id="celebration" titulo="Menção honrosa por inovação no Maranhão" size="g">
         <template slot="conteudo">
             <div class="row">
                 <div class="col-12">
@@ -349,7 +349,7 @@
                 </div>
             </div>
         </template>
-    </modal>
+    </modal>-->
 
     <div class="row">
         <div id="sandbox-container"></div>
@@ -458,7 +458,7 @@
                 $('#termosdeuso_popup').modal('show')
                 @endif
 
-                $('#celebration').modal('show')
+                // $('#celebration').modal('show')
             },
             methods: {
                 concordar() {
