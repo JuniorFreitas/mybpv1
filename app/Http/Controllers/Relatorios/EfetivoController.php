@@ -96,19 +96,43 @@ class EfetivoController extends Controller
      */
     protected function filtro(Request $request)
     {
-        $resultado = CentroCusto::select(['id', 'label', 'empresa_id'])->with(['Admissao' => function ($query) use ($request) {
-            $query->whereNotNull('centro_custo_id')
-                ->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO)
-                ->with('Feedback:id,curriculo_id,vagas_abertas_id',
+        return $resultado = Admissao::admitidos()
+            ->where('admissoes.status',Admissao::STATUS_ADMISSAO_ADMITIDO)
+            ->whereHas('Feedback')
+            ->select(['id', 'label', 'empresa_id'])
+            ->join('feedback_curriculos as feedback', 'feedback.id', '=', 'admissoes.feedback_id')
+            ->join('curriculos as curriculo', 'curriculo.id', '=', 'feedback.curriculo_id')
+            ->with(['Feedback:id,curriculo_id,vagas_abertas_id',
                     'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
-                    'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id',
-                    'Feedback.VagaAberta.VagaSelecionada:id,nome',
-                    'Feedback.VagaAberta.Municipio')
-                ->select(['id', 'feedback_id', 'salario', 'tipo_admissao', 'centro_custo_id', 'status', 'data_admissao']);
-        }])->whereAtivo(true);
+                    'CentroCusto.Filiais',
+                    'CentroCusto',
+            ])
+            ->select([
+                'admissoes.id',
+                'admissoes.feedback_id',
+                'admissoes.tipo_admissao',
+                'admissoes.cargo',
+                'admissoes.centro_custo_id',
+                'admissoes.centro_custo_filial_id',
+                'admissoes.filial',
+                'admissoes.status',
+                'admissoes.data_admissao'
+            ])->orderBy('curriculo.nome');
+
+
+//        $resultado = CentroCusto::select(['id', 'label', 'empresa_id'])->with(['Admissao' => function ($query) use ($request) {
+//            $query->whereNotNull('centro_custo_id')
+//                ->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO)
+//                ->with('Feedback:id,curriculo_id,vagas_abertas_id',
+//                    'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
+//                    'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id',
+//                    'Feedback.VagaAberta.VagaSelecionada:id,nome',
+//                    'Feedback.VagaAberta.Municipio')
+//                ->select(['id', 'feedback_id', 'salario', 'tipo_admissao', 'centro_custo_id', 'status', 'data_admissao']);
+//        }])->whereAtivo(true);
 
         if ($request->filled('campoCentrosDeCusto')) {
-            $resultado->whereId($request->campoCentrosDeCusto);
+            $resultado->whereCentroCustoId($request->campoCentrosDeCusto);
         }
 
         $resultado = $resultado->groupBy('id')->orderBy('label');
@@ -122,7 +146,7 @@ class EfetivoController extends Controller
      */
     public function atualizar(Request $request)
     {
-        $pg = $this->filtro($request)->paginate($request->porPag ?: 50);
+        $pg = $this->filtro($request)->paginate($request->porPag ?: 100);
         $centros_de_custo = CentroCusto::whereAtivo(true)->orderBy('label')->get();
         $dados = [
             'centros_de_custo' => $centros_de_custo
