@@ -142,7 +142,8 @@ const app = new Vue({
                 campoPcd: "",
                 campoUf: "",
                 campoFeedback: "",
-                campoCPF: ""
+                campoCPF: "",
+                campoCargo: "",
             }
         }
     },
