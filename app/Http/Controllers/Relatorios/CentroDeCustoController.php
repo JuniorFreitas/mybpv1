@@ -103,7 +103,7 @@ class CentroDeCustoController extends Controller
     {
         $resultado = CentroCusto::select(['id', 'label', 'empresa_id'])
             ->whereHas('Admissao', function ($q) {
-                $q->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO);
+                $q->admitidos()->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO);
             })
             ->with(['Admissao' => function ($query) use ($request) {
                 $query->whereNotNull('centro_custo_id')
