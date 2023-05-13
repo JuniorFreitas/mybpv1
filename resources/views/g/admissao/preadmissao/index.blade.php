@@ -122,6 +122,16 @@
                             @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
                 </fieldset>
                 <fieldset>
+                    <legend>CARTA OFERTA</legend>
+                    <upload label="Selecionar anexo(s)"
+
+                            :leitura="true"
+                            :model="form.carta_oferta"
+                            :model-delete="form.carta_ofertaDel" :url="urlAnexoUpload"
+                            @onprogresso="anexoUploadAndamento=true"
+                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
+                </fieldset>
+                <fieldset>
                     <legend>CÓPIA DA CARTEIRA DE VACINA; (NÃO OBRIGATÓRIO)</legend>
                     <upload label="Selecionar anexo(s)"
 
