@@ -543,6 +543,11 @@ class Curriculo extends Model
         return $this->belongsToMany(Arquivo::class, 'documentos_curriculos', 'curriculo_id', 'arquivo_id')->whereTipo('carta_sindicato');
     }
 
+    public function CartaOferta()
+    {
+        return $this->belongsToMany(Arquivo::class, 'documentos_curriculos', 'curriculo_id', 'arquivo_id')->whereTipo('carta_oferta');
+    }
+
     public function CarteiraVacina()
     {
         return $this->belongsToMany(Arquivo::class, 'documentos_curriculos', 'curriculo_id', 'arquivo_id')->whereTipo('carteira_vacina');

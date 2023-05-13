@@ -63,11 +63,11 @@
         }
     </style>
 </head>
-<body class="my-login-page">
+<body class="my-login-page bg-white">
 <div id="app" v-cloak>
 
     <div class="container-fluid"
-         style="background: url(https://bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
+         style="background: url({{ asset('images/bg_login_bpin_mybp.jpg') }}) no-repeat #072333; background-size: cover;"
          v-if="!autenticado">
         <div class="container">
             <div class="row">
@@ -75,9 +75,9 @@
                     <div class="row">
                         <div class="col-lg-6 col-md-8 mx-auto">
                             <div class="card rounded shadow shadow-sm">
-                                <div class="card-header">
-                                    <img src="{{ asset('images/logo_bpse_color.png') }}" class="img-fluid"
-                                         alt="logo_bpse">
+                                <div class="card-header bg-white text-center">
+                                    <img src="{{ asset('images/bpin_mybp_color.svg') }}" style="height: 120px"
+                                         alt="logo_bpse" >
                                 </div>
                                 <div class="card-body">
                                     <form @submit.prevent="autenticar" class="form" role="form" id="formAutenticar">
@@ -98,25 +98,26 @@
                                             </button>
                                         </div>
                                     </form>
-
-
-                                    <div class="py-3 d-flex justify-content-center">
+                                    <div class="py-3" style="display: flex; justify-content: space-around; align-items: center;">
+                                        <img src="{{ asset('images/inova_maranhao.png') }}" alt=""
+                                             class=" " style="height: 60px">
+                                        <img src="{{ asset('images/fapema-logo.png') }}" alt=""
+                                             class=" " style="height: 60px">
                                         <img src="https://bpse.com.br/img/logo_procem.png" alt=""
-                                             class=" " style="height: 130px">
+                                             class=" " style="height: 90px">
                                         <img src="https://bpse.com.br/img/selo_gptw.png" alt="" class=" "
-                                             style="height: 130px">
+                                             style="height: 90px">
+
                                     </div>
 
                                     <div class="social-links d-flex justify-content-around">
                                         <a href="https://instagram.com/sejabpse" target="_blank" class="instagram"><i
                                                 class="fab fa-instagram"></i></a>
-                                        <a href="https://www.linkedin.com/company/bpse/" target="_blank"
-                                           class="linkedin"><i
+                                        <a href="https://www.linkedin.com/company/bpse/" target="_blank" class="linkedin"><i
                                                 class="fab fa-linkedin"></i></a>
                                         <a href="https://fb.com/bpse1" target="_blank" class="facebook"><i
                                                 class="fab fa-facebook"></i></a>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -131,23 +132,28 @@
 
         <div class="row py-3 bg-primary">
             <div class="mx-auto">
-                <img src="{{ asset('img/logo_white.png') }}" class="img-fluid" alt="">
+                <img src="{{ asset('images/bpin_mybp_branco.svg') }}" style="height: 100px"
+                     alt="logo_bpse" >
             </div>
         </div>
 
         <div class="row py-3">
             <div class="col-12">
-                <documento v-if="autenticado" :curriculo="curriculo"></documento>
+                <documento v-if="autenticado" :curriculo="curriculo" :apelido="formUser.apelido"></documento>
             </div>
         </div>
 
-        <div class="row py-3 bg-primary">
+        <div class="row py-3 bg-white" style="border-top: 1px solid #cccccc">
             <div class="col-12">
                 <div class="py-3 d-flex justify-content-center">
+                    <img src="{{ asset('images/inova_maranhao.png') }}" alt=""
+                         class=" " style="height: 60px">
+                    <img src="{{ asset('images/fapema-logo.png') }}" alt=""
+                         class=" " style="height: 60px">
                     <img src="https://bpse.com.br/img/logo_procem.png" alt=""
-                         class=" " style="height: 100px">
+                         class=" " style="height: 90px">
                     <img src="https://bpse.com.br/img/selo_gptw.png" alt="" class=" "
-                         style="height: 100px">
+                         style="height: 90px">
                 </div>
             </div>
         </div>
