@@ -223,6 +223,11 @@ export default {
             required: false,
             default: false
         },
+        apenasPdf: { // se aceita apenas pdf
+            type: Boolean,
+            required: false,
+            default: false
+        },
         simples: { // interface simples sem tabela
             type: Boolean,
             required: false,
@@ -233,8 +238,6 @@ export default {
             required: false,
             default: false
         }
-
-
     },
     computed: {
         btn: function() {
@@ -315,16 +318,20 @@ export default {
 
     },
     mounted() {
+        if (this.apenasPdf) {
+            this.mimeTypes = [
+                "application/pdf"
+            ];
+        }
+
         if (this.apenasImagens) {
             this.mimeTypes = [
                 "image/jpeg",
                 "image/jpg",
                 "image/png"
             ];
-        } else {
-
+        }else{
             this.mimeTypes = this.mimeTypes.concat(this.tipos); // junta com a lista padrão
-
         }
         //criando a chave de upload para essa pagina
         this.chave = String(Math.random()).substr(2);

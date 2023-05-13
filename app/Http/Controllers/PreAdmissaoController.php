@@ -43,7 +43,8 @@ class PreAdmissaoController extends Controller
             'Curriculo.CarteiraVacina',
             'Curriculo.RgcpfFilho',
             'Curriculo.CartaoVacinaFilho',
-            'Curriculo.DeclaracaoEscolarFilho'
+            'Curriculo.DeclaracaoEscolarFilho',
+            'Curriculo.CartaOferta'
         );
     }
 
@@ -67,6 +68,7 @@ class PreAdmissaoController extends Controller
                     'CarteiraVacina',
                     'RgcpfFilho',
                     'CartaoVacinaFilho',
+                    'CartaOferta',
                     'DeclaracaoEscolarFilho']);
         }])->with([
             'Cliente:id,nome,razao_social,nome_fantasia',
@@ -189,7 +191,8 @@ class PreAdmissaoController extends Controller
             JobEnvioDocumento::dispatch([
                 'nome' => $curriculo->nome,
                 'email' => $feedback['email'],
-                'empresa_id' => $feedback->empresa_id
+                'empresa_id' => $feedback->empresa_id,
+                'url_documento' => env('APP_URL')."/".auth()->user()->Empresa->apelido."/documentos",
             ]);
             return response()->json([], 201);
         } catch (\Exception $e) {

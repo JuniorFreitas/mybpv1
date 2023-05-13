@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Arquivo;
+use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\DocumentosPreAdmissao;
 use App\Models\Sistema;
@@ -20,11 +21,20 @@ class DocumentosPreAdmissaoController extends Controller
      */
     public function index()
     {
+        $empresaId = $this->getEmpresa();
+        if(is_null($empresaId)){
+            abort(404);
+        }
         return view('documentos.index');
+    }
+
+    protected function getEmpresa(){
+       return Cliente::withoutGlobalScopes()->select('id')->whereApelido(request()->segment(1))->first();
     }
 
     public function autenticar(Request $request)
     {
+        $empresaId = $this->getEmpresa()->id;
         $cpf = Sistema::transformCpfCnpj($request->cpf);
 
         $dataNascimento = Sistema::dataTransform($request->nascimento);
@@ -33,8 +43,9 @@ class DocumentosPreAdmissaoController extends Controller
         }
         $candidato = Curriculo::withoutGlobalScopes()->whereCpf($cpf)
             ->whereNascimento((new DataHora($dataNascimento))->dataInsert())
-            ->whereHas('Feedback', function ($q) {
+            ->whereHas('Feedback', function ($q) use ($empresaId){
                 $q->withoutGlobalScopes();
+                $q->whereEmpresaId($empresaId);
                 $q->whereHas('ResultadoIntegrado', function ($qu) {
                     $qu->whereDocumentosEntregue(true);
                 });
@@ -55,7 +66,8 @@ class DocumentosPreAdmissaoController extends Controller
                 'CarteiraVacina',
                 'RgcpfFilho',
                 'CartaoVacinaFilho',
-                'DeclaracaoEscolarFilho'
+                'DeclaracaoEscolarFilho',
+                'CartaOferta'
             );
         if ($candidato->count() == 0) {
             return response()->json(['msg' => 'Não foi possivel autenticar, CPF e/ou Data de Nascimento inválido. Ou você já inseriu todos os documentos.', 'autenticado' => false], 400);
@@ -461,6 +473,26 @@ class DocumentosPreAdmissaoController extends Controller
                             $arquivo->chave = '';
                             $arquivo->save();
                             $curriculo->DeclaracaoEscolarFilho()->attach($arquivo->id, ['tipo' => 'declaracao_escolar_filho']);
+                        }
+                    }
+                }
+
+                //Remove a carta oferta
+                if (isset($dados['carta_oferta'])) {
+                    foreach ($dados['carta_ofertaDel'] as $id_anexo) {
+                        $arquivo = Arquivo::find($id_anexo);
+                        $arquivo->excluir();
+                    }
+                }
+                // inseri carta oferta
+                if (isset($dados['carta_oferta'])) {
+                    foreach ($dados['carta_oferta'] as $index => $anexo) {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $curriculo->CartaOferta()->attach($arquivo->id, ['tipo' => 'carta_oferta']);
                         }
                     }
                 }

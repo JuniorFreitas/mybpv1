@@ -27,6 +27,7 @@ class JobEnvioDocumento implements ShouldQueue
             'nome' => $dados['nome'],
             'email' => $dados['email'],
             'empresa_id' => $dados['empresa_id'],
+            'url_documento' => $dados['url_documento'],
         ];
     }
 

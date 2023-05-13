@@ -136,6 +136,16 @@
                         @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
             </fieldset>
             <fieldset>
+                <legend>CARTA OFERTA</legend>
+                <upload label="Selecionar anexo(s)"
+                        :dados-ajax="{tipo:'carta_oferta',curriculo_id: curriculo.id}"
+                        :model="formUser.carta_oferta"
+                        :model-delete="formUser.carta_ofertaDel" :url="urlAnexoUpload"
+                        :apenas-pdf="true"
+                        @onprogresso="anexoUploadAndamento=true"
+                        @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
+            </fieldset>
+            <fieldset>
                 <legend>CÓPIA DA CARTEIRA DE VACINA; (NÃO OBRIGATÓRIO)</legend>
                 <upload label="Selecionar anexo(s)"
                         :dados-ajax="{tipo:'carteira_vacina',curriculo_id: curriculo.id}"
@@ -191,6 +201,11 @@ export default {
         telefones
     },
     props: {
+        apelido: { // modal Pai
+            type: String,
+            required: true,
+            default: ''
+        },
 
         curriculo: {
             type: Object,
@@ -273,6 +288,9 @@ export default {
                 carta_sindicato: [],
                 carta_sindicatoDel: [],
 
+                carta_oferta: [],
+                carta_ofertaDel: [],
+
                 carteira_vacina: [],
                 carteira_vacinaDel: [],
 
@@ -290,7 +308,7 @@ export default {
     methods: {
 
         redirecionar() {
-            window.location.href = `${URL_SITE}/documentos`;
+            window.location.href = `${URL_SITE}/${this.apelido}/documentos`;
         },
 
         alterar() {
@@ -299,7 +317,7 @@ export default {
                 mostraErro('', 'Verifique os erros')
                 return false;
             }
-            axios.put(`${URL_SITE}/documentos/${this.formUser.id}`, this.formUser)
+            axios.put(`${URL_SITE}/${this.apelido}/documentos/${this.formUser.id}`, this.formUser)
                 .then(response => {
                     if (response.status === 201) {
                         this.preload = false;

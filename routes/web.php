@@ -1286,10 +1286,11 @@ Route::group(['as' => 'provas.'], function () {
 //Rotas de pre-admissao protegidas
 Route::group(['as' => 'documentospreadmissao.'], function () {
     //Provas
-    Route::post('documentos-pre-admissao/autenticar', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'autenticar'])->name('documentos.autenticar');
-
-    Route::get('documentos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'index'])->name('documentos.index');
-    Route::put('documentos/{curriculo_id}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'update'])->name('documentos.update');
+    Route::group(['prefix' => '{apelido}'], function (){
+        Route::post('documentos-pre-admissao/autenticar', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'autenticar'])->name('documentos.autenticar');
+        Route::get('documentos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'index'])->name('documentos.index');
+        Route::put('documentos/{curriculo_id}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'update'])->name('documentos.update');
+    });
 
     Route::post('documentos/uploadAnexos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'uploadAnexos'])->name('documentos.upload-anexos');
     Route::get('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoShow'])->name('documentos.anexo-show');
