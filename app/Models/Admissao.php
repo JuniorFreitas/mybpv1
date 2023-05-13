@@ -820,6 +820,11 @@ class Admissao extends Model
     {
         return $query->whereDoesntHave('Demissao');
     }
+
+    public function scopeDemitidos($query)
+    {
+        return $query->has('Demissao');
+    }
 //    public function ChecklistDemissao()
 //    {
 //        return $this->hasOne(ChecklistDemissao::class, 'curriculo_id', 'curriculo_id');
@@ -837,6 +842,7 @@ class Admissao extends Model
         return $this->belongsToMany(ClassificacaoRescisao::class, 'classificacao_rescisao_curriculo', 'curriculo_id', 'classificacao_id')
             ->withPivot(['quem_classificou']);
     }*/
+
 
     public function FeriasAdquiridasCriaOuAtualiza($dados)
     {

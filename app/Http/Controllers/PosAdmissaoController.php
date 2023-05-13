@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Excel\JobExportaPosAdmissao;
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
@@ -422,54 +423,14 @@ class PosAdmissaoController extends Controller
                 $resultado->whereHas('EntrevistaDesligamento');
             }
         }
-
         return $resultado->orderByDesc('updated_at');
-
     }
 
     public function export(Request $request)
     {
-        if($request->filled('selecionados') && count($request->selecionados) > 0){
-            $resultado = $this->filtro($request)->whereIn('id',$request->selecionados)->get();
-        }else{
-            $resultado = $this->filtro($request)->get();
-        }
+        $filtros = $request->input();
 
-        $head = [
-            'ID',
-            'Nome',
-            'CPF',
-            'Área',
-            'Cargo',
-            'Data Admissão',
-            'Data Demissão',
-            'Status',
-            'Data Entrevista',
-            'Empresa',
-            'Salario'
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = [
-                $row->Admissao->id,
-                $row->Curriculo->nome,
-                $row->Curriculo->cpf,
-                $row->Admissao->area_etiqueta_id ? $row->Admissao->AreaEtiqueta->label : '',
-                $row->Admissao->cargo,
-                (new DataHora($row->data_admissao))->dataCompleta() . ' ' . substr((new DataHora($row->data_admissao))->horaCompleta(), 0, 5),
-                (new DataHora($row->data_desmobilizacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_desmobilizacao))->horaCompleta(), 0, 5),
-                $row->Admissao->status,
-                $row->data_entrevista,
-                $row->Empresa->nome_fantasia,
-                $row->Admissao->salario,
-
-            ];
-        }
-
-        $nameArquivo = "posadmissao" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "PosAdmissao", $head, $rows, $nameArquivo);
+        JobExportaPosAdmissao::dispatch(auth()->id(), auth()->user()->empresa_id, $filtros);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
@@ -491,7 +452,6 @@ class PosAdmissaoController extends Controller
             DB::rollback();
             $msg = "error POS ADMISSÃO - ENTREVISTAR : {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
-            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
@@ -512,7 +472,6 @@ class PosAdmissaoController extends Controller
             DB::rollback();
             $msg = "error POS ADMISSÃO - ENTREVISTAR UPDATE : {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
-            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
