@@ -39,14 +39,16 @@ class JobSendNotificacaoWhatsApp implements ShouldQueue
     {
         $send = (new ZapNotificacao())->send($this->dados, $this->upload);
 
-        if ($send['status']) {
-            $notificacao = new NotificacaoWhatsapp();
-            $notificacao->enviado_id = $this->dados['enviado_id'];
-            $notificacao->user_id = auth()->id() ?? 1;
-            $notificacao->messageid = 0;
-            $notificacao->telefone = $this->dados['telefone'];
-            $notificacao->mensagem = $this->dados['mensagem'];
-            $notificacao->save();
+        if (!isset($this->dados['sistema'])) {
+            if ($send['status']) {
+                $notificacao = new NotificacaoWhatsapp();
+                $notificacao->enviado_id = $this->dados['enviado_id'];
+                $notificacao->user_id = auth()->id() ?? 1;
+                $notificacao->messageid = 0;
+                $notificacao->telefone = $this->dados['telefone'];
+                $notificacao->mensagem = $this->dados['mensagem'];
+                $notificacao->save();
+            }
         }
 
         return $send;
