@@ -27,7 +27,7 @@ class JobSendNotificacaoWhatsApp implements ShouldQueue
     {
         $this->dados = $dados;
         $this->upload = $upload;
-        $this->delay = now()->addSeconds(rand(5, 10));
+        $this->delay = now()->addSeconds(rand(5,7));
     }
 
     /**
