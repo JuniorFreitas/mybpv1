@@ -79,7 +79,7 @@ class VagaAbertaController extends Controller
             ->with(
                 ['VagasAbertas' => function ($query) {
                     $query->withoutGlobalScopes()
-                        ->with('Municipio')
+                        ->with('Municipio','Cargo:id,nome')
                         ->whereAtivo(true);
                 }, 'Logo'])
             ->withoutGlobalScopes()

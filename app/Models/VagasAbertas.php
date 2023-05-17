@@ -86,6 +86,11 @@ class VagasAbertas extends Model
         return $this->hasOne(Vaga::class, 'id', 'vaga_id');
     }
 
+    public function Cargo()
+    {
+        return $this->hasOne(Vaga::class, 'id', 'vaga_id');
+    }
+
     public function VagaSelecionada()
     {
         return $this->hasOne(Vaga::class, 'id', 'vaga_id');
