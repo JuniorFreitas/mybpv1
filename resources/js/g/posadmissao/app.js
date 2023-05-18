@@ -399,9 +399,12 @@ const app = new Vue({
                     let data = response.data;
                     this.tituloJanela = `Entrevista de desligamento: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
                     Object.assign(this.form, data);
+
                     if (!this.form.entrevista_desligamento) {
                         this.form.entrevista_desligamento = _.cloneDeep(this.formDefault.entrevista_desligamento);
                         // Object.assign(this.form.entrevista_desligamento, this.formDefault.entrevista_desligamento);
+                    }else{
+                        this.form.entrevista_desligamento = this.form.feedback.entrevista_desligamento;
                     }
                     // this.form.entrevista_desligamento = !this.form.entrevista_desligamento ? Object.assign(this.form.entrevista_desligamento, this.formDefault.entrevista_desligamento) : Object.assign(this.form, data);
                     this.preload = false;
