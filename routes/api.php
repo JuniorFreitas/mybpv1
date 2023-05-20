@@ -56,12 +56,17 @@ Route::group(['as' => 'vaga'], function () {
     Route::get('{empresa_slug}/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagaAberta']);
 //    Route::get('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'index']);
     Route::post('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'atualizar']);
+
     Route::post('busca-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCurriculo']);
     Route::post('busca-cpf', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCpf']);
     Route::post('cadastra-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'store']);
 });
 
 
+Route::group(['as' => 'projetos', 'prefix' => '{empresa_slug}'], function () {
+    Route::get('projetos/lista', [\App\Http\Controllers\Api\ProjetoController::class, 'index']);
+});
+
 Route::fallback(function () {
-    return response()->getStatusCode();
+    return response()->json(['msg' => 'Não encontrado', 'success' => false], 404);
 });
