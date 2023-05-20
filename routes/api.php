@@ -64,7 +64,7 @@ Route::group(['as' => 'vaga'], function () {
 
 
 Route::group(['as' => 'projetos', 'prefix' => '{empresa_slug}'], function () {
-    Route::get('projetos/lista', [\App\Http\Controllers\Api\ProjetoController::class, 'index']);
+    Route::post('projetos/lista', [\App\Http\Controllers\Api\ProjetoController::class, 'index'])->middleware('apitoken');
 });
 
 Route::fallback(function () {
