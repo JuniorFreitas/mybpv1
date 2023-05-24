@@ -10,6 +10,7 @@ use App\Jobs\Movimentacao\FeriasPrevista\VerificaVencimentoFeriasJob;
 use App\Jobs\Rotinas\JobAniversariantesDia;
 use App\Jobs\Rotinas\JobCalculoAvos;
 use App\Jobs\Rotinas\JobConvocacaoIntermitente;
+use App\Jobs\Rotinas\JobCorrigePonto;
 use App\Jobs\Rotinas\JobFerias;
 use App\Jobs\Weekly_report\LembreteTarefaJob;
 use Illuminate\Console\Scheduling\Schedule;
@@ -49,6 +50,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(new JobConvocacaoIntermitente())->hourly();
         $schedule->call(new JobFerias())->daily();
         $schedule->call(new JobCalculoAvos())->weekly();
+        $schedule->call(new JobCorrigePonto())->daily();
 
 //        $schedule->call(new Im)->daily();
     }
