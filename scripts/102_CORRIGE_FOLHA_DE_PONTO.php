@@ -90,8 +90,6 @@ WHERE empresa_id = $empresa_id
   AND duracao_normal is not null
 ORDER BY created_at ASC");
 
-dd($ponto_eletronico);
-
 
 foreach ($ponto_eletronico as $pe) {
     $id_ponto = $pe->id;
@@ -152,4 +150,4 @@ foreach ($ponto_eletronico as $pe) {
         $cont_pontos++;
     }
 }
-dd("PONTOS COM ERRO CORRIGIDOS: ". $cont_pontos);
+\Log::info('PONTOS COM ERRO CORRIGIDOS: ' . $cont_pontos);
