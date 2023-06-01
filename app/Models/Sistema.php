@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Events\Notificacoes\NotificacaoEvent;
 use DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 use MasterTag\GExtenso;
@@ -264,7 +267,13 @@ class Sistema
 
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
-        return 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+        $mime = 'image';
+        if ($type == 'pdf') {
+            $mime = 'application';
+        }
+
+        return "data:$mime/" . $type . ';base64,' . base64_encode($data);
     }
 
     public static function convertBase2($arquivo, $storage = null)
@@ -597,7 +606,7 @@ class Sistema
 
     public static function syncAso()
     {
-        $Empresas = \App\Models\User::select('id', 'nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
+        $Empresas = \App\Models\User::select(['id', 'nome'])->whereNotIn('id', [100])->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();
 
         try {
             echo "Iniciando Sincronização...\n";
@@ -605,29 +614,38 @@ class Sistema
             foreach ($Empresas as $Empresa) {
                 echo "Sincronizando $Empresa->nome...\n";
 
-                $admissoes = DB::table('feedback_curriculos as FC')
-                    ->select(['A.id', 'A.data_aso'])
-                    ->join('admissoes as A', 'A.feedback_id', '=', 'FC.id')
-                    ->where('FC.empresa_id', $Empresa->id)
-                    ->whereNotNull('A.data_aso')
-                    ->get();
+                $admissoes = Admissao::withoutGlobalScopes()->select(['id', 'data_aso'])
+                    ->whereHas('Feedback', function ($query) use ($Empresa) {
+                        $query->withoutGlobalScopes()->whereEmpresaId($Empresa->id);
+                    })->get();
 
                 foreach ($admissoes as $admissao) {
-                    DB::table('admissao_asos')->where('admissao_id', $admissao->id)->update(['ativo' => false]);
-                    $aso = AdmissaoAso::withoutGlobalScopes()->create([
-                        'empresa_id' => $Empresa->id,
-                        'admissao_id' => $admissao->id,
-                        'user_alterou_id' => 1,
-                        'data_aso' => $admissao->data_aso,
-                        'ativo' => 1
-                    ]);
-                    echo $aso->data_aso . " Criado \n";
+                    $admissaoAso = AdmissaoAso::where('admissao_id', $admissao->id)->whereAtivo(true)->first();
+
+                    if (!is_null($admissaoAso)) {
+                        if (($admissaoAso->data_aso && !$admissao->data_aso) || ($admissaoAso->data_aso && $admissao->data_aso)) {
+                            $admissao->update(['data_aso' => (new DataHora($admissaoAso->data_aso))->dataInsert()]);
+                        }
+                    }
+
+                    if ((!is_null($admissaoAso) && !$admissaoAso->data_aso && $admissao->data_aso)) {
+                        DB::table('admissao_asos')->where('admissao_id', $admissao->id)->update(['ativo' => false]);
+                        AdmissaoAso::updateOrCreate([
+                            'empresa_id' => $Empresa->id,
+                            'admissao_id' => $admissao->id,
+                            'user_alterou_id' => 1,
+                            'data_aso' => (new DataHora($admissaoAso->data_aso))->dataInsert(),
+                            'ativo' => 1
+                        ]);
+                        $admissao->update(['data_aso' => $admissaoAso->data_aso]);
+                    }
                 }
             }
             echo "Fim de Sincronização...\n";
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e->getMessage(), $e->getTraceAsString());
             echo $e->getTraceAsString();
         }
     }
@@ -882,5 +900,49 @@ class Sistema
         ];
     }
 
+
+    public static function exportaExcelPython($usuario, $local, $dados, $nome_arquivo)
+    {
+        try {
+            $caminho_script = base_path("scripts/python/export.py");
+            $autenticado = $usuario;
+            $jsonData = json_encode($dados);
+            Redis::set($nome_arquivo, $jsonData);
+            $redisNome = env('REDIS_PREFIX') . $nome_arquivo;
+            $resultado = exec("python3 $caminho_script $nome_arquivo $redisNome");
+            if ($resultado != "") {
+                $nomedoarquivo = "$nome_arquivo.xls";
+                Exportacao::create([
+                    'user_id' => $autenticado->id,
+                    'arquivo' => $nomedoarquivo,
+                    'local' => $local,
+                    'removido' => false,
+                ]);
+                Event::dispatch(new NotificacaoEvent([
+                    'user_id' => $autenticado->id,
+                    'local' => $local,
+                ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
+            } else {
+                throw new \Exception("Erro ao gerar o arquivo");
+            }
+
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
+    }
+
+    /**
+     * @param $nomeCache
+     * @param $empresa_id
+     * @param $usuario_id
+     * @return string
+     */
+    public static function nomeCache($nomeCache, $empresa_id)
+    {
+        $empresa_id = $empresa_id ?? auth()->user()->empresa_id;
+        $nomedocache = "{$nomeCache}_{$empresa_id}";
+        return $nomedocache;
+    }
 
 }

@@ -33,13 +33,13 @@ class MedidasAdministrativasController extends Controller
         })->with(
             'Feedback:id,curriculo_id,empresa_id,vaga_id,vagas_abertas_id',
             'Feedback.Curriculo:id,nome,rg,orgao_expeditor,nascimento',
-            'Feedback.VagaSelecionada'
+            'Feedback.VagaAberta:id,vaga_id,titulo'
         )->where('data_solicitacao', '>=', $dataInicio->dataInsert())
             ->where('data_solicitacao', '<=', $dataFim->dataInsert())
             ->get()->map(function ($medida) {
                 return [
                     'nome' => $medida->Feedback->Curriculo->nome,
-                    'cargo' => $medida->Feedback->VagaSelecionada->nome,
+                    'cargo' => $medida->Feedback->VagaAberta->Vaga->nome,
                     'motivo' => $medida->motivo,
                     'causa' => $medida->causa,
                     'data_solicitacao' => $medida->data_solicitacao,

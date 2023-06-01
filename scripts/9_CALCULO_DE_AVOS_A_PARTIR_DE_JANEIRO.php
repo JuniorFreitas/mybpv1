@@ -23,14 +23,14 @@ $admissoes = DB::select("SELECT
             a.id as admissao_id, a.feedback_id, a.data_admissao, fc.empresa_id
         FROM admissoes a
             INNER JOIN feedback_curriculos fc on a.feedback_id = fc.id
-        WHERE a.data_admissao >= '2022-01-01'
+        WHERE a.data_admissao >= '2018-01-01'
         AND a.feedback_id not in (SELECT
                 feedback_id
             FROM demissaos)
         AND fc.deleted_at is null
         ORDER BY a.data_admissao ASC");
 
-$periodos_aquisitivos = DB::select("SELECT * FROM periodos_aquisitivos WHERE ano_inicial >= 2022");
+$periodos_aquisitivos = DB::select("SELECT * FROM periodos_aquisitivos WHERE ano_inicial >= 2018");
 $periodo_aquisitivo = [];
 foreach ($periodos_aquisitivos as $pa){
     $periodo_aquisitivo[$pa->ano_inicial] = [
@@ -53,7 +53,7 @@ foreach ($admissoes as $key => $linha) {
     $ano_admissao = (new DataHora($data_admissao))->ano();
     $periodo_aquisitivo_admissao = $periodo_aquisitivo[$ano_admissao]['id'];
     $empresa_id = $linha->empresa_id;
-    $historico_avos = \App\Models\FeriasCalculoAvos::somaAvosScript($dia_admissao, $mes_admissao, $ano_admissao, $periodo_aquisitivo);
+    $historico_avos = \App\Models\FeriasCalculoAvos::somaAvosScriptNew($dia_admissao, $mes_admissao, $ano_admissao, $periodo_aquisitivo);
 
     $ultimo_total_avos_admissao = $historico_avos[$ano_admissao]['total_avos'];
     $historico_avos_admissao = $historico_avos[$ano_admissao];

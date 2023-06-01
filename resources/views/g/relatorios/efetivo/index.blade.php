@@ -7,19 +7,20 @@
 @section('content')
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
-        <form class="row" @submit.prevent="$refs.componente.buscar()">
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Centros de Custo</label>
-                    <select v-model="controle.dados.campoCentrosDeCusto" :disabled="controle.carregando"
-                            @change="atualizar()" class="form-control form-control-sm">
-                        <option value="">Todas os centros de custo</option>
-                        <option v-for="item in centros_de_custo" :value="item.id" :key="item.id"
-                                v-text="item.label"></option>
-                    </select>
-                </div>
-            </div>
-        </form>
+{{--        <form class="row" @submit.prevent="$refs.componente.buscar()">--}}
+{{--            <div class="col-12 col-sm-4 col-md-3 col-lg-2">--}}
+{{--                <div class="form-group">--}}
+{{--                    <label>Centros de Custo</label>--}}
+{{--                    <select v-model="controle.dados.campoCentrosDeCusto" :disabled="controle.carregando"--}}
+{{--                            @change="atualizar()" class="form-control form-control-sm">--}}
+{{--                        <option value="">Todas os centros de custo</option>--}}
+{{--                        <option value="nenhum">SEM CENTRO DE CUSTO</option>--}}
+{{--                        <option v-for="item in centros_de_custo" :value="item.id" :key="item.id"--}}
+{{--                                v-text="item.label"></option>--}}
+{{--                    </select>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </form>--}}
 
         <div class="col-12">
             <div class="row">
@@ -28,11 +29,11 @@
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"
-                        @click.prevent="exportaPdf()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">
-                    <i class="fas fa-file-pdf"></i> EXPORTAR PDF
-                </button>
+{{--                <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"--}}
+{{--                        @click.prevent="exportaPdf()"--}}
+{{--                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">--}}
+{{--                    <i class="fas fa-file-pdf"></i> EXPORTAR PDF--}}
+{{--                </button>--}}
                 <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">
@@ -50,10 +51,10 @@
             <h3 class="text-center mt-3">Listagem Sintética de Funcionários</h3>
             <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
         </div>
-        <div class="table-responsive" v-show="!controle.carregando && lista.length > 0" >
+        <div v-show="!controle.carregando && lista.length > 0" >
             <h3 class="text-center mt-3 mb-3">Listagem Sintética de Funcionários</h3>
-            <div v-for="centro_de_custo in lista" class="mb-5">
-                <h3>@{{ centro_de_custo.label }}</h3>
+{{--            <div v-for="centro_de_custo in lista" class="mb-5">--}}
+            <div class="mb-5">
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
@@ -63,50 +64,34 @@
                         <th>Salário</th>
                         <th>Tipo Admissão</th>
                         <th>Data da Admissão</th>
+                        <th>Centro de Custo</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-if="!centro_de_custo.admissao.length">
-                        <td colspan="6">
-                            <div class="alert alert-warning">
-                                <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-for="item in centro_de_custo.admissao" v-else>
-                        <td>
-                            @{{  item.feedback.curriculo.id }}
-                        </td>
-                        <td>
-                            @{{  item.feedback.curriculo.nome }}
-                        </td>
-                        <td>
-                            @{{item.feedback.vaga_aberta.vaga_selecionada.nome}} - @{{item.feedback.vaga_aberta.municipio.nome}} -
-                            @{{item.feedback.vaga_aberta.municipio.uf}}
-                        </td>
-                        <td>
-                            @{{item ? 'R$ '+item.salario : '' }}
-                        </td>
-                        <td>
-                            @{{item ? item.tipo_admissao : '' }}
-                        </td>
-                        <td>
-                            @{{item ? item.data_admissao : '' }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="6" class="text-right">
-                            <strong>Total de Funcionários: </strong> @{{ centro_de_custo.admissao.length }}
-                        </td>
-                    </tr>
+                        <tr v-for="item in lista">
+                            <td>
+                                @{{  item.feedback.curriculo.id }}
+                            </td>
+                            <td>
+                                @{{  item.feedback.curriculo.nome }}
+                            </td>
+                            <td>
+                                @{{  item.cargo }}
+                            </td>
+                            <td>
+                                @{{  'R$ '+item.salario  }}
+                            </td>
+                            <td>
+                                @{{  item.tipo_admissao }}
+                            </td>
+                            <td>
+                                @{{  item.data_admissao }}
+                            </td>
+                            <td>
+                                @{{  item.centro_custo_label }}
+                            </td>
+                        </tr>
                     </tbody>
-                </table>
-            </div>
-            <div>
-                <table class="tabela">
-                    <tr>
-                        <td class="text-center"><strong>TOTAL DE FUNCIONÁRIOS: @{{ total }}</strong></td>
-                    </tr>
                 </table>
             </div>
         </div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Excel\JobExportaPosAdmissao;
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
@@ -349,7 +350,7 @@ class PosAdmissaoController extends Controller
         $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
         $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
         $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
-        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissao')->first();
+        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissão')->first();
         $formulario->load('Setores.Alternativas');
 
         $ids_form = array();
@@ -372,22 +373,28 @@ class PosAdmissaoController extends Controller
                 'formulario' => $formulario,
                 'form_limpo' => $formulario_vazio,
                 // ToDO ajustar na branch que vai ser feito a modificação de formulario por tabela
-//                'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
-//                'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
-//                'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
+                'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
+                'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
+                'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
             ]
         ]);
     }
 
     public function filtro(Request $request)
     {
-        $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
+        $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) use ($request) {
             $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);
-        })->with('Admissao.AreaEtiqueta', 'Curriculo', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
+            if ($request->filled('campoArea')) {
+                $q->whereAreaEtiquetaId($request->campoArea);
+            }
+            if ($request->filled('campoCargo')) {
+                $q->where('cargo', 'like', '%' . $request->campoCargo . '%');
+            }
+        })->with('Admissao:id,feedback_id,area_etiqueta_id,cargo,data_admissao','Admissao.AreaEtiqueta', 'Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
+                $query->where('nome', 'like', '%' . $request->campoBusca . '%');
             });
         }
 
@@ -397,60 +404,33 @@ class PosAdmissaoController extends Controller
             });
         }
 
-
         if ($request->filled('campoUf')) {
             $resultado->whereHas('Curriculo', function ($q) use ($request) {
                 $q->whereUfVaga($request->campoUf);
             });
         }
 
-        if ($request->filled('campoFeedback')) {
-            $resultado->whereAvaliacao($request->campoFeedback);
+        if ($request->filled('campoCPF')) {
+            $resultado->whereHas('Curriculo', function ($q) use ($request) {
+                $q->whereCpf($request->campoCPF);
+            });
         }
 
+        if ($request->filled('campoFeedback')) {
+            if($request->campoFeedback == "nao"){
+                $resultado->whereDoesntHave('EntrevistaDesligamento');
+            }else{
+                $resultado->whereHas('EntrevistaDesligamento');
+            }
+        }
         return $resultado->orderByDesc('updated_at');
-
     }
 
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
+        $filtros = $request->input();
 
-        $head = [
-            'ID',
-            'Nome',
-            'CPF',
-            'Área',
-            'Cargo',
-            'Data Admissão',
-            'Data Demissão',
-            'Status',
-            'Data Entrevista',
-            'Empresa',
-            'Salario'
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = [
-                $row->Admissao->id,
-                $row->Curriculo->nome,
-                $row->Curriculo->cpf,
-                $row->Admissao->area_etiqueta_id ? $row->Admissao->AreaEtiqueta->label : '',
-                $row->Admissao->cargo,
-                (new DataHora($row->data_admissao))->dataCompleta() . ' ' . substr((new DataHora($row->data_admissao))->horaCompleta(), 0, 5),
-                (new DataHora($row->data_desmobilizacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_desmobilizacao))->horaCompleta(), 0, 5),
-                $row->Admissao->status,
-                $row->data_entrevista,
-                $row->Empresa->nome_fantasia,
-                $row->Admissao->salario,
-
-            ];
-        }
-
-        $nameArquivo = "posadmissao" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "PosAdmissao", $head, $rows, $nameArquivo);
+        JobExportaPosAdmissao::dispatch(auth()->id(), auth()->user()->empresa_id, $filtros);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
@@ -472,7 +452,6 @@ class PosAdmissaoController extends Controller
             DB::rollback();
             $msg = "error POS ADMISSÃO - ENTREVISTAR : {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
-            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
@@ -493,7 +472,6 @@ class PosAdmissaoController extends Controller
             DB::rollback();
             $msg = "error POS ADMISSÃO - ENTREVISTAR UPDATE : {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
-            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }

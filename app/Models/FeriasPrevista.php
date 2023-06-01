@@ -107,7 +107,6 @@ class FeriasPrevista extends Model
         'solicitante',
         'status',
         'obs',
-
         'user_aprovacao_id',
         'obs_aprovacao',
         'data_aprovacao',

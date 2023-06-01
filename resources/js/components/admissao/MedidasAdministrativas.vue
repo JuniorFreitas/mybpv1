@@ -63,7 +63,7 @@
                     </div>
 
                     <div class="col-md-2">
-                        <date-picker label="Data Solicitação" v-model="obj.data_solicitacao" :max="hoje" :disabled="!obj.novo"></date-picker>
+                        <date-picker label="Data Solicitação" v-model="obj.data_solicitacao" :max="restricao" :disabled="!obj.novo"></date-picker>
                     </div>
 
                     <div class="col-md-2">
@@ -142,6 +142,7 @@ export default {
             anexoUploadAndamento: false,
 
             hoje: '',
+            restricao: '',
 
             form: {
                 medidas_administrativas: [],
@@ -222,11 +223,13 @@ export default {
             this.form.medidas_administrativasDelete = [];
             axios.get(`${URL_ADMIN}/historico/${this.feedback_id}`).then(res => {
                 let data = res.data;
+                console.log(data.hoje)
                 this.form.medidas_administrativas = data.feedback.medidas_administrativas;
                 this.causas = data.causas;
                 this.tipos = data.tipos;
                 this.definicao = data.definicao;
                 this.hoje = data.hoje;
+                this.restricao = data.restricao;
                 this.preload = false;
             })
         }

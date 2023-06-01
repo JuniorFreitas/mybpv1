@@ -1,23 +1,28 @@
-# This is a sample build configuration for PHP.
-# Check our guides at https://confluence.atlassian.com/x/e8YWN for more examples.
-# Only use spaces to indent your .yml configuration.
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
-image: php:7.1.29
+image: node:14
 
 pipelines:
-
-  branches:
-    production:
-      - step:
-          name: Deploy em homologocao
-          deployment: production
-          script:
-            - echo "Deploying to production environment"
-            - pipe: atlassian/ssh-run:0.2.2
-              variables:
-                SSH_USER: $SSH_USER_HOMOL
-                SERVER: $SERVER_HOMOL
-                #SSH_KEY: $MYKEY
-                PORT: $PORT
-                COMMAND: "/var/www/deploy.sh"
+  default:
+    - step:
+        name: Criando host
+        script:
+          - apt-get update
+          - apt-get install -yqq openssh-client
+          - cd /root
+          - ls -la
+          - mkdir -p /root/.ssh
+          - ls -la
+          - echo "$MYBPIN" | base64 -d > /root/.ssh/aws.pem
+          - ls -la
+          - cd /root/.ssh/
+          - cat /root/.ssh/aws.pem
+          - chmod 600 /root/.ssh/aws.pem
+          - ls -la
+          - pwd
+          - ssh -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
+          - ssh -o StrictHostKeyChecking=no -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
+          - ssh -i "/root/.ssh/aws.pem" ubuntu@3.224.176.151 "ls -la"
+          
+    - step:
+        name: Connecting to server
+        script:
+          - ssh -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"

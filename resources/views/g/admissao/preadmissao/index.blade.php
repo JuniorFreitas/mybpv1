@@ -8,158 +8,18 @@
     <modal id="janelaVisualizar" :titulo="tituloJanela" size="g">
         <template slot="conteudo">
             <preload class=" mt-2 text-center" v-if="preload"></preload>
-            <div v-if="!preload" id="formDocumentos">
-                <fieldset>
-                    <legend>FOTO 3X4</legend>
+            <div v-if="!preload && form.docs_curriculo_pre_adm.length" id="formDocumentos">
+                <fieldset v-for="item in form.docs_curriculo_pre_adm">
+                    <legend>@{{ item.label }}</legend>
+                    <div class="alert alert-info" v-if="!item.docs_curriculo_anexos.length">
+                        Nenhum anexo enviado
+                    </div>
                     <upload label="Selecionar anexo(s)"
                             :leitura="true"
-                            :model="form.foto_tres"
-                            :model-delete="form.foto_tresDel" :url="urlAnexoUpload"
+                            :model="item.docs_curriculo_anexos"
+                            :model-delete="[]" :url="urlAnexoUpload"
                             @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>RG/CPF</legend>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.anexos_cpf_rg"
-                            :model-delete="form.anexos_cpf_rgDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>COMPROVANTE DE ENDEREÇO</legend>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.comprovante_end"
-                            :model-delete="form.comprovante_endDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CTPS DIGITAL (FRENTE)</legend>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.ctps_frente"
-                            :model-delete="form.ctps_frenteDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CTPS DIGITAL (VERSO)</legend>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.ctps_verso"
-                            :model-delete="form.ctps_versoDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>ANTECEDENTE CRIMINAL</legend>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.antecedentes"
-                            :model-delete="form.antecedentesDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>TITULO ELEITOR</legend>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.titulo_eleitor"
-                            :model-delete="form.titulo_eleitorDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CERTIFICADO RESERVISTA (Apenas Homens)</legend>
-                    <upload label="Selecionar anexo(s)"
-
-                            :leitura="true"
-                            :model="form.certificado_reservista"
-                            :model-delete="form.certificado_reservistaDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CARTÃO DO PIS OU RESCISÃO DE CONTRATO</legend>
-                    <upload label="Selecionar anexo(s)"
-
-                            :leitura="true"
-                            :model="form.pis_rescisao"
-                            :model-delete="form.pis_rescisaoDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CERTIFICADO DE ESCOLARIDADE</legend>
-                    <upload label="Selecionar anexo(s)"
-
-                            :leitura="true"
-                            :model="form.certificado_escolaridade"
-                            :model-delete="form.certificado_escolaridadeDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CONTA BANCO</legend>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.conta_banco"
-                            :model-delete="form.conta_bancoDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CARTA DE SINDICALIZAÇÃO EMITIDA PELO SINDICATO</legend>
-                    <upload label="Selecionar anexo(s)"
-
-                            :leitura="true"
-                            :model="form.carta_sindicato"
-                            :model-delete="form.carta_sindicatoDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CÓPIA DA CARTEIRA DE VACINA; (NÃO OBRIGATÓRIO)</legend>
-                    <upload label="Selecionar anexo(s)"
-
-                            :leitura="true"
-                            :model="form.carteira_vacina"
-                            :model-delete="form.carteira_vacinaDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>DOCUMENTAÇÃO FILHOS (PARA SALÁRIO FAMÍLIA)</legend>
-                    <p>IDENTIDADE E CPF</p>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.rgcpf_filho"
-                            :model-delete="form.rgcpf_filhoDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :multi="true"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>CARTÃO VACINA (ATÉ 6 ANOS)</legend>
-                    <upload label="Selecionar anexo(s)"
-                            :leitura="true"
-                            :model="form.cartao_vacina_filho"
-                            :model-delete="form.cartao_vacina_filhoDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :multi="true"></upload>
-                </fieldset>
-                <fieldset>
-                    <legend>DECLARAÇÃO ESCOLAR (DE 7 ANOS ATÉ 14 ANOS)</legend>
-                    <p>DECLARAÇÃO ESCOLAR DO ANO EM CURSO (ORIGINAL)</p>
-                    <upload label="Selecionar anexo(s)"
-
-                            :leitura="true"
-                            :model="form.declaracao_escolar_filho"
-                            :model-delete="form.declaracao_escolar_filhoDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :multi="true"></upload>
+                            @onfinalizado="anexoUploadAndamento=false" :multi="false"></upload>
                 </fieldset>
             </div>
 
@@ -342,17 +202,10 @@
                         resultado.cliente.nome}}
                     </td>
                     <td class="text-center">
-                        @{{resultado.vaga_selecionada.nome}}
+                        @{{resultado.vaga_aberta_municipio}}
                     </td>
                     <td class="text-center">
-                        @{{ resultado.curriculo.anexos_cpf_rg_count + resultado.curriculo.antecedentes_count +
-                        resultado.curriculo.carta_sindicato_count + resultado.curriculo.cartao_vacina_filho_count +
-                        resultado.curriculo.carteira_vacina_count + resultado.curriculo.certificado_escolaridade_count +
-                        resultado.curriculo.certificado_reservista_count + resultado.curriculo.comprovante_end_count +
-                        resultado.curriculo.conta_banco_count + resultado.curriculo.ctps_frente_count +
-                        resultado.curriculo.ctps_verso_count + resultado.curriculo.declaracao_escolar_filho_count +
-                        resultado.curriculo.foto_tres_count + resultado.curriculo.pis_rescisao_count +
-                        resultado.curriculo.rgcpf_filho_count + resultado.curriculo.titulo_eleitor_count }} anexo(s)
+                        @{{ resultado.qnt_anexos }} anexo(s)
                     </td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-primary" title="Visuzalizar"

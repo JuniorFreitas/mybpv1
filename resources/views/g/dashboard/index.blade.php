@@ -330,6 +330,27 @@
         </template>
     </modal>
 
+<!--    <modal id="celebration" titulo="Menção honrosa por inovação no Maranhão" size="g">
+        <template slot="conteudo">
+            <div class="row">
+                <div class="col-12">
+                    <img src="https://mybp-prod.s3.amazonaws.com/public/cert_mensao_honrosa.png" class="img-fluid">
+                    <p class="text-justify">
+                        A BPSE recebeu uma Menção Honrosa por Inovação do Governo do Estado do Maranhão e a Secretaria
+                        da
+                        Ciência, Tecnologia e Inovação, pelo nosso sistema e pelo desenvolvimento da versão indústria!
+                        <br>
+                        Assim
+                        atualizamos a nossa Home de Login para BPIN, Soluções em Gestão, durante esse mês de celebração.
+                        Acreditamos que cada pessoa tem um potencial único e é nosso dever ajudá-las a alcançar suas
+                        metas
+                        profissionais. É um prazer celebrar com você essa conquista!
+                    </p>
+                </div>
+            </div>
+        </template>
+    </modal>-->
+
     <div class="row">
         <div id="sandbox-container"></div>
         <div class="col-12 col-lg-10">
@@ -436,6 +457,8 @@
                 @if(!auth()->user()->termos)
                 $('#termosdeuso_popup').modal('show')
                 @endif
+
+                // $('#celebration').modal('show')
             },
             methods: {
                 concordar() {

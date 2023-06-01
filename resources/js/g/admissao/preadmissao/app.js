@@ -41,54 +41,7 @@ const app = new Vue({
             id: '',
             nome: '',
             cpf: '',
-
-            foto_tres: [], //FOTO 3X4
-            foto_tresDel: [],
-
-            anexos_cpf_rg: [],
-            anexos_cpf_rgDel: [],
-
-            comprovante_end: [],
-            comprovante_endDel: [],
-
-            ctps_frente: [],
-            ctps_frenteDel: [],
-
-            ctps_verso: [],
-            ctps_versoDel: [],
-
-            antecedentes: [],
-            antecedentesDel: [],
-
-            titulo_eleitor: [],
-            titulo_eleitorDel: [],
-
-            certificado_reservista: [],
-            certificado_reservistaDel: [],
-
-            pis_rescisao: [],
-            pis_rescisaoDel: [],
-
-            certificado_escolaridade: [],
-            certificado_escolaridadeDel: [],
-
-            conta_banco: [],
-            conta_bancoDel: [],
-
-            carta_sindicato: [],
-            carta_sindicatoDel: [],
-
-            carteira_vacina: [],
-            carteira_vacinaDel: [],
-
-            rgcpf_filho: [],
-            rgcpf_filhoDel: [],
-
-            cartao_vacina_filho: [],
-            cartao_vacina_filhoDel: [],
-
-            declaracao_escolar_filho: [],
-            declaracao_escolar_filhoDel: [],
+            docs_curriculo_pre_adm: [], //DOCUMENTOS DO CURRICULO
         },
         formDefault: null,
 
@@ -211,10 +164,10 @@ const app = new Vue({
             formReset();
             axios.get(`${URL_ADMIN}/preadmissao/${id}`)
                 .then(response => {
-                    let data = response.data.curriculo;
+                    let data = response.data;
                     Object.assign(this.form, data);
                     this.form.id = response.data.id;
-                    this.tituloJanela = `Documentos de Pré-admissão - ${data.nome}`;
+                    this.tituloJanela = `Documentos de Pré-admissão - ${data.curriculo.nome}`;
                     this.preload = false;
                 })
                 .catch(error => {

@@ -1,5 +1,10 @@
 FROM codions/laravel:8.x
 
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip --no-install-recommends && \
+    pip3 install xlwt redis boto3
+
 # Override nginx's default config
 COPY .deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
 

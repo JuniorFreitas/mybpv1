@@ -320,7 +320,7 @@
                     <th>CPF</th>
                     <th>RG/Emitente</th>
                     <th>Filiação</th>
-                    <th class="text-center">Vaga</th>
+                    <th class="text-center">Cargo</th>
                     <th class="text-center">Função</th>
                     <th class="text-center">Foto 3x4</th>
                     <th class="text-center">
@@ -361,7 +361,7 @@
 
 
                     <td class="text-center">
-                        @{{resultado.vaga_selecionada.nome}}
+                        @{{resultado.admissao.cargo}}
                     </td>
 
                     <td class="text-center">

@@ -71,7 +71,7 @@
     </style>
 </head>
 <body class="my-login-page"
-      style="background: url(https://bpse.com.br/img/b_blue.png) no-repeat #072333; background-size: cover;"
+      style="background: url({{ asset('images/bg_login_bpin_mybp.jpg') }}) no-repeat #072333; background-size: cover;"
     {{--      style="background: url({{assets('imagens/bg-business.jpg')}});"--}}
 >
 <div id="app" v-cloak class="container-fluid">
@@ -81,8 +81,8 @@
                 <div class="row">
                     <div class="col-lg-6 col-md-8 mx-auto">
                         <div class="card rounded shadow shadow-sm">
-                            <div class="card-header">
-                                <img src="{{ asset('images/logo_bpse_color.png') }}" class="img-fluid" alt="logo_bpse">
+                            <div class="card-header bg-white text-center">
+                                <img src="{{ asset('images/bpin_mybp_color.svg') }}" class="" alt="logo_bpse" style="height: 120px">
                             </div>
                             <div class="card-body">
                                 <form method="POST" id="demo-form" v-show="!recuperaSenha"
@@ -169,11 +169,16 @@
                                     </div>
                                 </form>
 
-                                <div class="py-3 d-flex justify-content-center">
+                                <div class="py-3" style="display: flex; justify-content: space-around; align-items: center;">
+                                    <img src="{{ asset('images/inova_maranhao.png') }}" alt=""
+                                         class=" " style="height: 60px">
+                                    <img src="{{ asset('images/fapema-logo.png') }}" alt=""
+                                         class=" " style="height: 60px">
                                     <img src="https://bpse.com.br/img/logo_procem.png" alt=""
-                                         class=" " style="height: 130px">
+                                         class=" " style="height: 90px">
                                     <img src="https://bpse.com.br/img/selo_gptw.png" alt="" class=" "
-                                         style="height: 130px">
+                                         style="height: 90px">
+
                                 </div>
 
                                 <div class="social-links d-flex justify-content-around">

@@ -134,6 +134,10 @@ class Cih extends Model
         'obs_aprovacao',
         'data_aprovacao',
         'status',
+        'user_rh_id',
+        'resposta_rh',
+        'obs_rh',
+        'data_aprovacao_rh',
         'empresa_id',
         'centro_de_custo_id',
         'user_deletou_id'
@@ -158,6 +162,10 @@ class Cih extends Model
         'obs_aprovacao' => 'string',
         'data_aprovacao' => 'string',
         'status' => 'string',
+        'user_rh_id' => 'int',
+        'resposta_rh' => 'string',
+        'obs_rh' => 'string',
+        'data_aprovacao_rh' => 'string',
         'created_at' => 'datetime:d/m/Y à\s H:i\h',
         'updated_at' => 'datetime:d/m/Y à\s H:i\h',
         'empresa_id' => 'int',
@@ -187,7 +195,7 @@ class Cih extends Model
     {
         if ($value) {
             $data = new DataHora($this->attributes['data_lancamento']);
-            return $data->dataCompleta();
+            return $data->dataHoraCompleta();
         }
     }
 
@@ -204,7 +212,7 @@ class Cih extends Model
     {
         if (!is_null($value)) {
             $data = new DataHora($this->attributes['data_aprovacao']);
-            return $data->dataCompleta() . ' às ' . $data->horaCompleta();
+            return $data->dataHoraCompleta();
         } else {
             return null;
         }
@@ -218,6 +226,27 @@ class Cih extends Model
             $this->attributes['data_aprovacao'] = $data->dataHoraInsert();
         } else {
             $this->attributes['data_aprovacao'] = null;
+        }
+    }
+
+    public function getDataAprovacaoRhAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['data_aprovacao_rh']);
+            return $data->dataHoraCompleta();
+        } else {
+            return null;
+        }
+    }
+
+    //Modificador ->data_fim
+    public function setDataAprovacaoRhAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($value);
+            $this->attributes['data_aprovacao_rh'] = $data->dataHoraInsert();
+        } else {
+            $this->attributes['data_aprovacao_rh'] = null;
         }
     }
 
@@ -259,6 +288,11 @@ class Cih extends Model
     public function ResponsavelAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
+
+    public function RhAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'user_rh_id');
     }
 
     public function Anexos()

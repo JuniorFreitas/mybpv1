@@ -167,7 +167,7 @@ const app = new Vue({
 
         async formEncaminhar(obj) {
             this.dados.nome = obj.curriculo.nome;
-            this.dados.cargo = obj.vaga_selecionada.nome;
+            this.dados.cargo = obj.vaga_aberta.vaga.nome;
             this.nav = 'encaminhar';
 
             this.form = _.cloneDeep(this.formDefault);

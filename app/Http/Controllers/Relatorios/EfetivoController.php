@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\Excel\Relatorios\JobExportaEfetivo;
 use App\Jobs\JobExportaExcel;
 use App\Jobs\JobExportaPdf;
 use App\Models\Admissao;
 use App\Models\CentroCusto;
+use App\Models\ClienteFilial;
 use App\Models\FeedbackCurriculo;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
@@ -94,24 +96,39 @@ class EfetivoController extends Controller
      * @param Request $request
      * @return FeedbackCurriculo|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
-    protected function filtro(Request $request)
+    public static function filtro(Request $request)
     {
-        $resultado = CentroCusto::select(['id', 'label', 'empresa_id'])->with(['Admissao' => function ($query) use ($request) {
-            $query->whereNotNull('centro_custo_id')
-                ->whereStatus(Admissao::STATUS_ADMISSAO_ADMITIDO)
-                ->with('Feedback:id,curriculo_id,vagas_abertas_id',
+        $resultado = Admissao::admitidos()
+            ->where('admissoes.status',Admissao::STATUS_ADMISSAO_ADMITIDO)
+            ->whereHas('Feedback')
+            ->select(['id', 'label', 'empresa_id'])
+            ->join('feedback_curriculos as feedback', 'feedback.id', '=', 'admissoes.feedback_id')
+            ->join('curriculos as curriculo', 'curriculo.id', '=', 'feedback.curriculo_id')
+            ->with(['Feedback:id,curriculo_id,vagas_abertas_id',
                     'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
-                    'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id',
-                    'Feedback.VagaAberta.VagaSelecionada:id,nome',
-                    'Feedback.VagaAberta.Municipio')
-                ->select(['id', 'feedback_id', 'salario', 'tipo_admissao', 'centro_custo_id', 'status', 'data_admissao']);
-        }])->whereAtivo(true);
+                    'CentroCusto.Filiais',
+                    'CentroCusto',
+            ])
+            ->select([
+                'admissoes.id',
+                'admissoes.feedback_id',
+                'admissoes.tipo_admissao',
+                'admissoes.cargo',
+                'admissoes.salario',
+                'admissoes.centro_custo_id',
+                'admissoes.centro_custo_filial_id',
+                'admissoes.filial',
+                'admissoes.status',
+                'admissoes.data_admissao'
+            ])->orderBy('curriculo.nome');
 
         if ($request->filled('campoCentrosDeCusto')) {
-            $resultado->whereId($request->campoCentrosDeCusto);
+            if($request->campoCentrosDeCusto == 'nenhum'){
+                $resultado->whereNull('centro_custo_id');
+            }else{
+                $resultado->whereCentroCustoId($request->campoCentrosDeCusto);
+            }
         }
-
-        $resultado = $resultado->groupBy('id')->orderBy('label');
 
         return $resultado;
     }
@@ -122,13 +139,31 @@ class EfetivoController extends Controller
      */
     public function atualizar(Request $request)
     {
-        $pg = $this->filtro($request)->paginate($request->porPag ?: 50);
+        $resultado = self::filtro($request)->paginate($request->porPag ?: 100);
         $centros_de_custo = CentroCusto::whereAtivo(true)->orderBy('label')->get();
-        $dados = [
-            'centros_de_custo' => $centros_de_custo
-        ];
+        $filial = new ClienteFilial();
+        if ($filial->temFilial()) {
+            $listaFilial = $filial->getListaFilialAtiva();
+        }
+        $itens = collect($resultado->items())->transform(function ($item) {
+            $item->data_admissao = $item->data_admissao ?: 'NÃO INFORMADA';
+            $item->salario = $item->salario ?: '0,00';
+            $item->cargo = $item->cargo ?: 'NÃO INFORMADO';
+            $item->tipo_admissao = $item->tipo_admissao ?: 'NÃO INFORMADA';
+            $item->centro_custo_label = $item->CentroCusto ? $item->CentroCusto->label : 'NÃO INFORMADO';
+            return $item;
+        });
 
-        return Sistema::pg($pg, $dados);
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $itens,
+                'listaFilial' => $listaFilial ?? null,
+                'centros_de_custo' => $centros_de_custo
+            ]
+        ], 200);
     }
 
     /**
@@ -139,7 +174,7 @@ class EfetivoController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $dados = $this->filtro($request)->get()->toArray();
+        $dados = self::filtro($request)->get()->toArray();
         $view = 'pdf.relatorio.centrosdecusto.centrosdecusto';
         $nameArquivo = "relatorio_centro_de_custo_" . rand(1000, 9999) . "_" . date('YmdHis') . ".pdf";
 
@@ -164,38 +199,7 @@ class EfetivoController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
-
-        $head = [
-            "Código",
-            "Nome",
-            "Centro de Custo",
-            "Cargo",
-            "Salário",
-            "Tipo de admissão",
-            "Data da Admissão",
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            if (count($row->admissao) > 0) {
-                foreach ($row->admissao as $admissao) {
-                    $rows[] = array(
-                        $admissao->Feedback->curriculo_id,
-                        $admissao->Feedback->Curriculo->nome,
-                        $row->label,
-                        $admissao->Feedback->VagaAberta ? $admissao->Feedback->VagaAberta->VagaSelecionada->nome . ' - ' . $admissao->Feedback->VagaAberta->Municipio->uf ?: "" : "",
-                        $admissao ? $admissao->salario ?: "" : "",
-                        $admissao ? $admissao->tipo_admissao ?: "" : "",
-                        $admissao ? $admissao->data_admissao ?: "" : "",
-                    );
-                }
-            }
-        }
-
-        $nameArquivo = "relatorio_efetivo" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Relatório - Efetivo", $head, $rows, $nameArquivo);
+        JobExportaEfetivo::dispatch(auth()->id(), auth()->user()->empresa_id);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }

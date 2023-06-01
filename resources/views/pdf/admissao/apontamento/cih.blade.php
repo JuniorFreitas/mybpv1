@@ -23,8 +23,10 @@
                 <th class="text-center">Ocorrência</th>
                 <th class="text-center">Responsável Lançamento</th>
                 <th class="text-center">Ação</th>
-                <th class="text-center">Status</th>
-                <th class="text-center">Responsável Aprovação</th>
+                <th class="text-center">Status Aprovação Gestor</th>
+                <th class="text-center">Responsável Aprovação Gestor</th>
+                <th class="text-center">Status Aprovação Rh</th>
+                <th class="text-center">Responsável Aprovação Rh</th>
             </tr>
         </thead>
         <?php $cont = 1; ?>
@@ -43,6 +45,11 @@
                     {{ $cih['data_aprovacao'] }}
                 </td>
                 <td class="text-center" style="text-transform: uppercase">{{ $cih['responsavel_aprovacao'] }}</td>
+                <td class="text-center" style="text-transform: uppercase">
+                    {{ $cih['resposta_rh'] }}<br>
+                    {{ $cih['data_aprovacao_rh'] }}
+                </td>
+                <td class="text-center" style="text-transform: uppercase">{{ $cih['rh_aprovacao'] }}</td>
             </tr>
             <?php $cont++; ?>
         @endforeach

@@ -280,7 +280,8 @@ class FolhaDePontoController extends Controller
             'totalHorasNegativas' => PontoEletronico::formataTempo($totalHorasNegativas),
             'saldoValor' => ($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas,
             'saldoDeHoras' => PontoEletronico::formataTempo(($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas),
-            'escala' => $funcionario->EmpresaEscalas[0]
+            'escala' => $funcionario->EmpresaEscalas[0],
+            'razao_social' => auth()->user()->DadosEmpresa->razao_social,
 
         ]);
         $pdf->setPaper('A4', 'portrait');

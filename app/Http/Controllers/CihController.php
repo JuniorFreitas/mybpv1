@@ -188,10 +188,10 @@ class CihController extends Controller
 
         $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
         if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
-            return $cih->load('Anexos', 'Tag', 'CentroDeCusto', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome');
+            return $cih->load('Anexos', 'Tag', 'CentroDeCusto', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome', 'RhAprovacao:id,nome');
         }
 
-        return $cih->load('Anexos', 'Tag', 'Area', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome');
+        return $cih->load('Anexos', 'Tag', 'Area', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome', 'RhAprovacao:id,nome');
     }
 
     /**
@@ -210,25 +210,70 @@ class CihController extends Controller
 
         try {
             DB::beginTransaction();
-            $cih->update([
-                'user_aprovacao_id' => $dados['user_aprovacao_id'],
-                'data_aprovacao' => $dados['data_aprovacao'],
-                'obs_aprovacao' => $dados['obs_aprovacao'],
-                'status' => $dados['status']
-            ]);
-            DB::commit();
+            if(is_null($dados['resposta_rh'])){
+                $dadosValidados = \Validator::make($dados, [
+                    'status' => 'required',
+                ]);
 
-            $jobDados = [
-                'empresa_id' => auth()->user()->empresa_id,
-                'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
-                'nome_de' => $cih->ResponsavelAprovacao->nome,
-                'email_de' => $cih->ResponsavelAprovacao->login,
-                'nome_para' => $cih->ResponsavelLancamento->nome,
-                'email_para' => $cih->ResponsavelLancamento->login,
-                'tipo' => $cih->tag_id != 0 ? CihTag::find($cih->tag_id)->label : $cih->outra_tag,
-                'status' => ucfirst($cih->status),
-                'cih_id' => $cih->id
-            ];
+                if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+                    return response()->json([
+                        'msg' => 'Erro ao Salvar Informações',
+                        'erros' => $dadosValidados->errors()
+                    ], 400);
+                }
+
+                $cih->update([
+                    'user_aprovacao_id' => $dados['user_aprovacao_id'],
+                    'data_aprovacao' => $dados['data_aprovacao'],
+                    'obs_aprovacao' => $dados['obs_aprovacao'],
+                    'status' => $dados['status']
+                ]);
+
+                DB::commit();
+
+                $jobDados = [
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
+                    'nome_de' => $cih->ResponsavelAprovacao->nome,
+                    'email_de' => $cih->ResponsavelAprovacao->login,
+                    'nome_para' => $cih->ResponsavelLancamento->nome,
+                    'email_para' => $cih->ResponsavelLancamento->login,
+                    'tipo' => $cih->tag_id != 0 ? CihTag::find($cih->tag_id)->label : $cih->outra_tag,
+                    'status' => ucfirst($cih->status),
+                    'cih_id' => $cih->id
+                ];
+            }else{
+                $dadosValidados = \Validator::make($dados, [
+                    'resposta_rh' => 'required',
+                ]);
+
+                if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+                    return response()->json([
+                        'msg' => 'Erro ao Salvar Informações',
+                        'erros' => $dadosValidados->errors()
+                    ], 400);
+                }
+
+                $cih->update([
+                    'user_rh_id' => auth()->id(),
+                    'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
+                    'obs_rh' => $dados['obs_rh'],
+                    'resposta_rh' => $dados['resposta_rh']
+                ]);
+                DB::commit();
+
+                $jobDados = [
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
+                    'nome_de' => $cih->RhAprovacao->nome,
+                    'email_de' => $cih->RhAprovacao->login,
+                    'nome_para' => $cih->ResponsavelLancamento->nome,
+                    'email_para' => $cih->ResponsavelLancamento->login,
+                    'tipo' => $cih->tag_id != 0 ? CihTag::find($cih->tag_id)->label : $cih->outra_tag,
+                    'status' => ucfirst($cih->resposta_rh),
+                    'cih_id' => $cih->id
+                ];
+            }
 
             $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
             if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
@@ -298,6 +343,8 @@ class CihController extends Controller
                     'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
                     'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
                     'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
+                    'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                    'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh')
                 ],
                 'areas' => $areas,
                 'gestores' => $gestores,
@@ -328,7 +375,8 @@ class CihController extends Controller
                 'CentroDeCusto',
                 'Colaboradores',
                 'ResponsavelLancamento:id,nome',
-                'ResponsavelAprovacao:id,nome'
+                'ResponsavelAprovacao:id,nome',
+                'RhAprovacao:id,nome'
             );
         }else{
             $resultado = Cih::vinculados()->with('Tag:id,label',
@@ -336,7 +384,8 @@ class CihController extends Controller
                 'CentroDeCusto',
                 'Colaboradores',
                 'ResponsavelLancamento:id,nome',
-                'ResponsavelAprovacao:id,nome'
+                'ResponsavelAprovacao:id,nome',
+                'RhAprovacao:id,nome'
             );
         }
 
@@ -349,13 +398,23 @@ class CihController extends Controller
         }
 
         if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Colaborador.Curriculo', function ($q) use ($request) {
+            $resultado->whereHas('Colaboradores.Curriculo', function ($q) use ($request) {
                 $q->where('nome', 'like', '%' . $request->campoBusca . '%');
             });
         }
 
         if ($request->filled('campoStatus')) {
-            $resultado->whereStatus($request->campoStatus);
+            $status = $request->campoStatus;
+            if ($request->campoStatus == "aberto"){
+                $resultado->whereStatus($request->campoStatus);
+            }
+            elseif ($request->campoStatus == "aprovado_gestor"){
+                $resultado->whereStatus('aprovado')->whereNull('resposta_rh');
+            }elseif ($request->campoStatus == "aprovado_rh"){
+                $resultado->whereRespostaRh('aprovado');
+            }else{
+                $resultado->whereStatus('reprovado')->orWhere('resposta_rh','reprovado');
+            }
         }
 
         if ($request->filled('campoTags')) {
@@ -391,6 +450,8 @@ class CihController extends Controller
     public function export(Request $request)
     {
         $resultado = $this->filtro($request)->get();
+
+//        return $resultado;
         $head = [
             "Colaborador",
             "Cargo",
@@ -399,9 +460,12 @@ class CihController extends Controller
             "Ocorrência",
             "Responsável Lançamento",
             "Ação",
-            "Status",
-            "Data Status",
-            "Responsável Status"
+            "Status Aprovação Gestor",
+            "Data Aprovação Gestor",
+            "Responsável Aprovação Gestor",
+            "Status Aprovação RH",
+            "Data Aprovação RH",
+            "Responsável Aprovação RH"
         ];
 
         $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
@@ -414,9 +478,12 @@ class CihController extends Controller
                 "Ocorrência",
                 "Responsável Lançamento",
                 "Ação",
-                "Status",
-                "Data Status",
-                "Responsável Status"
+                "Status Aprovação Gestor",
+                "Data Aprovação Gestor",
+                "Responsável Aprovação Gestor",
+                "Status Aprovação RH",
+                "Data Aprovação RH",
+                "Responsável Aprovação RH"
             ];
         }
 
@@ -437,6 +504,9 @@ class CihController extends Controller
                         'status' => $row->status ?: "aguardando",
                         'data_aprovacao' => $row->data_aprovacao ?: '',
                         'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                        'resposta_rh' => $row->resposta_rh ?: "",
+                        'data_aprovacao_rh' => $row->data_aprovacao_rh ?: '',
+                        'rh_aprovacao' => $row->RhAprovacao ? $row->RhAprovacao->nome : '',
                     ];
                 }else{
                     $rows[] = [
@@ -450,6 +520,9 @@ class CihController extends Controller
                         'status' => $row->status ?: "aguardando",
                         'data_aprovacao' => $row->data_aprovacao ?: '',
                         'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                        'resposta_rh' => $row->resposta_rh ?: "",
+                        'data_aprovacao_rh' => $row->data_aprovacao_rh ?: '',
+                        'rh_aprovacao' => $row->RhAprovacao ? $row->RhAprovacao->nome : '',
                     ];
                 }
             }
@@ -617,6 +690,9 @@ class CihController extends Controller
                     'status' => $row->status ?: "aguardando",
                     'data_aprovacao' => $row->data_aprovacao ?: '',
                     'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
+                    'resposta_rh' => $row->resposta_rh ?: "",
+                    'data_aprovacao_rh' => $row->data_aprovacao_rh ?: '',
+                    'rh_aprovacao' => $row->RhAprovacao ? $row->RhAprovacao->nome : '',
                 ];
 
                 $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;

@@ -483,6 +483,11 @@ class Curriculo extends Model
         return $this->hasOne(Escolaridade::class, 'id', 'formacao');
     }
 
+    public function Escolaridade()
+    {
+        return $this->hasOne(Escolaridade::class, 'id', 'formacao');
+    }
+
     public function Telefones()
     {
         return $this->hasMany(TelefoneCurriculo::class, 'curriculo_id', 'id');
@@ -563,6 +568,7 @@ class Curriculo extends Model
         return $this->belongsToMany(Arquivo::class, 'documentos_curriculos', 'curriculo_id', 'arquivo_id')->whereTipo('declaracao_escolar_filho');
     }
 
+
     public function Usuario()
     {
         return $this->hasOne(User::class, 'id', 'usuario_lido');
@@ -636,6 +642,16 @@ class Curriculo extends Model
     public function EmailsPreAdmissao()
     {
         return $this->hasMany(EmailPreAdmissao::class, 'curriculo_id', 'id');
+    }
+
+    public function CartaOferta()
+    {
+        return $this->hasOne(CartaOferta::class, 'curriculo_id', 'id');
+    }
+
+    public function CartaOfertaArquivo()
+    {
+        return $this->belongsToMany(Arquivo::class, 'documentos_curriculos', 'curriculo_id', 'arquivo_id')->whereTipo('carta_oferta');
     }
 
     public static function getTelPrincipal($curriculo_id)

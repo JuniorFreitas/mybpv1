@@ -13,16 +13,19 @@ const app = new Vue({
         formUser: {
             cpf: '',
             nascimento: '',
+            apelido: '',
         }
     },
     mounted() {
         this.formVinculoDefault = _.cloneDeep(this.formVinculo) //copia
+        const pathArray = window.location.pathname.split("/");
+        this.formUser.apelido = pathArray[1];
     },
     methods: {
         autenticar() {
             this.autenticado = false;
             this.preloadAutenticacao = true;
-            axios.post(`${URL_SITE}/documentos-pre-admissao/autenticar`, this.formUser)
+            axios.post(`${URL_SITE}/${this.formUser.apelido}/documentos-pre-admissao/autenticar`, this.formUser)
                 .then(response => {
                     let data = response.data;
                     this.curriculo = data.curriculo;

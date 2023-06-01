@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Mail;
 
 class JobEnvioDocumento implements ShouldQueue
 {
@@ -27,7 +28,16 @@ class JobEnvioDocumento implements ShouldQueue
             'nome' => $dados['nome'],
             'email' => $dados['email'],
             'empresa_id' => $dados['empresa_id'],
+            'url_documento' => $dados['url_documento'],
         ];
+
+        if (isset($dados['anexo'])){
+            $this->mail['anexo'] = $dados['anexo'];
+        }
+
+        if (isset($dados['url_checklist'])){
+            $this->mail['url_checklist'] = $dados['url_checklist'];
+        }
     }
 
     /**
@@ -37,6 +47,6 @@ class JobEnvioDocumento implements ShouldQueue
      */
     public function handle()
     {
-        \Mail::send(new EnvioDocumentosMail($this->mail));
+        Mail::send(new EnvioDocumentosMail($this->mail));
     }
 }

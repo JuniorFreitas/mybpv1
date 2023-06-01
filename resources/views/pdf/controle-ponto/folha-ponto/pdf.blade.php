@@ -22,15 +22,39 @@
             color: #02660c;
         }
 
+        .textoLaranja {
+            color: #af6700;
+        }
+
         table.dados2, table.dados2 th, table.dados2 td {
             border: 0.1px solid black;
             border-collapse: collapse;
             font-size: 8.5pt;
             padding: 3px;
         }
-
-        .dados2 {
+        table.dados3 {
             width: 100%;
+            border: 1px solid black;
+            border-collapse: collapse;
+            font-size: 7.7pt;
+            padding: 3px;
+        }
+
+        table.dados3 th, table.dados3 td {
+            border-collapse: collapse;
+            font-size: 7.7pt;
+            padding: 3px;
+        }
+
+        .dados2, .dados3 {
+            width: 100%;
+        }
+
+        table.dados4, table.dados4 th, table.dados4 td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            font-size: 7.7pt;
+            padding: 4px;
         }
 
     </style>
@@ -78,26 +102,43 @@
                     <td>
 
                         @if($calendar['ponto'] && $calendar['ponto']->verificado)
-                            *
-                        @else
-                            @if($calendar['ponto'])
+                            <span class="textoVerde">
                                 @foreach($calendar['ponto']->periodos as $index =>$periodo)
                                     @if($calendar['ponto']->ocorrencia->trabalhado)
                                         @if($index > 0)
                                             |
                                         @endif {{ $periodo->horaEntrada }}
                                         @if($periodo->horaSaida)
-                                            -{{ $periodo->horaSaida }}
-                                        @endif
-                                        @if(!$periodo->horaSaida)
-                                            - trabalhando
-                                        @endif
-                                    @else
-                                        @if(!$calendar['ponto']->ocorrencia->trabalhado)
-                                            {{ $calendar['ponto']->ocorrencia->descricao }}
+                                            - {{ $periodo->horaSaida }}
                                         @endif
                                     @endif
                                 @endforeach
+
+                                @if(!$calendar['ponto']->ocorrencia->trabalhado)
+                                    {{ $calendar['ponto']->ocorrencia->descricao }}
+                                @endif
+                            </span>
+                        @else
+                            @if($calendar['ponto'])
+                                <span class="textoLaranja">
+                                    @foreach($calendar['ponto']->periodos as $index =>$periodo)
+                                        @if($calendar['ponto']->ocorrencia->trabalhado)
+                                            @if($index > 0)
+                                                |
+                                            @endif {{ $periodo->horaEntrada }}
+                                            @if($periodo->horaSaida)
+                                                - {{ $periodo->horaSaida }}
+                                            @endif
+                                            @if(!$periodo->horaSaida)
+                                                - trabalhando
+                                            @endif
+                                        @endif
+                                    @endforeach
+
+                                    @if(!$calendar['ponto']->ocorrencia->trabalhado)
+                                        {{ $calendar['ponto']->ocorrencia->descricao }}
+                                    @endif
+                                </span>
                             @endif
                         @endif
                     </td>
@@ -115,7 +156,7 @@
                         @endif
                     </td>
                     <td>
-                        @if($calendar['ponto'] && $calendar['ponto']->jornada->ocorrencia->trabalhado && $calendar['ponto']->ocorrencia->conta_horas && $calendar['ponto']->PeriodosEmAberto()->count() ===0)
+                        @if($calendar['ponto'] && $calendar['ponto']->jornada->ocorrencia->trabalhado && $calendar['ponto']->ocorrencia->conta_horas)
                             {{ $calendar['ponto']->horasNormalFormat }}
                         @else
                             --
@@ -197,9 +238,33 @@
             </tr>
         </table>
 
-        <p>
-            * Não verificado
-        </p>
+{{--        <p>--}}
+{{--            * Não verificado--}}
+{{--        </p>--}}
+        <p style="margin-top: 3px; margin-bottom: 3px">Observações:</p>
+        <table class="dados4" style="width: 100%; margin-top: 4px ">
+            <thead>
+            <tr>
+                <th style="height: 70px"></th>
+            </tr>
+            </thead>
+        </table>
+
+        <table class="dados3" style="margin-top: 40px; border: 0;">
+            <thead>
+            <tr>
+                <th style="text-align: center !important; width:50%">
+                    <hr style="width: 100%">
+                    {{$razao_social}}
+                </th>
+                <th style="width:1%"></th>
+                <th style="text-align: center; width:49%">
+                    <hr style="width: 100%">
+                    {{$dados->nome}}
+                </th>
+            </tr>
+            </thead>
+        </table>
     @endif
     @include('layouts.rodapePdf')
 @endsection

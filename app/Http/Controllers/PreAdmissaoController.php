@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Admissao;
+use App\Models\Arquivo;
 use App\Models\Curriculo;
+use App\Models\DocumentosCurriculosAdmissaoEmpresa;
+use App\Models\DocumentosPreAdmissao;
 use App\Models\FeedbackCurriculo;
 use App\Models\Sistema;
 use Illuminate\Http\Request;
@@ -20,81 +23,58 @@ class PreAdmissaoController extends Controller
         return view('g.admissao.preadmissao.index');
     }
 
-    public function show(FeedbackCurriculo $feedback)
+    public function show($feedback)
     {
-        return $feedback->load(
-            'Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf',
-            'Cliente:id,nome,razao_social,nome_fantasia',
-            'VagaSelecionada:id,nome',
-            'Admissao:feedback_id,data_admissao,funcao,cargo,status',
-            'Curriculo.Telefones',
-            'Curriculo.FotoTres',
-            'Curriculo.AnexosCpfRg',
-            'Curriculo.ComprovanteEnd',
-            'Curriculo.CtpsFrente',
-            'Curriculo.CtpsVerso',
-            'Curriculo.Antecedentes',
-            'Curriculo.TituloEleitor',
-            'Curriculo.CertificadoReservista',
-            'Curriculo.PisRescisao',
-            'Curriculo.CertificadoEscolaridade',
-            'Curriculo.ContaBanco',
-            'Curriculo.CartaSindicato',
-            'Curriculo.CarteiraVacina',
-            'Curriculo.RgcpfFilho',
-            'Curriculo.CartaoVacinaFilho',
-            'Curriculo.DeclaracaoEscolarFilho'
-        );
+        $feedback = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id'])
+            ->whereId($feedback)
+            ->first()
+            ->load('Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf');
+
+        $feedback->docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa(auth()->user()->empresa_id)
+            ->transform(function ($doc) use ($feedback) {
+                $doc->docs_curriculo_anexos = DB::table('documentos_curriculos')
+                    ->whereTipo($doc->tipo)
+                    ->where('curriculo_id', $feedback->curriculo_id)
+                    ->join('arquivos', 'arquivos.id', '=', 'documentos_curriculos.arquivo_id')
+                    ->get()->transform(function ($doc) {
+                        $doc->url = "";
+                        $doc->url_download = "";
+                        if (in_array($doc->disco, Arquivo::LISTAGEM_DISCOS)) {
+                            $doc->url = config('filesystems.disks.' . $doc->disco . '.urlShow') . "/{$doc->file}";
+                            $doc->urlDownload = config('filesystems.disks.' . $doc->disco . '.urlDownload') . "/{$doc->file}";
+                            $doc->urlThumb = config('filesystems.disks.' . $doc->disco . '.urlThumb') . "/{$doc->file}";
+                        };
+                        return $doc;
+                    });
+                $doc->qnt_anexos = count($doc->docs_curriculo_anexos);
+                return $doc;
+            });
+
+        return $feedback;
+
     }
+
+
 
     public function atualizar(Request $request)
     {
-        $resultado = FeedbackCurriculo::with(['Curriculo' => function ($model) {
-            $model->select(['id', 'nome', 'cpf', 'email', 'nascimento', 'rg', 'orgao_expeditor', 'logradouro', 'complemento', 'bairro', 'municipio', 'uf'])
-                ->withCount([
-                    'FotoTres',
-                    'AnexosCpfRg',
-                    'ComprovanteEnd',
-                    'CtpsFrente',
-                    'CtpsVerso',
-                    'Antecedentes',
-                    'TituloEleitor',
-                    'CertificadoReservista',
-                    'PisRescisao',
-                    'CertificadoEscolaridade',
-                    'ContaBanco',
-                    'CartaSindicato',
-                    'CarteiraVacina',
-                    'RgcpfFilho',
-                    'CartaoVacinaFilho',
-                    'DeclaracaoEscolarFilho']);
-        }])->with(
-            'Cliente:id,nome,razao_social,nome_fantasia',
-            'VagaSelecionada:id,nome',
-            'Admissao:feedback_id,data_admissao,funcao,cargo,status',
-        );
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id'])->with(['Curriculo' => function ($model) {
+            $model->select(['id', 'nome', 'cpf', 'email', 'nascimento', 'rg', 'orgao_expeditor', 'logradouro', 'complemento', 'bairro', 'municipio', 'uf']);
+        }]);
 
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
-            $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
-            });
-        }
-
-        if ($request->filled('status')){
+        if ($request->filled('status')) {
             if ($request->status == 'em_processo') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
                     $q->whereDocumentosEntregue(true);
-                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao');
+                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao')->orWhereHas('Admissao', function ($q) {
+                    $q->whereIn('status', [Admissao::STATUS_ADMISSAO_PENDENTEDOCUMENTO]);
+                });
             }
             if ($request->status == 'admitidos') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
                     $q->whereDocumentosEntregue(true);
-                })->whereHas('Admissao', function ($q){
+                })->whereHas('Admissao', function ($q) {
                     $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
                 })->whereDoesntHave('Demissao');
             }
@@ -125,19 +105,37 @@ class PreAdmissaoController extends Controller
             });
         }
 
-        if ($request->filled('campoUf')) {
-            $resultado->whereHas('VagaAberta.Municipio', function ($q) use ($request) {
-                $q->whereUf($request->campoUf);
-            });
-        }
-
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+
+        $items = collect($resultado->items())->transform(function ($item) {
+            $docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa(auth()->user()->empresa_id)
+                ->transform(function ($doc) use ($item) {
+                    $doc->docs_curriculo_anexos = DB::table('documentos_curriculos')
+                        ->whereTipo($doc->tipo)
+                        ->where('curriculo_id', $item->curriculo_id)
+                        ->join('arquivos', 'arquivos.id', '=', 'documentos_curriculos.arquivo_id')
+                        ->get()->transform(function ($doc) {
+                            $doc->url = "";
+                            $doc->url_download = "";
+                            if (in_array($doc->disco, Arquivo::LISTAGEM_DISCOS)) {
+                                $doc->url = config('filesystems.disks.' . $doc->disco . '.urlShow') . "/{$doc->file}";
+                                $doc->url_download = config('filesystemzs.disks.' . $doc->disco . '.urlDownload') . "/{$doc->file}";
+                            };
+                            return $doc;
+                        });
+                    $doc->qnt_anexos = count($doc->docs_curriculo_anexos);
+                    return $doc;
+                });
+            $item->docs_curriculo_pre_adm = $docs_curriculo_pre_adm;
+            $item->qnt_anexos = $docs_curriculo_pre_adm->sum('qnt_anexos');
+            return $item;
+        });
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['items' => $resultado->items(), 'usuario_cliente_id' => auth()->user()->cliente_id, 'email_padrao' => Sistema::EMAILPADRAO]
+            'dados' => ['items' => $items, 'usuario_cliente_id' => auth()->user()->cliente_id, 'email_padrao' => Sistema::EMAILPADRAO]
         ]);
     }
 
@@ -188,7 +186,8 @@ class PreAdmissaoController extends Controller
             JobEnvioDocumento::dispatch([
                 'nome' => $curriculo->nome,
                 'email' => $feedback['email'],
-                'empresa_id' => $feedback->empresa_id
+                'empresa_id' => $feedback->empresa_id,
+                'url_documento' => env('APP_URL') . "/" . auth()->user()->Empresa->apelido . "/documentos",
             ]);
             return response()->json([], 201);
         } catch (\Exception $e) {
