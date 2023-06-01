@@ -36,16 +36,16 @@
                                 ><path style="fill:#E2E5E7;" d="M128,0c-17.6,0-32,14.4-32,32v448c0,17.6,14.4,32,32,32h320c17.6,0,32-14.4,32-32V128L352,0H128z"
                                         />
                                         <path style="fill:#B0B7BD;"
-                                              d="M384,128h96L352,0v96C352,113.6,366.4,128,384,128z" />
-                                        <polygon style="fill:#CAD1D8;" points="480,224 384,128 480,128 " />
+                                              d="M384,128h96L352,0v96C352,113.6,366.4,128,384,128z"/>
+                                        <polygon style="fill:#CAD1D8;" points="480,224 384,128 480,128 "/>
                                         <path style="fill:#184056;"
-                                              d="M416,416c0,8.8-7.2,16-16,16H48c-8.8,0-16-7.2-16-16V256c0-8.8,7.2-16,16-16h352c8.8,0,16,7.2,16,16 V416z" />
+                                              d="M416,416c0,8.8-7.2,16-16,16H48c-8.8,0-16-7.2-16-16V256c0-8.8,7.2-16,16-16h352c8.8,0,16,7.2,16,16 V416z"/>
                                         <g><!--	<path style="fill:#FFFFFF;" d=""/>--><text x="45" y="380"
                                                                                               style="font-size:130px;fill:#FFFFFF;">
                                             {{ arquivo.extensao }}
                                         </text></g>
                                         <path style="fill:#CAD1D8;"
-                                              d="M400,432H96v16h304c8.8,0,16-7.2,16-16v-16C416,424.8,408.8,432,400,432z" />
+                                              d="M400,432H96v16h304c8.8,0,16-7.2,16-16v-16C416,424.8,408.8,432,400,432z"/>
                                         <g></g>
                                         <g></g>
                                         <g></g>
@@ -86,15 +86,15 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <a :href="arquivo.url" target="_blank" class="btn btn-sm btn-secondary"
+                            <a :href="arquivo.url" target="_blank" class="btn btn-sm btn-secondary mb-1"
                                v-show="!arquivo.chave || (arquivo.enviado && !arquivo.falhou)">
                                 <i class="fas fa-search"></i> Visualizar
                             </a>
-                            <a :href="arquivo.urlDownload" class="btn btn-sm btn-secondary"
+                            <a :href="arquivo.urlDownload" class="btn btn-sm btn-secondary mb-1" target="_blank"
                                v-show="!arquivo.chave || (arquivo.enviado && !arquivo.falhou)">
                                 <i class="fas fa-download"></i> Download
                             </a>
-                            <button class="btn btn-sm btn-secondary mover"
+                            <button class="btn btn-sm btn-secondary mover mb-1"
                                     v-show="(!arquivo.chave && ordenar) || ((arquivo.enviado && !arquivo.falhou) && ordenar)"
                                     v-if="!leitura">
                                     <span>
@@ -228,6 +228,11 @@ export default {
             required: false,
             default: false
         },
+        apenasPdfImg: { // se aceita apenas pdf
+            type: Boolean,
+            required: false,
+            default: false
+        },
         simples: { // interface simples sem tabela
             type: Boolean,
             required: false,
@@ -240,10 +245,10 @@ export default {
         }
     },
     computed: {
-        btn: function() {
+        btn: function () {
             return $(this.$refs.file);
         },
-        atual: function() {
+        atual: function () {
 
             if (this.total === 0) {
                 return 1;
@@ -252,14 +257,14 @@ export default {
             let index = null;
 
             // o primeiro da lista que esta enviando...
-            index = _.findIndex(this.lista, { enviando: true });
+            index = _.findIndex(this.lista, {enviando: true});
             if (index > -1) {
                 /*console.log('achou o primeiro index que esta enviando',index);*/
                 return index + 1; // o primeiro que estiver enviando é o atual...
             }
 
             // o primeiro da lista que esta aguardando
-            index = _.findIndex(this.lista, { aguardando: true });
+            index = _.findIndex(this.lista, {aguardando: true});
             if (index > -1) {
                 /*console.log('achou o primeiro index que esta aguardando',index);*/
                 return index + 1; // ou o primeiro que estiver aguardando é o atual...
@@ -274,32 +279,32 @@ export default {
 
             return this.total; // se nao achar nada retorna 1 ou o ultimo item da lista
         },
-        total: function() {
+        total: function () {
             return this.lista.length;
         },
-        arquivo: function() {
+        arquivo: function () {
             return this.lista[this.atual - 1];
         },
         lista: {
-            get: function() {
+            get: function () {
                 return this.model;
             },
-            set: function(newValue) {
+            set: function (newValue) {
                 newValue.forEach((obj, index) => {
                     this.$set(this.model, index, obj);
                 });
             }
         },
-        bytesLimite: function() {
+        bytesLimite: function () {
             return this.size * MB;
         },
-        arquivosPermitidos: function() {
+        arquivosPermitidos: function () {
             return this.mimeTypes.join(",");
         },
-        multiple: function() {
-            return this.multi === true ? { multiple: "" } : "";
+        multiple: function () {
+            return this.multi === true ? {multiple: ""} : "";
         },
-        quantidadeMaxima: function() {
+        quantidadeMaxima: function () {
             if (this.quantidade == null) {
                 return false;
             }
@@ -324,13 +329,23 @@ export default {
             ];
         }
 
+        if (this.apenasPdfImg) {
+            this.mimeTypes = [
+                "application/pdf",
+                "image/jpeg",
+                "image/jpg",
+                "image/png"
+            ];
+        }
+
         if (this.apenasImagens) {
             this.mimeTypes = [
                 "image/jpeg",
                 "image/jpg",
                 "image/png"
             ];
-        }else{
+        } else {
+            console.log('this.tipos', this.tipos)
             this.mimeTypes = this.mimeTypes.concat(this.tipos); // junta com a lista padrão
         }
         //criando a chave de upload para essa pagina
@@ -365,27 +380,27 @@ export default {
     },
 
     methods: {
-        remover: function(index) {
+        remover: function (index) {
             this.$emit("ondelete", this.lista[index]);
             //if(this.lista[index].id && this.lista[index].enviado && !this.lista[index].falhou){
-            if (this.lista[index].id && this.lista[index].temporario == false) {
+            if (this.lista[index].id && !this.lista[index].temporario) {
                 this.modelDelete.push(parseInt(this.lista[index].id));
             }
-            if (this.lista[index].id && this.lista[index].temporario == true) {
+            if (this.lista[index].id && this.lista[index].temporarioe) {
                 var dados = {};
                 dados._method = "DELETE";
-                $.post(this.lista[index].urlDelete, dados).done((data) => {
+                axios.post(this.lista[index].urlDelete, dados).done((data) => {
                     //console.log('apagou')
                 });
             }
             this.lista.splice(index, 1);
         },
-        cancelar: function() {
+        cancelar: function () {
             this.pediuCancelar = true;
             mostraErro("", "O envio foi cancelado");
             this.ajax.abort();
         },
-        proximo: function() {
+        proximo: function () {
 
             if (this.atual === this.total) {
                 if (this.arquivo.enviado) {
@@ -403,11 +418,11 @@ export default {
                 this.enviarArquivo(); // proximo arquivo
             }
         },
-        selecionar: function() {
+        selecionar: function () {
             this.btn.val("");
             this.btn.trigger("click");
         },
-        upload: function() {
+        upload: function () {
 
             let totalDeArquivos = this.btn[0].files.length;
             this.emAndamento = true;
@@ -493,7 +508,7 @@ export default {
 
             let refVue = this;
 
-            Object.assign(this.arquivo, { enviando: true, aguardando: false });
+            Object.assign(this.arquivo, {enviando: true, aguardando: false});
 
             /*console.log(this.atual);
             console.log("aguardando",this.arquivo.aguardando,"enviando",this.arquivo.enviando,"enviado",this.arquivo.enviado);
@@ -526,17 +541,17 @@ export default {
                     return ajax;
                 }
             })
-                .done(function(data) {
+                .done(function (data) {
 
                     Object.assign(refVue.arquivo, data); //mesclar e sobrescrever com resposta do servidor
 
-                    Object.assign(refVue.arquivo, { enviando: false, enviado: true });
+                    Object.assign(refVue.arquivo, {enviando: false, enviado: true});
 
                     refVue.$emit("onComplete", data); //dados do servidor
 
                     refVue.proximo();
                 })
-                .fail(function(data) {
+                .fail(function (data) {
 
                     if (refVue.pediuCancelar) {
                         refVue.pediuCancelar = false;
@@ -558,7 +573,7 @@ export default {
                         }
                         //console.log('quem é o atual agora é:'+refVue.atual+" e o total é: "+refVue.total);
                     } else {
-                        Object.assign(refVue.arquivo, { enviando: false, enviado: true, falhou: true });
+                        Object.assign(refVue.arquivo, {enviando: false, enviado: true, falhou: true});
                     }
 
                     refVue.proximo();

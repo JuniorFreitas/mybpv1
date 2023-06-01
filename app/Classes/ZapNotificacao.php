@@ -3,6 +3,7 @@
 namespace App\Classes;
 
 use App\Jobs\JobSendNotificacaoWhatsApp;
+use App\Models\Sistema;
 use ZapMeSdk\Base as ZapMeSdk;
 
 class ZapNotificacao
@@ -45,6 +46,24 @@ class ZapNotificacao
         if ($ambiente != 'prod') {
             $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
             $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
+//            $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '5598991140405';
+        }
+
+        $upload = isset($dados['anexo']) ? [
+            'file_content' => Sistema::convertBase2($dados['anexo']['arquivo'],true),
+            'file_extension' => $dados['anexo']['tipo'] == self::TIPO_IMAGEM ? self::EXTENSAO_IMG : self::EXTENSAO_PDF
+        ] : [];
+
+        JobSendNotificacaoWhatsApp::dispatch($dados, $upload);
+    }
+
+    public function SgiEnvia(array $dados)
+    {
+        $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
+
+        if ($ambiente != 'prod') {
+            $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
+            $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
         }
 
         $upload = isset($dados['anexo']) ? [
@@ -52,7 +71,9 @@ class ZapNotificacao
             'file_extension' => $dados['anexo']['tipo'] == self::TIPO_IMAGEM ? self::EXTENSAO_IMG : self::EXTENSAO_PDF
         ] : [];
 
-        JobSendNotificacaoWhatsApp::dispatch($dados, $upload);
+        $send = (new ZapNotificacao())->send($dados, $upload);
+
+        return $send;
     }
 
     public function send($dados, $upload)

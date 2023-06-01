@@ -1594,7 +1594,7 @@
                             <i class="fa fa-search-plus"></i>
                         </button>
 
-                        <a v-if="item.admissao" :href="`admissao/${item.fc_token}/pdf`"
+                        <a v-if="item.admissao" :href="`${item.fc_token}/pdf`"
                            class="btn btn-sm btn-primary mb-2" content="Gerar PDF" v-tippy
                            target="_blank">
                             <i class="fa fa-file-pdf"></i>

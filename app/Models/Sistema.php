@@ -267,7 +267,13 @@ class Sistema
 
         $type = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
-        return 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+        $mime = 'image';
+        if ($type == 'pdf') {
+            $mime = 'application';
+        }
+
+        return "data:$mime/" . $type . ';base64,' . base64_encode($data);
     }
 
     public static function convertBase2($arquivo, $storage = null)
@@ -924,6 +930,19 @@ class Sistema
             return $e->getMessage();
         }
 
+    }
+
+    /**
+     * @param $nomeCache
+     * @param $empresa_id
+     * @param $usuario_id
+     * @return string
+     */
+    public static function nomeCache($nomeCache, $empresa_id)
+    {
+        $empresa_id = $empresa_id ?? auth()->user()->empresa_id;
+        $nomedocache = "{$nomeCache}_{$empresa_id}";
+        return $nomedocache;
     }
 
 }

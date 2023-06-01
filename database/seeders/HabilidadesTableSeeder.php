@@ -486,6 +486,8 @@ class HabilidadesTableSeeder extends Seeder
 
         $lista[] = ['nome' => 'relatorio_efetivo', 'descricao' => 'Pode acessar relatório de efetivo'];
 
+        $lista[] = ['nome' => 'admissao_documentos_carta_oferta', 'descricao' => 'Acessa Menu Carta Oferta'];
+        $lista[] = ['nome' => 'admissao_documentos_carta_oferta_aprova_reprova', 'descricao' => 'Pode Aprovar ou Reprovar uma Carta Oferta'];
 
         try {
             DB::beginTransaction();
