@@ -62,7 +62,8 @@ class TelefoneCurriculo extends Model
         'ramal',
         'detalhe',
         'curriculo_id',
-        'principal'];
+        'principal'
+    ];
     protected $casts = [
         'id' => 'int',
         'tipo' => 'string',

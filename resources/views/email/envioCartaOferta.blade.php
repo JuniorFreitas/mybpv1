@@ -32,27 +32,17 @@
         <tr>
             <td style="text-align: justify">
 
-                Prezado(a) sr(a) <strong>{{$dados['nome']}}</strong>, tudo bem?<br><br>
+                Prezado(a) sr(a) <strong>{{$dados['nome']}}</strong>, Tudo bem?<br><br>
 
-                Parabéns por chegado até esta etapa! Você foi aprovado(a) na etapa de entrevista e seleção e agora vamos
-                para a etapa de documentos para admissão.<br><br>
-
-                @if(isset($dados['url_checklist']))
-                    <div class="botao">
-                        <a href="{{ $dados['url_checklist'] }}">DOWNLOAD DO CHECKLIST</a><br><br>
-                    </div>
-                @endif
-
-                Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme
-                descrição.<br><br>
+                Para continuidade no processo, segue o link abaixo para que seja anexada a <strong>CARTA OFERTA
+                    ASSINADA</strong>.
+                <br><br>
 
                 <div class="botao">
-                    <a href="{{ $dados['url_documento'] }}">CLIQUE AQUI PARA ANEXAR.</a><br><br>
+                    <a href="{{ $dados['url_documento'] }}">CLIQUE AQUI</a>
+                    <br><span style="font-size: 11px; color: #696969">Caso não consiga abrir copie e cole esse endereço no navegador: {{$dados['url_documento']}}</span>
+                    <br><br>
                 </div>
-
-                Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões
-                para que não haja atraso na etapa de documentação, necessária para a continuidade de sua
-                admissão.<br><br>
 
                 Atenciosamente,<br><br>
 

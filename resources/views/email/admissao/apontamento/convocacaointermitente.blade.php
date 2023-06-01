@@ -7,11 +7,11 @@
             display: inline-block;
             background: #0F4C60;
             color: #fff !important;
-            padding: 6px;
+            padding: 10px 0px 6px;
             margin-top: 4px;
             border-radius: 15px;
             text-align: center;
-            width: 125px;
+            width: 100%;
             height: 25px;
             transition: .3s;
         }

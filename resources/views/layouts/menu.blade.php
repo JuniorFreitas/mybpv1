@@ -489,19 +489,37 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('admissao_pre_admissao', 'admissao_cih', 'admissao_processo', 'admissao_historico', 'admissao_pos_admissao','cadastro_tipos_cih'))
+    @if(\App\Models\Sistema::permitirLinks('admissao_pre_admissao', 'admissao_documentos_carta_oferta', 'admissao_cih', 'admissao_processo', 'admissao_historico', 'admissao_pos_admissao','cadastro_tipos_cih'))
         <li id="admissao">
             <a href="javascript://" class="has-arrow waves-effect" parent="admissao"><i class="bx bx-bookmark-plus"></i>
                 <span>ADMISSÃO</span>
             </a>
             <ul aria-expanded="false">
-                @can('admissao_pre_admissao')
-                    <li>
-                        <a href="{{route('g.admissao.preadm.index')}}" parent="admissao" key="pre_admissao">
-                            PRÉ-ADMISSÃO
-                        </a>
+                @if(\App\Models\Sistema::permitirLinks('admissao_pre_admissao', 'admissao_documentos_carta_oferta'))
+                    <li id="documentos">
+                        <a href="javascript://" class="has-arrow waves-effect" subparent="documentos"
+                           parent="admissao">
+                            DOCUMENTOS</a>
+                        <ul aria-expanded="false">
+                            @can('admissao_documentos_carta_oferta')
+                                <li>
+                                    <a href="{{route('g.admissao.documentos.cartaoferta.index')}}" subparent="admissao"
+                                       parent="documentos" key="cartaoferta">
+                                        CARTA OFERTA
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('admissao_pre_admissao')
+                                <li>
+                                    <a href="{{route('g.admissao.preadm.index')}}" subparent="admissao"
+                                       parent="documentos" key="pre_admissao">
+                                        PRÉ-ADMISSÃO
+                                    </a>
+                                </li>
+                            @endcan
+                        </ul>
                     </li>
-                @endcan
+                @endif
                 @can('admissao_controle_exames')
                     <li>
                         <a href="{{route('g.controle_exames.index')}}" parent="admissao" key="controle_exames">
@@ -523,6 +541,7 @@
                                     </a>
                                 </li>
                             @endcan
+
                             <li>
                                 <a href="{{ (route('g.admissao.cih.cih.index')) }}" subparent="apontamento"
                                    parent="admissao">
@@ -790,7 +809,8 @@
             <ul aria-expanded="false">
                 @can('relatorio_ferias')
                     <li>
-                        <a href="{{route('g.relatorios.vencimentoferias.indexVencimentoFerias')}}" parent="relatorios" key="relatorio_ferias">
+                        <a href="{{route('g.relatorios.vencimentoferias.indexVencimentoFerias')}}" parent="relatorios"
+                           key="relatorio_ferias">
                             Vencimento Férias
                         </a>
                     </li>

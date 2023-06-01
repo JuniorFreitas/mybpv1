@@ -1,6 +1,17 @@
 <?php
 
+use App\Models\CartaOferta;
 use Illuminate\Support\Facades\Route;
+
+Route::get('download-checklist/{empresa}', function ($empresa) {
+    $path = CartaOferta::checklistArquivo($empresa);
+    $type = pathinfo($path, PATHINFO_EXTENSION);
+    $data = file_get_contents($path);
+
+    return response($data)
+        ->header('Content-Type', 'application/' . $type)
+        ->header('Content-Disposition', 'attachment; filename="checklist.' . $type . '"');
+})->name('download-checklist');
 
 Route::redirect('/', 'g/login');
 
@@ -686,23 +697,35 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::get('/', [\App\Http\Controllers\PreAdmissaoController::class, 'index'])->name('index');
         });
 
-        Route::post('admissao/export', [\App\Http\Controllers\AdmissaoController::class, 'export'])->name('admissao.excel');
-        Route::post('admissao/cadastra-massa', [\App\Http\Controllers\AdmissaoController::class, 'cadastraMassa'])->name('admissao.cadastraMassa');
-        Route::post('admissao/busca-cpf', [\App\Http\Controllers\AdmissaoController::class, 'buscaCPF'])->name('admissao.buscaCPF');
-        Route::get('admissao/{fc_token}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');
-        // Anexos
-        Route::post('admissao/uploadAnexos', [\App\Http\Controllers\AdmissaoController::class, 'uploadAnexos'])->name('admissao.upload-anexos');
-        Route::get('admissao/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoShow'])->name('admissao.anexo-show');
-        Route::get('admissao/anexoDownload/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'download'])->name('admissao.anexo-download');
-        Route::delete('admissao/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoDelete'])->name('admissao.anexo-delete');
+        Route::group(['prefix' => 'admissao'], function () {
+            Route::post('/export', [\App\Http\Controllers\AdmissaoController::class, 'export'])->name('admissao.excel');
+            Route::post('/cadastra-massa', [\App\Http\Controllers\AdmissaoController::class, 'cadastraMassa'])->name('admissao.cadastraMassa');
+            Route::post('/busca-cpf', [\App\Http\Controllers\AdmissaoController::class, 'buscaCPF'])->name('admissao.buscaCPF');
+            Route::get('/{fc_token}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');
+            // Anexos
+            Route::post('/uploadAnexos', [\App\Http\Controllers\AdmissaoController::class, 'uploadAnexos'])->name('admissao.upload-anexos');
+            Route::get('/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoShow'])->name('admissao.anexo-show');
+            Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'download'])->name('admissao.anexo-download');
+            Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoDelete'])->name('admissao.anexo-delete');
 
-        Route::get('admissao/listSelects', [\App\Http\Controllers\AdmissaoController::class, 'listSelects'])->name('admissao.listSelects')->middleware('can:admissao_processo'); // manter essa rota antes do resource
-        Route::get('admissao/tipos_dependentes', [\App\Http\Controllers\AdmissaoController::class, 'getTiposDependentes'])->name('admissao.tiposDependentes'); // get tipos de dependentes
-        Route::post('admissao/atualizar', [\App\Http\Controllers\AdmissaoController::class, 'atualizar'])->name('admissao.atualizar')->middleware('can:admissao_processo'); // manter essa rota antes do resource
-        Route::get('admissao/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao_processo'); // manter essa rota antes do resource
+            Route::get('/listSelects', [\App\Http\Controllers\AdmissaoController::class, 'listSelects'])->name('admissao.listSelects')->middleware('can:admissao_processo'); // manter essa rota antes do resource
+            Route::get('/tipos_dependentes', [\App\Http\Controllers\AdmissaoController::class, 'getTiposDependentes'])->name('admissao.tiposDependentes'); // get tipos de dependentes
+            Route::post('/atualizar', [\App\Http\Controllers\AdmissaoController::class, 'atualizar'])->name('admissao.atualizar')->middleware('can:admissao_processo'); // manter essa rota antes do resource
+            Route::get('/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao_processo'); // manter essa rota antes do resource
 
-        Route::get('admissao/import', [\App\Http\Controllers\AdmissaoController::class, 'import'])->name('admissao.import');
-        Route::resource('admissao', \App\Http\Controllers\AdmissaoController::class)->middleware('can:admissao_processo');
+            Route::get('/import', [\App\Http\Controllers\AdmissaoController::class, 'import'])->name('admissao.import');
+            Route::resource('admissao', \App\Http\Controllers\AdmissaoController::class)->middleware('can:admissao_processo');
+
+            Route::group(['as' => 'documentos.', 'prefix' => 'documentos'], function () {
+
+                Route::group(['as' => 'cartaoferta.', 'prefix' => 'carta-oferta'], function () {
+                    Route::post('atualizar', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
+                    Route::put('responder', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'responder'])->name('responder');
+                    Route::post('/enviar-email', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'enviarEmail'])->name('enviarEmail');
+                    Route::get('/', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'index'])->name('index');
+                });
+            });
+        });
     });
 
     Route::group(['as' => 'posadmissao.'], function () {
@@ -1286,10 +1309,15 @@ Route::group(['as' => 'provas.'], function () {
 //Rotas de pre-admissao protegidas
 Route::group(['as' => 'documentospreadmissao.'], function () {
     //Provas
-    Route::group(['prefix' => '{apelido}'], function (){
+    Route::group(['prefix' => '{apelido}'], function () {
         Route::post('documentos-pre-admissao/autenticar', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'autenticar'])->name('documentos.autenticar');
         Route::get('documentos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'index'])->name('documentos.index');
         Route::put('documentos/{curriculo_id}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'update'])->name('documentos.update');
+
+
+        Route::get('carta-oferta/{token}', [\App\Http\Controllers\CartaOfertaController::class, 'index'])->name('carta-oferta.index');
+        Route::post('carta-oferta/{token}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');
+
     });
 
     Route::post('documentos/uploadAnexos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'uploadAnexos'])->name('documentos.upload-anexos');
