@@ -1,12 +1,15 @@
 <?php
 
 use App\Classes\ZapNotificacao;
+use App\Models\CartaOferta;
+use App\Models\Sistema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('convocacao/{resposta}/{hash}/', [\App\Http\Controllers\IntermitenteController::class, "respostaConvocacao"])->name('respostaConvocacao');
 
 Route::middleware('apitoken')->post('envia-whats', function (Request $request) {
+//     $arquivo =  Sistema::convertBase2(CartaOferta::checklistArquivo('equatorialservicos'), true);
     try {
         (new ZapNotificacao())->enviar([
             'enviado_id' => 1,
@@ -22,6 +25,13 @@ Route::middleware('apitoken')->post('envia-whats', function (Request $request) {
         Log::error("Error ao enviar o whatsapp " . $exception->getMessage());
         return response()->json(['msg' => __('msg.HOUVE_UM_ERRO')], 400);
     }
+
+//    'json' => [
+//        "enviado_id" => 104,
+//        "telefone" => env('APP_ENV') == 'local' ? "5598999023762" : $dados['telefone'],
+//        "mensagem" => $dados['mensagem'],
+//        "sistema" => "sgi"
+//    ]
 });
 
 
@@ -66,6 +76,10 @@ Route::group(['as' => 'vaga'], function () {
 Route::group(['as' => 'projetos', 'prefix' => '{empresa_slug}'], function () {
     Route::post('projetos/lista', [\App\Http\Controllers\Api\ProjetoController::class, 'index'])->middleware('apitoken');
 });
+
+//Integra SGI com MYBP
+Route::post('integra-sgi-mybp-aceita-carta-oferta', [\App\Http\Controllers\Api\IntegraSgiMybpController::class, 'aceiteCartaOferta'])
+    ->middleware('apitoken');
 
 Route::fallback(function () {
     return response()->json(['msg' => 'Não encontrado', 'success' => false], 404);

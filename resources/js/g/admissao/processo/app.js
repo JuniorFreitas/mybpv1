@@ -835,7 +835,7 @@ const app = new Vue({
             this.formAvulsa.admissao = this.form.admissao;
             this.formAvulsa.preload = true;
 
-            axios.post(`${URL_ADMIN}/admissao`, this.formAvulsa)
+            axios.post(`${URL_ADMIN}/admissao/admissao`, this.formAvulsa)
                 .then(response => {
                     if (response.status === 201) {
                         this.formAvulsa.preload = false;
@@ -866,7 +866,7 @@ const app = new Vue({
             this.form_massa.selecionados = this.selecionados;
 
 
-            axios.post(`${URL_ADMIN}/admissao/cadastra-massa`, this.form_massa)
+            axios.post(`${URL_ADMIN}/admissao/admissao/cadastra-massa`, this.form_massa)
                 .then(response => {
                     if (response.status === 201) {
                         this.form_massa.preload = false;
@@ -922,7 +922,7 @@ const app = new Vue({
             this.tituloJanela = `#${id}`;
 
             formReset();
-            axios.get(`${URL_ADMIN}/admissao/${id}/editar`)
+            axios.get(`${URL_ADMIN}/admissao/admissao/${id}/editar`)
                 .then(response => {
                     let data = response.data;
                     this.buscaProjeto(data.feedback.vagas_abertas_id);
@@ -1005,7 +1005,7 @@ const app = new Vue({
 
             this.preload = true;
 
-            axios.put(`${URL_ADMIN}/admissao/${this.form.id}`, this.form)
+            axios.put(`${URL_ADMIN}/admissao/admissao/${this.form.id}`, this.form)
                 .then(response => {
                     this.preload = false;
                     this.atualizado = true;
@@ -1020,7 +1020,7 @@ const app = new Vue({
             this.form._method = "DELETE";
             this.preload = true;
 
-            $.post(`${URL_ADMIN}/admissao/${this.form.id}`, this.form)
+            $.post(`${URL_ADMIN}/admissao/admissao/${this.form.id}`, this.form)
                 .done((data) => {
                     this.preload = false;
                     this.apagado = true;

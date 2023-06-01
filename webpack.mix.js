@@ -114,6 +114,8 @@ mix.js("resources/js/app.js", "public/js")
     .js("resources/js/g/admissao/processo/app.js", "public/js/g/admissao/processo/")
     //admissao->pre-admissao
     .js("resources/js/g/admissao/preadmissao/app.js", "public/js/g/admissao/preadmissao/")
+    //Admissao -> documentos -> Carta oferta
+    .js("resources/js/g/admissao/documentos/cartaoferta/app.js", "public/js/g/admissao/documentos/cartaoferta/")
     //admissao->apontamento
     .js("resources/js/g/admissao/apontamento/cih/app.js", "public/js/g/admissao/apontamento/cih/")
     .js("resources/js/g/admissao/apontamento/intermitente/app.js", "public/js/g/admissao/apontamento/intermitente/")
@@ -201,6 +203,9 @@ mix.js("resources/js/app.js", "public/js")
 
     //Documentos
     .js("resources/js/documentos/app.js", "public/js/documentos/")
+
+    //Carta Oferta
+    .js("resources/js/cartaoferta/app.js", "public/js/cartaoferta/")
 
     //Pesquisa Clima
     .js("resources/js/pesquisaclima/app.js", "public/js/pesquisaclima/")
