@@ -1,5 +1,27 @@
 @extends('layouts.mail.layout')
 @section('titulo', $dados['assunto'])
+@push('css')
+    <style>
+        .botao a {
+            font-size: 15px;
+            display: inline-block;
+            background: #0F4C60;
+            color: #fff !important;
+            padding: 10px 0px 6px;
+            margin-top: 4px;
+            border-radius: 15px;
+            text-align: center;
+            width: 100%;
+            height: 25px;
+            transition: .3s;
+        }
+
+        .botao a:hover {
+            background: #031E2D;
+            color: #fff !important;
+        }
+    </style>
+@endpush
 @section('conteudo')
 
     <table border="0" align="center" cellpadding="0" width="97%" style="width: 100%;padding: 25px;">
@@ -9,11 +31,12 @@
                 Olá, <strong>{{ $dados['clinica'] }}</strong>.<br><br>
                 Estamos encaminhando {{ $dados['colaborador'] }}, {{ $dados['idade'] }} anos. <br>
                 Para realizar exame de ordem {{ $dados['tipoExame'] }}. <br><br>
-                <a href='{{$dados['link']}}' class='link'
-                   style='padding: 10px; background: #072534; color: white; margin-right: 5px'>CLIQUE AQUI</a> para
-                acessar a ficha, se não abrir copie e cole o link abaixo em seu navegador. <br><br>
+                <div class="botao">
+                <a href='{{$dados['link']}}'>CLIQUE AQUI PARA ACESSAR A FICHA</a> <br>
+                    Se não abrir copie e cole o link abaixo em seu navegador. <br><br>
                 {{$dados['link']}}
                 <br><br>
+                </div>
 
 
 {{--                Abraços<br><br>--}}

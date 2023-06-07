@@ -27,6 +27,9 @@ class Pcmso extends Model
 {
     use HasFactory, TenantTrait;
 
+    const TABELA = 'pcmsos';
+    protected $table = self::TABELA;
+
     public $timestamps = false;
 
     protected $fillable = [

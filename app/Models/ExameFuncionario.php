@@ -56,6 +56,10 @@ class ExameFuncionario extends Model
 {
     use HasFactory;
 
+    const TABELA = 'exame_funcionarios';
+
+    protected $table = self::TABELA;
+
     protected $fillable = [
         "empresa_id",
         "formulario_id",

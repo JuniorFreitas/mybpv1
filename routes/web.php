@@ -643,7 +643,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::delete('controle-exames-resultado/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoDelete'])->name('anexo-delete');
         Route::post('controle-exames-resultado/uploadAnexos', [\App\Http\Controllers\ControleExameController::class, 'uploadAnexos'])->name('.upload-anexos');
 
-        Route::post('controle-exames/ficha-encaminhamento/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
+        Route::get('controle-exames/ficha-encaminhamento/{exame}/{token}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
         Route::get('controle-exames/carregaResposta', [\App\Http\Controllers\ControleExameController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('controle-exames/resultado/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getResultado'])->name('getResultado');
         Route::post('controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');

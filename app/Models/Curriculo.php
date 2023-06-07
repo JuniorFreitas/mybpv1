@@ -175,6 +175,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $nacionalidade
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNacionalidade($value)
  * @property-read mixed $c_token
+ * @property-read \App\Models\CartaOferta|null $CartaOferta
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CartaOfertaArquivo
+ * @property-read int|null $carta_oferta_arquivo_count
+ * @property-read \App\Models\Escolaridade|null $Escolaridade
  */
 class Curriculo extends Model
 {
@@ -196,7 +200,10 @@ class Curriculo extends Model
     }
 
     public $incrementing = false;
-    protected $table = 'curriculos';
+
+    const TABELA = 'curriculos';
+    protected $table = self::TABELA;
+
     protected $fillable = [
         "id",
         "cpf",

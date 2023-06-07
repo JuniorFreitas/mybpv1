@@ -93,6 +93,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $user_deletou_id
  * @method static Builder|Cih whereDeletedAt($value)
  * @method static Builder|Cih whereUserDeletouId($value)
+ * @property int|null $user_rh_id
+ * @property string|null $resposta_rh
+ * @property string|null $obs_rh
+ * @property string|null $data_aprovacao_rh
+ * @property-read \App\Models\User|null $RhAprovacao
+ * @method static Builder|Cih whereDataAprovacaoRh($value)
+ * @method static Builder|Cih whereObsRh($value)
+ * @method static Builder|Cih whereRespostaRh($value)
+ * @method static Builder|Cih whereUserRhId($value)
  */
 class Cih extends Model
 {

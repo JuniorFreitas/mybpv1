@@ -71,8 +71,8 @@ class ResultadoIntegradoController extends Controller
         } else {
             try {
                 \DB::beginTransaction();
+                $feedback = FeedbackCurriculo::whereId($dados['feedback_id'])->with('Curriculo')->first();
                 ResultadoIntegrado::create($dados);
-
                 if(!is_null($dados['empresa_exame_id']) && !is_null($dados['pcmso_id'])){
                     $empresaExameId = $dados['empresa_exame_id'];
                     $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
@@ -105,7 +105,6 @@ class ResultadoIntegradoController extends Controller
                 }
 
                 \DB::commit();
-                $feedback = FeedbackCurriculo::whereId($dados['feedback_id'])->with('Curriculo')->first();
 
                 is_null($dados['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
                 is_null($dados['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
@@ -117,8 +116,6 @@ class ResultadoIntegradoController extends Controller
                 \DB::rollBack();
                 $msg = "erro STORE RESULTADO INTEGRADO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
-                return $e->getMessage() . ' ' . $e->getLine();
-//                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
 
@@ -137,10 +134,8 @@ class ResultadoIntegradoController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\FeedbackCurriculo $resultadoIntegrado
-     * @return \Illuminate\Http\Response
+     * @param FeedbackCurriculo $resultadoIntegrado
+     * @return \Illuminate\Http\JsonResponse
      */
     public function edit(FeedbackCurriculo $resultadoIntegrado)
     {
@@ -183,11 +178,10 @@ class ResultadoIntegradoController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\ResultadoIntegrado $resultadoIntegrado
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param ResultadoIntegrado $resultadoIntegrado
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Throwable
      */
     public function update(Request $request, ResultadoIntegrado $resultadoIntegrado)
     {

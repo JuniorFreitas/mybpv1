@@ -149,6 +149,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder|User tiposGerenciais()
  * @method static Builder|User wherePrivilegioGestorArea($value)
  * @method static Builder|User wherePrivilegioGestorCentroCusto($value)
+ * @method static Builder|User ativoNaoExcluido()
  */
 class User extends Authenticatable
 {

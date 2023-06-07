@@ -221,6 +221,9 @@ class FeedbackCurriculo extends Model
         return false;
     }
 
+    const TABELA = 'feedback_curriculos';
+    protected $table = self::TABELA;
+
     protected $fillable = [
         'curriculo_id',
         'selecionado',
