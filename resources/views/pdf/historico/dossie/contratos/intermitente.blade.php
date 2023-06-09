@@ -10,10 +10,10 @@
             <strong>CONTRATO DE TRABALHO INTERMITENTE</strong>
         </p>
         <p class="f12 text-justify">
-            Por este instrumento particular, de um lado <strong>{{$dados['dados_colaborador']->User->DadosEmpresa->razao_social}}</strong>,
+            Por este instrumento particular, de um lado <strong>{{$dados['dados_empresa']['razao_social']}}</strong>,
             pessoa jurídica de direito
-            privado, inscrita no CNPJ/MF sob o nº <strong>{{$dados['dados_colaborador']->User->DadosEmpresa->cnpj}}</strong>, estabelecida
-            no(a) {{$dados['dados_colaborador']->User->DadosEmpresa->endereco_completo}}, doravante denominada <strong>EMPREGADOR(A)</strong>,
+            privado, inscrita no CNPJ/MF sob o nº <strong>{{$dados['dados_empresa']['cnpj']}}</strong>, estabelecida
+            no(a) {{$dados['dados_empresa']['endereco_completo']}}, doravante denominada <strong>EMPREGADOR(A)</strong>,
             e,
             de outro, {{$dados['dados_colaborador']->nome}}, inscrito(a) no CPF sob o nº {{$dados['dados_colaborador']->cpf}}, doravante, ,denominado(a)
             <strong>EMPREGADO(A)</strong>, firmam o Contrato de Trabalho na Modalidade Intermitente, nos termos da Lei
@@ -313,7 +313,7 @@
         </div>
         <div class="f12" style="line-height: 15pt;text-align: center">
             <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">
-            {{$dados['dados_colaborador']->User->DadosEmpresa->razao_social}}
+            {{$dados['dados_empresa']['razao_social']}}
             <br>
             <br>
             <br>
