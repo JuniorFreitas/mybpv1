@@ -139,7 +139,7 @@ class Cih extends Model
         'obs_rh',
         'data_aprovacao_rh',
         'empresa_id',
-        'centro_de_custo_id',
+        'centro_custo_id',
         'user_deletou_id'
     ];
 
@@ -169,7 +169,7 @@ class Cih extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i\h',
         'updated_at' => 'datetime:d/m/Y à\s H:i\h',
         'empresa_id' => 'int',
-        'centro_de_custo_id' => 'int',
+        'centro_custo_id' => 'int',
         'user_deletou_id' => 'int'
     ];
 

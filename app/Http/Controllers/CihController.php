@@ -96,6 +96,7 @@ class CihController extends Controller
             $usuario = auth()->user();
             $modelo_cih_config = $usuario->EmpresaConfiguracoes->modelo_cih;
 
+
             DB::beginTransaction();
             $dados['tag_id'] = $dados['tag_id'] > 0 ? $dados['tag_id'] : null;
             $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
@@ -163,7 +164,6 @@ class CihController extends Controller
             DB::commit();
             return response()->json([$cih->load('Anexos')], 201);
         } catch (\Exception $e) {
-            dd($e);
             DB::rollback();
             $msg = "error STORE CIH:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
