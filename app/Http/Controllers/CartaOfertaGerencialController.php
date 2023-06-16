@@ -167,14 +167,12 @@ class CartaOfertaGerencialController extends Controller
             'Content-Type' => 'application/json',
             'User-Agent' => 'MyBP'
         ];
-
-        \Log::debug(env('APP_URL'));
-
+        
         switch (env('APP_URL')) {
-            case 'https://sgi.bpse.com.br':
+            case 'https://sistema.mybp.com.br':
                 $url = 'https://sgi.bpse.com.br';
                 break;
-            case 'https://qasgi.bpse.com.br':
+            case 'https://qa.mybp.com.br':
                 $url = 'https://qasgi.bpse.com.br';
                 break;
             default:
