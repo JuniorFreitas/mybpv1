@@ -168,7 +168,7 @@ class CartaOfertaGerencialController extends Controller
             'User-Agent' => 'MyBP'
         ];
 
-        console.log(env('APP_URL'));
+        \Log::debug(env('APP_URL'));
 
         switch (env('APP_URL')) {
             case 'https://sgi.bpse.com.br':
