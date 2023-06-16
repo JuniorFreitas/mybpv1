@@ -418,7 +418,7 @@ class IntegraSgiMybpController extends Controller
             DB::commit();
 
 
-            $link_carta_oferta = route('documentospreadmissao.carta-oferta.index', ['apelido' => $Empresa->apelido, 'token' => $dados['token']]);
+            $link_carta_oferta = env('APP_URL')."/{$Empresa->apelido}/carta-oferta/{$dados['token']}";
 
             JobEnvioCartaOferta::dispatch([
                 'nome' => $curriculo->nome,

@@ -167,8 +167,18 @@ class CartaOfertaGerencialController extends Controller
             'Content-Type' => 'application/json',
             'User-Agent' => 'MyBP'
         ];
-
-        $url = env('APP_ENV') == 'local' ? 'http://192.168.1.10:8884' : 'https://sgi.bpse.com.br';
+        
+        switch (env('APP_URL')) {
+            case 'https://sistema.mybp.com.br':
+                $url = 'https://sgi.bpse.com.br';
+                break;
+            case 'https://qa.mybp.com.br':
+                $url = 'https://qasgi.bpse.com.br';
+                break;
+            default:
+                $url = 'http://192.168.1.10:8884';
+                break;
+        }
 
         $response = $client->post("$url/api/carta-oferta/$token/integramybp", [
             'headers' => $headers,

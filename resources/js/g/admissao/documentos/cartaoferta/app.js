@@ -12,7 +12,7 @@ const app = new Vue({
     data: {
         tituloJanela: 'Carta Oferta',
         preload: false,
-        atualizanndo: false,
+        atualizando: false,
 
         anexoUploadAndamento: false,
         urlAnexoUpload: `${URL_SITE}/documentos/uploadAnexos`,
