@@ -168,6 +168,8 @@ class CartaOfertaGerencialController extends Controller
             'User-Agent' => 'MyBP'
         ];
 
+        console.log(env('APP_URL'));
+
         switch (env('APP_URL')) {
             case 'https://sgi.bpse.com.br':
                 $url = 'https://sgi.bpse.com.br';
@@ -176,7 +178,7 @@ class CartaOfertaGerencialController extends Controller
                 $url = 'https://qasgi.bpse.com.br';
                 break;
             default:
-                $url = 'http://localhost:8884';
+                $url = 'http://192.168.1.10:8884';
                 break;
         }
 
