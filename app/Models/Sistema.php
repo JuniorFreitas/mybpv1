@@ -945,4 +945,36 @@ class Sistema
         return $nomedocache;
     }
 
+    public static function gerarCPF() {
+        $cpf = '';
+
+        for ($i = 0; $i < 9; $i++) {
+            $cpf .= rand(0, 9);
+        }
+
+        $soma = 0;
+
+        for ($i = 0; $i < 9; $i++) {
+            $soma += intval($cpf[$i]) * (10 - $i);
+        }
+
+        $resto = $soma % 11;
+        $digito1 = ($resto < 2) ? 0 : 11 - $resto;
+
+        $cpf .= $digito1;
+
+        $soma = 0;
+
+        for ($i = 0; $i < 10; $i++) {
+            $soma += intval($cpf[$i]) * (11 - $i);
+        }
+
+        $resto = $soma % 11;
+        $digito2 = ($resto < 2) ? 0 : 11 - $resto;
+
+        $cpf .= $digito2;
+
+        return $cpf;
+    }
+
 }
