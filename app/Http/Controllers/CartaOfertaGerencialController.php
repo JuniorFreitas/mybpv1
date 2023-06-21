@@ -161,13 +161,13 @@ class CartaOfertaGerencialController extends Controller
 
     public function requestSgi($token)
     {
-        $client = new Client(['verify' => false, 'http_errors' => true]);
-        $headers = [
-            'X-API-TOKEN' => 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK',
-            'Content-Type' => 'application/json',
-            'User-Agent' => 'MyBP'
-        ];
-
+//        $client = new Client(['verify' => false, 'http_errors' => true]);
+//        $headers = [
+//            'X-API-TOKEN' => 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK',
+//            'Content-Type' => 'application/json',
+//            'User-Agent' => 'MyBP'
+//        ];
+//
         switch (env('APP_URL')) {
             case 'https://sistema.mybp.com.br':
                 $url = 'https://sgi.bpse.com.br';
@@ -179,14 +179,32 @@ class CartaOfertaGerencialController extends Controller
                 $url = 'http://192.168.1.15:8884';
                 break;
         }
+//
+//        $response = $client->get("$url/api/carta-oferta/$token/integramybp", [
+//            'headers' => $headers,
+//        ]);
+//
+////        print_r($response->getBody()->getContents());
+//
+//        return $response->getBody()->getContents();
 
-        $response = $client->get("$url/api/carta-oferta/$token/integramybp", [
-            'headers' => $headers,
-        ]);
+        $curl = curl_init();
 
-//        print_r($response->getBody()->getContents());
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "$url/api/carta-oferta/$token/integramybp",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
 
-        return $response->getBody()->getContents();
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return $response;
     }
 
 }
