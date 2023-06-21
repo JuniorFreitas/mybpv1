@@ -180,9 +180,7 @@ class CartaOfertaGerencialController extends Controller
                 break;
         }
 
-        $response = $client->get("$url/carta-oferta/$token/integramybp", [
-            'headers' => $headers,
-        ]);
+        $response = $client->get("$url/carta-oferta/$token/integramybp");
 
 //        print_r($response->getBody()->getContents());
 
