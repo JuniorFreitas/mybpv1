@@ -170,7 +170,7 @@ class CartaOfertaGerencialController extends Controller
 
         switch (env('APP_URL')) {
             case 'https://sistema.mybp.com.br':
-                $url = 'https://sgi.bpse.com.br';
+                $url = 'http://sgi.bpse.com.br';
                 break;
             case 'https://qa.mybp.com.br':
                 $url = 'https://qasgi.bpse.com.br';
