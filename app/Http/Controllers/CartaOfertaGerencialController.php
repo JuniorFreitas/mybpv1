@@ -80,8 +80,38 @@ class CartaOfertaGerencialController extends Controller
                 ]);
 
                 if ($cartaOferta->local == CartaOferta::LOCAL_SGI) {
-                    $dadosIntegra = $this->requestSgi($cartaOferta->token);
-                    IntegraSgiMybpController::integra($dadosIntegra);
+                    $client = new Client();
+                    $headers = [
+                        'X-API-TOKEN' => 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK',
+                        'Content-Type' => 'application/json',
+                        'User-Agent' => 'MyBP'
+                    ];
+
+                    switch (env('APP_URL')) {
+                        case 'https://sistema.mybp.com.br':
+                            $url = 'https://sgi.bpse.com.br';
+                            break;
+                        case 'https://qa.mybp.com.br':
+                            $url = 'https://qasgi.bpse.com.br';
+                            break;
+                        default:
+                            $url = 'http://192.168.1.10:8884';
+                            break;
+                    }
+
+                    $endpoint = "$url/api/carta-oferta/$cartaOferta->token/integramybp";
+
+                    $response = $client->get($endpoint, [
+                        'headers' => $headers,
+                    ]);
+
+                    var_dump($endpoint);
+
+                    var_dump($response->getBody()->getContents());
+
+                    die();
+//                    $dadosIntegra = $this->requestSgi($cartaOferta->token);
+//                    IntegraSgiMybpController::integra($dadosIntegra);
                 }
 
                 \DB::commit();
@@ -161,7 +191,8 @@ class CartaOfertaGerencialController extends Controller
 
     public function requestSgi($token)
     {
-        $client = new Client(['verify' => false, 'http_errors' => true]);
+
+        $client = new Client();
         $headers = [
             'X-API-TOKEN' => 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK',
             'Content-Type' => 'application/json',
@@ -170,17 +201,21 @@ class CartaOfertaGerencialController extends Controller
 
         switch (env('APP_URL')) {
             case 'https://sistema.mybp.com.br':
-                $url = 'http://sgi.bpse.com.br';
+                $url = 'https://sgi.bpse.com.br';
                 break;
             case 'https://qa.mybp.com.br':
                 $url = 'https://qasgi.bpse.com.br';
                 break;
             default:
-                $url = 'http://192.168.1.15:8884';
+                $url = 'http://192.168.1.10:8884';
                 break;
         }
 
-        $response = $client->get("$url/carta-oferta/$token/integramybp");
+        $endpoint = "$url/api/carta-oferta/$token/integramybp";
+
+        $response = $client->get($endpoint, [
+            'headers' => $headers,
+        ]);
 
 //        print_r($response->getBody()->getContents());
 
