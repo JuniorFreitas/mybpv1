@@ -161,13 +161,13 @@ class CartaOfertaGerencialController extends Controller
 
     public function requestSgi($token)
     {
-        $client = new Client(['verify' => false, 'http_errors' => false]);
+        $client = new Client(['verify' => false, 'http_errors' => true]);
         $headers = [
             'X-API-TOKEN' => 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK',
             'Content-Type' => 'application/json',
             'User-Agent' => 'MyBP'
         ];
-        
+
         switch (env('APP_URL')) {
             case 'https://sistema.mybp.com.br':
                 $url = 'https://sgi.bpse.com.br';
@@ -176,11 +176,11 @@ class CartaOfertaGerencialController extends Controller
                 $url = 'https://qasgi.bpse.com.br';
                 break;
             default:
-                $url = 'http://192.168.1.10:8884';
+                $url = 'http://192.168.1.15:8884';
                 break;
         }
 
-        $response = $client->post("$url/api/carta-oferta/$token/integramybp", [
+        $response = $client->get("$url/api/carta-oferta/$token/integramybp", [
             'headers' => $headers,
         ]);
 
