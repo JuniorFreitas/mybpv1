@@ -100,12 +100,12 @@ class CartaOfertaGerencialController extends Controller
                     }
 
                     $endpoint = "$url/api/carta-oferta/$cartaOferta->token/integramybp";
-
+                    var_dump($endpoint);
                     $response = $client->get($endpoint, [
                         'headers' => $headers,
                     ]);
 
-                    var_dump($endpoint);
+
 
                     var_dump($response->getBody()->getContents());
 
