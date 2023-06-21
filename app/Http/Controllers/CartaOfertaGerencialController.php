@@ -136,7 +136,7 @@ class CartaOfertaGerencialController extends Controller
                 $msg = "Erro ao integrar: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
                 Sistema::LogFormatado($request->input());
-                return response()->json(['message' => $msg], 422);
+                return response()->json(['message' => $msg], 400);
             }
 
         }
