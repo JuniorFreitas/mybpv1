@@ -165,7 +165,7 @@ class CartaOfertaGerencialController extends Controller
         $headers = [
             'X-API-TOKEN' => 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK',
             'Content-Type' => 'application/json',
-            'User-Agent' => 'MyBP'
+//            'User-Agent' => 'MyBP'
         ];
 
         switch (env('APP_URL')) {
