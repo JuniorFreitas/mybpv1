@@ -521,6 +521,15 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::resource('muda-cargo-prevista', \App\Http\Controllers\MudaCargoPrevistaController::class, ['parameters' => ['muda-cargo-prevista' => 'muda_cargo_prevista']]);
             });
 
+            Route::group(['as' => 'solicitacao_cargo.'], function () {
+                Route::put('mudanca-cargo/{cargo}/aprovargestor', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarGestor'])->name('mudanca-cargo.aprovarGestor');
+                Route::post('mudanca-cargo/export', [\App\Http\Controllers\MudancaCargoController::class, 'export'])->name('mudanca-cargo.excel');
+                Route::post('mudanca-cargo/atualizacao-status', [\App\Http\Controllers\MudancaCargoController::class, 'atualizacaoStatus'])->name('mudanca-cargo.atualizacaoStatus');
+                Route::post('mudanca-cargo/atualizar', [\App\Http\Controllers\MudancaCargoController::class, 'atualizar'])->name('mudanca-cargo.atualizar');
+                Route::put('mudanca-cargo/{cargo}/aprovarrh', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarRH'])->name('mudanca-cargo.aprovarRH');
+                Route::resource('mudanca-cargo', \App\Http\Controllers\MudancaCargoController::class, ['parameters' => ['ferias-prevista' => 'ferias']]);
+            });
+
             Route::group(['as' => 'solicitacao_intermitente.'], function () {
                 Route::post('intermitente-fixo-prevista/atualizacao-status', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizacaoStatus'])->name('intermitente-fixo-prevista.atualizacaoStatus');
                 Route::post('intermitente-fixo-prevista/atualizar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizar'])->name('atualizar');

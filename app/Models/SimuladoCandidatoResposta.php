@@ -10,29 +10,25 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\SimuladoCandidatoResposta
  *
  * @property int $simulado_vaga_id
- * @property int $curriculo_id_id
+ * @property int|null $feedback_id
  * @property int $simulado_pergunta_id
  * @property int $simulado_resposta_id
- * @property-read \App\Models\Curriculo $Candidato
- * @property-read \App\Models\SimuladoPergunta $Perguntas
- * @property-read \App\Models\SimuladoResposta $Resposta
- * @property-read \App\Models\SimuladoCandidato $SimuladoCandidato
- * @property-read \App\Models\SimuladoVaga $SimuladoVaga
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidatoResposta newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidatoResposta newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidatoResposta query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidatoResposta whereCurriculoIdId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidatoResposta whereSimuladoPerguntaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidatoResposta whereSimuladoRespostaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidatoResposta whereSimuladoVagaId($value)
- * @mixin \Eloquent
- * @property int $curriculo_id
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidatoResposta whereCurriculoId($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @property int|null $feedback_id
- * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta whereFeedbackId($value)
+ * @property-read \App\Models\Curriculo|null $Candidato
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \App\Models\SimuladoPergunta|null $Perguntas
+ * @property-read \App\Models\SimuladoResposta|null $Resposta
+ * @property-read \App\Models\SimuladoCandidato|null $SimuladoCandidato
+ * @property-read \App\Models\SimuladoVaga|null $SimuladoVaga
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta query()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta whereSimuladoPerguntaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta whereSimuladoRespostaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta whereSimuladoVagaId($value)
+ * @mixin \Eloquent
  */
 class SimuladoCandidatoResposta extends Model
 {

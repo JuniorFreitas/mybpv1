@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $nome
  * @property int $tipobeneficio_id
- * @property int $cliente_id
+ * @property int|null $cliente_id
  * @property float $valor
  * @property string $aplicacao
  * @property string $periodicidade
@@ -19,31 +19,30 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $opcao_desconto
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Beneficio[] $BeneficioFeedback
+ * @property int|null $empresa_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|Beneficio[] $BeneficioFeedback
  * @property-read int|null $beneficio_feedback_count
- * @property-read \App\Models\TipoBeneficio $TipoBeneficio
+ * @property-read \App\Models\User|null $Empresa
+ * @property-read \App\Models\TipoBeneficio|null $TipoBeneficio
  * @property-read mixed $valor_format
  * @property-read mixed $valordescontado_format
  * @property-write mixed $valordescontado
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereAplicacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereNome($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereOpcaoDesconto($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio wherePeriodicidade($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereTipobeneficioId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereValor($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Beneficio whereValorDescontado($value)
- * @mixin \Eloquent
- * @property-read \App\Models\Cliente|null $Cliente
- * @property int|null $empresa_id
- * @property-read \App\Models\User|null $Empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereAplicacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereClienteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereOpcaoDesconto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio wherePeriodicidade($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereTipobeneficioId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereValor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereValorDescontado($value)
+ * @mixin \Eloquent
  */
 class Beneficio extends Model
 {

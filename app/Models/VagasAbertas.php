@@ -7,50 +7,45 @@ use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * App\VagasAbertas
+ * App\Models\VagasAbertas
  *
  * @property int $id
- * @property int $vagas_id
+ * @property int $vaga_id
  * @property string|null $titulo
  * @property string|null $descricao
- * @property string|null $requerimentos
- * @property string|null $uf_vaga
- * @property string|null $municipio_id
- * @property int $ativo
+ * @property int|null $municipio_id
+ * @property bool $ativo
+ * @property bool $ativo_sistema
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereDescricao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereMunicipioId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereRequerimentos($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereTitulo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereUfVaga($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereVagasId($value)
- * @mixin \Eloquent
- * @property int $vaga_id
- * @property-read \App\Models\Municipio $Municipio
- * @property-read \App\Models\Vaga $Vaga
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\VagasAbertas whereVagaId($value)
  * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereEmpresaId($value)
+ * @property-read \App\Models\Vaga|null $Cargo
+ * @property-read \App\Models\Cliente|null $Empresa
+ * @property-read \App\Models\Municipio|null $Municipio
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagaProjeto[] $Projetos
+ * @property-read int|null $projetos_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoVaga[] $Simulados
  * @property-read int|null $simulados_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoVaga[] $SimuladosAtivos
  * @property-read int|null $simulados_ativos_count
+ * @property-read \App\Models\Vaga|null $Vaga
+ * @property-read \App\Models\Vaga|null $VagaSelecionada
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
- * @property int $ativo_sistema
- * @property-read \App\Models\Cliente|null $Empresa
- * @property-read \App\Models\Vaga|null $VagaSelecionada
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas query()
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereAtivoSistema($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagaProjeto[] $Projetos
- * @property-read int|null $projetos_count
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereMunicipioId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereTitulo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereVagaId($value)
+ * @mixin \Eloquent
  */
 class VagasAbertas extends Model
 {

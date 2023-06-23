@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $tipo_id
  * @property string $pergunta
  * @property bool $ativo
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PesquisaClimaPerguntaRespostaCandidato[] $PerguntaResposta
+ * @property-read int|null $pergunta_resposta_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PesquisaClimaPerguntaResposta[] $Resposta
  * @property-read int|null $resposta_count
  * @property-read \App\Models\PesquisaClimaTipo|null $Tipo
@@ -22,8 +24,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPergunta wherePergunta($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPergunta whereTipoId($value)
  * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PesquisaClimaPerguntaRespostaCandidato[] $PerguntaResposta
- * @property-read int|null $pergunta_resposta_count
  */
 class PesquisaClimaPergunta extends Model
 {

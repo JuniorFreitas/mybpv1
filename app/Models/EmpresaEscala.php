@@ -14,30 +14,30 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\EmpresaEscala
  *
- * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala query()
- * @mixin \Eloquent
  * @property int $id
  * @property int $empresa_id
  * @property string $descricao
  * @property \datetime $inicio
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @property-read \App\Models\User|null $Empresa
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EscalaJornada[] $Jornadas
+ * @property-read int|null $jornadas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala newQuery()
+ * @method static \Illuminate\Database\Query\Builder|EmpresaEscala onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala query()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereInicio($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EscalaJornada[] $Jornadas
- * @property-read int|null $jornadas_count
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property int|null $user_deletou_id
- * @method static \Illuminate\Database\Query\Builder|EmpresaEscala onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaEscala whereUserDeletouId($value)
  * @method static \Illuminate\Database\Query\Builder|EmpresaEscala withTrashed()
  * @method static \Illuminate\Database\Query\Builder|EmpresaEscala withoutTrashed()
+ * @mixin \Eloquent
  */
 class EmpresaEscala extends Model
 {

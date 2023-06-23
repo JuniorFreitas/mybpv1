@@ -12,9 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\ParecerRota
  *
  * @property int $id
- * @property int $feedback_id
- * @property int|null $formulario_id
- * @property int $curriculo_id
+ * @property int|null $feedback_id
  * @property bool|null $tem_rota
  * @property string|null $qual
  * @property string|null $bairro_rota
@@ -36,11 +34,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $observacao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Curriculo|null $Curriculo
- * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property int|null $formulario_id
+ * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
  * @property-read \App\Models\User|null $QuemAprovou
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @property-read mixed $data_entrevista
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota query()
@@ -48,7 +47,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereBairroResidencia($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereBairroRota($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereFormularioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereId($value)
@@ -70,8 +68,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRota whereValeTransporte($value)
  * @mixin \Eloquent
- * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
- * @property-read mixed $data_entrevista
  */
 class ParecerRota extends Model
 {

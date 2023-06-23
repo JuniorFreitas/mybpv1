@@ -33,89 +33,87 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $contato
  * @property string|null $email
  * @property string|null $tel_principal
- * @property mixed|null $aniversario
+ * @property string|null $aniversario
  * @property string|null $como_conheceu
  * @property string|null $como_conheceu_outro
  * @property string|null $politica_ehs
  * @property bool $ativo
  * @property mixed|null $created_at
  * @property mixed|null $updated_at
+ * @property string|null $missao
+ * @property string|null $visao
+ * @property string|null $valores
+ * @property string|null $politica_gq
  * @property-read \App\Models\Area|null $Area
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AreaEtiqueta[] $AreasEtiquetas
  * @property-read int|null $areas_etiquetas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Vaga[] $Cargos
+ * @property-read int|null $cargos_count
+ * @property-read \App\Models\CarteiraAssinatura|null $CarteiraAssinatura
+ * @property-read \App\Models\ClienteConfig|null $ClienteConfig
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $EmpresaFuncionarios
+ * @property-read int|null $empresa_funcionarios_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ClienteFilial[] $Filiais
+ * @property-read int|null $filiais_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Funcionarios
+ * @property-read int|null $funcionarios_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Logo
  * @property-read int|null $logo_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Mascote
+ * @property-read int|null $mascote_count
+ * @property-read \App\Models\Papel|null $Papel
+ * @property-read \App\Models\ParabensEnviado|null $Parabens
+ * @property-read \App\Models\PesquisaClimaCliente|null $PesquisaClimaCliente
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ServicosCliente[] $ServicosCliente
  * @property-read int|null $servicos_cliente_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ServicosProspects[] $ServicosProspect
  * @property-read int|null $servicos_prospect_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ClienteTelefone[] $Telefones
  * @property-read int|null $telefones_count
+ * @property-read \App\Models\EmpresaTemporaria|null $Temporaria
+ * @property-read \App\Models\User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
+ * @property-read int|null $vagas_abertas_count
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read mixed $endereco_completo
  * @property mixed $inicio
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente query()
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereAniversario($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereApelido($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereAreaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereBairro($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereCep($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereCnpj($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereComoConheceu($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereComoConheceuOutro($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereComplemento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereContato($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereCpf($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereLogradouro($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereMunicipio($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereNome($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereNomeFantasia($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereNumero($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente wherePoliticaEhs($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereRamo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereRazaoSocial($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereTelPrincipal($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereTipo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereTipoCliente($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereUf($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Cliente whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FormaPagamento[] $FormasPagamento
- * @property-read int|null $formas_pagamento_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Funcionarios
- * @property-read int|null $funcionarios_count
- * @property-read \App\Models\PesquisaClimaCliente|null $PesquisaClimaCliente
- * @property-read \App\Models\User|null $Usuario
- * @property-read \App\Models\ParabensEnviado|null $Parabens
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Vaga[] $Cargos
- * @property-read int|null $cargos_count
- * @property string|null $missao
- * @property string|null $visao
- * @property string|null $valores
- * @property string|null $politica_gq
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Mascote
- * @property-read int|null $mascote_count
+ * @method static Builder|Cliente newModelQuery()
+ * @method static Builder|Cliente newQuery()
+ * @method static Builder|Cliente query()
+ * @method static Builder|Cliente whereAniversario($value)
+ * @method static Builder|Cliente whereApelido($value)
+ * @method static Builder|Cliente whereAreaId($value)
+ * @method static Builder|Cliente whereAtivo($value)
+ * @method static Builder|Cliente whereBairro($value)
+ * @method static Builder|Cliente whereCep($value)
+ * @method static Builder|Cliente whereCnpj($value)
+ * @method static Builder|Cliente whereComoConheceu($value)
+ * @method static Builder|Cliente whereComoConheceuOutro($value)
+ * @method static Builder|Cliente whereComplemento($value)
+ * @method static Builder|Cliente whereContato($value)
+ * @method static Builder|Cliente whereCpf($value)
+ * @method static Builder|Cliente whereCreatedAt($value)
+ * @method static Builder|Cliente whereEmail($value)
+ * @method static Builder|Cliente whereId($value)
+ * @method static Builder|Cliente whereLogradouro($value)
  * @method static Builder|Cliente whereMissao($value)
+ * @method static Builder|Cliente whereMunicipio($value)
+ * @method static Builder|Cliente whereNome($value)
+ * @method static Builder|Cliente whereNomeFantasia($value)
+ * @method static Builder|Cliente whereNumero($value)
+ * @method static Builder|Cliente wherePoliticaEhs($value)
  * @method static Builder|Cliente wherePoliticaGq($value)
+ * @method static Builder|Cliente whereRamo($value)
+ * @method static Builder|Cliente whereRazaoSocial($value)
+ * @method static Builder|Cliente whereTelPrincipal($value)
+ * @method static Builder|Cliente whereTipo($value)
+ * @method static Builder|Cliente whereTipoCliente($value)
+ * @method static Builder|Cliente whereUf($value)
+ * @method static Builder|Cliente whereUpdatedAt($value)
  * @method static Builder|Cliente whereValores($value)
  * @method static Builder|Cliente whereVisao($value)
- * @property-read \App\Models\ClienteConfig|null $ClienteConfig
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
- * @property-read int|null $vagas_abertas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $EmpresaFuncionarios
- * @property-read int|null $empresa_funcionarios_count
- * @property-read \App\Models\EmpresaTemporaria|null $Temporaria
- * @property-read \App\Models\CarteiraAssinatura|null $CarteiraAssinatura
- * @property-read \App\Models\Papel|null $Papel
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ClienteFilial[] $Filiais
- * @property-read int|null $filiais_count
+ * @mixin \Eloquent
  */
 class Cliente extends Model
 {

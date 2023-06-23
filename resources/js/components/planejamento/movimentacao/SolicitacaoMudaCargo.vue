@@ -318,9 +318,11 @@
                                    @click="selecionaTodos">
                         </th>
                         <th>CÓD</th>
-                        <th>Solicitação</th>
+                        <th>Solicitante</th>
                         <th>Centro de custo</th>
                         <th>Colaborador</th>
+                        <th>Cargo Anterior</th>
+                        <th>Salário Anterior</th>
                         <th>Cargo Anterior</th>
                         <th>Salário Anterior</th>
                         <th>Novo Cargo</th>
@@ -364,7 +366,7 @@
                         </td>
 
                         <td>
-                            {{ item.cargo_anterior.nome }}
+                            {{ item.cargo_anterior ? item.cargo_anterior.nome : '' }}
                         </td>
 
 

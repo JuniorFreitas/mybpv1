@@ -22,25 +22,25 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property float $valor
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\FeedbackCurriculo $Feedback
- * @property-read \App\User $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read mixed $valor_format
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereAno($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereComprada($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereDataFim($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereDataInicio($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereDiasComprados($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereQuemCadastrou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\FeriasFeedback whereValor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback query()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereAno($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereComprada($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereDataFim($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereDataInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereDiasComprados($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereQuemCadastrou($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback whereValor($value)
  * @mixin \Eloquent
  */
 class FeriasFeedback extends Model

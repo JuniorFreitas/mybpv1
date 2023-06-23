@@ -17,6 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $ramal
  * @property string|null $detalhe
  * @property int $fornecedor_id
+ * @property bool $principal
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read mixed $tipo_text
@@ -28,11 +29,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneFornecedor whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneFornecedor whereNumero($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneFornecedor wherePais($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TelefoneFornecedor wherePrincipal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneFornecedor whereRamal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneFornecedor whereTipo($value)
  * @mixin \Eloquent
- * @property int $principal
- * @method static \Illuminate\Database\Eloquent\Builder|TelefoneFornecedor wherePrincipal($value)
  */
 class TelefoneFornecedor extends Model
 {

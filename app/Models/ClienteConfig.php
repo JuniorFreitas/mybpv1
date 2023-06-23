@@ -12,20 +12,22 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int|null $verifica_mes_vencimento
  * @property int|null $cliente_id
+ * @property bool|null $envia_whatsapp
+ * @property int|null $vencimento_aso
+ * @property string $modelo_cih
+ * @property bool $supervisor_etiqueta_bloqueio
  * @property-read \App\Models\Cliente|null $Cliente
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig query()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereClienteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereEnviaWhatsapp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereModeloCih($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereSupervisorEtiquetaBloqueio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVerificaMesVencimento($value)
  * @mixin \Eloquent
- * @property bool|null $envia_whatsapp
- * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereEnviaWhatsapp($value)
- * @property int|null $vencimento_aso
- * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
- * @property string $modelo_cih
- * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereModeloCih($value)
  */
 class ClienteConfig extends Model
 {

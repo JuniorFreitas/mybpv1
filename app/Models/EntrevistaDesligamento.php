@@ -10,14 +10,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\EntrevistaDesligamento
  *
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento query()
- * @mixin \Eloquent
  * @property int $id
- * @property int $curriculo_id
  * @property int|null $feedback_id
  * @property string|null $superior_imediato
  * @property string|null $motivo
@@ -43,11 +36,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $formulario_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento query()
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereAtividade($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereComentarios($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereContrMelhoria($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereDataEntrevista($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereDirecaoEmpresa($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereFeedbackId($value)
@@ -70,6 +67,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereUserEntrevista($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaDesligamento whereValoresNormas($value)
+ * @mixin \Eloquent
  */
 class EntrevistaDesligamento extends Model
 {

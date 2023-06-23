@@ -12,20 +12,20 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $simulado_id
  * @property string $enunciado
+ * @property int|null $qnt_linhas
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoResposta[] $Respostas
  * @property-read int|null $respostas_count
- * @property-read \App\Models\Simulado $Simulado
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoPergunta newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoPergunta newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoPergunta query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoPergunta whereEnunciado($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoPergunta whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoPergunta whereSimuladoId($value)
- * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \App\Models\Simulado|null $Simulado
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
- * @property int|null $qnt_linhas
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta query()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta whereEnunciado($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta whereQntLinhas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta whereSimuladoId($value)
+ * @mixin \Eloquent
  */
 class SimuladoPergunta extends Model
 {

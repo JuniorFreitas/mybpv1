@@ -43,15 +43,23 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool|null $envia_whatsapp
  * @property string|null $data_envia_whatsapp
  * @property int|null $user_envia_whatsapp
+ * @property int|null $empresa_id
+ * @property int|null $vagas_abertas_id
+ * @property int|null $vaga_projeto_id
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $AcordoHora
  * @property-read int|null $acordo_hora_count
  * @property-read \App\Models\Admissao|null $Admissao
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Afastamento[] $Afastamentos
+ * @property-read int|null $afastamentos_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ArquivamentoDossie
  * @property-read int|null $arquivamento_dossie_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ArquivamentoEletronico
  * @property-read int|null $arquivamento_eletronico_count
+ * @property-read \App\Models\AvaliacaoNoventaVencimento|null $AvaliacaoNoventaVencimento
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $AvisoFerias
  * @property-read int|null $aviso_ferias_count
+ * @property-read \App\Models\UsuarioConta|null $BancoConta
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $BookRescisao
  * @property-read int|null $book_rescisao_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CartoesPonto
@@ -62,6 +70,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $certificados_nr_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ChaveFgts
  * @property-read int|null $chave_fgts_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Cih[] $Cih
+ * @property-read int|null $cih_count
+ * @property-read \App\Models\ClassificacaoRescisaoCurriculo|null $ClassificacaoRescisao
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ComprovanteDevCtp
  * @property-read int|null $comprovante_dev_ctp_count
@@ -80,10 +91,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $cursos_formacoes_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $DeclaracaoDependentesImposto
  * @property-read int|null $declaracao_dependentes_imposto_count
+ * @property-read \App\Models\Demissao|null $Demissao
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $DocChecklist
  * @property-read int|null $doc_checklist_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $DocSelecao
  * @property-read int|null $doc_selecao_count
+ * @property-read \App\Models\Cliente|null $Empresa
  * @property-read \App\Models\EntrevistaDesligamento|null $EntrevistaDesligamento
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Etapas[] $EtapaStatus
  * @property-read int|null $etapa_status_count
@@ -98,10 +111,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $guia_seguro_desemprego_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\MedidaAdministrativa[] $MedidasAdministrativas
  * @property-read int|null $medidas_administrativas_count
+ * @property-read \App\Models\MotivoRescisaoCurriculo|null $MotivoRescisao
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $NadaConstaFichaEpi
  * @property-read int|null $nada_consta_ficha_epi_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $OrdemServicoAssinada
  * @property-read int|null $ordem_servico_assinada_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $PlanoSaudeAssinado
+ * @property-read int|null $plano_saude_assinado_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $PppAssinado
  * @property-read int|null $ppp_assinado_count
  * @property-read \App\Models\User|null $QuemMarcou
@@ -115,7 +131,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $termo_confiabilidade_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $TermoRescisao
  * @property-read int|null $termo_rescisao_count
+ * @property-read \App\Models\TipoAvisoCurriculo|null $TipoAviso
  * @property-read \App\Models\Treinamento|null $Treinamento
+ * @property-read \App\Models\VagasAbertas|null $VagaAberta
+ * @property-read \App\Models\VagaProjetoFeedback|null $VagaProjeto
  * @property-read \App\Models\Vaga|null $VagaSelecionada
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ValeTransporteAssinado
  * @property-read int|null $vale_transporte_assinado_count
@@ -126,13 +145,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\EntrevistaRh|null $entrevistaRh
  * @property-read \App\Models\GestorRh|null $gestorRh
  * @property mixed $datalido
+ * @property-read mixed $f_c_token
+ * @property-read mixed $vaga_aberta_municipio
  * @property-read \App\Models\IndividualRh|null $individualRh
  * @property-read \App\Models\ParecerRh|null $parecerRh
  * @property-read \App\Models\ParecerRota|null $parecerRota
  * @property-read \App\Models\ParecerEntrevistaTecnica|null $parecerTecnica
  * @property-read \App\Models\ParecerTestePratico|null $parecerTeste
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo admitidos()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo demitidos()
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo newQuery()
+ * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo query()
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereContatoRealizado($value)
@@ -143,6 +167,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereDataEnviaMailProvas($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereDataEnviaMailProximaEtapa($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereDataEnviaWhatsapp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereEnviaMailDesclassificacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereEnviaMailProvas($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereEnviaMailProximaEtapa($value)
@@ -161,37 +187,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereUserEnviaWhatsapp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereUsuarioEntrevistaMarcado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagaId($value)
- * @mixin \Eloquent
- * @property-read \App\Models\ClassificacaoRescisaoCurriculo|null $ClassificacaoRescisao
- * @property-read \App\Models\MotivoRescisaoCurriculo|null $MotivoRescisao
- * @property-read \App\Models\TipoAvisoCurriculo|null $TipoAviso
- * @property int|null $empresa_id
- * @property int|null $vagas_abertas_id
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereEmpresaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagasAbertasId($value)
- * @property-read \App\Models\UsuarioConta|null $BancoConta
- * @property-read \App\Models\Cliente|null $Empresa
- * @property-read \App\Models\VagasAbertas|null $VagaAberta
- * @property-read mixed $vaga_aberta_municipio
- * @property int|null $vaga_projeto_id
- * @property-read \App\Models\AvaliacaoNoventaVencimento|null $AvaliacaoNoventaVencimento
- * @property-read \App\Models\Demissao|null $Demissao
- * @property-read \App\Models\VagaProjetoFeedback|null $VagaProjeto
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagaProjetoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo admitidos()
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Afastamento[] $Afastamentos
- * @property-read int|null $afastamentos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Cih[] $Cih
- * @property-read int|null $cih_count
- * @property-read mixed $f_c_token
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo demitidos()
- * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagasAbertasId($value)
  * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo withTrashed()
  * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo withoutTrashed()
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $PlanoSaudeAssinado
- * @property-read int|null $plano_saude_assinado_count
+ * @mixin \Eloquent
  */
 class FeedbackCurriculo extends Model
 {

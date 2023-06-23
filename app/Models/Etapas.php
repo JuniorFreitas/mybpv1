@@ -10,7 +10,7 @@ use MasterTag\DataHora;
  * App\Models\Etapas
  *
  * @property int $id
- * @property int $curriculo_id
+ * @property int|null $feedback_id
  * @property int $user_id
  * @property int $vaga_id
  * @property string $etapa
@@ -21,27 +21,25 @@ use MasterTag\DataHora;
  * @property string|null $preenchido_por
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Curriculo $Curriculo
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereCurriculoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereEnviadoEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereEtapa($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereObservacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas wherePreenchidoPor($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereTextEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Etapas whereVagaId($value)
- * @mixin \Eloquent
- * @property int|null $feedback_id
- * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereFeedbackId($value)
  * @property int|null $passo_id é o id da etapa_tipo
+ * @property-read \App\Models\Curriculo|null $Curriculo
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereEnviadoEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereEtapa($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereObservacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Etapas wherePassoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas wherePreenchidoPor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereTextEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereVagaId($value)
+ * @mixin \Eloquent
  */
 class Etapas extends Model
 {

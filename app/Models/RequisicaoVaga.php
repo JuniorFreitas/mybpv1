@@ -12,7 +12,7 @@ use MasterTag\DataHora;
  * App\Models\RequisicaoVaga
  *
  * @property int $id
- * @property int $cliente_id
+ * @property int|null $cliente_id
  * @property int $centro_custo_id
  * @property int $cargo_id
  * @property int|null $area_id
@@ -20,17 +20,27 @@ use MasterTag\DataHora;
  * @property string $tipo_contratacao
  * @property string $prioridade
  * @property bool $imediata
- * @property string|null $previsao_inicio
+ * @property mixed|null $previsao_inicio
  * @property string|null $solicitante
  * @property int $user_id
  * @property string|null $observacao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $empresa_id
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
  * @property-read \App\Models\AreaEtiqueta|null $Area
  * @property-read \App\Models\Vaga|null $Cargo
  * @property-read \App\Models\CentroCusto|null $CentroCusto
  * @property-read \App\Models\Cliente|null $Cliente
+ * @property-read \App\Models\User|null $GestorAprovacao
+ * @property-read \App\Models\TipoContratacao|null $OutrasInformacoes
  * @property-read \App\Models\User|null $User
+ * @property-read \App\Models\User|null $UserAprovacao
+ * @property-read \App\Models\User|null $UserCadastrou
+ * @property-read mixed $data_solicitacao
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga query()
@@ -39,32 +49,22 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereCentroCustoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereImediata($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereObsAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereObservacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga wherePrevisaoInicio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga wherePrioridade($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereQuantidade($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereSolicitante($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereStatusAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereTipoContratacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUserId($value)
  * @mixin \Eloquent
- * @property-read \App\Models\TipoContratacao|null $OutrasInformacoes
- * @property-read mixed $data_solicitacao
- * @property int|null $empresa_id
- * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
- * @property string|null $obs_aprovacao
- * @property string|null $status_aprovacao
- * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereDataAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereEmpresaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereObsAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereStatusAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUserAprovacaoId($value)
- * @property-read \App\Models\User|null $GestorAprovacao
- * @property-read \App\Models\User|null $UserAprovacao
- * @property-read \App\Models\User|null $UserCadastrou
  */
 class RequisicaoVaga extends Model
 {

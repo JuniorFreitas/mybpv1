@@ -19,136 +19,129 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $id
  * @property string $nome
- * @property string $login
- * @property string $password
- * @property int $grupo_id
- * @property int $grupo_cloud_id
- * @property int $cliente_id
- * @property string|null $email
- * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string|null $logradouro
  * @property string|null $complemento
  * @property string|null $bairro
  * @property string|null $municipio
  * @property string|null $uf
  * @property string|null $cep
+ * @property string|null $login
+ * @property string|null $password
+ * @property string $tipo
+ * @property int|null $grupo_id
+ * @property int|null $grupo_cloud_id
  * @property string|null $cadastrou
  * @property bool $ativo
  * @property bool $temp
- * @property mixed $ultimo_acesso
- * @property string|null $remember_token
+ * @property \datetime|null $ultimo_acesso
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\GrupoCloud|null $GrupoCloud
- * @property-read \App\Models\Papel|null $Papel
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
- * @property-read int|null $notifications_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
- * @property-read int|null $tokens_count
- * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User query()
- * @method static \Illuminate\Database\Eloquent\Builder|User whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereBairro($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCadastrou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCep($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereComplemento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmailVerifiedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereGrupoCloudId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereGrupoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLogin($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLogradouro($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereMunicipio($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereNome($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereTemp($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUf($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUltimoAcesso($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property bool $termos
- * @method static \Illuminate\Database\Eloquent\Builder|User whereTermos($value)
- * @property string $tipo
+ * @property string|null $remember_token
+ * @property bool|null $termos
  * @property string|null $device_token
- * @method static \Illuminate\Database\Eloquent\Builder|User whereDeviceToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereTipo($value)
+ * @property string|null $api_token
  * @property int|null $empresa_id
+ * @property bool|null $gestor
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property bool $privilegio_gestor_area
+ * @property bool $privilegio_gestor_centro_custo
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ArquivamentoDossie
  * @property-read int|null $arquivamento_dossie_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoFeedback[] $Avaliadores
+ * @property-read int|null $avaliadores_count
+ * @property-read \App\Models\UsuarioConta|null $BancoConta
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \Illuminate\Database\Eloquent\Collection|User[] $ClienteFuncionarios
  * @property-read int|null $cliente_funcionarios_count
  * @property-read \Illuminate\Database\Eloquent\Collection|User[] $ClientesEmpresa
  * @property-read int|null $clientes_empresa_count
- * @property-read \App\Models\Curriculo|null $Curriculo
- * @property-read \App\Models\FeedbackCurriculo|null $Feedback
- * @property-read \App\Models\Fornecedor|null $Fornecedor
- * @property-read \Illuminate\Database\Eloquent\Collection|User[] $FornecedoresEmpresa
- * @property-read int|null $fornecedores_empresa_count
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmpresaId($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FormaPagamento[] $FormasPagamento
- * @property-read int|null $formas_pagamento_count
- * @property-read \App\Models\EmpresaConfig|null $ConfigEmpresa
- * @property-read User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|User[] $EmpresaFuncionarios
- * @property-read int|null $empresa_funcionarios_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaPerimetro[] $Perimetros
- * @property-read int|null $perimetros_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaPerimetro[] $PerimetrosEmpresa
- * @property-read int|null $perimetros_empresa_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaPerimetro[] $PerimetrosFuncionario
- * @property-read int|null $perimetros_funcionario_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaEscala[] $EmpresaEscalas
- * @property-read int|null $empresa_escalas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaEscala[] $EscalasFuncionario
- * @property-read int|null $escalas_funcionario_count
- * @property mixed $loginl
- * @property-read \App\Models\UsuarioConta|null $BancoConta
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoPerfil
- * @property-read int|null $foto_perfil_count
- * @property int|null $gestor
- * @method static Builder|User whereGestor($value)
- * @property-read \App\Models\Cliente|null $DadosEmpresa
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ClientesLogo
  * @property-read int|null $clientes_logo_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ClientesMascote
  * @property-read int|null $clientes_mascote_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Cloud[] $Clouds
  * @property-read int|null $clouds_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GrupoCloud[] $GrupoClouds
- * @property-read int|null $grupo_clouds_count
- * @property string|null $api_token
+ * @property-read \App\Models\EmpresaConfig|null $ConfigEmpresa
+ * @property-read \App\Models\Curriculo|null $Curriculo
+ * @property-read \App\Models\Cliente|null $DadosEmpresa
+ * @property-read \App\Models\Cliente|null $Empresa
  * @property-read \App\Models\ClienteConfig|null $EmpresaConfiguracoes
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaEscala[] $EmpresaEscalas
+ * @property-read int|null $empresa_escalas_count
  * @property-read \App\Models\EmpresaExame|null $EmpresaExame
+ * @property-read \Illuminate\Database\Eloquent\Collection|User[] $EmpresaFuncionarios
+ * @property-read int|null $empresa_funcionarios_count
+ * @property-read \App\Models\EmpresaConfig|null $EmpresaPontoConfiguracoes
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaEscala[] $EscalasFuncionario
+ * @property-read int|null $escalas_funcionario_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Exportacao[] $Exportacoes
  * @property-read int|null $exportacoes_count
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FormaPagamento[] $FormasPagamento
+ * @property-read int|null $formas_pagamento_count
+ * @property-read \App\Models\Fornecedor|null $Fornecedor
+ * @property-read \Illuminate\Database\Eloquent\Collection|User[] $FornecedoresEmpresa
+ * @property-read int|null $fornecedores_empresa_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoPerfil
+ * @property-read int|null $foto_perfil_count
+ * @property-read \App\Models\GrupoCloud|null $GrupoCloud
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GrupoCloud[] $GrupoClouds
+ * @property-read int|null $grupo_clouds_count
+ * @property-read \App\Models\Papel|null $Papel
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaPerimetro[] $PerimetrosEmpresa
+ * @property-read int|null $perimetros_empresa_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmpresaPerimetro[] $PerimetrosFuncionario
+ * @property-read int|null $perimetros_funcionario_count
  * @property-read \App\Models\RecuperacaoSenha|null $RecuperacaoSenha
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\TipoRecebeEmail[] $UserRecebeEmail
  * @property-read int|null $user_recebe_email_count
- * @method static Builder|User whereApiToken($value)
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @method static \Illuminate\Database\Query\Builder|User onlyTrashed()
- * @method static Builder|User whereDeletedAt($value)
- * @method static \Illuminate\Database\Query\Builder|User withTrashed()
- * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
- * @property-read \App\Models\EmpresaConfig|null $EmpresaPontoConfiguracoes
- * @property bool $privilegio_gestor_area
- * @property bool $privilegio_gestor_centro_custo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoFeedback[] $Avaliadores
- * @property-read int|null $avaliadores_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Avaliacao[] $avaliadoresFuncionario
  * @property-read int|null $avaliadores_funcionario_count
+ * @property mixed $loginl
  * @property-read mixed $privilegios
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
+ * @property-read int|null $notifications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
+ * @property-read int|null $tokens_count
+ * @method static Builder|User ativoNaoExcluido()
+ * @method static Builder|User newModelQuery()
+ * @method static Builder|User newQuery()
+ * @method static \Illuminate\Database\Query\Builder|User onlyTrashed()
+ * @method static Builder|User query()
  * @method static Builder|User tiposGerenciais()
+ * @method static Builder|User whereApiToken($value)
+ * @method static Builder|User whereAtivo($value)
+ * @method static Builder|User whereBairro($value)
+ * @method static Builder|User whereCadastrou($value)
+ * @method static Builder|User whereCep($value)
+ * @method static Builder|User whereComplemento($value)
+ * @method static Builder|User whereCreatedAt($value)
+ * @method static Builder|User whereDeletedAt($value)
+ * @method static Builder|User whereDeviceToken($value)
+ * @method static Builder|User whereEmpresaId($value)
+ * @method static Builder|User whereGestor($value)
+ * @method static Builder|User whereGrupoCloudId($value)
+ * @method static Builder|User whereGrupoId($value)
+ * @method static Builder|User whereId($value)
+ * @method static Builder|User whereLogin($value)
+ * @method static Builder|User whereLogradouro($value)
+ * @method static Builder|User whereMunicipio($value)
+ * @method static Builder|User whereNome($value)
+ * @method static Builder|User wherePassword($value)
  * @method static Builder|User wherePrivilegioGestorArea($value)
  * @method static Builder|User wherePrivilegioGestorCentroCusto($value)
+ * @method static Builder|User whereRememberToken($value)
+ * @method static Builder|User whereTemp($value)
+ * @method static Builder|User whereTermos($value)
+ * @method static Builder|User whereTipo($value)
+ * @method static Builder|User whereUf($value)
+ * @method static Builder|User whereUltimoAcesso($value)
+ * @method static Builder|User whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|User withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
+ * @mixin \Eloquent
  */
 class User extends Authenticatable
 {

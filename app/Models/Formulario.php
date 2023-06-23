@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\Formulario
  *
  * @property int $id
+ * @property int|null $empresa_id
  * @property string $titulo
  * @property string|null $descricao
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SetoresFormulario[] $Setores
@@ -18,11 +19,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Formulario newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Formulario query()
  * @method static \Illuminate\Database\Eloquent\Builder|Formulario whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Formulario whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Formulario whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Formulario whereTitulo($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|Formulario whereEmpresaId($value)
  */
 class Formulario extends Model
 {

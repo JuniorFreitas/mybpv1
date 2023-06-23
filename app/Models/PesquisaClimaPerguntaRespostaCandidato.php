@@ -14,12 +14,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $respostadigitada
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $cliente_id
+ * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\PesquisaClimaPergunta|null $Pergunta
  * @property-read \App\Models\PesquisaClimaPerguntaResposta|null $Resposta
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato query()
+ * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato whereId($value)
@@ -28,9 +31,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato whereRespostadigitada($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property int|null $cliente_id
- * @property-read \App\Models\Cliente|null $Cliente
- * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPerguntaRespostaCandidato whereClienteId($value)
  */
 class PesquisaClimaPerguntaRespostaCandidato extends Model
 {

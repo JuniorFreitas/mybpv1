@@ -8,16 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * App\Models\TipoAvisoCurriculo
  *
+ * @property int $tipo_aviso_id
+ * @property int|null $feedback_id
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo query()
- * @mixin \Eloquent
- * @property int $tipo_aviso_id
- * @property int $curriculo_id
- * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo whereCurriculoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo whereTipoAvisoId($value)
- * @property int|null $feedback_id
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo whereTipoAvisoId($value)
+ * @mixin \Eloquent
  */
 class TipoAvisoCurriculo extends Model
 {

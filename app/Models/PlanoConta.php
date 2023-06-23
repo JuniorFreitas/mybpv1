@@ -16,8 +16,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $descricao
  * @property string $operacao c-credito , d-debito, t-todos
  * @property bool $ativo
+ * @property int $empresa_id
  * @property-read \App\Models\CategoriaPlanoConta|null $Categoria
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read mixed $operacao_credito
  * @property-read mixed $operacao_debito
@@ -29,13 +30,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|PlanoConta whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanoConta whereCategoriaPlanoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanoConta whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PlanoConta whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanoConta whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanoConta whereOperacao($value)
  * @mixin \Eloquent
- * @property int|null $cliente_id
- * @method static \Illuminate\Database\Eloquent\Builder|PlanoConta whereClienteId($value)
- * @property int $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|PlanoConta whereEmpresaId($value)
  */
 class PlanoConta extends Model
 {

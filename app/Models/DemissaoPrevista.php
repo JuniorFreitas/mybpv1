@@ -14,24 +14,35 @@ use MasterTag\DataHora;
  * App\Models\DemissaoPrevista
  *
  * @property int $id
- * @property int $cliente_id
+ * @property int|null $cliente_id
  * @property int $colaborador_id
  * @property int $centro_custo_id
  * @property string|null $aviso
  * @property mixed $data_demissao
- * @property mixed $data_pagamento
+ * @property string|null $tipo_aviso
  * @property float $valor
  * @property int|null $user_id
  * @property string|null $solicitante
  * @property string|null $status
  * @property string|null $obs
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @property int|null $empresa_id
+ * @property int|null $gestor_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
  * @property-read \App\Models\Cliente|null $Cliente
- * @property-read \App\Models\User|null $Funcionario
- * @property-read \App\Models\User|null $UserCadastrou
+ * @property-read User|null $Colaborador
+ * @property-read User|null $GestorAprovacao
+ * @property-read User|null $UserAprovacao
+ * @property-read User|null $UserCadastrou
  * @property-read mixed $valor_format
+ * @property-write mixed $data_pagamento
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista query()
@@ -40,43 +51,22 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereColaboradorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereDataAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereDataDemissao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereDataPagamento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereGestorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereObs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereObsAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereSolicitante($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereTipoAviso($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereValor($value)
  * @mixin \Eloquent
- * @property-read \App\Models\User|null $Colaborador
- * @property string|null $tipo_aviso
- * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
- * @property string|null $obs_aprovacao
- * @property string|null $status_aprovacao
- * @property int|null $empresa_id
- * @property int|null $gestor_id
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereDataAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereEmpresaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereGestorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereObsAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereStatusAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereTipoAviso($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserAprovacaoId($value)
- * @property-read User|null $GestorAprovacao
- * @property-read User|null $UserAprovacao
- * @property int|null $user_rh_id
- * @property string|null $resposta_rh
- * @property string|null $obs_rh
- * @property string|null $data_aprovacao_rh
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereDataAprovacaoRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereObsRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereRespostaRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserRhId($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
  */
 class DemissaoPrevista extends Model
 {

@@ -17,7 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $situacao
  * @property string $descricao
  * @property string $compromisso
- * @property mixed $data
+ * @property string $data
  * @property int $user_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -25,18 +25,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\User $UsuarioRelator
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico query()
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereCompromisso($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereData($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereDescricao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereSituacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeedbackHistorico whereUserId($value)
+ * @method static Builder|FeedbackHistorico newModelQuery()
+ * @method static Builder|FeedbackHistorico newQuery()
+ * @method static Builder|FeedbackHistorico query()
+ * @method static Builder|FeedbackHistorico whereCompromisso($value)
+ * @method static Builder|FeedbackHistorico whereCreatedAt($value)
+ * @method static Builder|FeedbackHistorico whereData($value)
+ * @method static Builder|FeedbackHistorico whereDescricao($value)
+ * @method static Builder|FeedbackHistorico whereFeedbackId($value)
+ * @method static Builder|FeedbackHistorico whereId($value)
+ * @method static Builder|FeedbackHistorico whereSituacao($value)
+ * @method static Builder|FeedbackHistorico whereUpdatedAt($value)
+ * @method static Builder|FeedbackHistorico whereUserId($value)
  * @mixin \Eloquent
  */
 class FeedbackHistorico extends Model

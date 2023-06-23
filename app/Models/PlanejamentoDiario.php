@@ -17,6 +17,7 @@ use MasterTag\DataHora;
  * @property string|null $importante
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $empresa_id
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PlanejamentoDiarioTarefas[] $Tarefas
  * @property-read int|null $tarefas_count
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario newModelQuery()
@@ -24,14 +25,13 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario query()
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereImportante($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereTarefasAgendadas($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereUserId($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereEmpresaId($value)
  */
 class PlanejamentoDiario extends Model
 {

@@ -12,10 +12,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\Vaga
  *
  * @property int $id
- * @property int $categoria_id
+ * @property int|null $categoria_id
  * @property string $nome
  * @property bool $ativo
+ * @property int|null $empresa_id
  * @property-read \App\Models\CategoriaVagas|null $Categoria
+ * @property-read \App\Models\User|null $Empresa
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Etapas[] $EtapaStatus
+ * @property-read int|null $etapa_status_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoVaga[] $SimuladoVaga
+ * @property-read int|null $simulado_vaga_count
+ * @property-read \App\Models\VagasAbertas|null $VagaAberta
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga newModelQuery()
@@ -23,19 +30,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga query()
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereCategoriaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereNome($value)
  * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoVaga[] $SimuladoVaga
- * @property-read int|null $simulado_vaga_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Etapas[] $EtapaStatus
- * @property-read int|null $etapa_status_count
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereEmpresaId($value)
- * @property-read \App\Models\Cliente|null $Empresa
- * @property-read \App\Models\VagasAbertas|null $VagaAberta
- * @property float|null $salario
- * @method static \Illuminate\Database\Eloquent\Builder|Vaga whereSalario($value)
  */
 class Vaga extends Model
 {

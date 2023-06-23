@@ -18,23 +18,23 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $tipo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read mixed $novo_salario_format
- * @property-read mixed $tipo_text
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback whereMotivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback whereNovoCargo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback whereNovoSalario($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback wherePercentual($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback whereTipo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\PromocaoFeedback whereUpdatedAt($value)
- * @mixin \Eloquent
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @property-read mixed $novo_salario_format
+ * @property-read mixed $tipo_text
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback query()
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback whereMotivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback whereNovoCargo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback whereNovoSalario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback wherePercentual($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PromocaoFeedback whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class PromocaoFeedback extends Model
 {

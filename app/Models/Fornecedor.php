@@ -38,35 +38,35 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $servicos_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\TelefoneFornecedor[] $Telefones
  * @property-read int|null $telefones_count
+ * @property-read \App\Models\User|null $Usuario
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read mixed $endereco_completo
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor query()
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereAniversario($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereBairro($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereCep($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereCnpj($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereComplemento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereContato($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereCpf($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereLogradouro($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereMunicipio($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereNome($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereNomeFantasia($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereNumero($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereRazaoSocial($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereTipo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereTipoPessoa($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereUf($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereUpdatedAt($value)
+ * @method static Builder|Fornecedor newModelQuery()
+ * @method static Builder|Fornecedor newQuery()
+ * @method static Builder|Fornecedor query()
+ * @method static Builder|Fornecedor whereAniversario($value)
+ * @method static Builder|Fornecedor whereAtivo($value)
+ * @method static Builder|Fornecedor whereBairro($value)
+ * @method static Builder|Fornecedor whereCep($value)
+ * @method static Builder|Fornecedor whereCnpj($value)
+ * @method static Builder|Fornecedor whereComplemento($value)
+ * @method static Builder|Fornecedor whereContato($value)
+ * @method static Builder|Fornecedor whereCpf($value)
+ * @method static Builder|Fornecedor whereCreatedAt($value)
+ * @method static Builder|Fornecedor whereEmail($value)
+ * @method static Builder|Fornecedor whereId($value)
+ * @method static Builder|Fornecedor whereLogradouro($value)
+ * @method static Builder|Fornecedor whereMunicipio($value)
+ * @method static Builder|Fornecedor whereNome($value)
+ * @method static Builder|Fornecedor whereNomeFantasia($value)
+ * @method static Builder|Fornecedor whereNumero($value)
+ * @method static Builder|Fornecedor whereRazaoSocial($value)
+ * @method static Builder|Fornecedor whereTipo($value)
+ * @method static Builder|Fornecedor whereTipoPessoa($value)
+ * @method static Builder|Fornecedor whereUf($value)
+ * @method static Builder|Fornecedor whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property-read \App\Models\User|null $Usuario
  */
 class Fornecedor extends Model
 {

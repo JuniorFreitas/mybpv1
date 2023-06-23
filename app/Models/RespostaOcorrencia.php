@@ -13,24 +13,24 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $ocorrencia_id
  * @property int $user_id
  * @property string $resposta
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
- * @property-read \App\Models\Ocorrencia $Ocorrencia
- * @property-read \App\Models\User $Usuario
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia whereOcorrenciaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia whereResposta($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\RespostaOcorrencia whereUserId($value)
- * @mixin \Eloquent
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
  * @property-read int|null $anexos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \App\Models\Ocorrencia $Ocorrencia
+ * @property-read User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia query()
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia whereOcorrenciaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia whereResposta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia whereUserId($value)
+ * @mixin \Eloquent
  */
 class RespostaOcorrencia extends Model {
     use LogsActivity;

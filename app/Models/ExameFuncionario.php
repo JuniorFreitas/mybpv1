@@ -15,15 +15,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $empresa_id
  * @property int $formulario_id
  * @property int $feedback_id
- * @property mixed $respostas
+ * @property array $respostas
  * @property int $empresa_exame_id
  * @property int $user_encaminhou_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string $token
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
  * @property-read \App\Models\EmpresaExame|null $EmpresaExame
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\Formulario|null $Formulario
  * @property-read \App\Models\User|null $QuemEncaminhou
+ * @property-read \App\Models\Examesesmt|null $Sesmt
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario query()
@@ -34,12 +36,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereFormularioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereRespostas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereUserEncaminhouId($value)
  * @mixin \Eloquent
- * @property string $token
- * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereToken($value)
- * @property-read \App\Models\Examesesmt|null $Sesmt
  */
 class ExameFuncionario extends Model
 {
