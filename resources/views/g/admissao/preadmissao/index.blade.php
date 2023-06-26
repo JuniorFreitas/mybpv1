@@ -41,13 +41,13 @@
                             <input type="text" class="form-control form-control-sm validacampo"
                                    v-model="formEmail.email"
                                    autocomplete="mybp" @keyup.prevent="validaEmailVazio($event.target)"
-                                   blur.prevent="validaEmailVazio($event.target)">
+                                   @blur.prevent="validaEmailVazio($event.target)">
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="form-group">
                             <label>Observação</label>
-                            <textarea cols="3" rows="5" maxlength="255" class="form-control form-control-sm"
+                            <textarea cols="3" rows="5" class="form-control form-control-sm"
                                       v-model="formEmail.observacao"
                                       autocomplete="mybp"></textarea>
                         </div>
