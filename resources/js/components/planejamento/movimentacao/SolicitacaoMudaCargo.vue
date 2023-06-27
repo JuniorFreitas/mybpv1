@@ -13,23 +13,7 @@
                     <fieldset>
                         <legend>Informações</legend>
                         <div class="row">
-
-                            <div class="col-12 col-md-6">
-                                <div class="form-group">
-                                    <label>Centro de Custo</label>
-                                    <select v-model="form.centro_custo_id" class="form-control form-control-sm"
-                                            :disabled="visualizar "
-                                            onchange="valida_campo_vazio(this,1)"
-                                            onblur="valida_campo_vazio(this,1)">
-                                        <option value="">Selecione</option>
-                                        <option v-for="item in centro_custos" :value="item.id">
-                                            {{ item.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-12">
                                 <div class="form-group">
                                     <label>Colaborador </label>
                                     <autocomplete :caminho="`autocomplete/colaboradores`"
@@ -43,122 +27,258 @@
                                                   @onselect="selecionaColaborador"></autocomplete>
                                 </div>
                             </div>
-
-                            <div class="col-12 col-md-6">
+                        </div>
+                        <div class="row" v-if="form.colaborador_id">
+                            <div class="col-12 col-md-2">
                                 <div class="form-group">
-                                    <label>Cargo Anterior</label>
-                                    <autocomplete :caminho="`autocomplete/cargosEmpresa`"
-                                                  :formsm="true"
-                                                  :valido="form.cargo_anterior_id !== ''"
-                                                  v-model="form.autocomplete_label_cargoanterior"
-                                                  placeholder="Selecione um cargo"
-                                                  :disabled="true"
-                                                  :id="`cargo_anterior_${hash}`"
-                                                  @onblur="resetaCampoCargoAnterior"
-                                                  @onselect="selecionaCargoAnterior"></autocomplete>
+                                    <label>Mantém Centro de Custo</label>
+                                    <select class="form-control form-control-sm"
+                                            v-model="form.mantem_centro_custo">
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
                                 </div>
                             </div>
-
                             <div class="col-12 col-md-3">
                                 <div class="form-group">
-                                    <label>Salário Anterior</label>
-                                    <input type="text" class="form-control form-control-sm" v-mascara:dinheiro
-                                           onblur="valida_dinheiro(this,1)"
-                                           :disabled="visualizar "
-                                           v-model="form.salario_anterior_format">
+                                    <label>Centro de Custo Atual</label>
+                                    <select v-model="form.anterior_centro_custo_id"
+                                            class="form-control form-control-sm"
+                                            disabled>
+                                        <option value="">Selecione</option>
+                                        <option v-for="item in centro_custos" :value="item.id">
+                                            {{ item.label }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
-
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-1" v-if="centroCustoTemFilial">
                                 <div class="form-group">
-                                    <label>Novo Cargo</label>
-                                    <autocomplete :caminho="`autocomplete/cargosEmpresa`"
-                                                  :formsm="true"
-                                                  :valido="form.novo_cargo_id !== ''"
-                                                  v-model="form.autocomplete_label_novo_cargo"
-                                                  placeholder="Selecione um cargo"
-                                                  :disabled="visualizar  || editando"
-                                                  :id="`novo_cargo_${hash}`"
-                                                  @onblur="resetaCampoNovoCargo"
-                                                  @onselect="selecionaNovoCargo"></autocomplete>
+                                    <label>CNPJ Atual</label>
+                                    <select
+                                        :disabled="visualizar || centroCustoTemFilial"
+                                        v-model="form.anterior_filial"
+                                        class="form-control form-control-sm"
+                                        @change.p.prevent="changeCnpj()"
+                                    >
+                                        <option :value="false">Matriz</option>
+                                        <option :value="true">Filial</option>
+                                    </select>
                                 </div>
                             </div>
-
-
+                            <div class="col-12 col-sm-6" v-if="temFilial && form.anterior_filial">
+                                <div class="form-group">
+                                    <label>Filial</label>
+                                    <select
+                                        :disabled="visualizar || disabled"
+                                        v-model="form.anterior_centro_custo_filial_id"
+                                        class="form-control"
+                                    >
+                                        <option value="">Selecione</option>
+                                        <option v-for="item in centroCustoSelecionado" :value="item.id" :key="item.id">
+                                            {{ item.filial.razao_social }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="col-12 col-md-3">
                                 <div class="form-group">
-                                    <label>Novo Salário</label>
-                                    <input type="text" class="form-control form-control-sm" v-mascara:dinheiro
-                                           onblur="valida_dinheiro(this,1)"
-                                           :disabled="visualizar "
-                                           v-model="form.novo_salario_format">
+                                    <label>Função Atual</label>
+                                    <input type="text" class="form-control form-control-sm" onblur="valida_campo_vazio(this,2)"
+                                           :disabled="visualizar || form.mantem_funcao"
+                                           v-model="form.anterior_funcao">
                                 </div>
                             </div>
-
-                            <gestoraprovacao :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>
-
-                            <div class="col-12">
+                            <div class="col-12 col-md-3" v-if="!form.mantem_centro_custo">
                                 <div class="form-group">
-                                    <label>Observação</label>
-                                    <textarea class="form-control form-control-sm" v-model="form.obs" cols="5" rows="5"
-                                              :disabled="visualizar "></textarea>
+                                    <label>Novo Centro de Custo</label>
+                                    <select v-model="form.novo_centro_custo_id" class="form-control form-control-sm"
+                                            @change.prevent="changeCentroCusto()"
+                                            onchange="valida_campo_vazio(this,1)"
+                                            onblur="valida_campo_vazio(this,1)">
+                                        <option value="">Selecione</option>
+                                        <option v-for="item in centro_custos" :value="item.id">
+                                            {{ item.label }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
-                        </div>
-
-                        <fieldset>
-                            <legend>Anexos</legend>
-                            <upload :model="form.anexos"
-                                    :model-delete="form.anexosDel"
-                                    :url="url_anexo"
-                                    :tipos="mimes"
-                                    :leitura="!podeanexar"
-                                    label="Selecionar"
-                                    @onProgresso="anexoUploadAndamento=true"
-                                    @onFinalizado="anexoUploadAndamento=false"></upload>
-                        </fieldset>
-
-                        <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
-                            Esta solicitação ainda não foi aprovada ou reprovada!
-                        </div>
-
-                        <fieldset v-if="visualizar || editando">
-                            <legend>Aprovação</legend>
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea class="form-control form-control-sm"
-                                                  :disabled="form.data_aprovacao || !aprovando"
-                                                  v-model="form.obs_aprovacao"
-                                                  cols="5" rows="5"></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select :disabled="form.data_aprovacao || !aprovando " v-if="editando"
-                                                v-model="form.status_aprovacao"
-                                                class="form-control form-control-sm">
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
-
-                                        <select :disabled="form.data_aprovacao || !aprovando " v-if="!editando"
-                                                v-model="form.status_aprovacao"
-                                                onblur="valida_campo_vazio(this,1)"
-                                                onchange="valida_campo_vazio(this,1)"
-                                                class="form-control form-control-sm">
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
-                                    </div>
+                            <div class="col-12 col-md-2" v-if="centroCustoTemFilialNovo && form.novo_centro_custo_id">
+                                <div class="form-group">
+                                    <label>CNPJ Novo</label>
+                                    <select
+                                        :disabled="visualizar"
+                                        v-model="form.novo_filial"
+                                        class="form-control form-control-sm"
+                                        @change.p.prevent="changeCnpj()"
+                                    >
+                                        <option :value="false">Matriz</option>
+                                        <option :value="true">Filial</option>
+                                    </select>
                                 </div>
                             </div>
-                        </fieldset>
+                            <div class="col-12 col-sm-3" v-if="temFilial && form.novo_filial">
+                                <div class="form-group">
+                                    <label>Nova Filial</label>
+                                    <select
+                                        :disabled="visualizar"
+                                        v-model="form.novo_centro_custo_filial_id"
+                                        class="form-control form-control-sm"
+                                    >
+                                        <option value="">Selecione</option>
+                                        <option v-for="item in centroCustoSelecionadoNovo" :value="item.id" :key="item.id">
+                                            {{ item.filial.razao_social }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+<!--                            <div class="col-12 col-sm-3" v-if="temFilial && form.anterior_filial">-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>Filial</label>-->
+<!--                                    <select-->
+<!--                                        :disabled="visualizar || disabled"-->
+<!--                                        v-model="form.centro_custo_filial_id"-->
+<!--                                        class="form-control"-->
+<!--                                    >-->
+<!--                                        <option value="">Selecione</option>-->
+<!--                                        <option v-for="item in centroCustoSelecionado" :value="item.id" :key="item.id">-->
+<!--                                            {{ item.filial.razao_social }}-->
+<!--                                        </option>-->
+<!--                                    </select>-->
+<!--                                </div>-->
+<!--                            </div>-->
+                        </div>
+<!--                        <div class="row">-->
+<!--                            <div class="col-12 col-md-6">-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>Centro de Custo</label>-->
+<!--                                    <select v-model="form.centro_custo_id" class="form-control form-control-sm"-->
+<!--                                            :disabled="visualizar "-->
+<!--                                            onchange="valida_campo_vazio(this,1)"-->
+<!--                                            onblur="valida_campo_vazio(this,1)">-->
+<!--                                        <option value="">Selecione</option>-->
+<!--                                        <option v-for="item in centro_custos" :value="item.id">-->
+<!--                                            {{ item.label }}-->
+<!--                                        </option>-->
+<!--                                    </select>-->
+<!--                                </div>-->
+<!--                            </div>-->
+
+<!--                            <div class="col-12 col-md-6">-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>Cargo Anterior</label>-->
+<!--                                    <autocomplete :caminho="`autocomplete/cargosEmpresa`"-->
+<!--                                                  :formsm="true"-->
+<!--                                                  :valido="form.cargo_anterior_id !== ''"-->
+<!--                                                  v-model="form.autocomplete_label_cargoanterior"-->
+<!--                                                  placeholder="Selecione um cargo"-->
+<!--                                                  :disabled="true"-->
+<!--                                                  :id="`cargo_anterior_${hash}`"-->
+<!--                                                  @onblur="resetaCampoCargoAnterior"-->
+<!--                                                  @onselect="selecionaCargoAnterior"></autocomplete>-->
+<!--                                </div>-->
+<!--                            </div>-->
+
+<!--                            <div class="col-12 col-md-3">-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>Salário Anterior</label>-->
+<!--                                    <input type="text" class="form-control form-control-sm" v-mascara:dinheiro-->
+<!--                                           onblur="valida_dinheiro(this,1)"-->
+<!--                                           :disabled="visualizar "-->
+<!--                                           v-model="form.salario_anterior_format">-->
+<!--                                </div>-->
+<!--                            </div>-->
+
+<!--                            <div class="col-12 col-md-6">-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>Novo Cargo</label>-->
+<!--                                    <autocomplete :caminho="`autocomplete/cargosEmpresa`"-->
+<!--                                                  :formsm="true"-->
+<!--                                                  :valido="form.novo_cargo_id !== ''"-->
+<!--                                                  v-model="form.autocomplete_label_novo_cargo"-->
+<!--                                                  placeholder="Selecione um cargo"-->
+<!--                                                  :disabled="visualizar  || editando"-->
+<!--                                                  :id="`novo_cargo_${hash}`"-->
+<!--                                                  @onblur="resetaCampoNovoCargo"-->
+<!--                                                  @onselect="selecionaNovoCargo"></autocomplete>-->
+<!--                                </div>-->
+<!--                            </div>-->
+
+
+<!--                            <div class="col-12 col-md-3">-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>Novo Salário</label>-->
+<!--                                    <input type="text" class="form-control form-control-sm" v-mascara:dinheiro-->
+<!--                                           onblur="valida_dinheiro(this,1)"-->
+<!--                                           :disabled="visualizar "-->
+<!--                                           v-model="form.novo_salario_format">-->
+<!--                                </div>-->
+<!--                            </div>-->
+
+<!--                            <gestoraprovacao :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>-->
+
+<!--                            <div class="col-12">-->
+<!--                                <div class="form-group">-->
+<!--                                    <label>Observação</label>-->
+<!--                                    <textarea class="form-control form-control-sm" v-model="form.obs" cols="5" rows="5"-->
+<!--                                              :disabled="visualizar "></textarea>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+
+<!--                        <fieldset>-->
+<!--                            <legend>Anexos</legend>-->
+<!--                            <upload :model="form.anexos"-->
+<!--                                    :model-delete="form.anexosDel"-->
+<!--                                    :url="url_anexo"-->
+<!--                                    :tipos="mimes"-->
+<!--                                    :leitura="!podeanexar"-->
+<!--                                    label="Selecionar"-->
+<!--                                    @onProgresso="anexoUploadAndamento=true"-->
+<!--                                    @onFinalizado="anexoUploadAndamento=false"></upload>-->
+<!--                        </fieldset>-->
+
+<!--                        <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">-->
+<!--                            Esta solicitação ainda não foi aprovada ou reprovada!-->
+<!--                        </div>-->
+
+<!--                        <fieldset v-if="visualizar || editando">-->
+<!--                            <legend>Aprovação</legend>-->
+<!--                            <div class="row">-->
+<!--                                <div class="col-12">-->
+<!--                                    <div class="form-group">-->
+<!--                                        <label>Observação</label>-->
+<!--                                        <textarea class="form-control form-control-sm"-->
+<!--                                                  :disabled="form.data_aprovacao || !aprovando"-->
+<!--                                                  v-model="form.obs_aprovacao"-->
+<!--                                                  cols="5" rows="5"></textarea>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+
+<!--                                <div class="col-md-6">-->
+<!--                                    <div class="form-group">-->
+<!--                                        <label>Status</label>-->
+<!--                                        <select :disabled="form.data_aprovacao || !aprovando " v-if="editando"-->
+<!--                                                v-model="form.status_aprovacao"-->
+<!--                                                class="form-control form-control-sm">-->
+<!--                                            <option value="">Selecione...</option>-->
+<!--                                            <option value="aprovado">Aprovar</option>-->
+<!--                                            <option value="reprovado">Reprovar</option>-->
+<!--                                        </select>-->
+
+<!--                                        <select :disabled="form.data_aprovacao || !aprovando " v-if="!editando"-->
+<!--                                                v-model="form.status_aprovacao"-->
+<!--                                                onblur="valida_campo_vazio(this,1)"-->
+<!--                                                onchange="valida_campo_vazio(this,1)"-->
+<!--                                                class="form-control form-control-sm">-->
+<!--                                            <option value="">Selecione...</option>-->
+<!--                                            <option value="aprovado">Aprovar</option>-->
+<!--                                            <option value="reprovado">Reprovar</option>-->
+<!--                                        </select>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </fieldset>-->
                     </fieldset>
 
                 </form>
@@ -440,9 +560,10 @@ import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
 import Utils from "../../../mixins/Utils";
+import configuracoes from "../../../mixins/Configuracoes";
 
 export default {
-    mixins: [ExportacaoMixin, Utils],
+    mixins: [ExportacaoMixin, Utils, configuracoes],
 
     components: {
         colaborador,
@@ -463,7 +584,7 @@ export default {
             aprovar_por_gestor: false,
             preloadExportacao: false,
 
-            urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/muda-cargo-prevista/export`,
+            urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/export`,
 
             url_anexo: `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`,
             anexoUploadAndamento: false,
@@ -487,37 +608,58 @@ export default {
 
             formConfirmacaoDefault: null,
             form: {
-
+                empresa_id: '',
+                admissao_id: '',
                 colaborador_id: '',
                 autocomplete_label_colaborador: '',
-                autocomplete_label_colaborador_anterior: '',
 
-                centro_custo_id: '',
+                mantem_centro_custo: true,
+                anterior_centro_custo_id: '',
+                anterior_centro_custo_filial_id: '',
+                anterior_filial: false,
+                novo_centro_custo_id: "",
+                novo_centro_custo_filial_id: '',
+                novo_filial: false,
                 tipo_contrato: '',
 
-                cargo_anterior_id: '',
-                autocomplete_label_cargoanterior: '',
-                autocomplete_label_cargoanterior_anterior: '',
+                mantem_cargo: true,
+                anterior_vaga_aberta_id: '',
+                autocomplete_label_vaga_anterior: '',
+                nova_vaga_aberta_id: '',
+                autocomplete_label_vaga_nova: '',
 
-                novo_cargo_id: '',
-                autocomplete_label_novo_cargo: '',
-                autocomplete_label_novo_cargo_anterior: '',
+                mantem_funcao: true,
+                anterior_funcao: '',
+                anterior_funcao_id: '',
+                autocomplete_label_funcao_anterior: '',
+                nova_funcao_id: '',
+                autocomplete_label_funcao_nova: '',
+
+                mantem_salario: false,
+                anterior_salario: '0,00',
+                novo_salario: '0,00',
+
+                solicitante_id: '',
+                autocomplete_label_solicitante: '',
+                obs_solicitante: '',
+                data_solicitacao: '',
 
                 gestor_id: '',
-                autocomplete_label_gestor_modal: '',
-                autocomplete_label_gestor_modal_anterior: '',
+                autocomplete_label_gestor: '',
 
-                data_admissao: '',
-                salario_anterior_format: '0,00',
-                novo_salario_format: '0,00',
+                gestor_aprovacao_id: '',
+                autocomplete_label_gestor_aprovacao: '',
+                obs_gestor_aprovacao: '',
+                status_aprovacao_gestor: '',
+                data_aprovacao_gestor: '',
 
-                user_id: '',
-                solicitante: '',
-                status: '',
-                obs: '',
+                rh_aprovacao_id: '',
+                autocomplete_label_rh: '',
+                obs_rh: '',
+                status_aprovacao_rh: '',
+                data_aprovacao_rh: '',
+                aprovado_via_script: false,
 
-                obs_aprovacao: '',
-                status_aprovacao: '',
                 anexos: [],
                 anexosDel: []
             },
@@ -525,9 +667,10 @@ export default {
             formDefault: null,
             lista: [],
             centro_custos: [],
+            filiais_centro_custos: [],
 
             // colaborador_ativo: `autocomplete/colaboradores/`,
-            urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/muda-cargo-prevista/atualizar`,
+            urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/atualizar`,
             controle: {
                 carregando: false,
                 dados: {
@@ -576,9 +719,46 @@ export default {
         },
         por_pagina() {
             return [20, 50, 100, 150];
-        }
+        },
+        centroCustoSelecionado() {
+            if (this.form.anterior_centro_custo_id === undefined || this.form.anterior_centro_custo_id === null || this.form.anterior_centro_custo_id === '') {
+                return [];
+            }
+
+            let centroSelecionado = _.find(this.centro_custos, {id: this.form.anterior_centro_custo_id});
+            if (centroSelecionado.filiais.length) {
+                return centroSelecionado.filiais;
+            }
+
+            return [];
+        },
+        centroCustoSelecionadoNovo() {
+            if (this.form.novo_centro_custo_id === undefined || this.form.novo_centro_custo_id === null || this.form.novo_centro_custo_id === '') {
+                return [];
+            }
+
+            let centroSelecionado = _.find(this.centro_custos, {id: this.form.novo_centro_custo_id});
+            if (centroSelecionado.filiais.length) {
+                return centroSelecionado.filiais;
+            }
+
+            return [];
+        },
+        centroCustoTemFilial() {
+            return this.temFilial && this.centroCustoSelecionado.length > 0;
+        },
+        centroCustoTemFilialNovo() {
+            return this.temFilial && this.centroCustoSelecionadoNovo.length > 0;
+        },
     },
     methods: {
+        changeCentroCusto() {
+            this.form.novo_filial = false;
+            this.form.novo_centro_custo_filial_id = ''
+        },
+        changeCnpj() {
+            this.form.novo_centro_custo_filial_id = ''
+        },
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo
             if (this.selecionaTudo) {
@@ -604,7 +784,7 @@ export default {
             this.formConfirmacao.status_aprovacao = confirmacao;
             this.formConfirmacao.selecionados.push(this.selecionados)
 
-            axios.post(`${URL_ADMIN}/planejamento/movimentacao/muda-cargo-prevista/atualizacao-status`, this.formConfirmacao)
+            axios.post(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/atualizacao-status`, this.formConfirmacao)
                 .then(res => {
                     this.preloadAtualizacao = false;
                     $('#janelaAtualizaStatus').modal('hide');
@@ -641,6 +821,12 @@ export default {
             this.form.autocomplete_label_colaborador = obj.label;
             this.form.autocomplete_label_colaborador_anterior = obj.label;
 
+            this.form.anterior_centro_custo_id = obj.admissao.centro_custo_id;
+            this.form.anterior_filial = obj.admissao.filial;
+            this.form.anterior_centro_custo_filial_id = this.form.anterior_filial ? obj.admissao.centro_custo_filial_id : null;
+            this.form.admissao_id = obj.admissao.id;
+            this.form.anterior_funcao = obj.admissao.funcao;
+
             //Cargo Anterior
             this.form.cargo_anterior_id = obj.vaga_id;
             this.form.autocomplete_label_cargoanterior = obj.vaga_selecionada.nome;
@@ -667,7 +853,6 @@ export default {
                 }, 100);
             }
         },
-
         selecionaCargoAnterior(obj) {
             this.form.cargo_anterior_id = obj.id;
             this.form.autocomplete_label_cargoanterior = obj.label;
@@ -688,7 +873,17 @@ export default {
                 }, 100);
             }
         },
-
+        selecionaFilialCentroDeCusto(centro_custo_id, empresa_id) {
+            axios.post(`${URL_ADMIN}/get-filiais/`, {
+                centro_custo_id: centro_custo_id,
+                empresa_id: empresa_id,
+            }).then(res => {
+                this.filiais_centro_de_custo = res.data.filiais_centro_de_custo;
+                console.log(this.filiais_centro_de_custo)
+            }).catch(error => {
+                this.preload = false;
+            });
+        },
         selecionaNovoCargo(obj) {
             this.form.novo_cargo_id = obj.id;
             this.form.autocomplete_label_novo_cargo = obj.label;
@@ -787,7 +982,7 @@ export default {
 
             this.preload = true;
 
-            axios.post(`${URL_ADMIN}/planejamento/movimentacao/muda-cargo-prevista`, this.form)
+            axios.post(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo`, this.form)
                 .then(response => {
                     $(`#${this.hash} `).modal('hide');
                     let data = response.data;
@@ -814,7 +1009,7 @@ export default {
             formReset();
             this.preload = true;
 
-            axios.get(`${URL_ADMIN}/planejamento/movimentacao/muda-cargo-prevista/${id}/editar`)
+            axios.get(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${id}/editar`)
                 .then(response => {
                     let data = response.data;
                     Object.assign(this.form, data);
@@ -898,7 +1093,7 @@ export default {
             }
 
             this.preload = true;
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/muda-cargo-prevista/${this.form.id}/aprovar`, this.form)
+            axios.put(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovar`, this.form)
                 .then(response => {
                     let data = response.data;
                     mostraSucesso('', 'Registro salvo com sucesso!');

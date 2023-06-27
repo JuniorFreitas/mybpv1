@@ -248,4 +248,22 @@ class CentroCustoController extends Controller
 
         return response()->json($resposta, 200);
     }
+
+    public function getFiliaisCentroDeCusto(Request $request)
+    {
+
+        $resposta = CentroCustoFilial::where('ativo',true)->where('centro_custo_id', $request->centro_custo_id)
+            ->where('empresa_id', auth()->user()->empresa_id ?? $request->empresa_id)
+            ->with('Filial')
+            ->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'razao_social' => $item->Filial->dados->razao_social,
+                ];
+            });
+
+        dd($resposta);
+
+        return response()->json($resposta, 200);
+    }
 }
