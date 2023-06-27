@@ -537,6 +537,11 @@ class User extends Authenticatable
         return $query->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS);
     }
 
+    public function enviaWhatsApp()
+    {
+        return $this->EmpresaConfiguracoes->envia_whatsapp;
+    }
+
     protected static function booted()
     {
         static::creating(function ($model) {
