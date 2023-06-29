@@ -21,7 +21,7 @@
                                                   :valido="form.colaborador_id !== ''"
                                                   v-model="form.autocomplete_label_colaborador"
                                                   placeholder="Selecione um(a) colaborador(a)"
-                                                  :disabled="visualizar  || editando"
+                                                  :disabled="visualizar || editando"
                                                   :id="`colaborador_${hash}`"
                                                   @onblur="resetaCampoColaborador"
                                                   @onselect="selecionaColaborador"></autocomplete>
@@ -29,16 +29,6 @@
                             </div>
                         </div>
                         <div class="row" v-if="form.colaborador_id">
-                            <div class="col-12 col-md-2">
-                                <div class="form-group">
-                                    <label>Mantém Centro de Custo</label>
-                                    <select class="form-control form-control-sm"
-                                            v-model="form.mantem_centro_custo">
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
-                                </div>
-                            </div>
                             <div class="col-12 col-md-3">
                                 <div class="form-group">
                                     <label>Centro de Custo Atual</label>
@@ -56,7 +46,7 @@
                                 <div class="form-group">
                                     <label>CNPJ Atual</label>
                                     <select
-                                        :disabled="visualizar || centroCustoTemFilial"
+                                        disabled
                                         v-model="form.anterior_filial"
                                         class="form-control form-control-sm"
                                         @change.p.prevent="changeCnpj()"
@@ -66,11 +56,11 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12 col-sm-6" v-if="temFilial && form.anterior_filial">
+                            <div class="col-12 col-md-5" v-if="temFilial && form.anterior_filial">
                                 <div class="form-group">
                                     <label>Filial</label>
                                     <select
-                                        :disabled="visualizar || disabled"
+                                        disabled
                                         v-model="form.anterior_centro_custo_filial_id"
                                         class="form-control"
                                     >
@@ -83,16 +73,49 @@
                             </div>
                             <div class="col-12 col-md-3">
                                 <div class="form-group">
+                                    <label>Cargo Atual</label>
+                                    <autocomplete :disabled="true" :caminho="caminho_autocomplete_vagas"
+                                                  :valido="form.autocomplete_label_vaga_anterior !== ''"
+                                                  v-model="form.autocomplete_label_vaga_anterior"
+                                                  placeholder="Vaga Atual"
+                                                  @onblur="resetaCampo"
+                                                  @onselect="selecionaVaga"></autocomplete>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <div class="form-group">
                                     <label>Função Atual</label>
-                                    <input type="text" class="form-control form-control-sm" onblur="valida_campo_vazio(this,2)"
-                                           :disabled="visualizar || form.mantem_funcao"
+                                    <input type="text" class="form-control form-control-sm"
+                                           onblur="valida_campo_vazio(this,2)"
+                                           disabled
                                            v-model="form.anterior_funcao">
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <div class="form-group">
+                                    <label>Salário Atual R$</label>
+                                    <input type="text" class="form-control form-control-sm"
+                                           v-mascara:dinheiro
+                                           disabled
+                                           v-model="form.anterior_salario">
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <div class="form-group">
+                                    <label>Mantém Centro de Custo</label>
+                                    <select class="form-control form-control-sm"
+                                            @change.p.prevent="changeMantemCentroDeCusto()"
+                                            v-model="form.mantem_centro_custo">
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-12 col-md-3" v-if="!form.mantem_centro_custo">
                                 <div class="form-group">
                                     <label>Novo Centro de Custo</label>
-                                    <select v-model="form.novo_centro_custo_id" class="form-control form-control-sm"
+                                    <select v-model="form.novo_centro_custo_id"
+                                            class="form-control form-control-sm"
                                             @change.prevent="changeCentroCusto()"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -103,9 +126,9 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-2" v-if="centroCustoTemFilialNovo && form.novo_centro_custo_id">
+                            <div class="col-12 col-md-1" v-if="centroCustoTemFilialNovo && !form.mantem_centro_custo">
                                 <div class="form-group">
-                                    <label>CNPJ Novo</label>
+                                    <label>Novo CNPJ</label>
                                     <select
                                         :disabled="visualizar"
                                         v-model="form.novo_filial"
@@ -117,7 +140,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12 col-sm-3" v-if="temFilial && form.novo_filial">
+                            <div class="col-12 col-md-4" v-if="temFilial && form.novo_filial && !form.mantem_centro_custo">
                                 <div class="form-group">
                                     <label>Nova Filial</label>
                                     <select
@@ -132,6 +155,66 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-12 col-md-2" v-if="form.anterior_funcao">
+                                <div class="form-group">
+                                    <label>Mantém Função</label>
+                                    <select class="form-control form-control-sm"
+                                            @change.p.prevent="changeMantemFuncao()"
+                                            v-model="form.mantem_funcao">
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-3" v-if="!form.mantem_funcao">
+                                <div class="form-group">
+                                    <label>Nova Função</label>
+                                    <input type="text" class="form-control form-control-sm" onblur="valida_campo_vazio(this,2)"
+                                           v-model="form.nova_funcao">
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-2" v-if="centroCustoTemFilialNovo">
+                                <div class="form-group">
+                                    <label>Mantém Cargo</label>
+                                    <select class="form-control form-control-sm"
+                                            @change.p.prevent="changeMantemCargo()"
+                                            v-model="form.mantem_cargo">
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-3" v-if="!form.mantem_cargo">
+                                <div class="form-group">
+                                    <label>Novo Cargo</label>
+                                    <autocomplete :caminho="caminho_autocomplete_vagas"
+                                                  :valido="form.autocomplete_label_vaga_nova !== ''"
+                                                  v-model="form.autocomplete_label_vaga_nova"
+                                                  placeholder="Novo Cargo"
+                                                  @onselect="selecionaVagaNovo"></autocomplete>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-2" v-if="form.colaborador_id">
+                                <div class="form-group">
+                                    <label>Mantém Salário</label>
+                                    <select class="form-control form-control-sm"
+                                            @change.p.prevent="changeMantemSalario()"
+                                            v-model="form.mantem_salario">
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-2" v-if="!form.mantem_salario">
+                                <div class="form-group">
+                                    <label>Novo Salário R$</label>
+                                    <input type="text" class="form-control form-control-sm"
+                                           v-mascara:dinheiro
+                                           v-model="form.novo_salario">
+                                </div>
+                            </div>
+                            <gestoraprovacao formsm :model="form" :verifica="visualizar || aprovando" :hash="hash"></gestoraprovacao>
+
 <!--                            <div class="col-12 col-sm-3" v-if="temFilial && form.anterior_filial">-->
 <!--                                <div class="form-group">-->
 <!--                                    <label>Filial</label>-->
@@ -217,26 +300,26 @@
 
 <!--                            <gestoraprovacao :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>-->
 
-<!--                            <div class="col-12">-->
-<!--                                <div class="form-group">-->
-<!--                                    <label>Observação</label>-->
-<!--                                    <textarea class="form-control form-control-sm" v-model="form.obs" cols="5" rows="5"-->
-<!--                                              :disabled="visualizar "></textarea>-->
-<!--                                </div>-->
-<!--                            </div>-->
+                            <div class="col-12 col-md-12">
+                                <div class="form-group">
+                                    <label>Observação</label>
+                                    <textarea class="form-control form-control-sm" v-model="form.obs_solicitante" cols="5" rows="5"
+                                              :disabled="visualizar "></textarea>
+                                </div>
+                            </div>
 <!--                        </div>-->
 
-<!--                        <fieldset>-->
-<!--                            <legend>Anexos</legend>-->
-<!--                            <upload :model="form.anexos"-->
-<!--                                    :model-delete="form.anexosDel"-->
-<!--                                    :url="url_anexo"-->
-<!--                                    :tipos="mimes"-->
-<!--                                    :leitura="!podeanexar"-->
-<!--                                    label="Selecionar"-->
-<!--                                    @onProgresso="anexoUploadAndamento=true"-->
-<!--                                    @onFinalizado="anexoUploadAndamento=false"></upload>-->
-<!--                        </fieldset>-->
+                        <fieldset>
+                            <legend>Anexos</legend>
+                            <upload :model="form.anexos"
+                                    :model-delete="form.anexosDel"
+                                    :url="url_anexo"
+                                    :tipos="mimes"
+                                    :leitura="!podeanexar"
+                                    label="Selecionar"
+                                    @onProgresso="anexoUploadAndamento=true"
+                                    @onFinalizado="anexoUploadAndamento=false"></upload>
+                        </fieldset>
 
 <!--                        <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">-->
 <!--                            Esta solicitação ainda não foi aprovada ou reprovada!-->
@@ -585,11 +668,11 @@ export default {
             preloadExportacao: false,
 
             urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/export`,
-
             url_anexo: `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`,
             anexoUploadAndamento: false,
             podeanexar: false,
             mimes: [],
+            caminho_autocomplete_vagas: `autocomplete/todas-vagas-ativas`,
 
             hash: `mastertag_${parseInt((Math.random() * 999999))}`,
 
@@ -630,12 +713,9 @@ export default {
 
                 mantem_funcao: true,
                 anterior_funcao: '',
-                anterior_funcao_id: '',
-                autocomplete_label_funcao_anterior: '',
-                nova_funcao_id: '',
-                autocomplete_label_funcao_nova: '',
+                nova_funcao: '',
 
-                mantem_salario: false,
+                mantem_salario: true,
                 anterior_salario: '0,00',
                 novo_salario: '0,00',
 
@@ -645,8 +725,8 @@ export default {
                 data_solicitacao: '',
 
                 gestor_id: '',
-                autocomplete_label_gestor: '',
-
+                autocomplete_label_gestor_modal: "",
+                autocomplete_label_gestor_modal_anterior: "",
                 gestor_aprovacao_id: '',
                 autocomplete_label_gestor_aprovacao: '',
                 obs_gestor_aprovacao: '',
@@ -756,6 +836,21 @@ export default {
             this.form.novo_filial = false;
             this.form.novo_centro_custo_filial_id = ''
         },
+        changeMantemCentroDeCusto() {
+            this.form.novo_centro_custo_filial_id = '';
+            this.form.novo_centro_custo_id = '';
+            this.form.novo_filial = '';
+        },
+        changeMantemFuncao() {
+            this.form.nova_funcao = '';
+        },
+        changeMantemCargo() {
+            this.form.autocomplete_label_vaga_nova = '';
+            this.form.nova_vaga_aberta_id = '';
+        },
+        changeMantemSalario() {
+            this.form.novo_salario = '';
+        },
         changeCnpj() {
             this.form.novo_centro_custo_filial_id = ''
         },
@@ -797,25 +892,14 @@ export default {
                     this.preloadAtualizacao = false;
                 });
         },
-        /***Campos de Filtros ****/
         selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id;
-            this.controle.dados.autocomplete_label = obj.label;
-            this.controle.dados.autocomplete_label_anterior = obj.label;
-            this.controle.carregando = true;
-            setTimeout(() => {
-                this.$refs.componente.buscar();
-            }, 600);
+            this.form.anterior_vaga_aberta_id = obj.id;
+            this.form.autocomplete_label_vaga_anterior = obj.label;
         },
-        resetaCampo() {
-            if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
-                this.$refs.componente.buscar();
-            }
+        selecionaVagaNovo(obj) {
+            this.form.nova_vaga_aberta_id = obj.id;
+            this.form.autocomplete_label_vaga_nova = obj.label;
         },
-
         selecionaColaborador(obj) {
             this.form.colaborador_id = obj.curriculo_id;
             this.form.autocomplete_label_colaborador = obj.label;
@@ -826,12 +910,9 @@ export default {
             this.form.anterior_centro_custo_filial_id = this.form.anterior_filial ? obj.admissao.centro_custo_filial_id : null;
             this.form.admissao_id = obj.admissao.id;
             this.form.anterior_funcao = obj.admissao.funcao;
-
-            //Cargo Anterior
-            this.form.cargo_anterior_id = obj.vaga_id;
-            this.form.autocomplete_label_cargoanterior = obj.vaga_selecionada.nome;
-            this.form.autocomplete_label_cargoanterior_anterior = obj.vaga_selecionada.nome;
-
+            this.form.anterior_vaga_aberta_id = obj.vaga_aberta.vaga_id;
+            this.form.autocomplete_label_vaga_anterior = obj.vaga_aberta.vaga.nome;
+            this.form.anterior_salario = obj.admissao.salario;
         },
         resetaCampoColaborador() {
             if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
@@ -839,10 +920,14 @@ export default {
                 this.form.autocomplete_label_colaborador = '';
                 this.form.colaborador_id = '';
 
-                //Cargo Anterior
-                this.form.cargo_anterior_id = '';
-                this.form.autocomplete_label_cargoanterior = '';
-                this.form.autocomplete_label_cargoanterior_anterior = '';
+                this.form.anterior_centro_custo_id = '';
+                this.form.anterior_filial = '';
+                this.form.anterior_centro_custo_filial_id = '';
+                this.form.admissao_id = '';
+                this.form.anterior_funcao = '';
+                this.form.anterior_vaga_aberta_id = '';
+                this.form.autocomplete_label_vaga_anterior = '';
+                this.form.anterior_salario = '';
 
                 setTimeout(() => {
                     if (this.form.colaborador_id === '') {
@@ -855,12 +940,12 @@ export default {
         },
         selecionaCargoAnterior(obj) {
             this.form.cargo_anterior_id = obj.id;
+            this.form.autocomplete_label_cargo_anterior = obj.label;
             this.form.autocomplete_label_cargoanterior = obj.label;
-            this.form.autocomplete_label_cargoanterior_anterior = obj.label;
         },
         resetaCampoCargoAnterior() {
-            if (this.form.autocomplete_label_cargoanterior_anterior !== this.form.autocomplete_label_cargoanterior) {
-                this.form.autocomplete_label_cargoanterior_anterior = '';
+            if (this.form.autocomplete_label_cargo_anterior !== this.form.autocomplete_label_cargoanterior) {
+                this.form.autocomplete_label_cargo_anterior = '';
                 this.form.autocomplete_label_cargoanterior = '';
                 this.form.cargo_anterior_id = '';
 
@@ -936,10 +1021,9 @@ export default {
             this.podeanexar = true;
 
             this.tituloJanela = "Solicitação de Mudança de Cargo";
-
+            this.form = _.cloneDeep(this.formDefault) //copia
             formReset();
             setupCampo();
-            this.form = _.cloneDeep(this.formDefault) //copia
             this.listaCentroCusto();
         },
 
