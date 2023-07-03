@@ -30,8 +30,10 @@
         <template slot="conteudo">
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preload">
-                <div class="alert alert-warning">Observação: Ao trocar o e-mail, implicará no e-mail de acesso ao
-                    Sistema.
+                <div class="alert alert-warning">Observação: Comunicamos que a troca do e-mail, implicará também na mudança do acesso ao Sistema.
+                    <span v-if="whatsappLiberado && authconfiguracao.empresa_id === 65974">
+                        <br> Quando o Campo mensagem for preenchido e o colaborador possuir Whatsapp será enviado junto ao e-mail uma mensagem via Whatsapp.
+                       </span>
                 </div>
                 <fieldset>
                     <legend>Envio de E-mail</legend>
@@ -41,16 +43,24 @@
                             <input type="text" class="form-control form-control-sm validacampo"
                                    v-model="formEmail.email"
                                    autocomplete="mybp" @keyup.prevent="validaEmailVazio($event.target)"
-                                   blur.prevent="validaEmailVazio($event.target)">
+                                   @blur.prevent="validaEmailVazio($event.target)">
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="form-group">
-                            <label>Observação</label>
-                            <textarea cols="3" rows="5" maxlength="255" class="form-control form-control-sm"
+                            <label>Mensagem Adicional</label>
+                            <textarea cols="3" rows="5" class="form-control form-control-sm"
                                       v-model="formEmail.observacao"
                                       autocomplete="mybp"></textarea>
                         </div>
+                    </div>
+
+                    <div class="col-3" v-if="whatsappLiberado && authconfiguracao.empresa_id === 65974 && formEmail.temwhatsapp">
+                        <label for="">Envia WhatsApp</label>
+                        <select class="form-control form-control-sm" v-model="formEmail.envia_whatsapp">
+                            <option :value="true">Sim</option>
+                            <option :value="false">Não</option>
+                        </select>
                     </div>
                 </fieldset>
             </div>

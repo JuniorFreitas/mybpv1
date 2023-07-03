@@ -1,9 +1,10 @@
 import upload from '../../../components/Upload';
 import validacoes from "../../../mixins/Validacoes";
+import configuracoes from "../../../mixins/Configuracoes";
 
 const app = new Vue({
     el: '#app',
-    mixins: [validacoes],
+    mixins: [validacoes,configuracoes],
     components: {
         upload,
     },
@@ -49,7 +50,10 @@ const app = new Vue({
             id: '',
             email: '',
             curriculo_id: '',
-            observacao: ''
+            observacao: '',
+            temwhatsapp: false,
+            envia_whatsapp: false,
+            numero_telefone: '',
         },
         formEmailDefault: null,
 
@@ -191,6 +195,9 @@ const app = new Vue({
                     this.formEmail.curriculo_id = data.curriculo.id;
                     this.formEmail.id = data.id;
                     this.formEmail.email = data.curriculo.email;
+                    this.formEmail.temwhatsapp = data.tel_principal.tipo === 'whatsapp';
+                    this.formEmail.envia_whatsapp = data.tel_principal.tipo === 'whatsapp';
+                    this.formEmail.numero_telefone = data.tel_principal.sonumero;
                     this.tituloJanela = `Reenvio de E-mail - ${data.curriculo.nome}`;
                     this.preload = false;
                 })

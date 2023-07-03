@@ -76,7 +76,7 @@ const app = new Vue({
             this.controle.dados.autocomplete_label_anterior = obj.label;
         },
 
-        formVisualizar(obj) {
+        async formVisualizar(obj) {
             this.objopen = null;
             this.abriupdf = false;
             this.objopen = obj;
@@ -84,17 +84,19 @@ const app = new Vue({
             this.$nextTick(() => {
                 this.abriupdf = true;
             });
+           await this.getIntegraMybp(obj.token);
         },
 
         carregouPdf() {
             this.preloadbotoes = false;
         },
 
-        responder(obj, resposta) {
+        async responder(obj, resposta) {
             this.atualizanndo = true;
             this.preload = true;
             obj.resposta = resposta;
-            axios.put(`${this.urlDefault}/responder`,obj).then(response => {
+
+            await axios.put(`${this.urlDefault}/responder`, obj).then(response => {
                 if (resposta === 'Recusado pelo RH') {
                     $('#janelaRecusar').modal('hide');
                 }
@@ -116,6 +118,38 @@ const app = new Vue({
                 .fail((data) => {
                     this.preload = false;
                 });
+        },
+
+        async getIntegraMybp(token) {
+            let endpoint = '';
+            switch (window.location.hostname) {
+                case 'qa.mybp.com.br':
+                    endpoint = `https://qasgi.bpse.com.br/api/carta-oferta/${token}/integramybp`;
+                    break;
+                case 'sistema.mybp.com.br':
+                    endpoint = `https://sgi.bpse.com.br/api/carta-oferta/${token}/integramybp`;
+                    break;
+                default:
+                    endpoint = `http://localhost:8884/api/carta-oferta/${token}/integramybp`;
+                    break;
+            }
+
+            await axios.post(`${endpoint}/`,
+                {},
+                {
+                    headers: {
+                        'X-API-TOKEN': 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK'
+                    }
+                }
+            )
+                .then(({data}) => {
+                    this.objopen.integraMybp = data;
+                })
+                .catch(error => {
+                    this.preload = false
+                    mostraErro('', 'Erro ao integrar caso o erro persista, entre em contato com o suporte.');
+                    return false;
+                })
         },
 
         carregou(dados) {

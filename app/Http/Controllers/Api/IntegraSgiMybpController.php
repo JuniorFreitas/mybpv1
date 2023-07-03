@@ -21,7 +21,6 @@ class IntegraSgiMybpController extends Controller
 {
     public static function integra($dados)
     {
-        $dados = json_decode($dados, true);
 
         //loga como empresa para usar withGlobalScope
         $empresa_id = $dados['empresa_id'];
