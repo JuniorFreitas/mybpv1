@@ -11,7 +11,7 @@
                 </div>
                 <form v-if="!preload && (!cadastrado && !atualizado) " :id="`form_${hash}`" onsubmit="return false;">
                     <fieldset>
-                        <legend>Informações</legend>
+                        <legend>Para qual colaborador?</legend>
                         <div class="row">
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
@@ -28,7 +28,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row" v-if="form.colaborador_id">
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Dados Atuais</legend>
+                        <div class="row">
                             <div class="col-12 col-md-3">
                                 <div class="form-group">
                                     <label>Centro de Custo Atual</label>
@@ -100,6 +103,11 @@
                                            v-model="form.anterior_salario">
                                 </div>
                             </div>
+                        </div>
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Sobre Centro de Custo</legend>
+                        <div class="row">
                             <div class="col-12 col-md-2">
                                 <div class="form-group">
                                     <label>Mantém Centro de Custo</label>
@@ -111,7 +119,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-3" v-if="!form.mantem_centro_custo">
+                            <div class="col-12 col-md-4" v-if="!form.mantem_centro_custo">
                                 <div class="form-group">
                                     <label>Novo Centro de Custo</label>
                                     <select v-model="form.novo_centro_custo_id"
@@ -126,7 +134,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-1" v-if="centroCustoTemFilialNovo && !form.mantem_centro_custo">
+                            <div class="col-12 col-md-2" v-if="centroCustoTemFilialNovo && !form.mantem_centro_custo">
                                 <div class="form-group">
                                     <label>Novo CNPJ</label>
                                     <select
@@ -155,6 +163,11 @@
                                     </select>
                                 </div>
                             </div>
+                        </div>
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Sobre a Função</legend>
+                        <div class="row">
                             <div class="col-12 col-md-2" v-if="form.anterior_funcao">
                                 <div class="form-group">
                                     <label>Mantém Função</label>
@@ -173,7 +186,12 @@
                                            v-model="form.nova_funcao">
                                 </div>
                             </div>
-                            <div class="col-12 col-md-2" v-if="centroCustoTemFilialNovo">
+                        </div>
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Sobre o Cargo</legend>
+                        <div class="row">
+                            <div class="col-12 col-md-2">
                                 <div class="form-group">
                                     <label>Mantém Cargo</label>
                                     <select class="form-control form-control-sm"
@@ -194,7 +212,12 @@
                                                   @onselect="selecionaVagaNovo"></autocomplete>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-2" v-if="form.colaborador_id">
+                        </div>
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Sobre o Salário</legend>
+                        <div class="row">
+                            <div class="col-12 col-md-2">
                                 <div class="form-group">
                                     <label>Mantém Salário</label>
                                     <select class="form-control form-control-sm"
@@ -205,7 +228,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-2" v-if="!form.mantem_salario">
+                            <div class="col-12 col-md-3" v-if="!form.mantem_salario">
                                 <div class="form-group">
                                     <label>Novo Salário R$</label>
                                     <input type="text" class="form-control form-control-sm"
@@ -213,8 +236,37 @@
                                            v-model="form.novo_salario">
                                 </div>
                             </div>
+                        </div>
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Gestor Responsável</legend>
+                        <div class="row">
                             <gestoraprovacao formsm :model="form" :verifica="visualizar || aprovando" :hash="hash"></gestoraprovacao>
-
+                        </div>
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Informações Extras</legend>
+                        <div class="row">
+                            <div class="col-12 col-md-12">
+                                <div class="form-group">
+                                    <label>Observação</label>
+                                    <textarea class="form-control form-control-sm" v-model="form.obs_solicitante" cols="5" rows="5"
+                                              :disabled="visualizar "></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Anexos</legend>
+                        <upload :model="form.anexos"
+                                :model-delete="form.anexosDel"
+                                :url="url_anexo"
+                                :tipos="mimes"
+                                :leitura="!podeanexar"
+                                label="Selecionar"
+                                @onProgresso="anexoUploadAndamento=true"
+                                @onFinalizado="anexoUploadAndamento=false"></upload>
+                    </fieldset>
 <!--                            <div class="col-12 col-sm-3" v-if="temFilial && form.anterior_filial">-->
 <!--                                <div class="form-group">-->
 <!--                                    <label>Filial</label>-->
@@ -230,7 +282,7 @@
 <!--                                    </select>-->
 <!--                                </div>-->
 <!--                            </div>-->
-                        </div>
+<!--                        </div>-->
 <!--                        <div class="row">-->
 <!--                            <div class="col-12 col-md-6">-->
 <!--                                <div class="form-group">-->
@@ -299,28 +351,7 @@
 <!--                            </div>-->
 
 <!--                            <gestoraprovacao :model="form" :verifica="visualizar" :hash="hash"></gestoraprovacao>-->
-
-                            <div class="col-12 col-md-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
-                                    <textarea class="form-control form-control-sm" v-model="form.obs_solicitante" cols="5" rows="5"
-                                              :disabled="visualizar "></textarea>
-                                </div>
-                            </div>
 <!--                        </div>-->
-
-                        <fieldset>
-                            <legend>Anexos</legend>
-                            <upload :model="form.anexos"
-                                    :model-delete="form.anexosDel"
-                                    :url="url_anexo"
-                                    :tipos="mimes"
-                                    :leitura="!podeanexar"
-                                    label="Selecionar"
-                                    @onProgresso="anexoUploadAndamento=true"
-                                    @onFinalizado="anexoUploadAndamento=false"></upload>
-                        </fieldset>
-
 <!--                        <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">-->
 <!--                            Esta solicitação ainda não foi aprovada ou reprovada!-->
 <!--                        </div>-->
