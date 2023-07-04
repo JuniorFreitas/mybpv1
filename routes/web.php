@@ -692,8 +692,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'preadm.', 'prefix' => 'preadmissao'], function () {
             Route::post('atualizar', [\App\Http\Controllers\PreAdmissaoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::get('/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'show'])->name('show');
+            Route::get('finalizar/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'showFinalizar'])->name('showFinalizar');
             Route::get('/editar/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'edit'])->name('edit');
             Route::post('/enviar-email', [\App\Http\Controllers\PreAdmissaoController::class, 'enviarEmail'])->name('enviarEmail');
+            Route::post('/finalizar-encaminhar', [\App\Http\Controllers\PreAdmissaoController::class, 'finalizarEncaminhar'])->name('finalizarEncaminhar');
             Route::get('/', [\App\Http\Controllers\PreAdmissaoController::class, 'index'])->name('index');
         });
 

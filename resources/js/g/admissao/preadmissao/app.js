@@ -10,7 +10,9 @@ const app = new Vue({
     },
     data: {
         tituloJanela: 'Pré-admissão',
+        tituloJanelaFinalizar: '',
         preload: false,
+        preloadFinalizar: false,
         editando: false,
         apagado: false,
         cadastrado: false,
@@ -57,7 +59,20 @@ const app = new Vue({
         },
         formEmailDefault: null,
 
+        formFinalizar: {
+            feedback_id: '',
+            empresa_exame_id: '',
+            encaminhado_exame_data: '',
+            pcmso_id: '',
+            envia_email: true,
+            envia_whatsapp: true,
+        },
+        formFinalizarDefault: null,
+
         lista: [],
+        listaPcmsos: [],
+        listaEmpresasExames: [],
+        dadosFinalizar: [],
         vagas: [],
         areasEtiquetas: [],
 
@@ -109,6 +124,9 @@ const app = new Vue({
             let resultado = totalItens === totalEncontrado;
             this.selecionaTudo = resultado;
             return resultado;
+        },
+        dataHoje() {
+            return new Date(Date.now()).toLocaleString().split(',')[0];
         }
     },
     mounted() {
@@ -171,11 +189,32 @@ const app = new Vue({
                     let data = response.data;
                     Object.assign(this.form, data);
                     this.form.id = response.data.id;
+                    this.formFinalizar.t
                     this.tituloJanela = `Documentos de Pré-admissão - ${data.curriculo.nome}`;
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
+                })
+        },
+
+        abrirFormFinalizar(id) {
+            this.aprovado = false;
+            this.aprovando = false;
+            this.preloadFinalizar = true;
+            Object.assign(this.formFinalizar, this.formFinalizarDefault);
+            formReset();
+
+            axios.get(`${URL_ADMIN}/preadmissao/finalizar/${id}`)
+                .then(({data}) => {
+                    this.dadosFinalizar = data.dados;
+                    this.listaPcmsos = data.pcmsos;
+                    this.listaEmpresasExames = data.empresas_exames;
+                    this.tituloJanelaFinalizar = `Finalizar Pré-admissão - ${this.dadosFinalizar.curriculo.nome}`;
+                    this.preloadFinalizar = false;
+                })
+                .catch(error => {
+                    this.preloadFinalizar = false;
                 })
         },
 
@@ -234,6 +273,37 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preload = false;
+                })
+        },
+
+        finalizarEncaminhar() {
+            this.validaBlur();
+
+            $("#janelaFinalizar :input:visible").trigger("blur");
+            if ($("#janelaFinalizar :input:visible.is-invalid").length) {
+                mostraErro("", "Preencha todos os campos obrigatórios");
+                return false;
+            }
+            // this.validaBlur();
+            // $(`#janelaFinalizar :input:visible.is-invalid`).length;
+            // if ($(`#janelaFinalizar :input:visible.is-invalid`).length) {
+            //     this.mostraErro("", "Preencha todos os campos obrigatórios");
+            //     return false;
+            // }
+
+            this.preloadFinalizar = true;
+
+            formReset();
+            axios.post(`${URL_ADMIN}/preadmissao/finalizar-encaminhar`, this.formFinalizar)
+                .then(response => {
+                    if (response.status === 201) {
+                        $('#janelaFinalizar').modal('hide');
+                        this.mostraSucesso('Finalizado e encaminhado com sucesso!');
+                    }
+                    this.preloadFinalizar = false;
+                })
+                .catch(error => {
+                    this.preloadFinalizar = false;
                 })
         },
 
