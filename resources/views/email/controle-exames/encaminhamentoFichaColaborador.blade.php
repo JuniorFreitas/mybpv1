@@ -30,9 +30,9 @@
             <td style="text-align: justify">
 
                 Olá, <strong>{{ $dados['colaborador'] }}</strong>.<br><br>
-                Estamos encaminhando para realizar o exame de ordem {{ $dados['tipoExame'] }}.<br><br>
-{{--                Data de Encaminhamento: <strong>{{ $dados['clinica']['nome'] }}</strong> <br>--}}
-{{--                Data de Realização: <strong>{{ $dados['clinica']['nome'] }}</strong> <br>--}}
+                Estamos encaminhando para realizar o exame de ordem {{ $dados['tipoExame'] }}.<br>
+                Data de Encaminhamento: <strong>{{ $dados['encaminhamento_data'] }}</strong> <br>
+                Data de Realização: <strong>{{ $dados['data_realizacao'] }}</strong> <br><br>
                 Local do Exame: <strong>{{ $dados['clinica']['nome'] }}</strong> <br>
                 Endereço: <strong>{{ $dados['clinica']['dados']['endereco']['endereco_completo'] }}</strong><br>
                 Contato: <strong>{{ $dados['clinica']['dados']['telefone'] }}</strong>

@@ -108,7 +108,7 @@
             </div>
         </template>
         <template slot="rodape">
-            <button class="btn btn-primary btn-sm" v-if="!preloadFinalizar" @click="finalizarEncaminhar">
+            <button class="btn btn-primary btn-sm" v-if="!preloadFinalizar" @click="finalizarEncaminhar(dadosFinalizar.id)">
                 <i class="fa fa-save"></i> Finalizar e Salvar
             </button>
         </template>
@@ -271,7 +271,7 @@
         </div>
 
         <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
+            <table class="table table-bordered table-striped">
                 <thead>
                 <tr class="bg-default">
                     <th class="text-center">CÓD</th>
@@ -280,11 +280,16 @@
                     <th class="text-center" v-if="cliente_id === 1">Cliente</th>
                     <th class="text-center">Vaga</th>
                     <th class="text-center">Qnt Anexos</th>
+                    <th class="text-center">Status</th>
                     <th class="text-center"></th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="resultado in lista">
+                <tr v-for="resultado in lista"
+                    :class="{
+                        'bg-success text-white': resultado.finalizado === true
+                    }"
+                >
                     <td class="text-center">
                         @{{resultado.id}}
                     </td>
@@ -306,6 +311,9 @@
                         @{{ resultado.qnt_anexos }} anexo(s)
                     </td>
                     <td class="text-center">
+                        <span v-if="resultado.finalizado">Finalizado por @{{ resultado.quem_finalizou }}<br>em @{{ resultado.data_finalizacao }}</span>
+                    </td>
+                    <td class="text-center">
                         <button class="btn btn-sm btn-primary" title="Visuzalizar"
                                 @click.prevent="formVisualizar(resultado.id)"
                                 data-toggle="modal"
@@ -320,6 +328,7 @@
                             <button class="btn btn-sm btn-primary" title="Finalizar"
                                     @click.prevent="abrirFormFinalizar(resultado.id)"
                                     data-toggle="modal"
+                                    v-if="!resultado.finalizado"
                                     data-target="#janelaFinalizar"><i class="fa fa-check-circle"></i></button>
 {{--                        @endcan--}}
                     </td>

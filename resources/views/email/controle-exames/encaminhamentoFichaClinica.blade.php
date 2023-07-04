@@ -30,9 +30,9 @@
 
                 Olá, <strong>{{ $dados['clinica'] }}</strong>.<br><br>
                 Estamos encaminhando {{ $dados['colaborador'] }}, {{ $dados['idade'] }} anos. <br>
-                Para realizar exame de ordem {{ $dados['tipoExame'] }}. <br><br>
-                {{--                Data de Encaminhamento: <strong>{{ $dados['clinica']['nome'] }}</strong> <br>--}}
-                {{--                Data de Realização: <strong>{{ $dados['clinica']['nome'] }}</strong> <br>--}}
+                Para realizar exame de ordem {{ $dados['tipoExame'] }}. <br>
+                Data de Encaminhamento: <strong>{{ $dados['encaminhamento_data'] }}</strong> <br>
+                Data de Realização: <strong>{{ $dados['data_realizacao'] }}</strong> <br><br>
                 <div class="botao">
                 <a href='{{$dados['link']}}'>CLIQUE AQUI PARA ACESSAR A FICHA</a> <br>
                     Se não abrir copie e cole o link abaixo em seu navegador. <br><br>

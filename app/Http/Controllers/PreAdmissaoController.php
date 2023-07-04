@@ -18,6 +18,8 @@ use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
 use App\Models\ExameTipo;
 use App\Models\FeedbackCurriculo;
+use App\Models\FeedbackPreadmissao;
+use App\Models\Formulario;
 use App\Models\Pcmso;
 use App\Models\RespostaAlternativas;
 use App\Models\Sistema;
@@ -175,6 +177,14 @@ class PreAdmissaoController extends Controller
                 });
             $item->docs_curriculo_pre_adm = $docs_curriculo_pre_adm;
             $item->qnt_anexos = $docs_curriculo_pre_adm->sum('qnt_anexos');
+
+            $estaFinalizado = DB::table('feedback_preadmissao')->where('feedback_id',$item->id)->first();
+            if($estaFinalizado){
+                $user_finalizou = DB::table('users')->where('id', $estaFinalizado->user_finalizou_id)->first()->nome;
+                $item->finalizado = true;
+                $item->quem_finalizou = $user_finalizou;
+                $item->data_finalizacao = (new DataHora($estaFinalizado->created_at))->dataHoraCompleta();
+            }
             return $item;
         });
 
@@ -197,25 +207,25 @@ class PreAdmissaoController extends Controller
         try {
             \DB::beginTransaction();
             $token = Sistema::uuid();
-
+            $formulario_id = Formulario::whereTitulo('Exames')->first()->load('Setores.Alternativas.Opcoes')->id;
             $empExame = EmpresaExame::find($request->empresa_exame_id);
             $pcmso_id = $request->pcmso_id;
-
-            // Select se tem
+            $exame_tipo_id = 1; // Admissional
+            $data_encaminhamento_insert = (new DataHora())->dataHoraInsert();
+            $data_encaminhamento = (new DataHora())->dataHoraCompleta();
+            $data_realizacao = (new DataHora($request->encaminhamento_data))->dataCompleta();
 
             if (!$pcmso_id == "") {
-                $exame_tipo_id = $request->exame_tipo_id;
-
                 $exame = ExameFuncionario::create([
                     'feedback_id' => $request->feedback_id,
                     'empresa_exame_id' => $request->empresa_exame_id,
-                    'formulario_id' => $request->formulario_id,
+                    'formulario_id' => $formulario_id,
                     'respostas' => (object)[],
                     'token' => $token,
                     'pcmso' => true,
                     'pcmso_id' => $pcmso_id,
                     'exame_tipo_id' => $exame_tipo_id,
-                    'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert()
+                    'encaminhamento_data' => $data_encaminhamento_insert
                 ]);
 
                 $tipoExame = ExameTipo::find($exame_tipo_id);
@@ -227,18 +237,26 @@ class PreAdmissaoController extends Controller
                 $exame = ExameFuncionario::create([
                     'feedback_id' => $request->feedback_id,
                     'empresa_exame_id' => $request->empresa_exame_id,
-                    'formulario_id' => $request->formulario_id,
+                    'formulario_id' => $formulario_id,
                     'respostas' => $request->respostas,
                     'token' => $token,
                     'pcmso' => false,
-                    'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert(),
+                    'encaminhamento_data' => $data_encaminhamento_insert,
                     'exame_tipo_id' => (int)$tipoExame->value,
                 ]);
             }
 
+            $dados_feedback_preadmissao = [
+                'feedback_id' => $request->feedback_id,
+                'user_finalizou_id' => auth()->user()->id,
+            ];
+
+            FeedbackPreadmissao::create($dados_feedback_preadmissao);
+
             $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id','telefone_id'])->find($request->feedback_id);
 
             if ($request->envia_email) {
+
                 $dtEmailClinica = [
                     'clinica' => $empExame->nome,
                     'email' => trim(mb_strtolower($empExame->dados['email'])),
@@ -248,7 +266,9 @@ class PreAdmissaoController extends Controller
                     'idade' => $colaborador->Curriculo->idade,
                     'tipoExame' => $tipoExame->label,
                     'empresa_id' => $empExame->id,
-                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
+                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token]),
+                    'encaminhamento_data' => $data_encaminhamento,
+                    'data_realizacao' => $data_realizacao,
                 ];
 
                 $dtEmailColaborador = [
@@ -258,7 +278,9 @@ class PreAdmissaoController extends Controller
                     'colaborador' => $colaborador->Curriculo->nome,
                     'tipoExame' => $tipoExame->label,
                     'empresa_id' => $empExame->id,
-                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
+                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token]),
+                    'encaminhamento_data' => $data_encaminhamento,
+                    'data_realizacao' => $data_realizacao,
                 ];
 
                 $dados_email = [
@@ -275,7 +297,9 @@ class PreAdmissaoController extends Controller
                         "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
                         "🏥 Local do Exame: \n*{$empExame->nome}*.\n" .
                         "📍 Endereço: *{$empExame->dados['endereco']['endereco_completo']}*\n" .
-                        "📞 Contato: *{$empExame->dados['telefone']}*" .
+                        "📞 Contato: *{$empExame->dados['telefone']}*\n" .
+                        "🗓️ Data de encaminhamento: *{$data_encaminhamento}*\n" .
+                        "🗓️ Data de realização: *{$data_realizacao}*" .
                         "\n\n" .
                         "Atenciosamente,\n\n" .
                         "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
@@ -290,7 +314,7 @@ class PreAdmissaoController extends Controller
             }
 
             \DB::commit();
-            return response()->json("");
+            return response()->json("", 201);
         } catch (\ErrorException $e) {
             $msg = "Erro ao Encaminhar para exame:  {$e->getMessage()} , CODIGO:  {$e->getCode()}, Linha: {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             Sistema::LogFormatado($request->input());

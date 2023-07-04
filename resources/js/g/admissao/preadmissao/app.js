@@ -276,7 +276,7 @@ const app = new Vue({
                 })
         },
 
-        finalizarEncaminhar() {
+        finalizarEncaminhar(id) {
             this.validaBlur();
 
             $("#janelaFinalizar :input:visible").trigger("blur");
@@ -284,21 +284,16 @@ const app = new Vue({
                 mostraErro("", "Preencha todos os campos obrigatórios");
                 return false;
             }
-            // this.validaBlur();
-            // $(`#janelaFinalizar :input:visible.is-invalid`).length;
-            // if ($(`#janelaFinalizar :input:visible.is-invalid`).length) {
-            //     this.mostraErro("", "Preencha todos os campos obrigatórios");
-            //     return false;
-            // }
 
             this.preloadFinalizar = true;
-
+            this.formFinalizar.feedback_id = id;
             formReset();
             axios.post(`${URL_ADMIN}/preadmissao/finalizar-encaminhar`, this.formFinalizar)
                 .then(response => {
                     if (response.status === 201) {
                         $('#janelaFinalizar').modal('hide');
                         this.mostraSucesso('Finalizado e encaminhado com sucesso!');
+                        this.atualizar();
                     }
                     this.preloadFinalizar = false;
                 })
