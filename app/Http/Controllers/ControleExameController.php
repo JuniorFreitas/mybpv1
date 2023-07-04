@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\ZapNotificacao;
 use App\Jobs\ControleExames\JobExame;
-use App\Mail\ControleExames\FichaClinicaMail;
-use App\Mail\ControleExames\FichaColaboradorMail;
+use App\Jobs\Entrevista\ResultadoIntegrado\JobEncaminhamentoExame;
 use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
@@ -12,8 +12,10 @@ use App\Models\Curriculo;
 use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
 use App\Models\Examesesmt;
+use App\Models\ExameTipo;
 use App\Models\FeedbackCurriculo;
 use App\Models\Formulario;
+use App\Models\Pcmso;
 use App\Models\RespostaAlternativas;
 use App\Models\Sistema;
 use App\Models\User;
@@ -36,19 +38,30 @@ class ControleExameController extends Controller
         if ($request->filled('feedback_id') && $request->filled('formulario')) {
             $resposta = ExameFuncionario::whereFeedbackId($request->feedback_id)
                 ->whereFormularioId($request->formulario)
-                ->with('EmpresaExame:id,nome', 'QuemEncaminhou:id,nome','Formulario.Setores.Alternativas.Opcoes')
+                ->with('EmpresaExame:id,nome', 'QuemEncaminhou:id,nome', 'Formulario.Setores.Alternativas.Opcoes', 'PcmsoDados:id,label')
                 ->orderByDesc('created_at')->get();
 
             $resposta->transform(function ($item) {
-                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
-                $item->tipo_exame = RespostaAlternativas::find($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;
+                if (is_null($item->exame_tipo_id)) {
+                    $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
+                    $item->tipo_exame = RespostaAlternativas::whereValue($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->first()->label;
+                } else {
+                    $item->tipo_exame = ExameTipo::find($item->exame_tipo_id)->label;
+                }
+                $item->encaminhamento_data = is_null($item->encaminhamento_data) ? (new DataHora($item->created_at))->dataCompleta() : (new DataHora($item->encaminhamento_data))->dataCompleta();
+                $item->pcmso_label = $item->pcmso ? $item->PcmsoDados->label : 'Não se aplica';
                 $item->resultado = Examesesmt::whereExameFuncionarioId($item->id)->first();
                 return $item;
             });
 
+            $pcmos = Pcmso::whereAtivo(true)->get();
+            $exame_tipos = ExameTipo::whereAtivo(true)->get();
+
             return [
                 'tipo' => 'cadastrar',
-                'historico' => $resposta
+                'historico' => $resposta,
+                'pcmsos' => $pcmos,
+                'exame_tipos' => $exame_tipos,
             ];
         } else {
             return response()->json(['msg' => "Erro -> Faltando parametros"], 400);
@@ -62,29 +75,55 @@ class ControleExameController extends Controller
             $token = Sistema::uuid();
 
             if ($request->tipo == 'store') {
-                $exame = ExameFuncionario::create([
-                    'feedback_id' => $request->feedback_id,
-                    'empresa_exame_id' => $request->empresa_exame_id,
-                    'formulario_id' => $request->formulario_id,
-                    'respostas' => $request->respostas,
-                    'token' => $token
-                ]);
-
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
-                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
-                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->label;
-//                $tipoExame = RespostaAlternativas::find($request->respostas['alternativa_id_' . $tipoOrdem]['valor'])->label;;
-                $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id'])->find($request->feedback_id);
+                $pcmso_id = $request->pcmso_id;
+
+                // Select se tem
+
+                if (!$pcmso_id == "") {
+                    $exame_tipo_id = $request->exame_tipo_id;
+
+                    $exame = ExameFuncionario::create([
+                        'feedback_id' => $request->feedback_id,
+                        'empresa_exame_id' => $request->empresa_exame_id,
+                        'formulario_id' => $request->formulario_id,
+                        'respostas' => (object)[],
+                        'token' => $token,
+                        'pcmso' => true,
+                        'pcmso_id' => $pcmso_id,
+                        'exame_tipo_id' => $exame_tipo_id,
+                        'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert()
+                    ]);
+
+                    $tipoExame = ExameTipo::find($exame_tipo_id);
+                } else {
+                    $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
+                    $tipoExame = RespostaAlternativas::whereValue($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->first();
+
+
+                    $exame = ExameFuncionario::create([
+                        'feedback_id' => $request->feedback_id,
+                        'empresa_exame_id' => $request->empresa_exame_id,
+                        'formulario_id' => $request->formulario_id,
+                        'respostas' => $request->respostas,
+                        'token' => $token,
+                        'pcmso' => false,
+                        'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert(),
+                        'exame_tipo_id' => (int)$tipoExame->value,
+                    ]);
+                }
+
+                $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id','telefone_id'])->find($request->feedback_id);
 
                 if ($request->envia_email) {
                     $dtEmailClinica = [
                         'clinica' => $empExame->nome,
                         'email' => trim(mb_strtolower($empExame->dados['email'])),
-                        'assunto' => "Encaminhamento de Exame {$tipoExame} colaborador {$colaborador->Curriculo->nome}",
+                        'assunto' => "Encaminhamento de Exame {$tipoExame->label} colaborador {$colaborador->Curriculo->nome}",
                         'colaborador' => $colaborador->Curriculo->nome,
                         'colaborador_email' => trim(mb_strtolower($colaborador->Curriculo->email)),
                         'idade' => $colaborador->Curriculo->idade,
-                        'tipoExame' => $tipoExame,
+                        'tipoExame' => $tipoExame->label,
                         'empresa_id' => $empExame->id,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
@@ -92,9 +131,9 @@ class ControleExameController extends Controller
                     $dtEmailColaborador = [
                         'clinica' => $empExame,
                         'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
-                        'assunto' => "Encaminhamento de Exame {$tipoExame}",
+                        'assunto' => "Encaminhamento de Exame {$tipoExame->label}",
                         'colaborador' => $colaborador->Curriculo->nome,
-                        'tipoExame' => $tipoExame,
+                        'tipoExame' => $tipoExame->label,
                         'empresa_id' => $empExame->id,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
@@ -105,7 +144,26 @@ class ControleExameController extends Controller
                     ];
 
                     JobExame::dispatch($dados_email);
+                }
 
+                if ($request->envia_whatsapp) {
+                    if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp && $colaborador->TelPrincipal->tipo == 'whatsapp' && !is_null($empExame)) {
+                        $mensagem = "Prezado(a) sr(a) *{$colaborador->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem *{$tipoExame->label}*, " .
+                            "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
+                            "🏥 Local do Exame: \n*{$empExame->nome}*.\n" .
+                            "📍 Endereço: *{$empExame->dados['endereco']['endereco_completo']}*\n" .
+                            "📞 Contato: *{$empExame->dados['telefone']}*" .
+                            "\n\n" .
+                            "Atenciosamente,\n\n" .
+                            "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
+                            "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+
+                        (new ZapNotificacao())->enviar([
+                            'enviado_id' => $colaborador->curriculo_id,
+                            'telefone' => $colaborador->TelPrincipal->sonumero,
+                            'mensagem' => $mensagem
+                        ]);
+                    }
                 }
 
                 \DB::commit();
@@ -119,12 +177,12 @@ class ControleExameController extends Controller
                 return response()->json("Editou", 201);
             }
         } catch (\ErrorException $e) {
-            $msg = "Erro ao Encaminhar para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            $msg = "Erro ao Encaminhar para exame:  {$e->getMessage()} , CODIGO:  {$e->getCode()}, Linha: {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             Sistema::LogFormatado($request->input());
             \DB::rollback();
             return response()->json(['msg' => $msg,
                 'request' => $request->input(),
-                ], 400);
+            ], 400);
             return response()->json(['msg' => 'Houve um erro ao encaminhar!'], 400);
         }
     }
@@ -152,6 +210,9 @@ class ControleExameController extends Controller
         $dados['data_vencimento'] = (new DataHora($dados['data_realizacao']))->addAno(1);
         $dados['vencido'] = false;
 
+        $feedback_id = ExameFuncionario::find($dados['exame_funcionario_id'])->feedback_id;
+        $dados['feedback_id'] = $feedback_id;
+
         $dadosValidados = \Validator::make($dados, []);
 
         if ($dados['exame_realizado']) {
@@ -176,6 +237,17 @@ class ControleExameController extends Controller
         try {
             \DB::beginTransaction();
             $Examesesmt = Examesesmt::create($dados);
+
+            if ($dados['resultado']['aprovado'] == "Sim") {
+                Examesesmt::whereFeedbackId($feedback_id)->update([
+                    'atual' => 0
+                ]);
+
+                $Examesesmt->update([
+                    'atual' => 1
+                ]);
+            }
+
             foreach ($dados['anexos'] as $item) {
                 $Examesesmt->Anexos()->attach($item['id']);
                 $Examesesmt->Anexos()->where('id', $item['id'])
@@ -251,6 +323,17 @@ class ControleExameController extends Controller
 
             $resultado->update($dados);
 
+            if ($dados['resultado']['aprovado'] == "Sim") {
+
+                Examesesmt::whereFeedbackId($resultado->feedback_id)->update([
+                    'atual' => 0
+                ]);
+
+                $resultado->update([
+                    'atual' => 1
+                ]);
+            }
+
             \DB::commit();
             return response()->json([], 201);
         } catch (\ErrorException $e) {
@@ -265,8 +348,8 @@ class ControleExameController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = FeedbackCurriculo::with(
-            'Curriculo',
+        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'telefone_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'])->with(
+            'Curriculo:id,nome,nascimento,id,nome,email,nascimento,rg,orgao_expeditor,logradouro,cep,end_numero,complemento,bairro,municipio,uf',
             'Cliente:id,razao_social,area_id',
             'VagaAberta',
             'TelPrincipal');
@@ -275,7 +358,9 @@ class ControleExameController extends Controller
             if ($request->status == 'em_processo') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
                     $q->whereEncaminhadoExame(true);
-                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao');
+                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao')->orWhereHas('Admissao', function ($q) {
+                    $q->whereNotIn('status', [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_DESISTENCIA]);
+                });
             }
             if ($request->status == 'admitidos') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
@@ -291,7 +376,40 @@ class ControleExameController extends Controller
             }
         }
 
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
+
+        if ($filtroPeriodo) {
+            $periodo = explode(' até ', $request->periodo);
+            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
+            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
+                $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+            });
+        }
+
+        if ($request->filled('campoBusca')) {
+            $resultado->whereHas('Curriculo', function ($query) use ($request) {
+                $query->where('nome', 'like', '%' . $request->campoBusca . '%');
+            });
+        }
+
+        if ($request->filled('campoCPF')) {
+            $resultado->whereHas('Curriculo', function ($query) use ($request) {
+                $query->whereCpf($request->campoCPF);
+            });
+        }
+
         $resultado = $resultado->paginate($request->pages);
+
+        $items = collect($resultado->items())->transform(function ($item) {
+            $exameFuncionario = ExameFuncionario::whereFeedbackId($item->id)->orderByDesc('id')->first();
+            $item->ultimo_encaminhamento = 'Sem encaminhamento';
+            if (!is_null($exameFuncionario)) {
+                $item->ultimo_encaminhamento = is_null($exameFuncionario->encaminhamento_data) ? (new DataHora($exameFuncionario->created_at))->dataCompleta() : $exameFuncionario->encaminhamento_data;
+                return $item;
+            }
+            return $item;
+        });
 
         $empresaExames = EmpresaExame::whereAtivo(true)->get();
 
@@ -299,37 +417,43 @@ class ControleExameController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items(), 'emp_exames' => $empresaExames]
+            'dados' => ['itens' => $items, 'emp_exames' => $empresaExames]
         ]);
     }
 
-    public function getFichaPdf(Request $request, ExameFuncionario $exame, $token = null)
+    public function getFichaPdf(Request $request, $exame, $token = null)
     {
-        if ($token) {
-            $exame = ExameFuncionario::withoutGlobalScope(new ScopeEmpresa())
-                ->with(['Formulario' => function ($query) {
-                    $query->withoutGlobalScope(new ScopeEmpresa());
-                }])->with(['EmpresaExame' => function ($query) {
-                    $query->withoutGlobalScope(new ScopeEmpresa());
-                }])->with(['Feedback' => function ($query) {
-                    $query->withoutGlobalScope(ScopeClientesEmpresa::class)
-                        ->with(['Curriculo' => function ($query) {
-                            $query->withoutGlobalScope(new ScopeEmpresa());
-                        }]);
-                }])->whereId($exame->id)->whereToken($request->token);
-
-            if ($exame->count() == 0) {
-                abort(404);
-            } else {
-                $exame = $exame->first();
-            }
+        if (!$token) {
+            abort(404);
         }
 
+        if ($token) {
+            $ExameFuncionario = ExameFuncionario::withoutGlobalScopes()
+                ->with(['PcmsoDados' => function ($query) {
+                    $query->withoutGlobalScopes();
+                }])->with(['Formulario' => function ($query) {
+                    $query->withoutGlobalScopes();
+                }])->with(['EmpresaExame' => function ($query) {
+                    $query->withoutGlobalScopes();
+                }])->with(['Feedback' => function ($query) {
+                    $query->withoutGlobalScopes()
+                        ->with(['Curriculo' => function ($query) {
+                            $query->withoutGlobalScopes();
+                        }]);
+                }])->whereId($exame)->whereToken($request->token)
+                ->first();
+        }
+
+        if (!$ExameFuncionario) {
+            abort(404);
+        }
+
+        $ExameFuncionario->dados_empresa = Sistema::getEmpresaFilialMatriz($ExameFuncionario->Feedback->centro_custo_filial_id, $ExameFuncionario->Feedback->empresa_id);
+
         $tipoexame = $request->tipo_exame;
-//        return view('pdf.controle-exames.ficha', compact('exame'));
-        $pdf = PDF::loadView('pdf.controle-exames.ficha', compact('exame'));
+        $pdf = PDF::loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("Exame {$tipoexame} " . Str::slug($exame->Feedback->Curriculo->nome) . ".pdf");
+        return $pdf->stream("Exame {$tipoexame} " . Str::slug($ExameFuncionario->Feedback->Curriculo->nome) . ".pdf");
     }
 
     // Anexos-------------------------------------------------

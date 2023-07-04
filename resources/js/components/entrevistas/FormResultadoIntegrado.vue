@@ -10,7 +10,7 @@
                             class="form-control"
                             onchange="valida_campo_vazio(this,1)"
                             onblur="valida_campo_vazio(this,1)"
-                            :disabled="visualizar || disabled"
+                            :disabled="visualizar || disabled || encaminhado.documentos"
                             v-model="form.documentos_entregue"
                         >
                             <option value="">Selecione</option>
@@ -25,19 +25,19 @@
                     <datepicker
                         style="margin-top: -19px;"
                         label=""
-                        :disabled="visualizar || disabled"
+                        :disabled="visualizar || disabled || encaminhado.documentos"
                         v-model="form.documentos_entregue_data"
                     ></datepicker>
                 </div>
                 <div class="col-2" v-if="form.documentos_entregue">
                     <div class="switchToggle">
-                        <input type="checkbox" v-model="form.envia_email_documentos" :disabled="visualizar || disabled" id="envia_email_documentos">
+                        <input type="checkbox" v-model="form.envia_email_documentos" :disabled="visualizar || disabled || encaminhado.documentos" id="envia_email_documentos">
                         <label for="envia_email_documentos">Enviar E-mail</label>
                     </div>
                 </div>
                 <div class="col-2" v-if="form.documentos_entregue">
                     <div class="switchToggle" v-show="whatsappLiberado">
-                        <input type="checkbox" v-model="form.envia_whatsapp_documentos" :disabled="visualizar || disabled" id="envia_whatsapp_documentos">
+                        <input type="checkbox" v-model="form.envia_whatsapp_documentos" :disabled="visualizar || disabled || encaminhado.documentos" id="envia_whatsapp_documentos">
                         <label for="envia_whatsapp_documentos">Enviar Whatsapp</label>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
                             class="form-control"
                             onchange="valida_campo_vazio(this,1)"
                             onblur="valida_campo_vazio(this,1)"
-                            :disabled="visualizar || disabled"
+                            :disabled="visualizar || disabled || encaminhado.exame"
                             v-model="form.encaminhado_exame"
                         >
                             <option value="">Selecione</option>
@@ -70,7 +70,7 @@
                         class="form-control"
                         onchange="valida_campo_vazio(this,1)"
                         onblur="valida_campo_vazio(this,1)"
-                        :disabled="visualizar || disabled"
+                        :disabled="visualizar || disabled || encaminhado.exame"
                         v-model="form.pcmso_id"
                     >
                         <option value="">Selecione</option>
@@ -85,7 +85,7 @@
                         class="form-control"
                         onchange="valida_campo_vazio(this,1)"
                         onblur="valida_campo_vazio(this,1)"
-                        :disabled="visualizar || disabled"
+                        :disabled="visualizar || disabled || encaminhado.exame"
                         v-model="form.empresa_exame_id"
                     >
                         <option value="">Selecione</option>
@@ -95,24 +95,24 @@
                 </div>
 
                 <div class="col-12 col-sm-6" v-if="form.encaminhado_exame">
-                    <label>Data do encaminhamento</label>
+                    <label>Data da Realização</label>
                     <datepicker
                         label=""
                         style="margin-top: -19px;"
-                        :disabled="visualizar || disabled"
+                        :disabled="visualizar || disabled || encaminhado.exame"
                         v-model="form.encaminhado_exame_data"
                     ></datepicker>
                 </div>
 
                 <div class="col-2" v-if="form.encaminhado_exame">
                     <div class="switchToggle">
-                        <input type="checkbox" v-model="form.envia_email_exame" :disabled="visualizar || disabled" id="envia_email_exame">
+                        <input type="checkbox" v-model="form.envia_email_exame" :disabled="visualizar || disabled || encaminhado.exame" id="envia_email_exame">
                         <label for="envia_email_exame">Enviar E-mail</label>
                     </div>
                 </div>
                 <div class="col-2" v-if="form.encaminhado_exame">
                     <div class="switchToggle" v-show="whatsappLiberado">
-                        <input type="checkbox" v-model="form.envia_whatsapp_exame" :disabled="visualizar || disabled" id="envia_whatsapp_exame">
+                        <input type="checkbox" v-model="form.envia_whatsapp_exame" :disabled="visualizar || disabled || encaminhado.exame" id="envia_whatsapp_exame">
                         <label for="envia_whatsapp_exame">Enviar Whatsapp</label>
                     </div>
                 </div>
@@ -120,7 +120,7 @@
         </fieldset>
 
         <fieldset>
-            <legend>Encaminhamento Treinameto</legend>
+            <legend>Encaminhamento Treinamento</legend>
             <div class="row">
                 <div class="col-12 col-sm-6">
                     <div class="form-group">
@@ -129,7 +129,7 @@
                             class="form-control"
                             onchange="valida_campo_vazio(this,1)"
                             onblur="valida_campo_vazio(this,1)"
-                            :disabled="visualizar || disabled"
+                            :disabled="visualizar || disabled || encaminhado.treinamento"
                             v-model="form.encaminhado_treinamento"
                         >
                             <option value="">Selecione</option>
@@ -144,7 +144,7 @@
                     <datepicker
                         label=""
                         style="margin-top: -19px;"
-                        :disabled="visualizar || disabled"
+                        :disabled="visualizar || disabled || encaminhado.treinamento"
                         v-model="form.encaminhado_treinamento_data"
                     ></datepicker>
                 </div>
@@ -257,7 +257,12 @@ export default {
     data() {
         return {
             listaPcmso: [],
-            listaEmpresaExame: []
+            listaEmpresaExame: [],
+            encaminhado: {
+                documentos:false,
+                exame:false,
+                treinamento: false
+            }
         };
     },
     mounted() {
@@ -274,6 +279,12 @@ export default {
         this.form.envia_whatsapp_documentos = false;
         this.form.envia_email_exame = false;
         this.form.envia_whatsapp_exame = false;
+
+        this.encaminhado = {
+            documentos: !!this.form.documentos_entregue,
+            exame: !!this.form.encaminhado_exame,
+            treinamento: !!this.form.encaminhado_treinamento
+        };
     }
 };
 </script>

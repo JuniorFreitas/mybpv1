@@ -180,6 +180,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilial
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereCentroCustoFilialId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereFilial($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao demitidos()
  */
 class Admissao extends Model
 {
@@ -485,6 +486,25 @@ class Admissao extends Model
         } else {
             $this->attributes['data_adm_prevista'] = null;
         }
+    } //Acessor ->data_adm_prevista
+
+    public function getDataAsoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['data_aso']);
+            return $data->dataCompleta();
+        }
+        return null;
+    }
+
+    //Acessor ->data_adm_prevista
+    public function setDataAsoAttribute($value)
+    {
+        if (!is_null($value) && $value != 'aaaa-mm-dd') {
+            $data = new DataHora($value);
+            $this->attributes['data_aso'] = $data->dataInsert();
+        }
+        $this->attributes['data_aso'] = null;
     }
 
     public function getDataEntregaAreaAttribute($value)

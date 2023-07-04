@@ -5,7 +5,13 @@ namespace App\Http\Controllers\Relatorios;
 use App\Http\Controllers\Controller;
 use App\Models\Admissao;
 use App\Models\AdmissaoAso;
+use App\Models\AlternativaFormulario;
 use App\Models\ClienteConfig;
+use App\Models\ExameFuncionario;
+use App\Models\Examesesmt;
+use App\Models\ExameTipo;
+use App\Models\FeedbackCurriculo;
+use App\Models\RespostaAlternativas;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
 
@@ -17,8 +23,9 @@ class VencimentoAsosController extends Controller
         return view('g.relatorios.vencimentoasos.index');
     }
 
-    public function show()
+    public function show(Request $request)
     {
+        $dados = $request->input();
         $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->vencimento_aso];
         $empresa_id = auth()->user()->empresa_id;
 
@@ -26,45 +33,53 @@ class VencimentoAsosController extends Controller
         $data = new DataHora();
         $data->addDia($periodo_vencimento);
 
-        $AdmissoesAso = AdmissaoAso::whereAtivo(true)->whereEmpresaId($empresa_id)
-            ->whereHas('Admissao', function ($q) {
-                $q->Admitidos()->whereNotNull('data_aso');
+        $examesFuncionarios = FeedbackCurriculo::select(['id', 'curriculo_id', 'empresa_id', 'vaga_id', 'vagas_abertas_id'])
+            ->whereHas('UltimoAso', function ($q) use ($request){
+                $filtroVencimento = $request->filtroVencimento == 'true' ? true : false;
+                if ($filtroVencimento) {
+                    $periodo = explode(' até ', $request->campoVencimento);
+                    $dataInicio = new DataHora($periodo[0]);
+                    $dataFim = new DataHora($periodo[1]);
+                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert())->where('data_vencimento', '<=', $dataFim->dataInsert());
+                }
+                if(!is_null($request->campoVencido)){
+                    $q->where('vencido', $request->campoVencido);
+                }
             })
-            ->select(['id', 'empresa_id', 'admissao_id', 'data_aso', 'data_vencimento'])
-//            ->where('data_vencimento', '>=', (new DataHora())->dataInsert())
-            ->where('data_vencimento', '<=', $data->dataInsert())
-            ->where('ativo',true)
-            ->with('Admissao', function ($a) {
-                $a->select(['id', 'feedback_id', 'data_admissao','data_aso'])
-                    ->Admitidos()
-                    ->with('Feedback', function ($F) {
-                        $F->select(['id', 'curriculo_id', 'empresa_id', 'vaga_id'])
-                            ->with('VagaSelecionada:id,nome')
-                            ->with('Curriculo', function ($C) {
-                                $C->select(['id', 'nome', 'nascimento', 'rg', 'orgao_expeditor']);
-                            });
-                    });
+            ->whereHas('UltimoAso.ExameFuncionario', function ($q) use ($request) {
+                if (!is_null($request->campoTipoExame)) {
+                    $q->where('exame_tipo_id', $request->campoTipoExame);
+                }
             })
-            ->orderBy('data_vencimento')
-            ->get()
-            ->toArray();
+            ->with('UltimoAso.ExameFuncionario:id,feedback_id,exame_tipo_id','UltimoAso.ExameFuncionario.ExameTipo:id,label')
+            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor')
+            ->whereHas('Curriculo', function ($q) use ($dados) {
+                if(!is_null($dados['campoBusca'])) {
+                    $q->where('nome', 'like', '%' . $dados['campoBusca'] . '%');
+                }
+            })
+            ->with('Admissao:id,feedback_id,cargo,data_admissao')
+            ->with('VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id')
+            ->with('VagaAberta.VagaSelecionada:id,nome','VagaAberta.Municipio')
+            ->groupBy('id')->get();
 
-        $vencimentos = collect();
-        foreach ($AdmissoesAso as $vencimento) {
-            if ($vencimentos->where('admissao_id', $vencimento['admissao_id'])->count() == 0) {
-                $vencimentos->push([
-                    'admissao_id' => $vencimento['admissao_id'],
-                    'colaborador' => $vencimento['admissao']['feedback']['curriculo']['nome'],
-                    'cargo' => $vencimento['admissao']['feedback']['vaga_selecionada']['nome'],
-                    'data_admissao' => $vencimento['admissao']['data_admissao'],
-                    'data_aso' => $vencimento['data_aso'],
-                    'data_aso_adm' => (new DataHora($vencimento['admissao']['data_aso']))->dataCompleta(),
-                    'data_vencimento' => $vencimento['data_vencimento_formatada'],
-                    'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert(), $vencimento['data_vencimento'])
-                ]);
-            }
-        }
+        $examesFuncionarios = $examesFuncionarios->map(function ($item){
+            return [
+                'feedback_id' => $item->id,
+                'colaborador' => $item->Curriculo->nome,
+                'cargo' => $item->VagaAberta->VagaSelecionada->nome,
+                'data_admissao' => $item->Admissao->data_admissao ?? 'Não informada',
+                'exame_tipo' => $item->UltimoAso->ExameFuncionario[0]->ExameTipo->label,
+                'data_aso' => $item->UltimoAso->data_realizacao,
+                'data_vencimento' => $item->UltimoAso->data_vencimento,
+                'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert(), (new DataHora($item->UltimoAso->data_vencimento))->dataInsert())
+            ];
+        });
+        return response()->json($examesFuncionarios);
+    }
 
-        return response()->json($vencimentos);
+    public function tiposExames()
+    {
+       return ExameTipo::whereAtivo(true)->get();
     }
 }

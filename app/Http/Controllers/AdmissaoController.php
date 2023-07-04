@@ -17,7 +17,9 @@ use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
 use App\Models\EmpresaConfig;
 use App\Models\EmpresaExame;
+use App\Models\ExameFuncionario;
 use App\Models\FeedbackCurriculo;
+use App\Models\Formulario;
 use App\Models\Pcmso;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
@@ -148,14 +150,9 @@ class AdmissaoController extends Controller
         }
 
         if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
-            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) == 0) {
-                return response()->json([
-                    'msg' => 'Informe a data do ASO'
-                ], 400);
-            }
             if (trim($dados['admissao']['data_admissao']) == 0) {
                 return response()->json([
-                    'msg' => 'Informe a data do ASO'
+                    'msg' => 'Informe a data do Admissão'
                 ], 400);
             }
         }
@@ -308,9 +305,38 @@ class AdmissaoController extends Controller
                 is_null($dados['resultado_integrado']['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
                 is_null($dados['resultado_integrado']['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
 
+                if(!is_null($empresaExame) && !is_null($tipo_pcmso)){
+                    $empresaExameId = $dados['resultado_integrado']['empresa_exame_id'];
+                    $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
+                    $token = Sistema::uuid();
+                    $exame_tipo_id = 1;
+                    $empresa_id = auth()->user()->empresa_id;
+                    $pcmso_id = $dados['resultado_integrado']['pcmso_id'];
+                    $encaminhamento_data = $dadosResultadoIntegrado['encaminhado_exame_data'];
+
+                    $temExameFuncionario = ExameFuncionario::whereFeedbackId($feedback->id)
+                                                           ->whereEmpresaExameId($empresaExameId)
+                                                           ->where('exame_tipo_id', $exame_tipo_id)
+                                                           ->where('pcmso_id', $pcmso_id)
+                                                           ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
+
+                    if(is_null($temExameFuncionario)) {
+                        $exameFuncionario = ExameFuncionario::create([
+                            'feedback_id' => $feedback->id,
+                            'empresa_id' => $empresa_id,
+                            'empresa_exame_id' => $empresaExameId,
+                            'formulario_id' => $formulario_id,
+                            'respostas' => (object) [],
+                            'token' => $token,
+                            'pcmso' => true,
+                            'pcmso_id' => $pcmso_id,
+                            'exame_tipo_id' => $exame_tipo_id,
+                            'encaminhamento_data' => $encaminhamento_data
+                        ]);
+                    }
+                }
+
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dadosResultadoIntegrado, $empresaExame, $tipo_pcmso);
-
-
                 $admissaoCreate = $feedback->Admissao()->create($dadosAdmissao);
 
                 //Cria Usuario na Empresa
@@ -323,38 +349,6 @@ class AdmissaoController extends Controller
                 DadosAdmissao::create($tableDadosAdmissao);
 
                 if ($feedback->Admissao) {
-                    $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
-                    if (!empty($ultimo_aso_ativo_dados['data_aso'])) {
-
-                        $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
-
-                        if ($tem_aso->count() > 0) {
-                            $UltimoAsoColaborador = $tem_aso->where('data_aso',
-                                (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);
-
-                            if ($UltimoAsoColaborador->count() == 0) {
-                                AdmissaoAso::where('admissao_id', $feedback->Admissao->id)->update([
-                                    'ativo' => false,
-                                    'user_alterou_id' => auth()->id()
-                                ]);
-
-                                $feedback->Admissao->UltimoAsoAtivo()->create([
-                                    'admissao_id' => $feedback->Admissao['admissao_id'],
-                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                    'ativo' => true,
-                                    'user_alterou_id' => auth()->id()
-                                ]);
-                            }
-                        } else {
-                            $feedback->Admissao->UltimoAsoAtivo()->create([
-                                'admissao_id' => $feedback->Admissao['admissao_id'],
-                                'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                'ativo' => true,
-                                'user_alterou_id' => auth()->id()
-                            ]);
-                        }
-                    }
-
                     if (isset($dados['admissao']['ferias_adquiridasDelete'])) {
                         foreach ($dados['admissao']['ferias_adquiridasDelete'] as $id) {
                             $feedback->Admissao->FeriasAdquiridas->find($id)->delete();
@@ -366,15 +360,6 @@ class AdmissaoController extends Controller
                             $feedback->Admissao->FeriasAdquiridasCriaOuAtualiza($linha);
                         }
                     }
-
-                } else {
-                    $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
-                    AdmissaoAso::create([
-                        'admissao_id' => $dadosAdmissao['admissao_id'],
-                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                        'ativo' => true,
-                        'user_alterou_id' => auth()->id()
-                    ]);
 
                 }
 
@@ -442,7 +427,6 @@ class AdmissaoController extends Controller
                     $avaliacao = AvaliacaoNoventaVencimento::whereFeedbackId($feedback['id'])->first();
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
-
 
             } else {
 
@@ -628,39 +612,6 @@ class AdmissaoController extends Controller
                 $datas = [];
 
                 if ($feedback->Admissao) {
-                    $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
-
-                    if (!empty($ultimo_aso_ativo_dados['data_aso'])) {
-
-                        $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
-
-                        if ($tem_aso->count() > 0) {
-                            $UltimoAsoColaborador = $tem_aso->where('data_aso',
-                                (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);
-
-                            if ($UltimoAsoColaborador->count() == 0) {
-                                AdmissaoAso::where('admissao_id', $feedback->Admissao->id)->update([
-                                    'ativo' => false,
-                                    'user_alterou_id' => auth()->id()
-                                ]);
-
-                                $feedback->Admissao->UltimoAsoAtivo()->create([
-                                    'admissao_id' => $feedback->Admissao['admissao_id'],
-                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                    'ativo' => true,
-                                    'user_alterou_id' => auth()->id()
-                                ]);
-                            }
-                        } else {
-                            $feedback->Admissao->UltimoAsoAtivo()->create([
-                                'admissao_id' => $feedback->Admissao['admissao_id'],
-                                'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                'ativo' => true,
-                                'user_alterou_id' => auth()->id()
-                            ]);
-                        }
-                    }
-
                     if (isset($dados['admissao']['ferias_adquiridasDelete'])) {
                         foreach ($dados['admissao']['ferias_adquiridasDelete'] as $id) {
                             $feedback->Admissao->FeriasAdquiridas->find($id)->delete();
@@ -672,15 +623,6 @@ class AdmissaoController extends Controller
                             $feedback->Admissao->FeriasAdquiridasCriaOuAtualiza($linha);
                         }
                     }
-
-                } else {
-                    $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
-                    AdmissaoAso::create([
-                        'admissao_id' => $dadosAdmissao['admissao_id'],
-                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                        'ativo' => true,
-                        'user_alterou_id' => auth()->id()
-                    ]);
 
                 }
 
@@ -763,7 +705,7 @@ class AdmissaoController extends Controller
             Sistema::telegram(print_r($dados, true));
             \Log::info("-------FIM DE DADOS-------");
             Sistema::LogFormatado($dados);
-//            return response()->json($msg, 400);
+            return response()->json($msg, 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
 
         }
@@ -819,7 +761,7 @@ class AdmissaoController extends Controller
         $feedback->load(
             'Admissao.DadosAdmissoes',
             'Admissao.FeriasAdquiridas',
-            'Admissao.UltimoAsoAtivo',
+            'UltimoAso',
             'Curriculo.Formacao',
             'Curriculo.Dependentes',
             'Curriculo.FotoTres',
@@ -866,20 +808,20 @@ class AdmissaoController extends Controller
             $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: '';
             $feedback->Admissao->status_carteira_treinamento = $feedback->Admissao->status_carteira_treinamento ?: '';
             $feedback->Admissao->area_etiqueta_id = $feedback->Admissao->area_etiqueta_id == 0 ? null : $feedback->Admissao->area_etiqueta_id;
-            $feedback->Admissao->documento = $feedback->Admissao->documento ?: "";
-            $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: "";
-            $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?: "";
-            $feedback->Admissao->tipo_treinamento = $feedback->Admissao->tipo_treinamento ?: "";
-            $feedback->Admissao->treinamento = $feedback->Admissao->treinamento ?: "";
-            $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?: "";
-            $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?: "";
-            $feedback->Admissao->trinta_dois_sessenta = $feedback->Admissao->trinta_dois_sessenta ?: "";
-            $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?: "";
-            $feedback->Admissao->status = $feedback->Admissao->status ?: "";
-            $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?: "";
-            // $feedback->Admissao->data_aso = $feedback->Admissao->data_aso ?: "";
-            $feedback->Admissao->salario = $feedback->Admissao->salario ?: "0,00";
-            $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?: "";
+            $feedback->Admissao->documento = $feedback->Admissao->documento ?? "";
+            $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?? "";
+            $feedback->Admissao->tipo_admissao = $feedback->Admissao->tipo_admissao ?? "";
+            $feedback->Admissao->tipo_treinamento = $feedback->Admissao->tipo_treinamento ?? "";
+            $feedback->Admissao->treinamento = $feedback->Admissao->treinamento ?? "";
+            $feedback->Admissao->nr_trinta_tres = $feedback->Admissao->nr_trinta_tres ?? "";
+            $feedback->Admissao->nr_trinta_cinco = $feedback->Admissao->nr_trinta_cinco ?? "";
+            $feedback->Admissao->trinta_dois_sessenta = $feedback->Admissao->trinta_dois_sessenta ?? "";
+            $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?? "";
+            $feedback->Admissao->status = $feedback->Admissao->status ?? "";
+            $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?? "";
+            $feedback->Admissao->data_aso = $feedback->UltimoAso->data_realizacao ?? "";
+            $feedback->Admissao->salario = $feedback->Admissao->salario ?? "0,00";
+            $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?? "";
         }
 
         $feedback->parecerRh->indicado_por = $feedback->parecerRh->indicado_por ?: "";
@@ -929,14 +871,9 @@ class AdmissaoController extends Controller
         $dados['curriculo']['nascimento'] = $data_nascimento->dataInsert();
 
         if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
-            if (trim($dados['admissao']['ultimo_aso_ativo']['data_aso']) == 0) {
-                return response()->json([
-                    'msg' => 'Informe a data do ASO'
-                ], 400);
-            }
             if (trim($dados['admissao']['data_admissao']) == 0) {
                 return response()->json([
-                    'msg' => 'Informe a data do ASO'
+                    'msg' => 'Informe a data da Admissão'
                 ], 400);
             }
         }
@@ -1085,12 +1022,41 @@ class AdmissaoController extends Controller
 
                 $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
+                if(!is_null($dados['resultado_integrado']['empresa_exame_id']) && !is_null($dados['resultado_integrado']['pcmso_id'])){
+                    $empresaExameId = $dados['resultado_integrado']['empresa_exame_id'];
+                    $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
+                    $token = Sistema::uuid();
+                    $exame_tipo_id = 1;
+                    $empresa_id = auth()->user()->empresa_id;
+                    $pcmso_id = $dados['resultado_integrado']['pcmso_id'];
+                    $encaminhamento_data = $dadosResultadoIntegrado['encaminhado_exame_data'];
+
+                    $temExameFuncionario = ExameFuncionario::whereFeedbackId($feedback->id)
+                        ->whereEmpresaExameId($empresaExameId)
+                        ->where('exame_tipo_id', $exame_tipo_id)
+                        ->where('pcmso_id', $pcmso_id)
+                        ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
+
+                    if(is_null($temExameFuncionario)) {
+                        $exameFuncionario = ExameFuncionario::create([
+                            'feedback_id' => $feedback->id,
+                            'empresa_id' => $empresa_id,
+                            'empresa_exame_id' => $empresaExameId,
+                            'formulario_id' => $formulario_id,
+                            'respostas' => (object) [],
+                            'token' => $token,
+                            'pcmso' => true,
+                            'pcmso_id' => $pcmso_id,
+                            'exame_tipo_id' => $exame_tipo_id,
+                            'encaminhamento_data' => $encaminhamento_data
+                        ]);
+                    }
+                }
+
                 $dadosAdmissao = $admissaoDados['dados_admissoes'];
                 unset($admissaoDados['dados_admissoes']);
 
                 if ($feedback->Admissao) {
-                    $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
-
                     if (isset($dados['admissao']['ferias_adquiridasDelete'])) {
                         foreach ($dados['admissao']['ferias_adquiridasDelete'] as $id) {
                             $feedback->Admissao->FeriasAdquiridas->find($id)->delete();
@@ -1100,39 +1066,6 @@ class AdmissaoController extends Controller
                     if (isset($dados['admissao']['ferias_adquiridas'])) {
                         foreach ($dados['admissao']['ferias_adquiridas'] as $linha) {
                             $feedback->Admissao->FeriasAdquiridasCriaOuAtualiza($linha);
-                        }
-                    }
-
-                    if (!empty($ultimo_aso_ativo_dados['data_aso'])) {
-
-                        $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
-
-                        if ($tem_aso->count() > 0) {
-                            $UltimoAsoColaborador = $tem_aso->where('data_aso',
-                                (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);
-
-                            if ($UltimoAsoColaborador->count() == 0) {
-                                AdmissaoAso::where('admissao_id', $feedback->Admissao->id)->update([
-                                    'ativo' => false,
-                                    'user_alterou_id' => auth()->id()
-                                ]);
-
-                                $feedback->Admissao->UltimoAsoAtivo()->create([
-                                    'admissao_id' => $feedback->Admissao['admissao_id'],
-                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                    'ativo' => true,
-                                    'user_alterou_id' => auth()->id()
-                                ]);
-                            }
-                        } else {
-                            if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
-                                $feedback->Admissao->UltimoAsoAtivo()->create([
-                                    'admissao_id' => $feedback->Admissao['admissao_id'],
-                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                    'ativo' => true,
-                                    'user_alterou_id' => auth()->id()
-                                ]);
-                            }
                         }
                     }
 
@@ -1160,17 +1093,6 @@ class AdmissaoController extends Controller
 
                     $dadosAdmissao['admissao_id'] = $admissao_id['id'];
                     DadosAdmissao::create($dadosAdmissao);
-
-                    $ultimo_aso_ativo_dados = $dados['admissao']['ultimo_aso_ativo'];
-                    if (in_array($dados['admissao']['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
-                        AdmissaoAso::create([
-                            'admissao_id' => $dadosAdmissao['admissao_id'],
-                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                            'ativo' => true,
-                            'user_alterou_id' => auth()->id()
-                        ]);
-                    }
-
                 }
 
                 $datas = [];
@@ -1303,6 +1225,7 @@ class AdmissaoController extends Controller
                 \Log::info("-------FIM DE DADOS-------");
                 Sistema::LogFormatado($dados);
 
+                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
@@ -1312,12 +1235,6 @@ class AdmissaoController extends Controller
     {
         $this->authorize('admissao_processo_update');
         $dados = $request->input();
-
-        $ultimo_aso_ativo_dados = $dados['ultimo_aso_ativo'];
-
-        if (in_array($dados['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO]) && trim($dados['ultimo_aso_ativo']['data_aso']) == 0) {
-            return response()->json(['message' => 'Informe a data do Aso'], 422);
-        }
 
         $dadosValidados = \Validator::make($dados, []);
         if ($dadosValidados->fails()) {
@@ -1354,48 +1271,10 @@ class AdmissaoController extends Controller
                     if ($feedback->Admissao) {
 
                         $feedback->Admissao->update($dados);
-
-                        if (!empty($ultimo_aso_ativo_dados['data_aso'])) {
-                            $tem_aso = $feedback->Admissao->UltimoAsoAtivo();
-
-                            if ($tem_aso->count() > 0) {
-                                $UltimoAsoColaborador = $tem_aso->where('data_aso',
-                                    (new DataHora($ultimo_aso_ativo_dados['data_aso']))->dataInsert())->whereAtivo(true);
-
-                                if ($UltimoAsoColaborador->count() == 0) {
-                                    AdmissaoAso::where('admissao_id', $feedback->Admissao->id)->update([
-                                        'ativo' => false,
-                                        'user_alterou_id' => auth()->id()
-                                    ]);
-
-                                    $feedback->Admissao->UltimoAsoAtivo()->create([
-                                        'admissao_id' => $feedback->Admissao['admissao_id'],
-                                        'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                        'ativo' => true,
-                                        'user_alterou_id' => auth()->id()
-                                    ]);
-                                }
-                            } else {
-                                $feedback->Admissao->UltimoAsoAtivo()->create([
-                                    'admissao_id' => $feedback->Admissao['admissao_id'],
-                                    'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                                    'ativo' => true,
-                                    'user_alterou_id' => auth()->id()
-                                ]);
-                            }
-                        }
                     }
                     $feedback->Admissao()->create($dados);
-                    if (in_array($dados['status'], [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO])) {
-                        AdmissaoAso::create([
-                            'admissao_id' => $feedback->Admissao['admissao_id'],
-                            'data_aso' => $ultimo_aso_ativo_dados['data_aso'],
-                            'ativo' => true,
-                            'user_alterou_id' => auth()->id()
-                        ]);
-                    }
-
                     $datas = [];
+
                     if ($dados['tipo_admissao'] == 'FIXO') {
                         $data = new DataHora($dados['data_admissao']);
                         switch ($dados['prazo_experiencia']) {
@@ -1477,6 +1356,7 @@ class AdmissaoController extends Controller
                 Sistema::telegram(print_r($dados, true));
                 \Log::info("-------FIM DE DADOS-------");
                 Sistema::LogFormatado($dados);
+                return response()->json($msg, 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
             }
         }
@@ -1552,8 +1432,8 @@ class AdmissaoController extends Controller
             $periodo = explode(' até ', $request->campoAso);
             $dataInicio = new DataHora($periodo[0]);
             $dataFim = new DataHora($periodo[1]);
-            $resultado->whereHas('Admissao.UltimoAsoAtivo', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('data_aso', '>=', $dataInicio->dataInsert())->where('data_aso', '<=', $dataFim->dataInsert());
+            $resultado->whereHas('UltimoAso', function ($q) use ($dataInicio, $dataFim) {
+                $q->where('data_realizacao', '>=', $dataInicio->dataInsert())->where('data_realizacao', '<=', $dataFim->dataInsert());
             });
         }
 
@@ -1694,7 +1574,8 @@ class AdmissaoController extends Controller
         ])->find(\Crypt::decrypt($fc_token))
             ->load(
                 'ResultadoIntegrado:id,feedback_id',
-                'Admissao'
+                'Admissao',
+                'UltimoAso',
             );
 
         $dados = [

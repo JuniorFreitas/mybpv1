@@ -107,6 +107,15 @@ Artisan::command('mybp:syncAso', function () {
     \App\Models\Sistema::syncAso();
 })->describe("Sincronizando data ASOs");
 
+Artisan::command('mybp:vencimentoAso', function () {
+    set_time_limit(0);
+    \DB::table('examesesmts')
+        ->where('data_vencimento','<',(new DataHora())->dataInsert())
+        ->update([
+            'vencido' => 1,
+        ]);
+})->describe("Vencimento de Aso");
+
 Artisan::command('mybp:ferias', function () {
     try {
         $ferias_gozando_sistema = \DB::table('ferias')
