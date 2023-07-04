@@ -3,18 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
+use App\Jobs\ControleExames\JobExame;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Jobs\Entrevista\JobEnvioFeedbackDocumento;
 use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Admissao;
+use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\DocumentosCurriculosAdmissaoEmpresa;
 use App\Models\DocumentosPreAdmissao;
+use App\Models\EmpresaExame;
+use App\Models\ExameFuncionario;
+use App\Models\ExameTipo;
 use App\Models\FeedbackCurriculo;
+use App\Models\FeedbackPreadmissao;
+use App\Models\Formulario;
+use App\Models\Pcmso;
+use App\Models\RespostaAlternativas;
 use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -29,10 +39,10 @@ class PreAdmissaoController extends Controller
 
     public function show($feedback)
     {
-        $feedback = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id'])
+        $feedback = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id', 'telefone_id'])
             ->whereId($feedback)
             ->first()
-            ->load('Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf');
+            ->load('Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf','TelPrincipal');
 
         $feedback->docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa(auth()->user()->empresa_id)
             ->transform(function ($doc) use ($feedback) {
@@ -55,16 +65,52 @@ class PreAdmissaoController extends Controller
             });
 
         return $feedback;
+    }
 
+    public function showFinalizar($feedback)
+    {
+        $feedback = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id', 'telefone_id'])
+            ->whereId($feedback)
+            ->first()
+            ->load('Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf','VagaAberta.Vaga','TelPrincipal');
+
+        $feedback->docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa(auth()->user()->empresa_id)
+            ->transform(function ($doc) use ($feedback) {
+                $doc->docs_curriculo_anexos = DB::table('documentos_curriculos')
+                    ->whereTipo($doc->tipo)
+                    ->where('curriculo_id', $feedback->curriculo_id)
+                    ->join('arquivos', 'arquivos.id', '=', 'documentos_curriculos.arquivo_id')
+                    ->get()->transform(function ($doc) {
+                        $doc->url = "";
+                        $doc->url_download = "";
+                        if (in_array($doc->disco, Arquivo::LISTAGEM_DISCOS)) {
+                            $doc->url = config('filesystems.disks.' . $doc->disco . '.urlShow') . "/{$doc->file}";
+                            $doc->urlDownload = config('filesystems.disks.' . $doc->disco . '.urlDownload') . "/{$doc->file}";
+                            $doc->urlThumb = config('filesystems.disks.' . $doc->disco . '.urlThumb') . "/{$doc->file}";
+                        };
+                        return $doc;
+                    });
+                $doc->qnt_anexos = count($doc->docs_curriculo_anexos);
+                return $doc;
+            });
+
+        $pcmso = Pcmso::whereAtivo(true)->get();
+        $empresas_exames = EmpresaExame::whereAtivo(true)->get();
+
+        return response()->json([
+            'empresas_exames' => $empresas_exames,
+            'pcmsos' => $pcmso,
+            'dados' => $feedback
+        ]);
     }
 
 
     public function atualizar(Request $request)
     {
 
-        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id'])->with(['Curriculo' => function ($model) {
+        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id', 'telefone_id'])->with(['Curriculo' => function ($model) {
             $model->select(['id', 'nome', 'cpf', 'email', 'nascimento', 'rg', 'orgao_expeditor', 'logradouro', 'complemento', 'bairro', 'municipio', 'uf']);
-        }]);
+        }])->with('TelPrincipal');
 
         if ($request->filled('status')) {
             if ($request->status == 'em_processo') {
@@ -131,6 +177,14 @@ class PreAdmissaoController extends Controller
                 });
             $item->docs_curriculo_pre_adm = $docs_curriculo_pre_adm;
             $item->qnt_anexos = $docs_curriculo_pre_adm->sum('qnt_anexos');
+
+            $estaFinalizado = DB::table('feedback_preadmissao')->where('feedback_id',$item->id)->first();
+            if($estaFinalizado){
+                $user_finalizou = DB::table('users')->where('id', $estaFinalizado->user_finalizou_id)->first()->nome;
+                $item->finalizado = true;
+                $item->quem_finalizou = $user_finalizou;
+                $item->data_finalizacao = (new DataHora($estaFinalizado->created_at))->dataHoraCompleta();
+            }
             return $item;
         });
 
@@ -145,6 +199,131 @@ class PreAdmissaoController extends Controller
     public function edit(FeedbackCurriculo $feedback)
     {
         return $feedback->load('Curriculo.Pessoa', 'TelPrincipal');
+    }
+
+    public function finalizarEncaminhar(Request $request)
+    {
+        //TODO : Criar dados para feedback_preadmissao
+        try {
+            \DB::beginTransaction();
+            $token = Sistema::uuid();
+            $formulario_id = Formulario::whereTitulo('Exames')->first()->load('Setores.Alternativas.Opcoes')->id;
+            $empExame = EmpresaExame::find($request->empresa_exame_id);
+            $pcmso_id = $request->pcmso_id;
+            $exame_tipo_id = 1; // Admissional
+            $data_encaminhamento_insert = (new DataHora())->dataHoraInsert();
+            $data_encaminhamento = (new DataHora())->dataHoraCompleta();
+            $data_realizacao = (new DataHora($request->encaminhamento_data))->dataCompleta();
+
+            if (!$pcmso_id == "") {
+                $exame = ExameFuncionario::create([
+                    'feedback_id' => $request->feedback_id,
+                    'empresa_exame_id' => $request->empresa_exame_id,
+                    'formulario_id' => $formulario_id,
+                    'respostas' => (object)[],
+                    'token' => $token,
+                    'pcmso' => true,
+                    'pcmso_id' => $pcmso_id,
+                    'exame_tipo_id' => $exame_tipo_id,
+                    'encaminhamento_data' => $data_encaminhamento_insert
+                ]);
+
+                $tipoExame = ExameTipo::find($exame_tipo_id);
+            } else {
+                $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
+                $tipoExame = RespostaAlternativas::whereValue($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->first();
+
+
+                $exame = ExameFuncionario::create([
+                    'feedback_id' => $request->feedback_id,
+                    'empresa_exame_id' => $request->empresa_exame_id,
+                    'formulario_id' => $formulario_id,
+                    'respostas' => $request->respostas,
+                    'token' => $token,
+                    'pcmso' => false,
+                    'encaminhamento_data' => $data_encaminhamento_insert,
+                    'exame_tipo_id' => (int)$tipoExame->value,
+                ]);
+            }
+
+            $dados_feedback_preadmissao = [
+                'feedback_id' => $request->feedback_id,
+                'user_finalizou_id' => auth()->user()->id,
+            ];
+
+            FeedbackPreadmissao::create($dados_feedback_preadmissao);
+
+            $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id','telefone_id'])->find($request->feedback_id);
+
+            if ($request->envia_email) {
+
+                $dtEmailClinica = [
+                    'clinica' => $empExame->nome,
+                    'email' => trim(mb_strtolower($empExame->dados['email'])),
+                    'assunto' => "Encaminhamento de Exame {$tipoExame->label} colaborador {$colaborador->Curriculo->nome}",
+                    'colaborador' => $colaborador->Curriculo->nome,
+                    'colaborador_email' => trim(mb_strtolower($colaborador->Curriculo->email)),
+                    'idade' => $colaborador->Curriculo->idade,
+                    'tipoExame' => $tipoExame->label,
+                    'empresa_id' => $empExame->id,
+                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token]),
+                    'encaminhamento_data' => $data_encaminhamento,
+                    'data_realizacao' => $data_realizacao,
+                ];
+
+                $dtEmailColaborador = [
+                    'clinica' => $empExame,
+                    'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
+                    'assunto' => "Encaminhamento de Exame {$tipoExame->label}",
+                    'colaborador' => $colaborador->Curriculo->nome,
+                    'tipoExame' => $tipoExame->label,
+                    'empresa_id' => $empExame->id,
+                    'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token]),
+                    'encaminhamento_data' => $data_encaminhamento,
+                    'data_realizacao' => $data_realizacao,
+                ];
+
+                $dados_email = [
+                    'dtEmailClinica' => $dtEmailClinica,
+                    'dtEmailColaborador' => $dtEmailColaborador
+                ];
+
+                JobExame::dispatch($dados_email);
+            }
+
+            if ($request->envia_whatsapp) {
+                if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp && $colaborador->TelPrincipal->tipo == 'whatsapp' && !is_null($empExame)) {
+                    $mensagem = "Prezado(a) sr(a) *{$colaborador->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem *{$tipoExame->label}*, " .
+                        "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
+                        "🏥 Local do Exame: \n*{$empExame->nome}*.\n" .
+                        "📍 Endereço: *{$empExame->dados['endereco']['endereco_completo']}*\n" .
+                        "📞 Contato: *{$empExame->dados['telefone']}*\n" .
+                        "🗓️ Data de encaminhamento: *{$data_encaminhamento}*\n" .
+                        "🗓️ Data de realização: *{$data_realizacao}*" .
+                        "\n\n" .
+                        "Atenciosamente,\n\n" .
+                        "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
+                        "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+
+                    (new ZapNotificacao())->enviar([
+                        'enviado_id' => $colaborador->curriculo_id,
+                        'telefone' => $colaborador->TelPrincipal->sonumero,
+                        'mensagem' => $mensagem
+                    ]);
+                }
+            }
+
+            \DB::commit();
+            return response()->json("", 201);
+        } catch (\ErrorException $e) {
+            $msg = "Erro ao Encaminhar para exame:  {$e->getMessage()} , CODIGO:  {$e->getCode()}, Linha: {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            Sistema::LogFormatado($request->input());
+            \DB::rollback();
+            return response()->json(['msg' => $msg,
+                'request' => $request->input(),
+            ], 400);
+            return response()->json(['msg' => 'Houve um erro ao encaminhar!'], 400);
+        }
     }
 
     public function enviarEmail(Request $request)

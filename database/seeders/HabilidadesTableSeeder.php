@@ -500,6 +500,7 @@ class HabilidadesTableSeeder extends Seeder
                     echo "\e[34mHabilidade já existe: " . $habilidade['nome'] . " - " . $habilidade['descricao'] . "\n";
                 }
             }
+            \Cache::forget('habilidades_sistema');
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();

@@ -23,11 +23,18 @@ class CarregaHabilidades
             return redirect()->route('logout');
         }
 
-        $listaDeHabilidadesSistema = Habilidade::select('nome')->pluck('nome')->toArray(); // lista de habilidade do sistema
+        $listaDeHabilidadesSistema = \Cache::get('habilidades_sistema');
+
+        if (is_null(\Cache::get('habilidades_sistema'))) {
+            $listaDeHabilidadesSistema = Habilidade::select('nome')->pluck('nome')->toArray();
+            \Cache::rememberForever('habilidades_sistema', function () use ($listaDeHabilidadesSistema) {
+                return $listaDeHabilidadesSistema;
+            });
+        }
 
         foreach ($listaDeHabilidadesSistema as $habilidade) {
-            Gate::define($habilidade, function (User $usuario) use ($habilidade) {
-                if (collect($usuario->listaDeHabilidades())->search($habilidade) !== false) {
+            Gate::define($habilidade, function ($listaDeHabilidadesUsuario) use ($habilidade) {
+                if (collect($listaDeHabilidadesUsuario)->search($habilidade) !== false) {
                     return true;
                 }
                 return false;

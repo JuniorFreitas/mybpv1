@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
  * @property string $modelo_cih
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereModeloCih($value)
+ * @property bool $supervisor_etiqueta_bloqueio
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereSupervisorEtiquetaBloqueio($value)
  */
 class ClienteConfig extends Model
 {

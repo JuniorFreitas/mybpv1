@@ -39,6 +39,12 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereVencido($value)
  * @mixin \Eloquent
+ * @property bool|null $atual
+ * @property int|null $feedback_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ExameFuncionario[] $ExameFuncionario
+ * @property-read int|null $exame_funcionario_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereAtual($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereFeedbackId($value)
  */
 class Examesesmt extends Model
 {
@@ -52,7 +58,9 @@ class Examesesmt extends Model
         'data_realizacao',
         'data_vencimento',
         'vencido',
+        'atual',
         'user_id',
+        'feedback_id'
     ];
 
     protected $casts = [
@@ -64,7 +72,9 @@ class Examesesmt extends Model
         'data_realizacao' => 'string',
         'data_vencimento' => 'string',
         'vencido' => 'boolean',
+        'atual' => 'boolean',
         'user_id' => 'int',
+        'feedback_id' => 'int',
     ];
 
     //Modificador ->data_realizacao
@@ -107,11 +117,16 @@ class Examesesmt extends Model
         return $this->belongsToMany(Arquivo::class, 'controle_exame_sesmt_anexos', 'examesesmt_id', 'arquivo_id');
     }
 
+    public function ExameFuncionario()
+    {
+        return $this->hasMany(ExameFuncionario::class, 'id', 'exame_funcionario_id');
+    }
+
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-            $model->user_id = auth()->user()->id;
+            $model->empresa_id = auth()->user()->empresa_id ?? $model->empresa_id;
+            $model->user_id = auth()->user()->id ?? $model->user_id;
         });
 
         static::updating(function ($model) {

@@ -26,6 +26,94 @@
         </template>
     </modal>
 
+    <modal id="janelaFinalizar" :titulo="tituloJanelaFinalizar" size="g">
+        <template slot="conteudo">
+            <preload class=" mt-2 text-center" v-if="preload"></preload>
+            <div v-if="!preloadFinalizar" id="formFinalizar">
+                <fieldset v-if="dadosFinalizar.curriculo">
+                    <legend class="text-uppercase">Informações</legend>
+                    <div class="row">
+                        <div class="col-12">
+                            <p>
+                                Nome: <strong>@{{ dadosFinalizar.curriculo.nome }}</strong> - @{{ dadosFinalizar.curriculo.idade }} anos <br>
+                                Cargo: <strong>@{{ dadosFinalizar.vaga_aberta.vaga.nome }}</strong> <br>
+                                Contato: <span v-if="dadosFinalizar.tel_principal && dadosFinalizar.tel_principal.tipo === 'whatsapp'"><strong><i class="fab fa-whatsapp text-success"></i> @{{
+                                    dadosFinalizar.tel_principal.numero }}</strong> - </span>E-mail: <strong>@{{dadosFinalizar.curriculo.email}}</strong> <br>
+                            </p>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend class="text-uppercase">Encaminhamento</legend>
+                    <div class='row'>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label for="">CLÍNICA</label>
+                                <select class='form-control'
+                                        onblur='valida_campo_vazio(this,1)'
+                                        onchange='valida_campo_vazio(this,1)'
+                                        v-model='formFinalizar.empresa_exame_id'
+                                >
+                                    <option value=''>Selecione</option>
+                                    <option v-for='item in listaEmpresasExames' :value='item.id'>
+                                        @{{ item.nome }}
+                                    </option>
+                                </select>
+                                <small v-if='formFinalizar.empresa_exame_id' class='my-2'
+                                       v-text="listaEmpresasExames.filter(item => item.id === formFinalizar.empresa_exame_id)[0].dados.email"></small>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <datepicker
+                                label="DATA PARA REALIZAÇÃO"
+                                :disabled="visualizar"
+                                v-model="formFinalizar.encaminhado_exame_data"
+                                :min="dataHoje"
+                            ></datepicker>
+                        </div>
+
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="form-group">
+                                <label for="">PCMSO</label>
+                                <select class='form-control' v-model='formFinalizar.pcmso_id'  onblur='valida_campo_vazio(this,1)'
+                                        onchange='valida_campo_vazio(this,1)'>
+                                    <option value=''>Selecione ...</option>
+                                    <option v-for='pcmso in listaPcmsos' :value='pcmso.id'>
+                                        @{{ pcmso.label }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="custom-control custom-switch float-left">
+                                <input type="checkbox" v-model="formFinalizar.envia_email" class="custom-control-input"
+                                       id="envia_email">
+                                <label class="custom-control-label"
+                                       for="envia_email">Enviar E-mail</label>
+                            </div>
+
+                            <div class="custom-control custom-switch float-left ml-3"
+                                 v-if="whatsappLiberado && dadosFinalizar.tel_principal && dadosFinalizar.tel_principal.tipo ==='whatsapp'">
+                                <input type="checkbox" v-model="formFinalizar.envia_whatsapp"
+                                       class="custom-control-input"
+                                       id="envia_whatsapp">
+                                <label class="custom-control-label"
+                                       for="envia_whatsapp">Enviar WhatsApp</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </template>
+        <template slot="rodape">
+            <button class="btn btn-primary btn-sm" v-if="!preloadFinalizar" @click="finalizarEncaminhar(dadosFinalizar.id)">
+                <i class="fa fa-save"></i> Finalizar e Salvar
+            </button>
+        </template>
+    </modal>
+
     <modal id="janelaEnviarEmail" :titulo="tituloJanela" size="g">
         <template slot="conteudo">
             <preload class=" mt-2 text-center" v-if="preload"></preload>
@@ -183,7 +271,7 @@
         </div>
 
         <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
+            <table class="table table-bordered table-striped">
                 <thead>
                 <tr class="bg-default">
                     <th class="text-center">CÓD</th>
@@ -192,11 +280,16 @@
                     <th class="text-center" v-if="cliente_id === 1">Cliente</th>
                     <th class="text-center">Vaga</th>
                     <th class="text-center">Qnt Anexos</th>
+                    <th class="text-center">Status</th>
                     <th class="text-center"></th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="resultado in lista">
+                <tr v-for="resultado in lista"
+                    :class="{
+                        'bg-success text-white': resultado.finalizado === true
+                    }"
+                >
                     <td class="text-center">
                         @{{resultado.id}}
                     </td>
@@ -218,6 +311,9 @@
                         @{{ resultado.qnt_anexos }} anexo(s)
                     </td>
                     <td class="text-center">
+                        <span v-if="resultado.finalizado">Finalizado por @{{ resultado.quem_finalizou }}<br>em @{{ resultado.data_finalizacao }}</span>
+                    </td>
+                    <td class="text-center">
                         <button class="btn btn-sm btn-primary" title="Visuzalizar"
                                 @click.prevent="formVisualizar(resultado.id)"
                                 data-toggle="modal"
@@ -228,6 +324,13 @@
                                     data-toggle="modal"
                                     data-target="#janelaEnviarEmail"><i class="fa fa-share-square"></i></button>
                         @endcan
+{{--                        @can('privilegio_admissao_pre_admissao_reencaminhar_email')--}}
+                            <button class="btn btn-sm btn-primary" title="Finalizar"
+                                    @click.prevent="abrirFormFinalizar(resultado.id)"
+                                    data-toggle="modal"
+                                    v-if="!resultado.finalizado"
+                                    data-target="#janelaFinalizar"><i class="fa fa-check-circle"></i></button>
+{{--                        @endcan--}}
                     </td>
 
                 </tr>

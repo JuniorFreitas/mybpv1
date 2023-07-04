@@ -7,6 +7,22 @@
         <template slot="conteudo">
             <preload v-if="abasesmt.preload" label="Aguarde ...."></preload>
             <fieldset v-if="!abasesmt.preload">
+                <legend class="text-uppercase">Colaborador(a)</legend>
+                <div class="row">
+                    <div class="col-12">
+                        <p>
+                            Nome: <strong>@{{ dados.nome }}</strong> - @{{ dados.idade }} anos <br>
+                            Cargo: <strong>@{{ dados.cargo }}</strong> <br>
+                            Endereço: <strong>@{{ dados.endereco_completo }}</strong><br>
+                            Contato: <strong><i class="fab fa-whatsapp text-success"
+                                                v-show="dados.tel_principal.tipo === 'whatsapp'"></i> @{{
+                                dados.tel_principal.numero }}</strong> - E-mail: <strong>@{{dados.email}}</strong> <br>
+                        </p>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset v-if="!abasesmt.preload">
                 <legend>Exame</legend>
                 <div class="row">
                     <div class="col-12 col-md-6">
@@ -26,12 +42,17 @@
 
                     <template v-if="abasesmt.form.exame_realizado">
                         <div class="col-12 col-md-6">
-                            <label for="">DATA DO EXAME:
-                            </label>
-                            <input type="text" class="form-control validacampo" v-model="abasesmt.form.data_realizacao"
-                                   v-mascara:data
-                                   @keyup.prevent="valida_data_vazio($event.target)"
-                                   @blur.prevent="valida_data_vazio($event.target)">
+                            {{--                            <label for="">DATA DO EXAME:</label>--}}
+                            {{--                            <input type="text" class="form-control validacampo" v-model="abasesmt.form.data_realizacao"--}}
+                            {{--                                   v-mascara:data--}}
+                            {{--                                   @keyup.prevent="valida_data_vazio($event.target)"--}}
+                            {{--                                   @blur.prevent="valida_data_vazio($event.target)">--}}
+
+                            <datepicker
+                                label="DATA DO EXAME"
+                                :disabled="visualizar"
+                                v-model="abasesmt.form.data_realizacao"
+                            ></datepicker>
                         </div>
 
                         <div class="col-12 col-md-6">
@@ -168,9 +189,13 @@
                     <div class="row">
                         <div class="col-12">
                             <p>
-                                Nome: <strong>@{{ dados.nome }}</strong> <br>
-                                <br>
+                                Nome: <strong>@{{ dados.nome }}</strong> - @{{ dados.idade }} anos <br>
                                 Cargo: <strong>@{{ dados.cargo }}</strong> <br>
+                                Endereço: <strong>@{{ dados.endereco_completo }}</strong><br>
+                                Contato: <strong><i class="fab fa-whatsapp text-success"
+                                                    v-show="dados.tel_principal.tipo === 'whatsapp'"></i> @{{
+                                    dados.tel_principal.numero }}</strong> - E-mail: <strong>@{{dados.email}}</strong>
+                                <br>
                             </p>
                         </div>
                     </div>
@@ -205,10 +230,28 @@
                     <div class="tab-pane fade show active" id="nav-encaminhar" role="tabpanel"
                          aria-labelledby="nav-encaminhar-tab">
                         <fieldset>
-                            <legend class="text-uppercase">Clinica</legend>
+                            <legend class="text-uppercase">Encaminhamento</legend>
                             <div class='row'>
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                                <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
+                                        <label for="">TIPO DE ORDEM</label>
+                                        <select class='form-control' v-model='form.exame_tipo_id'
+                                                onblur='valida_campo_vazio(this,1)'
+                                                onchange='valida_campo_vazio(this,1)'
+                                        >
+                                            <option value=''>Selecione</option>
+                                            <option v-for='exame_tipo in listaExameTipos' :value='exame_tipo.id'>
+                                                @{{ exame_tipo.label }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-12"></div>
+
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="form-group">
+                                        <label for="">CLÍNICA</label>
                                         <select class='form-control'
                                                 onblur='valida_campo_vazio(this,1)'
                                                 onchange='valida_campo_vazio(this,1)'
@@ -219,35 +262,59 @@
                                                 @{{ item.nome }}
                                             </option>
                                         </select>
+                                        <small v-if='form.empresa_exame_id' class='my-2'
+                                               v-text="listaEmpresasExames.filter(item => item.id === form.empresa_exame_id)[0].dados.email"></small>
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <datepicker
+                                        label="DATA PARA REALIZAÇÃO"
+                                        :disabled="visualizar"
+                                        v-model="form.encaminhado_exame_data"
+                                        :min="dataHoje"
+                                    ></datepicker>
+                                </div>
+
+                                <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
-                                        <h5 v-if='form.empresa_exame_id' class='my-2'
-                                            v-text="listaEmpresasExames.filter(item => item.id === form.empresa_exame_id)[0].dados.email"></h5>
+                                        <label for="">PCMSO</label>
+                                        <select class='form-control' v-model='form.pcmso_id'  onblur='valida_campo_vazio(this,1)'
+                                                onchange='valida_campo_vazio(this,1)'>
+{{--                                            <option value=''>Nenhum</option>--}}
+                                            <option value=''>Selecione ...</option>
+                                            <option v-for='pcmso in listaPcmsos' :value='pcmso.id'>
+                                                @{{ pcmso.label }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                <div class="col-12" v-if="form.empresa_exame_id">
-                                    <div class="switchToggle">
-                                        <input type="checkbox" v-model="form.envia_email" id="envia_email_documentos">
-                                        <label for="envia_email_documentos">Enviar E-mail</label>
+                                <div class="col-12">
+                                    <div class="custom-control custom-switch float-left">
+                                        <input type="checkbox" v-model="form.envia_email" class="custom-control-input"
+                                               id="envia_email">
+                                        <label class="custom-control-label"
+                                               for="envia_email">Enviar E-mail</label>
+                                    </div>
+
+                                    <div class="custom-control custom-switch float-left ml-3"
+                                         v-if="whatsappLiberado && dados.tel_principal.tipo ==='whatsapp'">
+                                        <input type="checkbox" v-model="form.envia_whatsapp"
+                                               class="custom-control-input"
+                                               id="envia_whatsapp">
+                                        <label class="custom-control-label"
+                                               for="envia_whatsapp">Enviar WhatsApp</label>
                                     </div>
                                 </div>
-{{--                                <div class="col-2" v-if="form.empresa_exame_id">--}}
-{{--                                    <div class="switchToggle" v-show="whatsappLiberado">--}}
-{{--                                        <input type="checkbox" v-model="form.envia_whatsapp_documentos" id="envia_whatsapp_documentos">--}}
-{{--                                        <label for="envia_whatsapp_documentos">Enviar Whatsapp</label>--}}
-{{--                                    </div>--}}
-{{--                                </div>--}}
                             </div>
+
                         </fieldset>
 
-                        <formulario :model='form' :formulario_id='form.formulario.id' v-if='form.formulario'
+
+                        <formulario :model='form' :formulario_id='form.formulario.id' v-show="false"
+                                    v-if='form.formulario && form.pcmso_id.length===0'
                                     :mostra_titulo='false'></formulario>
-
-
                     </div>
 
                     <div class="tab-pane fade" id="nav-encaminhados" role="tabpanel"
@@ -263,6 +330,7 @@
                                 <th>CÓD</th>
                                 <th>Tipo de exame</th>
                                 <th>Clinica</th>
+                                <th>PCSMO</th>
                                 <th>Encaminhado Por</th>
                                 <th>Data do Encaminhamento</th>
                                 <th></th>
@@ -273,21 +341,26 @@
                                 <td>@{{ item.id }}</td>
                                 <td>@{{ item.tipo_exame }}</td>
                                 <td>@{{ item.empresa_exame.nome }}</td>
+                                <td>@{{ item.pcmso_label }}</td>
                                 <td>@{{ item.quem_encaminhou.nome }}</td>
                                 <td>@{{ item.created_at }}</td>
                                 <td>
-                                    <form :action="`${URL_ADMIN}/controle-exames/ficha-encaminhamento/${item.id}`"
-                                          target="_blank" method="post">
-                                        @csrf
-                                        <input type="hidden" name="id" :value="item.id">
-                                        <input type="hidden" name="tipo_exame" :value="item.tipo_exame">
-                                        <button type="submit" content="Gerar PDF" v-tippy
-                                                class="btn btn-sm btn-primary mb-2">
-                                            <i class="fa fa-file-pdf" aria-hidden="true"></i>
-                                        </button>
-                                    </form>
+                                    {{--                                    <form :action="`${URL_ADMIN}/controle-exames/ficha-encaminhamento/${item.id}/${item.token}`"--}}
+                                    {{--                                          target="_blank" method="post">--}}
+                                    {{--                                        @csrf--}}
+                                    {{--                                        <input type="hidden" name="id" :value="item.id">--}}
+                                    {{--                                        <input type="hidden" name="token" :value="item.token">--}}
+                                    {{--                                        <input type="hidden" name="tipo_exame" :value="item.tipo_exame">--}}
+                                    {{--                                        <button type="submit" content="Gerar PDF" v-tippy--}}
+                                    {{--                                                class="btn btn-sm btn-primary mb-2">--}}
+                                    {{--                                            <i class="fa fa-file-pdf" aria-hidden="true"></i>--}}
+                                    {{--                                        </button>--}}
+                                    {{--                                    </form>--}}
 
-
+                                    <a :href="`${URL_ADMIN}/controle-exames/ficha-encaminhamento/${item.id}/${item.token}`"
+                                       target="_blank" content="Gerar PDF" class="btn btn-sm btn-primary mb-2">
+                                        <i class="fa fa-file-pdf" aria-hidden="true"></i>
+                                    </a>
                                 </td>
                             </tr>
                             </tbody>
@@ -562,6 +635,7 @@
                                         <th>Tipo de exame</th>
                                         <th>Clinica</th>
                                         <th>Encaminhado Por</th>
+                                        <th>Data para realização</th>
                                         <th>Aprovado</th>
                                         <th></th>
                                     </tr>
@@ -580,6 +654,9 @@
                                         <td>@{{ item.empresa_exame.nome }}</td>
                                         <td>
                                             @{{ item.quem_encaminhou.nome }}<br>em @{{ item.created_at }}
+                                        </td>
+                                        <td>
+                                            @{{ item.encaminhamento_data }}
                                         </td>
                                         <td>
                                             @{{ item.resultado ? item.resultado.resultado.aprovado : 'Aguardando' }}
@@ -625,9 +702,7 @@
     </modal>
 
     <preload class="text-center" v-if="controle.carregando"></preload>
-    <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
-        <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
-    </div>
+
     <fieldset>
         <legend>Filtro</legend>
         <form @submit.prevent="$refs.componente.buscar()">
@@ -711,6 +786,7 @@
                 <th>ID</th>
                 <th>Nome</th>
                 <th>Cargo</th>
+                <th>Ultimo Encaminhamento</th>
                 <th>
 
                 </th>
@@ -721,6 +797,7 @@
                 <td>@{{ colaborador.id }}</td>
                 <td>@{{ colaborador.curriculo.nome }}</td>
                 <td>@{{ colaborador.vaga_aberta.vaga.nome }}</td>
+                <td>@{{ colaborador.ultimo_encaminhamento }}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-primary mb-2" content="Encaminhar/historico" v-tippy
                             v-show="!colaborador.resultado_integrado"
