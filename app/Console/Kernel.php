@@ -53,7 +53,8 @@ class Kernel extends ConsoleKernel
         $schedule->call(new JobCalculoAvos())->weekly();
         $schedule->call(new JobCorrigePonto())->daily();
 
-        $schedule->call(Artisan::call('mybp:vencimentoAso'))->daily();
+        $schedule->command('mybp:vencimentoAso')->daily();
+        $schedule->command('mybp:ferias')->daily();
 //        $schedule->call(new Im)->daily();
     }
 
