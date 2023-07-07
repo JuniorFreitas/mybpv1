@@ -67,7 +67,6 @@
                         <div class="col-12 col-sm-6 col-md-4">
                             <datepicker
                                 label="DATA PARA REALIZAÇÃO"
-                                :disabled="visualizar"
                                 v-model="formFinalizar.encaminhado_exame_data"
                                 :min="dataHoje"
                             ></datepicker>

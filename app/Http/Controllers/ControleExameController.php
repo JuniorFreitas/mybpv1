@@ -124,7 +124,7 @@ class ControleExameController extends Controller
                         'colaborador_email' => trim(mb_strtolower($colaborador->Curriculo->email)),
                         'idade' => $colaborador->Curriculo->idade,
                         'tipoExame' => $tipoExame->label,
-                        'empresa_id' => $empExame->id,
+                        'empresa_id' => $empExame->empresa_id,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
 
@@ -134,7 +134,7 @@ class ControleExameController extends Controller
                         'assunto' => "Encaminhamento de Exame {$tipoExame->label}",
                         'colaborador' => $colaborador->Curriculo->nome,
                         'tipoExame' => $tipoExame->label,
-                        'empresa_id' => $empExame->id,
+                        'empresa_id' => $empExame->empresa_id,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
 
