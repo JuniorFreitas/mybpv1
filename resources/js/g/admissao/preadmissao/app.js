@@ -67,7 +67,14 @@ const app = new Vue({
             envia_email: true,
             envia_whatsapp: true,
         },
-        formFinalizarDefault: null,
+        formFinalizarDefault: {
+            feedback_id: '',
+            empresa_exame_id: '',
+            encaminhado_exame_data: '',
+            pcmso_id: '',
+            envia_email: true,
+            envia_whatsapp: true,
+        },
 
         lista: [],
         listaPcmsos: [],
@@ -203,6 +210,7 @@ const app = new Vue({
             this.aprovando = false;
             this.preloadFinalizar = true;
             Object.assign(this.formFinalizar, this.formFinalizarDefault);
+            this.formFinalizar = _.cloneDeep(this.formFinalizarDefault); //copia
             formReset();
 
             axios.get(`${URL_ADMIN}/preadmissao/finalizar/${id}`)
@@ -291,6 +299,7 @@ const app = new Vue({
             axios.post(`${URL_ADMIN}/preadmissao/finalizar-encaminhar`, this.formFinalizar)
                 .then(response => {
                     if (response.status === 201) {
+                        this.formFinalizar = _.cloneDeep(this.formFinalizarDefault); //copia
                         $('#janelaFinalizar').modal('hide');
                         this.mostraSucesso('Finalizado e encaminhado com sucesso!');
                         this.atualizar();
