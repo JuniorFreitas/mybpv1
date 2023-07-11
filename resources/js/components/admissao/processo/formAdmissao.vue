@@ -231,7 +231,7 @@
                     <label>Data do ASO</label>
                     <input type="text" class="form-control" placeholder="dd/mm/aaaa"
                            :disabled="visualizar || disabled"
-                           v-model="form.data_aso" v-mascara:data
+                           v-model="form.ultimo_aso.data_realizacao" v-mascara:data
                            readonly>
                 </div>
             </div>
@@ -475,7 +475,7 @@ export default {
                     cert_reservista_categoria: "",
                 },
                 ultimo_aso: {
-                    data_aso: ""
+                    data_realizacao: ""
                 },
                 ferias_adquiridas: [],
                 ferias_adquiridasDelete: [],

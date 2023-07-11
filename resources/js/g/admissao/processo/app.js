@@ -973,9 +973,9 @@ const app = new Vue({
                         };
                     }
 
-                    if (!admissao.ultimo_aso_ativo) {
-                        this.form.admissao.ultimo_aso_ativo = {
-                            "data_aso": ""
+                    if (!admissao.ultimo_aso) {
+                        this.form.admissao.ultimo_aso = {
+                            "data_realizacao": ""
                         };
                     }
 

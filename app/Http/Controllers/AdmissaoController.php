@@ -761,6 +761,7 @@ class AdmissaoController extends Controller
         $feedback->load(
             'Admissao.DadosAdmissoes',
             'Admissao.FeriasAdquiridas',
+            'Admissao.UltimoAso',
             'UltimoAso',
             'Curriculo.Formacao',
             'Curriculo.Dependentes',
@@ -819,11 +820,10 @@ class AdmissaoController extends Controller
             $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?? "";
             $feedback->Admissao->status = $feedback->Admissao->status ?? "";
             $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?? "";
-            $feedback->Admissao->data_aso = $feedback->UltimoAso->data_realizacao ?? "";
+//            $feedback->Admissao->data_aso = $feedback->UltimoAso->data_realizacao ?? "";
             $feedback->Admissao->salario = $feedback->Admissao->salario ?? "0,00";
             $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?? "";
         }
-
         $feedback->parecerRh->indicado_por = $feedback->parecerRh->indicado_por ?: "";
         $feedback->parecerRh->calca = $feedback->parecerRh->calca ?: "";
         $feedback->parecerRh->bota = $feedback->parecerRh->bota ?: "";
