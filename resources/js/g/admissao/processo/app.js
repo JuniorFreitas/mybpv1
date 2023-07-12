@@ -240,8 +240,8 @@ const app = new Vue({
                     cert_reservista_categoria: "",
                 },
                 // data_aso: "",
-                ultimo_aso_ativo: {
-                    data_aso: ""
+                ultimo_aso: {
+                    data_realizacao: ""
                 },
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
@@ -467,8 +467,8 @@ const app = new Vue({
                     cert_reservista_categoria: "",
                 },
                 // data_aso: "",
-                ultimo_aso_ativo: {
-                    data_aso: ""
+                ultimo_aso: {
+                    data_realizacao: ""
                 },
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
@@ -521,8 +521,8 @@ const app = new Vue({
             data_encerramento: "",
             documento_portaria: "",
             // data_aso: "",
-            ultimo_aso_ativo: {
-                data_aso: ""
+            ultimo_aso: {
+                data_realizacao: ""
             },
             status_carteira_treinamento: "",
             status: "",

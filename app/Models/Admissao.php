@@ -889,7 +889,7 @@ class Admissao extends Model
     }
 
     public function UltimoAso(){
-        return $this->hasOne(Examesesmt::class, 'feedback_id', 'id')
+        return $this->hasOne(Examesesmt::class, 'feedback_id', 'feedback_id')
             ->whereJsonContains('resultado->aprovado', 'Sim')
             ->whereExameRealizado(true)
             ->whereAtual(true)
