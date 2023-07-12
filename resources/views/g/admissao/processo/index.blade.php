@@ -1188,7 +1188,7 @@
                             <div class="form-group">
                                 <label>Data do ASO</label>
                                 <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
-                                       v-model="form_massa.ultimo_aso_ativo.data_aso" v-mascara:data
+                                       v-model="form_massa.ultimo_aso.data_realizacao" v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
                                        @blur.prevent="valida_data($event.target)">
                             </div>
@@ -1565,7 +1565,7 @@
                     </td>
 
                     <td v-if="controle.dados.filtroAso">
-                        @{{item.admissao ? item.admissao.data_aso : '' }}
+                        @{{item.admissao ? item.admissao.ultimo_aso.data_realizacao : '' }}
                     </td>
 
                     <td v-if="controle.dados.filtroDataAdmissao">

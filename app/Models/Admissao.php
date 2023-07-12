@@ -888,6 +888,15 @@ class Admissao extends Model
         return $this->hasOne(AdmissaoAso::class, 'admissao_id', 'id')->whereAtivo(true);
     }
 
+    public function UltimoAso(){
+        return $this->hasOne(Examesesmt::class, 'feedback_id', 'feedback_id')
+            ->whereJsonContains('resultado->aprovado', 'Sim')
+            ->whereExameRealizado(true)
+            ->whereAtual(true)
+            ->orderByDesc('data_vencimento');
+    }
+
+
     /**
      * @param $feedback_id
      * @param $tipo_admissao

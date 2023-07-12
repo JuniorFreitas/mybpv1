@@ -56,9 +56,10 @@ try {
             ->whereEmpresaExameId($empresaExameId)
             ->where('exame_tipo_id', $exame_tipo_id)
             ->where('pcmso_id', $pcmso_id)
-            ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();;
+            ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
+
         if (is_null($temExameFuncionario)) {
-            $exameFuncionario = ExameFuncionario::withoutGlobalScopes()->create([
+            $exameFuncionario = ExameFuncionario::withoutGlobalScopes()->firstOrCreate([
                 'feedback_id' => $admissao->feedback_id,
                 'empresa_id' => $empresa_id,
                 'empresa_exame_id' => $empresaExameId,
@@ -90,7 +91,7 @@ try {
                     "espacao_confinado" => "Não se aplica"
                 ];
 
-                $exameSesmt = \App\Models\Examesesmt::withoutGlobalScopes()->create([
+                $exameSesmt = \App\Models\Examesesmt::withoutGlobalScopes()->firstOrCreate([
                     'feedback_id' => $admissao->feedback_id,
                     'empresa_id' => $empresa_id,
                     'exame_funcionario_id' => $exameFuncionario->id,
@@ -104,6 +105,14 @@ try {
                 ]);
             }
         }
+
+        \App\Models\ResultadoIntegrado::withoutGlobalScopes()->whereFeedbackId($admissao->feedback_id)->update([
+            "encaminhado_exame" => true,
+            "encaminhado_exame_data" => (new DataHora($encaminhamento_data))->dataInsert(),
+            "pcmso_id" => $pcmso_id,
+            "empresa_exame_id" => $empresaExameId,
+        ]);
+
 //        Log::debug('Ultimo Inserido: '.$item->id);
         echo 'Ultimo Inserido: ' . $item->id . PHP_EOL;
         DB::commit();
