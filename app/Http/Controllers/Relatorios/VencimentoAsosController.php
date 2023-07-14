@@ -34,13 +34,14 @@ class VencimentoAsosController extends Controller
         $data->addDia($periodo_vencimento);
 
         $examesFuncionarios = FeedbackCurriculo::select(['id', 'curriculo_id', 'empresa_id', 'vaga_id', 'vagas_abertas_id'])
+            ->admitidos()
             ->whereHas('UltimoAso', function ($q) use ($request){
                 $filtroVencimento = $request->filtroVencimento == 'true' ? true : false;
                 if ($filtroVencimento) {
                     $periodo = explode(' até ', $request->campoVencimento);
                     $dataInicio = new DataHora($periodo[0]);
                     $dataFim = new DataHora($periodo[1]);
-                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert())->where('data_vencimento', '<=', $dataFim->dataInsert());
+                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert().' 00:00:00')->where('data_vencimento', '<=', $dataFim->dataInsert().' 23:59:59');
                 }
                 if(!is_null($request->campoVencido)){
                     $q->where('vencido', $request->campoVencido);
@@ -72,9 +73,12 @@ class VencimentoAsosController extends Controller
                 'exame_tipo' => $item->UltimoAso->ExameFuncionario[0]->ExameTipo->label,
                 'data_aso' => $item->UltimoAso->data_realizacao,
                 'data_vencimento' => $item->UltimoAso->data_vencimento,
-                'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert(), (new DataHora($item->UltimoAso->data_vencimento))->dataInsert())
+                'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert().' 00:00:00', (new DataHora($item->UltimoAso->data_vencimento))->dataInsert().' 23:59:59'),
             ];
         });
+
+        $examesFuncionarios = $examesFuncionarios->sortBy('dias_vencer')->values()->all();
+
         return response()->json($examesFuncionarios);
     }
 
