@@ -103,14 +103,12 @@ class ResultadoIntegradoController extends Controller
                         ]);
                     }
                 }
-
                 \DB::commit();
 
                 is_null($dados['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
                 is_null($dados['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
 
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dados, $empresaExame, $tipo_pcmso);
-
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();

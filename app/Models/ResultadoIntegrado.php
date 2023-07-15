@@ -303,6 +303,7 @@ class ResultadoIntegrado extends Model
                     'email' => $feedback->Curriculo->email,
                     'empresa_id' => $feedback->empresa_id,
                     'url_documento' => $urlDocumento,
+                    'observacao' => isset($dados['obs']) ?: '',
                 ]);
             }
         }
