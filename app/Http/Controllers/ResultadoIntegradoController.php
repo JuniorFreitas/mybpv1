@@ -2,12 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Classes\ZapNotificacao;
-use App\Jobs\Entrevista\JobEnvioDocumento;
-use App\Jobs\Entrevista\ResultadoIntegrado\JobEncaminhamentoExame;
 use App\Jobs\JobExportaExcel;
-use App\Mail\Entrevista\EnvioDocumentosMail;
-use App\Models\Cliente;
 use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
 use App\Models\FeedbackCurriculo;
