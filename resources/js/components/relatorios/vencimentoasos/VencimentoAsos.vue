@@ -73,7 +73,7 @@
         <div v-if="!preload">
             <p class="py-3 mt-3">
                 <i class="fas fa-circle text-danger ml-2"></i>
-                Colaborador com menos de {{ authconfiguracao.periodo_vencimento_extenso}} para o vencimento.
+                Colaborador com menos de {{ periodo_vencimento_extenso }} para o vencimento.
             </p>
 
             <div class="alert alert-warning" v-show="!dados.length">
@@ -95,7 +95,7 @@
                 </thead>
                 <tbody>
                 <tr v-for="(vencimento, index) in dados" :key="index"
-                    :class="vencimento.dias_vencer <= authconfiguracao.periodo_vencimento_numero ? 'table-danger': ''">
+                    :class="vencimento.dias_vencer <= periodo_vencimento_numero ? 'table-danger': ''">
                     <td style="text-align: center">{{ index + 1 }}</td>
                     <td style="text-align: center">{{ vencimento.colaborador }}</td>
                     <td style="text-align: center">{{ vencimento.cargo }}</td>
@@ -131,6 +131,8 @@ export default {
             preload: false,
             dados: [],
             listaTiposExame: [],
+            periodo_vencimento_numero: null,
+            periodo_vencimento_extenso: null,
 
             urlExportacao: `${URL_ADMIN}/relatorios/vencimentoasos/export-excel`,
 
@@ -159,7 +161,9 @@ export default {
         buscarDados() {
             this.preload = true;
             axios.post(`${URL_ADMIN}/relatorios/vencimentoasos`, this.controle.dados).then(res => {
-                this.dados = res.data;
+                this.dados = res.data.dados;
+                this.periodo_vencimento_numero = res.data.periodo_vencimento_numero;
+                this.periodo_vencimento_extenso = res.data.periodo_vencimento_extenso;
                 // this.listaTiposExame = this.dados.lista_tipos_exame;
                 this.preload = false;
             })

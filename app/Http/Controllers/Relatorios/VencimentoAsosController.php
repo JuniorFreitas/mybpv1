@@ -60,7 +60,7 @@ class VencimentoAsosController extends Controller
             ->with('VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id')
             ->groupBy('id')->get();
 
-        $examesFuncionarios = $examesFuncionarios->map(function ($item) {
+        $examesFuncionarios = $examesFuncionarios->map(function ($item) use($periodo_vencimento) {
             return [
                 'feedback_id' => $item->id,
                 'colaborador' => $item->Curriculo->nome,
@@ -79,7 +79,13 @@ class VencimentoAsosController extends Controller
     public function show(Request $request)
     {
         $examesFuncionarios = self::filtro(auth()->user()->empresa_id, $request->input());
-        return response()->json($examesFuncionarios);
+        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->vencimento_aso];
+        $periodo_vencimento = (int)preg_replace("/[^0-9]/", "", $periodo_vencimento);
+
+        return response()->json(['dados' => $examesFuncionarios,
+            'periodo_vencimento_numero' => (int)preg_replace("/[^0-9]/", "", $periodo_vencimento),
+            'periodo_vencimento_extenso' => $periodo_vencimento,
+            ]);
     }
 
     public function exportExcel(Request $request)

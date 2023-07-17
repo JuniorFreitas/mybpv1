@@ -181,9 +181,6 @@ class UserController extends Controller
         $whatsappLiberado = ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first();
         $temfilial = ClienteFilial::select('id')->whereEmpresaId(auth()->user()->empresa_id)->whereAtivo(true)->first();
 
-        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[$cliente->EmpresaConfiguracoes->vencimento_aso];
-
-
         if ($cliente) {
             $usuario = [
                 'cliente_id' => auth()->user()->empresa_id,
@@ -195,8 +192,6 @@ class UserController extends Controller
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'temFilial' => (bool)$temfilial,
                 'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
-                'periodo_vencimento_numero' => (int)preg_replace("/[^0-9]/", "", $periodo_vencimento),
-                'periodo_vencimento_extenso' => $periodo_vencimento,
             ];
 
         } else {
@@ -210,8 +205,6 @@ class UserController extends Controller
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'temFilial' => (bool)$temfilial,
                 'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
-                'periodo_vencimento_numero' => (int)preg_replace("/[^0-9]/", "", $periodo_vencimento),
-                'periodo_vencimento_extenso' => $periodo_vencimento,
             ];
         }
 
