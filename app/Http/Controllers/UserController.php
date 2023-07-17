@@ -181,6 +181,10 @@ class UserController extends Controller
         $whatsappLiberado = ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first();
         $temfilial = ClienteFilial::select('id')->whereEmpresaId(auth()->user()->empresa_id)->whereAtivo(true)->first();
 
+        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->vencimento_aso];
+        $periodo_vencimento = (int)preg_replace("/[^0-9]/", "", $periodo_vencimento);
+
+
         if ($cliente) {
             $usuario = [
                 'cliente_id' => auth()->user()->empresa_id,
@@ -191,7 +195,9 @@ class UserController extends Controller
                 'user_id' => auth()->id(),
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'temFilial' => (bool)$temfilial,
-                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido
+                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
+                'periodo_vencimento_numero' => $periodo_vencimento,
+                'periodo_vencimento_extenso' => ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->vencimento_aso]
             ];
 
         } else {
@@ -204,7 +210,9 @@ class UserController extends Controller
                 'user_id' => auth()->id(),
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'temFilial' => (bool)$temfilial,
-                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido
+                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
+                'periodo_vencimento_numero' => $periodo_vencimento ?? null,
+                'periodo_vencimento_extenso' => ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->vencimento_aso] ?? null
             ];
         }
 

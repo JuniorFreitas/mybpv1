@@ -62,20 +62,25 @@
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
+
+                <button type="button" class="btn btn-sm btn-primary" :disabled="preload || !dados.length"
+                        @click.prevent="exportaExcel()">
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                </button>
             </div>
         </fieldset>
         <preload v-show="preload" class="text-center"></preload>
         <div v-if="!preload">
-           <p class="py-3 mt-3">
-               <i class="fas fa-circle text-danger ml-2"></i>
-               Colaborador com menos de 30 dias para o vencimento.
-           </p>
+            <p class="py-3 mt-3">
+                <i class="fas fa-circle text-danger ml-2"></i>
+                Colaborador com menos de {{ authconfiguracao.periodo_vencimento_extenso}} para o vencimento.
+            </p>
 
             <div class="alert alert-warning" v-show="!dados.length">
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-           <table class="mt-4 table table-bordered tabela" v-if="dados.length">
+            <table class="mt-4 table table-bordered tabela" v-if="dados.length">
                 <thead>
                 <tr>
                     <th style="text-align: center; width: 45px ;">#</th>
@@ -89,8 +94,9 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="(vencimento, index) in dados" :key="index" :class="vencimento.dias_vencer <= 30 ? 'table-danger': ''">
-                    <td style="text-align: center">{{ index+1 }}</td>
+                <tr v-for="(vencimento, index) in dados" :key="index"
+                    :class="vencimento.dias_vencer <= authconfiguracao.periodo_vencimento_numero ? 'table-danger': ''">
+                    <td style="text-align: center">{{ index + 1 }}</td>
                     <td style="text-align: center">{{ vencimento.colaborador }}</td>
                     <td style="text-align: center">{{ vencimento.cargo }}</td>
                     <td style="text-align: center">{{ vencimento.data_admissao }}</td>
@@ -114,97 +120,106 @@ import configselect2 from "../../Select2/mixSelec2";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
 import Utils from "../../../mixins/Utils";
 import Validacoes from "../../../mixins/Validacoes";
+import Configuracoes from "../../../mixins/Configuracoes.js";
 
-    export default {
-        mixins: [configselect2, ExportacaoMixin, Utils, Validacoes],
-        data() {
-            return {
-                hash: String(Math.random()).substr(2),
+export default {
+    mixins: [configselect2, ExportacaoMixin, Utils, Validacoes, Configuracoes],
+    data() {
+        return {
+            hash: String(Math.random()).substr(2),
 
-                preload: false,
-                dados: [],
-                listaTiposExame: [],
-                controle: {
-                    carregando: false,
-                    dados: {
-                        campoBusca: "",
-                        campoTipoExame: "",
-                        campoVencido: "",
-                        filtroVencimento: false,
-                        campoVencimento: "",
-                    }
+            preload: false,
+            dados: [],
+            listaTiposExame: [],
+
+            urlExportacao: `${URL_ADMIN}/relatorios/vencimentoasos/export-excel`,
+
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: "",
+                    campoTipoExame: "",
+                    campoVencido: "",
+                    filtroVencimento: false,
+                    campoVencimento: "",
                 }
             }
-        },
-        mounted() {
-            this.buscarDados();
-            this.tiposExames();
-        },
-        methods: {
-            buscarDados() {
-                this.preload = true;
-                axios.post(`${URL_ADMIN}/relatorios/vencimentoasos`, this.controle.dados).then(res => {
-                    this.dados = res.data;
-                    // this.listaTiposExame = this.dados.lista_tipos_exame;
-                    this.preload = false;
-                })
-            },
-            gerarPdf() {
-                // let link = `${URL_ADMIN}/relatorios/controleusuarios/pdf/${this.form}`;
-                // open(link, '_blank');
-            },
-            tiposExames() {
-                axios.get(`${URL_ADMIN}/relatorios/tipos-exames`).then(response => {
-                    this.listaTiposExame = response.data;
-                });
-            },
         }
+    },
+    mounted() {
+        this.buscarDados();
+        this.tiposExames();
+    },
+    computed: {
+        paramsExport() {
+            return this.controle.dados;
+        }
+    },
+    methods: {
+        buscarDados() {
+            this.preload = true;
+            axios.post(`${URL_ADMIN}/relatorios/vencimentoasos`, this.controle.dados).then(res => {
+                this.dados = res.data;
+                // this.listaTiposExame = this.dados.lista_tipos_exame;
+                this.preload = false;
+            })
+        },
+        gerarPdf() {
+            // let link = `${URL_ADMIN}/relatorios/controleusuarios/pdf/${this.form}`;
+            // open(link, '_blank');
+        },
+        tiposExames() {
+            axios.get(`${URL_ADMIN}/relatorios/tipos-exames`).then(response => {
+                this.listaTiposExame = response.data;
+            });
+        },
     }
+}
 </script>
 
 <style scoped>
-    .card {
-        border: none;
-        background: transparent;
-    }
+.card {
+    border: none;
+    background: transparent;
+}
 
-    ul.timeline {
-        list-style-type: none;
-        position: relative;
-    }
+ul.timeline {
+    list-style-type: none;
+    position: relative;
+}
 
-    ul.timeline:before {
-        content: ' ';
-        background: #d4d9df;
-        display: inline-block;
-        position: absolute;
-        left: 29px;
-        width: 2px;
-        height: 100%;
-        z-index: 400;
-    }
+ul.timeline:before {
+    content: ' ';
+    background: #d4d9df;
+    display: inline-block;
+    position: absolute;
+    left: 29px;
+    width: 2px;
+    height: 100%;
+    z-index: 400;
+}
 
-    ul.timeline > li {
-        margin: 20px 0;
-        padding-left: 20px;
-    }
+ul.timeline > li {
+    margin: 20px 0;
+    padding-left: 20px;
+}
 
-    ul.timeline > li:before {
-        content: ' ';
-        background: white;
-        display: inline-block;
-        position: absolute;
-        border-radius: 50%;
-        border: 3px solid #184056;
-        left: 20px;
-        width: 20px;
-        height: 20px;
-        z-index: 400;
-    }
+ul.timeline > li:before {
+    content: ' ';
+    background: white;
+    display: inline-block;
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid #184056;
+    left: 20px;
+    width: 20px;
+    height: 20px;
+    z-index: 400;
+}
 
-    .trackind {
-        padding: .5rem .8rem;
-        background-color: #f4f4f4;
-        border-radius: .5rem;
-    }
+.trackind {
+    padding: .5rem .8rem;
+    background-color: #f4f4f4;
+    border-radius: .5rem;
+}
 </style>
