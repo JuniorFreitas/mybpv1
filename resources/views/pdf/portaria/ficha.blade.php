@@ -75,8 +75,26 @@
             background-color: #045588;
         }
 
+        #openModalButton {
+            padding: 5px 13px 5px 13px;
+            cursor: pointer;
+            margin-left: 10px;
+            background-color: #999999;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 1s;
+        }
+
+        #openModalButton:hover {
+            background-color: #333333;
+        }
+
         @media print {
             #printPageButton {
+                display: none;
+            }
+            #openModalButton {
                 display: none;
             }
         }
@@ -199,10 +217,98 @@
             -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: none;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 60%;
+            height: 60%;
+            overflow: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: row;
+        }
+        .text{
+            padding: 20px;
+        }
+        .text h4 {
+            margin-bottom: 15px;
+        }
+        .text p {
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 600px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 style="padding: 10px;">Instruções para melhor impressão</h2>
+        <div class="content-wrapper">
+            <div class="image">
+                <img src="https://mybp-prod.s3.amazonaws.com/public/imprimir_portaria.jpeg">
+            </div>
+            <div class="text">
+                <p>Para imprimir um documento com escala 80%, você pode seguir as instruções a seguir, dependendo do navegador que estiver usando:</p>
+                <h4>Google Chrome/Firefox:</h4>
+                <p>
+                    1. Abra o documento que deseja imprimir.<br>
+                    2. Pressione "Ctrl + P" (ou "Cmd + P" em um Mac) para abrir a caixa de diálogo de impressão.<br>
+                    3. Na seção "Configurações", procure a opção "Escala" ou "Dimensionar".<br>
+                    4. Selecione a opção "Personalizado" ou "Porcentagem" e digite "80%".<br>
+                    5. Verifique as outras configurações de impressão, como orientação do papel, margens, cabeçalho/rodapé, etc.<br>
+                    6. Clique em "Imprimir" para iniciar o processo de impressão com a escala de 80%.
+                </p>
+                <h4>Microsoft Edge:</h4>
+                <p>
+                    1. Abra o documento que deseja imprimir.<br>
+                    2. Pressione "Ctrl + P" (ou "Cmd + P" em um Mac) para abrir a caixa de diálogo de impressão.<br>
+                    3. Na seção "Configurações", procure a opção "Mais configurações".<br>
+                    4. Em "Escala", selecione a opção "Personalizado" e digite "80%".<br>
+                    5. Verifique as outras configurações de impressão, como orientação do papel, margens, cabeçalho/rodapé, etc.<br>
+                    6. Clique em "Imprimir" para iniciar o processo de impressão com a escala de 80%.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 <button id="printPageButton" onClick="window.print()">IMPRIMIR</button>
+<button id="openModalButton" onClick="openModal()">INSTRUÇÕES PARA IMPRESSÃO</button>
 <?php $cont = 0; ?>
 @foreach($feedbacks as $candidato)
     <div class="a4">
@@ -396,6 +502,15 @@
         <div style="page-break-after: always"></div>
     @endif
 @endforeach
+<script type="text/javascript">
+    function openModal() {
+        document.getElementById("myModal").style.display = "block";
+    }
 
+    function closeModal() {
+        document.getElementById("myModal").style.display = "none";
+    }
+
+</script>
 </body>
 </html>

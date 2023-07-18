@@ -30,16 +30,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $prazo_experiencia
  * @property string|null $tipo_treinamento
  * @property string|null $treinamento
- * @property string|null $data_treinamento
+ * @property mixed|null $data_treinamento
  * @property string|null $carteira_treinamento
  * @property string|null $nr_trinta_tres
- * @property string|null $data_nr_trinta_tres
+ * @property mixed|null $data_nr_trinta_tres
  * @property string|null $nr_trinta_cinco
- * @property string|null $data_nr_trinta_cinco
+ * @property mixed|null $data_nr_trinta_cinco
  * @property string|null $trinta_dois_sessenta
- * @property string|null $data_trinta_dois_sessenta
+ * @property mixed|null $data_trinta_dois_sessenta
  * @property string|null $numero_cracha
- * @property string|null $data_aso
+ * @property mixed|null $data_aso
  * @property bool|null $foto_escaneada
  * @property string|null $status_carteira_treinamento
  * @property int|null $usuario_id
@@ -53,12 +53,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $obs_avaliacao
  * @property int|null $user_avaliacao
  * @property string|null $responsavel_feedback
- * @property string|null $data_avaliacao
+ * @property mixed|null $data_avaliacao
  * @property int|null $area_etiqueta_id
  * @property bool|null $deu_baixa_epi
  * @property bool|null $cipa
  * @property array|null $alternativas
- * @property string|null $data_desmob
+ * @property mixed|null $data_desmob
  * @property int|null $usuario_desmob
  * @property bool|null $pendencia
  * @property string|null $pendencias_quais
@@ -66,7 +66,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $preenchido_por_rh
  * @property string|null $preenchido_por_adm
  * @property string|null $preenchido_por_ssma
- * @property string|null $data_entrega_area
+ * @property mixed|null $data_entrega_area
  * @property bool|null $biometria
  * @property string|null $data_biometria
  * @property int|null $formulario_id
@@ -168,7 +168,22 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsuarioId($value)
  * @method static \Illuminate\Database\Query\Builder|Admissao withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Admissao withoutTrashed()
- * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasAdquiridas[] $FeriasAdquiridas
+ * @property-read int|null $ferias_adquiridas_count
+ * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property int $usar_salario_base
+ * @property mixed|null $movimentacoes
+ * @property string|null $acessar_area_porto
+ * @property string|null $avaliacao_psicologica
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAcessarAreaPorto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAvaliacaoPsicologica($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereMovimentacoes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsarSalarioBase($value)
+ * @property bool $filial
+ * @property int|null $centro_custo_filial_id
+ * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilial
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereCentroCustoFilialId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereFilial($value)
  */
 class Admissao extends Model
 {
@@ -474,6 +489,25 @@ class Admissao extends Model
         } else {
             $this->attributes['data_adm_prevista'] = null;
         }
+    } //Acessor ->data_adm_prevista
+
+    public function getDataAsoAttribute($value)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes['data_aso']);
+            return $data->dataCompleta();
+        }
+        return null;
+    }
+
+    //Acessor ->data_adm_prevista
+    public function setDataAsoAttribute($value)
+    {
+        if (!is_null($value) && $value != 'aaaa-mm-dd') {
+            $data = new DataHora($value);
+            $this->attributes['data_aso'] = $data->dataInsert();
+        }
+        $this->attributes['data_aso'] = null;
     }
 
     public function getDataEntregaAreaAttribute($value)
@@ -856,6 +890,15 @@ class Admissao extends Model
     {
         return $this->hasOne(AdmissaoAso::class, 'admissao_id', 'id')->whereAtivo(true);
     }
+
+    public function UltimoAso(){
+        return $this->hasOne(Examesesmt::class, 'feedback_id', 'feedback_id')
+            ->whereJsonContains('resultado->aprovado', 'Sim')
+            ->whereExameRealizado(true)
+            ->whereAtual(true)
+            ->orderByDesc('data_vencimento');
+    }
+
 
     /**
      * @param $feedback_id

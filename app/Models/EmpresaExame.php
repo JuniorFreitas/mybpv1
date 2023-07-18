@@ -39,6 +39,9 @@ class EmpresaExame extends Model
 {
     use HasFactory, TenantTrait;
 
+    const TABELA = 'empresa_exames';
+    protected $table = self::TABELA;
+
     protected $fillable = [
         "user_id",
         "empresa_id",

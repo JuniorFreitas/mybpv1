@@ -652,7 +652,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::delete('controle-exames-resultado/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoDelete'])->name('anexo-delete');
         Route::post('controle-exames-resultado/uploadAnexos', [\App\Http\Controllers\ControleExameController::class, 'uploadAnexos'])->name('.upload-anexos');
 
-        Route::post('controle-exames/ficha-encaminhamento/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
+        Route::get('controle-exames/ficha-encaminhamento/{exame}/{token}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
         Route::get('controle-exames/carregaResposta', [\App\Http\Controllers\ControleExameController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('controle-exames/resultado/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getResultado'])->name('getResultado');
         Route::post('controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');
@@ -701,8 +701,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'preadm.', 'prefix' => 'preadmissao'], function () {
             Route::post('atualizar', [\App\Http\Controllers\PreAdmissaoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::get('/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'show'])->name('show');
+            Route::get('finalizar/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'showFinalizar'])->name('showFinalizar');
             Route::get('/editar/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'edit'])->name('edit');
             Route::post('/enviar-email', [\App\Http\Controllers\PreAdmissaoController::class, 'enviarEmail'])->name('enviarEmail');
+            Route::post('/finalizar-encaminhar', [\App\Http\Controllers\PreAdmissaoController::class, 'finalizarEncaminhar'])->name('finalizarEncaminhar');
             Route::get('/', [\App\Http\Controllers\PreAdmissaoController::class, 'index'])->name('index');
         });
 
@@ -1004,6 +1006,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
         Route::group(['as' => 'vencimentoasos.'], function () {
             Route::get('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'index'])->name('index')->middleware('can:relatorio_asos');
+            Route::get('tipos-exames', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'tiposExames'])->name('tiposExames')->middleware('can:relatorio_asos');
+            Route::post('vencimentoasos/export-excel', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_asos');
             Route::post('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'show'])->name('show')->middleware('can:relatorio_asos');
         });
         Route::group(['as' => 'medidasadministrativas.'], function () {

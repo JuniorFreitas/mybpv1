@@ -67,9 +67,7 @@ class ControleExamesController extends Controller
 //
 //        if ($request->filled('campoBusca')) {
 //            $resultado->whereHas('Curriculo', function ($query) use ($request) {
-//                $query->where('nome', 'like', '%' . $request->campoBusca . '%')
-//                    ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
-//                    ->orWhere('id', $request->campoBusca);
+//                $query->where('nome', 'like', '%' . $request->campoBusca . '%');
 //            });
 //        }
 //
@@ -99,7 +97,7 @@ class ControleExamesController extends Controller
 //
 //        $resultado = $resultado->orderByDesc('created_at');
 
-        return $resultado;
+//        return $resultado;
     }
 
     public function atualizar(Request $request)

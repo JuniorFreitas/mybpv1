@@ -38,7 +38,13 @@ class CartaOfertaController extends Controller
                     $q->withoutGlobalScopes();
                 },
             ])
-            ->first()->toArray();
+            ->first();
+
+        if (!$cartaOferta) {
+            return abort(404);
+        }
+
+        $cartaOferta = $cartaOferta->toArray();
 
         return view('cartaoferta.index', compact('cartaOferta', 'Empresa'));
     }
@@ -65,19 +71,23 @@ class CartaOfertaController extends Controller
 
         if ($cartaOferta->first()->status == CartaOferta::STATUS_PENDENTE_ANEXO) {
 
-            $logs = $cartaOferta->first()->logs;
+            $logsAntigo = json_decode($cartaOferta->first()->logs,1);
 
-            $logs[] = [
+            $logsAntigo[] = [
                 'data' => (new DataHora())->dataHoraInsert(),
                 'mensagem' => 'Carta de oferta enviada pelo o candidato',
                 'status' => 'Enviado pelo candidato',
                 'usuario' => \DB::table('users')->where('id', $cartaOferta->first()->curriculo_id)->first()->nome
             ];
 
+            usort($logsAntigo, function ($a, $b) {
+                return strtotime($b['data']) - strtotime($a['data']);
+            });
+
             $cartaOferta->update([
                 'status' => CartaOferta::STATUS_AGUARDANDO_RH,
                 'arquivo_id' => $request->arquivo['id'],
-                'logs' => $logs
+                'logs' => $logsAntigo
             ]);
 
             return response()->json(['message' => 'Carta de oferta enviada com sucesso!'], 200);

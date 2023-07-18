@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,23 +27,23 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Formulario extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantTrait;
 
-    protected $table = 'formularios';
+    const TABELA = 'formularios';
+    protected $table = self::TABELA;
+
     protected $fillable = ['titulo', 'descricao', 'empresa_id'];
     protected $casts = ['id' => 'int', 'titulo' => 'string', 'descricao' => 'string', 'empresa_id' => 'int'];
 
-    public function usesTimestamps(): bool
-    {
-        return false;
-    }
+    public $timestamps = false;
 
     public function Setores()
     {
         return $this->belongsToMany(SetoresFormulario::class, 'formulario_setores', 'formulario_id', 'setores_id')->orderBy('ordem');
     }
 
-    protected static function booted() {
+    protected static function booted()
+    {
         static::creating(function ($model) {
             $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
         });
@@ -51,6 +52,6 @@ class Formulario extends Model
             $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
         });
 
-        static::addGlobalScope(new ScopeEmpresa());
+//        static::addGlobalScope(new ScopeEmpresa());
     }
 }

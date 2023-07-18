@@ -279,12 +279,12 @@ class ResultadoIntegrado extends Model
     public static function Notificacao(FeedbackCurriculo $feedback, User $user, $dados, $empresaExame, $tipo_pcmso)
     {
         $telWhatsapp = $feedback->Curriculo->Telefones->where('tipo', 'whatsapp')->where('principal', true)->first();
-        $urlDocumento = env('APP_URL')."/".$user->Empresa->apelido."/documentos";
+        $urlDocumento = env('APP_URL') . "/" . $user->Empresa->apelido . "/documentos";
         if ($dados['documentos_entregue']) {
             if ($user->EmpresaConfiguracoes->envia_whatsapp && $telWhatsapp && $dados['envia_whatsapp_documentos']) {
                 $mensagem = "Prezado(a) sr(a) *{$feedback->Curriculo->nome}*, Tudo bem?\n\n👏🏽 Parabéns por chegado até esta etapa! Você foi aprovado na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.\n\n" .
                     "Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.\n\n" .
-                    $urlDocumento."\n\n" .
+                    $urlDocumento . "\n\n" .
                     "Destaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões para que não haja atraso na etapa de documentação, necessária para a continuidade de sua admissão.\n\n" .
                     "Atenciosamente,\n\n" .
                     "Equipe " . $user->Empresa->razao_social . "\n\n" .
@@ -301,6 +301,7 @@ class ResultadoIntegrado extends Model
                     'email' => $feedback->Curriculo->email,
                     'empresa_id' => $feedback->empresa_id,
                     'url_documento' => $urlDocumento,
+                    'observacao' => isset($dados['obs']) ?: '',
                 ]);
             }
         }

@@ -239,7 +239,7 @@
             </tr>
             <tr>
                 <td>Data do ASO: <br>
-                    <strong>{{ $dados['dados_colaborador']->Admissao->UltimoAsoAtivo->data_aso ?? 'Não informado' }}</strong>
+                    <strong>{{ $dados['dados_colaborador']->UltimoAso->data_realizacao ?? 'Não informado' }}</strong>
                 </td>
                 <td>Data da Admissão: <br>
                     <strong>{{ $dados['dados_colaborador']->Admissao->data_admissao ?? 'Não Informado'}}</strong></td>

@@ -1,7 +1,7 @@
 <div class="footer">
     <p class="obs">
         Esse documento foi gerado automaticamente pelo usuário {{ auth()->user()->nome }}: <br>
-        Sistema Integrado MYBP em {{ (new \MasterTag\DataHora())->dataCompleta() }}
+        Sistema Integrado BPIN by MyBP em {{ (new \MasterTag\DataHora())->dataCompleta() }}
         às {{ (new \MasterTag\DataHora())->horaCompleta() }}.
     </p>
     <div>
