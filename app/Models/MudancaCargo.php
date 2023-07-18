@@ -37,6 +37,76 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Query\Builder|MudancaCargo withTrashed()
  * @method static \Illuminate\Database\Query\Builder|MudancaCargo withoutTrashed()
  * @mixin \Eloquent
+ * @property int $id
+ * @property int $empresa_id
+ * @property int $admissao_id
+ * @property int $colaborador_id
+ * @property bool $mantem_centro_custo
+ * @property int|null $anterior_centro_custo_id
+ * @property bool|null $anterior_filial
+ * @property int|null $anterior_centro_custo_filial_id
+ * @property int|null $novo_centro_custo_id
+ * @property bool|null $novo_filial
+ * @property int|null $novo_centro_custo_filial_id
+ * @property bool $mantem_cargo
+ * @property int|null $anterior_vaga_aberta_id
+ * @property int|null $nova_vaga_aberta_id
+ * @property bool|null $mantem_funcao
+ * @property string|null $anterior_funcao
+ * @property string|null $nova_funcao
+ * @property bool $mantem_salario
+ * @property int $solicitante_id
+ * @property string|null $obs_solicitante
+ * @property int|null $gestor_id
+ * @property int|null $gestor_aprovacao_id
+ * @property string|null $obs_gestor_aprovacao
+ * @property string|null $status_aprovacao_gestor
+ * @property int|null $rh_aprovacao_id
+ * @property string|null $obs_rh
+ * @property string|null $status_aprovacao_rh
+ * @property bool $aprovado_via_script
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int|null $quem_deletou_id
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\Admissao|null $Admissao
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAdmissaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAnteriorCentroCustoFilialId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAnteriorCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAnteriorFilial($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAnteriorFuncao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAnteriorSalario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAnteriorVagaAbertaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAprovadoViaScript($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereColaboradorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereDataAprovacaoGestor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereDataSolicitacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereGestorAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereMantemCargo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereMantemCentroCusto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereMantemFuncao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereMantemSalario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereNovaFuncao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereNovaVagaAbertaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereNovoCentroCustoFilialId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereNovoCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereNovoFilial($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereNovoSalario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereObsGestorAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereObsRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereObsSolicitante($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereQuemDeletouId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereRhAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereSolicitanteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereStatusAprovacaoGestor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereStatusAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereUpdatedAt($value)
  */
 class MudancaCargo extends Model
 {

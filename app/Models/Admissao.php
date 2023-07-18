@@ -184,6 +184,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilial
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereCentroCustoFilialId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereFilial($value)
+ * @property-read \App\Models\Examesesmt|null $UltimoAso
+ * @mixin \Eloquent
  */
 class Admissao extends Model
 {

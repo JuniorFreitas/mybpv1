@@ -7,6 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\FeedbackPreadmissao
+ *
+ * @property int $id
+ * @property int $feedback_id
+ * @property int $user_finalizou_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\FeedbackCurriculo $Feedback
+ * @property-read \App\Models\User $UserFinalizou
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackPreadmissao newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackPreadmissao newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackPreadmissao query()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackPreadmissao whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackPreadmissao whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackPreadmissao whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackPreadmissao whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackPreadmissao whereUserFinalizouId($value)
+ * @mixin \Eloquent
+ */
 class FeedbackPreadmissao extends Model
 {
     use HasFactory, LogsActivity;
