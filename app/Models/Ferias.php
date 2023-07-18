@@ -180,7 +180,6 @@ class Ferias extends Model
         self::FILTRO_REPROVADO_GESTOR,
         self::FILTRO_REPROVADO_RH,
         self::FILTRO_APROVADO_GESTOR,
-        self::FILTRO_ABERTO,
         self::STATUS_REPROVADO
     ];
 

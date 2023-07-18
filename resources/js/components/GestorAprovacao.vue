@@ -8,8 +8,9 @@
                           v-model="model.autocomplete_label_gestor_modal"
                           placeholder="Digite o nome do(a) gestor(a)"
                           :disabled="verifica"
-                          :id="hash"
+                          :id="`gestor_${hash}`"
                           @onblur="resetaCampoGestor"
+                          @change="resetaCampoGestor"
                           @onselect="selecionaGestor"></autocomplete>
         </div>
     </div>
@@ -38,9 +39,14 @@ export default {
                     autocomplete_label_gestor_modal: '',
                     autocomplete_label_gestor_modal_anterior: '',
 
-                    hash: `gestor_${parseInt((Math.random() * 999999))}`,
+                    hash: `gestor_${this.hash}`,
                 }
             }
+        },
+        hash: {
+            type: String,
+            required: false,
+            default: `${parseInt((Math.random() * 999999))}`,
         },
         formsm: {
             type: Boolean,
@@ -57,11 +63,6 @@ export default {
             required: true,
         }
     },
-    computed: {
-        hash() {
-            return `gestor_${parseInt((Math.random() * 999999))}`;
-        },
-    },
     methods: {
         selecionaGestor(obj) {
             this.model.gestor_id = obj.id;
@@ -76,8 +77,8 @@ export default {
                 if (this.obrigatorio) {
                     setTimeout(() => {
                         if (this.model.gestor_id === '') {
-                            valida_campo_vazio($(`#${this.hash}`), 1);
-                            $(`#${this.hash}`).focus().trigger('blur');
+                            valida_campo_vazio($(`#gestor_${this.hash}`), 1);
+                            $(`#gestor_${this.hash}`).focus().trigger('blur');
                             mostraErro('Erro', 'O Campo Gestor não pode ficar vazio');
                         }
                     }, 100);

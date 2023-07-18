@@ -20,12 +20,14 @@ class CreateMudancaCargoTable extends Migration
             $table->unsignedBigInteger('colaborador_id');
             $table->boolean('mantem_centro_custo')->default(true);
             $table->unsignedBigInteger('anterior_centro_custo_id')->nullable();
+            $table->boolean('anterior_filial')->nullable();
             $table->unsignedBigInteger('anterior_centro_custo_filial_id')->nullable();
             $table->unsignedBigInteger('novo_centro_custo_id')->nullable();
+            $table->boolean('novo_filial')->nullable();
             $table->unsignedBigInteger('novo_centro_custo_filial_id')->nullable();
             $table->boolean('mantem_cargo')->default(false);
-            $table->unsignedBigInteger('anterior_vaga_aberta_id');
-            $table->unsignedBigInteger('nova_vaga_aberta_id');
+            $table->unsignedBigInteger('anterior_vaga_aberta_id')->nullable();;
+            $table->unsignedBigInteger('nova_vaga_aberta_id')->nullable();;
             $table->boolean('mantem_funcao')->nullable(true);
             $table->string('anterior_funcao')->nullable();
             $table->string('nova_funcao')->nullable();

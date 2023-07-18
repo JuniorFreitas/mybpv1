@@ -50,8 +50,10 @@ class MudancaCargo extends Model
         'colaborador_id',
         'mantem_centro_custo',
         'anterior_centro_custo_id',
+        'anterior_filial',
         'anterior_centro_custo_filial_id',
         'novo_centro_custo_id',
+        'novo_filial',
         'novo_centro_custo_filial_id',
         'mantem_cargo',
         'anterior_vaga_aberta_id',
@@ -82,10 +84,12 @@ class MudancaCargo extends Model
         'empresa_id' => 'int',
         'admissao_id' => 'int',
         'colaborador_id' => 'int',
-        'mantem_centro_custo' => 'boolean',
+        'anterior_filial' => 'boolean',
         'anterior_centro_custo_id' => 'int',
+        'mantem_centro_custo' => 'boolean',
         'anterior_centro_custo_filial_id' => 'int',
         'novo_centro_custo_id' => 'int',
+        'novo_filial' => 'boolean',
         'novo_centro_custo_filial_id' => 'int',
         'mantem_cargo' => 'boolean',
         'anterior_vaga_aberta_id' => 'int',
@@ -109,7 +113,17 @@ class MudancaCargo extends Model
         'status_aprovacao_rh' => 'string',
         'data_aprovacao_rh' => 'string',
         'aprovado_via_script' => 'boolean',
-        'quem_deletou_id' => 'int'
+        'quem_deletou_id' => 'int',
+        'created_at' => 'datetime:d/m/Y à\s H:i:s',
+        'updated_at' => 'datetime:d/m/Y à\s H:i:s'
+    ];
+
+    const STATUS_APROVADO = 'aprovado';
+    const STATUS_REPROVADO = 'reprovado';
+
+    const LISTA_STATUS_APROVACAO = [
+        self::STATUS_APROVADO,
+        self::STATUS_REPROVADO
     ];
 
     public function getAnteriorSalarioAttribute()
@@ -178,6 +192,11 @@ class MudancaCargo extends Model
     {
         $data = new DataHora($this->attributes['data_aprovacao_rh']);
         return $data->dataCompleta();
+    }
+
+    public function Admissao()
+    {
+        return $this->hasOne(Admissao::class, 'id', 'admissao_id');
     }
 
     public function Empresa()

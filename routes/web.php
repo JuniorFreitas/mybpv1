@@ -525,7 +525,6 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::group(['as' => 'solicitacao_cargo.'], function () {
                 Route::put('mudanca-cargo/{solicitacao}/aprovargestor', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarGestor'])->name('mudanca-cargo.aprovarGestor');
                 Route::post('mudanca-cargo/export', [\App\Http\Controllers\MudancaCargoController::class, 'export'])->name('mudanca-cargo.excel');
-                Route::post('mudanca-cargo/atualizacao-status', [\App\Http\Controllers\MudancaCargoController::class, 'atualizacaoStatus'])->name('mudanca-cargo.atualizacaoStatus');
                 Route::post('mudanca-cargo/atualizar', [\App\Http\Controllers\MudancaCargoController::class, 'atualizar'])->name('mudanca-cargo.atualizar');
                 Route::put('mudanca-cargo/{solicitacao}/aprovarrh', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarRH'])->name('mudanca-cargo.aprovarRH');
                 Route::resource('mudanca-cargo', \App\Http\Controllers\MudancaCargoController::class, ['parameters' => ['ferias-prevista' => 'ferias']]);

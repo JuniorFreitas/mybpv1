@@ -2,28 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\planejamento\movimentacao\feriasPrevistaExport;
 use App\Jobs\JobExportaExcel;
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovar;
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
+use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovarRH;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
-use App\Models\Curriculo;
-use App\Models\FeedbackCurriculo;
 use App\Models\Ferias;
-use App\Models\FeriasAdquiridas;
-use App\Models\FeriasPrevista;
-use App\Models\FeriasPrevistaDados;
-use App\Models\FeriasPrevistaMov;
 use App\Models\MudancaCargo;
 use App\Models\PeriodoAquisitivo;
 use App\Models\Sistema;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
-use ParagonIE\Sodium\Core\Curve25519\Fe;
 
 class MudancaCargoController extends Controller
 {
@@ -56,18 +46,14 @@ class MudancaCargoController extends Controller
     public function store(Request $request)
     {
         $dados = $request->input();
-        $dados['user_id'] = auth()->id();
-        $data = new DataHora($dados['ultima_data']);
-        $dados['ultima_data'] = $data->dataInsert();
-        $dados['tem_faltas'] = $dados['tem_faltas'] == 'true' ? true : false;
-        $dados['qnt_faltas'] = $dados['qnt_faltas'] == null ? 0 : $dados['qnt_faltas'];
 
         $dadosValidados = \Validator::make($dados,
             [
-                'centro_custo_id' => 'required',
-                'qnt_dias' => 'required',
-                'dias_saldo' => 'required',
-                'periodo_aquisitivo_id' => 'required',
+                'novo_centro_custo_id' => 'required_if:mantem_centro_custo,false',
+                'novo_centro_custo_filial_id' => 'required_if:novo_filial,true',
+                'nova_vaga_aberta_id' => 'required_if:mantem_cargo,false',
+                'nova_funcao' => 'required_if:mantem_funcao,false',
+                'novo_salario' => 'required_if:mantem_salario,false',
                 'colaborador_id' => [
                     function ($attribute, $value, $fail) use ($dados) {
                         if (strlen($value) == 0) {
@@ -78,54 +64,59 @@ class MudancaCargoController extends Controller
                 'gestor_id' => [
                     function ($attribute, $value, $fail) use ($dados) {
                         if (strlen($value) == 0) {
-                            $fail('Informe um gestor para aprovação');
+                            $fail('Informe um gestor responsável');
                         }
                     }
                 ],
-                'data_admissao' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (strlen($value) == 0) {
-                            $fail('Atualize a data de admissão do colaborador');
-                        }
-                    }
-                ]
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
-                'msg' => 'Erro ao Solicitar Férias',
+                'msg' => 'Erro ao Solicitar Mudança de Cargo',
                 'erros' => $dadosValidados->errors()
             ], 400);
         }
         try {
             DB::beginTransaction();
 
-            $ferias = Ferias::where('admissao_id', $dados['admissao_id'])
-                            ->where('periodo_aquisitivo_id', $dados['periodo_aquisitivo_id'])
-                            ->where('dias_saldo', '>', 0)
-                            ->where('status_ferias', Ferias::STATUS_GOZADA)
-                            ->orderByDesc('id')
+            $temMudancaCargoAprovar = MudancaCargo::where('admissao_id', $dados['admissao_id'])
+                            ->whereNull('status_aprovacao_gestor')
+                            ->whereNull('status_aprovacao_rh')
                             ->first();
 
-            if (is_null($ferias)) {
-                $dataAdmissao = $dados['data_admissao'];
-
-                $periodo = PeriodoAquisitivo::where('id', $dados['periodo_aquisitivo_id'])->first();
-
-                $date = new DataHora($dataAdmissao);
-                $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
-                $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
-                $newDate->addDia(330);
-                $dados['ultima_data'] = $newDate->dataInsert();
-
+            if (is_null($temMudancaCargoAprovar)) {
+                $dados['empresa_id'] = auth()->user()->empresa_id;
                 $dados['data_solicitacao'] = (new DataHora())->dataHoraInsert();
                 $dados['solicitante_id'] = auth()->user()->id;
 
-                $admissao = Admissao::find($dados['admissao_id'])->update([
-                    'centro_custo_id' => $dados['centro_custo_id']
-                ]);
+                $dadosMudancaCargo = [
+                    'empresa_id' => $dados['empresa_id'],
+                    'admissao_id' => $dados['admissao_id'],
+                    'colaborador_id' => $dados['colaborador_id'],
+                    'mantem_centro_custo' => $dados['mantem_centro_custo'],
+                    'anterior_centro_custo_id' => $dados['anterior_centro_custo_id'],
+                    'anterior_filial' => $dados['anterior_filial'],
+                    'anterior_centro_custo_filial_id' => $dados['anterior_filial'] ? $dados['anterior_centro_custo_filial_id'] : null,
+                    'novo_centro_custo_id' => !$dados['mantem_centro_custo'] ? $dados['novo_centro_custo_id'] : null,
+                    'novo_filial' => $dados['novo_filial'],
+                    'novo_centro_custo_filial_id' => $dados['novo_filial'] ? $dados['novo_centro_custo_filial_id'] : null,
+                    'mantem_cargo' => $dados['mantem_cargo'],
+                    'anterior_vaga_aberta_id' => $dados['anterior_vaga_aberta_id'],
+                    'nova_vaga_aberta_id' => !$dados['mantem_cargo'] ? $dados['nova_vaga_aberta_id'] : null,
+                    'mantem_funcao' => $dados['mantem_funcao'],
+                    'anterior_funcao' => $dados['anterior_funcao'],
+                    'nova_funcao' => !$dados['mantem_funcao'] ? $dados['nova_funcao'] : null,
+                    'mantem_salario' => $dados['mantem_salario'],
+                    'anterior_salario' => $dados['anterior_salario'],
+                    'novo_salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : null,
+                    'solicitante_id' => $dados['solicitante_id'],
+                    'obs_solicitante' => $dados['obs_solicitante'],
+                    'data_solicitacao' => $dados['data_solicitacao'],
+                    'gestor_id' => $dados['gestor_id'],
+                    'aprovado_via_script' => false,
+                ];
 
-                $feriasPrevista = Ferias::create($dados);
+                $mudancaCargo = MudancaCargo::create($dados);
 
                 if (isset($dados['anexos'])) {
                     foreach ($dados['anexos'] as $index => $anexo) {
@@ -134,20 +125,20 @@ class MudancaCargoController extends Controller
                             $arquivo->temporario = false;
                             $arquivo->chave = '';
                             $arquivo->save();
-                            $feriasPrevista->Anexos()->attach($arquivo->id);
+                            $mudancaCargo->Anexos()->attach($arquivo->id);
                         }
                     }
                 }
             }else{
                 return response()->json([
-                    'msg' => 'Colaborador sem saldo de férias para este período aquisitivo'
+                    'msg' => 'Colaborador com mudança de cargo pendente de aprovação'
                 ], 400);
             }
             DB::commit();
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            $msg = "erro ao salvar Solicitação de Mudança de Cargo:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             Sistema::LogFormatado($dados);
             return response()->json(['msg' => $msg], 400);
@@ -157,105 +148,56 @@ class MudancaCargoController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param \App\Models\FeriasPrevista $feriasPrevista
+     * @param \App\Models\MudancaCargo $mudancaCargo
      * @return \Illuminate\Http\Response
      */
-    public function show(FeriasPrevista $feriasPrevista)
+    public function show(MudancaCargo $mudancaCargo)
     {
         //
     }
 
     /**
-     * @param Ferias $ferias
+     * @param MudancaCargo $mudancaCargo
      * @return \Illuminate\Http\JsonResponse
      */
-    public function edit(Ferias $ferias)
+    public function edit(MudancaCargo $mudancaCargo)
     {
-        $ferias->autocomplete_label_colaborador = $ferias->Admissao->Feedback->Curriculo ? $ferias->Admissao->Feedback->Curriculo->nome : '';
-        $ferias->autocomplete_label_colaborador_anterior = $ferias->Admissao->Feedback->Curriculo ? $ferias->Admissao->Feedback->Curriculo->nome : '';
-        $ferias->colaborador_id = $ferias->Admissao->Feedback->Curriculo ? $ferias->Admissao->Feedback->Curriculo->id : '';
-        $ferias->autocomplete_label_gestor_modal = $ferias->Gestor ? $ferias->Gestor->nome : '';
-        $ferias->autocomplete_label_gestor_modal_anterior = $ferias->Gestor ? $ferias->Gestor->nome : '';
-        $ferias->gestor_aprovacao = $ferias->GestorAprovacao ? $ferias->GestorAprovacao->nome : '';
-        $ferias->centro_custo_id = $ferias->Admissao ? $ferias->Admissao->centro_custo_id : $ferias->FeriasPrevista->centro_custo_id;
-        $ferias->centro_custo = $ferias->Admissao->CentroCusto ? $ferias->Admissao->CentroCusto : '';
-        $ferias->rh_aprovacao = $ferias->RhAprovacao ? $ferias->RhAprovacao->nome : '';
-        $ferias->solicitante = $ferias->Solicitante->nome ?? '';
-        $ferias->gestor_id = $ferias->gestor_id?? '';
-        $data_admissao = $ferias->Admissao->data_admissao;
-        $ferias->data_admissao = $data_admissao;
-        $ferias->status_aprovacao_gestor = $ferias->status_aprovacao_gestor ?: '';
-        $ferias->status_aprovacao_rh = $ferias->status_aprovacao_rh ?: '';
-        $ferias->periodo_label = $ferias->PeriodoAquisitivo->label;
-        $ferias->anexosDel = [];
-        $ferias->load('Anexos');
+        $mudancaCargo->autocomplete_label_colaborador = $mudancaCargo->Admissao->Feedback->Curriculo ? $mudancaCargo->Admissao->Feedback->Curriculo->nome : '';
+        $mudancaCargo->autocomplete_label_colaborador_anterior = $mudancaCargo->Admissao->Feedback->Curriculo ? $mudancaCargo->Admissao->Feedback->Curriculo->nome : '';
+        $mudancaCargo->autocomplete_label_gestor_modal = $mudancaCargo->Gestor ? $mudancaCargo->Gestor->nome : '';
+        $mudancaCargo->autocomplete_label_gestor_modal_anterior = $mudancaCargo->Gestor ? $mudancaCargo->Gestor->nome : '';
+        $mudancaCargo->autocomplete_label_vaga_nova = $mudancaCargo->VagaAbertaNova ? $mudancaCargo->VagaAbertaNova->titulo : '';
+        $mudancaCargo->autocomplete_label_vaga_anterior = $mudancaCargo->VagaAbertaAnterior ? $mudancaCargo->VagaAbertaAnterior->titulo : '';
+        $mudancaCargo->gestor_aprovacao = $mudancaCargo->GestorAprovacao ? $mudancaCargo->GestorAprovacao->nome : '';
+        $mudancaCargo->rh_aprovacao = $mudancaCargo->RhAprovacao ? $mudancaCargo->RhAprovacao->nome : '';
+        $mudancaCargo->solicitante = $mudancaCargo->Solicitante->nome ?? '';
+        $mudancaCargo->status_aprovacao_gestor = $mudancaCargo->status_aprovacao_gestor ?: '';
+        $mudancaCargo->status_aprovacao_rh = $mudancaCargo->status_aprovacao_rh ?: '';
+        $mudancaCargo->anexosDel = [];
+        $mudancaCargo->load('Anexos');
 
-        return response()->json($ferias, 200);
+        return response()->json($mudancaCargo, 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \App\Models\FeriasPrevista $feriasPrevista
+     * @param \App\Models\MudancaCargo $mudancaCargo
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, FeriasPrevista $feriasPrevista)
+    public function update(Request $request, MudancaCargo $mudancaCargo)
     {
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'centro_custo_id' => 'required',
-                'colaborador_id' => 'required',
-                'qnt_dias' => 'required',
-                'dias_saldo' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Férias',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
-        try {
-            DB::beginTransaction();
-            $feriasPrevista->update($dados);
-            if (isset($dados['anexosDel'])) {
-                foreach ($dados['anexosDel'] as $id_anexo) {
-                    $arquivo = Arquivo::find($id_anexo);
-                    $arquivo->excluir();
-                }
-            }
-
-            if (isset($dados['anexos'])) {
-                foreach ($dados['anexos'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $feriasPrevista->Anexos()->attach($arquivo->id);
-                    }
-                }
-            }
-            DB::commit();
-            return response()->json('', 201);
-        } catch (\Exception $e) {
-            DB::rollback();
-            $msg = "erro ao atualizar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-            \Log::debug($msg);
-            Sistema::LogFormatado($dados);
-            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-        }
+        //
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param \App\Models\FeriasPrevista $feriasPrevista
+     * @param \App\Models\MudancaCargo $mudancaCargo
      * @return \Illuminate\Http\Response
      */
-    public function destroy(FeriasPrevista $feriasPrevista)
+    public function destroy(MudancaCargo $mudancaCargo)
     {
         //
     }
@@ -268,12 +210,12 @@ class MudancaCargoController extends Controller
         try {
             DB::beginTransaction();
 
-            $ferias = Ferias::find($dados['id']);
+            $mudanca_cargo = MudancaCargo::find($dados['id']);
 
-            $ferias->update([
+            $mudanca_cargo->update([
                 'gestor_aprovacao_id' => auth()->id(),
                 'data_aprovacao_gestor' => (new DataHora())->dataHoraInsert(),
-                'obs_gestor' => $dados['obs_gestor'],
+                'obs_gestor_aprovacao' => $dados['obs_gestor_aprovacao'],
                 'status_aprovacao_gestor' => $dados['status_aprovacao_gestor'],
             ]);
 
@@ -291,7 +233,7 @@ class MudancaCargoController extends Controller
                         $arquivo->temporario = false;
                         $arquivo->chave = '';
                         $arquivo->save();
-                        $ferias->Anexos()->attach($arquivo->id);
+                        $mudanca_cargo->Anexos()->attach($arquivo->id);
                     }
                 }
             }
@@ -300,27 +242,27 @@ class MudancaCargoController extends Controller
             $dados_email = [
                 'dados_quem_cadastrou' => [
                     'nome_de' => auth()->user()->nome,
-                    'nome_para' => $ferias->Solicitante->nome,
-                    'email_para' => $ferias->Solicitante->login,
-                    'status_aprovacao' => $ferias->status_aprovacao_gestor,
-                    'ferias_id' => $ferias->id,
-                    'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
+                    'nome_para' => $mudanca_cargo->Solicitante->nome,
+                    'email_para' => $mudanca_cargo->Solicitante->login,
+                    'status_aprovacao' => $mudanca_cargo->status_aprovacao_gestor,
+                    'mudanca_cargo_id' => $mudanca_cargo->id,
+                    'colaborador' => $mudanca_cargo->Admissao->Feedback->Curriculo->nome,
                     'empresa_id' => auth()->user()->empresa_id,
                     'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
                 ],
                 'dados_gestor' => [
                     'nome_de' => auth()->user()->nome,
-                    'nome_para' => $ferias->GestorAprovacao->nome,
-                    'email_para' => $ferias->GestorAprovacao->login,
-                    'status_aprovacao' => $ferias->status_aprovacao_gestor,
-                    'ferias_id' => $ferias->id,
-                    'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
+                    'nome_para' => $mudanca_cargo->GestorAprovacao->nome,
+                    'email_para' => $mudanca_cargo->GestorAprovacao->login,
+                    'status_aprovacao' => $mudanca_cargo->status_aprovacao_gestor,
+                    'mudanca_cargo_id' => $mudanca_cargo->id,
+                    'colaborador' => $mudanca_cargo->Admissao->Feedback->Curriculo->nome,
                     'empresa_id' => auth()->user()->empresa_id,
                     'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
                 ]
             ];
 
-            JobFeriasPrevistaAprovarRH::dispatch($dados_email);
+            JobMudaCargoPrevistaAprovarRH::dispatch($dados_email);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -333,70 +275,58 @@ class MudancaCargoController extends Controller
 
     }
 
-    public function aprovarRH(Request $request, Ferias $ferias)
+    public function aprovarRH(Request $request)
     {
         $this->authorize('privilegio_aprovar_por_rh');
         $dados = $request->input();
         try {
             DB::beginTransaction();
-            if($dados['status_aprovacao_rh'] === 'aprovado'){
 
-                $hoje = (new DataHora())->dataInsert();
-                $lista_periodos_aquisitivos = PeriodoAquisitivo::select(["id", "label"])->get();
-                $periodo_aquisitivo = [];
+            $mudancaCargo = MudancaCargo::find($dados['id']);
 
-                foreach ($lista_periodos_aquisitivos as $pa){
-                    $periodo_aquisitivo[$pa->id] = $pa->label;
-                }
+            $mudancaCargo->update([
+                'rh_aprovacao_id' => auth()->id(),
+                'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
+                'obs_rh' => $dados['obs_rh'],
+                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
+            ]);
 
-                if((new DataHora($ferias->data_saida))->dataInsert() <= $hoje && (new DataHora($ferias->data_retorno))->dataInsert() >= $hoje){
-                    $status = 'gozando';
-                }
-
-                if((new DataHora($ferias->data_retorno))->dataInsert() < $hoje){
-                    $status = 'gozada';
-                }
-
-                if((new DataHora($ferias->data_saida))->dataInsert() > $hoje){
-                    $status = 'aguardando';
-                }
-
-                $ferias->update([
-                    'rh_aprovacao_id' => auth()->id(),
-                    'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
-                    'obs_rh' => $dados['obs_rh'],
-                    'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
-                    'status_ferias' => $status,
-                    'data_status_ferias' => (new DataHora())->dataHoraInsert(),
-                ]);
-            }
+            $admissao = Admissao::find($dados['admissao_id']);
+            $admissao->update([
+                'centro_custo_filial_id' => !$dados['mantem_centro_custo'] && $dados['novo_filial'] ? $dados['novo_centro_custo_filial_id'] : $admissao->centro_custo_filial_id,
+                'filial' => !$dados['mantem_centro_custo'] ? $dados['novo_filial'] : $admissao->filial,
+                'centro_custo_id' => !$dados['mantem_centro_custo'] ? $dados['novo_centro_custo_id'] : $admissao->centro_custo_id,
+                'funcao' => !$dados['mantem_funcao'] ? $dados['nova_funcao'] : $admissao->funcao,
+                'cargo' => !$dados['mantem_cargo'] ? $mudancaCargo->VagaAbertaNova->Vaga->nome : $admissao->cargo,
+                'salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : $admissao->salario,
+            ]);
 
             DB::commit();
 
             $dados_email = [
                 'dados_quem_cadastrou' => [
                     'nome_de' => auth()->user()->nome,
-                    'nome_para' => $ferias->Solicitante->nome,
-                    'email_para' => $ferias->Solicitante->login,
-                    'status_aprovacao' => $ferias->status_aprovacao_rh,
-                    'ferias_id' => $ferias->id,
-                    'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
+                    'nome_para' => $mudancaCargo->Solicitante->nome,
+                    'email_para' => $mudancaCargo->Solicitante->login,
+                    'status_aprovacao' => $mudancaCargo->status_aprovacao_gestor,
+                    'mudanca_cargo_id' => $mudancaCargo->id,
+                    'colaborador' => $mudancaCargo->Admissao->Feedback->Curriculo->nome,
                     'empresa_id' => auth()->user()->empresa_id,
                     'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
                 ],
                 'dados_gestor' => [
                     'nome_de' => auth()->user()->nome,
-                    'nome_para' => $ferias->GestorAprovacao->nome,
-                    'email_para' => $ferias->GestorAprovacao->login,
-                    'status_aprovacao' => $ferias->status_aprovacao_rh,
-                    'ferias_id' => $ferias->id,
-                    'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
+                    'nome_para' => $mudancaCargo->GestorAprovacao->nome,
+                    'email_para' => $mudancaCargo->GestorAprovacao->login,
+                    'status_aprovacao' => $mudancaCargo->status_aprovacao_gestor,
+                    'mudanca_cargo_id' => $mudancaCargo->id,
+                    'colaborador' => $mudancaCargo->Admissao->Feedback->Curriculo->nome,
                     'empresa_id' => auth()->user()->empresa_id,
                     'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
                 ]
             ];
 
-            JobFeriasPrevistaAprovarRH::dispatch($dados_email);
+            JobMudaCargoPrevistaAprovarRH::dispatch($dados_email);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -446,7 +376,6 @@ class MudancaCargoController extends Controller
             'RhAprovacao:id,nome',
             'QuemDeletou:id,nome',
             'VagaAbertaNova',
-            'UserCadastrou:id,nome',
             'Colaborador:id,nome,login,tipo,ativo');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
@@ -465,227 +394,56 @@ class MudancaCargoController extends Controller
             });
         }
 
-//        if ($request->filled('campoStatus')) {
-//            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
-//            $resultado->whereStatusAprovacao($status);
-//        }
+        if ($request->filled('campoStatusAprovacao')) {
+            $status = $request->campoStatusAprovacao;
+            if ($request->campoStatusAprovacao == "aberto"){
+                $resultado->whereNull('status_aprovacao_gestor');
+            }
+            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
+                $resultado->where('status_aprovacao_gestor',Ferias::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
+                $resultado->where('status_aprovacao_rh', Ferias::STATUS_APROVADO);
+            }else{
+                $resultado->whereStatusAprovacaoGestor(Ferias::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', Ferias::STATUS_REPROVADO);
+            }
+        }
 
-        if (!auth()->user()->can('privilegio_gestao_rh')){
-            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
+        if (!auth()->user()->can('privilegio_gestao_rh')) {
+            $resultado->whereSolicitanteId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
         }
 
         return $resultado->orderByDesc('created_at');
-
-
-
-//        $resultado = Ferias::with(
-//            'PeriodoAquisitivo',
-//            'Gestor:id,nome',
-//            'GestorAprovacao:id,nome',
-//            'RhAprovacao:id,nome',
-//            'Solicitante:id,nome',
-//            'Admissao:id,centro_custo_id,cargo,funcao,data_admissao,feedback_id',
-//            'Admissao.CentroCusto',
-//            'Admissao.Feedback:id,curriculo_id,vagas_abertas_id',
-//            'Admissao.Feedback.VagaSelecionada',
-//            'Admissao.Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-//            'Admissao.CentroCusto:id,label',
-//            'FeriasPrevista:id,centro_custo_id',
-//            'FeriasPrevista.CentroCusto:id,label',
-//        );
-//
-//        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
-//        if ($filtroPeriodo) {
-//            $periodo = explode(' até ', $request->periodo);
-//            $dataInicio = new DataHora($periodo[0]);
-//            $dataFim = new DataHora($periodo[1]);
-//            $resultado->where('data_solicitacao', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('data_solicitacao', '<=', $dataFim->dataInsert() . ' 23:59:59');
-//        }
-//
-//        $filtroVencimento = $request->filtroVencimento == 'true' ? true : false;
-//        if ($filtroVencimento) {
-//            $periodo = explode(' até ', $request->vencimento);
-//            $dataInicio = new DataHora($periodo[0]);
-//            $dataFim = new DataHora($periodo[1]);
-//            $resultado->where('ultima_data', '>=', $dataInicio->dataInsert())->where('ultima_data', '<=', $dataFim->dataInsert());
-//        }
-//
-//        $filtroInicioFerias = $request->filtroInicioFerias == 'true' ? true : false;
-//        if ($filtroInicioFerias) {
-//            $periodo = explode(' até ', $request->inicioFerias);
-//            $dataInicio = new DataHora($periodo[0]);
-//            $dataFim = new DataHora($periodo[1]);
-//            $resultado->where('data_saida', '>=', $dataInicio->dataInsert())->where('data_saida', '<=', $dataFim->dataInsert());
-//        }
-//
-//        if ($request->filled('campoBusca')) {
-//            $resultado->whereHas('Admissao.Feedback.Curriculo', function ($q) use ($request) {
-//                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
-//                    ->orWhere('id', $request->campoBusca);
-//            });
-//        }
-//
-//        if ($request->filled('campoStatusAprovacao')) {
-//            $status = $request->campoStatusAprovacao;
-//            if ($request->campoStatusAprovacao == "aberto"){
-//                $resultado->whereNull('status_aprovacao_gestor');
-//            }
-//            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
-//                $resultado->where('status_aprovacao_gestor',Ferias::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
-//            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
-//                $resultado->where('status_aprovacao_rh', Ferias::STATUS_APROVADO);
-//            }else{
-//                $resultado->whereStatusAprovacaoGestor(Ferias::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', Ferias::STATUS_REPROVADO);
-//            }
-//        }
-//
-//        if (!auth()->user()->can('privilegio_gestao_rh')) {
-//            $resultado->whereSolicitanteId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
-//        }
-//
-//        if ($request->filled('filtroPeriodoAquisitivo')) {
-//            $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
-//                $q->where('id', $request->filtroPeriodoAquisitivo);
-//            });
-//        }else{
-//            $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
-//                $q->whereIn('ano_inicial', [date('Y')-2, date('Y')-1, date('Y')]);
-//            });
-//        }
-//
-//        // Fazer o filtro pra excluir gozada
-//        return $resultado->orderByDesc('data_solicitacao');
-    }
-
-    public function buscaDataAdmissao(Request $request)
-    {
-        $dados = $request->input();
-        if(!is_null($request->ferias_id)){
-            $ferias = Ferias::find($request->ferias_id);
-            $dataAdmissao = $ferias->Admissao->data_admissao;
-            $colaboradorPeriodo = $ferias->PeriodoAquisitivo;
-        }else{
-             $admissao = Admissao::whereFeedbackId($dados['colaborador_id'])->Admitidos()->first();
-
-             $admissaoId = $admissao->id;
-             $dataAdmissao = $admissao->data_admissao;
-             $ferias = Ferias::whereAdmissaoId($admissaoId)->whereStatusFerias(Ferias::STATUS_GOZADA)->orderByDesc('data_retorno')->select('periodo_aquisitivo_id')->first();
-
-             if(is_null($ferias)){
-                 $anoAtual = date('Y');
-                 $periodo = PeriodoAquisitivo::where('ano_inicial', $anoAtual)->first();
-                 $colaboradorPeriodo = $periodo;
-             }else{
-                 $colaboradorPeriodo = $ferias->PeriodoAquisitivo;
-             }
-        }
-
-        $dataHoje = new DataHora();
-        $data_saida = $dataHoje->dataCompleta();
-        $data_retorno = $dataHoje->dataCompleta();
-
-        if ($colaboradorPeriodo !== null && !$request->visualizar) {
-
-            $periodo = PeriodoAquisitivo::where('id', '>=', $colaboradorPeriodo->id)->first();
-
-            $date = (new DataHora($dataAdmissao));
-            $ultimoAnoPeriodoAquisitivo = $periodo->ano_final . '-' . $date->mes() . '-' . $date->dia();
-            $data_saida = $date->dia() . '/' . $date->mes() . '/' . $periodo['ano_inicial'];
-            $data_retorno = $date->dia() . '/' . $date->mes() . '/' . $periodo['ano_inicial'];
-            $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
-            $ultimaData = $newDate->addDia(330);
-
-        } elseif ($colaboradorPeriodo !== null && $request->visualizar) {
-            $periodo = $colaboradorPeriodo;
-            $data_saida = $ferias->data_saida;
-            $data_retorno = $ferias->data_retorno;
-            $ultimaData = $ferias->ultima_data;
-            $newDate = new DataHora($ultimaData);
-            $ultimaData = $newDate->dataCompleta();
-        } else {
-            $periodo = PeriodoAquisitivo::get();
-            $ultimaData = '';
-        }
-
-        return response()->json([
-            'data_admissao' => $dataAdmissao,
-            'periodo' => $periodo,
-            'ultimaData' => $ultimaData,
-            'data_saida' => $data_saida,
-            'data_retorno' => $data_retorno,
-        ]);
-    }
-
-    public function buscaPeriodosAquisitivos(Request $request)
-    {
-
-        $periodo = PeriodoAquisitivo::all();
-
-        return response()->json(['periodos' => $periodo]);
-    }
-
-    public function atualizacaoStatus(Request $request)
-    {
-        try {
-            DB::beginTransaction();
-
-            foreach ($request->selecionados[0] as $selecionado) {
-
-                $feriasPrevista = Ferias::find($selecionado);
-
-                $dados = [
-                    'user_aprovacao_id' => auth()->id(),
-                    'data_aprovacao' => (new DataHora())->dataHoraInsert(),
-                    'obs_gestor' => $request->obs_aprovacao,
-                    'status_aprovacao_gestor' => $request->status_aprovacao,
-                ];
-
-                if ($request->status_aprovacao === 'reprovado') {
-                    $feriasPrevista->update($dados);
-                } else {
-                    $feriasPrevista->update($dados);
-                }
-                DB::commit();
-            }
-            return response()->json([], 201);
-        } catch (\Exception $e) {
-            DB::rollback();
-            $msg = "error ao Atualizar Status em Massa:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-            \Log::debug($msg);
-            Sistema::LogFormatado($dados);
-            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-        }
-
     }
 
     //Excel
     public function export(Request $request)
     {
-
         $resultado = $this->filtro($request)->get();
 
         $head = [
             'Nome',
-            'Cargo',
-            'Data da Admissão',
-            'Centro de Custo',
-            'Período Aquisitivo',
-            'Última Data',
-            'Quantidade de Faltas',
-            'Data Saída',
-            'Data Retorno',
-            'Quantidade de Dias',
-            'Saldo de Dias',
-            'Abono Pecuniário',
-            'Adiantamento Décimo Terceiro',
-            'Quem Cadastrou',
-            'Gestor Indicado',
+            'Centro de Custo Atual',
+            'Filial Atual',
+            'Centro de Custo Novo',
+            'Filial Nova',
+            'Cargo Atual',
+            'Cargo Novo',
+            'Função Atual',
+            'Função Nova',
+            'Salário Atual',
+            'Salário Novo',
+            'Solicitante',
+            'Data Solicitação',
+            'OBS Solicitante',
+            'Gestor',
             'Gestor Aprovação',
             'Data da Aprovação',
             'Status',
+            'OBS Gestor',
             'RH Aprovação',
             'Data da Aprovação RH',
             'Resposta RH',
+            'OBS RH'
         ];
 
         $rows = [];
@@ -693,31 +451,34 @@ class MudancaCargoController extends Controller
         foreach ($resultado as $row) {
             $rows[] = array(
                 $row->Admissao->Feedback->Curriculo->nome,
-                $row->Admissao->FeedBack->VagaSelecionada->nome,
-                $row->Admissao->data_admissao,
-                $row->Admissao->CentroCusto ? $row->Admissao->CentroCusto->label : 'Não Informado',
-                $row->PeriodoAquisitivo->label,
-                $row->ultima_data,
-                (string)$row->qnt_faltas,
-                $row->data_saida,
-                $row->data_retorno,
-                (string)$row->qnt_dias,
-                (string)$row->dias_saldo,
-                $row->abono_pecuniario ? 'Sim' : 'Não',
-                $row->adiantamento_decimo_terceiro ? 'Sim' : 'Não',
+                $row->CentroCustoAnterior->label ?? '',
+                $row->anterior_filial ? $row->CentroCustoFilialAnterior->label : '',
+                $row->mantem_centro_custo ? '' : $row->CentroCustoNovo->label,
+                $row->novo_filial ? $row->CentroCustoFilialNovo->label : '',
+                $row->VagaAbertaAnterior->Vaga->nome,
+                $row->mantem_cargo ? '' : $row->VagaAbertaNova->Vaga->nome,
+                $row->anterior_funcao,
+                $row->mantem_funcao ? '' : $row->nova_funcao,
+                $row->anterior_salario,
+                $row->mantem_salario ? '' : $row->novo_salario,
                 $row->Solicitante->nome,
+                $row->data_solicitacao,
+                $row->obs_solicitante,
                 $row->Gestor->nome,
                 $row->GestorAprovacao ? $row->GestorAprovacao->nome : '',
                 $row->status_aprovacao_gestor ? $row->data_aprovacao_gestor : '',
                 $row->status_aprovacao_gestor,
+                $row->obs_gestor_aprovacao,
                 $row->status_aprovacao_rh ? $row->RhAprovacao->nome : '',
                 $row->status_aprovacao_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
                 $row->status_aprovacao_rh,
+                $row->obs_rh
             );
         }
+//        dd($rows);
 
-        $nameArquivo = "movimentacao_ferias_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Ferias", $head, $rows, $nameArquivo);
+        $nameArquivo = "movimentacao_cargo_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Mudança de Cargo", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
 
     }
