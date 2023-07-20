@@ -267,7 +267,7 @@ class MudancaCargoController extends Controller
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "error ao aprovar Solicitação de Férias - Gestor:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            $msg = "error ao aprovar Solicitação de Mudança de Cargo - Gestor:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
