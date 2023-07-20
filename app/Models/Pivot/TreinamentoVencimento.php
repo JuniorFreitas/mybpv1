@@ -13,19 +13,19 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $treinamento_id
  * @property int $vencimento_id
- * @property mixed $data_vencimento
- * @property mixed|null $data_treinamento
+ * @property string $data_vencimento
+ * @property string|null $data_treinamento
  * @property string|null $numero_fat
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Pivot\TreinamentoVencimento newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Pivot\TreinamentoVencimento newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Pivot\TreinamentoVencimento query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Pivot\TreinamentoVencimento whereDataTreinamento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Pivot\TreinamentoVencimento whereDataVencimento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Pivot\TreinamentoVencimento whereNumeroFat($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Pivot\TreinamentoVencimento whereTreinamentoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Pivot\TreinamentoVencimento whereVencimentoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento query()
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereDataTreinamento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereDataVencimento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereNumeroFat($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereTreinamentoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereVencimentoId($value)
  * @mixin \Eloquent
  */
 class TreinamentoVencimento extends Pivot

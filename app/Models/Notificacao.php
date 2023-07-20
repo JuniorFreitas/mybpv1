@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\Notificacao
  *
  * @property int $id
+ * @property string $tipo
  * @property int $user_id
  * @property array $payload
  * @property bool $visto
@@ -21,12 +22,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao wherePayload($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereVisto($value)
  * @mixin \Eloquent
- * @property string $tipo
- * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereTipo($value)
  */
 class Notificacao extends Model
 {

@@ -13,7 +13,7 @@ use MasterTag\DataHora;
  * App\Models\AdmissoesPrevista
  *
  * @property int $id
- * @property int $cliente_id
+ * @property int|null $cliente_id
  * @property int|null $colaborador_id
  * @property int $centro_custo_id
  * @property string $tipo_contrato
@@ -23,14 +23,24 @@ use MasterTag\DataHora;
  * @property int|null $user_id
  * @property string|null $solicitante
  * @property string|null $obs
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int|null $user_aprovacao_id
+ * @property mixed|null $data_aprovacao
+ * @property string|null $obs_aprovacao
+ * @property string|null $status_aprovacao
+ * @property int|null $empresa_id
+ * @property int|null $gestor_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
+ * @property-read \App\Models\Vaga|null $Cargo
  * @property-read \App\Models\CentroCusto|null $CentroCusto
  * @property-read \App\Models\Cliente|null $Cliente
- * @property-read \App\Models\User|null $Funcionario
+ * @property-read \App\Models\User|null $Colaborador
+ * @property-read \App\Models\User|null $GestorAprovacao
+ * @property-read \App\Models\User|null $UserAprovacao
  * @property-read \App\Models\User|null $UserCadastrou
  * @property-read mixed $salario_format
- * @property-write mixed $valor
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista query()
@@ -40,40 +50,20 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereColaboradorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereDataAdmissao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObs($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereSalario($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereSolicitante($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereTipoContrato($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserId($value)
- * @mixin \Eloquent
- * @property-read \App\Models\Vaga|null $Cargo
- * @property-read \App\Models\User|null $Colaborador
- * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
- * @property string|null $obs_aprovacao
- * @property string|null $status_aprovacao
- * @property int|null $empresa_id
- * @property int|null $gestor_id
- * @property-read \App\Models\User|null $GestorAprovacao
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereDataAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObs($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereSalario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereSolicitante($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereTipoContrato($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserAprovacaoId($value)
- * @property-read \App\Models\User|null $UserAprovacao
- * @property int|null $user_rh_id
- * @property string|null $resposta_rh
- * @property string|null $obs_rh
- * @property string|null $data_aprovacao_rh
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereDataAprovacaoRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObsRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereRespostaRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserRhId($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserId($value)
+ * @mixin \Eloquent
  */
 class AdmissoesPrevista extends Model
 {

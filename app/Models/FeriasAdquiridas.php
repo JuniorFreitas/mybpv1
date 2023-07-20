@@ -11,49 +11,46 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\FeriasAdquiridas
  *
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
- * @property mixed $data_limite
- * @property mixed $data_retorno
- * @property mixed $data_saida
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas query()
- * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Admissao[] $Admissao
- * @property-read int|null $admissao_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $UsuarioCadastrou
- * @property-read int|null $usuario_cadastrou_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $UsuarioEditou
- * @property-read int|null $usuario_editou_count
  * @property int $id
  * @property int $admissao_id
  * @property string $periodo_gozado
  * @property int $qnt_dias
+ * @property string $data_saida
+ * @property string $data_retorno
  * @property string $proximo_periodo
+ * @property string $data_limite
  * @property int $user_cadastrou_id
  * @property int|null $user_alterou_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $status
+ * @property int|null $ferias_prevista_id
+ * @property-read \App\Models\Admissao|null $Admissao
+ * @property-read \App\Models\Curriculo|null $Colaborador
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \App\Models\FeriasPrevista|null $FeriasPrevista
+ * @property-read \App\Models\User|null $UsuarioCadastrou
+ * @property-read \App\Models\User|null $UsuarioEditou
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas query()
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereAdmissaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereDataLimite($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereDataRetorno($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereDataSaida($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereFeriasPrevistaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas wherePeriodoGozado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereProximoPeriodo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereQntDias($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUserAlterouId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereUserCadastrouId($value)
- * @property string|null $status
- * @property int|null $ferias_prevista_id
- * @property-read \App\Models\Curriculo|null $Colaborador
- * @property-read \App\Models\FeedbackCurriculo|null $Feedback
- * @property-read \App\Models\FeriasPrevista|null $FeriasPrevista
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereFeriasPrevistaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas whereStatus($value)
+ * @mixin \Eloquent
  */
 class FeriasAdquiridas extends Model
 {

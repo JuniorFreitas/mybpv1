@@ -15,15 +15,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\ResultadoIntegrado
  *
  * @property int $id
- * @property int $feedback_id
- * @property int|null $formulario_id
- * @property int $curriculo_id
- * @property bool|null $documentos_entregue
- * @property mixed|null $documentos_entregue_data
- * @property bool|null $encaminhado_exame
- * @property mixed|null $encaminhado_exame_data
- * @property bool|null $encaminhado_treinamento
- * @property mixed|null $encaminhado_treinamento_data
+ * @property int|null $feedback_id
+ * @property bool $documentos_entregue
+ * @property string|null $documentos_entregue_data
+ * @property bool $encaminhado_exame
+ * @property string|null $encaminhado_exame_data
+ * @property int|null $pcmso_id
+ * @property int|null $empresa_exame_id
+ * @property bool $encaminhado_treinamento
+ * @property string|null $encaminhado_treinamento_data
  * @property bool|null $excessao
  * @property string|null $autorizado_por
  * @property int $usuario_id
@@ -31,11 +31,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $obs
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $formulario_id
  * @property-read \App\Models\Admissao|null $Admissao
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexo
  * @property-read int|null $anexo_count
+ * @property-read \App\Models\CertificadoAlumar|null $Certificado
  * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoTres
+ * @property-read int|null $foto_tres_count
+ * @property-read \App\Models\Pcmso|null $Pcmso
+ * @property-read \App\Models\Treinamento|null $Treinamento
  * @property-read \App\Models\User|null $Usuario
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
@@ -48,9 +54,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado query()
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereAutorizadoPor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereDocumentosEntregue($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereDocumentosEntregueData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereEmpresaExameId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereEncaminhadoExame($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereEncaminhadoExameData($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereEncaminhadoTreinamento($value)
@@ -60,19 +66,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereFormularioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereObs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado wherePcmsoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereResponsavelEnvio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereUsuarioId($value)
  * @mixin \Eloquent
- * @property-read \App\Models\CertificadoAlumar|null $Certificado
- * @property-read \App\Models\Treinamento|null $Treinamento
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoTres
- * @property-read int|null $foto_tres_count
- * @property int|null $pcmso_id
- * @property int|null $empresa_exame_id
- * @property-read \App\Models\Pcmso|null $Pcmso
- * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado whereEmpresaExameId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ResultadoIntegrado wherePcmsoId($value)
  */
 class ResultadoIntegrado extends Model
 {

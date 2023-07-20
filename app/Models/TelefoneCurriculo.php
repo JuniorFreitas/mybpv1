@@ -10,30 +10,30 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\TelefoneCurriculo
  *
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
- * @property-read mixed $tipo_text
- * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo query()
- * @mixin \Eloquent
  * @property int $id
- * @property int $curriculo_id
  * @property string $tipo
  * @property string $pais
  * @property string $numero
  * @property string|null $ramal
  * @property string|null $detalhe
+ * @property int $curriculo_id
+ * @property bool $principal
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $sonumero
+ * @property-read mixed $tipo_text
+ * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo query()
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo whereDetalhe($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo whereNumero($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo wherePais($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo wherePrincipal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo whereRamal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo whereTipo($value)
- * @property bool|null $principal
- * @property-read mixed $sonumero
- * @method static \Illuminate\Database\Eloquent\Builder|TelefoneCurriculo wherePrincipal($value)
+ * @mixin \Eloquent
  */
 class TelefoneCurriculo extends Model
 {

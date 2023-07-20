@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\NotificacaoWhats
  *
  * @property int $id
- * @property int $curriculo_id
+ * @property int|null $feedback_id
  * @property int $vaga_id
  * @property int $etapa_id
  * @property int $messageid
@@ -16,21 +16,19 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $mensagem
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereCurriculoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereEtapaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereMensagem($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereMessageid($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereUserId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\NotificacaoWhats whereVagaId($value)
- * @mixin \Eloquent
- * @property int|null $feedback_id
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats query()
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereEtapaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereMensagem($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereMessageid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereVagaId($value)
+ * @mixin \Eloquent
  */
 class NotificacaoWhats extends Model
 {

@@ -10,15 +10,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * App\Models\Models\EmpresaExame
+ * App\Models\EmpresaExame
  *
  * @property int $id
+ * @property int|null $user_id
  * @property int|null $empresa_id
  * @property string $nome
- * @property mixed $dados
- * @property int $ativo
+ * @property array $dados
+ * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $Empresa
+ * @property-read \App\Models\User|null $Usuario
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame query()
@@ -29,11 +32,8 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read \App\Models\User|null $Empresa
- * @property int|null $user_id
- * @property-read \App\Models\User|null $Usuario
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereUserId($value)
+ * @mixin \Eloquent
  */
 class EmpresaExame extends Model
 {

@@ -11,128 +11,91 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 
 /**
- * App\Models\FeriasPrevista
+ * App\Models\Ferias
  *
  * @property int $id
- * @property int $cliente_id
- * @property int $colaborador_id
- * @property int $centro_custo_id
+ * @property int $empresa_id
+ * @property int $admissao_id
+ * @property int $periodo_aquisitivo_id
  * @property mixed $data_saida
- * @property int $qnt_dias
  * @property mixed $data_retorno
- * @property int $dias_saldo
- * @property int|null $user_id
- * @property string|null $solicitante
- * @property string|null $status
- * @property string|null $obs
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\CentroCusto|null $CentroCusto
- * @property-read \App\Models\Cliente|null $Cliente
- * @property-read \App\Models\User|null $Funcionario
- * @property-read \App\Models\User|null $UserCadastrou
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista query()
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereCentroCustoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereColaboradorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataRetorno($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataSaida($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDiasSaldo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObs($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereQntDias($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereSolicitante($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserId($value)
- * @mixin \Eloquent
- * @property-read \App\Models\User|null $Colaborador
- * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
- * @property string|null $obs_aprovacao
- * @property string|null $status_aprovacao
+ * @property mixed $ultima_data
+ * @property int|null $qnt_dias
+ * @property int|null $dias_saldo
  * @property bool $tem_faltas
  * @property int|null $qnt_faltas
- * @property int|null $user_rh_id
- * @property string|null $resposta_rh
- * @property string|null $obs_rh
- * @property mixed|null $data_aprovacao_rh
- * @property int|null $empresa_id
- * @property-read User|null $GestorAprovacao
- * @property-read User|null $QuemAprovou
- * @property-read User|null $RhAprovacao
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataAprovacaoRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereEmpresaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObsAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObsRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereQntFaltas($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereRespostaRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereStatusAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereTemFaltas($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserAprovacaoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserRhId($value)
- * @property int|null $gestor_id
- * @property string|null $periodo_aquisitivo
- * @property mixed|null $ultima_data
- * @property string|null $mes
- * @property int|null $periodo_aquisitivo_id
- * @property-read User|null $Empresa
- * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereGestorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereMes($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUltimaData($value)
- * @property-read \App\Models\FeedbackCurriculo|null $Feedback
- * @property int $admissao_id
  * @property int $solicitante_id
  * @property string|null $obs_solicitante
  * @property \datetime $data_solicitacao
+ * @property int|null $gestor_id
  * @property int|null $gestor_aprovacao_id
  * @property string|null $obs_gestor
  * @property string|null $status_aprovacao_gestor
  * @property \datetime|null $data_aprovacao_gestor
  * @property int|null $rh_aprovacao_id
+ * @property string|null $obs_rh
  * @property string|null $status_aprovacao_rh
+ * @property \datetime|null $data_aprovacao_rh
  * @property string|null $status_ferias
  * @property \datetime|null $data_status_ferias
  * @property int|null $ferias_prevista_id
  * @property bool $aprovado_via_script
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int|null $quem_deletou_id
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property bool $abono_pecuniario
+ * @property bool $adiantamento_decimo_terceiro
  * @property-read \App\Models\Admissao|null $Admissao
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
  * @property-read int|null $anexos_count
+ * @property-read User|null $Empresa
  * @property-read \App\Models\FeriasPrevista|null $FeriasPrevista
+ * @property-read User|null $Gestor
+ * @property-read User|null $GestorAprovacao
+ * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
+ * @property-read User|null $RhAprovacao
  * @property-read User|null $Solicitante
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias newQuery()
+ * @method static \Illuminate\Database\Query\Builder|Ferias onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAbonoPecuniario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAdiantamentoDecimoTerceiro($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAdmissaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAprovadoViaScript($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDataAprovacaoGestor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDataRetorno($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDataSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDataSolicitacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDataStatusFerias($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDiasSaldo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereFeriasPrevistaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereGestorAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereObsGestor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereObsRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereObsSolicitante($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias wherePeriodoAquisitivoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereQntDias($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereQntFaltas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereQuemDeletouId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereRhAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereSolicitanteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereStatusAprovacaoGestor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereStatusAprovacaoRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereStatusFerias($value)
- * @property int|null $quem_deletou_id
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read User|null $Gestor
- * @method static \Illuminate\Database\Query\Builder|Ferias onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereQuemDeletouId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereTemFaltas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereUltimaData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|Ferias withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Ferias withoutTrashed()
- * @property bool $abono_pecuniario
- * @property bool $adiantamento_decimo_terceiro
- * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAbonoPecuniario($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAdiantamentoDecimoTerceiro($value)
+ * @mixin \Eloquent
  */
 class Ferias extends Model
 {
@@ -217,7 +180,6 @@ class Ferias extends Model
         self::FILTRO_REPROVADO_GESTOR,
         self::FILTRO_REPROVADO_RH,
         self::FILTRO_APROVADO_GESTOR,
-        self::FILTRO_ABERTO,
         self::STATUS_REPROVADO
     ];
 

@@ -14,38 +14,38 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\EmpresaPerimetro
  *
- * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro query()
- * @mixin \Eloquent
  * @property int $id
  * @property int $empresa_id
  * @property string $descricao
  * @property float $lat
  * @property float $long
  * @property int $perimetro
+ * @property bool $obrigatorio
  * @property \datetime|null $created_at
  * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @property-read \App\Models\User|null $Empresa
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro newQuery()
+ * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro query()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereLat($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereLong($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereObrigatorio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro wherePerimetro($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereUpdatedAt($value)
- * @property bool $obrigatorio
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereObrigatorio($value)
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property int|null $user_deletou_id
- * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaPerimetro whereUserDeletouId($value)
  * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro withTrashed()
  * @method static \Illuminate\Database\Query\Builder|EmpresaPerimetro withoutTrashed()
+ * @mixin \Eloquent
  */
 class EmpresaPerimetro extends Model
 {

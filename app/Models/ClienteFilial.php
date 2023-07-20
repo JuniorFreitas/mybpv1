@@ -15,12 +15,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $empresa_id
  * @property mixed $dados
  * @property bool $ativo
- * @property string|null $created_at
- * @property string|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\Cliente $Empresa
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @property-read mixed $endereco_completo
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial newQuery()
  * @method static \Illuminate\Database\Query\Builder|ClienteFilial onlyTrashed()
@@ -36,7 +37,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Query\Builder|ClienteFilial withTrashed()
  * @method static \Illuminate\Database\Query\Builder|ClienteFilial withoutTrashed()
  * @mixin \Eloquent
- * @property-read mixed $endereco_completo
  */
 class ClienteFilial extends Model
 {

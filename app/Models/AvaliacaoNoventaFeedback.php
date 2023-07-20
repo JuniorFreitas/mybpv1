@@ -16,32 +16,32 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $pergunta_id
  * @property int $gestor_id usuário em sessãos
  * @property int $nota
+ * @property int $quantidade_avaliacao
  * @property string $gestor_imediato
  * @property string|null $observacao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\FeedbackCurriculo $Feedback
- * @property-read \App\Models\AvaliacaoNoventaDias $Pergunta
- * @property-read \App\User $Usuario
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereGestorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereGestorImediato($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereNota($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereObservacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback wherePerguntaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property int $quantidade_avaliacao
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoNoventaFeedbackQuantidade[] $AvaliacaoQuantidade
  * @property-read int|null $avaliacao_quantidade_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaFeedback whereQuantidadeAvaliacao($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \App\Models\AvaliacaoNoventaDias|null $Pergunta
+ * @property-read User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereGestorImediato($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereNota($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback wherePerguntaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereQuantidadeAvaliacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class AvaliacaoNoventaFeedback extends Model
 {

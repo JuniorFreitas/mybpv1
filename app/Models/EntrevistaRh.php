@@ -11,9 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\EntrevistaRh
  *
  * @property int $id
- * @property int $feedback_id
- * @property int $curriculo_id
- * @property int|null $formulario_id
+ * @property int|null $feedback_id
  * @property string|null $parecer
  * @property string|null $indicado_para
  * @property int|null $nota
@@ -31,10 +29,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh query()
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereComentario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereEntrevistadoPor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereFormularioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereIndicadoPara($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EntrevistaRh whereNota($value)

@@ -15,11 +15,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $nome
  * @property string $descricao
  * @property int $empresa_id
- * @property int $ativo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Avaliacao[] $Avaliacoes
- * @property-read int|null $avaliacoes_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoTopico[] $AvaliacoesTopicos
- * @property-read int|null $avaliacoes_topicos_count
+ * @property bool $ativo
+ * @property-read \App\Models\AvaliacaoTopico $AvaliacaoTipo
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTipo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTipo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTipo query()
@@ -29,9 +28,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTipo whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTipo whereNome($value)
  * @mixin \Eloquent
- * @property-read \App\Models\AvaliacaoTopico $AvaliacaoTipo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
  */
 class AvaliacaoTipo extends Model
 {

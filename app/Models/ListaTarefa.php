@@ -16,8 +16,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $user_id
  * @property string $titulo
  * @property int $ordem
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
  * @property-read \App\Models\Quadro|null $Quadro
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tarefa[] $Tarefas
  * @property-read int|null $tarefas_count

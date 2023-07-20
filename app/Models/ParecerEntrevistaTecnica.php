@@ -12,9 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\ParecerEntrevistaTecnica
  *
  * @property int $id
- * @property int $feedback_id
- * @property int|null $formulario_id
- * @property int $curriculo_id
+ * @property int|null $feedback_id
  * @property string|null $tempo_funcao
  * @property bool|null $trabalhou_alumar
  * @property bool|null $indicado
@@ -39,11 +37,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool|null $trocou_valvulas
  * @property string|null $trocou_valvulas_ex
  * @property string|null $ferramentas_elevacao_carga
- * @property bool|null $opera_plat_movel
+ * @property string|null $opera_plat_movel
  * @property string|null $opera_plat_movel_ex
- * @property bool|null $opera_plat_ponte
+ * @property string|null $opera_plat_ponte
  * @property string|null $opera_plat_onte_ex
- * @property bool|null $experiencia_cargas_rigger
+ * @property string|null $experiencia_cargas_rigger
  * @property string|null $experiencia_cargas_rigger_ex
  * @property bool|null $trabalhou_overhaul
  * @property string|null $trabalhou_overhaul_ex
@@ -53,25 +51,26 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $observacao
  * @property string|null $indicado_area
  * @property string|null $resultado_final
- * @property int $nota
+ * @property int|null $nota
  * @property int|null $entrevistado_por
  * @property string|null $quem_entrevistou
- * @property string|null $tipo_contratacao
- * @property string|null $texto_livre
- * @property string|null $tipo_entrevista
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $tipo_contratacao
+ * @property string|null $texto_livre
+ * @property string $tipo_entrevista
+ * @property int|null $formulario_id
  * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
  * @property-read \App\Models\User|null $QuemEntrevistou
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @property-read mixed $data_entrevista
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica query()
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica whereAberturaTuboSeisPolegada($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica whereEntrevistadoPor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica whereExperienciaCargasRigger($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica whereExperienciaCargasRiggerEx($value)
@@ -120,7 +119,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerEntrevistaTecnica whereVaretaSeisPolegada($value)
  * @mixin \Eloquent
- * @property-read mixed $data_entrevista
  */
 class ParecerEntrevistaTecnica extends Model
 {

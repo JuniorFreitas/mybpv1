@@ -10,35 +10,35 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\EmpresaDispositivos
  *
- * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos query()
- * @mixin \Eloquent
  * @property int $id
  * @property int $empresa_id
  * @property string $descricao
  * @property float $lat
  * @property float $long
  * @property int $perimetro
+ * @property int $obrigatorio
  * @property \datetime|null $created_at
  * @property \datetime|null $updated_at
+ * @property string|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @property-read \App\Models\User|null $Empresa
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos query()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereLat($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereLong($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereObrigatorio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos wherePerimetro($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereUpdatedAt($value)
- * @property int $obrigatorio
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereObrigatorio($value)
- * @property string|null $deleted_at
- * @property int|null $user_deletou_id
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos whereUserDeletouId($value)
+ * @mixin \Eloquent
  */
 class EmpresaDispositivos extends Model
 {
