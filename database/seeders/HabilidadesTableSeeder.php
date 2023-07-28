@@ -489,6 +489,17 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_documentos_carta_oferta', 'descricao' => 'Acessa Menu Carta Oferta'];
         $lista[] = ['nome' => 'admissao_documentos_carta_oferta_aprova_reprova', 'descricao' => 'Pode Aprovar ou Reprovar uma Carta Oferta'];
 
+
+        // PLANEJAMENTO MOVIMENTAÇÃO
+        $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_demissao', 'descricao' => 'Exibir aba demissão'];
+        $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_ferias', 'descricao' => 'Exibir aba férias'];
+        $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_admissao', 'descricao' => 'Exibir aba admissão'];
+        $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_lideranca_de_pessoal_valor_extra', 'descricao' => 'Exibir aba liderança de pessoal e valor extra'];
+        $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_mudanca_cargo', 'descricao' => 'Exibir aba mudança de cargo'];
+        $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_mudanca_de_intermitente_para_fixo', 'descricao' => 'Exibir aba mudança de intermitente'];
+        $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_transferencia', 'descricao' => 'Exibir aba transferencia'];
+
+
         try {
             DB::beginTransaction();
 

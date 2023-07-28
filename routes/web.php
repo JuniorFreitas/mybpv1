@@ -548,6 +548,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
             //Rota raiz
             Route::get('/', [\App\Http\Controllers\MovimentacaoController::class, 'index'])->name('index');
+            Route::get('/lista-abas', [\App\Http\Controllers\MovimentacaoController::class, 'listarAbas'])->name('listarAbas');
         });
 
         Route::group(['as' => 'mobilizacao.'], function () {

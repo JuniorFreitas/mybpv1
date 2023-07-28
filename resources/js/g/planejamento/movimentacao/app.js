@@ -21,10 +21,6 @@ const app = new Vue({
         preload: false,
         cliente_id: '',
 
-        demissao: false,
-        ferias: false,
-        admissao: false,
-
         abas: {
             demissao: false,
             ferias: false,
@@ -33,13 +29,15 @@ const app = new Vue({
             mudacargo: false,
             intermitente: false,
         },
-        abasDefault: null
+        abasDefault: null,
+        permissoes_abas: [],
+        aba_ativa: '',
 
     },
     mounted() {
         this.usuarioAutenticado();
         this.abasDefault = _.cloneDeep(this.abas) //copia
-        this.abas.demissao = true
+        this.listaAbas();
     },
     methods: {
         trocaAba(aba) {
@@ -56,6 +54,21 @@ const app = new Vue({
                 .catch(error => {
                     this.preload = false;
                 })
+        },
+        listaAbas() {
+            this.preload = true;
+            axios.get(`${URL_ADMIN}/planejamento/movimentacao/lista-abas`)
+                .then(response => {
+                    let dados = response.data.dados;
+                    this.preload = false;
+                    this.permissoes_abas = dados.permissoes_abas;
+                    this.aba_ativa = dados.aba_ativa;
+                    console.log(this.aba_ativa);
+                    this.trocaAba(this.aba_ativa);
+                })
+                .catch(data => {
+                    this.preload = false;
+                });
         },
     }
 });
