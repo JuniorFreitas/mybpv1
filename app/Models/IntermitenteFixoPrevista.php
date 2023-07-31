@@ -171,6 +171,16 @@ class IntermitenteFixoPrevista extends Model
         return $this->hasOne(Vaga::class, 'id', 'novo_cargo_id');
     }
 
+    public function VagaAbertaAnterior()
+    {
+        return $this->hasOne(VagasAbertas::class, 'id', 'anterior_vaga_aberta_id');
+    }
+
+    public function VagaAbertaNova()
+    {
+        return $this->hasOne(VagasAbertas::class, 'id', 'nova_vaga_aberta_id');
+    }
+
     public function GestorAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'gestor_id');
@@ -179,6 +189,16 @@ class IntermitenteFixoPrevista extends Model
     public function UserAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
+
+    public function RhAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
+    }
+
+    public function QuemDeletou()
+    {
+        return $this->hasOne(User::class, 'id', 'quem_deletou_id');
     }
 
     public function Anexos()
