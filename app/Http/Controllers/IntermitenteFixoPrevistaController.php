@@ -8,6 +8,7 @@ use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPr
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovarRH;
 use App\Models\Arquivo;
 use App\Models\IntermitenteFixoPrevista;
+use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -45,6 +46,9 @@ class IntermitenteFixoPrevistaController extends Controller
         } else {
             try {
                 DB::beginTransaction();
+
+                $vaga = $this->firstOrCreateVagaAberta()
+
                 $intermitenteFixoPrevista = IntermitenteFixoPrevista::create($dados);
                 if (isset($dados['anexos'])) {
                     foreach ($dados['anexos'] as $index => $anexo) {
@@ -249,6 +253,8 @@ class IntermitenteFixoPrevistaController extends Controller
             'CentroCusto',
             'CargoAnterior',
             'NovoCargo',
+            'VagaAbertaAnterior',
+            'VagaAbertaNova',
             'UserCadastrou:id,nome',
             'Colaborador:id,nome,login,tipo,ativo', 'GestorAprovacao:id,nome', 'UserAprovacao:id,nome');
 
@@ -355,5 +361,20 @@ class IntermitenteFixoPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
+    }
+
+    function firstOrCreateVagaAberta($vaga_id, $municipio_id, $empresa_id, $titulo, $descricao = '', $ativo_sistema = true, $ativo = true)
+    {
+        $vaga = VagasAbertas::firstOrCreate([
+            'vaga_id' => $vaga_id,
+            'municipio_id' => $municipio_id,
+            'empresa_id' => $empresa_id,
+            'titulo' => $titulo,
+            'descricao' => $descricao,
+            'ativo_sistema' => $ativo_sistema,
+            'ativo' => $ativo
+        ]);
+
+        return $vaga;
     }
 }
