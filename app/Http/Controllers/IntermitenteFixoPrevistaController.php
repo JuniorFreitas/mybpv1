@@ -36,6 +36,8 @@ class IntermitenteFixoPrevistaController extends Controller
                 'salario_anterior_format' => 'required',
                 'novo_cargo_id' => 'required',
                 'novo_salario_format' => 'required',
+                'anterior_vaga_aberta_id' => 'required',
+                'nova_vaga_aberta_id' => 'required',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -46,8 +48,6 @@ class IntermitenteFixoPrevistaController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-
-                $vaga = $this->firstOrCreateVagaAberta()
 
                 $intermitenteFixoPrevista = IntermitenteFixoPrevista::create($dados);
                 if (isset($dados['anexos'])) {
@@ -89,6 +89,8 @@ class IntermitenteFixoPrevistaController extends Controller
 
         $intermitenteFixoPrevista->autocomplete_label_novo_cargo = $intermitenteFixoPrevista->NovoCargo ? $intermitenteFixoPrevista->NovoCargo->nome : '';
         $intermitenteFixoPrevista->autocomplete_label_novo_cargo_anterior = $intermitenteFixoPrevista->NovoCargo ? $intermitenteFixoPrevista->NovoCargo->nome : '';
+        $intermitenteFixoPrevista->autocomplete_label_vaga_anterior = $intermitenteFixoPrevista->VagaAbertaAnterior ? $intermitenteFixoPrevista->VagaAbertaAnterior->titulo : '';
+        $intermitenteFixoPrevista->autocomplete_label_vaga_nova = $intermitenteFixoPrevista->VagaAbertaNova ? $intermitenteFixoPrevista->VagaAbertaNova->titulo : '';
 
         $intermitenteFixoPrevista->autocomplete_label_gestor_modal = $intermitenteFixoPrevista->GestorAprovacao ? $intermitenteFixoPrevista->GestorAprovacao->nome : '';
         $intermitenteFixoPrevista->autocomplete_label_gestor_modal_anterior = $intermitenteFixoPrevista->GestorAprovacao ? $intermitenteFixoPrevista->GestorAprovacao->nome : '';
@@ -198,6 +200,7 @@ class IntermitenteFixoPrevistaController extends Controller
             DB::rollback();
             $msg = "error ao aprovar Intermitente Fixo Prevista:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
@@ -365,7 +368,7 @@ class IntermitenteFixoPrevistaController extends Controller
 
     function firstOrCreateVagaAberta($vaga_id, $municipio_id, $empresa_id, $titulo, $descricao = '', $ativo_sistema = true, $ativo = true)
     {
-        $vaga = VagasAbertas::firstOrCreate([
+        $vaga = VagasAbertas::withoutGlobalScopes()->firstOrCreate([
             'vaga_id' => $vaga_id,
             'municipio_id' => $municipio_id,
             'empresa_id' => $empresa_id,
