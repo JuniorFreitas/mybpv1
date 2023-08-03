@@ -47,15 +47,23 @@
                             <div class="col-12 col-md-6">
                                 <div class="form-group">
                                     <label>Cargo Anterior</label>
-                                    <autocomplete :caminho="`autocomplete/cargosEmpresa`"
-                                                  :formsm="true"
-                                                  :valido="form.cargo_anterior_id !== ''"
-                                                  v-model="form.autocomplete_label_cargoanterior"
-                                                  placeholder="Selecione um cargo"
-                                                  :disabled="true"
-                                                  :id="`cargo_anterior_${hash}`"
-                                                  @onblur="resetaCampoCargoAnterior"
-                                                  @onselect="selecionaCargoAnterior"></autocomplete>
+                                    <autocomplete
+                                        :disabled="true" :caminho="caminho_autocomplete_vagas"
+                                        :valido="form.autocomplete_label_vaga_anterior !== ''"
+                                        v-model="form.autocomplete_label_vaga_anterior"
+                                        placeholder="Vaga Atual"
+                                        @onblur="resetaCampoNovoCargo"
+                                        @onselect="selecionaVaga"
+                                    ></autocomplete>
+                                    <!--                                    <autocomplete :caminho="`autocomplete/cargosEmpresa`"-->
+                                    <!--                                                  :formsm="true"-->
+                                    <!--                                                  :valido="form.cargo_anterior_id !== ''"-->
+                                    <!--                                                  v-model="form.autocomplete_label_cargoanterior"-->
+                                    <!--                                                  placeholder="Selecione um cargo"-->
+                                    <!--                                                  :disabled="true"-->
+                                    <!--                                                  :id="`cargo_anterior_${hash}`"-->
+                                    <!--                                                  @onblur="resetaCampoCargoAnterior"-->
+                                    <!--                                                  @onselect="selecionaCargoAnterior"></autocomplete>-->
                                 </div>
                             </div>
 
@@ -72,15 +80,23 @@
                             <div class="col-12 col-md-6">
                                 <div class="form-group">
                                     <label>Novo Cargo</label>
-                                    <autocomplete :caminho="`autocomplete/cargosEmpresa`"
-                                                  :formsm="true"
-                                                  :valido="form.novo_cargo_id !== ''"
-                                                  v-model="form.autocomplete_label_novo_cargo"
-                                                  placeholder="Selecione um cargo"
-                                                  :disabled="visualizar || editando"
-                                                  :id="`novo_cargo_${hash}`"
-                                                  @onblur="resetaCampoNovoCargo"
-                                                  @onselect="selecionaNovoCargo"></autocomplete>
+                                    <autocomplete
+                                        :caminho="caminho_autocomplete_vagas"
+                                        :valido="form.autocomplete_label_vaga_nova !== ''"
+                                        v-model="form.autocomplete_label_vaga_nova"
+                                        placeholder="Novo Cargo"
+                                        @onselect="selecionaVagaNovo"
+                                        :disabled="visualizar || editando"
+                                    ></autocomplete>
+                                    <!--                                    <autocomplete :caminho="`autocomplete/cargosEmpresa`"-->
+                                    <!--                                                  :formsm="true"-->
+                                    <!--                                                  :valido="form.novo_cargo_id !== ''"-->
+                                    <!--                                                  v-model="form.autocomplete_label_novo_cargo"-->
+                                    <!--                                                  placeholder="Selecione um cargo"-->
+                                    <!--                                                  :disabled="visualizar || editando"-->
+                                    <!--                                                  :id="`novo_cargo_${hash}`"-->
+                                    <!--                                                  @onblur="resetaCampoNovoCargo"-->
+                                    <!--                                                  @onselect="selecionaNovoCargo"></autocomplete>-->
                                 </div>
                             </div>
 
@@ -294,136 +310,136 @@
             </span>
         </div>
 
-        <preload class="text-center" v-if="controle.carregando"></preload>
+                <preload class="text-center" v-if="controle.carregando"></preload>
 
-        <div id="conteudo">
-            <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
-                <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
-            </div>
+                <div id="conteudo">
+                    <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
+                        <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+                    </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
-                    <thead>
-                    <tr class="bg-default">
-                        <th class="text-center">
-                            <input type="checkbox"
-                                   :style="naoAprovados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                                   :disabled="naoAprovados.length === 0" :checked="tudoMarcado"
-                                   @click="selecionaTodos">
-                        </th>
-                        <th>CÓD</th>
-                        <th>Solicitação</th>
-                        <th>Centro de custo</th>
-                        <th>Colaborador</th>
-                        <th>Cargo Anterior</th>
-                        <th>Salário Anterior</th>
-                        <th>Novo Cargo</th>
-                        <th>Novo Salário</th>
-                        <th>Quem cadastrou</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="item in lista"
-                        :class="!item.status_aprovacao ? 'table-warning' : item.status_aprovacao === 'reprovado' ? 'table-danger' : item.status_aprovacao === 'aprovado' ? 'table-success' : null">
+                    <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
+                        <table class="tabela">
+                            <thead>
+                            <tr class="bg-default">
+                                <th class="text-center">
+                                    <input type="checkbox"
+                                           :style="naoAprovados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                                           :disabled="naoAprovados.length === 0" :checked="tudoMarcado"
+                                           @click="selecionaTodos">
+                                </th>
+                                <th>CÓD</th>
+                                <th>Solicitação</th>
+                                <th>Centro de custo</th>
+                                <th>Colaborador</th>
+                                <th>Cargo Anterior</th>
+                                <th>Salário Anterior</th>
+                                <th>Novo Cargo</th>
+                                <th>Novo Salário</th>
+                                <th>Quem cadastrou</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="item in lista"
+                                :class="!item.status_aprovacao ? 'table-warning' : item.status_aprovacao === 'reprovado' ? 'table-danger' : item.status_aprovacao === 'aprovado' ? 'table-success' : null">
 
-                        <td class="text-center">
-                            <label :for="item.id">
-                                <input
-                                    type="checkbox"
-                                    v-model="selecionados"
-                                    :value="item.id"
-                                    :id="item.id"
-                                    :style="!item.status_aprovacao ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                    :title="item.status_aprovacao ? null : 'Não possui aprovação'"
-                                    v-if="!item.status_aprovacao"
-                                >
-                                <input type="checkbox" v-else disabled="disabled" title="Status já atualizado">
+                                <td class="text-center">
+                                    <label :for="item.id">
+                                        <input
+                                            type="checkbox"
+                                            v-model="selecionados"
+                                            :value="item.id"
+                                            :id="item.id"
+                                            :style="!item.status_aprovacao ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                            :title="item.status_aprovacao ? null : 'Não possui aprovação'"
+                                            v-if="!item.status_aprovacao"
+                                        >
+                                        <input type="checkbox" v-else disabled="disabled" title="Status já atualizado">
 
-                            </label>
-                        </td>
-                        <td>
-                            {{ item.id }}
-                        </td>
+                                    </label>
+                                </td>
+                                <td>
+                                    {{ item.id }}
+                                </td>
 
-                        <td>
-                            {{ item.user_cadastrou.nome }} <br> {{ item.created_at }}
-                        </td>
+                                <td>
+                                    {{ item.user_cadastrou.nome }} <br> {{ item.created_at }}
+                                </td>
 
-                        <td>
-                            {{ item.centro_custo.label }}
-                        </td>
+                                <td>
+                                    {{ item.centro_custo.label }}
+                                </td>
 
-                        <td>
-                            {{ item.colaborador ? item.colaborador.nome : '' }}
-                        </td>
+                                <td>
+                                    {{ item.colaborador ? item.colaborador.nome : '' }}
+                                </td>
 
-                        <td>
-                            {{ item.cargo_anterior.nome }}
-                        </td>
-
-
-                        <td>
-                            {{ item.salario_anterior_format }}
-                        </td>
-                        <td>
-                            {{ item.novo_cargo.nome }}
-                        </td>
-
-                        <td>
-                            {{ item.novo_salario_format }}
-                        </td>
-
-                        <td>
-                        <span v-if="item.status_aprovacao !== null">
-                            <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br/>
-                            Por: {{ item.user_aprovacao.nome }}
-                        </span>
-
-                            <span v-else>
-                            Aguardando
-                        </span>
-                        </td>
+                                <td>
+                                    {{ item.vaga_aberta_anterior.titulo }}
+                                </td>
 
 
-                        <td class="text-center">
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
-                               v-if="!item.data_aprovacao && aprovar_por_gestor"
-                               @click.prevent="formOpen(item.id); aprovando = true; editando = false; visualizar = false; podeanexar = true;"
-                               data-toggle="modal"
-                               :data-target="`#${hash}`">
-                                <i class="fa fa-check"></i>
-                            </a>
+                                <td>
+                                    {{ item.salario_anterior_format }}
+                                </td>
+                                <td>
+                                    {{ item.vaga_aberta_nova.titulo }}
+                                </td>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                               v-if="!item.data_aprovacao"
-                               @click.prevent="formOpen(item.id); editando = true; aprovando = false; visualizar = false; podeanexar = true"
-                               data-toggle="modal"
-                               :data-target="`#${hash}`">
-                                <i class="fa fa-edit"></i>
-                            </a>
+                                <td>
+                                    {{ item.novo_salario_format }}
+                                </td>
 
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Visualizar"
-                               @click.prevent="formOpen(item.id); editando = false;  aprovando = false; visualizar = true; podeanexar= false"
-                               data-toggle="modal"
-                               :data-target="`#${hash}`">
-                                <i class="fa fa-search-plus"></i>
-                            </a>
-                        </td>
+                                <td>
+                                <span v-if="item.status_aprovacao !== null">
+                                    <span class="text-uppercase">{{ item.status_aprovacao }}</span> em {{ item.data_aprovacao }}<br/>
+                                    Por: {{ item.user_aprovacao.nome }}
+                                </span>
 
-                    </tr>
-                    </tbody>
-                </table>
-
-            </div>
-
-        </div>
+                                    <span v-else>
+                                    Aguardando
+                                </span>
+                                </td>
 
 
-        <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                            :url="urlPaginacao" :por-pagina="controle.dados.pages"
-                            :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando"/>
+                                <td class="text-center">
+                                    <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
+                                       v-if="!item.data_aprovacao && aprovar_por_gestor"
+                                       @click.prevent="formOpen(item.id); aprovando = true; editando = false; visualizar = false; podeanexar = true;"
+                                       data-toggle="modal"
+                                       :data-target="`#${hash}`">
+                                        <i class="fa fa-check"></i>
+                                    </a>
+
+                                    <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
+                                       v-if="!item.data_aprovacao"
+                                       @click.prevent="formOpen(item.id); editando = true; aprovando = false; visualizar = false; podeanexar = true"
+                                       data-toggle="modal"
+                                       :data-target="`#${hash}`">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+
+                                    <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Visualizar"
+                                       @click.prevent="formOpen(item.id); editando = false;  aprovando = false; visualizar = true; podeanexar= false"
+                                       data-toggle="modal"
+                                       :data-target="`#${hash}`">
+                                        <i class="fa fa-search-plus"></i>
+                                    </a>
+                                </td>
+
+                            </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
+                                    :url="urlPaginacao" :por-pagina="controle.dados.pages"
+                                    :dados="controle.dados"
+                                    v-on:carregou="carregou" v-on:carregando="carregando"/>
     </div>
 </template>
 
@@ -511,7 +527,12 @@ export default {
                 status_aprovacao: '',
 
                 anexos: [],
-                anexosDel: []
+                anexosDel: [],
+
+                anterior_vaga_aberta_id: '',
+                autocomplete_label_vaga_anterior: '',
+                nova_vaga_aberta_id: '',
+                autocomplete_label_vaga_nova: '',
             },
 
             formDefault: null,
@@ -520,6 +541,7 @@ export default {
 
             // colaborador_ativo: `autocomplete/colaboradores/`,
             urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/intermitente-fixo-prevista/atualizar`,
+            caminho_autocomplete_vagas: `autocomplete/todas-vagas-ativas`,
             controle: {
                 carregando: false,
                 dados: {
@@ -610,13 +632,14 @@ export default {
         },
         /***Campos de Filtros ****/
         selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id;
-            this.controle.dados.autocomplete_label = obj.label;
-            this.controle.dados.autocomplete_label_anterior = obj.label;
-            this.controle.carregando = true;
-            setTimeout(() => {
-                this.$refs.componente.buscar();
-            }, 600);
+            this.form.anterior_vaga_aberta_id = obj.id;
+            this.form.cargo_anterior_id = obj.vaga_id;
+            this.form.autocomplete_label_vaga_anterior = obj.vaga.nome;
+        },
+        selecionaVagaNovo(obj) {
+            this.form.nova_vaga_aberta_id = obj.id;
+            this.form.novo_cargo_id = obj.vaga_id;
+            this.form.autocomplete_label_vaga_nova = obj.vaga.nome;
         },
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
@@ -628,14 +651,17 @@ export default {
         },
 
         selecionaColaborador(obj) {
+            console.log(obj);
             this.form.colaborador_id = obj.curriculo_id;
             this.form.autocomplete_label_colaborador = obj.label;
             this.form.autocomplete_label_colaborador_anterior = obj.label;
 
             //Cargo Anterior
             this.form.cargo_anterior_id = obj.vaga_id;
-            this.form.autocomplete_label_cargoanterior = obj.vaga_selecionada.nome;
-            this.form.autocomplete_label_cargoanterior_anterior = obj.vaga_selecionada.nome;
+            this.form.autocomplete_label_cargoanterior = obj.vaga_aberta.vaga.nome;
+            this.form.autocomplete_label_cargoanterior_anterior = obj.vaga_aberta.vaga.nome;
+            this.form.anterior_vaga_aberta_id = obj.vaga_aberta.id;
+            this.form.autocomplete_label_vaga_anterior = obj.vaga_aberta.vaga.nome;
 
         },
         resetaCampoColaborador() {
@@ -648,6 +674,8 @@ export default {
                 this.form.cargo_anterior_id = '';
                 this.form.autocomplete_label_cargoanterior = '';
                 this.form.autocomplete_label_cargoanterior_anterior = '';
+                this.form.anterior_vaga_aberta_id = '';
+                this.form.autocomplete_label_vaga_anterior = '';
 
                 setTimeout(() => {
                     if (this.form.colaborador_id === '') {
@@ -697,18 +725,18 @@ export default {
             // }, 100);
         },
         resetaCampoNovoCargo() {
-            if (this.form.autocomplete_label_novo_cargo_anterior !== this.form.autocomplete_label_novo_cargo) {
-                this.form.autocomplete_label_novo_cargo_anterior = '';
+            if (this.form.autocomplete_label_novo_cargo !== this.form.autocomplete_label_novo_cargo) {
+                this.form.autocomplete_label_novo_cargo = '';
                 this.form.autocomplete_label_novo_cargo = '';
                 this.form.novo_cargo_id = '';
 
-                // setTimeout(() => {
-                //     if (this.form.novo_cargo_id === '') {
-                //         valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1);
-                //         $(`#${this.hash} #novo_cargo_${this.hash}`).focus().trigger('blur');
-                //         mostraErro('Erro', 'O Campo Novo Cargo não pode ficar vazio');
-                //     }
-                // }, 100);
+                setTimeout(() => {
+                    if (this.form.novo_cargo_id === '') {
+                        valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1);
+                        $(`#${this.hash} #novo_cargo_${this.hash}`).focus().trigger('blur');
+                        mostraErro('Erro', 'O Campo Novo Cargo não pode ficar vazio');
+                    }
+                }, 100);
             }
         },
 

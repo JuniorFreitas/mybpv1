@@ -29,8 +29,8 @@ class JobMudaIntermitenteFixoPrevistaAprovar implements ShouldQueue
             'email_para' => $mudaIntermitentePrevista->UserCadastrou->login,
             'status_aprovacao' => $mudaIntermitentePrevista->status_aprovacao,
             'id' => $mudaIntermitentePrevista->id,
-            'cargo_anterior' => $mudaIntermitentePrevista->CargoAnterior->nome,
-            'cargo_novo' => $mudaIntermitentePrevista->NovoCargo->nome,
+            'cargo_anterior' => $mudaIntermitentePrevista->VagaAbertaAnterior->titulo,
+            'cargo_novo' => $mudaIntermitentePrevista->VagaAbertaNova->titulo,
             'colaborador' => $mudaIntermitentePrevista->Colaborador->nome,
             'empresa_id' => auth()->user()->empresa_id
         ];

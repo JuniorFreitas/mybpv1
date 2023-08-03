@@ -7,6 +7,7 @@ use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Models\IntermitenteFixoPrevista
@@ -70,7 +71,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class IntermitenteFixoPrevista extends Model
 {
-    use HasFactory, TenantTrait;
+    use HasFactory, TenantTrait, SoftDeletes;
 
     protected $fillable = [
         'cliente_id',
@@ -88,6 +89,14 @@ class IntermitenteFixoPrevista extends Model
         'status_aprovacao',
         'empresa_id',
         'gestor_id',
+        'anterior_vaga_aberta_id',
+        'nova_vaga_aberta_id',
+        'rh_aprovacao_id',
+        'obs_rh',
+        'status_aprovacao_rh',
+        'data_aprovacao_rh',
+        'aprovado_via_script',
+        'quem_deletou_id',
     ];
 
     protected $casts = [
@@ -99,18 +108,24 @@ class IntermitenteFixoPrevista extends Model
         'salario_anterior' => 'float',
         'novo_cargo_id' => 'int',
         'novo_salario' => 'float',
-
         'user_id' => 'int',
         'motivos' => 'string',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
-
         'user_aprovacao_id' => 'int',
         'data_aprovacao' => 'date:d/m/Y',
         'obs_aprovacao' => 'string',
         'status_aprovacao' => 'string',
         'empresa_id' => 'int',
-        'gestor_id'=>'int'
+        'gestor_id'=>'int',
+        'anterior_vaga_aberta_id' => 'int',
+        'nova_vaga_aberta_id' => 'int',
+        'rh_aprovacao_id' => 'int',
+        'obs_rh' => 'string',
+        'status_aprovacao_rh' => 'string',
+        'data_aprovacao_rh' => 'date:d/m/Y',
+        'aprovado_via_script' => 'boolean',
+        'quem_deletou_id' => 'int',
     ];
 
     protected function serializeDate(DateTimeInterface $date)
