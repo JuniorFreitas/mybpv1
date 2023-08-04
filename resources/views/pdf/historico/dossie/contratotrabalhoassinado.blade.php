@@ -12,10 +12,10 @@
     </p>
     <p class="f11 text-justify">
         Pelo presente Instrumento Particular de Contrato de Trabalho a Título de Experiência, que de um lado celebra a
-        empresa <strong>{{$dados['dados_colaborador']->User->DadosEmpresa->razao_social}}</strong>, sociedade empresária limitada, inscrita
+        empresa <strong>{{$dados['dados_empresa']['razao_social']}}</strong>, sociedade empresária limitada, inscrita
         no CNPJ/MF sob n.º
-        <strong>{{$dados['dados_colaborador']->User->DadosEmpresa->cnpj}}</strong>, com atividade
-        localizada: {{$dados['dados_colaborador']->User->DadosEmpresa->endereco_completo}},
+        <strong>{{$dados['dados_empresa']['cnpj']}}</strong>, com atividade
+        localizada: {{$dados['dados_empresa']['endereco_completo']}},
         doravante designada simplesmente <strong>EMPREGADORA</strong> e de outro <strong>{{$dados['dados_colaborador']->nome}}</strong>
         portador(a) Carteira Profissional
         n.º {{$dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_numero : 'NÃO INFORMADO'}}
@@ -219,7 +219,7 @@
     </div>
     <div class="f11" style="line-height: 15pt;text-align: center">
         <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">
-        {{$dados['dados_colaborador']->User->DadosEmpresa->razao_social}}
+        {{$dados['dados_empresa']['razao_social']}}
         <br>
         <br>
         <br>

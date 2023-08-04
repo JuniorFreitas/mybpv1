@@ -240,6 +240,8 @@ class ClientesController extends Controller
 
                 $papel = Papel::create($dados_papel);
 
+                Sistema::grupoClinicaExame($cliente->id);
+
                 $habilidades = collect($request->listaDeHabilidades)->filter(function ($habilidade) {
                     if ($habilidade['acesso'] == 'true') {
                         return $habilidade;
@@ -361,109 +363,129 @@ class ClientesController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
 
-        } else {
-            try {
-                DB::beginTransaction();
+        }
 
-                $cliente->update($dados);
+        try {
+            DB::beginTransaction();
+
+            $cliente->update($dados);
 
 
-                if (isset($dados['telefonesDelete'])) {
-                    foreach ($dados['telefonesDelete'] as $telefonesDelete) {
-                        $cliente->Telefones()->find($telefonesDelete)->delete();
+            if (isset($dados['telefonesDelete'])) {
+                foreach ($dados['telefonesDelete'] as $telefonesDelete) {
+                    $cliente->Telefones()->find($telefonesDelete)->delete();
+                }
+            }
+            if (isset($dados['telefones'])) {
+                foreach ($dados['telefones'] as $linha) {
+                    if (isset($linha['id'])) {
+                        $cliente->Telefones()->find($linha['id'])->update($linha);
+                    } else {
+                        $cliente->Telefones()->create($linha);
                     }
                 }
-                if (isset($dados['telefones'])) {
-                    foreach ($dados['telefones'] as $linha) {
-                        if (isset($linha['id'])) {
-                            $cliente->Telefones()->find($linha['id'])->update($linha);
-                        } else {
-                            $cliente->Telefones()->create($linha);
+            }
+
+            if (isset($dados['logoDel'])) {
+                foreach ($dados['logoDel'] as $id) {
+                    $cliente->Logo()->find($id)->delete();
+                }
+            }
+
+
+            if (isset($dados['logo'])) {
+                foreach ($dados['logo'] as $index => $anexo) {
+                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+                    if ($anexo['chave'] == null) {
+                        Arquivo::whereId($anexo['id'])->update([
+                            'nome' => $anexo['nome'],
+                        ]);
+                    } else {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $cliente->Logo()->attach($arquivo->id);
                         }
                     }
                 }
+            }
 
-                if (isset($dados['logoDel'])) {
-                    foreach ($dados['logoDel'] as $id) {
-                        $cliente->Logo()->find($id)->delete();
+
+            if (isset($dados['mascoteDel'])) {
+                foreach ($dados['mascoteDel'] as $id) {
+                    $cliente->Mascote()->find($id)->delete();
+                }
+            }
+
+
+            if (isset($dados['mascote'])) {
+                foreach ($dados['mascote'] as $index => $anexo) {
+                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+                    if ($anexo['chave'] == null) {
+                        Arquivo::whereId($anexo['id'])->update([
+                            'nome' => $anexo['nome'],
+                        ]);
+                    } else {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $cliente->Mascote()->attach($arquivo->id);
+                        }
                     }
                 }
+            }
 
 
-                if (isset($dados['logo'])) {
-                    foreach ($dados['logo'] as $index => $anexo) {
-                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                        if ($anexo['chave'] == null) {
-                            Arquivo::whereId($anexo['id'])->update([
-                                'nome' => $anexo['nome'],
-                            ]);
-                        } else {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $cliente->Logo()->attach($arquivo->id);
+            if (isset($dados['servicos_clienteDelete'])) {
+                foreach ($dados['servicos_clienteDelete'] as $id) {
+                    $cliente->ServicosCliente()->find($id)->delete();
+                }
+            }
+
+            if (isset($dados['servicos_prospectDelete'])) {
+                foreach ($dados['servicos_prospectDelete'] as $id) {
+                    $cliente->ServicosProspect()->find($id)->delete();
+                }
+            }
+
+            // Se Tem Serviço Cliente
+            if (isset($dados['servicos_cliente'])) {
+
+                foreach ($dados['servicos_cliente'] as $linha) {
+                    $linha['ativo'] = $linha['ativo'] == 'true' ? true : false;
+
+                    if (isset($linha['anexosDel'])) {
+                        foreach ($linha['anexosDel'] as $id_anexo) {
+                            $arquivo = Arquivo::find($id_anexo);
+                            $arquivo->excluir();
+                        }
+                    }
+
+                    if (isset($linha['id'])) {
+                        $cliente->ServicosCliente()->find($linha['id'])->update($linha);
+                        foreach ($linha['anexos'] as $index => $anexo) {
+                            //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+                            if ($anexo['chave'] == null) {
+                                Arquivo::whereId($anexo['id'])->update([
+                                    'nome' => $anexo['nome'],
+                                ]);
+                            } else {
+                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                                if ($arquivo) {
+                                    $arquivo->temporario = false;
+                                    $arquivo->chave = '';
+                                    $arquivo->save();
+                                    $cliente->ServicosCliente()->find($linha['id'])->Anexos()->attach($arquivo->id);
+                                }
                             }
                         }
-                    }
-                }
-
-
-                if (isset($dados['mascoteDel'])) {
-                    foreach ($dados['mascoteDel'] as $id) {
-                        $cliente->Mascote()->find($id)->delete();
-                    }
-                }
-
-
-                if (isset($dados['mascote'])) {
-                    foreach ($dados['mascote'] as $index => $anexo) {
-                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                        if ($anexo['chave'] == null) {
-                            Arquivo::whereId($anexo['id'])->update([
-                                'nome' => $anexo['nome'],
-                            ]);
-                        } else {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $cliente->Mascote()->attach($arquivo->id);
-                            }
-                        }
-                    }
-                }
-
-
-                if (isset($dados['servicos_clienteDelete'])) {
-                    foreach ($dados['servicos_clienteDelete'] as $id) {
-                        $cliente->ServicosCliente()->find($id)->delete();
-                    }
-                }
-
-                if (isset($dados['servicos_prospectDelete'])) {
-                    foreach ($dados['servicos_prospectDelete'] as $id) {
-                        $cliente->ServicosProspect()->find($id)->delete();
-                    }
-                }
-
-                // Se Tem Serviço Cliente
-                if (isset($dados['servicos_cliente'])) {
-
-                    foreach ($dados['servicos_cliente'] as $linha) {
-                        $linha['ativo'] = $linha['ativo'] == 'true' ? true : false;
-
-                        if (isset($linha['anexosDel'])) {
-                            foreach ($linha['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-
-                        if (isset($linha['id'])) {
-                            $cliente->ServicosCliente()->find($linha['id'])->update($linha);
+                    } else {
+                        $servico = $cliente->ServicosCliente()->create($linha);
+                        if (isset($linha['anexos'])) {
                             foreach ($linha['anexos'] as $index => $anexo) {
                                 //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
                                 if ($anexo['chave'] == null) {
@@ -476,150 +498,130 @@ class ClientesController extends Controller
                                         $arquivo->temporario = false;
                                         $arquivo->chave = '';
                                         $arquivo->save();
-                                        $cliente->ServicosCliente()->find($linha['id'])->Anexos()->attach($arquivo->id);
+
+                                        $servico->Anexos()->attach($arquivo->id);
+
                                     }
                                 }
-                            }
-                        } else {
-                            $servico = $cliente->ServicosCliente()->create($linha);
-                            if (isset($linha['anexos'])) {
-                                foreach ($linha['anexos'] as $index => $anexo) {
-                                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                    if ($anexo['chave'] == null) {
-                                        Arquivo::whereId($anexo['id'])->update([
-                                            'nome' => $anexo['nome'],
-                                        ]);
-                                    } else {
-                                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                        if ($arquivo) {
-                                            $arquivo->temporario = false;
-                                            $arquivo->chave = '';
-                                            $arquivo->save();
 
-                                            $servico->Anexos()->attach($arquivo->id);
-
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-
-                if (isset($dados['servicos_prospect'])) {
-                    foreach ($dados['servicos_prospect'] as $linha) {
-
-                        if (isset($linha['anexosDel'])) {
-                            foreach ($linha['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-
-                        if (isset($linha['id'])) {
-
-                            $cliente->ServicosProspect()->find($linha['id'])->update($linha);
-                            if (isset($linha['anexos'])) {
-                                foreach ($linha['anexos'] as $index => $anexo) {
-                                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                    if ($anexo['chave'] == null) {
-                                        Arquivo::whereId($anexo['id'])->update([
-                                            'nome' => $anexo['nome'],
-                                        ]);
-                                    } else {
-                                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                        if ($arquivo) {
-                                            $arquivo->temporario = false;
-                                            $arquivo->chave = '';
-                                            $arquivo->save();
-                                            $cliente->ServicosProspect()->find($linha['id'])->Anexos()->attach($arquivo->id);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            $servico = $cliente->ServicosProspect()->create($linha);
-                            if (isset($linha['anexos'])) {
-                                foreach ($linha['anexos'] as $index => $anexo) {
-                                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                    if ($anexo['chave'] == null) {
-                                        Arquivo::whereId($anexo['id'])->update([
-                                            'nome' => $anexo['nome'],
-                                        ]);
-                                    } else {
-                                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                        if ($arquivo) {
-                                            $arquivo->temporario = false;
-                                            $arquivo->chave = '';
-                                            $arquivo->save();
-                                            $servico->Anexos()->attach($arquivo->id);
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
+
                 }
-
-                if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
-                    $config = ClienteConfig::find($dados['cliente_config']['id']);
-                    $config->update([
-                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
-                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
-                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-                        'modelo_cih' => $dados['cliente_config']['modelo_cih'],
-                        'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
-                    ]);
-                } else {
-                    $dadosClienteConfig = [
-                        'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
-                        'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
-                        'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
-                        'modelo_cih' => $dados['cliente_config']['modelo_cih'],
-                        'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
-                        'cliente_id' => $cliente->id
-                    ];
-                    ClienteConfig::create($dadosClienteConfig);
-                }
-
-                $verificaTrue = $dados['listaDeHabilidades'];
-                $verificaFalse = $dados['listaDeHabilidades'];
-
-                $habilidades = collect($verificaTrue)->filter(function ($habilidade) {
-                    if ($habilidade['acesso'] == true) {
-                        return $habilidade;
-                    }
-                })->pluck('id');
-
-                $cliente->Papel->habilidades()->sync($habilidades);
-
-                $todosPapeis = Papel::whereEmpresaId($cliente->id)->where('master', false)->with('habilidades')->get();
-
-                $habilidadesRetiradas = collect($verificaFalse)->filter(function ($habilidade) {
-                    if ($habilidade['acesso'] == false) {
-                        return $habilidade;
-                    }
-                })->pluck('id');
-
-                foreach ($todosPapeis as $papel) {
-                    $papel->habilidades()->detach($habilidadesRetiradas);
-                }
-
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-
-                DB::rollBack();
-                $msg = "error STORE CLIENTES:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json([
-                    'msg' => $msg,
-                ], 400);
             }
+
+
+            if (isset($dados['servicos_prospect'])) {
+                foreach ($dados['servicos_prospect'] as $linha) {
+
+                    if (isset($linha['anexosDel'])) {
+                        foreach ($linha['anexosDel'] as $id_anexo) {
+                            $arquivo = Arquivo::find($id_anexo);
+                            $arquivo->excluir();
+                        }
+                    }
+
+                    if (isset($linha['id'])) {
+
+                        $cliente->ServicosProspect()->find($linha['id'])->update($linha);
+                        if (isset($linha['anexos'])) {
+                            foreach ($linha['anexos'] as $index => $anexo) {
+                                //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+                                if ($anexo['chave'] == null) {
+                                    Arquivo::whereId($anexo['id'])->update([
+                                        'nome' => $anexo['nome'],
+                                    ]);
+                                } else {
+                                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                                    if ($arquivo) {
+                                        $arquivo->temporario = false;
+                                        $arquivo->chave = '';
+                                        $arquivo->save();
+                                        $cliente->ServicosProspect()->find($linha['id'])->Anexos()->attach($arquivo->id);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        $servico = $cliente->ServicosProspect()->create($linha);
+                        if (isset($linha['anexos'])) {
+                            foreach ($linha['anexos'] as $index => $anexo) {
+                                //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
+                                if ($anexo['chave'] == null) {
+                                    Arquivo::whereId($anexo['id'])->update([
+                                        'nome' => $anexo['nome'],
+                                    ]);
+                                } else {
+                                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                                    if ($arquivo) {
+                                        $arquivo->temporario = false;
+                                        $arquivo->chave = '';
+                                        $arquivo->save();
+                                        $servico->Anexos()->attach($arquivo->id);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
+                $config = ClienteConfig::find($dados['cliente_config']['id']);
+                $config->update([
+                    'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                    'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                    'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
+                    'modelo_cih' => $dados['cliente_config']['modelo_cih'],
+                    'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
+                ]);
+            } else {
+                $dadosClienteConfig = [
+                    'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
+                    'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
+                    'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
+                    'modelo_cih' => $dados['cliente_config']['modelo_cih'],
+                    'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
+                    'cliente_id' => $cliente->id
+                ];
+                ClienteConfig::create($dadosClienteConfig);
+            }
+
+            $verificaTrue = $dados['listaDeHabilidades'];
+            $verificaFalse = $dados['listaDeHabilidades'];
+
+            $habilidades = collect($verificaTrue)->filter(function ($habilidade) {
+                if ($habilidade['acesso'] == true) {
+                    return $habilidade;
+                }
+            })->pluck('id');
+
+            $cliente->Papel->habilidades()->sync($habilidades);
+
+            $todosPapeis = Papel::whereEmpresaId($cliente->id)->where('master', false)->with('habilidades')->get();
+
+            $habilidadesRetiradas = collect($verificaFalse)->filter(function ($habilidade) {
+                if ($habilidade['acesso'] == false) {
+                    return $habilidade;
+                }
+            })->pluck('id');
+
+            foreach ($todosPapeis as $papel) {
+                $papel->habilidades()->detach($habilidadesRetiradas);
+            }
+
+            DB::commit();
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+            $msg = "error STORE CLIENTES:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json([
+                'msg' => $msg,
+            ], 400);
         }
 
     }

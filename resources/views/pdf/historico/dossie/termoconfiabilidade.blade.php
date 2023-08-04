@@ -165,7 +165,7 @@
         </div>
         <div class="f11 text-justify l-3" style="line-height: 26pt;text-align: center">
             <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">
-            {{$dados['dados_colaborador']->User->DadosEmpresa->razao_social}}
+            {{$dados['dados_empresa']['razao_social']}}
             <br>
             <br>
             <br>
