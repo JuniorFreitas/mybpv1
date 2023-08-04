@@ -24,7 +24,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User|null $Empresa
  * @method static \Illuminate\Database\Eloquent\Builder|ExameEmpresa newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ExameEmpresa newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ExameEmpresa query()

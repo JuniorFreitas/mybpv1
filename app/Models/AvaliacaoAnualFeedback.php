@@ -10,33 +10,32 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\AvaliacaoAnualFeedback
  *
+ * @property int $id
  * @property int $feedback_id
  * @property int $pergunta_id
  * @property int $nota
  * @property int $quantidade_avaliacao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback whereNota($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback wherePerguntaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback whereQuantidadeAvaliacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property int $id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoAnualFeedback[] $AvaliacaoQuantidade
+ * @property-read \Illuminate\Database\Eloquent\Collection|AvaliacaoAnualFeedback[] $AvaliacaoQuantidade
  * @property-read int|null $avaliacao_quantidade_count
- * @property-read \App\Models\FeedbackCurriculo $Feedback
- * @property-read \App\Models\FormularioAvaliacaoAnual $Pergunta
- * @property-read \App\Models\Topicos $Topicos
- * @property-read \App\Models\User $User
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedback whereId($value)
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \App\Models\FormularioAvaliacaoAnual|null $Pergunta
+ * @property-read \App\Models\Topicos|null $Topicos
  * @property-read User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback whereNota($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback wherePerguntaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback whereQuantidadeAvaliacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class AvaliacaoAnualFeedback extends Model
 {

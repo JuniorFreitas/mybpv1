@@ -17,28 +17,28 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\SimuladoVaga $SimuladoVaga
- * @property-read mixed $slug
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Simulado newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Simulado newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Simulado query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Simulado whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Simulado whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Simulado whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Simulado whereTitulo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Simulado whereUpdatedAt($value)
- * @mixin \Eloquent
+ * @property int|null $empresa_id
+ * @property string|null $tipo_prova
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoPergunta[] $Perguntas
  * @property-read int|null $perguntas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \App\Models\SimuladoVaga|null $SimuladoVaga
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read mixed $qnt_questoes
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereEmpresaId($value)
+ * @property-read mixed $slug
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
- * @property string|null $tipo_prova
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereTipoProva($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereTitulo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Simulado whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class Simulado extends Model
 {

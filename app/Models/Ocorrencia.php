@@ -12,65 +12,57 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\Ocorrencia
  *
  * @property int $id
- * @property int $setor_id
+ * @property int|null $cliente_id
+ * @property int|null $usuario_id
+ * @property int|null $setor_id
  * @property string $assunto
  * @property int $quem_criou
- * @property int $quem_atualizou
- * @property mixed|null $datahora_finalizou
+ * @property int|null $quem_atualizou
+ * @property \datetime|null $datahora_finalizou
  * @property int|null $quem_finalizou
  * @property string $status
  * @property string $tipo
- * @property int $imovel_id
- * @property int|null $contrato_id
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
- * @property-read \App\User $Atualizou
- * @property-read \App\User $Criou
- * @property-read \App\User $Finalizou
- * @property-read mixed $status_novo
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereAssunto($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereContratoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereDatahoraFinalizou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereImovelId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereQuemAtualizou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereQuemCriou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereQuemFinalizou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereSetorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereTipo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read mixed $de_contrato
- * @property-read mixed $de_imovel
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int|null $empresa_id
+ * @property-read \App\Models\User|null $Atualizou
+ * @property-read \App\Models\Cliente|null $Cliente
+ * @property-read \App\Models\User|null $Criou
+ * @property-read \App\Models\User|null $Finalizou
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\RespostaOcorrencia[] $Respostas
+ * @property-read int|null $respostas_count
+ * @property-read \App\Models\OcorrenciaSetor|null $Setor
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tag[] $Tags
+ * @property-read int|null $tags_count
+ * @property-read \App\Models\User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
  * @property-read mixed $status_andamento
  * @property-read mixed $status_finalizado
+ * @property-read mixed $status_novo
  * @property-read mixed $status_text
  * @property-read mixed $tipo_anotacao
  * @property-read mixed $tipo_documentacao
  * @property-read mixed $tipo_problema
  * @property-read mixed $tipo_text
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia deContrato()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Ocorrencia deImovel()
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\RespostaOcorrencia[] $Respostas
- * @property-read \App\Models\OcorrenciaSetor $Setor
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tag[] $Tags
- * @property-read int|null $respostas_count
- * @property-read int|null $tags_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @property int|null $cliente_id
- * @property int|null $usuario_id
- * @property-read \App\Models\Cliente|null $Cliente
- * @property-read \App\Models\User|null $Usuario
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereAssunto($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereUsuarioId($value)
- * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereDatahoraFinalizou($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereQuemAtualizou($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereQuemCriou($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereQuemFinalizou($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereSetorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Ocorrencia whereUsuarioId($value)
+ * @mixin \Eloquent
  */
 class Ocorrencia extends Model
 {

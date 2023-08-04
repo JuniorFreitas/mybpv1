@@ -13,8 +13,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\OcorrenciaJornada
  *
  * @property int $id
- * @property int $empresa_id
+ * @property int|null $empresa_id
  * @property string $descricao
+ * @property bool $trabalhado
+ * @property bool $conta_horas
  * @property bool $ativo
  * @property \datetime|null $created_at
  * @property \datetime|null $updated_at
@@ -24,16 +26,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada query()
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereContaHoras($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereTrabalhado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property bool $trabalhado
- * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereTrabalhado($value)
- * @property bool|null $conta_horas
- * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada whereContaHoras($value)
  */
 class OcorrenciaJornada extends Model
 {

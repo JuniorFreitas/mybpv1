@@ -12,21 +12,21 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $nome
  * @property string $endereco
- * @property int $ativo
+ * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $empresa_id
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento query()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereEndereco($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTreinamento whereEmpresaId($value)
  */
 class EmpresaTreinamento extends Model
 {

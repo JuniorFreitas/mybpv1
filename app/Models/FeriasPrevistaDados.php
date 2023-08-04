@@ -20,8 +20,8 @@ use DateTimeInterface;
  * @property int|null $dias_saldo
  * @property string|null $status
  * @property string|null $obs
- * @property string|null $periodo_aquisitivo
- * @property mixed|null $ultima_data
+ * @property int|null $periodo_aquisitivo_id
+ * @property string|null $ultima_data
  * @property \datetime|null $created_at
  * @property \datetime|null $updated_at
  * @property int|null $user_aprovacao_id
@@ -34,9 +34,11 @@ use DateTimeInterface;
  * @property string|null $resposta_rh
  * @property string|null $obs_rh
  * @property mixed|null $data_aprovacao_rh
+ * @property int|null $gestor_id
  * @property-read \App\Models\CentroCusto|null $CentroCusto
  * @property-read \App\Models\FeriasPrevistaMov|null $FeriasPrevistaMov
  * @property-read \App\Models\User|null $GestorAprovacao
+ * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
  * @property-read \App\Models\User|null $QuemAprovou
  * @property-read \App\Models\User|null $RhAprovacao
  * @property-read \App\Models\User|null $UserCadastrou
@@ -51,11 +53,12 @@ use DateTimeInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereDataSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereDiasSaldo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereFeriasPrevistaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereGestorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereObs($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereObsAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereObsRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados wherePeriodoAquisitivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados wherePeriodoAquisitivoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereQntDias($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereQntFaltas($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereRespostaRh($value)
@@ -63,16 +66,11 @@ use DateTimeInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereStatusAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereTemFaltas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUltimaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUserRhId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUltimaData($value)
  * @mixin \Eloquent
- * @property int|null $periodo_aquisitivo_id
- * @property int|null $gestor_id
- * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereGestorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados wherePeriodoAquisitivoId($value)
  */
 class FeriasPrevistaDados extends Model
 {

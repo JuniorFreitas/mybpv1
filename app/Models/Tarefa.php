@@ -12,56 +12,50 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\Tarefa
  *
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa query()
- * @mixin \Eloquent
  * @property int $id
+ * @property int $lista_id
  * @property int $user_id
  * @property string $titulo
- * @property string $data_tarefa
- * @property string $lista to do, done
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereDataTarefa($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereLista($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereTitulo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereUserId($value)
- * @property int $lista_id
  * @property string|null $descricao
  * @property int $ordem
- * @property mixed|null $data_entrega
+ * @property \datetime|null $datahora_inicio
+ * @property \datetime|null $datahora_entrega
+ * @property string|null $lembrete
+ * @property bool $concluido
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ChecklistsTarefa[] $Checklists
+ * @property-read int|null $checklists_count
  * @property-read \App\Models\ListaTarefa|null $Lista
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\LogWeekly[] $Logs
+ * @property-read int|null $logs_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Membros
+ * @property-read int|null $membros_count
  * @property-read \App\Models\User|null $Usuario
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereDataEntrega($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereDescricao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereListaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereOrdem($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Membros
- * @property-read int|null $membros_count
- * @property mixed|null $datahora_inicio
- * @property mixed|null $datahora_entrega
  * @property-read mixed $data_hora_entrega_formatada
  * @property-read mixed $data_hora_inicio_formatada
+ * @property-read mixed $em_atraso
+ * @property-read mixed $lembrete_text
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereConcluido($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereDatahoraEntrega($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereDatahoraInicio($value)
- * @property bool $concluido
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ChecklistsTarefa[] $Checklists
- * @property-read int|null $checklists_count
- * @property-read mixed $em_atraso
- * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereConcluido($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
- * @property string|null $lembrete
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\LogWeekly[] $Logs
- * @property-read int|null $logs_count
- * @property-read mixed $lembrete_text
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereLembrete($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereListaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereOrdem($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereTitulo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tarefa whereUserId($value)
+ * @mixin \Eloquent
  */
 class Tarefa extends Model {
     use HasFactory, LogsActivity;

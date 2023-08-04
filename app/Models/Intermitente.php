@@ -15,71 +15,71 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $id
  * @property int $feedback_id somente quem foi admitido
- * @property int $cliente_id Cliente empresa
+ * @property int|null $cliente_id Cliente empresa
  * @property int $user_lancamento_id Responsavel pelo lançamenro usuario em sessão
  * @property int|null $area_id
  * @property int|null $tipo_id
  * @property string|null $obs_lancamento Responsavel pela aprovação usuario em sessão
- * @property mixed $data_lancamento
- * @property string $acao
+ * @property string $data_lancamento
+ * @property string $encerramento_previsto
+ * @property string|null $acao
  * @property int|null $user_aprovacao_id Responsavel pela aprovação usuario em sessão
  * @property string|null $obs_aprovacao Responsavel pela aprovação usuario em sessão
- * @property mixed|null $data_aprovacao
+ * @property string|null $data_aprovacao
  * @property string|null $status aberto, aprovado
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
- * @property-read \App\Models\AreaEtiqueta $Area
- * @property-read \App\Models\Clientes $Cliente
- * @property-read \App\Models\FeedbackCurriculo $Colaborador
- * @property-read \App\Models\User $ResponsavelAprovacao
- * @property-read \App\Models\User $ResponsavelLancamento
- * @property-read \App\Models\IntermitenteTipo $Tipo
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereAcao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereAreaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereDataAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereDataLancamento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereObsAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereObsLancamento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereTipoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereUserAprovacaoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Intermitente whereUserLancamentoId($value)
- * @mixin \Eloquent
- * @property string $encerramento_previsto
  * @property bool|null $devolve_epi
  * @property bool|null $devolve_cracha
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\IntermitenteProrrogacao[] $Prorrogacao
- * @property-read int|null $prorrogacao_count
- * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDevolveCracha($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDevolveEpi($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEncerramentoPrevisto($value)
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property int $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEmpresaId($value)
  * @property string $hash_colaborador
  * @property string|null $resposta_colaborador
  * @property string|null $data_resposta_colaborador
  * @property int|null $centro_custo_id
- * @property int $prazo_resposta
+ * @property int|null $prazo_resposta
  * @property string|null $prazo_resposta_expiracao
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
+ * @property-read \App\Models\AreaEtiqueta|null $Area
  * @property-read \App\Models\CentroCusto|null $CentroDeCusto
+ * @property-read \App\Models\Cliente|null $Cliente
+ * @property-read \App\Models\FeedbackCurriculo|null $Colaborador
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\IntermitenteProrrogacao[] $Prorrogacao
+ * @property-read int|null $prorrogacao_count
+ * @property-read User|null $ResponsavelAprovacao
+ * @property-read User|null $ResponsavelLancamento
+ * @property-read \App\Models\IntermitenteTipo|null $Tipo
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereAcao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereAreaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereClienteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDataLancamento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDataRespostaColaborador($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDevolveCracha($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereDevolveEpi($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereEncerramentoPrevisto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereHashColaborador($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereObsLancamento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente wherePrazoResposta($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente wherePrazoRespostaExpiracao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereRespostaColaborador($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereTipoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereUserAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Intermitente whereUserLancamentoId($value)
+ * @mixin \Eloquent
  */
 class Intermitente extends Model
 {

@@ -21,16 +21,21 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property mixed|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string|null $causa
- * @property mixed $data_solicitacao
+ * @property string $data_solicitacao
+ * @property string|null $data_retorno
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\User|null $Usuario
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @property-read mixed $tipo_medida
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa query()
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereCausa($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereDataRetorno($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereDataSolicitacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereDefinicao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereFeedbackId($value)
@@ -41,11 +46,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereUserId($value)
  * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
- * @property string|null $data_retorno
- * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereDataRetorno($value)
- * @property-read mixed $tipo_medida
  */
 class MedidaAdministrativa extends Model
 {

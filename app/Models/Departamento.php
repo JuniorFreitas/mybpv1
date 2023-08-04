@@ -11,24 +11,23 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property string $label
- * @property int $cliente_id
+ * @property int|null $cliente_id
  * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Cliente|null $Cliente
+ * @property int|null $empresa_id
+ * @property-read \App\Models\User|null $Empresa
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento query()
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @property-read \App\Models\User|null $Empresa
- * @method static \Illuminate\Database\Eloquent\Builder|Departamento whereEmpresaId($value)
  */
 class Departamento extends Model
 {

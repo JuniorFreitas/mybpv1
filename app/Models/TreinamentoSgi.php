@@ -21,6 +21,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $validade
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $empresa_id
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi newModelQuery()
@@ -30,14 +31,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereConteudoAbordado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereConteudoProgramatico($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereTituloCertificado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereValidade($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoSgi whereEmpresaId($value)
  */
 class TreinamentoSgi extends Model
 {

@@ -14,7 +14,7 @@ use MasterTag\DataHora;
  * App\Models\FeriasPrevista
  *
  * @property int $id
- * @property int $cliente_id
+ * @property int|null $cliente_id
  * @property int $colaborador_id
  * @property int $centro_custo_id
  * @property mixed $data_saida
@@ -25,31 +25,8 @@ use MasterTag\DataHora;
  * @property string|null $solicitante
  * @property string|null $status
  * @property string|null $obs
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\CentroCusto|null $CentroCusto
- * @property-read \App\Models\Cliente|null $Cliente
- * @property-read \App\Models\User|null $Funcionario
- * @property-read \App\Models\User|null $UserCadastrou
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista query()
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereCentroCustoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereColaboradorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataRetorno($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataSaida($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDiasSaldo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObs($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereQntDias($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereSolicitante($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserId($value)
- * @mixin \Eloquent
- * @property-read \App\Models\User|null $Colaborador
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
  * @property int|null $user_aprovacao_id
  * @property mixed|null $data_aprovacao
  * @property string|null $obs_aprovacao
@@ -61,35 +38,57 @@ use MasterTag\DataHora;
  * @property string|null $obs_rh
  * @property mixed|null $data_aprovacao_rh
  * @property int|null $empresa_id
- * @property-read User|null $GestorAprovacao
- * @property-read User|null $QuemAprovou
- * @property-read User|null $RhAprovacao
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataAprovacaoRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereEmpresaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObsAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObsRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereQntFaltas($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereRespostaRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereStatusAprovacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereTemFaltas($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserAprovacaoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserRhId($value)
  * @property int|null $gestor_id
  * @property string|null $periodo_aquisitivo
  * @property mixed|null $ultima_data
  * @property string|null $mes
  * @property int|null $periodo_aquisitivo_id
- * @property-read User|null $Empresa
- * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereGestorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereMes($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUltimaData($value)
- * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
  * @property-read int|null $anexos_count
+ * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \App\Models\Cliente|null $Cliente
+ * @property-read \App\Models\Curriculo|null $Colaborador
+ * @property-read User|null $Empresa
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read User|null $GestorAprovacao
+ * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
+ * @property-read User|null $QuemAprovou
+ * @property-read User|null $RhAprovacao
+ * @property-read User|null $UserCadastrou
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista query()
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereClienteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereColaboradorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataRetorno($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDataSaida($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereDiasSaldo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereMes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereObsRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista wherePeriodoAquisitivoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereQntDias($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereQntFaltas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereRespostaRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereSolicitante($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereTemFaltas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUltimaData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserRhId($value)
+ * @mixin \Eloquent
  */
 class FeriasPrevista extends Model
 {

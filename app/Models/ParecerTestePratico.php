@@ -11,21 +11,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\ParecerTestePratico
  *
- * @property-read \App\Models\Curriculo|null $Curriculo
- * @property-read \App\Models\User|null $Entrevistador
- * @property-read \App\Models\FeedbackCurriculo|null $Feedback
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
- * @property-read mixed $data_horario_realizacao
- * @property-read mixed $nota_teste_format
- * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico query()
- * @mixin \Eloquent
  * @property int $id
- * @property int $curriculo_id
  * @property int|null $feedback_id
  * @property bool|null $fez_teste
+ * @property string|null $data_horario_realizacao
  * @property string|null $responsavel_pelo_teste
  * @property string|null $qual_teste
  * @property int|null $resultado_teste
@@ -36,8 +25,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $formulario_id
+ * @property-read \App\Models\Curriculo|null $Curriculo
+ * @property-read \App\Models\User|null $Entrevistador
+ * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $nota_teste_format
+ * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico query()
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico whereDataHorarioRealizacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico whereEntrevistador($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico whereFeedbackId($value)
@@ -51,7 +48,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico whereResponsavelPeloTeste($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico whereResultadoTeste($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico whereUpdatedAt($value)
- * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
+ * @mixin \Eloquent
  */
 class ParecerTestePratico extends Model
 {

@@ -192,6 +192,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Query\Builder|FeedbackCurriculo withoutTrashed()
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $PlanoSaudeAssinado
  * @property-read int|null $plano_saude_assinado_count
+ * @property-read \App\Models\ExameFuncionario|null $ExamesFuncionario
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Examesesmt[] $Sesmt
+ * @property-read int|null $sesmt_count
+ * @property-read \App\Models\Examesesmt|null $UltimoAso
  */
 class FeedbackCurriculo extends Model
 {
@@ -216,6 +220,9 @@ class FeedbackCurriculo extends Model
     {
         return false;
     }
+
+    const TABELA = 'feedback_curriculos';
+    protected $table = self::TABELA;
 
     protected $fillable = [
         'curriculo_id',
@@ -813,6 +820,33 @@ class FeedbackCurriculo extends Model
     public function Cih()
     {
         return $this->belongsToMany(Cih::class, 'cih_feedback', 'feedback_id', 'cih_id');
+    }
+
+    public function ExamesFuncionario()
+    {
+        return $this->hasOne(ExameFuncionario::class, 'feedback_id', 'id');
+    }
+
+    public function Sesmt(){
+        return $this->hasMany(Examesesmt::class, 'feedback_id', 'id');
+    }
+
+    public function UltimoAso(){
+        return $this->hasOne(Examesesmt::class, 'feedback_id', 'id')
+                    ->whereJsonContains('resultado->aprovado', 'Sim')
+                    ->whereExameRealizado(true)
+                    ->whereAtual(true)
+                    ->orderByDesc('data_vencimento');
+    }
+
+    public function AsoAdmissional(){
+        return $this->hasOne(Examesesmt::class, 'feedback_id', 'id')
+                    ->whereJsonContains('resultado->aprovado', 'Sim')
+                    ->whereExameRealizado(true)
+                    ->whereHas('ExameFuncionario.ExameTipo', function($query){
+                        $query->where('label', 'Admissional');
+                    })
+                    ->orderByDesc('data_vencimento');
     }
 
 

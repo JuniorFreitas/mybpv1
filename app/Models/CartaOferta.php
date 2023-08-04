@@ -9,6 +9,50 @@ use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\CartaOferta
+ *
+ * @property int $id
+ * @property string|null $token
+ * @property int|null $empresa_id
+ * @property int|null $curriculo_id
+ * @property int|null $feedback_id
+ * @property int|null $vagas_abertas_id
+ * @property int|null $vaga_projeto_id
+ * @property int|null $arquivo_id
+ * @property string $status
+ * @property string $local
+ * @property array|null $logs
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @property-read \App\Models\Arquivo|null $anexo
+ * @property-read \App\Models\Curriculo|null $curriculo
+ * @property-read \App\Models\Cliente|null $empresa
+ * @property-read \App\Models\FeedbackCurriculo|null $feedback
+ * @property-read mixed $log
+ * @property-read mixed $ultima_atualizacao
+ * @property-read \App\Models\VagasAbertas|null $vagaAberta
+ * @property-read \App\Models\VagaProjeto|null $vagaProjeto
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta query()
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereArquivoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereCurriculoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereLocal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereLogs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereVagaProjetoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CartaOferta whereVagasAbertasId($value)
+ * @mixin \Eloquent
+ */
 class CartaOferta extends Model
 {
     use HasFactory, LogsActivity, TenantTrait;

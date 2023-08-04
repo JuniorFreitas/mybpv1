@@ -13,32 +13,29 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\Quadro
  *
  * @property int $id
- * @property int $cliente_id
  * @property int $user_id
  * @property string $titulo
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
- * @property-read \App\Models\Cliente|null $Cliente
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int $empresa_id
+ * @property-read \App\Models\User|null $Empresa
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ListaTarefa[] $Listas
  * @property-read int|null $listas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\LogWeekly[] $Logs
+ * @property-read int|null $logs_count
  * @property-read \App\Models\User|null $Usuario
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro query()
- * @method static \Illuminate\Database\Eloquent\Builder|Quadro whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quadro whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro whereTitulo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro whereUserId($value)
  * @mixin \Eloquent
- * @property int $empresa_id
- * @property-read \App\Models\User|null $Empresa
- * @method static \Illuminate\Database\Eloquent\Builder|Quadro whereEmpresaId($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\LogWeekly[] $Logs
- * @property-read int|null $logs_count
  */
 class Quadro extends Model {
     use HasFactory, LogsActivity;

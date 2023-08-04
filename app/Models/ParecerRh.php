@@ -13,24 +13,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\ParecerRh
  *
  * @property int $id
- * @property int|null $formulario_id
- * @property int $feedback_id
- * @property int $curriculo_id
+ * @property int|null $feedback_id
  * @property bool|null $cnh
  * @property bool|null $ex_funcionario
  * @property string|null $cnh_tipo
  * @property string|null $rota_bairro
- * @property string|null $destro
- * @property string|null $tipo_entrevista
- * @property int|null $nota_digitacao
- * @property string|null $dinamicadegrupo
- * @property string|null $obs_dinamicadegrupo
- * @property bool|null $experiencia_callcenter
- * @property string|null $disponibilidade_horarios
- * @property bool|null $turnos_seis_por_um
- * @property string|null $horario_preferencial
- * @property string|null $obs_call
- * @property string|null $obs_horario
  * @property int|null $calca
  * @property int|null $bota
  * @property int|null $camisa_protecao
@@ -52,7 +39,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $indicado_por
  * @property bool|null $alumar_experiencia
  * @property string|null $alumar_experiencia_area
- * @property bool $outra_industria_experiencia
+ * @property bool|null $outra_industria_experiencia
  * @property string|null $outra_industria_nome
  * @property string|null $grau_instrucao
  * @property bool|null $horaextra
@@ -82,22 +69,33 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $trabalho_equipe
  * @property string|null $parecer_final
  * @property string|null $parecer_final_um
- * @property int $nota
+ * @property int|null $nota
  * @property string|null $comentarios
- * @property int $entrevistador
+ * @property int|null $entrevistador
  * @property string|null $quem_entrevistou
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Curriculo|null $Curriculo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CursoFormacaoRH[] $CursosFormacao
- * @property-read int|null $cursos_formacao_count
+ * @property string|null $destro
+ * @property string $tipo_entrevista
+ * @property int|null $nota_digitacao
+ * @property string|null $dinamicadegrupo
+ * @property string|null $obs_dinamicadegrupo
+ * @property bool|null $experiencia_callcenter
+ * @property string|null $disponibilidade_horarios
+ * @property bool|null $turnos_seis_por_um
+ * @property string|null $horario_preferencial
+ * @property string|null $obs_call
+ * @property string|null $obs_horario
+ * @property int|null $formulario_id
  * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CertificadoNr[] $Nr
  * @property-read int|null $nr_count
  * @property-read \App\Models\User|null $QuemEntrevistou
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read \App\Models\EntrevistaRh|null $entrevistaRh
  * @property-read \App\Models\GestorRh|null $gestorRh
+ * @property-read mixed $data_entrevista
  * @property-read \App\Models\IndividualRh|null $individualRh
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh newQuery()
@@ -126,7 +124,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereConjugeTrabalha($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereCulturaQualidade($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereDestro($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereDinamicadegrupo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereDisponibilidadeHorarios($value)
@@ -179,8 +176,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereTurnosSeisPorUm($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerRh whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property-read mixed $data_entrevista
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CertificadoNr[] $Nr
  */
 class ParecerRh extends Model
 {

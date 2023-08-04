@@ -13,41 +13,41 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\SimuladoVaga
  *
  * @property int $id
+ * @property int $simulado_id
  * @property int $vaga_id
  * @property mixed $data_inicio
  * @property mixed $data_fim
  * @property int $duracao
- * @property int|null $simulado_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoPergunta[] $Perguntas
- * @property-read int|null $perguntas_count
- * @property-read \App\Models\Simulado $Simulado
- * @property-read mixed $duracao_segundos
- * @property-read mixed $qnt_questoes
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga whereDataFim($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga whereDataInicio($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga whereDuracao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga whereSimuladoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga whereVagaId($value)
- * @mixin \Eloquent
  * @property bool|null $online
- * @property-read \App\Models\Vaga $Vaga
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoVaga whereOnline($value)
  * @property int|null $empresa_id
  * @property int|null $vagas_abertas_id
- * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereEmpresaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereVagasAbertasId($value)
  * @property bool $ativo
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoPergunta[] $Perguntas
+ * @property-read int|null $perguntas_count
+ * @property-read \App\Models\Simulado|null $Simulado
+ * @property-read \App\Models\Vaga|null $Vaga
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
  * @property-read int|null $vagas_abertas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $duracao_segundos
+ * @property-read mixed $qnt_questoes
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga query()
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereDataFim($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereDataInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereDuracao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereOnline($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereSimuladoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereVagaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga whereVagasAbertasId($value)
+ * @mixin \Eloquent
  */
 class SimuladoVaga extends Model
 {

@@ -12,21 +12,21 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $label
  * @property bool $ativo
- * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta query()
- * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereLabel($value)
- * @mixin \Eloquent
  * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereEmpresaId($value)
  * @property int|null $gestor_id
  * @property int|null $centro_custo_id
  * @property-read \App\Models\CentroCusto|null $CentroCusto
  * @property-read \App\Models\User|null $Gestor
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereLabel($value)
+ * @mixin \Eloquent
  */
 class AreaEtiqueta extends Model
 {

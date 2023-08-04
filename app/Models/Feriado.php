@@ -12,21 +12,21 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\Feriado
  *
  * @property int $id
- * @property string $descricao
- * @property string $data
- * @property string $ativo
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Feriado whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Feriado whereData($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Feriado whereDescricao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Feriado whereId($value)
- * @mixin \Eloquent
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Feriado newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Feriado newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Feriado query()
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
  * @property int $empresa_id
+ * @property string $descricao
+ * @property mixed $data
+ * @property bool $ativo
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Feriado newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Feriado newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Feriado query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Feriado whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Feriado whereData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Feriado whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Feriado whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Feriado whereId($value)
+ * @mixin \Eloquent
  */
 class Feriado extends Model {
     use LogsActivity;

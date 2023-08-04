@@ -11,17 +11,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\IndividualRh
  *
  * @property int $id
- * @property int $feedback_id
- * @property int|null $formulario_id
- * @property int $curriculo_id
+ * @property int|null $feedback_id
  * @property string|null $parecer
  * @property int|null $nota
  * @property string|null $entrevistado_por
  * @property int|null $user_id
  * @property string|null $comentario
- * @property string|null $avaliacao_psicologica
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $avaliacao_psicologica
+ * @property int|null $formulario_id
  * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
@@ -32,7 +31,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|IndividualRh whereAvaliacaoPsicologica($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IndividualRh whereComentario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IndividualRh whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IndividualRh whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IndividualRh whereEntrevistadoPor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IndividualRh whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IndividualRh whereFormularioId($value)

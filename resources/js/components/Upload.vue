@@ -345,7 +345,6 @@ export default {
                 "image/png"
             ];
         } else {
-            console.log('this.tipos', this.tipos)
             this.mimeTypes = this.mimeTypes.concat(this.tipos); // junta com a lista padrão
         }
         //criando a chave de upload para essa pagina

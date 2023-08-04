@@ -13,28 +13,28 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $nome
  * @property int|null $arquivo_id
  * @property string|null $assinatura
+ * @property string|null $cargo
+ * @property string|null $registro
  * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $empresa_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor query()
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereArquivoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereAssinatura($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereCargo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereRegistro($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property string|null $cargo
- * @property string|null $registro
- * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereCargo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereRegistro($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereEmpresaId($value)
  */
 class Instrutor extends Model
 {

@@ -2,9 +2,7 @@
 
 namespace App\Jobs\Movimentacao\MudaCargoPrevista;
 
-
-use App\Mail\Movimentacao\FeriasPrevista\AprovacaoMail;
-use App\Mail\Movimentacao\FeriasPrevista\AprovacaoRhMail;
+use App\Mail\Movimentacao\MudaCargoPrevista\AprovacaoRhMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -21,31 +19,14 @@ class JobMudaCargoPrevistaAprovarRH implements ShouldQueue
      * @return void
      */
     public $mail;
-    public $mailGestor;
     public $tries = 3;
+    public $mailGestor;
 
-    public function __construct($mudaCargoPrevista)
+    public function __construct($dados)
     {
-        $this->mail = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $mudaCargoPrevista->UserCadastrou->nome,
-            'email_para' => $mudaCargoPrevista->UserCadastrou->login,
-            'status_aprovacao' => $mudaCargoPrevista->resposta_rh,
-            'ferias_id' => $mudaCargoPrevista->id,
-            'colaborador' => $mudaCargoPrevista->Colaborador->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
+        $this->mail = $dados['dados_quem_cadastrou'];
 
-        $this->mailGestor = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $mudaCargoPrevista->QuemAprovou->nome,
-            'email_para' => $mudaCargoPrevista->QuemAprovou->login,
-            'status_aprovacao' => $mudaCargoPrevista->resposta_rh,
-            'ferias_id' => $mudaCargoPrevista->id,
-            'colaborador' => $mudaCargoPrevista->Colaborador->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
-
+        $this->mailGestor = $dados['dados_gestor'];
     }
 
     /**

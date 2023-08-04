@@ -98,6 +98,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     Route::get('get-pcmso', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getPcmos'])->name('getPcmos');
     Route::get('get-empresa-exames', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getEmpresaExames'])->name('getEmpresaExames');
     Route::get('get-filiais', [\App\Http\Controllers\CentroCustoController::class, 'getFiliais'])->name('getFiliais');
+    Route::post('get-filiais', [\App\Http\Controllers\CentroCustoController::class, 'getFiliaisCentroDeCusto'])->name('getFiliaisCentroDeCusto');
 
     // AutoCompletes
     Route::group(['as' => 'autocompletes.', 'prefix' => 'autocomplete'], function () {
@@ -513,12 +514,20 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::resource('valor-extra-prevista', \App\Http\Controllers\ValorExtraPrevistaController::class, ['parameters' => ['valor-extra-prevista' => 'valor_extra_prevista']]);
             });
 
+//            Route::group(['as' => 'solicitacao_cargo.'], function () {
+//                Route::post('muda-cargo-prevista/atualizacao-status', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizacaoStatus'])->name('muda-cargo-prevista.atualizacaoStatus');
+//                Route::post('muda-cargo-prevista/atualizar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizar'])->name('atualizar');
+//                Route::put('muda-cargo-prevista/{mudaCargoPrevista}/aprovar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'aprovar'])->name('aprovar');
+//                Route::post('muda-cargo-prevista/export', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'export'])->name('muda-cargo-prevista.excel');
+//                Route::resource('muda-cargo-prevista', \App\Http\Controllers\MudaCargoPrevistaController::class, ['parameters' => ['muda-cargo-prevista' => 'muda_cargo_prevista']]);
+//            });
+
             Route::group(['as' => 'solicitacao_cargo.'], function () {
-                Route::post('muda-cargo-prevista/atualizacao-status', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizacaoStatus'])->name('muda-cargo-prevista.atualizacaoStatus');
-                Route::post('muda-cargo-prevista/atualizar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizar'])->name('atualizar');
-                Route::put('muda-cargo-prevista/{mudaCargoPrevista}/aprovar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'aprovar'])->name('aprovar');
-                Route::post('muda-cargo-prevista/export', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'export'])->name('muda-cargo-prevista.excel');
-                Route::resource('muda-cargo-prevista', \App\Http\Controllers\MudaCargoPrevistaController::class, ['parameters' => ['muda-cargo-prevista' => 'muda_cargo_prevista']]);
+                Route::put('mudanca-cargo/{solicitacao}/aprovargestor', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarGestor'])->name('mudanca-cargo.aprovarGestor');
+                Route::post('mudanca-cargo/export', [\App\Http\Controllers\MudancaCargoController::class, 'export'])->name('mudanca-cargo.excel');
+                Route::post('mudanca-cargo/atualizar', [\App\Http\Controllers\MudancaCargoController::class, 'atualizar'])->name('mudanca-cargo.atualizar');
+                Route::put('mudanca-cargo/{solicitacao}/aprovarrh', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarRH'])->name('mudanca-cargo.aprovarRH');
+                Route::resource('mudanca-cargo', \App\Http\Controllers\MudancaCargoController::class, ['parameters' => ['ferias-prevista' => 'ferias']]);
             });
 
             Route::group(['as' => 'solicitacao_intermitente.'], function () {
@@ -539,6 +548,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
             //Rota raiz
             Route::get('/', [\App\Http\Controllers\MovimentacaoController::class, 'index'])->name('index');
+            Route::get('/lista-abas', [\App\Http\Controllers\MovimentacaoController::class, 'listarAbas'])->name('listarAbas');
         });
 
         Route::group(['as' => 'mobilizacao.'], function () {
@@ -643,7 +653,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::delete('controle-exames-resultado/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoDelete'])->name('anexo-delete');
         Route::post('controle-exames-resultado/uploadAnexos', [\App\Http\Controllers\ControleExameController::class, 'uploadAnexos'])->name('.upload-anexos');
 
-        Route::post('controle-exames/ficha-encaminhamento/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
+        Route::get('controle-exames/ficha-encaminhamento/{exame}/{token}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
         Route::get('controle-exames/carregaResposta', [\App\Http\Controllers\ControleExameController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('controle-exames/resultado/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getResultado'])->name('getResultado');
         Route::post('controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');
@@ -692,8 +702,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::group(['as' => 'preadm.', 'prefix' => 'preadmissao'], function () {
             Route::post('atualizar', [\App\Http\Controllers\PreAdmissaoController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
             Route::get('/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'show'])->name('show');
+            Route::get('finalizar/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'showFinalizar'])->name('showFinalizar');
             Route::get('/editar/{feedback}', [\App\Http\Controllers\PreAdmissaoController::class, 'edit'])->name('edit');
             Route::post('/enviar-email', [\App\Http\Controllers\PreAdmissaoController::class, 'enviarEmail'])->name('enviarEmail');
+            Route::post('/finalizar-encaminhar', [\App\Http\Controllers\PreAdmissaoController::class, 'finalizarEncaminhar'])->name('finalizarEncaminhar');
             Route::get('/', [\App\Http\Controllers\PreAdmissaoController::class, 'index'])->name('index');
         });
 
@@ -995,6 +1007,8 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
         Route::group(['as' => 'vencimentoasos.'], function () {
             Route::get('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'index'])->name('index')->middleware('can:relatorio_asos');
+            Route::get('tipos-exames', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'tiposExames'])->name('tiposExames')->middleware('can:relatorio_asos');
+            Route::post('vencimentoasos/export-excel', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_asos');
             Route::post('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'show'])->name('show')->middleware('can:relatorio_asos');
         });
         Route::group(['as' => 'medidasadministrativas.'], function () {

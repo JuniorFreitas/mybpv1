@@ -32,6 +32,7 @@ class ExameTipo extends Model
         'ativo'
     ];
     protected $casts = [
+        'id' => 'int',
         'label' => 'string',
         'ativo' => 'boolean'
     ];

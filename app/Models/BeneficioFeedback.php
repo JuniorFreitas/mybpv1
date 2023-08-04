@@ -12,15 +12,15 @@ use MasterTag\DataHora;
  * @property int $feedback_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Beneficio $Beneficio
- * @property-read \App\Models\FeedbackCurriculo $Feedback
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\BeneficioFeedback newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\BeneficioFeedback newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\BeneficioFeedback query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\BeneficioFeedback whereBeneficioId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\BeneficioFeedback whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\BeneficioFeedback whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\BeneficioFeedback whereUpdatedAt($value)
+ * @property-read \App\Models\Beneficio|null $Beneficio
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback query()
+ * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback whereBeneficioId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class BeneficioFeedback extends Model

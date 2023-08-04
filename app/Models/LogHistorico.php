@@ -14,24 +14,24 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $id
  * @property int $feedback_id
+ * @property int $empresa_id
  * @property string $acao
  * @property int $user_id
  * @property string $data
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico query()
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereAcao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereUserId($value)
  * @mixin \Eloquent
- * @property int $empresa_id
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|LogHistorico whereEmpresaId($value)
  */
 class LogHistorico extends Model
 {

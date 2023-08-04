@@ -37,52 +37,58 @@ class DocumentosPreAdmissaoController extends Controller
 
     public function autenticar(Request $request)
     {
-        $empresaId = $this->getEmpresa()->id;
-        $cpf = Sistema::transformCpfCnpj($request->cpf);
+        try {
+            $empresaId = $this->getEmpresa()->id;
+            $cpf = Sistema::transformCpfCnpj($request->cpf);
 
-        $dataNascimento = Sistema::dataTransform($request->nascimento);
-        if (!Sistema::validaCPF($cpf)) {
-            return response()->json(['msg' => 'CPF inválido'], 400);
-        }
+            $dataNascimento = Sistema::dataTransform($request->nascimento);
+            if (!Sistema::validaCPF($cpf)) {
+                return response()->json(['msg' => 'CPF inválido'], 400);
+            }
 
-        $candidato = Curriculo::withoutGlobalScopes()->whereCpf($cpf)
-            ->whereNascimento((new DataHora($dataNascimento))->dataInsert())
-            ->whereHas('Feedback', function ($q) use ($empresaId) {
-                $q->withoutGlobalScopes();
-                $q->whereEmpresaId($empresaId);
-                $q->whereHas('ResultadoIntegrado', function ($qu) {
-                    $qu->whereDocumentosEntregue(true);
-                });
-            })->with(['Telefones'])
-            ->first();
-
-
-        $candidato->docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa($empresaId)
-            ->transform(function ($doc) use ($candidato) {
-                $doc->docs_curriculo_anexos = \Illuminate\Support\Facades\DB::table('documentos_curriculos')
-                    ->whereTipo($doc->tipo)
-                    ->where('curriculo_id', $candidato->id)
-                    ->join('arquivos', 'arquivos.id', '=', 'documentos_curriculos.arquivo_id')
-                    ->get()->transform(function ($doc) {
-                        $doc->url = "";
-                        $doc->url_download = "";
-                        if (in_array($doc->disco, Arquivo::LISTAGEM_DISCOS)) {
-                            $doc->url = config('filesystems.disks.' . $doc->disco . '.urlShow') . "/{$doc->file}";
-                            $doc->urlDownload = config('filesystems.disks.' . $doc->disco . '.urlDownload') . "/{$doc->file}";
-                            $doc->urlThumb = config('filesystems.disks.' . $doc->disco . '.urlThumb') . "/{$doc->file}";
-                        };
-                        return $doc;
+            $candidato = Curriculo::withoutGlobalScopes()->whereCpf($cpf)
+                ->whereNascimento((new DataHora($dataNascimento))->dataInsert())
+                ->whereHas('Feedback', function ($q) use ($empresaId) {
+                    $q->withoutGlobalScopes();
+                    $q->whereEmpresaId($empresaId);
+                    $q->whereHas('ResultadoIntegrado', function ($qu) {
+                        $qu->whereDocumentosEntregue(true);
                     });
-                $doc->docs_curriculo_anexosDelete = [];
-                $doc->qnt_anexos = count($doc->docs_curriculo_anexos);
-                return $doc;
-            });
+                })->with(['Telefones'])
+                ->first();
 
-        if (is_null($candidato)) {
-            return response()->json(['msg' => 'Não foi possivel autenticar, CPF e/ou Data de Nascimento inválido. Ou você já inseriu todos os documentos.', 'autenticado' => false], 400);
-        } else {
-            return response()->json(['curriculo' => $candidato, 'autenticado' => true]);
+
+            $candidato->docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa($empresaId)
+                ->transform(function ($doc) use ($candidato) {
+                    $doc->docs_curriculo_anexos = \Illuminate\Support\Facades\DB::table('documentos_curriculos')
+                        ->whereTipo($doc->tipo)
+                        ->where('curriculo_id', $candidato->id)
+                        ->join('arquivos', 'arquivos.id', '=', 'documentos_curriculos.arquivo_id')
+                        ->get()->transform(function ($doc) {
+                            $doc->url = "";
+                            $doc->url_download = "";
+                            if (in_array($doc->disco, Arquivo::LISTAGEM_DISCOS)) {
+                                $doc->url = config('filesystems.disks.' . $doc->disco . '.urlShow') . "/{$doc->file}";
+                                $doc->urlDownload = config('filesystems.disks.' . $doc->disco . '.urlDownload') . "/{$doc->file}";
+                                $doc->urlThumb = config('filesystems.disks.' . $doc->disco . '.urlThumb') . "/{$doc->file}";
+                            };
+                            return $doc;
+                        });
+                    $doc->docs_curriculo_anexosDelete = [];
+                    $doc->qnt_anexos = count($doc->docs_curriculo_anexos);
+                    return $doc;
+                });
+
+            if (is_null($candidato)) {
+                return response()->json(['msg' => 'Não foi possivel autenticar, CPF e/ou Data de Nascimento inválido. Ou você já inseriu todos os documentos.', 'autenticado' => false], 400);
+            } else {
+                return response()->json(['curriculo' => $candidato, 'autenticado' => true]);
+            }
+        } catch (\Exception $e) {
+            Sistema::LogFormatado($request->input());
+            return response()->json(['msg' => 'Erro ao buscar candidato'], 400);
         }
+
 
     }
 

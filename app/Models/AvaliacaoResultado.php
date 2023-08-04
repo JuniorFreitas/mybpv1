@@ -19,8 +19,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $plano_de_acao
  * @property string|null $responsavel
  * @property int $empresa_id
- * @property \Illuminate\Support\Carbon|null $inicio
- * @property \Illuminate\Support\Carbon|null $termino
+ * @property string|null $inicio
+ * @property string|null $termino
  * @property string|null $status
  * @property array|null $dados_extras
  * @property-read \App\Models\AvaliacaoTopico|null $Topico

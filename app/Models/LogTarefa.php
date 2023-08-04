@@ -11,27 +11,27 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\LogTarefa
  *
+ * @property int $id
+ * @property int $tarefa_id
+ * @property int $lista_anterior
+ * @property int $lista_atual
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property-read \App\Models\ListaTarefa|null $ListaAnterior
+ * @property-read \App\Models\ListaTarefa|null $ListaAtual
+ * @property-read \App\Models\Tarefa|null $Tarefa
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa query()
- * @mixin \Eloquent
- * @property int $id
- * @property int $tarefa_id
- * @property string $lista_anterior
- * @property string $lista_atual
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa whereListaAnterior($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa whereListaAtual($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa whereTarefaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogTarefa whereUpdatedAt($value)
- * @property-read \App\Models\ListaTarefa|null $ListaAnterior
- * @property-read \App\Models\ListaTarefa|null $ListaAtual
- * @property-read \App\Models\Tarefa|null $Tarefa
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
+ * @mixin \Eloquent
  */
 class LogTarefa extends Model
 {

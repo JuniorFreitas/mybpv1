@@ -11,9 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\Vinculo
  *
  * @property int $id
- * @property int $feedback_id
- * @property int $curriculo_id
- * @property int|null $formulario_id
+ * @property int|null $feedback_id
  * @property int $vaga_id
  * @property bool $parente
  * @property string|null $nome
@@ -31,10 +29,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Vinculo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Vinculo query()
  * @method static \Illuminate\Database\Eloquent\Builder|Vinculo whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Vinculo whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vinculo whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vinculo whereFoiEmpregado($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Vinculo whereFormularioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vinculo whereFuncao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vinculo whereGrauParentesco($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vinculo whereId($value)
@@ -66,8 +62,6 @@ class Vinculo extends Model
 
     protected $fillable = [
         'feedback_id',
-        'formulario_id',
-        'curriculo_id',
         'vaga_id',
         'parente',
         'nome',
@@ -81,8 +75,6 @@ class Vinculo extends Model
     protected $casts = [
         'id' => 'int',
         'feedback_id' => 'int',
-        'formulario_id' => 'int',
-        'curriculo_id' => 'int',
         'vaga_id' => 'int',
         'parente' => 'boolean',
         'nome' => 'string',
