@@ -11,10 +11,10 @@
         </p>
         <p class="f12 text-justify">
             Pelo presente Instrumento Particular, que de um lado celebra a empresa
-            <strong>{{$dados['dados_colaborador']->User->DadosEmpresa->razao_social}}</strong>, sociedade empresária
+            <strong>{{$dados['dados_empresa']['razao_social']}}</strong>, sociedade empresária
             limitada, inscrita
-            no CNPJ/MF sob n.º <strong>{{$dados['dados_colaborador']->User->DadosEmpresa->cnpj}}</strong>, com sede
-            localizada: {{$dados['dados_colaborador']->User->DadosEmpresa->endereco_completo}}, representada por quem
+            no CNPJ/MF sob n.º <strong>{{$dados['dados_empresa']['cnpj']}}</strong>, com sede
+            localizada: {{$dados['dados_empresa']['endereco_completo']}}, representada por quem
             assina abaixo, doravante
             designada simplesmente <strong>EMPREGADORA</strong> e de outro
             <strong>{{$dados['dados_colaborador']->nome}}</strong>
@@ -110,7 +110,7 @@
         </div>
         <div class="f12" style="line-height: 15pt;text-align: center">
             <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">
-            {{$dados['dados_colaborador']->User->DadosEmpresa->razao_social}}
+            {{$dados['dados_empresa']['razao_social']}}
             <br>
             <br>
             <br>
