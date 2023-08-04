@@ -13,19 +13,29 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $requisicao_vaga_id
  * @property string $posicao
  * @property string $processo
+ * @property string|null $nome_indicacao
  * @property string $contrato
- * @property string $local_trabalho
+ * @property string|null $local_trabalho
  * @property string $horario
  * @property int|null $gestor_id
  * @property string|null $gestor
- * @property string|null $ppra
+ * @property bool|null $ppra
+ * @property string|null $salario
+ * @property float|null $salario_valor
+ * @property string|null $beneficio
+ * @property string|null $beneficio_excecao
+ * @property string|null $treinamento
+ * @property string|null $treinamento_excecao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User|null $GestorUser
+ * @property-read User|null $GestorAprovacao
  * @property-read \App\Models\RequisicaoVaga|null $Requisicao
+ * @property-read mixed $salario_valor_format
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao query()
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereBeneficio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereBeneficioExcecao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereContrato($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereGestor($value)
@@ -33,28 +43,17 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereHorario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereLocalTrabalho($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereNomeIndicacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao wherePosicao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao wherePpra($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereProcesso($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereRequisicaoVagaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property string|null $nome_indicacao
- * @property string|null $salario
- * @property float|null $salario_valor
- * @property string|null $beneficio
- * @property string|null $beneficio_excecao
- * @property string|null $treinamento
- * @property string|null $treinamento_excecao
- * @property-read User|null $GestorAprovacao
- * @property-read mixed $salario_valor_format
- * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereBeneficio($value)
- * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereBeneficioExcecao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereNomeIndicacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereSalario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereSalarioValor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereTreinamento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereTreinamentoExcecao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class TipoContratacao extends Model
 {

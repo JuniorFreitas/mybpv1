@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $empresa_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagaProjeto[] $VagasProjeto
+ * @property-read int|null $vagas_projeto_count
+ * @property-read mixed $tem_vaga
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto query()
@@ -29,9 +32,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto whereQntTotalRestante($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagaProjeto[] $VagasProjeto
- * @property-read int|null $vagas_projeto_count
- * @property-read mixed $tem_vaga
  */
 class Projeto extends Model
 {

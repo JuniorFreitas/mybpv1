@@ -14,6 +14,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property string $descricao
  * @property bool $ativo
+ * @property int $empresa_id
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|CategoriaPlanoConta newModelQuery()
@@ -21,12 +22,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|CategoriaPlanoConta query()
  * @method static \Illuminate\Database\Eloquent\Builder|CategoriaPlanoConta whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CategoriaPlanoConta whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CategoriaPlanoConta whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CategoriaPlanoConta whereId($value)
  * @mixin \Eloquent
- * @property int|null $cliente_id
- * @method static \Illuminate\Database\Eloquent\Builder|CategoriaPlanoConta whereClienteId($value)
- * @property int $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|CategoriaPlanoConta whereEmpresaId($value)
  */
 class CategoriaPlanoConta extends Model
 {

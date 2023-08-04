@@ -13,17 +13,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $simulado_pergunta_id
  * @property string $resposta
  * @property bool $correto
- * @property-read \App\Models\SimuladoPergunta $Pergunta
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoResposta newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoResposta newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoResposta query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoResposta whereCorreto($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoResposta whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoResposta whereResposta($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoResposta whereSimuladoPerguntaId($value)
- * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \App\Models\SimuladoPergunta|null $Pergunta
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta query()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta whereCorreto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta whereResposta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta whereSimuladoPerguntaId($value)
+ * @mixin \Eloquent
  */
 class SimuladoResposta extends Model
 {

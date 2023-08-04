@@ -11,11 +11,16 @@ use Laravel\Sanctum\HasApiTokens;
  * App\Models\VagaProjeto
  *
  * @property int $id
+ * @property int $empresa_id
  * @property int $projeto_id
  * @property int $vaga_aberta_id
  * @property int $qnt_total
  * @property int $qnt_preenchida
- * @property int $empresa_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedbackCurriculo[] $Feedbacks
+ * @property-read int|null $feedbacks_count
+ * @property-read \App\Models\Projeto|null $Projeto
+ * @property-read \App\Models\VagasAbertas|null $VagaAberta
+ * @property-read mixed $tem_vaga
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto newModelQuery()
@@ -28,11 +33,6 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto whereQntTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto whereVagaAbertaId($value)
  * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedbackCurriculo[] $Feedbacks
- * @property-read int|null $feedbacks_count
- * @property-read \App\Models\Projeto|null $Projeto
- * @property-read \App\Models\VagasAbertas|null $VagaAberta
- * @property-read mixed $tem_vaga
  */
 class VagaProjeto extends Model
 {

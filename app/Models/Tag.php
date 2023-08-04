@@ -9,16 +9,16 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * App\Models\Tag
  *
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Tag newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Tag newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Tag query()
- * @mixin \Eloquent
  * @property int $id
  * @property string $nome
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Tag whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Tag whereNome($value)
  * @property int|null $empresa_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Tag newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Tag newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Tag query()
  * @method static \Illuminate\Database\Eloquent\Builder|Tag whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tag whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tag whereNome($value)
+ * @mixin \Eloquent
  */
 class Tag extends Model
 {

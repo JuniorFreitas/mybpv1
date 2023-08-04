@@ -11,13 +11,13 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $tipo_id
  * @property int $cliente_id
- * @property-read \App\Models\Clientes|null $Cliente
+ * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\PesquisaClimaTipo|null $Tipo
- * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaCliente newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaCliente newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaCliente query()
- * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaCliente whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaCliente whereTipoId($value)
+ * @method static Builder|PesquisaClimaCliente newModelQuery()
+ * @method static Builder|PesquisaClimaCliente newQuery()
+ * @method static Builder|PesquisaClimaCliente query()
+ * @method static Builder|PesquisaClimaCliente whereClienteId($value)
+ * @method static Builder|PesquisaClimaCliente whereTipoId($value)
  * @mixin \Eloquent
  */
 class PesquisaClimaCliente extends Model

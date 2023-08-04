@@ -12,10 +12,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\Avaliacao
  *
- * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao query()
- * @mixin \Eloquent
  * @property int $id
  * @property int $avaliacao_tipo_id
  * @property int $empresa_id
@@ -25,6 +21,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $status
  * @property bool $ativo
  * @property-read \App\Models\AvaliacaoTipo $AvaliacaoTipo
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao query()
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereAvaliacaoTipoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereDataFimPrazo($value)
@@ -33,8 +34,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereTitulo($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
+ * @mixin \Eloquent
  */
 class Avaliacao extends Model
 {

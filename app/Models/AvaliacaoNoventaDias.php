@@ -13,16 +13,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $pergunta
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaDias newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaDias newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaDias query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaDias whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaDias whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaDias wherePergunta($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoNoventaDias whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaDias newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaDias newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaDias query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaDias whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaDias whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaDias wherePergunta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaDias whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class AvaliacaoNoventaDias extends Model
 {

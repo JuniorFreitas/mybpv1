@@ -11,8 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\CertificadoAlumar
  *
  * @property int $id
- * @property int $feedback_id
- * @property int $curriculo_id
+ * @property int|null $feedback_id
  * @property int $cliente_id
  * @property bool $nacional
  * @property int|null $empresa_treinamento_trinta_tres_id
@@ -22,7 +21,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Cliente|null $Cliente
- * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\EmpresaTreinamento|null $EmpresaTreinamentoTrintaCinco
  * @property-read \App\Models\EmpresaTreinamento|null $EmpresaTreinamentoTrintaTres
  * @property-read \App\Models\EmpresaTreinamento|null $EmpresaTrintaCinco
@@ -38,7 +36,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoAlumar query()
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoAlumar whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoAlumar whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|CertificadoAlumar whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoAlumar whereEmpresaTreinamentoTrintaCincoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoAlumar whereEmpresaTreinamentoTrintaTresId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoAlumar whereFeedbackId($value)

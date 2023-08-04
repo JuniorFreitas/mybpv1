@@ -13,84 +13,69 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 
 /**
- * App\Models\Models\PontoEletronico
+ * App\Models\PontoEletronico
  *
  * @property int $id
  * @property int $empresa_id
  * @property int $funcionario_id
  * @property int|null $jornada_id
  * @property int $ocorrencia_id
+ * @property int $duracao
+ * @property int|null $duracao_normal
+ * @property int|null $duracao_extra
+ * @property int|null $duracao_noturna
+ * @property string $tipo_frequencia
+ * @property int $tempo_limite_falta
+ * @property int $tempo_limite_saida
+ * @property int $limite_tolerancia
  * @property string|null $justificativa
+ * @property bool $verificado
  * @property \datetime|null $created_at
  * @property \datetime|null $updated_at
- * @property-read User|null $Funcionario
- * @property-read EscalaJornada|null $Jornada
- * @property-read OcorrenciaJornada|null $OcorrenciaJornada
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Models\PeriodoPontoEletronico[] $Periodos
+ * @property-read \App\Models\User|null $Funcionario
+ * @property-read \App\Models\EscalaJornada|null $Jornada
+ * @property-read \App\Models\OcorrenciaJornada|null $Ocorrencia
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PeriodoPontoEletronico[] $Periodos
  * @property-read int|null $periodos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PeriodoPontoEletronico[] $PeriodosEmAberto
+ * @property-read int|null $periodos_em_aberto_count
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
+ * @property-read mixed $dia
+ * @property-read mixed $dia_sem
+ * @property-read mixed $dia_semana
+ * @property-read mixed $duracao_jornada
+ * @property-read mixed $duracao_jornada_original
+ * @property-read mixed $horas_extra
+ * @property-read mixed $horas_extra_format
+ * @property-read mixed $horas_normal
+ * @property-read mixed $horas_normal_format
+ * @property-read mixed $horas_normal_original
+ * @property-read mixed $horas_normal_original_format
+ * @property-read mixed $horas_noturna
+ * @property-read mixed $horas_noturna_format
+ * @property-read mixed $total_minutos
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico query()
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoNormal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoNoturna($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereFuncionarioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereJornadaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereJustificativa($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereOcorrenciaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read OcorrenciaJornada|null $Ocorrencia
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Models\PeriodoPontoEletronico[] $PeriodosEmAberto
- * @property-read int|null $periodos_em_aberto_count
- * @property int $duracao
- * @property string $tipo_frequencia
- * @property int $tempo_limite_falta
- * @property int $tempo_limite_saida
- * @property int $limite_tolerancia
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereLimiteTolerancia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereOcorrenciaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTempoLimiteFalta($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTempoLimiteSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTipoFrequencia($value)
- * @property bool $verificado
- * @property-read mixed $dia
- * @property-read mixed $duracao_jornada
- * @property-read mixed $horas_extra
- * @property-read mixed $horas_extra_format
- * @property-read mixed $total_minutos
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereVerificado($value)
- * @property-read mixed $dia_sem
- * @property-read mixed $dia_semana
- * @property-read mixed $horas_normal
- * @property-read mixed $horas_normal_format
- * @property-read mixed $duracao_jornada_original
- * @property-read mixed $horas_normal_original
- * @property int|null $duracao_extra
- * @property int|null $duracao_noturna
- * @property-read mixed $horas_normal_original_format
- * @property-read mixed $horas_noturna
- * @property-read mixed $horas_noturna_format
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoExtra($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoNoturna($value)
- * @property int|null $duracao_normal
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoNormal($value)
- * @property string $autenticacao
- * @property int $escala_id
- * @property int $ocorrencia_jornada_id
- * @property int $periodo_id
- * @property int $facial
- * @property float|null $lat
- * @property float|null $long
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereAutenticacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereEscalaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereFacial($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereLat($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereLong($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereOcorrenciaJornadaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico wherePeriodoId($value)
+ * @mixin \Eloquent
  */
 class PontoEletronico extends Model {
     use HasFactory, LogsActivity;

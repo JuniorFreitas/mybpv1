@@ -13,25 +13,23 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\FormaPagamento
  *
  * @property int $id
- * @property int $cliente_id
  * @property string $descricao
  * @property bool $ativo
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int $empresa_id
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento query()
  * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property int $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|FormaPagamento whereEmpresaId($value)
  */
 class FormaPagamento extends Model {
     use HasFactory, LogsActivity;

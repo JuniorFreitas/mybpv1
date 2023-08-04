@@ -10,13 +10,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int $ata_reuniao_id
  * @property string $assunto
- * @property-read \App\Models\AtaReuniao $AtaReuniao
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAssunto newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAssunto newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAssunto query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAssunto whereAssunto($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAssunto whereAtaReuniaoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAssunto whereId($value)
+ * @property-read \App\Models\AtaReuniao|null $AtaReuniao
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto whereAssunto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto whereAtaReuniaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto whereId($value)
  * @mixin \Eloquent
  */
 class AtaReuniaoAssunto extends Model

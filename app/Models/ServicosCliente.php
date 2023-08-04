@@ -22,6 +22,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $status
  * @property string|null $feedback
  * @property bool $ativo
+ * @property string $tipo_contrato
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\Cliente|null $Cliente
@@ -41,11 +42,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente whereServicoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente whereTipoContrato($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente whereTipoFaturamento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente whereValor($value)
  * @mixin \Eloquent
- * @property string $tipo_contrato
- * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente whereTipoContrato($value)
  */
 class ServicosCliente extends Model
 {

@@ -18,10 +18,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property mixed|null $data_inicio
  * @property mixed|null $data_encerramento
  * @property string|null $escopo
- * @property string $valor
- * @property string $tipo_faturamento
- * @property string $status
- * @property string $feedback
+ * @property string|null $valor
+ * @property string|null $tipo_faturamento
+ * @property string|null $status
+ * @property string|null $feedback
  * @property bool $ativo
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
  * @property-read int|null $anexos_count

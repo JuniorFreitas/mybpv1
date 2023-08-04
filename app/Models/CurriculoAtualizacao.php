@@ -9,16 +9,16 @@ use MasterTag\DataHora;
 /**
  * App\Models\CurriculoAtualizacao
  *
- * @property-read mixed $created_at
+ * @property int $curriculo_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoAtualizacao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoAtualizacao newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoAtualizacao query()
- * @mixin \Eloquent
- * @property int $curriculo_id
- * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoAtualizacao whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoAtualizacao whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoAtualizacao whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class CurriculoAtualizacao extends Model
 {

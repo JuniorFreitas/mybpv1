@@ -79,9 +79,8 @@ class CartaOfertaGerencialController extends Controller
                     'logs' => $logs
                 ]);
 
-                if ($cartaOferta->local == CartaOferta::LOCAL_SGI) {
-                    $dadosIntegra = $this->requestSgi($cartaOferta->token);
-                    IntegraSgiMybpController::integra($dadosIntegra);
+                if ($cartaOferta->local == CartaOferta::LOCAL_SGI && $request->resposta == CartaOferta::STATUS_ACEITO_RH) {
+                    IntegraSgiMybpController::integra($request->integraMybp);
                 }
 
                 \DB::commit();
@@ -136,7 +135,7 @@ class CartaOfertaGerencialController extends Controller
                 $msg = "Erro ao integrar: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
                 Sistema::LogFormatado($request->input());
-                return response()->json(['message' => $msg], 422);
+                return response()->json(['message' => $msg], 400);
             }
 
         }
@@ -161,20 +160,32 @@ class CartaOfertaGerencialController extends Controller
 
     public function requestSgi($token)
     {
-        $client = new Client(['verify' => false, 'http_errors' => false]);
+
+        switch (env('APP_URL')) {
+            case 'https://sistema.mybp.com.br':
+                $url = 'https://sgi.bpse.com.br';
+                break;
+            case 'https://qa.mybp.com.br':
+                $url = 'https://qasgi.bpse.com.br';
+                break;
+            default:
+                $url = 'http://192.168.1.10:8884';
+                break;
+        }
+
+        $endpoint = "$url/api/carta-oferta/$token/integramybp";
+
+        $client = new Client();
         $headers = [
             'X-API-TOKEN' => 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK',
             'Content-Type' => 'application/json',
             'User-Agent' => 'MyBP'
         ];
 
-        $url = env('APP_ENV') == 'local' ? 'http://192.168.1.10:8884' : 'https://sgi.bpse.com.br';
-
-        $response = $client->post("$url/api/carta-oferta/$token/integramybp", [
+        $response = $client->post($endpoint, [
             'headers' => $headers,
         ]);
 
-//        print_r($response->getBody()->getContents());
 
         return $response->getBody()->getContents();
     }

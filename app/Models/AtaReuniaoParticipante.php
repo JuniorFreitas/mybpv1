@@ -13,16 +13,16 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $nome
  * @property int|null $user_id
  * @property string $funcao
- * @property-read \App\Models\AtaReuniao $AtaReuniao
- * @property-read \App\Models\User $User
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoParticipante newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoParticipante newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoParticipante query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoParticipante whereAtaReuniaoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoParticipante whereFuncao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoParticipante whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoParticipante whereNome($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoParticipante whereUserId($value)
+ * @property-read \App\Models\AtaReuniao|null $AtaReuniao
+ * @property-read User|null $User
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante whereAtaReuniaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante whereFuncao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante whereUserId($value)
  * @mixin \Eloquent
  */
 class AtaReuniaoParticipante extends Model

@@ -10,31 +10,18 @@ use function PHPUnit\Framework\isNull;
 /**
  * App\Models\AvaliacaoNoventaVencimento
  *
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento query()
- * @mixin \Eloquent
  * @property int $id
  * @property int $feedback_id
  * @property string|null $prazo_dez_inicial
- * @property bool|null $enviado_dez_inicial
  * @property string|null $prazo_cinco_inicial
- * @property bool|null $enviado_cinco_inicial
  * @property string|null $prazo_dia_inicial
- * @property bool|null $enviado_dia_inicial
  * @property string|null $prazo_dez_final
- * @property bool|null $enviado_dez_final
  * @property string|null $prazo_cinco_final
- * @property bool|null $enviado_cinco_final
  * @property string|null $prazo_dia_final
- * @property bool|null $enviado_dia_final
- * @property-read \App\Models\FeedbackCurriculo|null $Feedback
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento whereEnviadoCincoFinal($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento whereEnviadoCincoInicial($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento whereEnviadoDezFinal($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento whereEnviadoDezInicial($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento whereEnviadoDiaFinal($value)
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento whereEnviadoDiaInicial($value)
+ * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento query()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoCincoFinal($value)
@@ -43,7 +30,7 @@ use function PHPUnit\Framework\isNull;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDezInicial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDiaFinal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDiaInicial($value)
- * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
+ * @mixin \Eloquent
  */
 class AvaliacaoNoventaVencimento extends Model
 {

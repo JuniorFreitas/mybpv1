@@ -14,27 +14,27 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property string $nome
  * @property string $descricao
- * @property string $email
+ * @property string|null $email
+ * @property int|null $empresa_id
  * @property bool $ativo
+ * @property bool|null $master
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Habilidade[] $habilidades
  * @property-read int|null $habilidades_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Papel clinica()
  * @method static \Illuminate\Database\Eloquent\Builder|Papel newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Papel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Papel notClinica()
  * @method static \Illuminate\Database\Eloquent\Builder|Papel query()
  * @method static \Illuminate\Database\Eloquent\Builder|Papel whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Papel whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Papel whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Papel whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Papel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Papel whereMaster($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Papel whereNome($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|Papel whereEmpresaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Papel clinica()
- * @method static \Illuminate\Database\Eloquent\Builder|Papel notClinica()
- * @property bool|null $master
- * @method static \Illuminate\Database\Eloquent\Builder|Papel whereMaster($value)
  */
 class Papel extends Model
 {

@@ -107,56 +107,6 @@ Artisan::command('mybp:syncAso', function () {
     \App\Models\Sistema::syncAso();
 })->describe("Sincronizando data ASOs");
 
-Artisan::command('mybp:ferias', function () {
-    try {
-        $ferias_gozando_sistema = \DB::table('ferias')
-            ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
-            ->where('aprovado_via_script', true)
-            ->where('data_saida', '<=', (new DataHora())->dataInsert())
-            ->where('data_retorno', '>=', (new DataHora())->dataInsert())
-            ->update([
-                'status_ferias' => Ferias::STATUS_GOZANDO,
-                'data_status_ferias' => (new DataHora())->dataInsert()
-            ]);
-        Log::info("Ferias gozando");
-
-        $ferias_gozando_rh = \DB::table('ferias')
-            ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
-            ->where('data_saida', '<=', (new DataHora())->dataInsert())
-            ->where('data_retorno', '>=', (new DataHora())->dataInsert())
-            ->update([
-                'status_ferias' => Ferias::STATUS_GOZANDO,
-                'data_status_ferias' => (new DataHora())->dataInsert()
-            ]);
-        Log::info("Ferias gozando rh");
-
-        $ferias_gozadas_sistema = \DB::table('ferias')
-            ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
-            ->where('aprovado_via_script', true)
-            ->where('data_retorno', '<', (new DataHora())->dataInsert())
-            ->update([
-                'status_ferias' => Ferias::STATUS_GOZADA,
-                'data_status_ferias' => (new DataHora())->dataInsert()
-            ]);
-
-        Log::info("Ferias gozadas");
-
-        $ferias_gozadas_rh = \DB::table('ferias')
-            ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
-            ->where('data_retorno', '<', (new DataHora())->dataInsert())
-            ->update([
-                'status_ferias' => Ferias::STATUS_GOZADA,
-                'data_status_ferias' => (new DataHora())->dataInsert()
-            ]);
-
-        Log::info("Ferias gozando rh");
-
-        // NAO FAZER AGORA - AGUARDANDO DEFINICAO DE REGRAS DE NEGOCIO (DANY)
-    } catch (\Exception $e) {
-        \Log::error($e->getMessage());
-    }
-})->describe("Sincronizando Ferias");
-
 Artisan::command('mybp:calculoAvos', function () {
     $admissoes = DB::select("SELECT
             a.id as admissao_id, a.feedback_id, a.data_admissao, fc.empresa_id

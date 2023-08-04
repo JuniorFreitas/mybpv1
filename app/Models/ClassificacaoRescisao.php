@@ -12,14 +12,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $descricao
  * @property string $periodo
  * @property bool $ativo
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\ClassificacaoRescisao newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\ClassificacaoRescisao newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\ClassificacaoRescisao query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\ClassificacaoRescisao whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\ClassificacaoRescisao whereClasse($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\ClassificacaoRescisao whereDescricao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\ClassificacaoRescisao whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\ClassificacaoRescisao wherePeriodo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao query()
+ * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao whereClasse($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao wherePeriodo($value)
  * @mixin \Eloquent
  */
 class ClassificacaoRescisao extends Model
