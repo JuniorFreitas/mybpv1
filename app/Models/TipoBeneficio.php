@@ -11,24 +11,23 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property string $nome
- * @property int $cliente_id
+ * @property int|null $cliente_id
  * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Cliente|null $Cliente
+ * @property int|null $empresa_id
+ * @property-read \App\Models\User|null $Empresa
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio query()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @property-read \App\Models\User|null $Empresa
- * @method static \Illuminate\Database\Eloquent\Builder|TipoBeneficio whereEmpresaId($value)
  */
 class TipoBeneficio extends Model
 {

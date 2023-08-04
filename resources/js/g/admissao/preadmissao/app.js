@@ -1,15 +1,18 @@
 import upload from '../../../components/Upload';
 import validacoes from "../../../mixins/Validacoes";
+import configuracoes from "../../../mixins/Configuracoes";
 
 const app = new Vue({
     el: '#app',
-    mixins: [validacoes],
+    mixins: [validacoes,configuracoes],
     components: {
         upload,
     },
     data: {
         tituloJanela: 'Pré-admissão',
+        tituloJanelaFinalizar: '',
         preload: false,
+        preloadFinalizar: false,
         editando: false,
         apagado: false,
         cadastrado: false,
@@ -49,11 +52,34 @@ const app = new Vue({
             id: '',
             email: '',
             curriculo_id: '',
-            observacao: ''
+            observacao: '',
+            temwhatsapp: false,
+            envia_whatsapp: false,
+            numero_telefone: '',
         },
         formEmailDefault: null,
 
+        formFinalizar: {
+            feedback_id: '',
+            empresa_exame_id: '',
+            encaminhado_exame_data: '',
+            pcmso_id: '',
+            envia_email: true,
+            envia_whatsapp: true,
+        },
+        formFinalizarDefault: {
+            feedback_id: '',
+            empresa_exame_id: '',
+            encaminhado_exame_data: '',
+            pcmso_id: '',
+            envia_email: true,
+            envia_whatsapp: true,
+        },
+
         lista: [],
+        listaPcmsos: [],
+        listaEmpresasExames: [],
+        dadosFinalizar: [],
         vagas: [],
         areasEtiquetas: [],
 
@@ -105,6 +131,9 @@ const app = new Vue({
             let resultado = totalItens === totalEncontrado;
             this.selecionaTudo = resultado;
             return resultado;
+        },
+        dataHoje() {
+            return new Date(Date.now()).toLocaleString().split(',')[0];
         }
     },
     mounted() {
@@ -167,11 +196,33 @@ const app = new Vue({
                     let data = response.data;
                     Object.assign(this.form, data);
                     this.form.id = response.data.id;
+                    this.formFinalizar.t
                     this.tituloJanela = `Documentos de Pré-admissão - ${data.curriculo.nome}`;
                     this.preload = false;
                 })
                 .catch(error => {
                     this.preload = false;
+                })
+        },
+
+        abrirFormFinalizar(id) {
+            this.aprovado = false;
+            this.aprovando = false;
+            this.preloadFinalizar = true;
+            Object.assign(this.formFinalizar, this.formFinalizarDefault);
+            this.formFinalizar = _.cloneDeep(this.formFinalizarDefault); //copia
+            formReset();
+
+            axios.get(`${URL_ADMIN}/preadmissao/finalizar/${id}`)
+                .then(({data}) => {
+                    this.dadosFinalizar = data.dados;
+                    this.listaPcmsos = data.pcmsos;
+                    this.listaEmpresasExames = data.empresas_exames;
+                    this.tituloJanelaFinalizar = `Finalizar Pré-admissão - ${this.dadosFinalizar.curriculo.nome}`;
+                    this.preloadFinalizar = false;
+                })
+                .catch(error => {
+                    this.preloadFinalizar = false;
                 })
         },
 
@@ -191,6 +242,9 @@ const app = new Vue({
                     this.formEmail.curriculo_id = data.curriculo.id;
                     this.formEmail.id = data.id;
                     this.formEmail.email = data.curriculo.email;
+                    this.formEmail.temwhatsapp = data.tel_principal.tipo === 'whatsapp';
+                    this.formEmail.envia_whatsapp = data.tel_principal.tipo === 'whatsapp';
+                    this.formEmail.numero_telefone = data.tel_principal.sonumero;
                     this.tituloJanela = `Reenvio de E-mail - ${data.curriculo.nome}`;
                     this.preload = false;
                 })
@@ -227,6 +281,33 @@ const app = new Vue({
                 })
                 .catch(error => {
                     this.preload = false;
+                })
+        },
+
+        finalizarEncaminhar(id) {
+            this.validaBlur();
+
+            $("#janelaFinalizar :input:visible").trigger("blur");
+            if ($("#janelaFinalizar :input:visible.is-invalid").length) {
+                mostraErro("", "Preencha todos os campos obrigatórios");
+                return false;
+            }
+
+            this.preloadFinalizar = true;
+            this.formFinalizar.feedback_id = id;
+            formReset();
+            axios.post(`${URL_ADMIN}/preadmissao/finalizar-encaminhar`, this.formFinalizar)
+                .then(response => {
+                    if (response.status === 201) {
+                        this.formFinalizar = _.cloneDeep(this.formFinalizarDefault); //copia
+                        $('#janelaFinalizar').modal('hide');
+                        this.mostraSucesso('Finalizado e encaminhado com sucesso!');
+                        this.atualizar();
+                    }
+                    this.preloadFinalizar = false;
+                })
+                .catch(error => {
+                    this.preloadFinalizar = false;
                 })
         },
 

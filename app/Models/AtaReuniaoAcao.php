@@ -10,26 +10,26 @@ use MasterTag\DataHora;
  *
  * @property int $id
  * @property int $ata_reuniao_id
+ * @property string $responsavel
+ * @property string $email
  * @property string $acao
  * @property string|null $prazo
  * @property int|null $continuo
- * @property string $status
  * @property string|null $observacao
- * @property string $responsavel
- * @property string $email
- * @property-read \App\Models\AtaReuniao $AtaReuniao
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao whereAcao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao whereAtaReuniaoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao whereContinuo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao whereObservacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao wherePrazo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao whereResponsavel($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoAcao whereStatus($value)
+ * @property string $status
+ * @property-read \App\Models\AtaReuniao|null $AtaReuniao
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereAcao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereAtaReuniaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereContinuo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao wherePrazo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereResponsavel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereStatus($value)
  * @mixin \Eloquent
  */
 class AtaReuniaoAcao extends Model

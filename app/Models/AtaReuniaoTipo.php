@@ -11,14 +11,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $ata_reuniao_id
  * @property string $tipo Comentário, Assuntos Pendentes ou Próxima Reunião
  * @property string|null $observacao
- * @property-read \App\Models\AtaReuniao $AtaReuniao
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoTipo newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoTipo newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoTipo query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoTipo whereAtaReuniaoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoTipo whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoTipo whereObservacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniaoTipo whereTipo($value)
+ * @property-read \App\Models\AtaReuniao|null $AtaReuniao
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo whereAtaReuniaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo whereTipo($value)
  * @mixin \Eloquent
  */
 class AtaReuniaoTipo extends Model

@@ -11,28 +11,28 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\AfastamentoFeedback
  *
- * @property-read \App\Models\FeedbackCurriculo $Feedback
- * @property-read \App\Models\User $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @property mixed $data_fim
- * @property mixed $data_inicio
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback query()
- * @mixin \Eloquent
  * @property int $id
  * @property int $feedback_id
  * @property int $quem_cadastrou
+ * @property mixed|null $data_inicio
+ * @property mixed|null $data_fim
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback whereDataFim($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback whereDataInicio($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback whereQuemCadastrou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AfastamentoFeedback whereUpdatedAt($value)
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback whereDataFim($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback whereDataInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback whereQuemCadastrou($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class AfastamentoFeedback extends Model
 {

@@ -13,7 +13,6 @@ use MasterTag\GExtenso;
 class Sistema
 {
 
-    public const UrlServidor = 'http://159.89.154.53:8991/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS';
     public const EMAILPADRAO = 'sistema@mybp.com.br';
 
     public static function nomeDoGrupo()
@@ -34,7 +33,6 @@ class Sistema
         if ($grupo) {
             return $grupo->email;
         }
-//        return self::$EMAIL_CONTRATO; // no caso de não encontrar
     }
 
     public static function permitirLinks($links)
@@ -801,7 +799,7 @@ class Sistema
      */
     public static function getEmpresa($empresa_id): array
     {
-        $cliente = Cliente::select([
+        $cliente = Cliente::withoutGlobalScopes()->select([
             'id',
             'razao_social',
             'cnpj',
@@ -838,7 +836,9 @@ class Sistema
      */
     public static function getFilial($empresa_id, $centro_custo_filial_id): array
     {
-        $centroCustoFilial = CentroCustoFilial::with('Filial:id,empresa_id,dados')->find($centro_custo_filial_id);
+        $centroCustoFilial = CentroCustoFilial::withoutGlobalScopes()->with(['Filial' => function($q){
+            $q->select(['id,empresa_id,dados'])->withoutGlobalScopes();
+        }])->find($centro_custo_filial_id);
 
         if (!$centroCustoFilial) {
             return [];
@@ -847,7 +847,7 @@ class Sistema
         $filial = $centroCustoFilial->Filial;
         $dados = (object)$filial->dados;
 
-        $logo = isset($dados->logo) ? self::convertBase3($dados->Logo->first()->urlThumb, true) : self::convertBase3(Cliente::find($empresa_id)->Logo->first()->urlThumb, true);
+        $logo = isset($dados->logo) ? self::convertBase3($dados->Logo->first()->urlThumb, true) : self::convertBase3(Cliente::withoutGlobalScopes()->find($empresa_id)->Logo->first()->urlThumb, true);
 
         return [
             'id' => $filial->id,

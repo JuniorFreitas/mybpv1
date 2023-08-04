@@ -10,20 +10,18 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property int|null $curriculo_id
- * @property int|null $cliente_id
+ * @property int|null $empresa_id
  * @property int $ano
+ * @property string|null $status
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado query()
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereAno($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereCurriculoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereId($value)
- * @mixin \Eloquent
- * @property int|null $empresa_id
- * @property string|null $status
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ParabensEnviado whereStatus($value)
+ * @mixin \Eloquent
  */
 class ParabensEnviado extends Model
 {

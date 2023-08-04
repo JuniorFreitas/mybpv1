@@ -12,6 +12,7 @@ use App\Jobs\Rotinas\JobCalculoAvos;
 use App\Jobs\Rotinas\JobConvocacaoIntermitente;
 use App\Jobs\Rotinas\JobCorrigePonto;
 use App\Jobs\Rotinas\JobFerias;
+use App\Jobs\Rotinas\JobAsosVencidos;
 use App\Jobs\Weekly_report\LembreteTarefaJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -52,6 +53,8 @@ class Kernel extends ConsoleKernel
         $schedule->call(new JobCalculoAvos())->weekly();
         $schedule->call(new JobCorrigePonto())->daily();
 
+        $schedule->command('mybp:vencimentoAso')->daily();
+        $schedule->command('mybp:ferias')->daily();
 //        $schedule->call(new Im)->daily();
     }
 

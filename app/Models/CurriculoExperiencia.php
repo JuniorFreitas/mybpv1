@@ -11,24 +11,23 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\CurriculoExperiencia
  *
- * @property-read \App\Models\Curriculo|null $Curriculo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
- * @property mixed $data_fim
- * @property mixed $data_inicio
- * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia query()
- * @mixin \Eloquent
  * @property int $id
- * @property int $curriculo
+ * @property int $curriculo_id
  * @property string $empresa
  * @property string $cargo
  * @property string $principais_atv
+ * @property string|null $data_inicio
+ * @property string|null $data_fim
  * @property string|null $referencia_nome
  * @property string|null $referencia_telefone
+ * @property-read \App\Models\Curriculo|null $Curriculo
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia query()
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereCargo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereCurriculo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereDataFim($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereDataInicio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereEmpresa($value)
@@ -36,8 +35,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia wherePrincipaisAtv($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereReferenciaNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereReferenciaTelefone($value)
- * @property int $curriculo_id
- * @method static \Illuminate\Database\Eloquent\Builder|CurriculoExperiencia whereCurriculoId($value)
+ * @mixin \Eloquent
  */
 class CurriculoExperiencia extends Model
 {

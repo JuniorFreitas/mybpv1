@@ -149,6 +149,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder|User tiposGerenciais()
  * @method static Builder|User wherePrivilegioGestorArea($value)
  * @method static Builder|User wherePrivilegioGestorCentroCusto($value)
+ * @method static Builder|User ativoNaoExcluido()
  */
 class User extends Authenticatable
 {
@@ -535,6 +536,11 @@ class User extends Authenticatable
     public function scopeTiposGerenciais($query)
     {
         return $query->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS);
+    }
+
+    public function enviaWhatsApp()
+    {
+        return $this->EmpresaConfiguracoes->envia_whatsapp;
     }
 
     protected static function booted()

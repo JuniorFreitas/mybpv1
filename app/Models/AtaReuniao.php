@@ -16,41 +16,41 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $quem_cadastrou Usuario da sessão
  * @property string $local
- * @property mixed $data_inicio
- * @property mixed $data_fim
+ * @property string $data_inicio
+ * @property string $data_fim
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoAcao[] $Acoes
- * @property-read int|null $acoes_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoAssunto[] $Assuntos
- * @property-read int|null $assuntos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoParticipante[] $Participantes
- * @property-read int|null $participantes_count
- * @property-read \App\Models\User $QuemCadastrou
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoTipo[] $Tipos
- * @property-read int|null $tipos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereDataFim($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereDataInicio($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereLocal($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereQuemCadastrou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AtaReuniao whereUpdatedAt($value)
- * @mixin \Eloquent
  * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereEmpresaId($value)
  * @property int|null $area_etiqueta_id
  * @property int|null $centro_custo_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoAcao[] $Acoes
+ * @property-read int|null $acoes_count
  * @property-read \App\Models\AreaEtiqueta|null $Area
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoAssunto[] $Assuntos
+ * @property-read int|null $assuntos_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoParticipante[] $Participantes
+ * @property-read int|null $participantes_count
+ * @property-read User|null $QuemCadastrou
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoTipo[] $Tipos
+ * @property-read int|null $tipos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao query()
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao vinculados()
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereAreaEtiquetaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereDataFim($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereDataInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereLocal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereQuemCadastrou($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class AtaReuniao extends Model
 {

@@ -17,16 +17,20 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\Models\PontoEletronico
  *
  * @property int $id
- * @property string $autenticacao
+ * @property int $empresa_id
  * @property int $funcionario_id
- * @property int $escala_id
- * @property int $jornada_id
- * @property int $ocorrencia_jornada_id
- * @property int $periodo_id
- * @property bool $facial
- * @property float|null $lat
- * @property float|null $long
+ * @property int|null $jornada_id
+ * @property int $ocorrencia_id
+ * @property int $duracao
+ * @property int|null $duracao_normal
+ * @property int|null $duracao_extra
+ * @property int|null $duracao_noturna
+ * @property string $tipo_frequencia
+ * @property int $tempo_limite_falta
+ * @property int $tempo_limite_saida
+ * @property int $limite_tolerancia
  * @property string|null $justificativa
+ * @property int $verificado
  * @property \datetime|null $created_at
  * @property \datetime|null $updated_at
  * @property-read EmpresaEscala|null $Escala
@@ -39,42 +43,24 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico query()
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereAutenticacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereEscalaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereFacial($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereFuncionarioId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereJornadaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereJustificativa($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereLat($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereLong($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereOcorrenciaJornadaId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico wherePeriodoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property int $empresa_id
- * @property int $ocorrencia_id
- * @property int $duracao
- * @property int|null $duracao_normal
- * @property int|null $duracao_extra
- * @property int|null $duracao_noturna
- * @property string $tipo_frequencia
- * @property int $tempo_limite_falta
- * @property int $tempo_limite_saida
- * @property int $limite_tolerancia
- * @property int $verificado
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoExtra($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoNormal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereDuracaoNoturna($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereFuncionarioId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereJornadaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereJustificativa($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereLimiteTolerancia($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereOcorrenciaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTempoLimiteFalta($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTempoLimiteSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereTipoFrequencia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico whereVerificado($value)
+ * @mixin \Eloquent
  */
 class PontoEletronico extends Model
 {

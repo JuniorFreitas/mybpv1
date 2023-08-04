@@ -15,13 +15,15 @@ use DateTimeInterface;
  * @property int $colaborador_id
  * @property int $dias_saldo
  * @property int|null $empresa_id
- * @property string|null $ultimo_periodo_aquisitivo
- * @property mixed|null $ultima_data
+ * @property int|null $ultimo_periodo_aquisitivo_id
+ * @property string|null $ultima_data
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Curriculo|null $Colaborador
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasPrevistaDados[] $FeriasPrevistaDados
  * @property-read int|null $ferias_prevista_dados_count
+ * @property-read \App\Models\FeriasPrevistaDados|null $FeriasPrevistaDadosUltimo
+ * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov query()
@@ -30,14 +32,10 @@ use DateTimeInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereDiasSaldo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUltimoPeriodoAquisitivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUltimaData($value)
- * @mixin \Eloquent
- * @property int|null $ultimo_periodo_aquisitivo_id
- * @property-read \App\Models\FeriasPrevistaDados|null $FeriasPrevistaDadosUltimo
- * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUltimoPeriodoAquisitivoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class FeriasPrevistaMov extends Model
 {

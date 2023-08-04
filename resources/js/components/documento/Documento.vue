@@ -3,8 +3,8 @@
     <!--        <template slot="conteudo">-->
     <div>
 <!--        <p class=" mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>-->
-        <preload v-if="preload"></preload>
-        <div v-if="!preload" id="formDocumentos">
+        <preload :msg="salvando ? 'Salvando ... ' : 'Carregando ...'" v-if="preload"></preload>
+        <div v-if="!preload && !salvando" id="formDocumentos">
             <fieldset>
                 <legend>INFORMAÇÕES</legend>
                 <div class="form-group">
@@ -114,6 +114,7 @@ export default {
             cadastrado: false,
             exibindo: false,
             mensagem: false,
+            salvando: false,
 
             formUser: {
                 nome: '',
@@ -138,17 +139,22 @@ export default {
                 mostraErro('', 'Verifique os erros')
                 return false;
             }
+            this.salvando = true;
             this.preload = true;
             axios.put(`${URL_SITE}/${this.apelido}/documentos/${this.formUser.id}`, this.formUser)
                 .then(response => {
                     if (response.status === 201) {
-                        this.preload = false;
                         mostraSucesso('Suas informações foram alteradas com sucesso!');
-                        // this.redirecionar();
+                        setTimeout(() => {
+                            this.redirecionar();
+                        }, 2000)
+                        // this.preload = false;
                     }
                 })
-                .catch(error);
-            //axios.put enviar formulário de edição dos dados do candidato e fazer a validação para saber se os campos estão preenchidos.
+                .catch(error => {
+                    this.preload = false;
+                    this.salvando = false;
+                });
         }
     }
 

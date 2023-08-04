@@ -28,11 +28,14 @@ use MasterTag\DataHora;
  * @property \datetime|null $created_at
  * @property \datetime|null $updated_at
  * @property int|null $gestor_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  * @property-read \App\Models\CentroCusto|null $CentroCustoDestino
  * @property-read \App\Models\CentroCusto|null $CentroCustoOrigem
  * @property-read \App\Models\Curriculo|null $Colaborador
  * @property-read User|null $GestorAprovacao
  * @property-read User|null $QuemAprovou
+ * @property-read User|null $UserAprovacao
  * @property-read User|null $UserCadastrou
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista newQuery()
@@ -54,17 +57,6 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserId($value)
  * @mixin \Eloquent
- * @property-read User|null $UserAprovacao
- * @property int|null $user_rh_id
- * @property string|null $resposta_rh
- * @property string|null $obs_rh
- * @property string|null $data_aprovacao_rh
- * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereDataAprovacaoRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereObsRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereRespostaRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserRhId($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
  */
 class TransferenciaPrevista extends Model
 {

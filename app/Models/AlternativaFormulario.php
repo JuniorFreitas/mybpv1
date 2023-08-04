@@ -9,19 +9,19 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\AlternativaFormulario
  *
  * @property int $id
+ * @property int|null $empresa_id
  * @property string $nome
  * @property string $tipo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OpcaoAlternativa[] $Opcoes
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\RespostaAlternativas[] $Opcoes
  * @property-read int|null $opcoes_count
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario whereTipo($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario whereEmpresaId($value)
  */
 class AlternativaFormulario extends Model
 {

@@ -12,79 +12,61 @@ use Illuminate\Database\Eloquent\Model;
  * App\Models\IntermitenteFixoPrevista
  *
  * @property int $id
- * @property int $cliente_id
- * @property int $funcionario_id
- * @property int $centro_custo_id
- * @property string|null $tipo
- * @property int|null $cargo_anterior
- * @property string|null $salario_anterior
- * @property int|null $novo_cargo
- * @property string|null $novo_salario
- * @property int|null $user_id
- * @property string|null $autorizado_por
- * @property string|null $obs
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista query()
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereAutorizadoPor($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCargoAnterior($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCentroCustoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereFuncionarioId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereNovoCargo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereNovoSalario($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereObs($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereSalarioAnterior($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereTipo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserId($value)
- * @mixin \Eloquent
+ * @property int|null $cliente_id
  * @property int $colaborador_id
+ * @property int $centro_custo_id
  * @property int|null $cargo_anterior_id
+ * @property float|null $salario_anterior
  * @property int|null $novo_cargo_id
- * @property-read \App\Models\Vaga|null $CargoAnterior
- * @property-read \App\Models\CentroCusto|null $CentroCusto
- * @property-read \App\Models\Cliente|null $Cliente
- * @property-read \App\Models\User|null $Colaborador
- * @property-read \App\Models\Vaga|null $NovoCargo
- * @property-read \App\Models\User|null $UserCadastrou
- * @property-read mixed $novo_salario_format
- * @property-read mixed $salario_anterior_format
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCargoAnteriorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereColaboradorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereNovoCargoId($value)
+ * @property float|null $novo_salario
+ * @property int|null $user_id
  * @property string|null $data_modificacao
+ * @property string|null $autorizado_por
  * @property string|null $motivos
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
  * @property int|null $user_aprovacao_id
  * @property mixed|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property int|null $empresa_id
  * @property int|null $gestor_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
+ * @property-read \App\Models\Vaga|null $CargoAnterior
+ * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \App\Models\Cliente|null $Cliente
+ * @property-read \App\Models\User|null $Colaborador
  * @property-read \App\Models\User|null $GestorAprovacao
+ * @property-read \App\Models\Vaga|null $NovoCargo
+ * @property-read \App\Models\User|null $UserAprovacao
+ * @property-read \App\Models\User|null $UserCadastrou
+ * @property-read mixed $novo_salario_format
+ * @property-read mixed $salario_anterior_format
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista query()
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereAutorizadoPor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCargoAnteriorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereClienteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereColaboradorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereDataAprovacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereDataModificacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereMotivos($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereNovoCargoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereNovoSalario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereSalarioAnterior($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserAprovacaoId($value)
- * @property-read \App\Models\User|null $UserAprovacao
- * @property int|null $user_rh_id
- * @property string|null $resposta_rh
- * @property string|null $obs_rh
- * @property string|null $data_aprovacao_rh
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereDataAprovacaoRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereObsRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereRespostaRh($value)
- * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserRhId($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserId($value)
+ * @mixin \Eloquent
  */
 class IntermitenteFixoPrevista extends Model
 {

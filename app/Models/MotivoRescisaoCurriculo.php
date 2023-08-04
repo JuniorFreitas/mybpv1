@@ -8,18 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * App\Models\MotivoRescisaoCurriculo
  *
+ * @property int $motivo_id
+ * @property int|null $feedback_id
+ * @property string|null $outro
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo query()
- * @mixin \Eloquent
- * @property int $motivo_id
- * @property int $curriculo_id
- * @property string|null $outro
- * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo whereCurriculoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo whereMotivoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo whereOutro($value)
- * @property int|null $feedback_id
- * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo whereFeedbackId($value)
+ * @mixin \Eloquent
  */
 class MotivoRescisaoCurriculo extends Model
 {

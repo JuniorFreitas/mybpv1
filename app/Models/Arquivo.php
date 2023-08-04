@@ -21,36 +21,34 @@ use Intervention\Image\ImageManagerStatic as Image;
  * @property string $extensao
  * @property string $file
  * @property string|null $thumb
+ * @property int $bytes
  * @property bool $temporario
  * @property string|null $chave
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read mixed $url
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereChave($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereExtensao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereFile($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereImagem($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereLayout($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereNome($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereQuemEnviou($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereTemporario($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereThumb($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read mixed $url_delete
- * @property-read mixed $url_download
- * @property-read mixed $url_thumb
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo query()
- * @property int $bytes
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\Arquivo whereBytes($value)
  * @property string|null $disco
- * @property int|null $s3
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property-read string $url
+ * @property-read string $url_delete
+ * @property-read string $url_download
+ * @property-read string $url_thumb
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereBytes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereChave($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereDisco($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereS3($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereExtensao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereFile($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereImagem($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereLayout($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereQuemEnviou($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereTemporario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereThumb($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class Arquivo extends Model
 {

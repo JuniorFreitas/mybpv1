@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  * @property-read \App\Models\Arquivo|null $Arquivo
  * @property-read \App\Models\Cliente $Empresa
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura newModelQuery()
@@ -31,6 +33,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read int|null $anexos_count
  */
 class CarteiraAssinatura extends Model
 {

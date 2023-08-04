@@ -15,18 +15,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $id
  * @property int|null $feedback_id
- * @property int|null $curriculo_id
  * @property int|null $cadastrou
  * @property string|null $tipo parada, fixo
  * @property int|null $gerou_id
- * @property mixed|null $data_envio
+ * @property string|null $data_envio
  * @property bool|null $enviado_email
  * @property int|null $enviou_id
  * @property string|null $email_envio
  * @property bool|null $email_aberto
  * @property mixed|null $data_email_aberto
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property mixed|null $created_at
+ * @property mixed|null $updated_at
  * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
  * @property-read \App\Models\User|null $QuemCadastrou
@@ -40,7 +39,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento query()
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereCadastrou($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereDataEmailAberto($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereDataEnvio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereEmailAberto($value)

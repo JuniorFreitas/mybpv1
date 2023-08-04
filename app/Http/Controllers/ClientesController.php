@@ -249,6 +249,7 @@ class ClientesController extends Controller
                 })->pluck('id');
 
                 $papel->habilidades()->attach($habilidades);
+                \Artisan::call('mybp:grupoClinicaExame ' . $cliente->id);
 
                 DB::commit();
                 return response()->json([], 201);

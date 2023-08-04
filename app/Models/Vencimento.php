@@ -16,7 +16,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $descricao
  * @property int|null $prazo_parada
  * @property int|null $prazo_fixo
+ * @property int|null $ordem
  * @property bool $ativo
+ * @property int|null $empresa_id
+ * @property string|null $label_reduzida
+ * @property bool|null $exibir_na_carteira
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento newModelQuery()
@@ -24,19 +28,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento query()
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereExibirNaCarteira($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereLabel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereLabelReduzida($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereOrdem($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento wherePrazoFixo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento wherePrazoParada($value)
  * @mixin \Eloquent
- * @property int|null $ordem
- * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereOrdem($value)
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereEmpresaId($value)
- * @property string|null $label_reduzida
- * @property bool|null $exibir_na_carteira
- * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereExibirNaCarteira($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereLabelReduzida($value)
  */
 class Vencimento extends Model
 {

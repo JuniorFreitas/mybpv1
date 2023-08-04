@@ -15,25 +15,25 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $quantidade_avaliacao
  * @property int $gestor_id
  * @property string $gestor_imediato
- * @property string $observacao
+ * @property string|null $observacao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereGestorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereGestorImediato($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereObservacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereQuantidadeAvaliacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\AvaliacaoAnualFeedbackQuantidade whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read \App\Models\FeedbackCurriculo $Feedback
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade whereGestorImediato($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade whereQuantidadeAvaliacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedbackQuantidade whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class AvaliacaoAnualFeedbackQuantidade extends Model
 {

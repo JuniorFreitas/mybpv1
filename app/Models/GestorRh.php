@@ -11,9 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\GestorRh
  *
  * @property int $id
- * @property int $feedback_id
- * @property int|null $formulario_id
- * @property int $curriculo_id
+ * @property int|null $feedback_id
  * @property string|null $parecer
  * @property string|null $indicado_para
  * @property int|null $nota
@@ -22,6 +20,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $comentario
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $formulario_id
  * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
@@ -31,7 +30,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|GestorRh query()
  * @method static \Illuminate\Database\Eloquent\Builder|GestorRh whereComentario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GestorRh whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|GestorRh whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GestorRh whereEntrevistadoPor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GestorRh whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GestorRh whereFormularioId($value)

@@ -11,7 +11,7 @@ use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * App\Models\Models\PeriodoPontoEletronico
+ * App\Models\PeriodoPontoEletronico
  *
  * @property int $id
  * @property int $ponto_id
@@ -30,8 +30,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $minutos
  * @property \datetime|null $created_at
  * @property \datetime|null $updated_at
- * @property-read Arquivo|null $FotoEntrada
- * @property-read Arquivo|null $FotoSaida
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $user_deletou_id
+ * @property-read \App\Models\Arquivo|null $FotoEntrada
+ * @property-read \App\Models\Arquivo|null $FotoSaida
+ * @property-read \App\Models\PontoEletronico|null $Ponto
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @property-read mixed $hora_entrada
@@ -40,12 +43,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read mixed $horas_trabalhadas_format
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico newQuery()
+ * @method static \Illuminate\Database\Query\Builder|PeriodoPontoEletronico onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico query()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereArquivoIdEntrada($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereArquivoIdSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereAutenticacaoEntrada($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereAutenticacaoSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereEntrada($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereFacialEntrada($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereFacialSaida($value)
@@ -58,15 +63,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico wherePontoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property-read \App\Models\PontoEletronico|null $Ponto
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property int|null $user_deletou_id
- * @method static \Illuminate\Database\Query\Builder|PeriodoPontoEletronico onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereUserDeletouId($value)
  * @method static \Illuminate\Database\Query\Builder|PeriodoPontoEletronico withTrashed()
  * @method static \Illuminate\Database\Query\Builder|PeriodoPontoEletronico withoutTrashed()
+ * @mixin \Eloquent
  */
 class PeriodoPontoEletronico extends Model
 {

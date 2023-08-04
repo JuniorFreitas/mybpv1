@@ -15,6 +15,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $nome
  * @property string $descricao
  * @property bool $ativo
+ * @property int|null $empresa_id
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Users
+ * @property-read int|null $users_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Usuarios
  * @property-read int|null $usuarios_count
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
@@ -26,13 +29,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud query()
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereNome($value)
  * @mixin \Eloquent
- * @property int|null $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud whereEmpresaId($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Users
- * @property-read int|null $users_count
  */
 class GrupoCloud extends Model
 {

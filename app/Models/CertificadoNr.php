@@ -11,7 +11,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\CertificadoNr
  *
- * @property int $curriculo_id
+ * @property int $id
+ * @property int|null $feedback_id
  * @property string|null $nr_dez_instituicao
  * @property mixed|null $nr_dez_emissao
  * @property mixed|null $nr_dez_validade
@@ -21,15 +22,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr query()
- * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr whereCurriculoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr whereNrDezEmissao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr whereNrDezInstituicao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr whereNrDezValidade($value)
  * @mixin \Eloquent
- * @property int $id
- * @property int|null $feedback_id
- * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr whereId($value)
  */
 class CertificadoNr extends Model
 {

@@ -6,7 +6,7 @@
 @stop
 @section('content')
     <modal modal-pai="janelaVisualizar" titulo="Recusar Carta Oferta"
-           :fechar="!atualizanndo"
+           :fechar="!atualizando"
            label-fechar="NÃO"
            id="janelaRecusar">
         <template slot="conteudo">
@@ -22,7 +22,7 @@
             </div>
         </template>
         <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-outline-danger" v-if="!atualizanndo"
+            <button type="button" class="btn btn-sm btn-outline-danger" v-if="!atualizando"
                     @click.prevent="responder(objopen,'Recusado pelo RH')"
             > sim, recusar
             </button>

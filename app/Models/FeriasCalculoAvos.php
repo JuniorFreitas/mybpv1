@@ -17,9 +17,9 @@ use function Symfony\Component\String\s;
  * @property int $empresa_id
  * @property int $admissao_id
  * @property int $periodo_aquisitivo_id
- * @property string $total_avos
+ * @property float $total_avos
  * @property array|null $historico
- * @property int $atualizado_via_script
+ * @property bool $atualizado_via_script
  * @property mixed $ultima_atualizacao
  * @property-read \App\Models\Admissao|null $Admissao
  * @property-read \App\Models\User|null $Empresa

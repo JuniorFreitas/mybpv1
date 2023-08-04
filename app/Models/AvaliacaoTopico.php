@@ -13,29 +13,28 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $id
  * @property int $empresa_id
- * @property int|null $topico_pai_id
+ * @property int|null $avaliacao_tipo_id
+ * @property string|null $topico_pai_id
  * @property string $topico
- * @property string $topico_explicacao
- * @property int $ativo
- * @property-read \App\Models\AvaliacaoTipo $AvaliacoesTipos
+ * @property string|null $topico_explicacao
+ * @property bool $ativo
+ * @property-read \App\Models\AvaliacaoTipo|null $AvaliacaoTipo
+ * @property-read \Illuminate\Database\Eloquent\Collection|AvaliacaoTopico[] $Subtopicos
+ * @property-read int|null $subtopicos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico topicosPais()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereAvaliacaoTipoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereTopico($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereTopicoExplicacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereTopicoPaiId($value)
  * @mixin \Eloquent
- * @property int|null $avaliacao_tipo_id
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereAvaliacaoTipoId($value)
- * @property-read \App\Models\AvaliacaoTipo|null $AvaliacaoTipo
- * @property-read \Illuminate\Database\Eloquent\Collection|AvaliacaoTopico[] $Subtopicos
- * @property-read int|null $subtopicos_count
- * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico topicosPais()
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
  */
 class AvaliacaoTopico extends Model
 {

@@ -640,7 +640,7 @@ class CihController extends Controller
      */
     public function tipoCihAtualizar(Request $request)
     {
-        $this->authorize('cadastro_centrocusto');
+        $this->authorize('cadastro_tipos_cih');
         $porPagina = $request->get('porPagina');
         $resultado = CihTag::orderBy('id');
 

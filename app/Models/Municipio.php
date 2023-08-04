@@ -14,6 +14,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $nome
  * @property string $uf
  * @property bool $capital
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
+ * @property-read int|null $vagas_abertas_count
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Municipio newModelQuery()
@@ -24,8 +26,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Municipio whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Municipio whereUf($value)
  * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
- * @property-read int|null $vagas_abertas_count
  */
 class Municipio extends Model
 {

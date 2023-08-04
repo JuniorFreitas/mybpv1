@@ -11,41 +11,35 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\SimuladoCandidato
  *
  * @property int $id
- * @property int $simulado_id
- * @property int $curriculo_id
+ * @property int $simulado_vaga_id
+ * @property int|null $feedback_id
  * @property int $duracao_segundos
  * @property bool $finalizado
+ * @property mixed|null $data_finalizacao
+ * @property int|null $acertos
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Curriculo $Candidato
- * @property-read \App\Models\Simulado $Simulado
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereCurriculoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereDuracaoSegundos($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereFinalizado($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereSimuladoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereUpdatedAt($value)
- * @mixin \Eloquent
- * @property int $simulado_vaga_id
- * @property mixed|null $data_finalizacao
- * @property-read \App\Models\SimuladoVaga $SimuladoVaga
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereDataFinalizacao($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereSimuladoVagaId($value)
- * @property int|null $acertos
  * @property string|null $status
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
- * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereAcertos($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\SimuladoCandidato whereStatus($value)
- * @property int|null $feedback_id
- * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereFeedbackId($value)
- * @property-read mixed $tempo_execucao
  * @property int|null $empresa_id
+ * @property-read \App\Models\FeedbackCurriculo|null $Candidato
+ * @property-read \App\Models\SimuladoVaga|null $SimuladoVaga
+ * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato query()
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereAcertos($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereDataFinalizacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereDuracaoSegundos($value)
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereFinalizado($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereSimuladoVagaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class SimuladoCandidato extends Model
 {

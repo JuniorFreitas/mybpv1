@@ -14,7 +14,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\Lancamento
  *
  * @property int $id
- * @property int|null $cliente_id
  * @property int $quem_cadastrou
  * @property int|null $quem_alterou
  * @property int $plano_id
@@ -22,13 +21,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property float $valor
  * @property float $saldo
  * @property string $operacao
- * @property mixed $data_hora
- * @property mixed|null $data_pendente quando vai receber ou pagar
- * @property mixed|null $data_hora_concluido quando recebeu ou pagou
+ * @property \datetime $data_hora
+ * @property \datetime|null $data_pendente quando vai receber ou pagar
+ * @property \datetime|null $data_hora_concluido quando recebeu ou pagou
  * @property bool $concluido
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
- * @property-read \App\Models\Cliente|null $Cliente
+ * @property \datetime|null $created_at
+ * @property \datetime|null $updated_at
+ * @property int $empresa_id
+ * @property-read \App\Models\User|null $Empresa
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\LancamentoForma[] $Formas
  * @property-read int|null $formas_count
  * @property-read \App\Models\PlanoConta|null $PlanoConta
@@ -38,19 +38,21 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read int|null $activities_count
  * @property-read mixed $credito
  * @property-read mixed $debito
+ * @property-read mixed $dias_atraso
+ * @property-read mixed $dias_atraso_concluido
  * @property-read mixed $operacao_text
  * @property-read mixed $saldo_format
  * @property-read mixed $valor_format
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento query()
- * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereConcluido($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereDataHora($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereDataHoraConcluido($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereDataPendente($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereOperacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento wherePlanoId($value)
@@ -60,11 +62,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereValor($value)
  * @mixin \Eloquent
- * @property-read mixed $dias_atraso
- * @property-read mixed $dias_atraso_concluido
- * @property-read \App\Models\User|null $Empresa
- * @property int $empresa_id
- * @method static \Illuminate\Database\Eloquent\Builder|Lancamento whereEmpresaId($value)
  */
 class Lancamento extends Model {
     use HasFactory, LogsActivity;

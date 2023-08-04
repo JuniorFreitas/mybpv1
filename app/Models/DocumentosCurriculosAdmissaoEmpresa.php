@@ -6,6 +6,36 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * App\Models\DocumentosCurriculosAdmissaoEmpresa
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int|null $categoria_id
+ * @property string $label
+ * @property string|null $metodo
+ * @property string|null $descricao
+ * @property string $tipo
+ * @property string|null $url_arquivo
+ * @property array|null $configuracoes
+ * @property int $ordem
+ * @property bool $ativo
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa query()
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereCategoriaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereConfiguracoes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereLabel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereMetodo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereOrdem($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereUrlArquivo($value)
+ * @mixin \Eloquent
+ */
 class DocumentosCurriculosAdmissaoEmpresa extends Model
 {
     use HasFactory;

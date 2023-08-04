@@ -27,13 +27,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property mixed|null $data_revisao
  * @property int|null $quem_editou
  * @property int|null $quem_excluiu
+ * @property mixed|null $created_at
+ * @property mixed|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property bool $movido
  * @property int|null $quem_moveu
  * @property mixed|null $data_movido
  * @property int|null $pertence_anterior
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\User|null $Aprovou
  * @property-read \App\Models\Arquivo|null $Arquivo
  * @property-read \App\Models\Cloud|null $Cloud

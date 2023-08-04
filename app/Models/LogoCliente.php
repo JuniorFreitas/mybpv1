@@ -14,13 +14,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Fotos
  * @property-read int|null $fotos_count
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\LogoCliente newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\LogoCliente newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\LogoCliente query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\LogoCliente whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\LogoCliente whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\LogoCliente whereNome($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Models\LogoCliente whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente query()
+ * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class LogoCliente extends Model

@@ -12,7 +12,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\CursoFormacaoRH
  *
- * @property int $curriculo_id
+ * @property int $id
+ * @property int|null $feedback_id
  * @property string $curso
  * @property string $instituicao
  * @property mixed $emissao
@@ -25,16 +26,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH query()
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereCertificado($value)
- * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereCurriculoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereCurso($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereEmissao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereInstituicao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereValidade($value)
  * @mixin \Eloquent
- * @property int $id
- * @property int|null $feedback_id
- * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereFeedbackId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH whereId($value)
  */
 class CursoFormacaoRH extends Model
 {

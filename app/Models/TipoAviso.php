@@ -8,16 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * App\Models\TipoAviso
  *
- * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso query()
- * @mixin \Eloquent
  * @property int $id
  * @property string $descricao
  * @property bool $ativo
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso query()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso whereId($value)
+ * @mixin \Eloquent
  */
 class TipoAviso extends Model
 {

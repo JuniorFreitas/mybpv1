@@ -12,25 +12,25 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\EmpresaConfig
  *
+ * @property int $empresa_id
+ * @property string $tipo_frequencia
+ * @property int $tempo_limite_falta
+ * @property int $tempo_limite_saida
+ * @property string $dia_nova_frequencia
+ * @property int $limite_tolerancia
  * @property-read \App\Models\User|null $Empresa
  * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig query()
- * @mixin \Eloquent
- * @property int $empresa_id
- * @property string $tipo_frequencia
- * @property int $tempo_limite_falta
- * @property int $tempo_limite_saida
- * @property int $dia_nova_frequencia
- * @property int $limite_tolerancia
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig whereDiaNovaFrequencia($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig whereLimiteTolerancia($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig whereTempoLimiteFalta($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig whereTempoLimiteSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig whereTipoFrequencia($value)
+ * @mixin \Eloquent
  */
 class EmpresaConfig extends Model
 {
