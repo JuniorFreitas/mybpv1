@@ -282,24 +282,31 @@ class MudancaCargoController extends Controller
         try {
             DB::beginTransaction();
 
-            $mudancaCargo = MudancaCargo::find($dados['id']);
+            if($dados['status_aprovacao_rh'] === 'aprovado') {
+                $mudancaCargo = MudancaCargo::find($dados['id']);
 
-            $mudancaCargo->update([
-                'rh_aprovacao_id' => auth()->id(),
-                'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
-                'obs_rh' => $dados['obs_rh'],
-                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
-            ]);
+                $mudancaCargo->update([
+                    'rh_aprovacao_id' => auth()->id(),
+                    'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
+                    'obs_rh' => $dados['obs_rh'],
+                    'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
+                ]);
 
-            $admissao = Admissao::find($dados['admissao_id']);
-            $admissao->update([
-                'centro_custo_filial_id' => !$dados['mantem_centro_custo'] && $dados['novo_filial'] ? $dados['novo_centro_custo_filial_id'] : $admissao->centro_custo_filial_id,
-                'filial' => !$dados['mantem_centro_custo'] ? $dados['novo_filial'] : $admissao->filial,
-                'centro_custo_id' => !$dados['mantem_centro_custo'] ? $dados['novo_centro_custo_id'] : $admissao->centro_custo_id,
-                'funcao' => !$dados['mantem_funcao'] ? $dados['nova_funcao'] : $admissao->funcao,
-                'cargo' => !$dados['mantem_cargo'] ? $mudancaCargo->VagaAbertaNova->Vaga->nome : $admissao->cargo,
-                'salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : $admissao->salario,
-            ]);
+                $admissao = Admissao::find($dados['admissao_id']);
+                if (!$dados['mantem_cargo']) {
+                    $admissao->Feedback->update([
+                        'vagas_abertas_id' => $mudancaCargo->VagaAbertaNova->id
+                    ]);
+                }
+                $admissao->update([
+                    'centro_custo_filial_id' => !$dados['mantem_centro_custo'] && $dados['novo_filial'] ? $dados['novo_centro_custo_filial_id'] : $admissao->centro_custo_filial_id,
+                    'filial' => !$dados['mantem_centro_custo'] ? $dados['novo_filial'] : $admissao->filial,
+                    'centro_custo_id' => !$dados['mantem_centro_custo'] ? $dados['novo_centro_custo_id'] : $admissao->centro_custo_id,
+                    'funcao' => !$dados['mantem_funcao'] ? $dados['nova_funcao'] : $admissao->funcao,
+                    'cargo' => !$dados['mantem_cargo'] ? $mudancaCargo->VagaAbertaNova->Vaga->nome : $admissao->cargo,
+                    'salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : $admissao->salario,
+                ]);
+            }
 
             DB::commit();
 

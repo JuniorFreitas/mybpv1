@@ -19,7 +19,7 @@
                 <div class="form-group">
                     <label>Centro de Custo</label>
                     <select
-                        :disabled="visualizar || disabled"
+                        :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
                         v-model="form.centro_custo_id"
                         @change.prevent="changeCentroCusto()"
                         class="form-control"
@@ -34,7 +34,7 @@
                 <div class="form-group">
                     <label>CNPJ</label>
                     <select
-                        :disabled="visualizar || disabled"
+                        :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
                         v-model="form.filial"
                         class="form-control"
                         @change.p.prevent="changeCnpj()"
@@ -49,7 +49,7 @@
                 <div class="form-group">
                     <label>Filial</label>
                     <select
-                        :disabled="visualizar || disabled"
+                        :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
                         v-model="form.centro_custo_filial_id"
                         class="form-control"
                     >
@@ -66,7 +66,7 @@
                 <div class="form-group">
                     <label>Função</label>
                     <input type="text" class="form-control" onblur="valida_campo_vazio(this,2)"
-                           :disabled="visualizar || disabled"
+                           :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
                            v-model="form.funcao">
                 </div>
             </div>
@@ -74,7 +74,7 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Salário R$</label>
-                    <input type="text" class="form-control" v-mascara:dinheiro :disabled="visualizar || disabled"
+                    <input type="text" class="form-control" v-mascara:dinheiro :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
                            v-model="form.salario">
                 </div>
             </div>
