@@ -385,21 +385,25 @@ class FolhaDePontoController extends Controller
 
         $dadosDaEmpresa = !is_null($request->centro_custo_filial_id) ? Sistema::getFilial($empresa_id, $request->centro_custo_filial_id) : Sistema::getEmpresa($empresa_id);
 
-        $funcionarios = PontoEletronico::select('funcionario_id')
+        $funcionarios = PontoEletronico::selectRaw('funcionario_id, COUNT(funcionario_id) as funcionario_count')
             ->whereBetween('created_at', [$inicio->dataHoraInsert(), $fim->dataHoraInsert()])
             ->where('empresa_id', $empresa_id)
             ->whereHas('Funcionario.Feedback', function ($q) use ($request) {
                 if ($request->filled('status')) {
-                    $request->status == 'admitidos' ? $q->admitidos() : $q->demitidos();
+                    $q->when($request->status == 'admitidos', function ($query) {
+                        $query->admitidos();
+                    }, function ($query) {
+                        $query->demitidos();
+                    });
                 }
                 $q->whereHas('Admissao', function ($q) use ($request) {
-                    if ($request->filled('centro_custo_filial_id')) {
-                        $q->where('centro_custo_filial_id', $request->centro_custo_filial_id);
-                    }
+                    $q->when($request->filled('centro_custo_filial_id'), function ($query) use ($request) {
+                        $query->where('centro_custo_filial_id', $request->centro_custo_filial_id);
+                    });
                 });
             })
             ->groupBy('funcionario_id')
-            ->havingRaw('COUNT(funcionario_id) > 1')
+            ->havingRaw('funcionario_count > 1')
             ->orderBy('funcionario_id')
             ->pluck('funcionario_id');
 

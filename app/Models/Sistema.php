@@ -837,7 +837,7 @@ class Sistema
     public static function getFilial($empresa_id, $centro_custo_filial_id): array
     {
         $centroCustoFilial = CentroCustoFilial::withoutGlobalScopes()->with(['Filial' => function($q){
-            $q->select(['id,empresa_id,dados'])->withoutGlobalScopes();
+            $q->select(['id','empresa_id','dados'])->withoutGlobalScopes();
         }])->find($centro_custo_filial_id);
 
         if (!$centroCustoFilial) {
