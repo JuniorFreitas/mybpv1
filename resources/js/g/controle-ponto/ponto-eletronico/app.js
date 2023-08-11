@@ -42,12 +42,12 @@ const app = new Vue({
             data: moment().format('DD/MM/YYYY'),
             preload: false,
         },
-        duracaoDiaHistorico:null,
-        tempoTrabalhadoHistorico:null,
-        formRegistro:{
-            preload:false,
+        duracaoDiaHistorico: null,
+        tempoTrabalhadoHistorico: null,
+        formRegistro: {
+            preload: false,
         },
-        modelRegistro:null,
+        modelRegistro: null,
 
 
         map: null,
@@ -79,15 +79,13 @@ const app = new Vue({
         String.prototype.capitalize = function () {
             return this.charAt(0).toUpperCase() + this.substr(1);
         }
-
-
     },
     computed: {
         escalaUsuario() {
-            return this.listaEscalas[0];
+            return this.listaEscalas ? this.listaEscalas[0] : null;
         },
         perimetroUsuario() {
-            return this.listaPerimetros[0];
+            return this.listaPerimetros ? this.listaPerimetros[0] : null;
         }
     },
     methods: {
@@ -131,7 +129,7 @@ const app = new Vue({
                 disableDefaultUI: true,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
-            if(this.formPonto.obrigatorio){
+            if (this.formPonto.obrigatorio) {
                 console.log(this.listaPerimetros);
                 this.listaPerimetros.forEach((p) => {
                     p.circulo = new google.maps.Circle({
@@ -186,7 +184,6 @@ const app = new Vue({
             }
 
 
-
             //buscar a localizacao
             navigator.geolocation.getCurrentPosition((dados) => {
                 latLong = new google.maps.LatLng(dados.coords.latitude, dados.coords.longitude);
@@ -216,7 +213,7 @@ const app = new Vue({
                 this.marker.setPosition(latLong);
 
                 //verificando todos os perimetros se esta dentro deles
-                if(this.formPonto.obrigatorio){
+                if (this.formPonto.obrigatorio) {
                     this.formPonto.dentro = false;
                     this.listaPerimetros.forEach((p) => {
 
@@ -234,10 +231,9 @@ const app = new Vue({
                             })
                         }
                     });
-                }else{
+                } else {
                     this.formPonto.dentro = true;
                 }
-
 
 
                 //atualizar de 5 em 5 segundos
@@ -256,7 +252,7 @@ const app = new Vue({
                                 console.log('gps');
                             }
                             //verificando todos os perimetros se esta dentro deles
-                            if(this.formPonto.obrigatorio){
+                            if (this.formPonto.obrigatorio) {
                                 this.formPonto.dentro = false;
                                 this.listaPerimetros.forEach((p) => {
 
@@ -274,7 +270,7 @@ const app = new Vue({
                                         })
                                     }
                                 });
-                            }else{
+                            } else {
                                 this.formPonto.dentro = true;
                             }
 
@@ -311,19 +307,19 @@ const app = new Vue({
 
         atualizarHistorico() {
             this.formHistorico.preload = true;
-            axios.post(`${URL_ADMIN}/controle-ponto/ponto-eletronico/atualizarHistorico/`,this.formHistorico)
+            axios.post(`${URL_ADMIN}/controle-ponto/ponto-eletronico/atualizarHistorico/`, this.formHistorico)
                 .then(response => {
                     this.formHistorico.preload = false;
                     this.historico = response.data.historicos;
-                    this.duracaoDiaHistorico = moment('00:00','HH:mm');
-                    this.tempoTrabalhadoHistorico = moment('00:00','HH:mm');
-                    this.duracaoDiaHistorico.add(response.data.duracao.total_minutos,'minutes');
-                    this.tempoTrabalhadoHistorico.add(response.data.minutos_trabalhados,'minutes');
+                    this.duracaoDiaHistorico = moment('00:00', 'HH:mm');
+                    this.tempoTrabalhadoHistorico = moment('00:00', 'HH:mm');
+                    this.duracaoDiaHistorico.add(response.data.duracao.total_minutos, 'minutes');
+                    this.tempoTrabalhadoHistorico.add(response.data.minutos_trabalhados, 'minutes');
                 }).catch(error => {
                 this.formHistorico.preload = false;
             });
         },
-        verDetalhes(ponto_id,periodo_id) {
+        verDetalhes(ponto_id, periodo_id) {
 
             this.formRegistro.preload = true;
             axios.get(`${URL_ADMIN}/controle-ponto/ponto-eletronico/${ponto_id}/${periodo_id}`)
