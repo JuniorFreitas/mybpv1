@@ -14,8 +14,11 @@ class AddFieldsAprovarrhVagasabertasToIntermitenteFixoPrevistasTable extends Mig
     public function up()
     {
         Schema::table('intermitente_fixo_previstas', function (Blueprint $table) {
+            $table->boolean('filial')->nullable();
+            $table->unsignedBigInteger('centro_custo_filial_id')->nullable();
             $table->unsignedBigInteger('anterior_vaga_aberta_id')->nullable();
             $table->unsignedBigInteger('nova_vaga_aberta_id')->nullable();
+            $table->unsignedInteger('area_etiqueta_id')->nullable();
             $table->unsignedBigInteger('rh_aprovacao_id')->nullable();
             $table->text('obs_rh')->nullable();
             $table->string('status_aprovacao_rh')->nullable();
@@ -24,8 +27,10 @@ class AddFieldsAprovarrhVagasabertasToIntermitenteFixoPrevistasTable extends Mig
             $table->unsignedBigInteger('quem_deletou_id')->nullable();
             $table->softDeletes();
 
+            $table->foreign('centro_custo_filial_id')->references('id')->on('centro_custo_filials');
             $table->foreign('anterior_vaga_aberta_id')->references('id')->on('vagas_abertas');
             $table->foreign('nova_vaga_aberta_id')->references('id')->on('vagas_abertas');
+            $table->foreign('area_etiqueta_id')->references('id')->on('area_etiquetas');
             $table->foreign('rh_aprovacao_id')->references('id')->on('users');
             $table->foreign('quem_deletou_id')->references('id')->on('users');
         });
@@ -41,16 +46,20 @@ class AddFieldsAprovarrhVagasabertasToIntermitenteFixoPrevistasTable extends Mig
         Schema::table('intermitente_fixo_previstas', function (Blueprint $table) {
             $table->dropForeign('quem_deletou_id');
             $table->dropForeign('rh_aprovacao_id');
+            $table->dropForeign('area_etiqueta_id');
             $table->dropForeign('nova_vaga_aberta_id');
             $table->dropForeign('anterior_vaga_aberta_id');
+            $table->dropForeign('centro_custo_filial_id');
             $table->dropColumn('quem_deletou_id');
             $table->dropColumn('aprovado_via_script');
             $table->dropColumn('data_aprovacao_rh');
             $table->dropColumn('status_aprovacao_rh');
             $table->dropColumn('obs_rh');
             $table->dropColumn('rh_aprovacao_id');
+            $table->dropColumn('area_etiqueta_id');
             $table->dropColumn('nova_vaga_aberta_id');
             $table->dropColumn('anterior_vaga_aberta_id');
+            $table->dropColumn('centro_custo_filial_id');
         });
     }
 }

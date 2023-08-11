@@ -285,7 +285,7 @@ class AutoCompletesController extends Controller
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%')->where('email', '<>', 'sistema@mybp.com.br');
         })->take($quantidade)
-            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor,email', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
+            ->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor,email', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome', 'Admissao:id,feedback_id,centro_custo_filial_id,filial,centro_custo_id,area_etiqueta_id,salario')->take($quantidade)
             ->get()->map(function ($item) {
                 $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - {$item->VagaAberta->Municipio->nome} - {$item->VagaAberta->Municipio->uf}";
                 return $item;
