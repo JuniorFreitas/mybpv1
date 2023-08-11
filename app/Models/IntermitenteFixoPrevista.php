@@ -134,6 +134,14 @@ class IntermitenteFixoPrevista extends Model
         'quem_deletou_id' => 'int',
     ];
 
+    const STATUS_APROVADO = 'aprovado';
+    const STATUS_REPROVADO = 'reprovado';
+
+    const LISTA_STATUS_APROVACAO = [
+        self::STATUS_APROVADO,
+        self::STATUS_REPROVADO
+    ];
+
     protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('Y-m-d H:i:s');
@@ -230,6 +238,16 @@ class IntermitenteFixoPrevista extends Model
     public function Anexos()
     {
         return $this->belongsToMany(Arquivo::class, 'intermitente_fixo_previstas_anexos', 'intermitente_fixo_prevista_id', 'arquivo_id');
+    }
+
+    public function CentroCustoFilial()
+    {
+        return $this->hasOne(CentroCustoFilial::class, 'id', 'centro_custo_filial_id');
+    }
+
+    public function AreaEtiqueta()
+    {
+        return $this->hasOne(AreaEtiqueta::class, 'id', 'area_etiqueta_id');
     }
 
 }

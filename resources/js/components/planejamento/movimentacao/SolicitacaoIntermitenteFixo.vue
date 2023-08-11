@@ -299,15 +299,17 @@
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
                                 :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Status</option>
-                            <option value="aberto">Aberto</option>
-                            <option value="aprovado">Aprovado</option>
+                            <option value="aberto">Aguardando Aprovação</option>
+                            <option value="aprovado_gestor">Aprovado Gestor</option>
+                            <option value="aprovado_rh">Aprovado Rh</option>
                             <option value="reprovado">Reprovado</option>
                         </select>
                     </div>
                 </div>
+
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label for="">Exibir</label>
@@ -638,7 +640,7 @@ export default {
                     campoBusca: '',
                     filtroPeriodo: false,
                     periodo: '',
-                    campoStatus: '',
+                    campoStatusAprovacao: '',
                 },
             },
         }
