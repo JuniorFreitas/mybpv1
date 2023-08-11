@@ -77,6 +77,8 @@ class IntermitenteFixoPrevista extends Model
         'cliente_id',
         'colaborador_id',
         'centro_custo_id',
+        'filial',
+        'centro_custo_filial_id',
         'cargo_anterior_id',
         'salario_anterior',
         'novo_cargo_id',
@@ -91,6 +93,7 @@ class IntermitenteFixoPrevista extends Model
         'gestor_id',
         'anterior_vaga_aberta_id',
         'nova_vaga_aberta_id',
+        'area_etiqueta_id',
         'rh_aprovacao_id',
         'obs_rh',
         'status_aprovacao_rh',
@@ -104,6 +107,8 @@ class IntermitenteFixoPrevista extends Model
         'cliente_id' => 'int',
         'colaborador_id' => 'int',
         'centro_custo_id' => 'int',
+        'filial' => 'boolean',
+        'centro_custo_filial_id' => 'int',
         'cargo_anterior_id' => 'int',
         'salario_anterior' => 'float',
         'novo_cargo_id' => 'int',
@@ -120,6 +125,7 @@ class IntermitenteFixoPrevista extends Model
         'gestor_id'=>'int',
         'anterior_vaga_aberta_id' => 'int',
         'nova_vaga_aberta_id' => 'int',
+        'area_etiqueta_id' => 'int',
         'rh_aprovacao_id' => 'int',
         'obs_rh' => 'string',
         'status_aprovacao_rh' => 'string',
@@ -194,6 +200,11 @@ class IntermitenteFixoPrevista extends Model
     public function VagaAbertaNova()
     {
         return $this->hasOne(VagasAbertas::class, 'id', 'nova_vaga_aberta_id');
+    }
+
+    public function Solicitante()
+    {
+        return $this->hasOne(User::class, 'id', 'user_id');
     }
 
     public function GestorAprovacao()

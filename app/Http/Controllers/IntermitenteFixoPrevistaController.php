@@ -6,6 +6,7 @@ use App\Exports\ModeloRowsExport;
 use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovar;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovarRH;
+use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\IntermitenteFixoPrevista;
 use App\Models\VagasAbertas;
@@ -27,10 +28,12 @@ class IntermitenteFixoPrevistaController extends Controller
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
         $dados['user_id'] = auth()->user()->id;
+        $dados['centro_custo_filial_id'] = $dados['filial'] ? $dados['centro_custo_filial_id'] : null;
 
         $dadosValidados = \Validator::make($dados,
             [
                 'centro_custo_id' => 'required',
+                'centro_custo_filial_id' => 'required_if:filial,true',
                 'colaborador_id' => 'required',
                 'cargo_anterior_id' => 'required',
                 'salario_anterior_format' => 'required',
@@ -92,8 +95,12 @@ class IntermitenteFixoPrevistaController extends Controller
         $intermitenteFixoPrevista->autocomplete_label_vaga_anterior = $intermitenteFixoPrevista->VagaAbertaAnterior ? $intermitenteFixoPrevista->VagaAbertaAnterior->titulo : '';
         $intermitenteFixoPrevista->autocomplete_label_vaga_nova = $intermitenteFixoPrevista->VagaAbertaNova ? $intermitenteFixoPrevista->VagaAbertaNova->titulo : '';
 
+        $intermitenteFixoPrevista->status_aprovacao = $intermitenteFixoPrevista->status_aprovacao ?: '';
+        $intermitenteFixoPrevista->status_aprovacao_rh = $intermitenteFixoPrevista->status_aprovacao_rh ?: '';
+
         $intermitenteFixoPrevista->autocomplete_label_gestor_modal = $intermitenteFixoPrevista->GestorAprovacao ? $intermitenteFixoPrevista->GestorAprovacao->nome : '';
         $intermitenteFixoPrevista->autocomplete_label_gestor_modal_anterior = $intermitenteFixoPrevista->GestorAprovacao ? $intermitenteFixoPrevista->GestorAprovacao->nome : '';
+        $intermitenteFixoPrevista->user_aprovacao = $intermitenteFixoPrevista->UserAprovacao;
         $intermitenteFixoPrevista->anexosDel = [];
         $intermitenteFixoPrevista->load('Anexos');
         return $intermitenteFixoPrevista;
@@ -208,17 +215,25 @@ class IntermitenteFixoPrevistaController extends Controller
 
     public function aprovarRH(Request $request, IntermitenteFixoPrevista $intermitenteFixoPrevista)
     {
-        $this->authorize('rh_aprova_movimentacao');
+        $this->authorize('privilegio_aprovar_por_rh');
         $dados = $request->input();
         try {
             DB::beginTransaction();
             $intermitenteFixoPrevista->update([
-                'user_rh_id' => auth()->id(),
-                'resposta_rh' => $dados['resposta_rh'],
+                'rh_aprovacao_id' => auth()->id(),
+                'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
                 'obs_rh' => $dados['obs_rh'],
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
             ]);
 
+            $admissao_id = $intermitenteFixoPrevista->Colaborador->Curriculo->FeedBack->Admissao->id;
+            Admissao::find($admissao_id)->update([
+                'centro_custo_id' => $dados['centro_custo_id'],
+                'filial' => $dados['filial'],
+                'centro_custo_filial_id' => $dados['centro_custo_filial_id'],
+                'cargo' => $intermitenteFixoPrevista->VagaAbertaNova->Vaga->nome,
+                'salario' => $dados['novo_salario']
+            ]);
             DB::commit();
 
             JobMudaIntermitenteFixoPrevistaAprovarRH::dispatch($intermitenteFixoPrevista);
@@ -228,7 +243,7 @@ class IntermitenteFixoPrevistaController extends Controller
             DB::rollback();
             $msg = "error ao aprovar solicitação RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
-            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            return response()->json(['msg' => $msg], 400);
         }
 
     }
@@ -246,6 +261,7 @@ class IntermitenteFixoPrevistaController extends Controller
                 'itens' => $resultado->items(),
                 'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
             ]
         ]);
     }
@@ -258,7 +274,11 @@ class IntermitenteFixoPrevistaController extends Controller
             'NovoCargo',
             'VagaAbertaAnterior',
             'VagaAbertaNova',
-            'UserCadastrou:id,nome',
+            'UserAprovacao:id,nome',
+            'Solicitante:id,nome',
+            'GestorAprovacao:id,nome',
+            'RhAprovacao:id,nome',
+            'QuemDeletou:id,nome',
             'Colaborador:id,nome,login,tipo,ativo', 'GestorAprovacao:id,nome', 'UserAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
