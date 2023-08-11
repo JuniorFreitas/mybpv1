@@ -25,7 +25,8 @@
                             Foto da entrada
                         </td>
                         <td>
-                            <img :src="modelRegistro.foto_entrada.url" alt="" style="width: 300px; border-radius: 6%;object-fit: cover;">
+                            <img :src="modelRegistro.foto_entrada.url" alt=""
+                                 style="width: 300px; border-radius: 6%;object-fit: cover;">
                         </td>
                     </tr>
                     <tr>
@@ -42,7 +43,8 @@
                             Foto da saída
                         </td>
                         <td>
-                            <img :src="modelRegistro.foto_saida.url" alt="" style="width: 300px; border-radius: 6%;object-fit: cover;">
+                            <img :src="modelRegistro.foto_saida.url" alt=""
+                                 style="width: 300px; border-radius: 6%;object-fit: cover;">
                         </td>
                     </tr>
                     <tr>
@@ -105,130 +107,133 @@
 
 
     <div class="row">
+        <preload v-if="preload"></preload>
 
-        <div class="col-12">
-            <ul class="nav nav-pills nav-fill mt-5">
-                <li class="nav-item">
-                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#marcao_dia" role="tab"
-                       aria-controls="home" aria-selected="true">Marcações do dia</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#historico" role="tab"
-                       aria-controls="profile" aria-selected="false">Histórico</a>
-                </li>
-            </ul>
-            <div class="tab-content">
-                <div class="tab-pane fade show active p-2 " id="marcao_dia" role="tabpanel"
-                     aria-labelledby="marcao_dia-tab">
-                    <div class="row">
-                        <div class="col-12" v-if="preload">
-                            <preload></preload>
-                        </div>
-                        <div class="col-12" v-else>
+        <template v-if="!preload">
+            <div class="col-12">
+                <ul class="nav nav-pills nav-fill mt-5">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#marcao_dia" role="tab"
+                           aria-controls="home" aria-selected="true">Marcações do dia</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="profile-tab" data-toggle="tab" href="#historico" role="tab"
+                           aria-controls="profile" aria-selected="false">Histórico</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active p-2 " id="marcao_dia" role="tabpanel"
+                         aria-labelledby="marcao_dia-tab">
+                        <div class="row">
+                            <div class="col-12" v-if="preload">
+                                <preload></preload>
+                            </div>
+                            <div class="col-12" v-else>
 
-                            <div class="card">
-                                <div class="card-header bg-white">
-                                    <h5 class="text-center">@{{ hoje }} </h5>
-                                </div>
-                                <ul class="list-group list-group-flush">
-                                    <template v-if="registros.length > 0" v-for="reg in registros">
-                                        <template v-for="per in reg.periodos">
-                                            <li class="list-group-item text-center" v-if="per.entrada">ENTRADA :
-                                                <strong>@{{ per.horaEntrada }}</strong></li>
-                                            <li class="list-group-item text-center" v-if="per.saida!=null">SAÍDA :
-                                                <strong>@{{ per.horaSaida }}</strong></li>
+                                <div class="card">
+                                    <div class="card-header bg-white">
+                                        <h5 class="text-center">@{{ hoje }} </h5>
+                                    </div>
+                                    <ul class="list-group list-group-flush">
+                                        <template v-if="registros.length > 0" v-for="reg in registros">
+                                            <template v-for="per in reg.periodos">
+                                                <li class="list-group-item text-center" v-if="per.entrada">ENTRADA :
+                                                    <strong>@{{ per.horaEntrada }}</strong></li>
+                                                <li class="list-group-item text-center" v-if="per.saida!=null">SAÍDA :
+                                                    <strong>@{{ per.horaSaida }}</strong></li>
+                                            </template>
                                         </template>
-                                    </template>
-                                    <li v-if="registros.length === 0" class="list-group-item text-center">
-                                        <span class="text-center text-primary">Nenhum registro realizado hoje</span>
-                                    </li>
-                                </ul>
+                                        <li v-if="registros.length === 0" class="list-group-item text-center">
+                                            <span class="text-center text-primary">Nenhum registro realizado hoje</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <button :disabled="preloadGoogleMaps" type="button" class="btn btn-warning btn-block"
+                                        data-toggle="modal" data-target="#janelaFormPonto" @click="formNovoRegistro"><i
+                                        class="fas fa-user-clock"></i> Registrar ponto
+                                </button>
+
                             </div>
-
-                            <button :disabled="preloadGoogleMaps" type="button" class="btn btn-warning btn-block"
-                                    data-toggle="modal" data-target="#janelaFormPonto" @click="formNovoRegistro"><i
-                                    class="fas fa-user-clock"></i> Registrar ponto
-                            </button>
-
-                        </div>
-                    </div>
-
-
-                </div>
-                <div class="tab-pane fade p-2" id="historico" role="tabpanel" aria-labelledby="historico-tab">
-
-                    <div class="row mt-3">
-                        <div class="col-12 col-md-4 offset-md-4">
-                            <div class="form-group">
-                                <h5 class="text-center">Registros no dia</h5>
-                                <datepicker v-model="formHistorico.data" :disabled="formHistorico.preload"
-                                            @onselect="atualizarHistorico"></datepicker>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <p class="text-center">
-                                <preload v-if="formHistorico.preload" label="Aguarde..."></preload>
-                            </p>
-                            <h4 class="text-center" v-if="historico.length === 0 && !formHistorico.preload">Nenhum
-                                registro encontrado</h4>
-
-                            <template v-if="historico.length > 0 && !formHistorico.preload" v-for="reg in historico">
-                                <table class="tabela">
-                                    <thead class="bg-default">
-                                    <tr>
-                                        <th>Entrada</th>
-                                        <th>Saída</th>
-                                        <th>Duração</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr v-for="per in reg.periodos">
-                                        <td class="text-center">
-                                            @{{ per.entrada }}
-                                        </td>
-                                        <td class="text-center">
-                                            <span v-if="per.saida">@{{ per.saida }}</span>
-                                            <span v-else><h5><span
-                                                        class="badge badge-warning">Trabalhando</span></h5></span>
-                                        </td>
-                                        <td class="text-center">
-                                            <span v-if="per.saida">@{{ per.horasTrabalhadasFormat }}</span>
-                                            <span v-else> -- </span>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-info" data-toggle="modal"
-                                                    data-target="#janelaFormDetalhes"
-                                                    @click="verDetalhes(reg.id,per.id)"><i
-                                                    class="fas fa-info-circle"></i> Detalhes
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="2"></td>
-                                        <td>Duração prevista:</td>
-                                        <td>@{{ duracaoDiaHistorico.format('HH[h]:mm') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="2"></td>
-                                        <td>Trabalhado:</td>
-                                        <td>@{{ tempoTrabalhadoHistorico.format('HH[h]:mm') }}</td>
-                                    </tr>
-
-                                    </tbody>
-                                </table>
-                            </template>
-
                         </div>
 
 
                     </div>
+                    <div class="tab-pane fade p-2" id="historico" role="tabpanel" aria-labelledby="historico-tab">
 
+                        <div class="row mt-3">
+                            <div class="col-12 col-md-4 offset-md-4">
+                                <div class="form-group">
+                                    <h5 class="text-center">Registros no dia</h5>
+                                    <datepicker v-model="formHistorico.data" :disabled="formHistorico.preload"
+                                                @onselect="atualizarHistorico"></datepicker>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <p class="text-center">
+                                    <preload v-if="formHistorico.preload" label="Aguarde..."></preload>
+                                </p>
+                                <h4 class="text-center" v-if="historico.length === 0 && !formHistorico.preload">Nenhum
+                                    registro encontrado</h4>
+
+                                <template v-if="historico.length > 0 && !formHistorico.preload"
+                                          v-for="reg in historico">
+                                    <table class="tabela">
+                                        <thead class="bg-default">
+                                        <tr>
+                                            <th>Entrada</th>
+                                            <th>Saída</th>
+                                            <th>Duração</th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="per in reg.periodos">
+                                            <td class="text-center">
+                                                @{{ per.entrada }}
+                                            </td>
+                                            <td class="text-center">
+                                                <span v-if="per.saida">@{{ per.saida }}</span>
+                                                <span v-else><h5><span
+                                                            class="badge badge-warning">Trabalhando</span></h5></span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span v-if="per.saida">@{{ per.horasTrabalhadasFormat }}</span>
+                                                <span v-else> -- </span>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-info" data-toggle="modal"
+                                                        data-target="#janelaFormDetalhes"
+                                                        @click="verDetalhes(reg.id,per.id)"><i
+                                                        class="fas fa-info-circle"></i> Detalhes
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2"></td>
+                                            <td>Duração prevista:</td>
+                                            <td>@{{ duracaoDiaHistorico.format('HH[h]:mm') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2"></td>
+                                            <td>Trabalhado:</td>
+                                            <td>@{{ tempoTrabalhadoHistorico.format('HH[h]:mm') }}</td>
+                                        </tr>
+
+                                        </tbody>
+                                    </table>
+                                </template>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
                 </div>
+
             </div>
-
-        </div>
-
+        </template>
     </div>
 @stop
 @push('js')

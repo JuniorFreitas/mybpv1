@@ -104,11 +104,10 @@ class ParecerEntrevistaTecnicaController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\ParecerEntrevistaTecnica $entrevistaTecnica
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param ParecerEntrevistaTecnica $entrevistaTecnica
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Throwable
      */
     public function update(Request $request, ParecerEntrevistaTecnica $entrevistaTecnica)
     {
@@ -126,19 +125,17 @@ class ParecerEntrevistaTecnicaController extends Controller
                 'msg' => 'Erro ao alterar a entrevista',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $entrevistaTecnica->update($dados);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        }
+        try {
+            DB::beginTransaction();
+            $entrevistaTecnica->update($dados);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -157,7 +154,6 @@ class ParecerEntrevistaTecnicaController extends Controller
     {
 
         $resultado = $this->filtro($request)->paginate($request->pages);
-        $periodo = ParecerEntrevistaTecnica::all();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -165,7 +161,6 @@ class ParecerEntrevistaTecnicaController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
             ]
         ]);
     }
@@ -253,7 +248,7 @@ class ParecerEntrevistaTecnicaController extends Controller
             $rows[] = [
                 $row->Curriculo->nome,
                 $row->vaga_aberta_municipio,
-                $row->Curriculo->pcd = false ? "SIM":"NÂO",
+                $row->Curriculo->pcd = false ? "SIM" : "NÂO",
                 $row->parecerRh->nota,
                 $row->obs,
                 $row->Curriculo->email,

@@ -13,6 +13,7 @@ use App\Models\SimuladoVaga;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use MasterTag\DataHora;
 use PDF;
@@ -202,14 +203,12 @@ class EntrevistaRhClienteController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = FeedbackCurriculo::all();
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo
             ]
         ]);
     }
@@ -388,8 +387,7 @@ class EntrevistaRhClienteController extends Controller
 
         $pdf = PDF::loadView('pdf.recrutamento.curriculo', compact('recrutamento'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("curriculo" . ST($recrutamento->nome) . ".pdf");
+        return $pdf->stream("curriculo" . Str::slug($recrutamento->nome) . ".pdf");
 
-        return view('pdf.recrutamento.curriculo', compact('recrutamento'));
     }
 }

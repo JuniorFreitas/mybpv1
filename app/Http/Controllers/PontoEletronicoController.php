@@ -282,9 +282,11 @@ class PontoEletronicoController extends Controller {
         //'EscalasFuncionario.Jornadas.Periodos',
         );
 
+        $userEscala = $usuario->EscalasFuncionario[0] ?? null;
+        $periodos =  null;
         $jornada = null;
-        if (isset($usuario->EscalasFuncionario[0])) {
-            $jornada = PontoEletronico::getJornadaAtual($usuario->EscalasFuncionario[0]->id);
+        if (!is_null($userEscala)) {
+            $jornada = PontoEletronico::getJornadaAtual($userEscala->id);
             $periodos = $jornada->periodos;
         }
         $hoje = new DataHora();
@@ -304,7 +306,7 @@ class PontoEletronicoController extends Controller {
 
         return response()->json([
             'lista_perimetros' => $usuario->PerimetrosFuncionario,
-            'lista_escalas' => $usuario->EscalasFuncionario[0],
+            'lista_escalas' => $userEscala,
             'periodos' => $periodos,
             'duracao' => $jornada ? PontoEletronico::duracaoJornada($jornada):null,
             'registros' => $registrosHoje,
