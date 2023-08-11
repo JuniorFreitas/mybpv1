@@ -271,6 +271,8 @@ class IntermitenteFixoPrevistaController extends Controller
         $resultado = IntermitenteFixoPrevista::with(
             'CentroCusto',
             'CargoAnterior',
+            'CentroCustoFilial',
+            'AreaEtiqueta',
             'NovoCargo',
             'VagaAbertaAnterior',
             'VagaAbertaNova',
@@ -297,9 +299,18 @@ class IntermitenteFixoPrevistaController extends Controller
             });
         }
 
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
-            $resultado->whereStatusAprovacao($status);
+        if ($request->filled('campoStatusAprovacao')) {
+            $status = $request->campoStatusAprovacao;
+            if ($request->campoStatusAprovacao == "aberto"){
+                $resultado->whereNull('status_aprovacao');
+            }
+            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
+                $resultado->where('status_aprovacao',IntermitenteFixoPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
+                $resultado->where('status_aprovacao_rh', IntermitenteFixoPrevista::STATUS_APROVADO);
+            }else{
+                $resultado->whereStatusAprovacao(IntermitenteFixoPrevista::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', IntermitenteFixoPrevista::STATUS_REPROVADO);
+            }
         }
 
         if (!auth()->user()->can('privilegio_gestao_rh')) {
@@ -317,18 +328,23 @@ class IntermitenteFixoPrevistaController extends Controller
             "Quem Solicitou",
             "Data da Solicitação",
             "Centro de Custo",
+            "Filial",
+            "Área Etiqueta",
             "Colaborador",
             "Cargo Anterior",
             "Salário Anterior",
             "Cargo Novo",
             "Salário Novo",
-            "data da Modificação",
             "Gestor Aprovação",
             "Motivos",
             "Status",
             "Quem Aprovou/Reprovou",
             "Data da Aprovação/Reprovação",
             'Observação Aprovação/Reprovação',
+            'RH Aprovação',
+            'Data da Aprovação RH',
+            'Resposta RH',
+            'OBS RH'
         ];
 
         $rows = [];
@@ -338,18 +354,23 @@ class IntermitenteFixoPrevistaController extends Controller
                 $row->UserCadastrou->nome,
                 (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
                 $row->CentroCusto->label,
+                $row->novo_filial ? '' : $row->CentroCustoFilial->Filial->dados->razao_social,
+                $row->AreaEtiqueta->label,
                 $row->Colaborador->nome,
-                $row->CargoAnterior->nome,
+                $row->VagaAbertaAnterior->titulo,
                 $row->salario_anterior_format,
-                $row->NovoCargo->nome,
+                $row->VagaAbertaNova->titulo,
                 $row->novo_salario_format,
-                $row->data_modificacao ? (new DataHora($row->data_modificacao))->dataCompleta() : '',
                 $row->GestorAprovacao->nome,
                 $row->motivos,
                 $row->status_aprovacao ? $row->status_aprovacao : "aberto",
                 $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
                 $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
                 $row->obs_aprovacao,
+                $row->status_aprovacao_rh ? $row->RhAprovacao->nome : '',
+                $row->status_aprovacao_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
+                $row->status_aprovacao_rh,
+                $row->obs_rh
             ];
         }
 
