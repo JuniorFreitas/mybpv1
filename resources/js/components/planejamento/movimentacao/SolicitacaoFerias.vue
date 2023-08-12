@@ -445,6 +445,7 @@
                                    @click="selecionaTodos">
                         </th>
                         <th>CÓD</th>
+                        <th>Solicitação</th>
                         <th>Centro de custo</th>
                         <th>Colaborador</th>
                         <th>Data Admissão</th>
@@ -480,6 +481,10 @@
                         </td>
                         <td>
                             {{ item.id }}
+                        </td>
+
+                        <td>
+                            {{ item.solicitante.nome }} <br> {{ item.data_solicitacao }}
                         </td>
 
                         <td>

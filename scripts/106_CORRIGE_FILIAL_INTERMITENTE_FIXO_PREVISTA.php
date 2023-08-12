@@ -18,24 +18,20 @@ $kernel->terminate($request, $response);
 ini_set('memory_limit', '-1');
 ini_set('max_execution_time', '-1');
 
-$intermitentes = DB::select("SELECT * FROM intermitente_fixo_previstas WHERE empresa_id = 40568");
+try {
+    $dados_update = [
+        'filial' => false,
+        'centro_custo_filial_id' => null
+    ];
 
-foreach ($intermitentes as $linha){
-    try {
-        $dados_update = [
-            'filial' => false,
-            'centro_custo_filial_id' => null
-        ];
+    $upd_intermitente = DB::table('intermitente_fixo_previstas')
+        ->where('empresa_id', 40568)
+        ->update($dados_update);
 
-        $upd_intermitente = DB::table('intermitente_fixo_previstas')
-            ->where('id', $linha->id)
-            ->update($dados_update);
-
-        if($upd_intermitente){
-            echo "ID : " . $linha->id . " | FILIAL ATUALIZADA EM INTERMITENTE FIXO\n";
-        }
-    }catch (Exception $exception) {
-        echo $exception->getMessage();
+    if($upd_intermitente){
+        echo "FILIAIS ATUALIZADAS EM INTERMITENTE FIXO\n";
     }
+}catch (Exception $exception) {
+    echo $exception->getMessage();
 }
 
