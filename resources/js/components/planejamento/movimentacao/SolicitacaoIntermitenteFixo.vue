@@ -701,7 +701,6 @@ export default {
             this.form.centro_custo_filial_id = ''
         },
         changeCnpj() {
-            console.log(this.form.filial)
             this.form.centro_custo_filial_id = ''
         },
         selecionaTodos() {
