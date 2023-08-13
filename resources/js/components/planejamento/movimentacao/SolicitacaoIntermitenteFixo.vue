@@ -123,12 +123,14 @@
                                 </div>
                             </div>
 
-                            <gestoraprovacao :model="form" :verifica="visualizar || aprovando || aprovandoRh" :hash="hash"></gestoraprovacao>
+                            <gestoraprovacao :model="form" :verifica="visualizar || aprovando || aprovandoRh"
+                                             :hash="hash"></gestoraprovacao>
 
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Motivos para modificação</label>
-                                    <textarea class="form-control form-control-sm" v-model="form.motivos" cols="5" rows="5"
+                                    <textarea class="form-control form-control-sm" v-model="form.motivos" cols="5"
+                                              rows="5"
                                               :disabled="visualizar || aprovando || aprovandoRh"></textarea>
                                 </div>
                             </div>
@@ -152,7 +154,8 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label>Observação</label>
-                                        <textarea class="form-control form-control-sm" :disabled="!aprovando || aprovandoRh"
+                                        <textarea class="form-control form-control-sm"
+                                                  :disabled="!aprovando || aprovandoRh"
                                                   v-model="form.obs_aprovacao"
                                                   cols="5" rows="5"></textarea>
                                     </div>
@@ -164,7 +167,8 @@
                                         <select :disabled="!aprovando || aprovandoRh"
                                                 v-model="form.status_aprovacao"
                                                 class="form-control form-control-sm validacampo"
-                                                onchange="valida_campo_vazio(this, 1)"  onblur="valida_campo_vazio(this, 1)">
+                                                onchange="valida_campo_vazio(this, 1)"
+                                                onblur="valida_campo_vazio(this, 1)">
                                             <option value="">Selecione...</option>
                                             <option value="aprovado">Aprovar</option>
                                             <option value="reprovado">Reprovar</option>
@@ -192,7 +196,8 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label>Observação</label>
-                                        <textarea class="form-control form-control-sm" :disabled="visualizar && !aprovando && !aprovandoRh"
+                                        <textarea class="form-control form-control-sm"
+                                                  :disabled="visualizar && !aprovando && !aprovandoRh"
                                                   v-model="form.obs_rh"
                                                   cols="5" rows="5"></textarea>
                                     </div>
@@ -204,7 +209,8 @@
                                         <select :disabled="visualizar && !aprovando && !aprovandoRh"
                                                 v-model="form.status_aprovacao_rh"
                                                 class="form-control form-control-sm validacampo"
-                                                onchange="valida_campo_vazio(this, 1)"  onblur="valida_campo_vazio(this, 1)">
+                                                onchange="valida_campo_vazio(this, 1)"
+                                                onblur="valida_campo_vazio(this, 1)">
                                             <option value="">Selecione...</option>
                                             <option value="aprovado">Aprovar</option>
                                             <option value="reprovado">Reprovar</option>
@@ -362,103 +368,104 @@
             </span>
         </div>
 
-                <preload class="text-center" v-if="controle.carregando"></preload>
+        <preload class="text-center" v-if="controle.carregando"></preload>
 
-                <div id="conteudo">
-                    <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
-                        <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
-                    </div>
+        <div id="conteudo">
+            <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
+                <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+            </div>
 
-                    <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                        <table class="tabela">
-                            <thead>
-                            <tr class="bg-default">
-                                <th class="text-center">
-                                    <input type="checkbox"
-                                           :style="naoAprovados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                                           :disabled="naoAprovados.length === 0" :checked="tudoMarcado"
-                                           @click="selecionaTodos">
-                                </th>
-                                <th>CÓD</th>
-                                <th>Solicitação</th>
-                                <th>Centro de custo</th>
-                                <th>Colaborador</th>
-                                <th>Cargo Anterior</th>
-                                <th>Novo Cargo</th>
-                                <th>Salário Anterior</th>
-                                <th>Novo Salário</th>
-                                <th>Status</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="item in lista" :class="{
+            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
+                <table class="tabela">
+                    <thead>
+                    <tr class="bg-default">
+                        <th class="text-center">
+                            <input type="checkbox"
+                                   :style="naoAprovados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                                   :disabled="naoAprovados.length === 0" :checked="tudoMarcado"
+                                   @click="selecionaTodos">
+                        </th>
+                        <th>CÓD</th>
+                        <th>Solicitação</th>
+                        <th>Centro de custo</th>
+                        <th>Colaborador</th>
+                        <th>Cargo Anterior</th>
+                        <th>Novo Cargo</th>
+                        <th>Salário Anterior</th>
+                        <th>Novo Salário</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :class="{
                               'table-danger' : item.status_aprovacao === 'reprovado' || item.status_aprovacao_rh === 'reprovado',
                               'table-success' : item.status_aprovacao_rh === 'aprovado' || (item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null && item.aprovado_via_script),
                               'table-info' : item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null && !item.aprovado_via_script,
                               'table-warning' : !item.status_aprovacao,
                             }">
 
-                                <td class="text-center">
-                                    <label :for="item.id">
-                                        <input
-                                            type="checkbox"
-                                            v-model="selecionados"
-                                            :value="item.id"
-                                            :id="item.id"
-                                            :style="!item.status_aprovacao ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                            :title="item.status_aprovacao ? null : 'Não possui aprovação'"
-                                            v-if="!item.status_aprovacao"
-                                        >
-                                        <input type="checkbox" v-else disabled="disabled" title="Status já atualizado">
+                        <td class="text-center">
+                            <label :for="item.id">
+                                <input
+                                    type="checkbox"
+                                    v-model="selecionados"
+                                    :value="item.id"
+                                    :id="item.id"
+                                    :style="!item.status_aprovacao ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                    :title="item.status_aprovacao ? null : 'Não possui aprovação'"
+                                    v-if="!item.status_aprovacao"
+                                >
+                                <input type="checkbox" v-else disabled="disabled" title="Status já atualizado">
 
-                                    </label>
-                                </td>
-                                <td>
-                                    {{ item.id }}
-                                </td>
+                            </label>
+                        </td>
+                        <td>
+                            {{ item.id }}
+                        </td>
 
-                                <td>
-                                    {{ item.solicitante.nome }} <br> {{ item.created_at }}
-                                </td>
+                        <td>
+                            {{ item.solicitante.nome }} <br> {{ item.created_at }}
+                        </td>
 
-                                <td>
-                                    {{ item.centro_custo.label }}
-                                </td>
+                        <td>
+                            {{ item.centro_custo.label }}
+                        </td>
 
-                                <td>
-                                    {{ item.colaborador ? item.colaborador.nome : '' }}
-                                </td>
+                        <td>
+                            {{ item.colaborador ? item.colaborador.nome : '' }}
+                        </td>
 
-                                <td>
-                                    {{ item.vaga_aberta_anterior.titulo }}
-                                </td>
+                        <td>
+                            {{ item.vaga_aberta_anterior.titulo }}
+                        </td>
 
-                                <td>
-                                  {{ item.vaga_aberta_nova.titulo }}
-                                </td>
+                        <td>
+                            {{ item.vaga_aberta_nova.titulo }}
+                        </td>
 
-                                <td>
-                                    {{ item.salario_anterior_format }}
-                                </td>
+                        <td>
+                            {{ item.salario_anterior_format }}
+                        </td>
 
-                                <td>
-                                    {{ item.novo_salario_format }}
-                                </td>
+                        <td>
+                            {{ item.novo_salario_format }}
+                        </td>
 
-                              <td>
+                        <td>
                                   <span class="text-uppercase" v-if="item.user_aprovacao || item.rh_aprovacao">
                                   <span
-                                    v-if="item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null">
+                                      v-if="item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null">
                                       {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
                                       Por gestor(a): {{ item.user_aprovacao.nome }}
                                   </span>
                                   <span
-                                    v-if="item.status_aprovacao_rh === 'aprovado'">
+                                      v-if="item.status_aprovacao_rh === 'aprovado'">
                                       {{ item.status_aprovacao_rh }} em {{ item.data_aprovacao_rh }}<br/>
                                       Por RH: {{ item.rh_aprovacao.nome }}
                                   </span>
-                                  <span v-if="item.status_aprovacao === 'reprovado' && item.status_aprovacao_rh === null">
+                                  <span
+                                      v-if="item.status_aprovacao === 'reprovado' && item.status_aprovacao_rh === null">
                                       {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
                                       Por gestor(a): {{ item.user_aprovacao.nome }}
                                   </span>
@@ -467,55 +474,55 @@
                                       Por RH: {{ item.rh_aprovacao.nome }}
                                   </span>
                                   </span>
-                                          <span v-else>
+                            <span v-else>
                                       AGUARDANDO
                                   </span>
-                              </td>
+                        </td>
 
-                                <td class="text-center">
-                                    <div class="dropdown show">
-                                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
-                                           id="dropdownMenuLink"
-                                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </a>
+                        <td class="text-center">
+                            <div class="dropdown show">
+                                <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                                   id="dropdownMenuLink"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
 
-                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
-                                            <a class="dropdown-item" href="javascript://" title="Aprovação Gestor"
-                                               data-toggle="modal"
-                                               :data-target="`#${hash}`"
-                                               @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoRh = false; podeanexar = true"
-                                               v-if="item.user_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor">
-                                                Aprovação Gestor
-                                            </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item" href="javascript://" title="Aprovação Gestor"
+                                       data-toggle="modal"
+                                       :data-target="`#${hash}`"
+                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoRh = false; podeanexar = true"
+                                       v-if="item.user_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor">
+                                        Aprovação Gestor
+                                    </a>
 
-                                            <a class="dropdown-item" href="javascript://" title="Aprovação RH"
-                                               data-toggle="modal"
-                                               :data-target="`#${hash}`"
-                                               @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoRh = true; podeanexar = false"
-                                               v-if="item.status_aprovacao === 'aprovado' && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh">
-                                                Aprovação Rh
-                                            </a>
+                                    <a class="dropdown-item" href="javascript://" title="Aprovação RH"
+                                       data-toggle="modal"
+                                       :data-target="`#${hash}`"
+                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoRh = true; podeanexar = false"
+                                       v-if="item.status_aprovacao === 'aprovado' && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh">
+                                        Aprovação Rh
+                                    </a>
 
-                                            <a class="dropdown-item" href="javascript://" title="Visualizar"
-                                               data-toggle="modal"
-                                               :data-target="`#${hash}`"
-                                               @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoRh = false; podeanexar = false">
-                                                Visualizar
-                                            </a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                    <a class="dropdown-item" href="javascript://" title="Visualizar"
+                                       data-toggle="modal"
+                                       :data-target="`#${hash}`"
+                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoRh = false; podeanexar = false">
+                                        Visualizar
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                                    :url="urlPaginacao" :por-pagina="controle.dados.pages"
-                                    :dados="controle.dados"
-                                    v-on:carregou="carregou" v-on:carregando="carregando"/>
+        <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
+                            :url="urlPaginacao" :por-pagina="controle.dados.pages"
+                            :dados="controle.dados"
+                            v-on:carregou="carregou" v-on:carregando="carregando"/>
     </div>
 </template>
 
@@ -694,6 +701,9 @@ export default {
         centroCustoTemFilial() {
             return this.temFilial && this.centroCustoSelecionado.length > 0;
         },
+        paramsExport() {
+            return this.controle.dados;
+        }
     },
     methods: {
         changeCentroCusto() {
@@ -792,7 +802,7 @@ export default {
                 this.form.salario_anterior_format = '';
                 this.form.area_etiqueta_id = '';
 
-                    setTimeout(() => {
+                setTimeout(() => {
                     if (this.form.colaborador_id === '') {
                         valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
                         $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');

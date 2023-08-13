@@ -69,7 +69,7 @@ use MasterTag\DataHora;
  */
 class MudaCargoPrevista extends Model
 {
-    use HasFactory, TenantTrait;
+    use TenantTrait;
 
     protected $fillable = [
         'cliente_id',

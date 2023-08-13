@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\ModeloRowsExport;
-use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaAprovar;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaAprovarRH;
+use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaExportaExcel;
 use App\Models\Arquivo;
 use App\Models\ValorExtraPrevista;
 use Illuminate\Http\Request;
@@ -224,7 +223,6 @@ class ValorExtraPrevistaController extends Controller
     {
 
         $resultado = $this->filtro($request)->paginate($request->pages);
-        $periodo = ValorExtraPrevista::all();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -232,7 +230,6 @@ class ValorExtraPrevistaController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
@@ -281,48 +278,8 @@ class ValorExtraPrevistaController extends Controller
 
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
-
-        $head = [
-            "Quem solicitou",
-            "Data da Solicitação",
-            "CENTRO DE CUSTO",
-            "COLABORADOR",
-            "Cargo",
-            "TIPO",
-            "PERÍODO EM DIAS",
-            "GESTOR APROVAÇÃO",
-            "OBSERVAÇÃO",
-            "STATUS",
-            "QUEM APROVOU/REPROVOU",
-            "DATA DA APROVAÇÃO/REPROVAÇÃO",
-            'OBSERVAÇÃO APROVAÇÃO/REPROVAÇÃO',
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = [
-                $row->UserCadastrou->nome,
-                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->CentroCusto->label,
-                $row->Colaborador->nome,
-                $row->Colaborador->FeedBack->VagaSelecionada->nome,
-                $row->tipo,
-                $row->periodo_dias,
-                $row->GestorAprovacao->nome,
-                $row->obs,
-                $row->status_aprovacao ? $row->status_aprovacao : "aberto",
-                $row->QuemAprovou ? $row->QuemAprovou->nome : "aguardando",
-                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
-                $row->obs_aprovacao,
-            ];
-        }
-
-        $nameArquivo = "valor_extra_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Valor Extra - Prevista", $head, $rows, $nameArquivo);
+        JobValorExtraPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
     }
 
     public function atualizacaoStatus(Request $request)

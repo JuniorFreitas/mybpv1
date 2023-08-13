@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\ModeloRowsExport;
-use App\Jobs\JobExportaExcel;
+
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovar;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovarRH;
+use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\IntermitenteFixoPrevista;
@@ -252,14 +252,12 @@ class IntermitenteFixoPrevistaController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = IntermitenteFixoPrevista::all();
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
             ]
@@ -301,14 +299,13 @@ class IntermitenteFixoPrevistaController extends Controller
 
         if ($request->filled('campoStatusAprovacao')) {
             $status = $request->campoStatusAprovacao;
-            if ($request->campoStatusAprovacao == "aberto"){
+            if ($request->campoStatusAprovacao == "aberto") {
                 $resultado->whereNull('status_aprovacao');
-            }
-            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
-                $resultado->where('status_aprovacao',IntermitenteFixoPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
-            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
+            } elseif ($request->campoStatusAprovacao == "aprovado_gestor") {
+                $resultado->where('status_aprovacao', IntermitenteFixoPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            } elseif ($request->campoStatusAprovacao == "aprovado_rh") {
                 $resultado->where('status_aprovacao_rh', IntermitenteFixoPrevista::STATUS_APROVADO);
-            }else{
+            } else {
                 $resultado->whereStatusAprovacao(IntermitenteFixoPrevista::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', IntermitenteFixoPrevista::STATUS_REPROVADO);
             }
         }
@@ -322,62 +319,8 @@ class IntermitenteFixoPrevistaController extends Controller
 
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
-
-        $head = [
-            "Quem Solicitou",
-            "Data da Solicitação",
-            "Centro de Custo",
-            "Filial",
-            "Área Etiqueta",
-            "Colaborador",
-            "Cargo Anterior",
-            "Salário Anterior",
-            "Cargo Novo",
-            "Salário Novo",
-            "Gestor Aprovação",
-            "Motivos",
-            "Status",
-            "Quem Aprovou/Reprovou",
-            "Data da Aprovação/Reprovação",
-            'Observação Aprovação/Reprovação',
-            'RH Aprovação',
-            'Data da Aprovação RH',
-            'Resposta RH',
-            'OBS RH'
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = [
-                $row->UserCadastrou->nome,
-                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->CentroCusto->label,
-                $row->novo_filial ? '' : $row->CentroCustoFilial->Filial->dados->razao_social,
-                $row->AreaEtiqueta->label,
-                $row->Colaborador->nome,
-                $row->VagaAbertaAnterior->titulo,
-                $row->salario_anterior_format,
-                $row->VagaAbertaNova->titulo,
-                $row->novo_salario_format,
-                $row->GestorAprovacao->nome,
-                $row->motivos,
-                $row->status_aprovacao ? $row->status_aprovacao : "aberto",
-                $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
-                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
-                $row->obs_aprovacao,
-                $row->status_aprovacao_rh ? $row->RhAprovacao->nome : '',
-                $row->status_aprovacao_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
-                $row->status_aprovacao_rh,
-                $row->obs_rh
-            ];
-        }
-
-        $nameArquivo = "intermitente_fixo_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Intermitente Fixo - Prevista", $head, $rows, $nameArquivo);
+        JobMudaIntermitenteFixoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
     }
 
     public function atualizacaoStatus(Request $request)

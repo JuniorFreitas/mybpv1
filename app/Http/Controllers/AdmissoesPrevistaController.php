@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovar;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovarRH;
+use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaExportaExcel;
 use App\Models\AdmissoesPrevista;
 use App\Models\Arquivo;
-use App\Models\DemissaoPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -219,15 +218,12 @@ class AdmissoesPrevistaController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = AdmissoesPrevista::all();
-
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
             ]
         ]);
@@ -301,45 +297,7 @@ class AdmissoesPrevistaController extends Controller
     //Excel
     public function export(Request $request)
     {
-
-        $resultado = $this->filtro($request)->get();
-        $head = [
-            "Quem Solicitou",
-            "Cargo",
-            "Data da Solicitação",
-            "Centro de Custo",
-            "Tipo de Contrato",
-            "Data da Admissão",
-            "Observação",
-            "Salário",
-            "Gestor Aprovação",
-            "Quem Aprovou/Reprovou",
-            "Data da Aprovação/Reprovação",
-            "Status"
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = [
-                $row->UserCadastrou->nome,
-                $row->Cargo->nome,
-                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->CentroCusto->label,
-                $row->tipo_contrato,
-                (new DataHora($row->data_admissao))->dataCompleta(),
-                $row->obs,
-                $row->salario_format,
-                $row->GestorAprovacao->nome,
-                $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
-                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
-                $row->status_aprovacao ? $row->status_aprovacao : "aberto",
-            ];
-        }
-
-        $nameArquivo = "admissao_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Admissão - Prevista", $head, $rows, $nameArquivo);
+        JobAdmissaoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
     }
 }

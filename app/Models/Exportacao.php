@@ -35,7 +35,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Exportacao extends Model
 {
-    use HasFactory, LogsActivity;
+    use LogsActivity;
 
     protected static $logFillable = true;
     protected static $logName = 'exportacao';

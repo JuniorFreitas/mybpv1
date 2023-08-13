@@ -154,14 +154,12 @@ class ParecerRotaController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
-        $periodo = ParecerRota::all();
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
             ]
         ]);
 

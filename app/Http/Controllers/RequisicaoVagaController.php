@@ -195,15 +195,12 @@ class RequisicaoVagaController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = RequisicaoVaga::all();
-
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
             ]
         ]);
     }

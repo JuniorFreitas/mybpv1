@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovarRH;
+use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
@@ -425,68 +425,7 @@ class MudancaCargoController extends Controller
     //Excel
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
-
-        $head = [
-            'Nome',
-            'Centro de Custo Atual',
-            'Filial Atual',
-            'Centro de Custo Novo',
-            'Filial Nova',
-            'Cargo Atual',
-            'Cargo Novo',
-            'Função Atual',
-            'Função Nova',
-            'Salário Atual',
-            'Salário Novo',
-            'Solicitante',
-            'Data Solicitação',
-            'OBS Solicitante',
-            'Gestor',
-            'Gestor Aprovação',
-            'Data da Aprovação',
-            'Status',
-            'OBS Gestor',
-            'RH Aprovação',
-            'Data da Aprovação RH',
-            'Resposta RH',
-            'OBS RH'
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = array(
-                $row->Admissao->Feedback->Curriculo->nome,
-                $row->CentroCustoAnterior->label ?? '',
-                $row->anterior_filial ? $row->CentroCustoFilialAnterior->label : '',
-                $row->mantem_centro_custo ? '' : $row->CentroCustoNovo->label,
-                $row->novo_filial ? $row->CentroCustoFilialNovo->label : '',
-                $row->VagaAbertaAnterior->Vaga->nome,
-                $row->mantem_cargo ? '' : $row->VagaAbertaNova->Vaga->nome,
-                $row->anterior_funcao,
-                $row->mantem_funcao ? '' : $row->nova_funcao,
-                $row->anterior_salario,
-                $row->mantem_salario ? '' : $row->novo_salario,
-                $row->Solicitante->nome,
-                $row->data_solicitacao,
-                $row->obs_solicitante,
-                $row->Gestor->nome,
-                $row->GestorAprovacao ? $row->GestorAprovacao->nome : '',
-                $row->status_aprovacao_gestor ? $row->data_aprovacao_gestor : '',
-                $row->status_aprovacao_gestor,
-                $row->obs_gestor_aprovacao,
-                $row->status_aprovacao_rh ? $row->RhAprovacao->nome : '',
-                $row->status_aprovacao_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
-                $row->status_aprovacao_rh,
-                $row->obs_rh
-            );
-        }
-//        dd($rows);
-
-        $nameArquivo = "movimentacao_cargo_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Mudança de Cargo", $head, $rows, $nameArquivo);
+        JobMudaCargoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
     }
 }

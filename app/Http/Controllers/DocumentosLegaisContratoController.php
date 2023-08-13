@@ -296,7 +296,7 @@ class DocumentosLegaisContratoController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
-        $areas = Area::all();
+        $areas = Area::get();
         $tiposDocumentos = TipoDocumento::whereTipo('empresa')->orderBy('nome')->get();
         $tiposServicos = Servico::orderBy('titulo')->get();
         $formasContrato = FormaContrato::orderBy('titulo')->get();

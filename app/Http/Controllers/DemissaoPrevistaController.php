@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\ModeloRowsExport;
-use App\Jobs\JobExportaExcel;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovar;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovarRH;
+use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaExportaExcel;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaStore;
 use App\Models\Arquivo;
 use App\Models\DemissaoPrevista;
@@ -95,6 +94,7 @@ class DemissaoPrevistaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\DemissaoPrevista $demissaoPrevista
      * @return \Illuminate\Http\Response
+     * @throws \Throwable
      */
     public function update(Request $request, DemissaoPrevista $demissaoPrevista)
     {
@@ -150,16 +150,12 @@ class DemissaoPrevistaController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
-
-        $periodo = DemissaoPrevista::all();
-
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
@@ -262,48 +258,8 @@ class DemissaoPrevistaController extends Controller
     //Excel
     public function export(Request $request)
     {
-
-        $resultado = $this->filtro($request)->get();
-        $head = [
-            "Quem Solicitou",
-            "Data da Solicitação",
-            "Centro de Custo",
-            "Colaborador",
-            "Cargo",
-            "Data Demissão",
-            "Tipo de Aviso",
-            "Gestor Aprovação",
-            "Observação",
-            "Status",
-            "Quem Aprovou/Reprovou",
-            "Data da Aprovação/Reprovação",
-            'Observação Aprovação/Reprovação',
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = [
-                $row->UserCadastrou->nome,
-                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->CentroCusto->label,
-                $row->Colaborador->nome,
-                $row->Colaborador->FeedBack->VagaSelecionada->nome,
-                (new DataHora($row->data_demissao))->dataCompleta(),
-                $row->tipo_aviso,
-                $row->GestorAprovacao->nome,
-                $row->obs,
-                $row->status_aprovacao ? $row->status_aprovacao : "aberto",
-                $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
-                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
-                $row->obs_aprovacao,
-            ];
-        }
-
-        $nameArquivo = "demissao_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Demissão - Prevista", $head, $rows, $nameArquivo);
+        JobDemissaoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
     }
 
     public function pdf(DemissaoPrevista $demissaoPrevista, Request $request)
