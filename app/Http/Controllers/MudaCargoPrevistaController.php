@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\ModeloRowsExport;
-use App\Jobs\JobExportaExcel;
+
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovar;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovarRH;
+use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaExportaExcel;
 use App\Models\Arquivo;
 use App\Models\MudaCargoPrevista;
 use Illuminate\Http\Request;
@@ -246,14 +246,12 @@ class MudaCargoPrevistaController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = MudaCargoPrevista::all();
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
             ]
         ]);
@@ -298,48 +296,7 @@ class MudaCargoPrevistaController extends Controller
 
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
-
-        $head = [
-            "Quem Solicitou",
-            "Data da Solicitação",
-            "Centro de Custo",
-            "Colaborador",
-            "Cargo Anterior",
-            "Salário Anterior",
-            "Cargo Novo",
-            "Salário Novo",
-            "Gestor Aprovação",
-            "Observação",
-            "Status",
-            "Quem Aprovou/Reprovou",
-            "Data da Aprovação/Reprovação",
-            'Observação Aprovação/Reprovação',
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = [
-                $row->UserCadastrou->nome,
-                (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-                $row->CentroCusto->label,
-                $row->Colaborador->nome,
-                $row->CargoAnterior->nome,
-                $row->salario_anterior_format,
-                $row->NovoCargo->nome,
-                $row->novo_salario_format,
-                $row->GestorAprovacao->nome,
-                $row->obs,
-                $row->status_aprovacao ? $row->status_aprovacao : "aberto",
-                $row->QuemAprovou ? $row->QuemAprovou->nome : "aguardando",
-                $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
-                $row->obs_aprovacao,
-            ];
-        }
-
-        $nameArquivo = "muda_cargo_prevista" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Muda Cargo - Prevista", $head, $rows, $nameArquivo);
+        JobMudaCargoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
     public function atualizacaoStatus(Request $request)

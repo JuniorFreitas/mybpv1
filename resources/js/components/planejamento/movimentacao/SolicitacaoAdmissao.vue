@@ -531,6 +531,9 @@ export default {
         },
         por_pagina() {
             return [20, 50, 100, 150];
+        },
+        paramsExport() {
+            return this.controle.dados;
         }
     },
     methods: {

@@ -534,6 +534,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('intermitente-fixo-prevista/atualizacao-status', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizacaoStatus'])->name('intermitente-fixo-prevista.atualizacaoStatus');
                 Route::post('intermitente-fixo-prevista/atualizar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('intermitente-fixo-prevista/{intermitenteFixoPrevista}/aprovar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('intermitente-fixo-prevista/{intermitenteFixoPrevista}/aprovarrh', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'aprovarRh'])->name('mudanca-cargo.aprovarRH');
                 Route::post('intermitente-fixo-prevista/export', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'export'])->name('intermitente-fixo-prevista.excel');
                 Route::resource('intermitente-fixo-prevista', \App\Http\Controllers\IntermitenteFixoPrevistaController::class, ['parameters' => ['intermitente-fixo-prevista' => 'intermitente_fixo_prevista']]);
             });

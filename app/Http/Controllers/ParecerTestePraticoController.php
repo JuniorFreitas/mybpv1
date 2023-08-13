@@ -150,7 +150,6 @@ class ParecerTestePraticoController extends Controller
 
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = ParecerTestePratico::all();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -158,7 +157,6 @@ class ParecerTestePraticoController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
-                'periodo' => $periodo,
             ]
         ]);
     }

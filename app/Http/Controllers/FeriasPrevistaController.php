@@ -2,21 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\planejamento\movimentacao\feriasPrevistaExport;
-use App\Jobs\JobExportaExcel;
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovar;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
+use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
-use App\Models\Curriculo;
-use App\Models\FeedbackCurriculo;
 use App\Models\Ferias;
-use App\Models\FeriasAdquiridas;
 use App\Models\FeriasPrevista;
-use App\Models\FeriasPrevistaDados;
-use App\Models\FeriasPrevistaMov;
 use App\Models\PeriodoAquisitivo;
 use App\Models\Sistema;
 use DB;
@@ -574,7 +566,7 @@ class FeriasPrevistaController extends Controller
     public function buscaPeriodosAquisitivos(Request $request)
     {
 
-        $periodo = PeriodoAquisitivo::all();
+        $periodo = PeriodoAquisitivo::get();
 
         return response()->json(['periodos' => $periodo]);
     }
@@ -616,64 +608,7 @@ class FeriasPrevistaController extends Controller
     //Excel
     public function export(Request $request)
     {
-
-        $resultado = $this->filtro($request)->get();
-
-        $head = [
-            'Nome',
-            'Cargo',
-            'Data da Admissão',
-            'Centro de Custo',
-            'Período Aquisitivo',
-            'Última Data',
-            'Quantidade de Faltas',
-            'Data Saída',
-            'Data Retorno',
-            'Quantidade de Dias',
-            'Saldo de Dias',
-            'Abono Pecuniário',
-            'Adiantamento Décimo Terceiro',
-            'Quem Cadastrou',
-            'Gestor Indicado',
-            'Gestor Aprovação',
-            'Data da Aprovação',
-            'Status',
-            'RH Aprovação',
-            'Data da Aprovação RH',
-            'Resposta RH',
-        ];
-
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            $rows[] = array(
-                $row->Admissao->Feedback->Curriculo->nome,
-                $row->Admissao->FeedBack->VagaSelecionada->nome,
-                $row->Admissao->data_admissao,
-                $row->Admissao->CentroCusto ? $row->Admissao->CentroCusto->label : 'Não Informado',
-                $row->PeriodoAquisitivo->label,
-                $row->ultima_data,
-                (string)$row->qnt_faltas,
-                $row->data_saida,
-                $row->data_retorno,
-                (string)$row->qnt_dias,
-                (string)$row->dias_saldo,
-                $row->abono_pecuniario ? 'Sim' : 'Não',
-                $row->adiantamento_decimo_terceiro ? 'Sim' : 'Não',
-                $row->Solicitante->nome,
-                $row->Gestor->nome,
-                $row->GestorAprovacao ? $row->GestorAprovacao->nome : '',
-                $row->status_aprovacao_gestor ? $row->data_aprovacao_gestor : '',
-                $row->status_aprovacao_gestor,
-                $row->status_aprovacao_rh ? $row->RhAprovacao->nome : '',
-                $row->status_aprovacao_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
-                $row->status_aprovacao_rh,
-            );
-        }
-
-        $nameArquivo = "movimentacao_ferias_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Ferias", $head, $rows, $nameArquivo);
+        JobFeriasPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
     }
 }

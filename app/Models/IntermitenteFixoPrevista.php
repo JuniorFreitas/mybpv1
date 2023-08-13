@@ -7,6 +7,7 @@ use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Models\IntermitenteFixoPrevista
@@ -70,12 +71,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 class IntermitenteFixoPrevista extends Model
 {
-    use HasFactory, TenantTrait;
+    use HasFactory, TenantTrait, SoftDeletes;
 
     protected $fillable = [
         'cliente_id',
         'colaborador_id',
         'centro_custo_id',
+        'filial',
+        'centro_custo_filial_id',
         'cargo_anterior_id',
         'salario_anterior',
         'novo_cargo_id',
@@ -88,6 +91,15 @@ class IntermitenteFixoPrevista extends Model
         'status_aprovacao',
         'empresa_id',
         'gestor_id',
+        'anterior_vaga_aberta_id',
+        'nova_vaga_aberta_id',
+        'area_etiqueta_id',
+        'rh_aprovacao_id',
+        'obs_rh',
+        'status_aprovacao_rh',
+        'data_aprovacao_rh',
+        'aprovado_via_script',
+        'quem_deletou_id',
     ];
 
     protected $casts = [
@@ -95,22 +107,39 @@ class IntermitenteFixoPrevista extends Model
         'cliente_id' => 'int',
         'colaborador_id' => 'int',
         'centro_custo_id' => 'int',
+        'filial' => 'boolean',
+        'centro_custo_filial_id' => 'int',
         'cargo_anterior_id' => 'int',
         'salario_anterior' => 'float',
         'novo_cargo_id' => 'int',
         'novo_salario' => 'float',
-
         'user_id' => 'int',
         'motivos' => 'string',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
-
         'user_aprovacao_id' => 'int',
         'data_aprovacao' => 'date:d/m/Y',
         'obs_aprovacao' => 'string',
         'status_aprovacao' => 'string',
         'empresa_id' => 'int',
-        'gestor_id'=>'int'
+        'gestor_id'=>'int',
+        'anterior_vaga_aberta_id' => 'int',
+        'nova_vaga_aberta_id' => 'int',
+        'area_etiqueta_id' => 'int',
+        'rh_aprovacao_id' => 'int',
+        'obs_rh' => 'string',
+        'status_aprovacao_rh' => 'string',
+        'data_aprovacao_rh' => 'date:d/m/Y',
+        'aprovado_via_script' => 'boolean',
+        'quem_deletou_id' => 'int',
+    ];
+
+    const STATUS_APROVADO = 'aprovado';
+    const STATUS_REPROVADO = 'reprovado';
+
+    const LISTA_STATUS_APROVACAO = [
+        self::STATUS_APROVADO,
+        self::STATUS_REPROVADO
     ];
 
     protected function serializeDate(DateTimeInterface $date)
@@ -171,6 +200,21 @@ class IntermitenteFixoPrevista extends Model
         return $this->hasOne(Vaga::class, 'id', 'novo_cargo_id');
     }
 
+    public function VagaAbertaAnterior()
+    {
+        return $this->hasOne(VagasAbertas::class, 'id', 'anterior_vaga_aberta_id');
+    }
+
+    public function VagaAbertaNova()
+    {
+        return $this->hasOne(VagasAbertas::class, 'id', 'nova_vaga_aberta_id');
+    }
+
+    public function Solicitante()
+    {
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
     public function GestorAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'gestor_id');
@@ -181,9 +225,29 @@ class IntermitenteFixoPrevista extends Model
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
     }
 
+    public function RhAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
+    }
+
+    public function QuemDeletou()
+    {
+        return $this->hasOne(User::class, 'id', 'quem_deletou_id');
+    }
+
     public function Anexos()
     {
         return $this->belongsToMany(Arquivo::class, 'intermitente_fixo_previstas_anexos', 'intermitente_fixo_prevista_id', 'arquivo_id');
+    }
+
+    public function CentroCustoFilial()
+    {
+        return $this->hasOne(CentroCustoFilial::class, 'id', 'centro_custo_filial_id');
+    }
+
+    public function AreaEtiqueta()
+    {
+        return $this->hasOne(AreaEtiqueta::class, 'id', 'area_etiqueta_id');
     }
 
 }
