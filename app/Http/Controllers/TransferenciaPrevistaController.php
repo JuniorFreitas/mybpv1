@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaAprovar;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaAprovarRH;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaExportaExcel;
+use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaStore;
 use App\Models\Arquivo;
 use App\Models\TransferenciaPrevista;
 use Illuminate\Http\Request;
@@ -51,8 +52,8 @@ class TransferenciaPrevistaController extends Controller
                         }
                     }
                 }
+                JobTransferenciaPrevistaStore::dispatch($transferenciaPrevista);
                 DB::commit();
-//                JobTransferenciaPrevistaStore::dispatch($transferenciaPrevista);
                 return response()->json('', 201);
             } catch (\Exception $e) {
                 DB::rollback();

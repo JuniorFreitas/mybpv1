@@ -50,7 +50,7 @@
 
                             <div class="col-12 col-md-4">
                                 <label>Data para tranferência</label>
-                                <datepicker label="" class="corrigiDatepicker" v-model="form.data_transferencia"
+                                <datepicker formsm label="" class="corrigiDatepicker" v-model="form.data_transferencia"
                                             :disabled="visualizar"></datepicker>
                             </div>
 

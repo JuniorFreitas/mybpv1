@@ -26,10 +26,10 @@ class JobFeriasPrevistaStore implements ShouldQueue
         $this->mail = [
             'nome_de' => auth()->user()->nome,
             'email_de' => auth()->user()->login,
-            'nome_para' => $feriasPrevista->GestorAprovacao->nome,
-            'email_para' => $feriasPrevista->GestorAprovacao->login,
+            'nome_para' => $feriasPrevista->Gestor->nome,
+            'email_para' => $feriasPrevista->Gestor->login,
             'ferias_id' => $feriasPrevista->id,
-            'colaborador' => $feriasPrevista->Colaborador->nome,
+            'colaborador' => $feriasPrevista->Admissao->Feedback->Curriculo->nome,
             'empresa_id' => auth()->user()->empresa_id
         ];
 

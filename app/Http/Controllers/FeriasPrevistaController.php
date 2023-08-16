@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaExportaExcel;
+use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
@@ -129,6 +130,7 @@ class FeriasPrevistaController extends Controller
                         }
                     }
                 }
+                JobFeriasPrevistaStore::dispatch($feriasPrevista);
             }else{
                 return response()->json([
                     'msg' => 'Colaborador sem saldo de férias para este período aquisitivo'

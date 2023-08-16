@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermintenteFixoPrevistaStore;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovar;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaExportaExcel;
@@ -64,6 +65,7 @@ class IntermitenteFixoPrevistaController extends Controller
                         }
                     }
                 }
+                JobMudaIntermintenteFixoPrevistaStore::dispatch($intermitenteFixoPrevista);
                 DB::commit();
                 return response()->json('', 201);
             } catch (\Exception $e) {

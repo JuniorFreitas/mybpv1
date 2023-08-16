@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaAprovar;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaAprovarRH;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaExportaExcel;
+use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaStore;
 use App\Models\Arquivo;
 use App\Models\ValorExtraPrevista;
 use Illuminate\Http\Request;
@@ -60,6 +61,7 @@ class ValorExtraPrevistaController extends Controller
                     }
                 }
             }
+            JobValorExtraPrevistaStore::dispatch($valorExtraPrevista);
             DB::commit();
             return response()->json('', 201);
         } catch (\Exception $e) {

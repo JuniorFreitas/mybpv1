@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaExportaExcel;
+use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaStore;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
@@ -129,6 +130,8 @@ class MudancaCargoController extends Controller
                         }
                     }
                 }
+
+                JobMudaCargoPrevistaStore::dispatch($mudancaCargo);
             }else{
                 return response()->json([
                     'msg' => 'Colaborador com mudança de cargo pendente de aprovação'

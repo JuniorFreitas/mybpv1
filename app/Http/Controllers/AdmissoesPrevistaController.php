@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovar;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaExportaExcel;
+use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaStore;
 use App\Models\AdmissoesPrevista;
 use App\Models\Arquivo;
 use Illuminate\Http\Request;
@@ -53,6 +54,7 @@ class AdmissoesPrevistaController extends Controller
                         }
                     }
                 }
+                JobAdmissaoPrevistaStore::dispatch($admPrevista);
                 DB::commit();
                 return response()->json('', 201);
             } catch (\Exception $e) {
