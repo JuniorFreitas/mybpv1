@@ -52,8 +52,8 @@ class TransferenciaPrevistaController extends Controller
                         }
                     }
                 }
-                JobTransferenciaPrevistaStore::dispatch($transferenciaPrevista);
                 DB::commit();
+                JobTransferenciaPrevistaStore::dispatch($transferenciaPrevista);
                 return response()->json('', 201);
             } catch (\Exception $e) {
                 DB::rollback();

@@ -54,8 +54,8 @@ class AdmissoesPrevistaController extends Controller
                         }
                     }
                 }
-                JobAdmissaoPrevistaStore::dispatch($admPrevista);
                 DB::commit();
+                JobAdmissaoPrevistaStore::dispatch($admPrevista);
                 return response()->json('', 201);
             } catch (\Exception $e) {
                 DB::rollback();

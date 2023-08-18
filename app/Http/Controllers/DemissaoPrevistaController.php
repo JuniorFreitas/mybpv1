@@ -31,6 +31,7 @@ class DemissaoPrevistaController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'centro_custo_id' => 'required',
+                'centro_custo_filial_id' => 'required_if:filial,true',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
             ]
@@ -157,6 +158,7 @@ class DemissaoPrevistaController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
         ]);

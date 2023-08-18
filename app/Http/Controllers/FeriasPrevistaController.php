@@ -130,13 +130,15 @@ class FeriasPrevistaController extends Controller
                         }
                     }
                 }
-                JobFeriasPrevistaStore::dispatch($feriasPrevista);
-            }else{
+            }
+
+            if (!is_null($ferias)) {
                 return response()->json([
                     'msg' => 'Colaborador sem saldo de férias para este período aquisitivo'
                 ], 400);
             }
             DB::commit();
+            JobFeriasPrevistaStore::dispatch($feriasPrevista);
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();

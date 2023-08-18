@@ -61,8 +61,8 @@ class ValorExtraPrevistaController extends Controller
                     }
                 }
             }
-            JobValorExtraPrevistaStore::dispatch($valorExtraPrevista);
             DB::commit();
+            JobValorExtraPrevistaStore::dispatch($valorExtraPrevista);
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();

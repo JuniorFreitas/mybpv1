@@ -130,14 +130,14 @@ class MudancaCargoController extends Controller
                         }
                     }
                 }
-
-                JobMudaCargoPrevistaStore::dispatch($mudancaCargo);
-            }else{
+            }
+            if (!is_null($temMudancaCargoAprovar)) {
                 return response()->json([
                     'msg' => 'Colaborador com mudança de cargo pendente de aprovação'
                 ], 400);
             }
             DB::commit();
+            JobMudaCargoPrevistaStore::dispatch($mudancaCargo);
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();

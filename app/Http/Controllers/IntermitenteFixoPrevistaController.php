@@ -65,8 +65,8 @@ class IntermitenteFixoPrevistaController extends Controller
                         }
                     }
                 }
-                JobMudaIntermintenteFixoPrevistaStore::dispatch($intermitenteFixoPrevista);
                 DB::commit();
+                JobMudaIntermintenteFixoPrevistaStore::dispatch($intermitenteFixoPrevista);
                 return response()->json('', 201);
             } catch (\Exception $e) {
                 DB::rollback();
