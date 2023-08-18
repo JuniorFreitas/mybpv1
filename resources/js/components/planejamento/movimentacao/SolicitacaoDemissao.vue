@@ -13,16 +13,30 @@
                     <fieldset>
                         <legend>Informações</legend>
                         <div class="row">
-
-                            <colaborador :model="form" :verifica="visualizar" :hash="hash"></colaborador>
-
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-12">
                                 <div class="form-group">
-                                    <label>Centro de Custo</label>
-                                    <select v-model="form.centro_custo_id" class="form-control form-control-sm"
-                                            :disabled="visualizar"
-                                            onchange="valida_campo_vazio(this,1)"
-                                            onblur="valida_campo_vazio(this,1)">
+                                    <label>Colaborador </label>
+                                    <autocomplete :caminho="`autocomplete/colaboradores`"
+                                                  :formsm="true"
+                                                  :valido="form.colaborador_id !== ''"
+                                                  v-model="form.autocomplete_label_colaborador"
+                                                  placeholder="Selecione um(a) colaborador(a)"
+                                                  :disabled="visualizar || aprovando || aprovandoRh"
+                                                  :id="`colaborador_${hash}`"
+                                                  @onblur="resetaCampoColaborador"
+                                                  @onselect="selecionaColaborador"></autocomplete>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <label>Centro de Custo Atual</label>
+                                    <select
+                                        v-model="form.centro_custo_id"
+                                        class="form-control form-control-sm"
+                                        disabled
+                                    >
                                         <option value="">Selecione</option>
                                         <option v-for="item in centro_custos" :value="item.id">
                                             {{ item.label }}
@@ -30,14 +44,44 @@
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-2" v-if="centroCustoTemFilial">
+                                <div class="form-group">
+                                    <label>CNPJ Atual</label>
+                                    <select
+                                        v-model="form.filial"
+                                        class="form-control form-control-sm"
+                                        @change.p.prevent="changeCnpj()"
+                                        disabled
+                                    >
+                                        <option :value="false">Matriz</option>
+                                        <option :value="true">Filial</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4" v-if="temFilial && form.filial">
+                                <div class="form-group">
+                                    <label>Filial</label>
+                                    <select
+                                        v-model="form.centro_custo_filial_id"
+                                        class="form-control"
+                                        disabled
+                                    >
+                                        <option value="">Selecione</option>
+                                        <option v-for="item in centroCustoSelecionado" :value="item.id" :key="item.id">
+                                            {{ item.filial.razao_social }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-6">
                                 <label>Data da demissão</label>
                                 <datepicker label="" class="corrigiDatepicker" formsm v-model="form.data_demissao"
                                             :disabled="visualizar"></datepicker>
                             </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6">
                                 <div class="form-group">
                                     <label>Tipo de Aviso</label>
                                     <select v-model="form.tipo_aviso" class="form-control form-control-sm"
@@ -375,17 +419,16 @@
 
 <script>
 
-import colaborador from "../../Colaborador";
 import gestoraprovacao from "../../GestorAprovacao";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
 import Upload from "../../Upload";
 import Utils from "../../../mixins/Utils";
+import configuracoes from "../../../mixins/Configuracoes";
 
 
 export default {
-    mixins: [ExportacaoMixin, Utils],
+    mixins: [ExportacaoMixin, Utils, configuracoes],
     components: {
-        colaborador,
         gestoraprovacao,
         Upload
     },
@@ -400,7 +443,9 @@ export default {
             atualizado: false,
             visualizar: false,
             aprovando: false,
-
+            aprovandoRh: false,
+            aprovaGestor: false,
+            aprovaRh: false,
             aprovar_por_gestor: false,
             URL_ADMIN,
             preloadExportacao: false,
@@ -437,6 +482,8 @@ export default {
                 autocomplete_label_gestor_modal_anterior: "",
 
                 centro_custo_id: "",
+                filial: false,
+                centro_custo_filial_id: '',
                 aviso: "",
                 data_demissao: "",
                 tipo_aviso: "",
@@ -451,7 +498,12 @@ export default {
                 status_aprovacao: "",
 
                 anexos: [],
-                anexosDel: []
+                anexosDel: [],
+                rh_aprovacao_id: '',
+                obs_rh: '',
+                status_aprovacao_rh: '',
+                data_aprovacao_rh: '',
+                aprovado_via_script: false,
             },
 
             formDefault: null,
@@ -509,9 +561,29 @@ export default {
         },
         paramsExport() {
             return this.controle.dados;
-        }
+        },
+        centroCustoSelecionado() {
+            if (this.form.centro_custo_id === undefined || this.form.centro_custo_id === null || this.form.centro_custo_id === '') {
+                return [];
+            }
+            let centroSelecionado = _.find(this.centro_custos, {id: this.form.centro_custo_id});
+            if (centroSelecionado.filiais.length) {
+                return centroSelecionado.filiais;
+            }
+            return [];
+        },
+        centroCustoTemFilial() {
+            return this.temFilial && this.centroCustoSelecionado.length > 0;
+        },
     },
     methods: {
+        changeCentroCusto() {
+            this.form.filial = false;
+            this.form.centro_custo_filial_id = ''
+        },
+        changeCnpj() {
+            this.form.centro_custo_filial_id = ''
+        },
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo
             if (this.selecionaTudo) {
@@ -568,6 +640,7 @@ export default {
             this.aprovando = false;
             this.visualizar = false;
             this.podeanexar = true;
+            this.aprovandoRh = false;
 
             this.tituloJanela = "Solicitação de Demissão";
 
@@ -708,11 +781,37 @@ export default {
                     this.preload = false;
                 });
         },
-
+        selecionaColaborador(obj) {
+            this.form.colaborador_id = obj.curriculo_id;
+            this.form.autocomplete_label_colaborador = obj.label;
+            this.form.autocomplete_label_colaborador_anterior = obj.label;
+            this.form.centro_custo_id = obj.admissao.centro_custo_id;
+            this.form.filial = obj.admissao.filial;
+            this.form.centro_custo_filial_id = this.form.filial ? obj.admissao.centro_custo_filial_id : null;
+        },
+        resetaCampoColaborador() {
+            if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
+                this.form.autocomplete_label_colaborador_anterior = '';
+                this.form.autocomplete_label_colaborador = '';
+                this.form.colaborador_id = '';
+                this.form.centro_custo_id = '';
+                this.form.filial = '';
+                this.form.centro_custo_filial_id = '';
+                setTimeout(() => {
+                    if (this.form.colaborador_id === '') {
+                        valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
+                        $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
+                        mostraErro('Erro', 'O Campo Colaborador não pode ficar vazio');
+                    }
+                }, 100);
+            }
+        },
         carregou(dados) {
             this.lista = dados.itens;
             this.mimes = dados.mimes;
             this.aprovar_por_gestor = dados.aprovar_por_gestor;
+            this.aprovaGestor = dados.aprovar_por_gestor;
+            this.aprovaRh = dados.aprovar_por_rh;
             this.controle.carregando = false;
         },
         carregando() {
