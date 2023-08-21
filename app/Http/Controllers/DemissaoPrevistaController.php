@@ -21,6 +21,7 @@ class DemissaoPrevistaController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Throwable
      */
     public function store(Request $request)
     {
@@ -40,32 +41,30 @@ class DemissaoPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Demissão',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $demissaoPrevista = DemissaoPrevista::create($dados);
+        }
+        try {
+            DB::beginTransaction();
+            $demissaoPrevista = DemissaoPrevista::create($dados);
 
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $demissaoPrevista->Anexos()->attach($arquivo->id);
-                        }
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $demissaoPrevista->Anexos()->attach($arquivo->id);
                     }
                 }
-
-                JobDemissaoPrevistaStore::dispatch($demissaoPrevista);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação de Demissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+            DB::commit();
+            JobDemissaoPrevistaStore::dispatch($demissaoPrevista);
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Demissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -93,7 +92,7 @@ class DemissaoPrevistaController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\DemissaoPrevista $demissaoPrevista
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
     public function update(Request $request, DemissaoPrevista $demissaoPrevista)
@@ -258,7 +257,7 @@ class DemissaoPrevistaController extends Controller
     //Excel
     public function export(Request $request)
     {
-        JobDemissaoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
+        JobDemissaoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 

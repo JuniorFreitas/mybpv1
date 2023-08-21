@@ -24,7 +24,7 @@
                             <h6 v-if="editando">Funcionário: @{{ form.nome }}</h6>
                             <fieldset>
                                 <label>Tipo</label>
-                                <select class="form-control" v-model="form.tipo" :disabled='editando'
+                                <select class="form-control" v-model="form.tipo"
                                         onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)">
                                     <option value="">Selecione ...</option>
