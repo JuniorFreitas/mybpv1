@@ -485,6 +485,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
                 Route::post('demissao-prevista/atualizar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('demissao-prevista/{demissaoPrevista}/aprovarrh', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('demissao-prevista/export', [\App\Http\Controllers\DemissaoPrevistaController::class, 'export'])->name('demissao-prevista.excel');
                 Route::resource('demissao-prevista', \App\Http\Controllers\DemissaoPrevistaController::class, ['parameters' => ['demissao-prevista' => 'demissao_prevista']]);
             });
@@ -514,14 +515,6 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('valor-extra-prevista/export', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'export'])->name('valor-extra-prevista.excel');
                 Route::resource('valor-extra-prevista', \App\Http\Controllers\ValorExtraPrevistaController::class, ['parameters' => ['valor-extra-prevista' => 'valor_extra_prevista']]);
             });
-
-//            Route::group(['as' => 'solicitacao_cargo.'], function () {
-//                Route::post('muda-cargo-prevista/atualizacao-status', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizacaoStatus'])->name('muda-cargo-prevista.atualizacaoStatus');
-//                Route::post('muda-cargo-prevista/atualizar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'atualizar'])->name('atualizar');
-//                Route::put('muda-cargo-prevista/{mudaCargoPrevista}/aprovar', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'aprovar'])->name('aprovar');
-//                Route::post('muda-cargo-prevista/export', [\App\Http\Controllers\MudaCargoPrevistaController::class, 'export'])->name('muda-cargo-prevista.excel');
-//                Route::resource('muda-cargo-prevista', \App\Http\Controllers\MudaCargoPrevistaController::class, ['parameters' => ['muda-cargo-prevista' => 'muda_cargo_prevista']]);
-//            });
 
             Route::group(['as' => 'solicitacao_cargo.'], function () {
                 Route::put('mudanca-cargo/{solicitacao}/aprovargestor', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarGestor'])->name('mudanca-cargo.aprovarGestor');

@@ -7,6 +7,7 @@ use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaExportaExcel;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaStore;
 use App\Models\Arquivo;
+use App\Models\Cliente;
 use App\Models\DemissaoPrevista;
 use DB;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ class DemissaoPrevistaController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Throwable
      */
     public function store(Request $request)
     {
@@ -31,6 +33,7 @@ class DemissaoPrevistaController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'centro_custo_id' => 'required',
+                'centro_custo_filial_id' => 'required_if:filial,true',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
             ]
@@ -40,32 +43,30 @@ class DemissaoPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Demissão',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $demissaoPrevista = DemissaoPrevista::create($dados);
+        }
+        try {
+            DB::beginTransaction();
+            $demissaoPrevista = DemissaoPrevista::create($dados);
 
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $demissaoPrevista->Anexos()->attach($arquivo->id);
-                        }
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $demissaoPrevista->Anexos()->attach($arquivo->id);
                     }
                 }
-
-                JobDemissaoPrevistaStore::dispatch($demissaoPrevista);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação de Demissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+            DB::commit();
+            JobDemissaoPrevistaStore::dispatch($demissaoPrevista);
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Demissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -83,6 +84,10 @@ class DemissaoPrevistaController extends Controller
         $demissaoPrevista->autocomplete_label_gestor_modal = $demissaoPrevista->GestorAprovacao ? $demissaoPrevista->GestorAprovacao->nome : '';
         $demissaoPrevista->autocomplete_label_gestor_modal_anterior = $demissaoPrevista->GestorAprovacao ? $demissaoPrevista->GestorAprovacao->nome : '';
         $demissaoPrevista->anexosDel = [];
+        $demissaoPrevista->user_aprovacao = $demissaoPrevista->UserAprovacao ? $demissaoPrevista->UserAprovacao->nome : '';
+        $demissaoPrevista->rh_aprovacao = $demissaoPrevista->RhAprovacao ? $demissaoPrevista->RhAprovacao->nome : '';
+        $demissaoPrevista->status_aprovacao= $demissaoPrevista->status_aprovacao ?: '';
+        $demissaoPrevista->status_aprovacao_rh = $demissaoPrevista->status_aprovacao_rh ?: '';
         $demissaoPrevista->load('Anexos');
 
         return $demissaoPrevista;
@@ -93,7 +98,7 @@ class DemissaoPrevistaController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\DemissaoPrevista $demissaoPrevista
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      * @throws \Throwable
      */
     public function update(Request $request, DemissaoPrevista $demissaoPrevista)
@@ -157,6 +162,7 @@ class DemissaoPrevistaController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
         ]);
@@ -172,7 +178,7 @@ class DemissaoPrevistaController extends Controller
             'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
             'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao',
             'Colaborador.FeedBack.VagaSelecionada',
-            'GestorAprovacao:id,nome', 'UserAprovacao:id,nome');
+            'GestorAprovacao:id,nome', 'UserAprovacao:id,nome', 'RhAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
@@ -190,9 +196,18 @@ class DemissaoPrevistaController extends Controller
             });
         }
 
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
-            $resultado->whereStatusAprovacao($status);
+        if ($request->filled('campoStatusAprovacao')) {
+            $status = $request->campoStatusAprovacao;
+            if ($request->campoStatusAprovacao == "aberto"){
+                $resultado->whereNull('status_aprovacao');
+            }
+            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
+                $resultado->where('status_aprovacao',DemissaoPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
+                $resultado->where('status_aprovacao_rh', DemissaoPrevista::STATUS_APROVADO);
+            }else{
+                $resultado->whereStatusAprovacao(DemissaoPrevista::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', DemissaoPrevista::STATUS_REPROVADO);
+            }
         }
 
         if (!auth()->user()->can('privilegio_gestao_rh')) {
@@ -230,20 +245,43 @@ class DemissaoPrevistaController extends Controller
 
     public function aprovarRH(Request $request, DemissaoPrevista $demissaoPrevista)
     {
-        $this->authorize('rh_aprova_movimentacao');
+        $this->authorize('privilegio_aprovar_por_rh');
         $dados = $request->input();
         try {
             DB::beginTransaction();
             $demissaoPrevista->update([
-                'user_rh_id' => auth()->id(),
-                'resposta_rh' => $dados['resposta_rh'],
+                'rh_aprovacao_id' => auth()->id(),
+                'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
                 'obs_rh' => $dados['obs_rh'],
-                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
+                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
             ]);
 
             DB::commit();
 
-            JobDemissaoPrevistaAprovarRH::dispatch($demissaoPrevista);
+            $dados_email = [
+                'dados_quem_cadastrou' => [
+                    'nome_de' => auth()->user()->nome,
+                    'nome_para' => $demissaoPrevista->UserCadastrou->nome,
+                    'email_para' => $demissaoPrevista->UserCadastrou->login,
+                    'status_aprovacao' => $demissaoPrevista->status_aprovacao_rh,
+                    'id' => $demissaoPrevista->id,
+                    'colaborador' => $demissaoPrevista->Colaborador->nome,
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
+                ],
+                'dados_gestor' => [
+                    'nome_de' => auth()->user()->nome,
+                    'nome_para' => $demissaoPrevista->GestorAprovacao->nome,
+                    'email_para' => $demissaoPrevista->GestorAprovacao->login,
+                    'status_aprovacao' => $demissaoPrevista->status_aprovacao_rh,
+                    'id' => $demissaoPrevista->id,
+                    'colaborador' => $demissaoPrevista->Colaborador->nome,
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
+                ]
+            ];
+
+            JobDemissaoPrevistaAprovarRH::dispatch($dados_email);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -258,7 +296,7 @@ class DemissaoPrevistaController extends Controller
     //Excel
     public function export(Request $request)
     {
-        JobDemissaoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
+        JobDemissaoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 

@@ -26,11 +26,11 @@ class JobMudaCargoPrevistaStore implements ShouldQueue
         $this->mail = [
             'nome_de' => auth()->user()->nome,
             'email_de' => auth()->user()->login,
-            'nome_para' => $mudaCargoPrevista->GestorAprovacao->nome,
-            'email_para' => $mudaCargoPrevista->GestorAprovacao->login,
+            'nome_para' => $mudaCargoPrevista->Gestor->nome,
+            'email_para' => $mudaCargoPrevista->Gestor->login,
             'id' => $mudaCargoPrevista->id,
-            'cargo_anterior' => $mudaCargoPrevista->CargoAnterior->nome,
-            'cargo_novo' => $mudaCargoPrevista->NovoCargo->nome,
+            'cargo_anterior' => $mudaCargoPrevista->VagaAbertaAnterior->titulo,
+            'cargo_novo' => $mudaCargoPrevista->VagaAbertaNova->titulo,
             'colaborador' => $mudaCargoPrevista->Colaborador->nome,
             'empresa_id' => auth()->user()->empresa_id
         ];
