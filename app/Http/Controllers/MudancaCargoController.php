@@ -208,6 +208,7 @@ class MudancaCargoController extends Controller
 
     public function aprovarGestor(Request $request)
     {
+        $this->authorize('privilegio_aprovar_por_gestor');
         $dados = $request->input();
 
         try {

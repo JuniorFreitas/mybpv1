@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use App\Scopes\ScopeClientesEmpresa;
 use App\Tenant\Traits\TenantTrait;
-use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -90,6 +90,12 @@ class DemissaoPrevista extends Model
         'status_aprovacao',
         'gestor_id',
         'empresa_id',
+        'rh_aprovacao_id',
+        'obs_rh',
+        'status_aprovacao_rh',
+        'data_aprovacao_rh',
+        'aprovado_via_script',
+        'quem_deletou_id'
     ];
 
     protected $casts = [
@@ -112,7 +118,16 @@ class DemissaoPrevista extends Model
         'empresa_id' => 'int',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
+        'rh_aprovacao_id' => 'int',
+        'obs_rh' => 'string',
+        'status_aprovacao_rh' => 'string',
+        'data_aprovacao_rh' => 'datetime:d/m/Y à\s H:i:s',
+        'aprovado_via_script' => 'boolean',
+        'quem_deletou_id' => 'int'
     ];
+
+    const STATUS_APROVADO = 'aprovado';
+    const STATUS_REPROVADO = 'reprovado';
 
     protected function serializeDate(DateTimeInterface $date) {
         return $date->format('Y-m-d H:i:s');
@@ -166,6 +181,11 @@ class DemissaoPrevista extends Model
         return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
     }
 
+    public function CentroCustoFilial()
+    {
+        return $this->hasOne(CentroCustoFilial::class, 'id', 'centro_custo_filial_id');
+    }
+
     public function UserCadastrou()
     {
         return $this->hasOne(User::class, 'id', 'user_id');
@@ -179,6 +199,11 @@ class DemissaoPrevista extends Model
     public function UserAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
+
+    public function RhAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
     }
 
     public function Anexos()

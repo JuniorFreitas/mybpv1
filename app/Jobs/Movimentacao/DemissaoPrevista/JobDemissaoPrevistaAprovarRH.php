@@ -3,8 +3,7 @@
 namespace App\Jobs\Movimentacao\DemissaoPrevista;
 
 
-use App\Mail\Movimentacao\DemissaoPrevista\AprovacaoMail;
-use App\Mail\Movimentacao\FeriasPrevista\AprovacaoRhMail;
+use App\Mail\Movimentacao\DemissaoPrevista\AprovacaoRhMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -24,27 +23,11 @@ class JobDemissaoPrevistaAprovarRH implements ShouldQueue
     public $mailGestor;
     public $tries = 3;
 
-    public function __construct($demissaoPrevista)
+    public function __construct($dados)
     {
-        $this->mail = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $demissaoPrevista->UserCadastrou->nome,
-            'email_para' => $demissaoPrevista->UserCadastrou->login,
-            'status_aprovacao' => $demissaoPrevista->status_aprovacao,
-            'demissao_id' => $demissaoPrevista->id,
-            'colaborador' => $demissaoPrevista->Colaborador->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
+        $this->mail = $dados['dados_quem_cadastrou'];
 
-        $this->mailGestor = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $demissaoPrevista->QuemAprovou->nome,
-            'email_para' => $demissaoPrevista->QuemAprovou->login,
-            'status_aprovacao' => $demissaoPrevista->resposta_rh,
-            'ferias_id' => $demissaoPrevista->id,
-            'colaborador' => $demissaoPrevista->Colaborador->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
+        $this->mailGestor = $dados['dados_gestor'];
 
 
     }

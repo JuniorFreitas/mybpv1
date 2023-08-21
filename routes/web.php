@@ -485,6 +485,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
                 Route::post('demissao-prevista/atualizar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('demissao-prevista/{demissaoPrevista}/aprovarrh', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('demissao-prevista/export', [\App\Http\Controllers\DemissaoPrevistaController::class, 'export'])->name('demissao-prevista.excel');
                 Route::resource('demissao-prevista', \App\Http\Controllers\DemissaoPrevistaController::class, ['parameters' => ['demissao-prevista' => 'demissao_prevista']]);
             });
