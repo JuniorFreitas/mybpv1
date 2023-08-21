@@ -38,6 +38,7 @@ class JobAdmissaoPrevistaExportaExcel implements ShouldQueue
             "Cargo",
             "Data da Solicitação",
             "Centro de Custo",
+            "Filial",
             "Tipo de Contrato",
             "Data da Admissão",
             "Observação",
@@ -45,7 +46,12 @@ class JobAdmissaoPrevistaExportaExcel implements ShouldQueue
             "Gestor Aprovação",
             "Quem Aprovou/Reprovou",
             "Data da Aprovação/Reprovação",
-            "Status"
+            "Status",
+            'Observação Aprovação/Reprovação',
+            "Status RH",
+            "Quem Aprovou/Reprovou RH",
+            "Data da Aprovação/Reprovação RH",
+            'Observação Aprovação/Reprovação RH'
         ];
 
         $CsvExport = new CsvExporter($this->user, 'Planejamento - Movimentação - Admissão', $header, $this->linhas);
@@ -59,6 +65,7 @@ class JobAdmissaoPrevistaExportaExcel implements ShouldQueue
             $row->Cargo->nome,
             (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
             $row->CentroCusto->label,
+            $row->filial ? $row->CentroCustoFilial->Filial->dados->razao_social : '',
             $row->tipo_contrato,
             (new DataHora($row->data_admissao))->dataCompleta(),
             $row->obs,
@@ -67,6 +74,11 @@ class JobAdmissaoPrevistaExportaExcel implements ShouldQueue
             $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
             $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
             $row->status_aprovacao ? $row->status_aprovacao : "aberto",
+            $row->status_aprovacao ?: "",
+            $row->obs_aprovacao,
+            $row->RhAprovacao ? $row->RhAprovacao->nome : "",
+            $row->data_aprovacao_rh ? (new DataHora($row->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_rh))->horaCompleta(), 0, 5) : '',
+            $row->obs_rh,
         ];
     }
 }

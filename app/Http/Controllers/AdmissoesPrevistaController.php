@@ -8,6 +8,7 @@ use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaExportaExcel;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaStore;
 use App\Models\AdmissoesPrevista;
 use App\Models\Arquivo;
+use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -29,6 +30,7 @@ class AdmissoesPrevistaController extends Controller
         $dadosValidados = \Validator::make($dados,
             [
                 'centro_custo_id' => 'required',
+                'centro_custo_filial_id' => 'required_if:filial,true',
                 'tipo_contrato' => 'required',
                 'cargo_id' => 'required',
                 'salario_format' => 'required',
@@ -81,6 +83,12 @@ class AdmissoesPrevistaController extends Controller
 
         $admissoesPrevista->anexosDel = [];
         $admissoesPrevista->load('Anexos');
+
+        $admissoesPrevista->user_aprovacao = $admissoesPrevista->UserAprovacao ? $admissoesPrevista->UserAprovacao->nome : '';
+        $admissoesPrevista->rh_aprovacao = $admissoesPrevista->RhAprovacao ? $admissoesPrevista->RhAprovacao->nome : '';
+        $admissoesPrevista->status_aprovacao = $admissoesPrevista->status_aprovacao ?: '';
+        $admissoesPrevista->status_aprovacao_rh = $admissoesPrevista->status_aprovacao_rh ?: '';
+
         return $admissoesPrevista;
     }
 
@@ -144,7 +152,7 @@ class AdmissoesPrevistaController extends Controller
 
     public function aprovar(Request $request, AdmissoesPrevista $admissoesPrevista)
     {
-        $this->authorize('privilegio__aprovar_por_gestor');
+        $this->authorize('privilegio_aprovar_por_gestor');
         $dados = $request->input();
         try {
             DB::beginTransaction();
@@ -190,29 +198,51 @@ class AdmissoesPrevistaController extends Controller
 
     public function aprovarRH(Request $request, AdmissoesPrevista $admissoesPrevista)
     {
-        $this->authorize('rh_aprova_movimentacao');
+        $this->authorize('privilegio_aprovar_por_rh');
         $dados = $request->input();
         try {
             DB::beginTransaction();
             $admissoesPrevista->update([
-                'user_rh_id' => auth()->id(),
-                'resposta_rh' => $dados['resposta_rh'],
+                'rh_aprovacao_id' => auth()->id(),
+                'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
                 'obs_rh' => $dados['obs_rh'],
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
             ]);
 
             DB::commit();
 
-            JobAdmissaoPrevistaAprovarRH::dispatch($admissoesPrevista);
+            $dados_email = [
+                'dados_quem_cadastrou' => [
+                    'nome_de' => auth()->user()->nome,
+                    'nome_para' => $admissoesPrevista->UserCadastrou->nome,
+                    'email_para' => $admissoesPrevista->UserCadastrou->login,
+                    'cargo' => $admissoesPrevista->Cargo->nome,
+                    'status_aprovacao' => $admissoesPrevista->status_aprovacao_rh,
+                    'id' => $admissoesPrevista->id,
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
+                ],
+                'dados_gestor' => [
+                    'nome_de' => auth()->user()->nome,
+                    'nome_para' => $admissoesPrevista->RhAprovacao->nome,
+                    'email_para' => $admissoesPrevista->RhAprovacao->login,
+                    'cargo' => $admissoesPrevista->Cargo->nome,
+                    'status_aprovacao' => $admissoesPrevista->status_aprovacao_rh,
+                    'id' => $admissoesPrevista->id,
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
+                ]
+            ];
+
+            JobAdmissaoPrevistaAprovarRH::dispatch($dados_email);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "error ao aprovar solicitação RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
-            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            return response()->json(['msg' => 'Houve um erro. Por favor, tente novamente'], 400);
         }
-
     }
 
     public function atualizar(Request $request)
@@ -226,6 +256,7 @@ class AdmissoesPrevistaController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
             ]
         ]);
 
@@ -263,8 +294,9 @@ class AdmissoesPrevistaController extends Controller
         $resultado = AdmissoesPrevista::with(
             'Cargo',
             'CentroCusto',
+            'CentroCustoFilial',
             'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo', 'GestorAprovacao:id,nome', 'UserAprovacao:id,nome');
+            'GestorAprovacao:id,nome', 'UserAprovacao:id,nome', 'RhAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
@@ -282,9 +314,18 @@ class AdmissoesPrevistaController extends Controller
             });
         }
 
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
-            $resultado->whereStatusAprovacao($status);
+        if ($request->filled('campoStatusAprovacao')) {
+            $status = $request->campoStatusAprovacao;
+            if ($request->campoStatusAprovacao == "aberto"){
+                $resultado->whereNull('status_aprovacao');
+            }
+            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
+                $resultado->where('status_aprovacao',AdmissoesPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
+                $resultado->where('status_aprovacao_rh', AdmissoesPrevista::STATUS_APROVADO);
+            }else{
+                $resultado->whereStatusAprovacao(AdmissoesPrevista::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', AdmissoesPrevista::STATUS_REPROVADO);
+            }
         }
 
         if (!auth()->user()->can('privilegio_gestao_rh')) {
