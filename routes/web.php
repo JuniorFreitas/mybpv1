@@ -502,6 +502,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('admissoes-prevista/atualizacao-status', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizacaoStatus'])->name('admissoes-prevista.atualizacaoStatus');
                 Route::post('admissoes-prevista/atualizar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('admissoes-prevista/{admissoesPrevista}/aprovar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('admissoes-prevista/{admissoesPrevista}/aprovarrh', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('admissoes-prevista/export', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'export'])->name('admissoes-prevista.excel');
                 Route::resource('admissoes-prevista', \App\Http\Controllers\AdmissoesPrevistaController::class, ['parameters' => ['admissoes-prevista' => 'admissoes_prevista']]);
             });

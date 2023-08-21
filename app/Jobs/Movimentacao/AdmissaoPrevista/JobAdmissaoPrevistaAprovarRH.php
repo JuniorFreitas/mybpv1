@@ -23,27 +23,10 @@ class JobAdmissaoPrevistaAprovarRH implements ShouldQueue
     public $mailGestor;
     public $tries = 3;
 
-    public function __construct($admissaoPrevista)
+    public function __construct($dados)
     {
-        $this->mail = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $admissaoPrevista->UserCadastrou->nome,
-            'email_para' => $admissaoPrevista->UserCadastrou->login,
-            'status_aprovacao' => $admissaoPrevista->resposta_rh,
-            'admissao_id' => $admissaoPrevista->id,
-            'cargo' => $admissaoPrevista->Cargo->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
-
-        $this->mailGestor = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $admissaoPrevista->QuemAprovou->nome,
-            'email_para' => $admissaoPrevista->QuemAprovou->login,
-            'status_aprovacao' => $admissaoPrevista->resposta_rh,
-            'admissao_id' => $admissaoPrevista->id,
-            'cargo' => $admissaoPrevista->Cargo->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
+        $this->mail = $dados['dados_quem_cadastrou'];
+        $this->mailGestor = $dados['dados_gestor'];
 
     }
 
