@@ -81,61 +81,61 @@ class MudancaCargoController extends Controller
             DB::beginTransaction();
 
             $temMudancaCargoAprovar = MudancaCargo::where('admissao_id', $dados['admissao_id'])
-                            ->whereNull('status_aprovacao_gestor')
-                            ->whereNull('status_aprovacao_rh')
-                            ->first();
+                ->whereNull('status_aprovacao_gestor')
+                ->whereNull('status_aprovacao_rh')
+                ->first();
 
-            if (is_null($temMudancaCargoAprovar)) {
-                $dados['empresa_id'] = auth()->user()->empresa_id;
-                $dados['data_solicitacao'] = (new DataHora())->dataHoraInsert();
-                $dados['solicitante_id'] = auth()->user()->id;
-
-                $dadosMudancaCargo = [
-                    'empresa_id' => $dados['empresa_id'],
-                    'admissao_id' => $dados['admissao_id'],
-                    'colaborador_id' => $dados['colaborador_id'],
-                    'mantem_centro_custo' => $dados['mantem_centro_custo'],
-                    'anterior_centro_custo_id' => $dados['anterior_centro_custo_id'],
-                    'anterior_filial' => $dados['anterior_filial'],
-                    'anterior_centro_custo_filial_id' => $dados['anterior_filial'] ? $dados['anterior_centro_custo_filial_id'] : null,
-                    'novo_centro_custo_id' => !$dados['mantem_centro_custo'] ? $dados['novo_centro_custo_id'] : null,
-                    'novo_filial' => $dados['novo_filial'],
-                    'novo_centro_custo_filial_id' => $dados['novo_filial'] ? $dados['novo_centro_custo_filial_id'] : null,
-                    'mantem_cargo' => $dados['mantem_cargo'],
-                    'anterior_vaga_aberta_id' => $dados['anterior_vaga_aberta_id'],
-                    'nova_vaga_aberta_id' => !$dados['mantem_cargo'] ? $dados['nova_vaga_aberta_id'] : null,
-                    'mantem_funcao' => $dados['mantem_funcao'],
-                    'anterior_funcao' => $dados['anterior_funcao'],
-                    'nova_funcao' => !$dados['mantem_funcao'] ? $dados['nova_funcao'] : null,
-                    'mantem_salario' => $dados['mantem_salario'],
-                    'anterior_salario' => $dados['anterior_salario'],
-                    'novo_salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : null,
-                    'solicitante_id' => $dados['solicitante_id'],
-                    'obs_solicitante' => $dados['obs_solicitante'],
-                    'data_solicitacao' => $dados['data_solicitacao'],
-                    'gestor_id' => $dados['gestor_id'],
-                    'aprovado_via_script' => false,
-                ];
-
-                $mudancaCargo = MudancaCargo::create($dados);
-
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $mudancaCargo->Anexos()->attach($arquivo->id);
-                        }
-                    }
-                }
-            }
             if (!is_null($temMudancaCargoAprovar)) {
                 return response()->json([
                     'msg' => 'Colaborador com mudança de cargo pendente de aprovação'
                 ], 400);
             }
+
+            $dados['empresa_id'] = auth()->user()->empresa_id;
+            $dados['data_solicitacao'] = (new DataHora())->dataHoraInsert();
+            $dados['solicitante_id'] = auth()->user()->id;
+
+            $dadosMudancaCargo = [
+                'empresa_id' => $dados['empresa_id'],
+                'admissao_id' => $dados['admissao_id'],
+                'colaborador_id' => $dados['colaborador_id'],
+                'mantem_centro_custo' => $dados['mantem_centro_custo'],
+                'anterior_centro_custo_id' => $dados['anterior_centro_custo_id'],
+                'anterior_filial' => $dados['anterior_filial'],
+                'anterior_centro_custo_filial_id' => $dados['anterior_filial'] ? $dados['anterior_centro_custo_filial_id'] : null,
+                'novo_centro_custo_id' => !$dados['mantem_centro_custo'] ? $dados['novo_centro_custo_id'] : null,
+                'novo_filial' => $dados['novo_filial'],
+                'novo_centro_custo_filial_id' => $dados['novo_filial'] ? $dados['novo_centro_custo_filial_id'] : null,
+                'mantem_cargo' => $dados['mantem_cargo'],
+                'anterior_vaga_aberta_id' => $dados['anterior_vaga_aberta_id'],
+                'nova_vaga_aberta_id' => !$dados['mantem_cargo'] ? $dados['nova_vaga_aberta_id'] : null,
+                'mantem_funcao' => $dados['mantem_funcao'],
+                'anterior_funcao' => $dados['anterior_funcao'],
+                'nova_funcao' => !$dados['mantem_funcao'] ? $dados['nova_funcao'] : null,
+                'mantem_salario' => $dados['mantem_salario'],
+                'anterior_salario' => $dados['anterior_salario'],
+                'novo_salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : null,
+                'solicitante_id' => $dados['solicitante_id'],
+                'obs_solicitante' => $dados['obs_solicitante'],
+                'data_solicitacao' => $dados['data_solicitacao'],
+                'gestor_id' => $dados['gestor_id'],
+                'aprovado_via_script' => false,
+            ];
+
+            $mudancaCargo = MudancaCargo::create($dados);
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $mudancaCargo->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+
             DB::commit();
             JobMudaCargoPrevistaStore::dispatch($mudancaCargo);
             return response()->json('', 201);

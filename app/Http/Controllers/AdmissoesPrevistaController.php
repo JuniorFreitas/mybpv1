@@ -39,31 +39,29 @@ class AdmissoesPrevistaController extends Controller
                 'msg' => 'Erro ao Solicitar Admissão',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $admPrevista = AdmissoesPrevista::create($dados);
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $admPrevista->Anexos()->attach($arquivo->id);
-                        }
+        }
+        try {
+            DB::beginTransaction();
+            $admPrevista = AdmissoesPrevista::create($dados);
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $admPrevista->Anexos()->attach($arquivo->id);
                     }
                 }
-                DB::commit();
-                JobAdmissaoPrevistaStore::dispatch($admPrevista);
-                return response()->json('', 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação de Admissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+            DB::commit();
+            JobAdmissaoPrevistaStore::dispatch($admPrevista);
+            return response()->json('', 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação de Admissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome. " | " . auth()->user()->Empresa->razao_social;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -91,7 +89,8 @@ class AdmissoesPrevistaController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\AdmissoesPrevista $admissoesPrevista
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Throwable
      */
     public function update(Request $request, AdmissoesPrevista $admissoesPrevista)
     {
@@ -299,7 +298,7 @@ class AdmissoesPrevistaController extends Controller
     //Excel
     public function export(Request $request)
     {
-        JobAdmissaoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
+        JobAdmissaoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 }
