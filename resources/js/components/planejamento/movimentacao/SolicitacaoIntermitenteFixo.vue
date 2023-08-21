@@ -772,7 +772,6 @@ export default {
         },
 
         selecionaColaborador(obj) {
-            console.log(obj);
             this.form.colaborador_id = obj.curriculo_id;
             this.form.autocomplete_label_colaborador = obj.label;
             this.form.autocomplete_label_colaborador_anterior = obj.label;
