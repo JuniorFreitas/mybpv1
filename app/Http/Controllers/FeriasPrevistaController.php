@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaExportaExcel;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
+use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaUpdate;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
@@ -63,7 +64,7 @@ class FeriasPrevistaController extends Controller
                 'colaborador_id' => [
                     function ($attribute, $value, $fail) use ($dados) {
                         if (strlen($value) == 0) {
-                            $fail('Informe um colaborar para continuar');
+                            $fail('Informe um colaborador para continuar');
                         }
                     }
                 ],
@@ -144,7 +145,7 @@ class FeriasPrevistaController extends Controller
             $msg = "erro ao salvar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             Sistema::LogFormatado($dados);
-            return response()->json(['msg' => $msg], 400);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -191,29 +192,69 @@ class FeriasPrevistaController extends Controller
      * Update the specified resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \App\Models\FeriasPrevista $feriasPrevista
+     * @param \App\Models\Ferias $ferias
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, FeriasPrevista $feriasPrevista)
+    public function update(Request $request, Ferias $ferias)
     {
+        $this->authorize('planejamento_movimentacao_ferias_editar');
+
         $dados = $request->input();
+        $dados['ultima_data'] = (new DataHora($dados['ultima_data']))->dataInsert();
+        $dados['data_retorno'] = (new DataHora($dados['data_retorno']))->dataInsert();
+        $dados['data_saida'] = (new DataHora($dados['data_saida']))->dataInsert();
+        unset($dados['colaborador_id']);
+        unset($dados['data_aprovacao_gestor']);
+        unset($dados['data_aprovacao_rh']);
+        unset($dados['data_status_ferias']);
+        unset($dados['created_at']);
+        $dados['data_solicitacao'] = (new DataHora())->dataHoraInsert();
+        $dados['solicitante_id'] = auth()->user()->id;
+
         $dadosValidados = \Validator::make($dados,
             [
                 'centro_custo_id' => 'required',
-                'colaborador_id' => 'required',
                 'qnt_dias' => 'required',
                 'dias_saldo' => 'required',
+                'periodo_aquisitivo_id' => 'required',
+                'colaborador_id' => [
+                    function ($attribute, $value, $fail) use ($dados) {
+                        if (strlen($value) == 0) {
+                            $fail('Informe um colaborador para continuar');
+                        }
+                    }
+                ],
+                'gestor_id' => [
+                    function ($attribute, $value, $fail) use ($dados) {
+                        if (strlen($value) == 0) {
+                            $fail('Informe um gestor para aprovação');
+                        }
+                    }
+                ],
+                'data_admissao' => [
+                    function ($attribute, $value, $fail) use ($dados) {
+                        if (strlen($value) == 0) {
+                            $fail('Atualize a data de admissão do colaborador');
+                        }
+                    }
+                ]
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
-                'msg' => 'Erro ao Solicitar Férias',
+                'msg' => 'Erro ao Editar Férias',
                 'erros' => $dadosValidados->errors()
             ], 400);
         }
         try {
             DB::beginTransaction();
-            $feriasPrevista->update($dados);
+
+            Admissao::find($dados['admissao_id'])->update([
+                'centro_custo_id' => $dados['centro_custo_id']
+            ]);
+
+            $ferias->update($dados);
+
             if (isset($dados['anexosDel'])) {
                 foreach ($dados['anexosDel'] as $id_anexo) {
                     $arquivo = Arquivo::find($id_anexo);
@@ -228,11 +269,12 @@ class FeriasPrevistaController extends Controller
                         $arquivo->temporario = false;
                         $arquivo->chave = '';
                         $arquivo->save();
-                        $feriasPrevista->Anexos()->attach($arquivo->id);
+                        $ferias->Anexos()->attach($arquivo->id);
                     }
                 }
             }
             DB::commit();
+            JobFeriasPrevistaUpdate::dispatch($ferias);
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();
@@ -246,12 +288,32 @@ class FeriasPrevistaController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param \App\Models\FeriasPrevista $feriasPrevista
+     * @param \App\Models\Ferias $ferias
      * @return \Illuminate\Http\Response
      */
-    public function destroy(FeriasPrevista $feriasPrevista)
+    public function destroy(Ferias $ferias)
     {
-        //
+        $this->authorize('planejamento_movimentacao_ferias_deletar');
+
+        try {
+            \DB::beginTransaction();
+
+            if ($ferias->Anexos->count() > 0) {
+                foreach ($ferias->Anexos as $anexo) {
+                    $anexo->excluir($anexo->id);
+                }
+            }
+            $ferias->update([
+                'quem_deletou_id' => auth()->id()
+            ]);
+
+            $ferias->delete();
+
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['msg' => $e->getMessage()], 400);
+        }
     }
 
 
@@ -411,6 +473,11 @@ class FeriasPrevistaController extends Controller
 
         $periodo = PeriodoAquisitivo::whereIn('ano_inicial', [date('Y') - 2, date('Y') - 1, date('Y')])->get();
 
+        $permissoes = [
+            'update' => auth()->user()->can('planejamento_movimentacao_ferias_editar'),
+            'delete' => auth()->user()->can('planejamento_movimentacao_ferias_deletar')
+        ];
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -418,6 +485,7 @@ class FeriasPrevistaController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'periodo' => $periodo,
+                'permissoes' => $permissoes,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
