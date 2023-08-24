@@ -513,6 +513,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('valor-extra-prevista/atualizacao-status', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'atualizacaoStatus'])->name('valor-extra-prevista.atualizacaoStatus');
                 Route::post('valor-extra-prevista/atualizar', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('valor-extra-prevista/{valorExtraPrevista}/aprovar', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('valor-extra-prevista/{valorExtraPrevista}/aprovarrh', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('valor-extra-prevista/export', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'export'])->name('valor-extra-prevista.excel');
                 Route::resource('valor-extra-prevista', \App\Http\Controllers\ValorExtraPrevistaController::class, ['parameters' => ['valor-extra-prevista' => 'valor_extra_prevista']]);
             });
