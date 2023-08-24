@@ -33,7 +33,7 @@
                         <div class="row">
                             <div class="col-12 col-md-6">
                                 <div class="form-group">
-                                    <label>Centro de Custo Atual</label>
+                                    <label>Centro de Custo</label>
                                     <select v-model="form.centro_custo_id" class="form-control form-control-sm" disabled>
                                         <option value="">Selecione</option>
                                         <option v-for="item in centro_custos" :value="item.id">
