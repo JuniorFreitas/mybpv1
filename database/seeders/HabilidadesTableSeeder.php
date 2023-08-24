@@ -493,6 +493,8 @@ class HabilidadesTableSeeder extends Seeder
         // PLANEJAMENTO MOVIMENTAÇÃO
         $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_demissao', 'descricao' => 'Exibir aba demissão'];
         $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_ferias', 'descricao' => 'Exibir aba férias'];
+        $lista[] = ['nome' => 'planejamento_movimentacao_ferias_editar', 'descricao' => 'Editar solicitação de férias'];
+        $lista[] = ['nome' => 'planejamento_movimentacao_ferias_deletar', 'descricao' => 'Deletar solicitação de férias'];
         $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_admissao', 'descricao' => 'Exibir aba admissão'];
         $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_lideranca_de_pessoal_valor_extra', 'descricao' => 'Exibir aba liderança de pessoal e valor extra'];
         $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_mudanca_cargo', 'descricao' => 'Exibir aba mudança de cargo'];

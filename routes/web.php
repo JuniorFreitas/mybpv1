@@ -496,6 +496,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
                 Route::post('ferias-prevista/atualizacao-status', [\App\Http\Controllers\FeriasPrevistaController::class, 'atualizacaoStatus'])->name('ferias-prevista.atualizacaoStatus');
                 Route::post('ferias-prevista/atualizar', [\App\Http\Controllers\FeriasPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('ferias-prevista/{ferias}/aprovarrh', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
+                Route::delete('ferias-prevista/{ferias}', [\App\Http\Controllers\FeriasPrevistaController::class, 'destroy'])->name('ferias-prevista-delete');
                 Route::resource('ferias-prevista', \App\Http\Controllers\FeriasPrevistaController::class, ['parameters' => ['ferias-prevista' => 'ferias']]);
             });
 

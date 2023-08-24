@@ -129,7 +129,8 @@ class Ferias extends Model
         'ferias_prevista_id',
         'aprovado_via_script',
         'abono_pecuniario',
-        'adiantamento_decimo_terceiro'
+        'adiantamento_decimo_terceiro',
+        'quem_deletou_id'
     ];
 
     protected $casts = [
@@ -159,6 +160,7 @@ class Ferias extends Model
         'status_ferias' => 'string',
         'data_status_ferias' => 'datetime:d/m/Y à\s H:i:s',
         'ferias_prevista_id' => 'int',
+        'quem_deletou_id' => 'int',
         'aprovado_via_script' => 'boolean',
         'abono_pecuniario' => 'boolean',
         'adiantamento_decimo_terceiro' => 'boolean',

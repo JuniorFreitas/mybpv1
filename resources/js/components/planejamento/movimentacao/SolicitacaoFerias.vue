@@ -1,5 +1,48 @@
 <template>
     <div>
+        <!--Janela de Apagar Férias-->
+        <modal id="janelaApagarFerias" :fechar="!formApagar.preload"
+               :titulo="this.formApagar.titulo">
+            <template slot="conteudo">
+                        <span v-show="formApagar.preload">
+                            <i class="fa fa-spinner fa-pulse"></i> Apagando Solicitação de Férias...
+                        </span>
+                <div v-show="!formApagar.preload && !formApagar.delete && !formApagar.erro" class="alert alert-warning"
+                     role="alert">
+                    <h4 class="text-center">
+                        <i class="fas fa-exclamation-triangle"></i><br>
+                        Atenção! Deseja excluir essa Solicitação de Férias?
+                    </h4>
+                </div>
+
+                <div v-show="!formApagar.preload && formApagar.delete && !formApagar.erro" class="alert alert-success"
+                     role="alert">
+                    <h4 class="text-center">
+                        <i class="fas fa-check"></i><br>
+                        A Solicitação de Férias foi apagada
+                    </h4>
+                </div>
+
+                <div v-show="!formApagar.preload && !formApagar.delete && formApagar.erro" class="alert alert-danger"
+                     role="alert">
+                    <h4 class="text-center">
+                        <i class="fas fa-times-circle"></i><br>
+                        {{ formApagar.msg }}
+                    </h4>
+                </div>
+
+
+            </template>
+            <template slot="rodape">
+                <button v-show="!formApagar.preload && !formApagar.delete && !formApagar.erro"
+                        class="btn btn-sm btn-danger"
+                        type="button"
+                        @click="apagarFerias()">
+                    <i class="fas fa-trash-alt"></i> Apagar Solicitação de Férias
+                </button>
+            </template>
+        </modal>
+
         <modal :id="hash" :titulo="tituloJanela" :size="90">
             <template slot="conteudo">
                 <preload v-show="preload" class="text-center"></preload>
@@ -9,7 +52,7 @@
                         <div class="row">
 
                             <colaborador tipo="ferias" @evtseleciona="dataAdmissao" @evtreseta="dataAdmissao"
-                                         :model="form" :verifica="visualizar || aprovando" :hash="hash"></colaborador>
+                                         :model="form" :verifica="visualizar || aprovando || aprovandoRh || editando" :hash="hash"></colaborador>
 
                             <div class="col-12 col-md-4" v-if="form.colaborador_id !== ''">
                                 <div class="form-group">
@@ -268,6 +311,10 @@
                     <i class="fa fa-save"></i> Salvar
                 </button>
                 <button type="button" class="btn btn-sm btn-primary"
+                        v-show="editando && !preload" @click.prevent="editar">
+                    <i class="fa fa-save"></i> Salvar
+                </button>
+                <button type="button" class="btn btn-sm btn-primary"
                         v-show="aprovandoRh && !preload" @click.prevent="aprovarRh">
                     <i class="fa fa-save"></i> Salvar
                 </button>
@@ -498,7 +545,7 @@
                         </td>
 
                         <td>
-                            {{ item.ferias_prevista ? item.ferias_prevista.centro_custo.label : '' }}
+                            {{ item.admissao.centro_custo ? item.admissao.centro_custo.label : '' }}
                         </td>
 
                         <td>
@@ -568,7 +615,7 @@
                                     <a class="dropdown-item" href="javascript://" title="Aprovação Gestor"
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; aprovandoRh = false; podeanexar = true"
+                                       @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; aprovandoRh = false; podeanexar = false"
                                        v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor">
                                         Aprovação Gestor
                                     </a>
@@ -579,6 +626,22 @@
                                        @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoRh = true; podeanexar = false"
                                        v-if="item.status_aprovacao_gestor === 'aprovado' && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh">
                                         Aprovação Rh
+                                    </a>
+
+                                    <a class="dropdown-item" href="javascript://" title="Editar"
+                                       data-toggle="modal"
+                                       :data-target="`#${hash}`"
+                                       @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoRh = false; editando = true; podeanexar = true"
+                                       v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor && permissoes.update">
+                                        Editar
+                                    </a>
+
+                                    <a class="dropdown-item" href="javascript://" title="Apagar"
+                                       data-target="#janelaApagarFerias"
+                                       data-toggle="modal"
+                                       @click.prevent="formApagarFerias(item.id)"
+                                       v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor && permissoes.delete">
+                                        Apagar
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar"
@@ -620,6 +683,7 @@ export default {
             tituloJanela: "Solicitacao de férias",
             preload: false,
             cadastrando: false,
+            editando: false,
             visualizar: false,
             aprovando: false,
             aprovandoRh: false,
@@ -635,6 +699,7 @@ export default {
             anexoUploadAndamento: false,
             podeanexar: false,
             mimes: [],
+            permissoes: [],
 
             selecionados: [],
             selecionaTudo: false,
@@ -646,6 +711,14 @@ export default {
             },
             formConfirmacaoDefault: null,
 
+            formApagar: {
+                id: null,
+                titulo: '',
+                preload: false,
+                delete: false,
+                erro: false,
+                msg: '',
+            },
 
             form: {
                 id: "",
@@ -799,6 +872,31 @@ export default {
         }
     },
     methods: {
+        //apagar férias
+        formApagarFerias(id) {
+            this.formApagar.id = id;
+            this.formApagar.titulo = this.tituloJanela = `${id} - Apagar Solicitação de férias`;
+            this.formApagar.preload = false;
+            this.formApagar.delete = false;
+            this.formApagar.erro = false;
+            this.formApagar.msg = '';
+
+        },
+        apagarFerias() {
+            this.formApagar.preload = true;
+            axios.delete(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.formApagar.id}`)
+                .then((response) => {
+                    this.formApagar.preload = false;
+                    this.formApagar.delete = true;
+                    this.$refs.componente.buscar();
+                })
+                .catch((response) => {
+                    this.formApagar.msg = response.data.msg;
+                    this.formApagar.preload = false;
+                    this.formApagar.erro = true;
+                });
+        },
+
         dataAdmissao() {
             if (this.form.colaborador_id !== "") {
                 axios.post(`${URL_ADMIN}/busca-data-admissao`, {
@@ -916,7 +1014,6 @@ export default {
         },
 
         cadastrar() {
-
             $(`#${this.hash} :input:visible`).trigger("blur");
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
                 mostraErro("", "Verifique os campos marcados");
@@ -931,6 +1028,30 @@ export default {
                         $(`#${this.hash} `).modal("hide");
                         let data = response.data;
                         mostraSucesso("", "Solicitação registrada com sucesso!");
+                        this.$refs.componente.buscar();
+                        this.preload = false;
+                    }
+                })
+                .catch(error => {
+                    this.preload = false;
+                });
+        },
+
+        editar() {
+            $(`#${this.hash} :input:visible`).trigger("blur");
+            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
+                mostraErro("", "Verifique os campos marcados");
+                return false;
+            }
+
+            this.preload = true;
+
+            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}`, this.form)
+                .then(response => {
+                    if (response.status === 201) {
+                        $(`#${this.hash} `).modal("hide");
+                        let data = response.data;
+                        mostraSucesso("", "Solicitação alterada com sucesso!");
                         this.$refs.componente.buscar();
                         this.preload = false;
                     }
@@ -1025,6 +1146,7 @@ export default {
             this.aprovaGestor = dados.aprovar_por_gestor;
             this.aprovaRh = dados.aprovar_por_rh;
             this.controle.carregando = false;
+            this.permissoes = dados.permissoes;
         },
         carregando() {
             this.controle.carregando = true;

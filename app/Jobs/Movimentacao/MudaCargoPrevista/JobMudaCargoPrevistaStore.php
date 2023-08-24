@@ -2,7 +2,7 @@
 
 namespace App\Jobs\Movimentacao\MudaCargoPrevista;
 
-use App\Mail\Movimentacao\MudaIntermitenteFixoPrevista\CriadaMail;
+use App\Mail\Movimentacao\MudaCargoPrevista\CriadaMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -29,8 +29,8 @@ class JobMudaCargoPrevistaStore implements ShouldQueue
             'nome_para' => $mudaCargoPrevista->Gestor->nome,
             'email_para' => $mudaCargoPrevista->Gestor->login,
             'id' => $mudaCargoPrevista->id,
-            'cargo_anterior' => $mudaCargoPrevista->VagaAbertaAnterior->titulo,
-            'cargo_novo' => $mudaCargoPrevista->VagaAbertaNova->titulo,
+            'cargo_anterior' => $mudaCargoPrevista->VagaAbertaAnterior->Vaga->nome,
+            'cargo_novo' => is_null($mudaCargoPrevista->nova_vaga_aberta_id) ? "Não mudou de cargo" : $mudaCargoPrevista->VagaAbertaNova->Vaga->nome,
             'colaborador' => $mudaCargoPrevista->Colaborador->nome,
             'empresa_id' => auth()->user()->empresa_id
         ];

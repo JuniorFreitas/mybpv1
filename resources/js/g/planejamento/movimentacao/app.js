@@ -63,7 +63,6 @@ const app = new Vue({
                     this.preload = false;
                     this.permissoes_abas = dados.permissoes_abas;
                     this.aba_ativa = dados.aba_ativa;
-                    console.log(this.aba_ativa);
                     this.trocaAba(this.aba_ativa);
                 })
                 .catch(data => {
