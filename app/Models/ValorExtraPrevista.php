@@ -66,6 +66,7 @@ class ValorExtraPrevista extends Model
     protected $fillable = [
         'colaborador_id',
         'centro_custo_id',
+        'centro_custo_filial_id',
         'tipo',
         'periodo_dias',
         'user_id',
@@ -77,6 +78,12 @@ class ValorExtraPrevista extends Model
         'status_aprovacao',
         'empresa_id',
         'gestor_id',
+        'rh_aprovacao_id',
+        'obs_rh',
+        'status_aprovacao_rh',
+        'data_aprovacao_rh',
+        'aprovado_via_script',
+        'quem_deletou_id'
     ];
 
     protected $casts = [
@@ -84,6 +91,7 @@ class ValorExtraPrevista extends Model
         'cliente_id' => 'int',
         'colaborador_id' => 'int',
         'centro_custo_id' => 'int',
+        'centro_custo_filial_id' => 'int',
         'tipo' => 'string',
         'periodo_dias' => 'float',
         'user_id' => 'int',
@@ -96,8 +104,17 @@ class ValorExtraPrevista extends Model
         'obs_aprovacao' => 'string',
         'status_aprovacao' => 'string',
         'empresa_id' => 'int',
-        'gestor_id' => 'int'
+        'gestor_id' => 'int',
+        'rh_aprovacao_id' => 'int',
+        'obs_rh' => 'string',
+        'status_aprovacao_rh' => 'string',
+        'data_aprovacao_rh' => 'datetime:d/m/Y à\s H:i:s',
+        'aprovado_via_script' => 'boolean',
+        'quem_deletou_id' => 'int'
     ];
+
+    const STATUS_APROVADO = 'aprovado';
+    const STATUS_REPROVADO = 'reprovado';
 
     protected function serializeDate(DateTimeInterface $date)
     {
@@ -119,6 +136,11 @@ class ValorExtraPrevista extends Model
         return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
     }
 
+    public function CentroCustoFilial()
+    {
+        return $this->hasOne(CentroCustoFilial::class, 'id', 'centro_custo_filial_id');
+    }
+
     public function UserCadastrou()
     {
         return $this->hasOne(User::class, 'id', 'user_id');
@@ -132,6 +154,11 @@ class ValorExtraPrevista extends Model
     public function UserAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
+
+    public function RhAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
     }
 
     public function Anexos()

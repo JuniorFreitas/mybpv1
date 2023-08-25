@@ -7,6 +7,7 @@ use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaAprovarRH;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaExportaExcel;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaStore;
 use App\Models\Arquivo;
+use App\Models\Cliente;
 use App\Models\ValorExtraPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,7 @@ class ValorExtraPrevistaController extends Controller
             [
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
+                'centro_custo_filial_id' => 'required_if:filial,true',
                 'tipo' => 'required',
                 'periodo_dias' => 'required',
             ]
@@ -86,6 +88,10 @@ class ValorExtraPrevistaController extends Controller
         $valorExtraPrevista->autocomplete_label_gestor_modal = $valorExtraPrevista->GestorAprovacao ? $valorExtraPrevista->GestorAprovacao->nome : '';
         $valorExtraPrevista->autocomplete_label_gestor_modal_anterior = $valorExtraPrevista->GestorAprovacao ? $valorExtraPrevista->GestorAprovacao->nome : '';
         $valorExtraPrevista->anexosDel = [];
+        $valorExtraPrevista->user_aprovacao = $valorExtraPrevista->UserAprovacao ? $valorExtraPrevista->UserAprovacao->nome : '';
+        $valorExtraPrevista->rh_aprovacao = $valorExtraPrevista->RhAprovacao ? $valorExtraPrevista->RhAprovacao->nome : '';
+        $valorExtraPrevista->status_aprovacao = $valorExtraPrevista->status_aprovacao ?: '';
+        $valorExtraPrevista->status_aprovacao_rh = $valorExtraPrevista->status_aprovacao_rh ?: '';
         $valorExtraPrevista->load('Anexos');
         return $valorExtraPrevista;
     }
@@ -146,51 +152,6 @@ class ValorExtraPrevistaController extends Controller
         }
     }
 
-    public function aprovarRH(Request $request, ValorExtraPrevista $valorExtraPrevista)
-    {
-        $this->authorize('rh_aprova_movimentacao');
-        $dados = $request->input();
-        try {
-            DB::beginTransaction();
-            $valorExtraPrevista->update([
-                'user_rh_id' => auth()->id(),
-                'resposta_rh' => $dados['resposta_rh'],
-                'obs_rh' => $dados['obs_rh'],
-                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
-            ]);
-
-            if (isset($dados['anexosDel'])) {
-                foreach ($dados['anexosDel'] as $id_anexo) {
-                    $arquivo = Arquivo::find($id_anexo);
-                    $arquivo->excluir();
-                }
-            }
-
-            if (isset($dados['anexos'])) {
-                foreach ($dados['anexos'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $valorExtraPrevista->Anexos()->attach($arquivo->id);
-                    }
-                }
-            }
-
-            DB::commit();
-
-            JobValorExtraPrevistaAprovarRH::dispatch($valorExtraPrevista);
-
-            return response()->json([], 201);
-        } catch (\Exception $e) {
-            DB::rollback();
-            $msg = "error ao aprovar solicitação RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-            \Log::debug($msg);
-            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-        }
-
-    }
 
     public function aprovar(Request $request, ValorExtraPrevista $valorExtraPrevista)
     {
@@ -206,13 +167,60 @@ class ValorExtraPrevistaController extends Controller
             ]);
             DB::commit();
 
-
             JobValorExtraPrevistaAprovar::dispatch($valorExtraPrevista);
-
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "error ao aprovar VALOR EXTRA:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+//            return response()->json(['msg' => $msg], 400);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
+    }
+
+    public function aprovarRH(Request $request, ValorExtraPrevista $valorExtraPrevista)
+    {
+        $this->authorize('privilegio_aprovar_por_rh');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $valorExtraPrevista->update([
+                'rh_aprovacao_id' => auth()->id(),
+                'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
+                'obs_rh' => $dados['obs_rh'],
+                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
+            ]);
+            DB::commit();
+
+            $dados_email = [
+                'dados_quem_cadastrou' => [
+                    'nome_de' => auth()->user()->nome,
+                    'nome_para' => $valorExtraPrevista->UserCadastrou->nome,
+                    'email_para' => $valorExtraPrevista->UserCadastrou->login,
+                    'status_aprovacao' => $valorExtraPrevista->status_aprovacao_rh,
+                    'id' => $valorExtraPrevista->id,
+                    'colaborador' => $valorExtraPrevista->Colaborador->nome,
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
+                ],
+                'dados_gestor' => [
+                    'nome_de' => auth()->user()->nome,
+                    'nome_para' => $valorExtraPrevista->GestorAprovacao->nome,
+                    'email_para' => $valorExtraPrevista->GestorAprovacao->login,
+                    'status_aprovacao' => $valorExtraPrevista->status_aprovacao_rh,
+                    'id' => $valorExtraPrevista->id,
+                    'colaborador' => $valorExtraPrevista->Colaborador->nome,
+                    'empresa_id' => auth()->user()->empresa_id,
+                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
+                ]
+            ];
+
+            JobValorExtraPrevistaAprovarRH::dispatch($dados_email);
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar VALOR EXTRA por RH:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             return response()->json(['msg' => $msg], 400);
 //            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
@@ -233,6 +241,7 @@ class ValorExtraPrevistaController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
         ]);
@@ -248,7 +257,9 @@ class ValorExtraPrevistaController extends Controller
             'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
             'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao',
             'Colaborador.FeedBack.VagaSelecionada',
-            'GestorAprovacao:id,nome', 'UserAprovacao:id,nome');
+            'GestorAprovacao:id,nome',
+            'UserAprovacao:id,nome',
+            'RhAprovacao:id,nome');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
 
@@ -266,9 +277,18 @@ class ValorExtraPrevistaController extends Controller
             });
         }
 
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
-            $resultado->whereStatusAprovacao($status);
+        if ($request->filled('campoStatusAprovacao')) {
+            $status = $request->campoStatusAprovacao;
+            if ($request->campoStatusAprovacao == "aberto"){
+                $resultado->whereNull('status_aprovacao');
+            }
+            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
+                $resultado->where('status_aprovacao',ValorExtraPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
+                $resultado->where('status_aprovacao_rh', ValorExtraPrevista::STATUS_APROVADO);
+            }else{
+                $resultado->whereStatusAprovacao(ValorExtraPrevista::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', ValorExtraPrevista::STATUS_REPROVADO);
+            }
         }
 
         if (!auth()->user()->can('privilegio_gestao_rh')) {

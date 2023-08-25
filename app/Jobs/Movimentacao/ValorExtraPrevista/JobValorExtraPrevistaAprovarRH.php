@@ -3,7 +3,6 @@
 namespace App\Jobs\Movimentacao\ValorExtraPrevista;
 
 
-use App\Mail\Movimentacao\ValorExtraPrevista\AprovacaoMail;
 use App\Mail\Movimentacao\ValorExtraPrevista\AprovacaoRhMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -25,28 +24,11 @@ class JobValorExtraPrevistaAprovarRH implements ShouldQueue
 
     public $tries = 3;
 
-    public function __construct($valorExtraPrevista)
+    public function __construct($dados)
     {
-        $this->mail = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $valorExtraPrevista->UserCadastrou->nome,
-            'email_para' => $valorExtraPrevista->UserCadastrou->login,
-            'status_aprovacao' => $valorExtraPrevista->resposta_rh,
-            'ferias_id' => $valorExtraPrevista->id,
-            'colaborador' => $valorExtraPrevista->Colaborador->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
+        $this->mail = $dados['dados_quem_cadastrou'];
 
-        $this->mailGestor = [
-            'nome_de' => auth()->user()->nome,
-            'nome_para' => $valorExtraPrevista->QuemAprovou->nome,
-            'email_para' => $valorExtraPrevista->QuemAprovou->login,
-            'status_aprovacao' => $valorExtraPrevista->resposta_rh,
-            'ferias_id' => $valorExtraPrevista->id,
-            'colaborador' => $valorExtraPrevista->Colaborador->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
-
+        $this->mailGestor = $dados['dados_gestor'];
     }
 
     /**
