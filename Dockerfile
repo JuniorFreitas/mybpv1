@@ -1,4 +1,6 @@
-FROM juniorfreitas/laravel:latest
+#troque para latest se a estrutura for arm64 (mac m1 posterior ou dessa estrutura) se for amd64 (linux comum que usa essa estrutura) troque para main
+#FROM juniorfreitas/laravel:latest
+FROM juniorfreitas/laravel:main
 
 RUN apt-get update && apt-get install -y \
     python3 \
