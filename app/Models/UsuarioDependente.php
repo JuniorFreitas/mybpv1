@@ -15,7 +15,7 @@ use MasterTag\DataHora;
  * @property string|null $outro_tipo
  * @property string $nome
  * @property string|null $cpf
- * @property mixed|null $nascimento
+ * @property \Illuminate\Support\Carbon|null $nascimento
  * @property string|null $observacao
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente newQuery()

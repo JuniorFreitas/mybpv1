@@ -33,17 +33,17 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $formulario_id
  * @property-read \App\Models\Admissao|null $Admissao
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexo
  * @property-read int|null $anexo_count
  * @property-read \App\Models\CertificadoAlumar|null $Certificado
  * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoTres
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $FotoTres
  * @property-read int|null $foto_tres_count
  * @property-read \App\Models\Pcmso|null $Pcmso
  * @property-read \App\Models\Treinamento|null $Treinamento
  * @property-read \App\Models\User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read \App\Models\ParecerRh|null $parecerRh
  * @property-read \App\Models\ParecerRota|null $parecerRota

@@ -22,7 +22,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User $EnviadoPor
  * @property-read \App\Models\User $User
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhatsapp newQuery()

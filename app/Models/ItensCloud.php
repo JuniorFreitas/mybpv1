@@ -21,18 +21,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $quem_criou
  * @property bool $aprovado
  * @property int|null $quem_aprovou
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property bool $revisado
  * @property int|null $quem_revisou
- * @property mixed|null $data_revisao
+ * @property \Illuminate\Support\Carbon|null $data_revisao
  * @property int|null $quem_editou
  * @property int|null $quem_excluiu
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property bool $movido
  * @property int|null $quem_moveu
- * @property mixed|null $data_movido
+ * @property \Illuminate\Support\Carbon|null $data_movido
  * @property int|null $pertence_anterior
  * @property-read \App\Models\User|null $Aprovou
  * @property-read \App\Models\Arquivo|null $Arquivo
@@ -40,20 +40,20 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\User|null $Criou
  * @property-read \App\Models\User|null $Editou
  * @property-read \App\Models\User|null $Excluiu
- * @property-read \Illuminate\Database\Eloquent\Collection|ItensCloud[] $Itens
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ItensCloud> $Itens
  * @property-read int|null $itens_count
  * @property-read \App\Models\User|null $Moveu
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GrupoCloud[] $Permissoes
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\GrupoCloud> $Permissoes
  * @property-read int|null $permissoes_count
  * @property-read ItensCloud|null $Pertence
  * @property-read ItensCloud|null $PertenceAntes
  * @property-read \App\Models\User|null $Revisou
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $tem_permissao
  * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud newQuery()
- * @method static \Illuminate\Database\Query\Builder|ItensCloud onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud query()
  * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud whereAprovado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud whereArquivoId($value)
@@ -77,8 +77,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud whereRevisado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|ItensCloud withTrashed()
- * @method static \Illuminate\Database\Query\Builder|ItensCloud withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ItensCloud withoutTrashed()
  * @mixin \Eloquent
  */
 class ItensCloud extends Model

@@ -14,9 +14,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $empresa_id
  * @property string $descricao
- * @property mixed $data
+ * @property \Illuminate\Support\Carbon $data
  * @property bool $ativo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Feriado newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Feriado newQuery()

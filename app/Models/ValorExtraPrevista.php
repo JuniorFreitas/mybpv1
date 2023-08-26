@@ -21,38 +21,58 @@ use MasterTag\DataHora;
  * @property int|null $user_id
  * @property string|null $solicitante
  * @property string|null $obs
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property int|null $empresa_id
  * @property int|null $gestor_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property int|null $filial
+ * @property int|null $centro_custo_filial_id
+ * @property int|null $rh_aprovacao_id
+ * @property string|null $obs_rh
+ * @property string|null $status_aprovacao_rh
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_rh
+ * @property bool $aprovado_via_script
+ * @property int|null $quem_deletou_id
+ * @property string|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilial
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\User|null $Colaborador
  * @property-read \App\Models\User|null $GestorAprovacao
+ * @property-read \App\Models\User|null $RhAprovacao
  * @property-read \App\Models\User|null $UserAprovacao
  * @property-read \App\Models\User|null $UserCadastrou
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista query()
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereAprovadoViaScript($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereCentroCustoFilialId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereCentroCustoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereColaboradorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereFilial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereGestorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereObs($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereObsRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista wherePeriodoDias($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereQuemDeletouId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereRhAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereSolicitante($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereStatusAprovacaoRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ValorExtraPrevista whereUserAprovacaoId($value)

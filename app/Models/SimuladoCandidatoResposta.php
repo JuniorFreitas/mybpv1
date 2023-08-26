@@ -19,7 +19,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\SimuladoResposta|null $Resposta
  * @property-read \App\Models\SimuladoCandidato|null $SimuladoCandidato
  * @property-read \App\Models\SimuladoVaga|null $SimuladoVaga
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidatoResposta newQuery()

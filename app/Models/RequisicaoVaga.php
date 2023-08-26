@@ -20,7 +20,7 @@ use MasterTag\DataHora;
  * @property string $tipo_contratacao
  * @property string $prioridade
  * @property bool $imediata
- * @property mixed|null $previsao_inicio
+ * @property \Illuminate\Support\Carbon|null $previsao_inicio
  * @property string|null $solicitante
  * @property int $user_id
  * @property string|null $observacao
@@ -28,7 +28,7 @@ use MasterTag\DataHora;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $empresa_id
  * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property-read \App\Models\AreaEtiqueta|null $Area

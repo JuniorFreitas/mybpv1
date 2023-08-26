@@ -23,18 +23,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $empresa_id
  * @property int|null $area_etiqueta_id
  * @property int|null $centro_custo_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoAcao[] $Acoes
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AtaReuniaoAcao> $Acoes
  * @property-read int|null $acoes_count
  * @property-read \App\Models\AreaEtiqueta|null $Area
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoAssunto[] $Assuntos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AtaReuniaoAssunto> $Assuntos
  * @property-read int|null $assuntos_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoParticipante[] $Participantes
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AtaReuniaoParticipante> $Participantes
  * @property-read int|null $participantes_count
  * @property-read User|null $QuemCadastrou
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AtaReuniaoTipo[] $Tipos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AtaReuniaoTipo> $Tipos
  * @property-read int|null $tipos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniao newQuery()

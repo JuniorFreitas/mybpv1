@@ -15,18 +15,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $fornecedor_id
  * @property int|null $tipo_servico_fornecedor_id
  * @property string|null $vencimento quando for utilizado para fornecedor
- * @property mixed|null $data_inicio
- * @property mixed|null $data_encerramento
+ * @property \Illuminate\Support\Carbon|null $data_inicio
+ * @property \Illuminate\Support\Carbon|null $data_encerramento
  * @property string|null $escopo
  * @property string|null $valor
  * @property string|null $tipo_faturamento
  * @property string|null $status
  * @property string|null $feedback
  * @property bool $ativo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\TipoServico|null $TipoServico
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|FornecedorServico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FornecedorServico newQuery()

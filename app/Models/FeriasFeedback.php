@@ -17,14 +17,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $ano
  * @property bool|null $comprada
  * @property int|null $dias_comprados
- * @property mixed|null $data_inicio
- * @property mixed|null $data_fim
+ * @property \Illuminate\Support\Carbon|null $data_inicio
+ * @property \Illuminate\Support\Carbon|null $data_fim
  * @property float $valor
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $valor_format
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasFeedback newModelQuery()

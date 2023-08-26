@@ -16,26 +16,26 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $ponto_id
  * @property string|null $autenticacao_entrada
- * @property \datetime $entrada
+ * @property \Illuminate\Support\Carbon $entrada
  * @property bool $facial_entrada
  * @property int|null $arquivo_id_entrada
  * @property float|null $lat_entrada
  * @property float|null $long_entrada
  * @property string|null $autenticacao_saida
- * @property \datetime|null $saida
+ * @property \Illuminate\Support\Carbon|null $saida
  * @property bool|null $facial_saida
  * @property int|null $arquivo_id_saida
  * @property float|null $lat_saida
  * @property float|null $long_saida
  * @property int $minutos
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property int|null $user_deletou_id
  * @property-read \App\Models\Arquivo|null $FotoEntrada
  * @property-read \App\Models\Arquivo|null $FotoSaida
  * @property-read \App\Models\PontoEletronico|null $Ponto
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $hora_entrada
  * @property-read mixed $hora_saida
@@ -43,7 +43,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read mixed $horas_trabalhadas_format
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico newQuery()
- * @method static \Illuminate\Database\Query\Builder|PeriodoPontoEletronico onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico query()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereArquivoIdEntrada($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereArquivoIdSaida($value)
@@ -64,8 +64,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico whereUserDeletouId($value)
- * @method static \Illuminate\Database\Query\Builder|PeriodoPontoEletronico withTrashed()
- * @method static \Illuminate\Database\Query\Builder|PeriodoPontoEletronico withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoPontoEletronico withoutTrashed()
  * @mixin \Eloquent
  */
 class PeriodoPontoEletronico extends Model

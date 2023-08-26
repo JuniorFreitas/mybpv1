@@ -20,10 +20,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $observacao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $periodo
  * @method static \Illuminate\Database\Eloquent\Builder|Afastamento newModelQuery()

@@ -19,13 +19,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $mensagem
  * @property int|null $arquivo_id
  * @property bool $visto
- * @property \datetime|null $datahora_visto
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $datahora_visto
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User|null $De
  * @property-read \App\Models\GruposChat|null $Grupo
  * @property-read \App\Models\User|null $Para
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|MensagemChat newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|MensagemChat newQuery()

@@ -14,9 +14,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $nome
  * @property string $uf
  * @property bool $capital
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VagasAbertas> $VagasAbertas
  * @property-read int|null $vagas_abertas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Municipio newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Municipio newQuery()

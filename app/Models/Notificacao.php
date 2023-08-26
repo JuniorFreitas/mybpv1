@@ -14,8 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $user_id
  * @property array $payload
  * @property bool $visto
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao query()

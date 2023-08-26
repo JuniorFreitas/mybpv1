@@ -19,9 +19,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $topico_explicacao
  * @property bool $ativo
  * @property-read \App\Models\AvaliacaoTipo|null $AvaliacaoTipo
- * @property-read \Illuminate\Database\Eloquent\Collection|AvaliacaoTopico[] $Subtopicos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, AvaliacaoTopico> $Subtopicos
  * @property-read int|null $subtopicos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico newQuery()

@@ -19,12 +19,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\Cliente $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $endereco_completo
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial newQuery()
- * @method static \Illuminate\Database\Query\Builder|ClienteFilial onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial query()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial userEmpresa()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial whereAtivo($value)
@@ -34,8 +34,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|ClienteFilial withTrashed()
- * @method static \Illuminate\Database\Query\Builder|ClienteFilial withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteFilial withoutTrashed()
  * @mixin \Eloquent
  */
 class ClienteFilial extends Model

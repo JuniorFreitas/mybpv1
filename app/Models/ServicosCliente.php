@@ -14,8 +14,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int|null $cliente_id
  * @property int|null $servico_id
- * @property mixed $data_inicio
- * @property mixed $data_encerramento
+ * @property \Illuminate\Support\Carbon $data_inicio
+ * @property \Illuminate\Support\Carbon $data_encerramento
  * @property string|null $escopo
  * @property float $valor
  * @property string $tipo_faturamento
@@ -23,12 +23,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $feedback
  * @property bool $ativo
  * @property string $tipo_contrato
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\Servico|null $Servico
  * @property-read \App\Models\TipoServico|null $TipoServico
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosCliente newQuery()

@@ -18,7 +18,9 @@ use MasterTag\DataHora;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $empresa_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PlanejamentoDiarioTarefas[] $Tarefas
+ * @property mixed $0
+ * @property mixed $1
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PlanejamentoDiarioTarefas> $Tarefas
  * @property-read int|null $tarefas_count
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario newQuery()

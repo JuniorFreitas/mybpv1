@@ -14,10 +14,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int|null $feedback_id
  * @property string|null $nr_dez_instituicao
- * @property mixed|null $nr_dez_emissao
- * @property mixed|null $nr_dez_validade
+ * @property \Illuminate\Support\Carbon|null $nr_dez_emissao
+ * @property \Illuminate\Support\Carbon|null $nr_dez_validade
  * @property-read \App\Models\Curriculo|null $Curriculo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CertificadoNr newQuery()

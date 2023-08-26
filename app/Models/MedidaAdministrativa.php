@@ -18,16 +18,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $tipo
  * @property string|null $definicao
  * @property string|null $motivo
- * @property mixed|null $created_at
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string|null $causa
  * @property string $data_solicitacao
  * @property string|null $data_retorno
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $tipo_medida
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa newModelQuery()

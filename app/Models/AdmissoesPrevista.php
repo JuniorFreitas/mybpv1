@@ -18,47 +18,67 @@ use MasterTag\DataHora;
  * @property int $centro_custo_id
  * @property string $tipo_contrato
  * @property int $cargo_id
- * @property mixed $data_admissao
+ * @property \Illuminate\Support\Carbon $data_admissao
  * @property float $salario
  * @property int|null $user_id
  * @property string|null $solicitante
  * @property string|null $obs
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property int|null $empresa_id
  * @property int|null $gestor_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property bool|null $filial
+ * @property int|null $centro_custo_filial_id
+ * @property int|null $rh_aprovacao_id
+ * @property string|null $obs_rh
+ * @property string|null $status_aprovacao_rh
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_rh
+ * @property bool $aprovado_via_script
+ * @property int|null $quem_deletou_id
+ * @property string|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\Vaga|null $Cargo
  * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilial
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\User|null $Colaborador
  * @property-read \App\Models\User|null $GestorAprovacao
+ * @property-read \App\Models\User|null $RhAprovacao
  * @property-read \App\Models\User|null $UserAprovacao
  * @property-read \App\Models\User|null $UserCadastrou
  * @property-read mixed $salario_format
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereAprovadoViaScript($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereCargoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereCentroCustoFilialId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereCentroCustoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereColaboradorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereDataAdmissao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereFilial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereGestorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObs($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereObsRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereQuemDeletouId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereRhAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereSalario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereSolicitante($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereStatusAprovacaoRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereTipoContrato($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserAprovacaoId($value)

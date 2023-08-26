@@ -17,7 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $empresa_id
  * @property bool $ativo
  * @property-read \App\Models\AvaliacaoTopico $AvaliacaoTipo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTipo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTipo newQuery()

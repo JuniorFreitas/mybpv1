@@ -18,7 +18,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $tipo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $novo_salario_format
  * @property-read mixed $tipo_text

@@ -14,7 +14,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $feedback_id
  * @property bool $cipa
- * @property mixed $data_desmobilizacao
+ * @property \Illuminate\Support\Carbon $data_desmobilizacao
  * @property int $motivo_rescisao_id
  * @property string|null $outro_motivo
  * @property int $tipo_aviso_id
@@ -25,7 +25,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\FeedbackCurriculo $Feedback
  * @property-read \App\Models\User $User
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read \App\Models\MotivoRescisao $motivoRescisao
  * @property-read \App\Models\TipoAviso $tipoAviso

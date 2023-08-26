@@ -25,8 +25,8 @@ use Intervention\Image\ImageManagerStatic as Image;
  * @property bool $temporario
  * @property string|null $chave
  * @property string|null $disco
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read string $url
  * @property-read string $url_delete
  * @property-read string $url_download

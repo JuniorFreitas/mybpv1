@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $feedback_id
  * @property string|null $observacoes
  * @property string|null $quem_classificou
- * @property mixed|null $data_afastamento
+ * @property \Illuminate\Support\Carbon|null $data_afastamento
  * @property string|null $preenchido_por
  * @property int|null $user_id
  * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisaoCurriculo newModelQuery()

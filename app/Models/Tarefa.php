@@ -18,23 +18,23 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $titulo
  * @property string|null $descricao
  * @property int $ordem
- * @property \datetime|null $datahora_inicio
- * @property \datetime|null $datahora_entrega
+ * @property \Illuminate\Support\Carbon|null $datahora_inicio
+ * @property \Illuminate\Support\Carbon|null $datahora_entrega
  * @property string|null $lembrete
  * @property bool $concluido
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ChecklistsTarefa[] $Checklists
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ChecklistsTarefa> $Checklists
  * @property-read int|null $checklists_count
  * @property-read \App\Models\ListaTarefa|null $Lista
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\LogWeekly[] $Logs
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LogWeekly> $Logs
  * @property-read int|null $logs_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Membros
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $Membros
  * @property-read int|null $membros_count
  * @property-read \App\Models\User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $data_hora_entrega_formatada
  * @property-read mixed $data_hora_inicio_formatada

@@ -15,7 +15,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property mixed $abertura
  * @property mixed $fechamento
  * @property bool $ativo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|HorarioAcesso newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|HorarioAcesso newQuery()

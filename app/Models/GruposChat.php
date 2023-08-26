@@ -13,9 +13,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $nome
  * @property int $empresa_id
  * @property int $criou_id
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|GruposChat newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|GruposChat newQuery()

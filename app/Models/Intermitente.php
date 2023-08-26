@@ -38,18 +38,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $centro_custo_id
  * @property int|null $prazo_resposta
  * @property string|null $prazo_resposta_expiracao
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\AreaEtiqueta|null $Area
  * @property-read \App\Models\CentroCusto|null $CentroDeCusto
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\FeedbackCurriculo|null $Colaborador
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\IntermitenteProrrogacao[] $Prorrogacao
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\IntermitenteProrrogacao> $Prorrogacao
  * @property-read int|null $prorrogacao_count
  * @property-read User|null $ResponsavelAprovacao
  * @property-read User|null $ResponsavelLancamento
  * @property-read \App\Models\IntermitenteTipo|null $Tipo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Intermitente newQuery()

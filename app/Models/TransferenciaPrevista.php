@@ -16,19 +16,19 @@ use MasterTag\DataHora;
  * @property int|null $colaborador_id
  * @property int $centro_custo_origem_id
  * @property int $centro_custo_destino_id
- * @property mixed $data_transferencia
+ * @property \Illuminate\Support\Carbon $data_transferencia
  * @property int|null $user_id
  * @property string|null $solicitante
  * @property string|null $obs
  * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property int|null $empresa_id
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $gestor_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\CentroCusto|null $CentroCustoDestino
  * @property-read \App\Models\CentroCusto|null $CentroCustoOrigem

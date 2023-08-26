@@ -28,9 +28,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Avaliacao|null $Avaliacao
  * @property-read \App\Models\User|null $Avaliador
  * @property-read \App\Models\User|null $Funcionario
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoResposta[] $Respostas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AvaliacaoResposta> $Respostas
  * @property-read int|null $respostas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback newQuery()

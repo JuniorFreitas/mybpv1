@@ -15,16 +15,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $user_id
  * @property string $titulo
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $empresa_id
  * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ListaTarefa[] $Listas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ListaTarefa> $Listas
  * @property-read int|null $listas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\LogWeekly[] $Logs
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LogWeekly> $Logs
  * @property-read int|null $logs_count
  * @property-read \App\Models\User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Quadro newQuery()

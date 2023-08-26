@@ -18,10 +18,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $empresa_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Admissao[] $Admissao
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Admissao> $Admissao
  * @property-read int|null $admissao_count
  * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CentroCustoFilial[] $Filiais
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CentroCustoFilial> $Filiais
  * @property-read int|null $filiais_count
  * @property-read \App\Models\User|null $Gestor
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto newModelQuery()

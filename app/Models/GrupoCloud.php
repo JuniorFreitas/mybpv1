@@ -16,13 +16,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $descricao
  * @property bool $ativo
  * @property int|null $empresa_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Users
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $Users
  * @property-read int|null $users_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Usuarios
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $Usuarios
  * @property-read int|null $usuarios_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\HabilidadeCloud[] $habilidades
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\HabilidadeCloud> $habilidades
  * @property-read int|null $habilidades_count
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|GrupoCloud newQuery()

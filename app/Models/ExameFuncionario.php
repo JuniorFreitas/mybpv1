@@ -16,41 +16,41 @@ use MasterTag\DataHora;
  * @property int $empresa_id
  * @property int $formulario_id
  * @property int $feedback_id
- * @property mixed $respostas
+ * @property array $respostas
  * @property int $empresa_exame_id
  * @property int $user_encaminhou_id
+ * @property string $token
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property bool|null $pcmso
+ * @property int|null $pcmso_id
+ * @property int|null $exame_tipo_id
+ * @property \Illuminate\Support\Carbon|null $encaminhamento_data
  * @property-read \App\Models\EmpresaExame|null $EmpresaExame
+ * @property-read \App\Models\ExameTipo|null $ExameTipo
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\Formulario|null $Formulario
+ * @property-read \App\Models\Pcmso|null $PcmsoDados
  * @property-read \App\Models\User|null $QuemEncaminhou
+ * @property-read \App\Models\Examesesmt|null $Sesmt
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario query()
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereEmpresaExameId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereEncaminhamentoData($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereExameTipoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereFormularioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario wherePcmso($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario wherePcmsoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereRespostas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereUserEncaminhouId($value)
  * @mixin \Eloquent
- * @property string $token
- * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereToken($value)
- * @property-read \App\Models\Examesesmt|null $Sesmt
- * @property bool|null $pcmso
- * @property int|null $pcmso_id
- * @property int|null $exame_tipo_id
- * @property mixed|null $encaminhamento_data
- * @property-read \App\Models\ExameTipo|null $ExameTipo
- * @property-read \App\Models\Pcmso|null $PcmsoDados
- * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereEncaminhamentoData($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereExameTipoId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario wherePcmso($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario wherePcmsoId($value)
  */
 class ExameFuncionario extends Model
 {

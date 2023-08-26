@@ -21,20 +21,20 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property float $valor
  * @property float $saldo
  * @property string $operacao
- * @property \datetime $data_hora
- * @property \datetime|null $data_pendente quando vai receber ou pagar
- * @property \datetime|null $data_hora_concluido quando recebeu ou pagou
+ * @property \Illuminate\Support\Carbon $data_hora
+ * @property \Illuminate\Support\Carbon|null $data_pendente quando vai receber ou pagar
+ * @property \Illuminate\Support\Carbon|null $data_hora_concluido quando recebeu ou pagou
  * @property bool $concluido
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $empresa_id
  * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\LancamentoForma[] $Formas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LancamentoForma> $Formas
  * @property-read int|null $formas_count
  * @property-read \App\Models\PlanoConta|null $PlanoConta
  * @property-read \App\Models\User|null $QuemAlterou
  * @property-read \App\Models\User|null $QuemCadastrou
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $credito
  * @property-read mixed $debito

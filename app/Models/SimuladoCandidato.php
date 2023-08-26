@@ -15,7 +15,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $feedback_id
  * @property int $duracao_segundos
  * @property bool $finalizado
- * @property mixed|null $data_finalizacao
+ * @property \Illuminate\Support\Carbon|null $data_finalizacao
  * @property int|null $acertos
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -23,7 +23,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $empresa_id
  * @property-read \App\Models\FeedbackCurriculo|null $Candidato
  * @property-read \App\Models\SimuladoVaga|null $SimuladoVaga
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoCandidato newQuery()

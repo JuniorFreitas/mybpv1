@@ -18,7 +18,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool $ativo
  * @property int $empresa_id
  * @property-read \App\Models\CategoriaPlanoConta|null $Categoria
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $operacao_credito
  * @property-read mixed $operacao_debito

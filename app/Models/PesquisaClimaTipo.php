@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $nome
  * @property int $ativo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PesquisaClimaPergunta[] $PesquisaClimaPergunta
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PesquisaClimaPergunta> $PesquisaClimaPergunta
  * @property-read int|null $pesquisa_clima_pergunta_count
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaTipo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaTipo newQuery()

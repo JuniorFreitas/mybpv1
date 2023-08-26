@@ -23,11 +23,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\CentroCusto $CentroCusto
  * @property-read \App\Models\Cliente $Empresa
  * @property-read \App\Models\ClienteFilial $Filial
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial newQuery()
- * @method static \Illuminate\Database\Query\Builder|CentroCustoFilial onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial query()
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereCentroCustoId($value)
@@ -37,8 +37,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|CentroCustoFilial withTrashed()
- * @method static \Illuminate\Database\Query\Builder|CentroCustoFilial withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|CentroCustoFilial withoutTrashed()
  * @mixin \Eloquent
  */
 class CentroCustoFilial extends Model

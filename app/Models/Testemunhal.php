@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexo
  * @property-read int|null $anexo_count
  * @method static \Illuminate\Database\Eloquent\Builder|Testemunhal newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Testemunhal newQuery()

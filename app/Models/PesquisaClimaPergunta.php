@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $tipo_id
  * @property string $pergunta
  * @property bool $ativo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PesquisaClimaPerguntaRespostaCandidato[] $PerguntaResposta
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PesquisaClimaPerguntaRespostaCandidato> $PerguntaResposta
  * @property-read int|null $pergunta_resposta_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PesquisaClimaPerguntaResposta[] $Resposta
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PesquisaClimaPerguntaResposta> $Resposta
  * @property-read int|null $resposta_count
  * @property-read \App\Models\PesquisaClimaTipo|null $Tipo
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaPergunta newModelQuery()

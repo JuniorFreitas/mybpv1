@@ -16,13 +16,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $user_id
  * @property string $titulo
  * @property int $ordem
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Quadro|null $Quadro
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tarefa[] $Tarefas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tarefa> $Tarefas
  * @property-read int|null $tarefas_count
  * @property-read \App\Models\User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|ListaTarefa newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ListaTarefa newQuery()

@@ -14,18 +14,18 @@ use DateTimeInterface;
  * @property int $ferias_prevista_id referencia ao colaborador HASONE
  * @property int|null $centro_custo_id
  * @property int|null $solicitante_id
- * @property mixed|null $data_saida
+ * @property \Illuminate\Support\Carbon|null $data_saida
  * @property int|null $qnt_dias
- * @property mixed|null $data_retorno
+ * @property \Illuminate\Support\Carbon|null $data_retorno
  * @property int|null $dias_saldo
  * @property string|null $status
  * @property string|null $obs
  * @property int|null $periodo_aquisitivo_id
  * @property string|null $ultima_data
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property bool $tem_faltas
@@ -33,7 +33,7 @@ use DateTimeInterface;
  * @property int|null $user_rh_id
  * @property string|null $resposta_rh
  * @property string|null $obs_rh
- * @property mixed|null $data_aprovacao_rh
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_rh
  * @property int|null $gestor_id
  * @property-read \App\Models\CentroCusto|null $CentroCusto
  * @property-read \App\Models\FeriasPrevistaMov|null $FeriasPrevistaMov

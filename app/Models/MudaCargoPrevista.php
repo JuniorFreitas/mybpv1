@@ -23,15 +23,15 @@ use MasterTag\DataHora;
  * @property int|null $user_id
  * @property string|null $autorizado_por
  * @property string|null $obs
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property int|null $empresa_id
  * @property int|null $gestor_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\Vaga|null $CargoAnterior
  * @property-read \App\Models\CentroCusto|null $CentroCusto

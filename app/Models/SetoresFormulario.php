@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property int|null $empresa_id
  * @property string $nome
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AlternativaFormulario[] $Alternativas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AlternativaFormulario> $Alternativas
  * @property-read int|null $alternativas_count
  * @method static \Illuminate\Database\Eloquent\Builder|SetoresFormulario newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|SetoresFormulario newQuery()

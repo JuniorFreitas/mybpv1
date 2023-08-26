@@ -16,12 +16,12 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int $vaga_aberta_id
  * @property int $qnt_total
  * @property int $qnt_preenchida
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeedbackCurriculo[] $Feedbacks
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FeedbackCurriculo> $Feedbacks
  * @property-read int|null $feedbacks_count
  * @property-read \App\Models\Projeto|null $Projeto
  * @property-read \App\Models\VagasAbertas|null $VagaAberta
  * @property-read mixed $tem_vaga
- * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto newQuery()

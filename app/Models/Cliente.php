@@ -38,43 +38,43 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $como_conheceu_outro
  * @property string|null $politica_ehs
  * @property bool $ativo
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string|null $missao
  * @property string|null $visao
  * @property string|null $valores
  * @property string|null $politica_gq
  * @property-read \App\Models\Area|null $Area
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AreaEtiqueta[] $AreasEtiquetas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AreaEtiqueta> $AreasEtiquetas
  * @property-read int|null $areas_etiquetas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Vaga[] $Cargos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Vaga> $Cargos
  * @property-read int|null $cargos_count
  * @property-read \App\Models\CarteiraAssinatura|null $CarteiraAssinatura
  * @property-read \App\Models\ClienteConfig|null $ClienteConfig
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $EmpresaFuncionarios
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $EmpresaFuncionarios
  * @property-read int|null $empresa_funcionarios_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ClienteFilial[] $Filiais
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ClienteFilial> $Filiais
  * @property-read int|null $filiais_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Funcionarios
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $Funcionarios
  * @property-read int|null $funcionarios_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Logo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Logo
  * @property-read int|null $logo_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Mascote
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Mascote
  * @property-read int|null $mascote_count
  * @property-read \App\Models\Papel|null $Papel
  * @property-read \App\Models\ParabensEnviado|null $Parabens
  * @property-read \App\Models\PesquisaClimaCliente|null $PesquisaClimaCliente
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ServicosCliente[] $ServicosCliente
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ServicosCliente> $ServicosCliente
  * @property-read int|null $servicos_cliente_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ServicosProspects[] $ServicosProspect
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ServicosProspects> $ServicosProspect
  * @property-read int|null $servicos_prospect_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ClienteTelefone[] $Telefones
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ClienteTelefone> $Telefones
  * @property-read int|null $telefones_count
  * @property-read \App\Models\EmpresaTemporaria|null $Temporaria
  * @property-read \App\Models\User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VagasAbertas> $VagasAbertas
  * @property-read int|null $vagas_abertas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $endereco_completo
  * @property mixed $inicio

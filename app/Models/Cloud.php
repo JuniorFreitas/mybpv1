@@ -18,13 +18,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property bool $ativo
  * @property-read \App\Models\Cliente $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ItensCloud[] $Itens
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItensCloud> $Itens
  * @property-read int|null $itens_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ItensCloud[] $Raiz
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ItensCloud> $Raiz
  * @property-read int|null $raiz_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $Usuarios
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $Usuarios
  * @property-read int|null $usuarios_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Cloud newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Cloud newQuery()

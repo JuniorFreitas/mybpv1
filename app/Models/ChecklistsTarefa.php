@@ -15,12 +15,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $tarefa_id
  * @property string $titulo
  * @property int $ordem
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ChecklistsTarefaItem[] $Itens
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ChecklistsTarefaItem> $Itens
  * @property-read int|null $itens_count
  * @property-read \App\Models\Tarefa|null $Tarefa
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefa newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefa newQuery()

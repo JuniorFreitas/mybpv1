@@ -17,18 +17,18 @@ use MasterTag\DataHora;
  * @property int|null $cliente_id
  * @property int $colaborador_id
  * @property int $centro_custo_id
- * @property mixed $data_saida
+ * @property \Illuminate\Support\Carbon $data_saida
  * @property int $qnt_dias
- * @property mixed $data_retorno
+ * @property \Illuminate\Support\Carbon $data_retorno
  * @property int $dias_saldo
  * @property int|null $user_id
  * @property string|null $solicitante
  * @property string|null $status
  * @property string|null $obs
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property bool $tem_faltas
@@ -36,14 +36,14 @@ use MasterTag\DataHora;
  * @property int|null $user_rh_id
  * @property string|null $resposta_rh
  * @property string|null $obs_rh
- * @property mixed|null $data_aprovacao_rh
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_rh
  * @property int|null $empresa_id
  * @property int|null $gestor_id
  * @property string|null $periodo_aquisitivo
- * @property mixed|null $ultima_data
+ * @property \Illuminate\Support\Carbon|null $ultima_data
  * @property string|null $mes
  * @property int|null $periodo_aquisitivo_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
  * @property-read \App\Models\Cliente|null $Cliente

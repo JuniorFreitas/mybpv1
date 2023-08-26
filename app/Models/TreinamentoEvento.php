@@ -15,18 +15,18 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $cliente_id
  * @property int $treinamento_sgi_id
  * @property int $empresa_treinamento_id
- * @property mixed $data_inicio
- * @property mixed $data_fim
+ * @property \Illuminate\Support\Carbon $data_inicio
+ * @property \Illuminate\Support\Carbon $data_fim
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\EmpresaTreinamento|null $EmpresaTreinamento
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Instrutor[] $InstrutoresEvento
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Instrutor> $InstrutoresEvento
  * @property-read int|null $instrutores_evento_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PessoaEmpresa[] $PessoasEvento
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PessoaEmpresa> $PessoasEvento
  * @property-read int|null $pessoas_evento_count
  * @property-read \App\Models\TreinamentoSgi|null $TreinamentoSgi
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoEvento newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoEvento newQuery()

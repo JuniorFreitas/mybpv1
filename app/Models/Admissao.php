@@ -30,16 +30,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $prazo_experiencia
  * @property string|null $tipo_treinamento
  * @property string|null $treinamento
- * @property mixed|null $data_treinamento
+ * @property string|null $data_treinamento
  * @property string|null $carteira_treinamento
  * @property string|null $nr_trinta_tres
- * @property mixed|null $data_nr_trinta_tres
+ * @property string|null $data_nr_trinta_tres
  * @property string|null $nr_trinta_cinco
- * @property mixed|null $data_nr_trinta_cinco
+ * @property string|null $data_nr_trinta_cinco
  * @property string|null $trinta_dois_sessenta
- * @property mixed|null $data_trinta_dois_sessenta
+ * @property string|null $data_trinta_dois_sessenta
  * @property string|null $numero_cracha
- * @property mixed|null $data_aso
+ * @property string|null $data_aso
  * @property bool|null $foto_escaneada
  * @property string|null $status_carteira_treinamento
  * @property int|null $usuario_id
@@ -53,12 +53,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $obs_avaliacao
  * @property int|null $user_avaliacao
  * @property string|null $responsavel_feedback
- * @property mixed|null $data_avaliacao
+ * @property string|null $data_avaliacao
  * @property int|null $area_etiqueta_id
  * @property bool|null $deu_baixa_epi
  * @property bool|null $cipa
  * @property array|null $alternativas
- * @property mixed|null $data_desmob
+ * @property string|null $data_desmob
  * @property int|null $usuario_desmob
  * @property bool|null $pendencia
  * @property string|null $pendencias_quais
@@ -66,7 +66,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $preenchido_por_rh
  * @property string|null $preenchido_por_adm
  * @property string|null $preenchido_por_ssma
- * @property mixed|null $data_entrega_area
+ * @property string|null $data_entrega_area
  * @property bool|null $biometria
  * @property string|null $data_biometria
  * @property int|null $formulario_id
@@ -74,7 +74,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property string|null $acessar_area_porto
  * @property string|null $avaliacao_psicologica
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexo
  * @property-read int|null $anexo_count
  * @property-read \App\Models\AreaEtiqueta|null $AreaEtiqueta
  * @property-read \App\Models\Treinamento|null $Carteira
@@ -84,15 +84,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\DadosAdmissao|null $DadosAdmissoes
  * @property-read \App\Models\Demissao|null $Demissao
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasAdquiridas[] $FeriasAdquiridas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FeriasAdquiridas> $FeriasAdquiridas
  * @property-read int|null $ferias_adquiridas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoTres
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $FotoTres
  * @property-read int|null $foto_tres_count
  * @property-read \App\Models\User|null $QuemAdmitiu
  * @property-read \App\Models\User|null $QuemAlterou
  * @property-read \App\Models\ResultadoIntegrado|null $ResultadoIntegrado
+ * @property-read \App\Models\Examesesmt|null $UltimoAso
  * @property-read \App\Models\AdmissaoAso|null $UltimoAsoAtivo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read \App\Models\ParecerRh|null $parecerRh
  * @property-read \App\Models\ParecerRota|null $parecerRota
@@ -102,7 +103,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao demitidos()
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao newQuery()
- * @method static \Illuminate\Database\Query\Builder|Admissao onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao query()
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAcessarAreaPorto($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAlternativas($value)
@@ -166,25 +167,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUserAvaliacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsuarioDesmob($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsuarioId($value)
- * @method static \Illuminate\Database\Query\Builder|Admissao withTrashed()
- * @method static \Illuminate\Database\Query\Builder|Admissao withoutTrashed()
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasAdquiridas[] $FeriasAdquiridas
- * @property-read int|null $ferias_adquiridas_count
- * @property-read \App\Models\CentroCusto|null $CentroCusto
- * @property int $usar_salario_base
- * @property mixed|null $movimentacoes
- * @property string|null $acessar_area_porto
- * @property string|null $avaliacao_psicologica
- * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAcessarAreaPorto($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereAvaliacaoPsicologica($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereMovimentacoes($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsarSalarioBase($value)
- * @property bool $filial
- * @property int|null $centro_custo_filial_id
- * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilial
- * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereCentroCustoFilialId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereFilial($value)
- * @property-read \App\Models\Examesesmt|null $UltimoAso
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao withoutTrashed()
  * @mixin \Eloquent
  */
 class Admissao extends Model

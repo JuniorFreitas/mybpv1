@@ -12,8 +12,8 @@ use MasterTag\DataHora;
  * @property int $feedback_id
  * @property string $nome
  * @property string $descricao
- * @property mixed $data_inicio
- * @property mixed $data_fim
+ * @property \Illuminate\Support\Carbon $data_inicio
+ * @property \Illuminate\Support\Carbon $data_fim
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback

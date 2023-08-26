@@ -14,7 +14,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property string $nome
  * @property int|null $empresa_id
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaSetor newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaSetor newQuery()

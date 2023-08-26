@@ -18,24 +18,24 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $assunto
  * @property int $quem_criou
  * @property int|null $quem_atualizou
- * @property \datetime|null $datahora_finalizou
+ * @property \Illuminate\Support\Carbon|null $datahora_finalizou
  * @property int|null $quem_finalizou
  * @property string $status
  * @property string $tipo
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $empresa_id
  * @property-read \App\Models\User|null $Atualizou
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\User|null $Criou
  * @property-read \App\Models\User|null $Finalizou
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\RespostaOcorrencia[] $Respostas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RespostaOcorrencia> $Respostas
  * @property-read int|null $respostas_count
  * @property-read \App\Models\OcorrenciaSetor|null $Setor
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tag[] $Tags
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tag> $Tags
  * @property-read int|null $tags_count
  * @property-read \App\Models\User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $status_andamento
  * @property-read mixed $status_finalizado

@@ -16,11 +16,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $feedback_id
  * @property string $curso
  * @property string $instituicao
- * @property mixed $emissao
- * @property mixed|null $validade
+ * @property \Illuminate\Support\Carbon $emissao
+ * @property \Illuminate\Support\Carbon|null $validade
  * @property bool|null $certificado
  * @property-read \App\Models\Curriculo|null $Curriculo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CursoFormacaoRH newQuery()

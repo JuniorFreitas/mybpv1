@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property string $nome
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\GrupoCloud[] $grupo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\GrupoCloud> $grupo
  * @property-read int|null $grupo_count
  * @method static \Illuminate\Database\Eloquent\Builder|HabilidadeCloud newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|HabilidadeCloud newQuery()

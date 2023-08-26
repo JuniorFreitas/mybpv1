@@ -10,33 +10,6 @@ use MasterTag\DataHora;
 /**
  * App\Models\MudancaCargo
  *
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
- * @property-read int|null $anexos_count
- * @property-read \App\Models\CentroCusto|null $CentroCustoAnterior
- * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilialAnterior
- * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilialNovo
- * @property-read \App\Models\CentroCusto|null $CentroCustoNovo
- * @property-read \App\Models\User|null $Colaborador
- * @property-read \App\Models\Cliente|null $Empresa
- * @property-read \App\Models\User|null $Gestor
- * @property-read \App\Models\User|null $GestorAprovacao
- * @property-read \App\Models\User|null $QuemDeletou
- * @property-read \App\Models\User|null $RhAprovacao
- * @property-read \App\Models\User|null $Solicitante
- * @property-read \App\Models\VagasAbertas|null $VagaAbertaAnterior
- * @property-read \App\Models\VagasAbertas|null $VagaAbertaNova
- * @property mixed $anterior_salario
- * @property mixed $data_aprovacao_gestor
- * @property mixed $data_aprovacao_rh
- * @property mixed $data_solicitacao
- * @property mixed $novo_salario
- * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo newQuery()
- * @method static \Illuminate\Database\Query\Builder|MudancaCargo onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo query()
- * @method static \Illuminate\Database\Query\Builder|MudancaCargo withTrashed()
- * @method static \Illuminate\Database\Query\Builder|MudancaCargo withoutTrashed()
- * @mixin \Eloquent
  * @property int $id
  * @property int $empresa_id
  * @property int $admissao_id
@@ -55,21 +28,45 @@ use MasterTag\DataHora;
  * @property string|null $anterior_funcao
  * @property string|null $nova_funcao
  * @property bool $mantem_salario
+ * @property float $anterior_salario
+ * @property float $novo_salario
  * @property int $solicitante_id
  * @property string|null $obs_solicitante
+ * @property string $data_solicitacao
  * @property int|null $gestor_id
  * @property int|null $gestor_aprovacao_id
  * @property string|null $obs_gestor_aprovacao
  * @property string|null $status_aprovacao_gestor
+ * @property string|null $data_aprovacao_gestor
  * @property int|null $rh_aprovacao_id
  * @property string|null $obs_rh
  * @property string|null $status_aprovacao_rh
+ * @property string|null $data_aprovacao_rh
  * @property bool $aprovado_via_script
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $quem_deletou_id
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\Admissao|null $Admissao
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
+ * @property-read int|null $anexos_count
+ * @property-read \App\Models\CentroCusto|null $CentroCustoAnterior
+ * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilialAnterior
+ * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilialNovo
+ * @property-read \App\Models\CentroCusto|null $CentroCustoNovo
+ * @property-read \App\Models\User|null $Colaborador
+ * @property-read \App\Models\Cliente|null $Empresa
+ * @property-read \App\Models\User|null $Gestor
+ * @property-read \App\Models\User|null $GestorAprovacao
+ * @property-read \App\Models\User|null $QuemDeletou
+ * @property-read \App\Models\User|null $RhAprovacao
+ * @property-read \App\Models\User|null $Solicitante
+ * @property-read \App\Models\VagasAbertas|null $VagaAbertaAnterior
+ * @property-read \App\Models\VagasAbertas|null $VagaAbertaNova
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo query()
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAdmissaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAnteriorCentroCustoFilialId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereAnteriorCentroCustoId($value)
@@ -107,6 +104,9 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereStatusAprovacaoGestor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereStatusAprovacaoRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo withoutTrashed()
+ * @mixin \Eloquent
  */
 class MudancaCargo extends Model
 {

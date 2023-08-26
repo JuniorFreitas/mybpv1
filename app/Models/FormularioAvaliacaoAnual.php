@@ -13,7 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $pergunta
  * @property int $topicos_id
  * @property-read \App\Models\Topicos|null $Topicos
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|FormularioAvaliacaoAnual newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FormularioAvaliacaoAnual newQuery()

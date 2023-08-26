@@ -17,37 +17,37 @@ use MasterTag\DataHora;
  * @property int $empresa_id
  * @property int $admissao_id
  * @property int $periodo_aquisitivo_id
- * @property mixed $data_saida
- * @property mixed $data_retorno
- * @property mixed $ultima_data
+ * @property \Illuminate\Support\Carbon $data_saida
+ * @property \Illuminate\Support\Carbon $data_retorno
+ * @property \Illuminate\Support\Carbon $ultima_data
  * @property int|null $qnt_dias
  * @property int|null $dias_saldo
  * @property bool $tem_faltas
  * @property int|null $qnt_faltas
  * @property int $solicitante_id
  * @property string|null $obs_solicitante
- * @property \datetime $data_solicitacao
+ * @property \Illuminate\Support\Carbon $data_solicitacao
  * @property int|null $gestor_id
  * @property int|null $gestor_aprovacao_id
  * @property string|null $obs_gestor
  * @property string|null $status_aprovacao_gestor
- * @property \datetime|null $data_aprovacao_gestor
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_gestor
  * @property int|null $rh_aprovacao_id
  * @property string|null $obs_rh
  * @property string|null $status_aprovacao_rh
- * @property \datetime|null $data_aprovacao_rh
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_rh
  * @property string|null $status_ferias
- * @property \datetime|null $data_status_ferias
+ * @property \Illuminate\Support\Carbon|null $data_status_ferias
  * @property int|null $ferias_prevista_id
  * @property bool $aprovado_via_script
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $quem_deletou_id
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property bool $abono_pecuniario
  * @property bool $adiantamento_decimo_terceiro
  * @property-read \App\Models\Admissao|null $Admissao
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read User|null $Empresa
  * @property-read \App\Models\FeriasPrevista|null $FeriasPrevista
@@ -58,7 +58,7 @@ use MasterTag\DataHora;
  * @property-read User|null $Solicitante
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias newQuery()
- * @method static \Illuminate\Database\Query\Builder|Ferias onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias query()
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAbonoPecuniario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereAdiantamentoDecimoTerceiro($value)
@@ -93,8 +93,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereTemFaltas($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereUltimaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|Ferias withTrashed()
- * @method static \Illuminate\Database\Query\Builder|Ferias withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Ferias withoutTrashed()
  * @mixin \Eloquent
  */
 class Ferias extends Model

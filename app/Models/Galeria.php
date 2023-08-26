@@ -17,9 +17,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Fotos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Fotos
  * @property-read int|null $fotos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Galeria newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Galeria newQuery()

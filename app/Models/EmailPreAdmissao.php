@@ -20,7 +20,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $email_padrao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmailPreAdmissao newQuery()

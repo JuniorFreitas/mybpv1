@@ -24,7 +24,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $status
  * @property array|null $dados_extras
  * @property-read \App\Models\AvaliacaoTopico|null $Topico
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResultado newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResultado newQuery()

@@ -20,11 +20,11 @@ use function Symfony\Component\String\s;
  * @property float $total_avos
  * @property array|null $historico
  * @property bool $atualizado_via_script
- * @property mixed $ultima_atualizacao
+ * @property \Illuminate\Support\Carbon $ultima_atualizacao
  * @property-read \App\Models\Admissao|null $Admissao
  * @property-read \App\Models\User|null $Empresa
  * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-write mixed $ultima_atualiazao
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasCalculoAvos newModelQuery()

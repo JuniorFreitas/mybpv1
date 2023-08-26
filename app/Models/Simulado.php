@@ -19,14 +19,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $empresa_id
  * @property string|null $tipo_prova
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoPergunta[] $Perguntas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SimuladoPergunta> $Perguntas
  * @property-read int|null $perguntas_count
  * @property-read \App\Models\SimuladoVaga|null $SimuladoVaga
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $qnt_questoes
  * @property-read mixed $slug
- * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  * @method static \Illuminate\Database\Eloquent\Builder|Simulado newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Simulado newQuery()

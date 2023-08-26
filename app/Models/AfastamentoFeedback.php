@@ -14,13 +14,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $feedback_id
  * @property int $quem_cadastrou
- * @property mixed|null $data_inicio
- * @property mixed|null $data_fim
+ * @property \Illuminate\Support\Carbon|null $data_inicio
+ * @property \Illuminate\Support\Carbon|null $data_fim
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AfastamentoFeedback newQuery()

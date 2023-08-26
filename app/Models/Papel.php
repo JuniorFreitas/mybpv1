@@ -18,9 +18,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $empresa_id
  * @property bool $ativo
  * @property bool|null $master
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Habilidade[] $habilidades
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Habilidade> $habilidades
  * @property-read int|null $habilidades_count
  * @method static \Illuminate\Database\Eloquent\Builder|Papel clinica()
  * @method static \Illuminate\Database\Eloquent\Builder|Papel newModelQuery()

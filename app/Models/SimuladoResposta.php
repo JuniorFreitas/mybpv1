@@ -14,7 +14,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $resposta
  * @property bool $correto
  * @property-read \App\Models\SimuladoPergunta|null $Pergunta
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoResposta newQuery()

@@ -23,15 +23,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $enviou_id
  * @property string|null $email_envio
  * @property bool|null $email_aberto
- * @property mixed|null $data_email_aberto
- * @property mixed|null $created_at
- * @property mixed|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $data_email_aberto
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
  * @property-read \App\Models\User|null $QuemCadastrou
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Vencimento[] $Vencimentos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Vencimento> $Vencimentos
  * @property-read int|null $vencimentos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $token
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento newModelQuery()

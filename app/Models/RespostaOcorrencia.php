@@ -13,13 +13,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $ocorrencia_id
  * @property int $user_id
  * @property string $resposta
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\Ocorrencia $Ocorrencia
  * @property-read User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RespostaOcorrencia newQuery()

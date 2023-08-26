@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $empresa_id
  * @property string $nome
  * @property string $tipo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\RespostaAlternativas[] $Opcoes
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RespostaAlternativas> $Opcoes
  * @property-read int|null $opcoes_count
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario newQuery()

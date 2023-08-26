@@ -88,10 +88,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $obs_horario
  * @property int|null $formulario_id
  * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CertificadoNr[] $Nr
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CertificadoNr> $Nr
  * @property-read int|null $nr_count
  * @property-read \App\Models\User|null $QuemEntrevistou
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read \App\Models\EntrevistaRh|null $entrevistaRh
  * @property-read \App\Models\GestorRh|null $gestorRh

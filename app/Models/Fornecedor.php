@@ -32,14 +32,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool $ativo
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FornecedorServico[] $Servicos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FornecedorServico> $Servicos
  * @property-read int|null $servicos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\TelefoneFornecedor[] $Telefones
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TelefoneFornecedor> $Telefones
  * @property-read int|null $telefones_count
  * @property-read \App\Models\User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $endereco_completo
  * @method static Builder|Fornecedor newModelQuery()

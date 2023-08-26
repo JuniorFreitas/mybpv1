@@ -11,10 +11,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $user_id
  * @property string $token
  * @property string $ip_solicitacao
- * @property mixed $solicitacao
- * @property mixed $expiracao
+ * @property \Illuminate\Support\Carbon $solicitacao
+ * @property \Illuminate\Support\Carbon $expiracao
  * @property string|null $ip_recuperacao
- * @property mixed|null $recuperacao
+ * @property \Illuminate\Support\Carbon|null $recuperacao
  * @property bool $recuperado
  * @property-read \App\Models\User|null $User
  * @method static \Illuminate\Database\Eloquent\Builder|RecuperacaoSenha newModelQuery()

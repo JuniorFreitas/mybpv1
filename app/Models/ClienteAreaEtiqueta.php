@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $cliente_id
  * @property int $area_etiqueta_id
  * @property string|null $numero_supervisor
+ * @property mixed $0
+ * @property mixed $1
+ * @property mixed $2
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteAreaEtiqueta newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteAreaEtiqueta newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteAreaEtiqueta query()

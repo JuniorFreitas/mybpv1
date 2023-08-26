@@ -21,13 +21,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $user_deletou_id
  * @property-read \App\Models\EmpresaEscala|null $Escala
  * @property-read \App\Models\OcorrenciaJornada|null $Ocorrencia
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PeriodoJornada[] $Periodos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PeriodoJornada> $Periodos
  * @property-read int|null $periodos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada newQuery()
- * @method static \Illuminate\Database\Query\Builder|EscalaJornada onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada query()
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada whereEscalaId($value)
@@ -36,8 +36,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada whereRepetir($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada whereUserDeletouId($value)
- * @method static \Illuminate\Database\Query\Builder|EscalaJornada withTrashed()
- * @method static \Illuminate\Database\Query\Builder|EscalaJornada withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|EscalaJornada withoutTrashed()
  * @mixin \Eloquent
  */
 class EscalaJornada extends Model

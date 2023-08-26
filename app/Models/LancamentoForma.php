@@ -17,7 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $observacoes
  * @property-read \App\Models\FormaPagamento|null $FormaPagamento
  * @property-read \App\Models\Lancamento $Lancamento
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $valor_format
  * @method static \Illuminate\Database\Eloquent\Builder|LancamentoForma newModelQuery()

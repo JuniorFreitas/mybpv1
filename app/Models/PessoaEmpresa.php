@@ -11,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * App\Models\PessoaEmpresa
  *
  * @property-read \App\Models\Cliente|null $Cliente
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property mixed $cpf
  * @property mixed $email

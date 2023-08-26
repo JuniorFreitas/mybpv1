@@ -14,16 +14,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $id
  * @property int $jornada_id
- * @property \datetime $entrada
- * @property \datetime $saida
+ * @property \Illuminate\Support\Carbon $entrada
+ * @property \Illuminate\Support\Carbon $saida
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property int|null $user_deletou_id
  * @property-read \App\Models\EscalaJornada|null $Jornada
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada newQuery()
- * @method static \Illuminate\Database\Query\Builder|PeriodoJornada onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada query()
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereEntrada($value)
@@ -31,8 +31,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereJornadaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereSaida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada whereUserDeletouId($value)
- * @method static \Illuminate\Database\Query\Builder|PeriodoJornada withTrashed()
- * @method static \Illuminate\Database\Query\Builder|PeriodoJornada withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriodoJornada withoutTrashed()
  * @mixin \Eloquent
  */
 class PeriodoJornada extends Model

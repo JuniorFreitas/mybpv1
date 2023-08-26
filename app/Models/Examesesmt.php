@@ -11,6 +11,7 @@ use MasterTag\DataHora;
  * App\Models\Examesesmt
  *
  * @property int $id
+ * @property int|null $feedback_id
  * @property int $exame_funcionario_id
  * @property int $empresa_id
  * @property bool $exame_realizado
@@ -18,33 +19,32 @@ use MasterTag\DataHora;
  * @property string|null $data_realizacao
  * @property string|null $data_vencimento
  * @property bool $vencido
+ * @property bool $atual
  * @property int $user_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\User|null $Empresa
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ExameFuncionario> $ExameFuncionario
+ * @property-read int|null $exame_funcionario_count
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereAtual($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereDataRealizacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereDataVencimento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereExameFuncionarioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereExameRealizado($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereResultado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereVencido($value)
  * @mixin \Eloquent
- * @property bool|null $atual
- * @property int|null $feedback_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ExameFuncionario[] $ExameFuncionario
- * @property-read int|null $exame_funcionario_count
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereAtual($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereFeedbackId($value)
  */
 class Examesesmt extends Model
 {

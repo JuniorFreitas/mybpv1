@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Event;
  * @property int|null $tarefa_id
  * @property int $user_id
  * @property string $descricao
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Quadro|null $Quadro
  * @property-read \App\Models\User|null $Usuario
  * @method static \Illuminate\Database\Eloquent\Builder|LogWeekly newModelQuery()

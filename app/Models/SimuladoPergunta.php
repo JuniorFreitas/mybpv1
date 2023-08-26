@@ -13,10 +13,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $simulado_id
  * @property string $enunciado
  * @property int|null $qnt_linhas
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoResposta[] $Respostas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SimuladoResposta> $Respostas
  * @property-read int|null $respostas_count
  * @property-read \App\Models\Simulado|null $Simulado
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoPergunta newQuery()

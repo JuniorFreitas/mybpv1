@@ -15,24 +15,24 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $simulado_id
  * @property int $vaga_id
- * @property mixed $data_inicio
- * @property mixed $data_fim
+ * @property \Illuminate\Support\Carbon $data_inicio
+ * @property \Illuminate\Support\Carbon $data_fim
  * @property int $duracao
  * @property bool|null $online
  * @property int|null $empresa_id
  * @property int|null $vagas_abertas_id
  * @property bool $ativo
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoPergunta[] $Perguntas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SimuladoPergunta> $Perguntas
  * @property-read int|null $perguntas_count
  * @property-read \App\Models\Simulado|null $Simulado
  * @property-read \App\Models\Vaga|null $Vaga
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\VagasAbertas[] $VagasAbertas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\VagasAbertas> $VagasAbertas
  * @property-read int|null $vagas_abertas_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $duracao_segundos
  * @property-read mixed $qnt_questoes
- * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|SimuladoVaga newQuery()

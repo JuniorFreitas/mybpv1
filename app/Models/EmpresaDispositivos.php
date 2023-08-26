@@ -17,12 +17,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property float $long
  * @property int $perimetro
  * @property int $obrigatorio
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string|null $deleted_at
  * @property int|null $user_deletou_id
  * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Activitylog\Models\Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaDispositivos newQuery()

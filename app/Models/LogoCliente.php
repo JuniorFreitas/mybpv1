@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $nome
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Fotos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Fotos
  * @property-read int|null $fotos_count
  * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|LogoCliente newQuery()

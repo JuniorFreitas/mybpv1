@@ -31,14 +31,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $limite_tolerancia
  * @property string|null $justificativa
  * @property int $verificado
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read EmpresaEscala|null $Escala
  * @property-read User|null $Funcionario
  * @property-read EscalaJornada|null $Jornada
  * @property-read OcorrenciaJornada|null $OcorrenciaJornada
  * @property-read PeriodoJornada|null $Periodo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PontoEletronico newQuery()

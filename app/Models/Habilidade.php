@@ -13,9 +13,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property string $nome
  * @property string $descricao
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Papel[] $papeis
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Papel> $papeis
  * @property-read int|null $papeis_count
  * @method static \Illuminate\Database\Eloquent\Builder|Habilidade newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Habilidade newQuery()

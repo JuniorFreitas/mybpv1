@@ -16,7 +16,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $data_vencimento
  * @property string|null $data_treinamento
  * @property string|null $numero_fat
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento newQuery()

@@ -14,43 +14,27 @@ use Spatie\Activitylog\Traits\LogsActivity;
 /**
  * App\Models\Curriculo
  *
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CurriculoExperiencia[] $Experiencias
- * @property-read int|null $experiencias_count
- * @property-read \App\Models\Escolaridade|null $Formacao
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CurriculoQualificacao[] $Qualificacoes
- * @property-read int|null $qualificacoes_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\TelefoneCurriculo[] $Telefones
- * @property-read int|null $telefones_count
- * @property-read \App\Models\User|null $Usuario
- * @property-read \App\Models\Vaga|null $Vaga
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
- * @property-read int|null $activities_count
- * @property-read mixed $created_at
- * @property-read mixed $email
- * @property-read mixed $endereco_completo
- * @property-read mixed $filiacao_mae
- * @property-read mixed $filiacao_pai
- * @property-read mixed $idade
- * @property mixed $nascimento
- * @property-read mixed $nome
- * @property-read mixed $rg_format
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo query()
- * @mixin \Eloquent
  * @property int $id
  * @property string $cpf
  * @property string|null $rg
+ * @property string|null $rg_data_emissao
+ * @property string|null $naturalidade
+ * @property string|null $nacionalidade
  * @property string|null $orgao_expeditor
  * @property string|null $carteira_trabalho
+ * @property string $nome
+ * @property string|null $estado_civil
  * @property string|null $cnh
- * @property string|null $sexo
+ * @property string|null $cnh_vencimento
+ * @property string $nascimento
  * @property string|null $logradouro
+ * @property string|null $end_numero
  * @property string|null $complemento
  * @property string|null $bairro
  * @property string|null $municipio
  * @property string|null $uf
  * @property string|null $cep
+ * @property string|null $email
  * @property int|null $formacao
  * @property string|null $formacao_instituicao
  * @property string|null $formacao_curso
@@ -61,20 +45,108 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool|null $pcd
  * @property string|null $cid
  * @property bool|null $viajar
- * @property string $lido
+ * @property bool|null $lido
  * @property int|null $usuario_lido
- * @property string|null $datalido
+ * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $datalido
+ * @property string|null $filiacao_pai
+ * @property string|null $filiacao_mae
+ * @property bool|null $disponibilidade_sabado
+ * @property bool|null $disponibilidade_domingo
+ * @property string|null $sexo
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexo
+ * @property-read int|null $anexo_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $AnexosCpfRg
+ * @property-read int|null $anexos_cpf_rg_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Antecedentes
+ * @property-read int|null $antecedentes_count
+ * @property-read \App\Models\CurriculoAtualizacao|null $Atualizacao
+ * @property-read \App\Models\CartaOferta|null $CartaOferta
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $CartaOfertaArquivo
+ * @property-read int|null $carta_oferta_arquivo_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $CartaSindicato
+ * @property-read int|null $carta_sindicato_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $CartaoVacinaFilho
+ * @property-read int|null $cartao_vacina_filho_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $CarteiraVacina
+ * @property-read int|null $carteira_vacina_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $CertificadoEscolaridade
+ * @property-read int|null $certificado_escolaridade_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $CertificadoReservista
+ * @property-read int|null $certificado_reservista_count
+ * @property-read \App\Models\Municipio|null $Cidade
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $ComprovanteEnd
+ * @property-read int|null $comprovante_end_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $ContaBanco
+ * @property-read int|null $conta_banco_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $CtpsFrente
+ * @property-read int|null $ctps_frente_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $CtpsVerso
+ * @property-read int|null $ctps_verso_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $DeclaracaoEscolarFilho
+ * @property-read int|null $declaracao_escolar_filho_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UsuarioDependente> $Dependentes
+ * @property-read int|null $dependentes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\EmailPreAdmissao> $EmailsPreAdmissao
+ * @property-read int|null $emails_pre_admissao_count
+ * @property-read \App\Models\Escolaridade|null $Escolaridade
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CurriculoExperiencia> $Experiencias
+ * @property-read int|null $experiencias_count
+ * @property-read \App\Models\FeedbackCurriculo|null $FeedBack
+ * @property-read \App\Models\Escolaridade|null $Formacao
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $FotoTres
+ * @property-read int|null $foto_tres_count
+ * @property-read \App\Models\ParabensEnviado|null $Parabens
+ * @property-read \App\Models\ParecerRh|null $ParecerRh
+ * @property-read \App\Models\ParecerRota|null $ParecerRota
+ * @property-read \App\Models\ParecerEntrevistaTecnica|null $ParecerTecnica
+ * @property-read \App\Models\ParecerTestePratico|null $ParecerTeste
+ * @property-read \App\Models\User|null $Pessoa
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $PisRescisao
+ * @property-read int|null $pis_rescisao_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CurriculoQualificacao> $Qualificacoes
+ * @property-read int|null $qualificacoes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $RgcpfFilho
+ * @property-read int|null $rgcpf_filho_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TelefoneCurriculo> $Telefones
+ * @property-read int|null $telefones_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $TituloEleitor
+ * @property-read int|null $titulo_eleitor_count
+ * @property-read \App\Models\Treinamento|null $Treinamentos
+ * @property-read \App\Models\User|null $User
+ * @property-read \App\Models\User|null $Usuario
+ * @property-read \App\Models\Vaga|null $Vaga
+ * @property-read \App\Models\VagasAbertas|null $VagaAberta
+ * @property-read \App\Models\NotificacaoWhats|null $WhatsAppNotificacao
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $c_token
+ * @property-read mixed $cpf_format
+ * @property-read mixed $endereco_completo
+ * @property-read mixed $idade
+ * @property-read mixed $rg_format
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo query()
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereBairro($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCarteiraTrabalho($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCep($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCnh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCnhVencimento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereComplemento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCpf($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDatalido($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDisponibilidadeDomingo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDisponibilidadeSabado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEndNumero($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEstadoCivil($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereFiliacaoMae($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereFiliacaoPai($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereFormacao($value)
@@ -86,11 +158,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereLogradouro($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereMunicipio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereMunicipioId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNacionalidade($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNascimento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNaturalidade($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereOrgaoExpeditor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo wherePcd($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereRg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereRgDataEmissao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereSexo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereUf($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereUfVaga($value)
@@ -98,87 +173,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereUsuarioLido($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereVagaPretendida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereViajar($value)
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexo
- * @property-read int|null $anexo_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $AnexoCpfRg
- * @property-read int|null $anexo_cpf_rg_count
- * @property-read \App\Models\CurriculoAtualizacao|null $Atualizacao
- * @property-read \App\Models\Municipio|null $Cidade
- * @property-read \App\Models\FeedbackCurriculo|null $FeedBack
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $FotoTres
- * @property-read int|null $foto_tres_count
- * @property-read \App\Models\ParecerRh|null $ParecerRh
- * @property-read \App\Models\ParecerEntrevistaTecnica|null $ParecerTecnica
- * @property-read \App\Models\NotificacaoWhats|null $WhatsAppNotificacao
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $AnexosCpfRg
- * @property-read int|null $anexos_cpf_rg_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Antecedentes
- * @property-read int|null $antecedentes_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CartaSindicato
- * @property-read int|null $carta_sindicato_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CartaoVacinaFilho
- * @property-read int|null $cartao_vacina_filho_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CarteiraVacina
- * @property-read int|null $carteira_vacina_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CertificadoEscolaridade
- * @property-read int|null $certificado_escolaridade_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CertificadoReservista
- * @property-read int|null $certificado_reservista_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ComprovanteEnd
- * @property-read int|null $comprovante_end_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $ContaBanco
- * @property-read int|null $conta_banco_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CtpsFrente
- * @property-read int|null $ctps_frente_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CtpsVerso
- * @property-read int|null $ctps_verso_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $DeclaracaoEscolarFilho
- * @property-read int|null $declaracao_escolar_filho_count
- * @property-read \App\Models\ParecerRota|null $ParecerRota
- * @property-read \App\Models\ParecerTestePratico|null $ParecerTeste
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $PisRescisao
- * @property-read int|null $pis_rescisao_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $RgcpfFilho
- * @property-read int|null $rgcpf_filho_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $TituloEleitor
- * @property-read int|null $titulo_eleitor_count
- * @property-read \App\Models\Treinamento|null $Treinamentos
- * @property-read \App\Models\User|null $Pessoa
- * @property-read \App\Models\ParabensEnviado|null $Parabens
- * @property-read \App\Models\UsuarioConta|null $BancoConta
- * @property-read mixed $cpf_format
- * @property-read \App\Models\User|null $User
- * @property string|null $rg_data_emissao
- * @property string|null $naturalidade
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNaturalidade($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereRgDataEmissao($value)
- * @property string|null $end_numero
- * @property bool|null $disponibilidade_sabado
- * @property bool|null $disponibilidade_domingo
- * @property-read \App\Models\VagasAbertas|null $VagaAberta
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDisponibilidadeDomingo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDisponibilidadeSabado($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEndNumero($value)
- * @property string|null $estado_civil
- * @property string|null $cnh_vencimento
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmailPreAdmissao[] $EmailsPreAdmissao
- * @property-read int|null $emails_pre_admissao_count
- * @method static \Illuminate\Database\Query\Builder|Curriculo onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereCnhVencimento($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereEstadoCivil($value)
- * @method static \Illuminate\Database\Query\Builder|Curriculo withTrashed()
- * @method static \Illuminate\Database\Query\Builder|Curriculo withoutTrashed()
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\UsuarioDependente[] $Dependentes
- * @property-read int|null $dependentes_count
- * @property string|null $nacionalidade
- * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereNacionalidade($value)
- * @property-read mixed $c_token
- * @property-read \App\Models\CartaOferta|null $CartaOferta
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $CartaOfertaArquivo
- * @property-read int|null $carta_oferta_arquivo_count
- * @property-read \App\Models\Escolaridade|null $Escolaridade
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Curriculo withoutTrashed()
+ * @mixin \Eloquent
  */
 class Curriculo extends Model
 {

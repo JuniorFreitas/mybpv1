@@ -13,7 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property string $titulo
  * @property bool $ativo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|CategoriaVagas newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CategoriaVagas newQuery()

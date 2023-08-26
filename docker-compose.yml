@@ -12,8 +12,8 @@ services:
 #      - mysql
 #      - redis
     environment:
-      - ENABLE_SCHEDULE=false
-      - ENABLE_WORKER=false
+      - ENABLE_SCHEDULE=true
+      - ENABLE_WORKER=true
       - ENABLE_HORIZON=true
       - ENABLE_WEBSOCKETS=false
       - ENABLE_SUPERVISOR_GUI=true

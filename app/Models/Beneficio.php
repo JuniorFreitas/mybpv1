@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $empresa_id
- * @property-read \Illuminate\Database\Eloquent\Collection|Beneficio[] $BeneficioFeedback
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Beneficio> $BeneficioFeedback
  * @property-read int|null $beneficio_feedback_count
  * @property-read \App\Models\User|null $Empresa
  * @property-read \App\Models\TipoBeneficio|null $TipoBeneficio

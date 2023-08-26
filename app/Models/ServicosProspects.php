@@ -14,15 +14,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int|null $cliente_id
  * @property int|null $servico_id
- * @property mixed $data_envio_proposta
+ * @property \Illuminate\Support\Carbon $data_envio_proposta
  * @property string|null $escopo
  * @property string $status
  * @property string|null $feedback
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\Servico|null $Servico
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosProspects newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ServicosProspects newQuery()

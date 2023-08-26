@@ -17,7 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $mes_conclusao
  * @property int $ano_conclusao
  * @property-read \App\Models\Curriculo|null $Curriculo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoQualificacao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|CurriculoQualificacao newQuery()

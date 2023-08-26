@@ -30,16 +30,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $limite_tolerancia
  * @property string|null $justificativa
  * @property bool $verificado
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User|null $Funcionario
  * @property-read \App\Models\EscalaJornada|null $Jornada
  * @property-read \App\Models\OcorrenciaJornada|null $Ocorrencia
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PeriodoPontoEletronico[] $Periodos
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PeriodoPontoEletronico> $Periodos
  * @property-read int|null $periodos_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PeriodoPontoEletronico[] $PeriodosEmAberto
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PeriodoPontoEletronico> $PeriodosEmAberto
  * @property-read int|null $periodos_em_aberto_count
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $dia
  * @property-read mixed $dia_sem

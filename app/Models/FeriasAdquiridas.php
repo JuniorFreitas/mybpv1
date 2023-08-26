@@ -31,7 +31,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\FeriasPrevista|null $FeriasPrevista
  * @property-read \App\Models\User|null $UsuarioCadastrou
  * @property-read \App\Models\User|null $UsuarioEditou
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasAdquiridas newQuery()

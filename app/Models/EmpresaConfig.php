@@ -19,7 +19,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $dia_nova_frequencia
  * @property int $limite_tolerancia
  * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaConfig newQuery()

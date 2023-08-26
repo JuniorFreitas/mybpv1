@@ -21,7 +21,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $empresa_id
  * @property string|null $label_reduzida
  * @property bool|null $exibir_na_carteira
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento newQuery()

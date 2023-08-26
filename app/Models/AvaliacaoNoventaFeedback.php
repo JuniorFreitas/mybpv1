@@ -21,12 +21,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $observacao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\AvaliacaoNoventaFeedbackQuantidade[] $AvaliacaoQuantidade
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AvaliacaoNoventaFeedbackQuantidade> $AvaliacaoQuantidade
  * @property-read int|null $avaliacao_quantidade_count
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\AvaliacaoNoventaDias|null $Pergunta
  * @property-read User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedback newQuery()

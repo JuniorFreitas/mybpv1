@@ -28,7 +28,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Curriculo|null $Curriculo
  * @property-read \App\Models\User|null $Entrevistador
  * @property-read \App\Models\FeedbackCurriculo|null $FeedbackCurriculo
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $nota_teste_format
  * @method static \Illuminate\Database\Eloquent\Builder|ParecerTestePratico newModelQuery()

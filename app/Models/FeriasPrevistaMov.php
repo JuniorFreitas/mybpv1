@@ -20,7 +20,7 @@ use DateTimeInterface;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Curriculo|null $Colaborador
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FeriasPrevistaDados[] $FeriasPrevistaDados
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FeriasPrevistaDados> $FeriasPrevistaDados
  * @property-read int|null $ferias_prevista_dados_count
  * @property-read \App\Models\FeriasPrevistaDados|null $FeriasPrevistaDadosUltimo
  * @property-read \App\Models\PeriodoAquisitivo|null $PeriodoAquisitivo

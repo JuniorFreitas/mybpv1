@@ -18,12 +18,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $empresa_id
  * @property-read \App\Models\CategoriaVagas|null $Categoria
  * @property-read \App\Models\User|null $Empresa
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Etapas[] $EtapaStatus
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Etapas> $EtapaStatus
  * @property-read int|null $etapa_status_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SimuladoVaga[] $SimuladoVaga
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SimuladoVaga> $SimuladoVaga
  * @property-read int|null $simulado_vaga_count
  * @property-read \App\Models\VagasAbertas|null $VagaAberta
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Vaga newQuery()

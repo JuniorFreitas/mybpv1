@@ -18,9 +18,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool $trabalhado
  * @property bool $conta_horas
  * @property bool $ativo
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|OcorrenciaJornada newQuery()

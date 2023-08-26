@@ -17,13 +17,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $quantidade_avaliacao
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|AvaliacaoAnualFeedback[] $AvaliacaoQuantidade
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, AvaliacaoAnualFeedback> $AvaliacaoQuantidade
  * @property-read int|null $avaliacao_quantidade_count
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @property-read \App\Models\FormularioAvaliacaoAnual|null $Pergunta
  * @property-read \App\Models\Topicos|null $Topicos
  * @property-read User|null $Usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|Activity[] $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAnualFeedback newQuery()

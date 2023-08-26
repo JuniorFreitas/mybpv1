@@ -24,49 +24,83 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $data_modificacao
  * @property string|null $autorizado_por
  * @property string|null $motivos
- * @property \datetime|null $created_at
- * @property \datetime|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $user_aprovacao_id
- * @property mixed|null $data_aprovacao
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
  * @property int|null $empresa_id
  * @property int|null $gestor_id
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Arquivo[] $Anexos
+ * @property bool|null $filial
+ * @property int|null $centro_custo_filial_id
+ * @property int|null $anterior_vaga_aberta_id
+ * @property int|null $nova_vaga_aberta_id
+ * @property int|null $area_etiqueta_id
+ * @property int|null $rh_aprovacao_id
+ * @property string|null $obs_rh
+ * @property string|null $status_aprovacao_rh
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_rh
+ * @property bool $aprovado_via_script
+ * @property int|null $quem_deletou_id
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
+ * @property-read \App\Models\AreaEtiqueta|null $AreaEtiqueta
  * @property-read \App\Models\Vaga|null $CargoAnterior
  * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \App\Models\CentroCustoFilial|null $CentroCustoFilial
  * @property-read \App\Models\Cliente|null $Cliente
  * @property-read \App\Models\User|null $Colaborador
  * @property-read \App\Models\User|null $GestorAprovacao
  * @property-read \App\Models\Vaga|null $NovoCargo
+ * @property-read \App\Models\User|null $QuemDeletou
+ * @property-read \App\Models\User|null $RhAprovacao
+ * @property-read \App\Models\User|null $Solicitante
  * @property-read \App\Models\User|null $UserAprovacao
  * @property-read \App\Models\User|null $UserCadastrou
+ * @property-read \App\Models\VagasAbertas|null $VagaAbertaAnterior
+ * @property-read \App\Models\VagasAbertas|null $VagaAbertaNova
  * @property-read mixed $novo_salario_format
  * @property-read mixed $salario_anterior_format
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista query()
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereAnteriorVagaAbertaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereAprovadoViaScript($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereAreaEtiquetaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereAutorizadoPor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCargoAnteriorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCentroCustoFilialId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCentroCustoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereClienteId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereColaboradorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereDataAprovacaoRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereDataModificacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereFilial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereGestorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereMotivos($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereNovaVagaAbertaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereNovoCargoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereNovoSalario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereObsRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereQuemDeletouId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereRhAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereSalarioAnterior($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereStatusAprovacaoRh($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista withoutTrashed()
  * @mixin \Eloquent
  */
 class IntermitenteFixoPrevista extends Model
