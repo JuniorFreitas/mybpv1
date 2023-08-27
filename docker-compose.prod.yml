@@ -13,7 +13,7 @@ services:
 #      - redis
     environment:
       - ENABLE_SCHEDULE=true
-      - ENABLE_WORKER=false
+      - ENABLE_WORKER=true
       - ENABLE_HORIZON=true
       - ENABLE_WEBSOCKETS=false
       - ENABLE_SUPERVISOR_GUI=true
