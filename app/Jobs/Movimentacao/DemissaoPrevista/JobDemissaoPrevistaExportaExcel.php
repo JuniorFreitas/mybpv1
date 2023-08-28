@@ -66,7 +66,7 @@ class JobDemissaoPrevistaExportaExcel implements ShouldQueue
             $row->CentroCusto->label,
             $row->filial ? $row->CentroCustoFilial->label : '',
             $row->Colaborador->nome,
-            $row->Colaborador->FeedBack->VagaAberta->Vaga->nome,
+            $row->Colaborador->FeedBack->Admissao->cargo,
             (new DataHora($row->data_demissao))->dataCompleta(),
             $row->tipo_aviso,
             $row->GestorAprovacao->nome,

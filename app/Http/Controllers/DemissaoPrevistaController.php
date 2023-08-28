@@ -176,7 +176,7 @@ class DemissaoPrevistaController extends Controller
             'UserCadastrou:id,nome',
             'Colaborador:id,nome,login,tipo,ativo',
             'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
-            'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao',
+            'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao,cargo',
             'Colaborador.FeedBack.VagaSelecionada',
             'GestorAprovacao:id,nome', 'UserAprovacao:id,nome', 'RhAprovacao:id,nome');
 
@@ -296,6 +296,9 @@ class DemissaoPrevistaController extends Controller
     //Excel
     public function export(Request $request)
     {
+
+
+
         JobDemissaoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }

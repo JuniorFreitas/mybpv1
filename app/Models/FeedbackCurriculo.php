@@ -850,6 +850,11 @@ class FeedbackCurriculo extends Model
     }
 
 
+    public function telCadPrincipal()
+    {
+        return $this->hasOne(TelefoneCurriculo::class, 'curriculo_id', 'curriculo_id')->wherePrincipal(true);
+    }
+
     /**/
     //scopeManual
 //    public function scopeEmpresa($query)

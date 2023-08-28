@@ -351,8 +351,7 @@ class ControleExameController extends Controller
         $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'telefone_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'])->with(
             'Curriculo:id,nome,nascimento,id,nome,email,nascimento,rg,orgao_expeditor,logradouro,cep,end_numero,complemento,bairro,municipio,uf',
             'Cliente:id,razao_social,area_id',
-            'VagaAberta',
-            'TelPrincipal');
+            'VagaAberta','telCadPrincipal');
 
         if ($request->filled('status')) {
             if ($request->status == 'em_processo') {

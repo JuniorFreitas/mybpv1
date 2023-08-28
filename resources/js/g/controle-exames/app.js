@@ -181,8 +181,8 @@ const app = new Vue({
                 idade: obj.curriculo.idade,
                 endereco_completo: obj.curriculo.endereco_completo,
                 tel_principal: {
-                    numero: obj.tel_principal.numero,
-                    tipo: obj.tel_principal.tipo
+                    numero: obj.tel_cad_principal.numero,
+                    tipo: obj.tel_cad_principal.tipo
                 },
             }
 
