@@ -8,9 +8,11 @@ APP_HARD_RESET_IN_DEMO="${APP_HARD_RESET_IN_DEMO:-false}"
 
 printf "${COL_GREEN} -----> Info:${COL_RESET} Override php's default config...\n"
 if [ "$APP_ENV" = "production" ]; then
-    cp /usr/deploy/php/php.ini-production /etc/php/8.2/fpm/php.ini
+#    cp /usr/deploy/php/php.ini-production /etc/php/8.2/fpm/php.ini
+    cp /usr/share/nginx/html/.deploy/php/php.ini-production /etc/php/8.2/fpm/php.ini
 else
-    cp /usr/deploy/php/php.ini-development /etc/php/8.2/fpm/php.ini
+#    cp /usr/deploy/php/php.ini-development /etc/php/8.2/fpm/php.ini
+    cp /usr/share/nginx/html/.deploy/php/php.ini-development /etc/php/8.2/fpm/php.ini
 fi
 
 if [ -d "$APP_PATH/vendor" ] ; then
