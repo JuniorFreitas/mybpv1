@@ -29,14 +29,14 @@ class JobEnvioDocumento implements ShouldQueue
             'email' => $dados['email'],
             'empresa_id' => $dados['empresa_id'],
             'url_documento' => $dados['url_documento'],
-            'observacao' => $dados['observacao'],
+            'observacao' => isset($dados['observacao']) ?: '',
         ];
 
-        if (isset($dados['anexo'])){
+        if (isset($dados['anexo'])) {
             $this->mail['anexo'] = $dados['anexo'];
         }
 
-        if (isset($dados['url_checklist'])){
+        if (isset($dados['url_checklist'])) {
             $this->mail['url_checklist'] = $dados['url_checklist'];
         }
     }
