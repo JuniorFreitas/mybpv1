@@ -27,10 +27,21 @@ class CartaOfertaGerencialController extends Controller
             'vagaProjeto.Projeto:id,nome',
             'vagaAberta.Cargo',
             'anexo'
-        )->orderBy('updated_at');
+        )->join('curriculos as c', 'curriculo_carta_oferta.curriculo_id', '=', 'c.id');
+
+        if ($request['order'] == 'nome') {
+            $query->orderBy('c.nome');
+        }else{
+            $query->orderBy('curriculo_carta_oferta.updated_at', 'desc');
+        }
 
         if (isset($request['status']) && $request['status'] != '') {
             $query->where('status', $request['status']);
+        }
+
+        if (isset($request['campoBusca']) && $request['campoBusca'] != '') {
+            $query->where('c.nome', 'like', '%'.$request['campoBusca'].'%' )
+                ->orWhere('c.cpf', 'like', '%'.$request['campoBusca'].'%');
         }
 
         if (isset($request['curriculo_id']) && $request['curriculo_id'] != '') {

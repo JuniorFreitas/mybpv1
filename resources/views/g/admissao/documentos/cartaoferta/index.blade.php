@@ -86,25 +86,25 @@
                        v-model="controle.dados.campoBusca">
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                <label>Por Cargo</label>
-                <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"
-                              :valido="controle.dados.campoVaga !== ''"
-                              v-model="controle.dados.autocomplete_label"
-                              placeholder="Por vaga"
-                              @onblur="resetaCampo"
-                              @onselect="selecionaVaga"></autocomplete>
-            </div>
+{{--            <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
+{{--                <label>Por Cargo</label>--}}
+{{--                <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"--}}
+{{--                              :valido="controle.dados.vagas_abertas_id !== ''"--}}
+{{--                              v-model="controle.dados.autocomplete_vaga_label"--}}
+{{--                              placeholder="Por vaga"--}}
+{{--                              @onblur="resetaCampoVaga"--}}
+{{--                              @onselect="selecionaVaga"></autocomplete>--}}
+{{--            </div>--}}
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                <label>Por Projeto</label>
-                <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"
-                              :valido="controle.dados.campoVaga !== ''"
-                              v-model="controle.dados.autocomplete_label"
-                              placeholder="Por vaga"
-                              @onblur="resetaCampo"
-                              @onselect="selecionaVaga"></autocomplete>
-            </div>
+{{--            <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
+{{--                <label>Por Projeto</label>--}}
+{{--                <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"--}}
+{{--                              :valido="controle.dados.campoProjeto !== ''"--}}
+{{--                              v-model="controle.dados.autocomplete_label"--}}
+{{--                              placeholder="Por Projeto"--}}
+{{--                              @onblur="resetaCampoProjeto"--}}
+{{--                              @onselect="selecionaProjeto"></autocomplete>--}}
+{{--            </div>--}}
 
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <div class="form-group">
@@ -118,12 +118,21 @@
             </div>
 
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
+                <label>Ordenar por</label>
+                <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                        v-model="controle.dados.order">
+                    <option value="nome">Nome</option>
+                    <option value="data_atualizacao">Data de atualização</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>Exibir</label>
                 <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
                         v-model="controle.dados.pages">
-                    <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
+                    <option value="150">150</option>
                 </select>
             </div>
         </form>

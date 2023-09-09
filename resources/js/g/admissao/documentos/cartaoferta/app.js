@@ -36,13 +36,17 @@ const app = new Vue({
             carregando: false,
             dados: {
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                autocomplete_label_anterior: '',
-                autocomplete_label: '',
+
+                autocomplete_vaga_label_anterior: '',
+                autocomplete_vaga_label: '',
+
                 pages: 50,
+                campoBusca: '',
                 status: '',
                 curriculo_id: '',
                 vaga_projeto_id: '',
                 vagas_abertas_id: '',
+                order: 'nome',
             },
         },
     },
@@ -62,18 +66,18 @@ const app = new Vue({
     methods: {
 
         //GERAL
-        resetaCampo() {
-            if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
+        resetaCampoVaga() {
+            if (this.controle.dados.autocomplete_vaga_label_anterior !== this.controle.dados.autocomplete_vaga_label) {
+                this.controle.dados.autocomplete_vaga_label_anterior = '';
+                this.controle.dados.autocomplete_vaga_label = '';
+                this.controle.dados.vagas_abertas_id = '';
             }
         },
 
         selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id;
-            this.controle.dados.autocomplete_label = obj.label;
-            this.controle.dados.autocomplete_label_anterior = obj.label;
+            this.controle.dados.vagas_abertas_id = obj.id;
+            this.controle.dados.autocomplete_vaga_label = obj.label;
+            this.controle.dados.autocomplete_vaga_label_anterior = obj.label;
         },
 
         async formVisualizar(obj) {
