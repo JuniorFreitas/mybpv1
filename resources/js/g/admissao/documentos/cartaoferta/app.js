@@ -28,6 +28,7 @@ const app = new Vue({
 
         lista: [],
         lista_status: [],
+        lista_projetos: [],
 
         vagas: [],
         areasEtiquetas: [],
@@ -35,6 +36,8 @@ const app = new Vue({
         controle: {
             carregando: false,
             dados: {
+                filtroPeriodo: false,
+                periodo: "",
                 caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
 
                 autocomplete_vaga_label_anterior: '',
@@ -44,8 +47,10 @@ const app = new Vue({
                 campoBusca: '',
                 status: '',
                 curriculo_id: '',
+
+                projeto_id: '',
                 vaga_projeto_id: '',
-                vagas_abertas_id: '',
+
                 order: 'nome',
             },
         },
@@ -57,6 +62,9 @@ const app = new Vue({
         urlPaginacao() {
             return `${this.urlDefault}/atualizar`;
         },
+        filterVagasProjeto() {
+            return this.lista_projetos.filter(item => item.id === this.controle.dados.projeto_id) ?? [];
+        }
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
@@ -158,6 +166,7 @@ const app = new Vue({
 
         carregou(dados) {
             this.lista = dados.itens;
+            this.lista_projetos = dados.lista_projetos;
             this.lista_status = dados.lista_status;
             this.controle.carregando = false;
         },

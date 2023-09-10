@@ -496,6 +496,10 @@ class Curriculo extends Model
     {
         return $this->hasMany(TelefoneCurriculo::class, 'curriculo_id', 'id');
     }
+    public function TelPrincipal()
+    {
+        return $this->hasOne(TelefoneCurriculo::class, 'curriculo_id', 'id')->where('principal', true);
+    }
 
     public function AnexosCpfRg()
     {

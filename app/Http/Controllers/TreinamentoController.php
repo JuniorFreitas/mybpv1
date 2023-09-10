@@ -345,11 +345,11 @@ class TreinamentoController extends Controller
         $campoVencimento = $request->campoVencimento == 'true';
         if ($campoVencimento) {
             $periodo = explode(' até ', $request->vencimento);
-            $dataInicio = new DataHora($periodo[0]);
-            $dataFim = new DataHora($periodo[1]);
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
             $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
                 $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
-                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert())->where('data_vencimento', '<=', $dataFim->dataInsert());
+                    $q->where('data_vencimento', '>=', $dataInicio->dataHoraInsert())->where('data_vencimento', '<=', $dataFim->dataHoraInsert());
                 });
             });
         }

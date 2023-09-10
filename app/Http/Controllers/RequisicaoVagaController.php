@@ -213,12 +213,13 @@ class RequisicaoVagaController extends Controller
             'Area','UserCadastrou:id,nome',
             'UserAprovacao:id,nome');
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]);
-            $dataFim = new DataHora($periodo[1]);
-            $resultado->where('created_at', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('created_at', '<=', $dataFim->dataInsert() . ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())
+                ->where('created_at', '<=', $dataFim->dataHoraInsert());
         }
 
         if ($request->filled('campoBusca')) {

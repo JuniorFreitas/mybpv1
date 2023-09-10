@@ -18,8 +18,8 @@ class MedidasAdministrativasController extends Controller
     public function show(Request $request)
     {
         $periodo = explode(' até ', $request->periodo);
-        $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-        $dataFim = new DataHora($periodo[1], ' 23:59:59');
+        $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+        $dataFim = new DataHora($periodo[1]. ' 23:59:59');
 
         $medidas = MedidaAdministrativa::whereHas('Feedback', function ($query) use ($request) {
             if ($request->filled('status')) {
@@ -34,8 +34,8 @@ class MedidasAdministrativasController extends Controller
             'Feedback:id,curriculo_id,empresa_id,vaga_id,vagas_abertas_id',
             'Feedback.Curriculo:id,nome,rg,orgao_expeditor,nascimento',
             'Feedback.VagaAberta:id,vaga_id,titulo'
-        )->where('data_solicitacao', '>=', $dataInicio->dataInsert())
-            ->where('data_solicitacao', '<=', $dataFim->dataInsert())
+        )->where('data_solicitacao', '>=', $dataInicio->dataHoraInsert())
+            ->where('data_solicitacao', '<=', $dataFim->dataHoraInsert())
             ->get()->map(function ($medida) {
                 return [
                     'nome' => $medida->Feedback->Curriculo->nome,

@@ -35,9 +35,10 @@ class VencimentoAsosController extends Controller
                 $filtroVencimento = $dados['filtroVencimento'] == 'true';
                 if ($filtroVencimento) {
                     $periodo = explode(' até ', $dados['campoVencimento']);
-                    $dataInicio = new DataHora($periodo[0]);
-                    $dataFim = new DataHora($periodo[1]);
-                    $q->where('data_vencimento', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('data_vencimento', '<=', $dataFim->dataInsert() . ' 23:59:59');
+                    $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+                    $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+                    $q->where('data_vencimento', '>=', $dataInicio->dataHoraInsert())
+                        ->where('data_vencimento', '<=', $dataFim->dataHoraInsert());
                 }
                 if (!is_null($dados['campoVencido'])) {
                     $q->where('vencido', $dados['campoVencido']);

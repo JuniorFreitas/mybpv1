@@ -451,13 +451,14 @@ class RecrutamentoController extends Controller
             ->doesntHave('FeedBack.parecerRh');
 
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
 
-            $resultado->where('updated_at', '>=', $dataInicio->dataInsert())->where('updated_at', '<=', $dataFim->dataInsert());
+            $resultado->where('updated_at', '>=', $dataInicio->dataHoraInsert())
+                ->where('updated_at', '<=', $dataFim->dataHoraInsert());
         }
 
         if ($request->filled('campoBusca')) {

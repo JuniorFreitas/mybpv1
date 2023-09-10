@@ -20,18 +20,18 @@ class TreinamentoController extends Controller
         $empresa_id = auth()->user()->empresa_id;
 
         $periodo = explode(' até ', $request->periodo);
-        $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-        $dataFim = new DataHora($periodo[1], ' 23:59:59');
+        $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+        $dataFim = new DataHora($periodo[1]. ' 23:59:59');
 
         $treinamentos = Treinamento::select(['id', 'feedback_id', 'tipo'])
             ->whereHas('FeedbackCurriculo', function ($q) use ($empresa_id) {
                 $q->Admitidos()->whereEmpresaId($empresa_id);
             })->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataInsert())
-                    ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataInsert());
+                $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataHoraInsert())
+                    ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataHoraInsert());
             })->with(['Vencimentos' => function ($q) use ($dataInicio, $dataFim) {
-                $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataInsert())
-                    ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataInsert());
+                $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataHoraInsert())
+                    ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataHoraInsert());
             }, 'FeedbackCurriculo:id,empresa_id,vaga_id,vagas_abertas_id,curriculo_id',
                 'FeedbackCurriculo.VagaAberta:id,vaga_id,titulo',
                 'FeedbackCurriculo.Curriculo:id,nome,nascimento,rg,orgao_expeditor'])

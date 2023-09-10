@@ -1413,10 +1413,10 @@ class AdmissaoController extends Controller
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
             $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+                $q->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
             });
         }
 
@@ -1430,10 +1430,10 @@ class AdmissaoController extends Controller
 
         if ($filtroAso) {
             $periodo = explode(' até ', $request->campoAso);
-            $dataInicio = new DataHora($periodo[0]);
-            $dataFim = new DataHora($periodo[1]);
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
             $resultado->whereHas('UltimoAso', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('data_realizacao', '>=', $dataInicio->dataInsert())->where('data_realizacao', '<=', $dataFim->dataInsert());
+                $q->where('data_realizacao', '>=', $dataInicio->dataHoraInsert())->where('data_realizacao', '<=', $dataFim->dataHoraInsert());
             });
         }
 
@@ -1441,10 +1441,10 @@ class AdmissaoController extends Controller
 
         if ($filtroDataAdmissao) {
             $periodo = explode(' até ', $request->campoAdmisaoData);
-            $dataInicio = new DataHora($periodo[0]);
-            $dataFim = new DataHora($periodo[1]);
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
             $resultado->whereHas('Admissao', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('data_admissao', '>=', $dataInicio->dataInsert())->where('data_admissao', '<=', $dataFim->dataInsert());
+                $q->where('data_admissao', '>=', $dataInicio->dataHoraInsert())->where('data_admissao', '<=', $dataFim->dataHoraInsert());
             });
         }
 

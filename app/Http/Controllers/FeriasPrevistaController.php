@@ -512,28 +512,31 @@ class FeriasPrevistaController extends Controller
             'FeriasPrevista.CentroCusto:id,label',
         );
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]);
-            $dataFim = new DataHora($periodo[1]);
-            $resultado->where('data_solicitacao', '>=', $dataInicio->dataInsert() . ' 00:00:00')->where('data_solicitacao', '<=', $dataFim->dataInsert() . ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $resultado->where('data_solicitacao', '>=', $dataInicio->dataHoraInsert())
+                ->where('data_solicitacao', '<=', $dataFim->dataHoraInsert());
         }
 
-        $filtroVencimento = $request->filtroVencimento == 'true' ? true : false;
+        $filtroVencimento = $request->filtroVencimento == 'true';
         if ($filtroVencimento) {
-            $periodo = explode(' até ', $request->vencimento);
-            $dataInicio = new DataHora($periodo[0]);
-            $dataFim = new DataHora($periodo[1]);
-            $resultado->where('ultima_data', '>=', $dataInicio->dataInsert())->where('ultima_data', '<=', $dataFim->dataInsert());
+            $periodoVenc = explode(' até ', $request->vencimento);
+            $dataInicioVenc = new DataHora($periodoVenc[0]. ' 00:00:00');
+            $dataFimVenc = new DataHora($periodoVenc[1]. ' 23:59:59');
+            $resultado->where('ultima_data', '>=', $dataInicioVenc->dataHoraInsert())
+                ->where('ultima_data', '<=', $dataFimVenc->dataHoraInsert());
         }
 
-        $filtroInicioFerias = $request->filtroInicioFerias == 'true' ? true : false;
+        $filtroInicioFerias = $request->filtroInicioFerias == 'true';
         if ($filtroInicioFerias) {
-            $periodo = explode(' até ', $request->inicioFerias);
-            $dataInicio = new DataHora($periodo[0]);
-            $dataFim = new DataHora($periodo[1]);
-            $resultado->where('data_saida', '>=', $dataInicio->dataInsert())->where('data_saida', '<=', $dataFim->dataInsert());
+            $periodoFer = explode(' até ', $request->inicioFerias);
+            $dataInicioFer = new DataHora($periodoFer[0]. ' 00:00:00');
+            $dataFimFer = new DataHora($periodoFer[1]. ' 23:59:59');
+            $resultado->where('data_saida', '>=', $dataInicioFer->dataHoraInsert())
+                ->where('data_saida', '<=', $dataFimFer->dataHoraInsert());
         }
 
         if ($request->filled('campoBusca')) {

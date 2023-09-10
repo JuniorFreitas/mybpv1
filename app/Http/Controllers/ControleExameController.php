@@ -73,6 +73,8 @@ class ControleExameController extends Controller
         try {
             \DB::beginTransaction();
             $token = Sistema::uuid();
+            $data_encaminhamento = (new DataHora())->dataHoraCompleta();
+            $data_realizacao = (new DataHora($request->encaminhamento_data))->dataCompleta();
 
             if ($request->tipo == 'store') {
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
@@ -125,6 +127,7 @@ class ControleExameController extends Controller
                         'idade' => $colaborador->Curriculo->idade,
                         'tipoExame' => $tipoExame->label,
                         'empresa_id' => $empExame->empresa_id,
+                        'encaminhamento_data' => $data_encaminhamento,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
 
@@ -135,6 +138,7 @@ class ControleExameController extends Controller
                         'colaborador' => $colaborador->Curriculo->nome,
                         'tipoExame' => $tipoExame->label,
                         'empresa_id' => $empExame->empresa_id,
+                        'encaminhamento_data' => $data_encaminhamento,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
 
@@ -152,7 +156,9 @@ class ControleExameController extends Controller
                             "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
                             "🏥 Local do Exame: \n*{$empExame->nome}*.\n" .
                             "📍 Endereço: *{$empExame->dados['endereco']['endereco_completo']}*\n" .
-                            "📞 Contato: *{$empExame->dados['telefone']}*" .
+                            "📞 Contato: *{$empExame->dados['telefone']}*\n" .
+                            "🗓️ Data de encaminhamento: *{$data_encaminhamento}*\n" .
+                            "🗓️ Data de realização: *{$data_realizacao}*" .
                             "\n\n" .
                             "Atenciosamente,\n\n" .
                             "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
@@ -177,12 +183,10 @@ class ControleExameController extends Controller
                 return response()->json("Editou", 201);
             }
         } catch (\ErrorException $e) {
+            \DB::rollback();
             $msg = "Erro ao Encaminhar para exame:  {$e->getMessage()} , CODIGO:  {$e->getCode()}, Linha: {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             Sistema::LogFormatado($request->input());
-            \DB::rollback();
-            return response()->json(['msg' => $msg,
-                'request' => $request->input(),
-            ], 400);
+            \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro ao encaminhar!'], 400);
         }
     }
@@ -379,10 +383,11 @@ class ControleExameController extends Controller
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
             $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+                $q->where('created_at', '>=', $dataInicio->dataHoraInsert())
+                    ->where('created_at', '<=', $dataFim->dataHoraInsert());
             });
         }
 

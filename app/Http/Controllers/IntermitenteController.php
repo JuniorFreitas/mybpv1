@@ -424,7 +424,8 @@ class IntermitenteController extends Controller
             $periodo = explode(' até ', $request->periodo);
             $dataInicio = new DataHora($periodo[0].' 00:00:00');
             $dataFim = new DataHora($periodo[1].' 23:59:59');
-            $resultado->where('data_lancamento', '>=', $dataInicio->dataHoraInsert())->where('data_lancamento', '<=', $dataFim->dataHoraInsert());
+            $resultado->where('data_lancamento', '>=', $dataInicio->dataHoraInsert())
+                ->where('data_lancamento', '<=', $dataFim->dataHoraInsert());
         }
 
         if ($request->filled('campoBusca')) {

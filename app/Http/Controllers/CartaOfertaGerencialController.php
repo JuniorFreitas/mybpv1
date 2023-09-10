@@ -6,9 +6,11 @@ use App\Classes\ZapNotificacao;
 use App\Http\Controllers\Api\IntegraSgiMybpController;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Models\CartaOferta;
+use App\Models\Projeto;
 use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
+use App\Models\VagaProjeto;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -22,16 +24,19 @@ class CartaOfertaGerencialController extends Controller
 
     public function filtro(Request $request)
     {
+        $filtroIntervalo = $request->filtroPeriodo == 'true';
+
         $query = CartaOferta::with(
-            'curriculo:id,nome,nascimento,rg,orgao_expeditor',
+            'Curriculo:id,nome,nascimento,rg,orgao_expeditor,email',
+            'Curriculo.TelPrincipal:id,tipo,pais,numero,detalhe,curriculo_id,principal',
             'vagaProjeto.Projeto:id,nome',
             'vagaAberta.Cargo',
-            'anexo'
+            'Anexo'
         )->join('curriculos as c', 'curriculo_carta_oferta.curriculo_id', '=', 'c.id');
 
         if ($request['order'] == 'nome') {
             $query->orderBy('c.nome');
-        }else{
+        } else {
             $query->orderBy('curriculo_carta_oferta.updated_at', 'desc');
         }
 
@@ -39,9 +44,23 @@ class CartaOfertaGerencialController extends Controller
             $query->where('status', $request['status']);
         }
 
+        if ($filtroIntervalo) {
+            $periodo = explode(' até ', $request->periodo);
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
+            $query->where('curriculo_carta_oferta.updated_at', '>=', $dataInicio->dataHoraInsert())
+                ->where('curriculo_carta_oferta.updated_at', '<=', $dataFim->dataHoraInsert());
+        }
+
         if (isset($request['campoBusca']) && $request['campoBusca'] != '') {
-            $query->where('c.nome', 'like', '%'.$request['campoBusca'].'%' )
-                ->orWhere('c.cpf', 'like', '%'.$request['campoBusca'].'%');
+            $query->where('c.nome', 'like', '%' . $request['campoBusca'] . '%')
+                ->orWhere('c.cpf', 'like', '%' . $request['campoBusca'] . '%');
+        }
+
+        if (isset($request['projeto_id']) && $request['projeto_id'] != '') {
+            $query->whereHas('vagaProjeto.Projeto', function ($query) use ($request) {
+                $query->where('projeto_id', $request['projeto_id']);
+            });
         }
 
         if (isset($request['curriculo_id']) && $request['curriculo_id'] != '') {
@@ -50,10 +69,6 @@ class CartaOfertaGerencialController extends Controller
 
         if (isset($request['vaga_projeto_id']) && $request['vaga_projeto_id'] != '') {
             $query->where('vaga_projeto_id', $request['vaga_projeto_id']);
-        }
-
-        if (isset($request['vagas_abertas_id']) && $request['vagas_abertas_id'] != '') {
-            $query->where('vagas_abertas_id', $request['vagas_abertas_id']);
         }
 
         return $query;
@@ -158,6 +173,13 @@ class CartaOfertaGerencialController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request['pages']);
+
+        $vagasProjeto = Projeto::
+        select(['id', 'nome', 'preenchidas', 'empresa_id', 'qnt_total', 'preenchidas'])->with(
+            'VagasProjeto',
+            'VagasProjeto.VagaAberta:id,empresa_id,vaga_id,titulo,municipio_id,ativo,ativo_sistema'
+        )->orderBy('nome')->get();
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -165,6 +187,7 @@ class CartaOfertaGerencialController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'lista_status' => CartaOferta::STATUS,
+                'lista_projetos' => $vagasProjeto,
             ]
         ]);
     }

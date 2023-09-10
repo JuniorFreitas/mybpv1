@@ -181,8 +181,8 @@ class FeriasController extends Controller
     {
         if ($request->filled('periodo_range') && $request->filled('tipo') && $request->tipo == 'data') {
             $periodo = explode(' até ', $request->periodo_range);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
         }
 
         $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->verifica_mes_vencimento];
@@ -210,8 +210,8 @@ class FeriasController extends Controller
             if ($request->tipo == 'aquisitivo') {
                 $queryResult->where('periodo_aquisitivo_id', $request->periodo);
             } else {
-                $queryResult->where('data_saida', '>=', $dataInicio->dataInsert())
-                    ->where('data_saida', '<=', $dataFim->dataInsert());
+                $queryResult->where('data_saida', '>=', $dataInicio->dataHoraInsert())
+                    ->where('data_saida', '<=', $dataFim->dataHoraInsert());
             }
         }
         if ($request->filled('status_ferias')) {

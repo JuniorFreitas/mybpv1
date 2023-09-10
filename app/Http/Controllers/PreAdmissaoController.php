@@ -316,12 +316,10 @@ class PreAdmissaoController extends Controller
             \DB::commit();
             return response()->json("", 201);
         } catch (\ErrorException $e) {
+            \DB::rollback();
             $msg = "Erro ao Encaminhar para exame:  {$e->getMessage()} , CODIGO:  {$e->getCode()}, Linha: {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             Sistema::LogFormatado($request->input());
-            \DB::rollback();
-            return response()->json(['msg' => $msg,
-                'request' => $request->input(),
-            ], 400);
+            \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro ao encaminhar!'], 400);
         }
     }
@@ -430,6 +428,7 @@ class PreAdmissaoController extends Controller
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::debug("Erro ao enviar e-mail: " . $e->getMessage());
             return response()->json(['msg' => 'Erro ao enviar e-mail', 'erros' => $e->getMessage()], 400);
         }
     }

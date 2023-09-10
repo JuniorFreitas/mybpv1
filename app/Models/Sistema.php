@@ -643,7 +643,6 @@ class Sistema
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            dd($e->getMessage(), $e->getTraceAsString());
             echo $e->getTraceAsString();
         }
     }

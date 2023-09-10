@@ -288,13 +288,14 @@ class ResultadoIntegradoController extends Controller
             ->has('parecerRh')
             ->whereIn('selecionado', ['sim', 'standby'])->whereInteresse(true);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true' ? true : false;
+        $filtroPeriodo = $request->filtroPeriodo == 'true';
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-            $dataFim = new DataHora($periodo[1], ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
             $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('created_at', '>=', $dataInicio->dataInsert())->where('created_at', '<=', $dataFim->dataInsert());
+                $q->where('created_at', '>=', $dataInicio->dataHoraInsert())
+                    ->where('created_at', '<=', $dataFim->dataHoraInsert());
             });
         }
 

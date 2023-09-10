@@ -157,7 +157,7 @@ class CertificadoController extends Controller
     {
         $this->authorize('treinamento_certificado');
 
-        $filtroIntervalo = $request->filtroPeriodo == 'true' ? true : false;
+        $filtroIntervalo = $request->filtroPeriodo == 'true';
 
         $resultado = ResultadoIntegrado::whereEncaminhadoTreinamento(true)
             ->with(
@@ -175,9 +175,10 @@ class CertificadoController extends Controller
                 $query->whereIn('id', [6, 7]);
                 if ($filtroIntervalo) {
                     $periodo = explode(' até ', $request->intervalo);
-                    $dataInicio = new DataHora($periodo[0], ' 00:00:00');
-                    $dataFim = new DataHora($periodo[1], ' 23:59:59');
-                    $query->whereBetween('data_treinamento', [$dataInicio->dataInsert(), $dataFim->dataInsert()]);
+                    $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
+                    $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+                    $query->where('data_treinamento', '>=', $dataInicio->dataHoraInsert())
+                        ->where('data_treinamento', '<=',  $dataFim->dataHoraInsert());
                 }
             });
 

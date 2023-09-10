@@ -46,7 +46,13 @@
                         <p>
                             Nome: <strong>@{{ objopen.curriculo.nome }}</strong><br>
                             Cargo: <strong>@{{ objopen.vaga_aberta.cargo.nome }}</strong><br>
-                            Status: <strong>@{{ objopen.status }}</strong>
+                            Status: <strong>@{{ objopen.status }}</strong><br>
+                            Contato: <br>
+                            <strong>@{{ objopen.curriculo.tel_principal.numero }}
+                                (@{{objopen.curriculo.tel_principal.tipo}})</strong>
+                            <br><strong>@{{ objopen.curriculo.email }}</strong>
+
+
                         </p>
                     </div>
                 </div>
@@ -77,7 +83,24 @@
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <form class="row" @submit.prevent="$refs.componente.buscar()">
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+
+            <div class="col-12 col-sm-3 col-md-3 col-lg-2">
+                <div class="form-check" style="margin-bottom: -11px;">
+                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
+                           @change="$refs.componente.buscar()"
+                           :id="`filtroIntervalo_${hash}`"
+                           v-model="controle.dados.filtroPeriodo">
+                    <label class="form-check-label cursor-pointer" :for="`filtroIntervalo_${hash}`">Por
+                        período</label>
+                </div>
+                <div class="form-group">
+                    <datepicker range formsm label=""
+                                :disabled="controle.carregando || !controle.dados.filtroPeriodo"
+                                v-model="controle.dados.periodo"></datepicker>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                 <label>Buscar</label>
                 <input type="text"
                        placeholder="Buscar por nome ou cpf"
@@ -85,26 +108,6 @@
                        class="form-control form-control-sm" :disabled="controle.carregando"
                        v-model="controle.dados.campoBusca">
             </div>
-
-{{--            <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
-{{--                <label>Por Cargo</label>--}}
-{{--                <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"--}}
-{{--                              :valido="controle.dados.vagas_abertas_id !== ''"--}}
-{{--                              v-model="controle.dados.autocomplete_vaga_label"--}}
-{{--                              placeholder="Por vaga"--}}
-{{--                              @onblur="resetaCampoVaga"--}}
-{{--                              @onselect="selecionaVaga"></autocomplete>--}}
-{{--            </div>--}}
-
-{{--            <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
-{{--                <label>Por Projeto</label>--}}
-{{--                <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"--}}
-{{--                              :valido="controle.dados.campoProjeto !== ''"--}}
-{{--                              v-model="controle.dados.autocomplete_label"--}}
-{{--                              placeholder="Por Projeto"--}}
-{{--                              @onblur="resetaCampoProjeto"--}}
-{{--                              @onselect="selecionaProjeto"></autocomplete>--}}
-{{--            </div>--}}
 
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <div class="form-group">
@@ -117,7 +120,32 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
+<!--
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
+                <label>Por Projeto</label>
+                <select class="form-control form-control-sm" @change="atualizar(); controle.dados.vaga_projeto_id = ''" :disabled="controle.carregando"
+                        v-model="controle.dados.projeto_id">
+                    <option value="">Todos</option>
+                    <option v-for="item in lista_projetos" :value="item.id">@{{ item.nome }}: (@{{ item.preenchidas }}
+                        de @{{ item.qnt_total }})
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
+                <label>Por Vaga</label>
+                <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                        v-model="controle.dados.vaga_projeto_id">
+                    <option value="">Todos</option>
+                    <option v-for="item in filterVagasProjeto[0]?.vagas_projeto" :value="item.id" :key="item.id">
+                        @{{ item.vaga_aberta.titulo }}
+                    </option>
+                </select>
+            </div>
+-->
+
+
+            <div class="col-12 col-sm-4 col-md-3 col-lg-3">
                 <label>Ordenar por</label>
                 <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
                         v-model="controle.dados.order">

@@ -262,8 +262,6 @@ class CentroCustoController extends Controller
                 ];
             });
 
-        dd($resposta);
-
         return response()->json($resposta, 200);
     }
 }
