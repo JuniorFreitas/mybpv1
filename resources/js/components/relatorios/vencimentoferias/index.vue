@@ -3,7 +3,7 @@
         <div>
             <fieldset>
                 <legend>Ações</legend>
-                <form class="row">
+                <form class="row" @submit.prevent="buscarDados()">
                     <!--                    <div class="col-12 col-md-3 pb-3">-->
                     <!--                        <label for="">Escolha o período:</label>-->
                     <!--                        <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.periodo"-->
@@ -12,14 +12,49 @@
                     <!--                            </option>-->
                     <!--                        </select>-->
                     <!--                    </div>-->
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <label>Buscar</label>
+                        <input type="text"
+                               placeholder="Buscar por nome"
+                               autocomplete="mastertag"
+                               class="form-control form-control-sm" :disabled="preload"
+                               v-model="filtrar.campoBusca">
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <label>Cargo</label>
+                        <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload"
+                                v-model="filtrar.campoCargo">
+                            <option value="">Todos</option>
+                            <option v-for="item in lista_cargos" :value="item" :key="item" v-text="item"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <label>Função</label>
+                        <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload"
+                                v-model="filtrar.campoFuncao">
+                            <option value="">Todos</option>
+                            <option v-for="item in lista_funcao" :value="item" :key="item" v-text="item"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <label>Centro de Custo</label>
+                        <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload"
+                                v-model="filtrar.campoCentroCusto">
+                            <option value="">Todos</option>
+                            <option v-for="item in lista_centro_custos" :value="item" :key="item" v-text="item"></option>
+                        </select>
+                    </div>
 
                     <div class="clearfix"></div>
 
-                    <div class="col-12">
-<!--                        <button class="btn btn-sm btn-primary" :disabled="preload" @click.prevent="buscarDados()"-->
-<!--                                type="button">-->
-<!--                            <i class="fa fa-search"></i> Buscar-->
-<!--                        </button>-->
+                    <div class="col-12 mt-2">
+                        <button class="btn btn-sm btn-primary" :disabled="preload" @click.prevent="buscarDados()"
+                                type="button">
+                            <i class="fa fa-search"></i> Buscar
+                        </button>
                         <button type="button" class="btn btn-sm btn-primary" :disabled="preload || !dados.length"
                                 @click.prevent="exportaExcel()">
                             <i class="fas fa-file-excel"></i> Exportar Excel
@@ -47,7 +82,9 @@
                                     <th colspan="6">{{ item.nome }}<br>(Admitido em: {{ item.data_admissao }}) - (Centro
                                         de Custo: {{ item.centro_custo }})
                                         <br><span
-                                            v-if="item.dias_atraso > 0">Férias atrasadas {{ item.tempo_atrasado }}</span>
+                                            v-if="item.dias_atraso > 0">Férias atrasadas {{
+                                                item.tempo_atrasado
+                                            }}</span>
                                     </th>
                                 </tr>
 
@@ -76,7 +113,9 @@
                                         {{ periodo.total_avos ? periodo.total_avos : 0 }}
                                     </th>
                                     <th style="text-align: center; vertical-align: middle;">
-                                        {{ periodo.ultima_atualizacao ? periodo.ultima_atualizacao : 'Sem atualização' }}
+                                        {{
+                                            periodo.ultima_atualizacao ? periodo.ultima_atualizacao : 'Sem atualização'
+                                        }}
                                     </th>
                                 </tr>
                                 </thead>
@@ -97,12 +136,19 @@ export default {
         return {
             preload: false,
             dados: [],
+            lista_cargos: [],
+            lista_funcao: [],
+            lista_centro_custos: [],
             filtro: [],
             periodo: "",
             urlExportacao: `${URL_ADMIN}/relatorios/vencimento-ferias/export-excel`,
             filtrar: {
                 periodo: '',
-                status_ferias: ''
+                status_ferias: '',
+                campoBusca: '',
+                campoCargo: '',
+                campoFuncao: '',
+                campoCentroCusto: ''
             }
         };
     },
@@ -133,7 +179,10 @@ export default {
             this.preload = true;
             await axios.post(`${URL_ADMIN}/relatorios/vencimento-ferias`, this.filtrar)
                 .then(({data}) => {
-                    this.dados = data;
+                    this.dados = data.result;
+                    this.lista_cargos = data.lista_cargos;
+                    this.lista_funcao = data.lista_funcao;
+                    this.lista_centro_custos = data.lista_centro_custos;
                     this.preload = false;
                 });
         }

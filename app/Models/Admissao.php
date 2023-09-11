@@ -825,6 +825,15 @@ class Admissao extends Model
         return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
     }
 
+    public function Afastamento()
+    {
+        return $this->hasOne(Afastamento::class, 'feedback_id', 'feedback_id');
+    }
+
+    public function scopeNaoAfastados($query)
+    {
+        return $query->whereDoesntHave('Afastamento');
+    }
     public function scopeAdmitidos($query)
     {
         return $query->whereDoesntHave('Demissao');

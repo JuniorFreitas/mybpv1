@@ -48,7 +48,7 @@ class SincronizandoFeriasCommand extends Command
                 ->where('data_retorno', '>=', (new DataHora())->dataInsert())
                 ->update([
                     'status_ferias' => Ferias::STATUS_GOZANDO,
-                    'data_status_ferias' => (new DataHora())->dataInsert()
+                    'data_status_ferias' => now()
                 ]);
             Log::info("Ferias gozando");
 
@@ -58,7 +58,7 @@ class SincronizandoFeriasCommand extends Command
                 ->where('data_retorno', '>=', (new DataHora())->dataInsert())
                 ->update([
                     'status_ferias' => Ferias::STATUS_GOZANDO,
-                    'data_status_ferias' => (new DataHora())->dataInsert()
+                    'data_status_ferias' => now()
                 ]);
             Log::info("Ferias gozando rh");
 
@@ -68,7 +68,7 @@ class SincronizandoFeriasCommand extends Command
                 ->where('data_retorno', '<', (new DataHora())->dataInsert())
                 ->update([
                     'status_ferias' => Ferias::STATUS_GOZADA,
-                    'data_status_ferias' => (new DataHora())->dataInsert()
+                    'data_status_ferias' => now()
                 ]);
 
             Log::info("Ferias gozadas");
@@ -78,7 +78,7 @@ class SincronizandoFeriasCommand extends Command
                 ->where('data_retorno', '<', (new DataHora())->dataInsert())
                 ->update([
                     'status_ferias' => Ferias::STATUS_GOZADA,
-                    'data_status_ferias' => (new DataHora())->dataInsert()
+                    'data_status_ferias' => now()
                 ]);
 
             Log::info("Ferias gozando rh");

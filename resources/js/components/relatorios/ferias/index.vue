@@ -9,7 +9,7 @@
                         <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.tipo"
                                 @change="buscarDados()">
                             <option value="aquisitivo">Período aquisitivo</option>
-                            <option value="data">Por data</option>
+                            <option value="data">Por data de saida</option>
                         </select>
                     </div>
 
@@ -23,7 +23,7 @@
                     </div>
 
                     <div class="col-12 col-md-3" v-if="filtrar.tipo === 'data'">
-                        <datepicker range formsm label="Escolha a data:" :disabled="preload" @onselect="buscarDados()"
+                        <datepicker range formsm label="Escolha a data de saida:" :disabled="preload" @onselect="buscarDados()"
                                     v-model="filtrar.periodo_range"></datepicker>
                     </div>
 
@@ -130,7 +130,7 @@ export default {
             periodo: "",
             urlExportacao: `${URL_ADMIN}/relatorios/ferias/export-excel`,
             filtrar: {
-                tipo: 'aquisitivo',
+                tipo: 'data',
                 periodo: '',
                 periodo_range: '',
                 status_ferias: ''
