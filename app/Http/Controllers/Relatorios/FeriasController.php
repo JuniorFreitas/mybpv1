@@ -77,7 +77,8 @@ class FeriasController extends Controller
                 'ferias.qnt_dias', 'ferias.qnt_faltas', 'ferias.dias_saldo', 'ferias.data_saida', 'ferias.data_retorno',
                 'ferias.status_ferias', 'ferias.aprovado_via_script', 'ferias.status_aprovacao_gestor', 'ferias.gestor_aprovacao_id',
                 'ferias.deleted_at', 'users.nome as gestor_aprovacao_nome', 'rh.nome as rh_aprovacao_nome', 'periodos_aquisitivos.label as periodo_aquisitivo_label', 'periodos_aquisitivos.ano_inicial as periodo_aquisitivo_ano_inicial',
-            ])
+            ])->selectRaw('DATEDIFF(NOW(), ferias.data_retorno) as atraso')
+                ->whereDoesntHave('Afastamento')
                 ->join('feedback_curriculos', 'admissoes.feedback_id', '=', 'feedback_curriculos.id')
                 ->leftJoin('ferias', 'admissoes.id', '=', 'ferias.admissao_id')
                 ->leftJoin('curriculos', 'feedback_curriculos.curriculo_id', '=', 'curriculos.id')
@@ -100,7 +101,8 @@ class FeriasController extends Controller
                     'ferias.periodo_aquisitivo_id', 'ferias.qnt_dias', 'ferias.qnt_faltas', 'ferias.id', 'periodos_aquisitivos.label', 'periodos_aquisitivos.ano_inicial',
                     'ferias.data_saida', 'ferias.data_retorno', 'ferias.dias_saldo')
                 ->orderBy('admissoes.id', 'asc')
-                ->get()->groupBy('admissao_id')->values()
+                ->get()
+                ->groupBy('admissao_id')->values()
                 ->map(function ($item) {
                     $todos_periodos = FeriasCalculoAvos::select(['ferias_calculo_avos.id', 'ferias_calculo_avos.admissao_id', 'ferias_calculo_avos.periodo_aquisitivo_id',
                         'ferias_calculo_avos.empresa_id', 'ferias_calculo_avos.total_avos', 'ferias_calculo_avos.ultima_atualizacao', 'ferias_calculo_avos.atualizado_via_script',
@@ -137,6 +139,7 @@ class FeriasController extends Controller
                         });
 
                     $atraso = collect($todos_periodos)->where('status_ferias', 'Disponivel')->sortBy('ultimo_dia_avo')->first();
+
                     if ($atraso) {
                         $atraso = Carbon::now()->diffInDays((new DataHora($atraso['ultimo_dia_avo']))->dataInsert());
                     } else {
@@ -167,13 +170,48 @@ class FeriasController extends Controller
                         'centro_custo' => !is_null($item->first()->centro_custo_id) ? $item->first()->centro_custo_label : 'Não informado',
                         'todos_periodos' => $todos_periodos,
                     ];
-                })->sortByDesc('dias_atraso')->values();
-
+                })->sortByDesc('dias_atraso')->values()->filter(function ($item) {
+                    return $item['dias_atraso'] >= 360;
+                })->values();
             \Cache::set($this->nomeRelatorio(), json_encode($result), 60 * 24);
             Redis::set($this->nomeRelatorio(), \Cache::get($this->nomeRelatorio()));
         }
 
-        return $result;
+        $cargos = collect($result)->unique('cargo')->pluck('cargo')->sort()->values()->toArray();
+        $centro_custos = collect($result)->unique('centro_custo')->pluck('centro_custo')->sort()->values()->toArray();
+        $funcao= collect($result)->unique('funcao')->pluck('funcao')->sort()->values()->toArray();
+
+        if ($request->filled('campoBusca')) {
+            $result = collect($result)->filter(function ($item) use ($request) {
+                return stripos($item['nome'], $request->campoBusca) !== false;
+            })->values();
+        }
+
+        if ($request->filled('campoCargo')) {
+            $result = collect($result)->filter(function ($item) use ($request) {
+                return stripos($item['cargo'], $request->campoCargo) !== false;
+            })->values();
+        }
+
+        if ($request->filled('campoFuncao')) {
+            $result = collect($result)->filter(function ($item) use ($request) {
+                return stripos($item['funcao'], $request->campoFuncao) !== false;
+            })->values();
+        }
+
+        if ($request->filled('campoCentroCusto')) {
+            $result = collect($result)->filter(function ($item) use ($request) {
+                return stripos($item['centro_custo'], $request->campoCentroCusto) !== false;
+            })->values();
+        }
+
+        return [
+            'result' => $result,
+            'lista_cargos' => $cargos,
+            'lista_centro_custos' => $centro_custos,
+            'lista_funcao' => $funcao,
+            'total' => count($result)
+        ];
 
     }
 
@@ -226,6 +264,12 @@ class FeriasController extends Controller
 
         foreach ($queryResult as $ferias) {
             $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $ferias['data_saida']);
+            $centro_custo = 'NÃO INFORMADO';
+
+            if (!is_null($ferias['admissao']['centro_custo_id'])) {
+                $centro_custo = $ferias['admissao']['centro_custo']['label'];
+            }
+
             $resultado->push([
                 'dias_vencer' => $dias_vencer,
                 'pintar' => $dias_vencer <= $periodo_vencimento / 2,
@@ -240,7 +284,7 @@ class FeriasController extends Controller
                 'quem_aprovou' => $ferias['gestor']['nome'] ?? '---',
                 'status_aprovacao' => $ferias['status_aprovacao_gestor'],
                 'data_aprovacao' => $ferias['data_aprovacao_gestor'],
-                'centro_custo' => !is_null($ferias['admissao']['centro_custo_id']) ? $ferias['admissao']['centro_custo']['label'] : $ferias['ferias_prevista']['centro_custo']['label'],
+                'centro_custo' => $centro_custo,
                 'qnt_dias' => $ferias['qnt_dias'],
                 'dias_saldo' => $ferias['dias_saldo'],
                 'tem_faltas' => $ferias['tem_faltas'] ? 'Sim' : 'Não',
