@@ -297,7 +297,7 @@
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
                                 :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Status</option>
-                            <option value="aberto">Aguardando Aprovação</option>
+                            <option value="aberto">Em aberto</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
                             <option value="aprovado_rh">Aprovado Rh</option>
                             <option value="reprovado">Reprovado</option>
@@ -349,7 +349,7 @@
         <div class="mb-2 mt-2 pt-1 pb-1 border-bottom bg-white" v-show="!controle.carregando && lista.length > 0">
             <span class="text-right ml-2">
                 Legenda:
-                <i class="fas fa-circle text-light ml-2"></i> Aguardando Aprovação
+                <i class="fas fa-circle text-light ml-2"></i> Em aberto
                 <i class="fas fa-circle text-warning ml-2"></i> Aprovado pelo Gestor
                 <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH
                 <i class="fas fa-circle text-danger ml-2"></i> Reprovado
@@ -374,10 +374,10 @@
                         <!--                                   @click="selecionaTodos">-->
                         <!--                        </th>-->
                         <th class="text-center">CÓD</th>
-                        <th class="text-center">Solicitação</th>
-                        <th class="text-center text-nowrap">Centro de custo</th>
                         <th class="text-center">Cargo</th>
+                        <th class="text-center text-nowrap">Centro de custo</th>
                         <th class="text-center text-nowrap">Data Admissão</th>
+                        <th class="text-center">Solicitante</th>
                         <th class="text-center">Status</th>
                         <th></th>
                     </tr>
@@ -402,25 +402,21 @@
                         <td class="text-center vertical-align-middle">
                             {{ item.id }}
                         </td>
-
                         <td class="text-center vertical-align-middle">
-                            {{ item.user_cadastrou.nome }} <br> {{ item.created_at }}
+                            {{ item.cargo.nome }}
                         </td>
 
                         <td class="text-center vertical-align-middle">
                             {{ item.centro_custo.label }}
                         </td>
 
-
-                        <td class="text-center vertical-align-middle">
-                            {{ item.cargo.nome }}
-                        </td>
-
-
                         <td class="text-center vertical-align-middle">
                             {{ item.data_admissao }}
                         </td>
 
+                        <td class="text-center vertical-align-middle">
+                            {{ item.user_cadastrou.nome }} <br> {{ item.created_at }}
+                        </td>
                         <td class="text-center font-weight-bold vertical-align-middle" :class="{
                             'bg-danger text-white' : item.status_aprovacao === 'reprovado' || item.status_aprovacao_rh === 'reprovado',
                             'bg-success' : item.status_aprovacao_rh === 'aprovado' || (item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null && item.aprovado_via_script),
@@ -449,7 +445,7 @@
                                 </span>
                             </span>
                             <span v-else>
-                                AGUARDANDO
+                                EM ABERTO
                             </span>
                         </td>
 

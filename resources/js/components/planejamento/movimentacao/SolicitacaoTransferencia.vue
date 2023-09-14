@@ -199,7 +199,7 @@
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
                                 :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Status</option>
-                            <option value="aberto">Aberto</option>
+                            <option value="aberto">Em aberto</option>
                             <option value="aprovado">Aprovado</option>
                             <option value="reprovado">Reprovado</option>
                         </select>
@@ -253,7 +253,7 @@
         <div class="mb-2 mt-2 pt-1 pb-1 border-bottom bg-white" v-show="!controle.carregando && lista.length > 0">
             <span class="text-right ml-2">
                 Legenda:
-                <i class="fas fa-circle text-light ml-2"></i> Aguardando Aprovação <i
+                <i class="fas fa-circle text-light ml-2"></i> Em aberto <i
                 class="fas fa-circle text-warning ml-2"></i> Aprovado pelo Gestor
                 <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH <i
                 class="fas fa-circle text-danger ml-2"></i> Reprovado
@@ -278,11 +278,11 @@
                                    @click="selecionaTodos">
                         </th>
                         <th class="text-center">CÓD</th>
-                        <th class="text-center">Solicitação</th>
                         <th class="text-center">Colaborador</th>
                         <th class="text-center">Centro de Custo Origem</th>
                         <th class="text-center">Centro de Custo Destino</th>
                         <th class="text-center">Data p/ Transferência</th>
+                        <th class="text-center">Solicitante</th>
                         <th class="text-center">Status</th>
                         <th></th>
                     </tr>
@@ -311,10 +311,6 @@
                         </td>
 
                         <td class="text-center vertical-align-middle">
-                            {{ item.user_cadastrou.nome }} <br> {{ item.created_at }}
-                        </td>
-
-                        <td class="text-center vertical-align-middle">
                             {{ item.colaborador.nome }}
                         </td>
 
@@ -330,6 +326,10 @@
                             {{ item.data_transferencia }}
                         </td>
 
+                        <td class="text-center vertical-align-middle">
+                            {{ item.user_cadastrou.nome }} <br> {{ item.created_at }}
+                        </td>
+
                         <td class="text-center font-weight-bold vertical-align-middle"
                             :class="!item.status_aprovacao ? 'bg-light' : item.status_aprovacao === 'reprovado' ? 'bg-danger text-white' : item.status_aprovacao === 'aprovado' ? 'bg-success' : null">
                         <span v-if="item.status_aprovacao !== null">
@@ -338,7 +338,7 @@
                         </span>
 
                             <span v-else>
-                            Aguardando
+                            EM ABERTO
                         </span>
                         </td>
 

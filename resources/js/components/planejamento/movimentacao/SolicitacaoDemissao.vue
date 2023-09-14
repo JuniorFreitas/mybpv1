@@ -296,7 +296,7 @@
                             @change="atualizar()"
                         >
                             <option value="">Todos os Status</option>
-                            <option value="aberto">Aguardando Aprovação</option>
+                            <option value="aberto">Em aberto</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
                             <option value="aprovado_rh">Aprovado Rh</option>
                             <option value="reprovado">Reprovado</option>
@@ -359,7 +359,7 @@
         <div class="mb-2 mt-2 pt-1 pb-1 border-bottom bg-white" v-show="!controle.carregando && lista.length > 0">
             <span class="text-right ml-2">
                 Legenda:
-                <i class="fas fa-circle text-light ml-2"></i> Aguardando Aprovação <i
+                <i class="fas fa-circle text-light ml-2"></i> Em aberto <i
                 class="fas fa-circle text-warning ml-2"></i> Aprovado pelo Gestor
                 <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH <i
                 class="fas fa-circle text-danger ml-2"></i> Reprovado
@@ -387,10 +387,10 @@
                             />
                         </th>
                         <th class="text-center">CÓD</th>
-                        <th class="text-center">Solicitação</th>
-                        <th class="text-center text-nowrap">Centro de custo</th>
                         <th class="text-center">Colaborador</th>
+                        <th class="text-center text-nowrap">Centro de custo</th>
                         <th class="text-center text-nowrap">Data demissão</th>
+                        <th class="text-center">Solicitante</th>
                         <th class="text-center">Status</th>
                         <th></th>
                     </tr>
@@ -419,8 +419,7 @@
                         </td>
 
                         <td class="text-center vertical-align-middle">
-                            {{ item.user_cadastrou.nome }} <br/>
-                            {{ item.created_at }}
+                            {{ item.colaborador.nome }}
                         </td>
 
                         <td class="text-center vertical-align-middle">
@@ -428,11 +427,12 @@
                         </td>
 
                         <td class="text-center vertical-align-middle">
-                            {{ item.colaborador.nome }}
+                            {{ item.data_demissao }}
                         </td>
 
                         <td class="text-center vertical-align-middle">
-                            {{ item.data_demissao }}
+                            {{ item.user_cadastrou.nome }} <br/>
+                            {{ item.created_at }}
                         </td>
 
                         <td class="text-center font-weight-bold vertical-align-middle"
@@ -466,7 +466,7 @@
                             </span>
                         </span>
                             <span v-else>
-                            AGUARDANDO
+                            EM ABERTO
                         </span>
                         </td>
                         <td class="text-center vertical-align-middle">

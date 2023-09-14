@@ -335,7 +335,7 @@
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
                                 @change="atualizar()" :disabled="controle.carregando">
                             <option value="">Todos os Status</option>
-                            <option value="aberto">Aguardando Aprovação</option>
+                            <option value="aberto">Em aberto</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
                             <option value="aprovado_rh">Aprovado Rh</option>
                             <option value="reprovado">Reprovado</option>
@@ -435,7 +435,7 @@
         <div class="mb-2 mt-2 pt-1 pb-1 border-bottom bg-white" v-show="!controle.carregando && lista.length > 0">
             <span class="text-right ml-2">
                 Legenda:
-                <i class="fas fa-circle text-light ml-2"></i> Aguardando Aprovação <i
+                <i class="fas fa-circle text-light ml-2"></i> Em aberto <i
                 class="fas fa-circle text-warning ml-2"></i> Aprovado pelo Gestor
                 <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH <i
                 class="fas fa-circle text-danger ml-2"></i> Reprovado
@@ -507,7 +507,7 @@
                                     Por RH: {{ item.rh_aprovacao.nome }}
                                 </span>
                             </span>
-                            <span class="text-capitalize" v-else>Aguardando</span>
+                            <span class="text-capitalize" v-else> EM ABERTO </span>
                         </td>
                         <td class="text-center vertical-align-middle">
                             <div class="dropdown show">

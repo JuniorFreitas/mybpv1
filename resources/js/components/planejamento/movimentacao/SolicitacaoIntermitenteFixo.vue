@@ -308,7 +308,7 @@
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
                                 :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Status</option>
-                            <option value="aberto">Aguardando Aprovação</option>
+                            <option value="aberto">Em aberto</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
                             <option value="aprovado_rh">Aprovado Rh</option>
                             <option value="reprovado">Reprovado</option>
@@ -361,7 +361,7 @@
         <div class="mb-2 mt-2 pt-1 pb-1 border-bottom bg-white" v-show="!controle.carregando && lista.length > 0">
             <span class="text-right ml-2">
                 Legenda:
-                <i class="fas fa-circle text-light ml-2"></i> Aguardando Aprovação <i
+                <i class="fas fa-circle text-light ml-2"></i> Em aberto <i
                 class="fas fa-circle text-warning ml-2"></i> Aprovado pelo Gestor
                 <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH <i
                 class="fas fa-circle text-danger ml-2"></i> Reprovado
@@ -386,13 +386,13 @@
                         <!--                                   @click="selecionaTodos">-->
                         <!--                        </th>-->
                         <th class="text-center">CÓD</th>
-                        <th class="text-center">Solicitação</th>
-                        <th class="text-center">Centro de custo</th>
                         <th class="text-center">Colaborador</th>
+                        <th class="text-center">Centro de custo</th>
                         <th class="text-center">Cargo Anterior</th>
                         <th class="text-center">Novo Cargo</th>
                         <th class="text-center">Salário Anterior</th>
                         <th class="text-center">Novo Salário</th>
+                        <th class="text-center">Solicitante</th>
                         <th class="text-center">Status</th>
                         <th></th>
                     </tr>
@@ -420,15 +420,11 @@
                         </td>
 
                         <td class="text-center vertical-align-middle">
-                            {{ item.solicitante.nome }} <br> {{ item.created_at }}
+                            {{ item.colaborador ? item.colaborador.nome : '' }}
                         </td>
 
                         <td class="text-center vertical-align-middle">
                             {{ item.centro_custo.label }}
-                        </td>
-
-                        <td class="text-center vertical-align-middle">
-                            {{ item.colaborador ? item.colaborador.nome : '' }}
                         </td>
 
                         <td class="text-center vertical-align-middle">
@@ -445,6 +441,10 @@
 
                         <td class="text-center vertical-align-middle">
                             {{ item.novo_salario_format }}
+                        </td>
+
+                        <td class="text-center vertical-align-middle">
+                            {{ item.solicitante.nome }} <br> {{ item.created_at }}
                         </td>
 
                         <td class="text-center font-weight-bold vertical-align-middle"
@@ -477,7 +477,7 @@
                                   </span>
                                   </span>
                             <span v-else>
-                                      AGUARDANDO
+                                      EM ABERTO
                                   </span>
                         </td>
 
