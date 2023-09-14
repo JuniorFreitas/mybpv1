@@ -15,11 +15,11 @@ class JobFeriasPrevistaExportaExcel implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 3;
-    public $timeout = 0;
+    public int $tries = 3;
+    public int $timeout = 0;
 
-    public $user;
-    private $linhas = [];
+    public User $user;
+    private array $linhas = [];
 
     public function __construct(User $user, $collection)
     {

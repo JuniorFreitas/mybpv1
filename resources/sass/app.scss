@@ -83,16 +83,19 @@
 //Driver Js
 @import "~driver.js/src/driver";
 
-#conteudo{
+#conteudo {
     margin-top: .75em;
 }
+
 .page-title-box {
     padding-bottom: 0px !important;
 }
+
 [v-cloak] {
     display: block;
     padding: 50px 0;
 }
+
 /*h4, h5, p, .form-check-label{
     word-break: break-all;
 }*/
@@ -103,7 +106,7 @@
     }
 }
 
-.corrigiDatepicker{
+.corrigiDatepicker {
     margin-top: -19px;
 }
 
@@ -126,10 +129,11 @@
     overflow: hidden;
 }
 
-[v-cloak]>* {
+[v-cloak] > * {
     display: none;
 
 }
+
 #app:not([v-cloak]) {
     opacity: 1;
     -webkit-animation-name: cloak-fade-in;
@@ -140,19 +144,20 @@
     animation-fill-mode: forwards;
 }
 
-.form-check-input{
+.form-check-input {
     cursor: pointer;
     margin-top: 0.2rem;
 }
 
-.cursor-pointer{
+.cursor-pointer {
     cursor: pointer;
 }
 
-.form-check-input:disabled{
+.form-check-input:disabled {
     cursor: no-drop;
 }
-button:disabled{
+
+button:disabled {
     cursor: no-drop;
 }
 
@@ -165,8 +170,6 @@ button:disabled{
 //.btClose {
 //    color: white
 //}
-
-
 
 
 //fieldset e legend
@@ -387,7 +390,7 @@ label {
     //background-color: $corPrincipalHover;
 }
 
-.nav-tabs{
+.nav-tabs {
     border-bottom: none;
 }
 
@@ -411,6 +414,19 @@ label {
     background: transparent !important;
     border: none !important;
 }
+
+.bg-light {
+    background-color: #d5d5d5 !important;
+}
+
+.text-light {
+    color: #d5d5d5 !important;
+}
+
+.vertical-align-middle {
+    vertical-align: middle !important;
+}
+
 /*
 
 :root {

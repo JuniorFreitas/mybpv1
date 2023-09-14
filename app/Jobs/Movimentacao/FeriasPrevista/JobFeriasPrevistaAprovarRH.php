@@ -3,13 +3,12 @@
 namespace App\Jobs\Movimentacao\FeriasPrevista;
 
 
-use App\Mail\Movimentacao\FeriasPrevista\AprovacaoMail;
 use App\Mail\Movimentacao\FeriasPrevista\AprovacaoRhMail;
 use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
 class JobFeriasPrevistaAprovarRH implements ShouldQueue
 {
@@ -40,5 +39,6 @@ class JobFeriasPrevistaAprovarRH implements ShouldQueue
     {
         \Mail::send(new AprovacaoRhMail($this->mail));
         \Mail::send(new AprovacaoRhMail($this->mailGestor));
+        \Artisan::call('mybp:ferias');
     }
 }

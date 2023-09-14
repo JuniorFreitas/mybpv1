@@ -166,7 +166,7 @@
                                     <div class="form-group">
                                         <label>Sexo</label>
                                         <select class="form-control"
-                                            v-model="formAvulsa.curriculo.sexo"
+                                                v-model="formAvulsa.curriculo.sexo"
                                         >
                                             <option value="">Selecione</option>
                                             <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
@@ -178,8 +178,8 @@
                                     <div class="form-group">
                                         <label>Estado Civil</label>
                                         <select
-                                            class="form-control"
-                                            v-model="formAvulsa.curriculo.estado_civil"
+                                                class="form-control"
+                                                v-model="formAvulsa.curriculo.estado_civil"
                                         >
                                             <option value="">Selecione</option>
                                             <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
@@ -255,10 +255,12 @@
                                             <div class="col-12 col-sm-6 col-md-4">
                                                 <div class="form-group">
                                                     <label>RG Data Emissão</label>
-                                                    <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                                                    <input type="text" class="form-control validacampo"
+                                                           placeholder="dd/mm/aaaa"
                                                            v-model="formAvulsa.curriculo.rg_data_emissao" v-mascara:data
                                                            @keyup.prevent="valida_data($event.target)"
-                                                           @blur.prevent="valida_data($event.target)" :disabled="visualizar">
+                                                           @blur.prevent="valida_data($event.target)"
+                                                           :disabled="visualizar">
                                                 </div>
                                             </div>
                                         </div>
@@ -337,7 +339,8 @@
                                 <div class="col-12 col-md-6">
                                     <div class="form-group">
                                         <label for="">Data admissão prevista</label>
-                                        <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" v-mascara:data
+                                        <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                                               v-mascara:data
                                                @keyup.prevent="valida_data($event.target)"
                                                @blur.prevent="valida_data($event.target)"
                                                v-model="formAvulsa.admissao.data_adm_prevista">
@@ -501,92 +504,92 @@
                                     </fieldset>
                                 </div>
 
-{{--                                <div class="col-12">--}}
-{{--                                    <fieldset>--}}
-{{--                                        <legend>Testes</legend>--}}
-{{--                                        <div class="row">--}}
-{{--                                            <div class="col-12 col-sm-6">--}}
-{{--                                                <div class="form-group">--}}
-{{--                                                    <label>Qual o teste foi aplicado</label>--}}
-{{--                                                    <input type="text" class="form-control"--}}
-{{--                                                           v-model="formAvulsa.parecer_teste.qual_teste"--}}
-{{--                                                           placeholder="Teste"--}}
-{{--                                                           autocomplete="mybp">--}}
-{{--                                                </div>--}}
-{{--                                            </div>--}}
+                                {{--                                <div class="col-12">--}}
+                                {{--                                    <fieldset>--}}
+                                {{--                                        <legend>Testes</legend>--}}
+                                {{--                                        <div class="row">--}}
+                                {{--                                            <div class="col-12 col-sm-6">--}}
+                                {{--                                                <div class="form-group">--}}
+                                {{--                                                    <label>Qual o teste foi aplicado</label>--}}
+                                {{--                                                    <input type="text" class="form-control"--}}
+                                {{--                                                           v-model="formAvulsa.parecer_teste.qual_teste"--}}
+                                {{--                                                           placeholder="Teste"--}}
+                                {{--                                                           autocomplete="mybp">--}}
+                                {{--                                                </div>--}}
+                                {{--                                            </div>--}}
 
-{{--                                            <div class="col-12 col-sm-6">--}}
-{{--                                                <div class="form-group">--}}
-{{--                                                    <label>Resultado do Teste</label>--}}
-{{--                                                    <select class="form-control"--}}
-{{--                                                            v-model="formAvulsa.parecer_teste.parecer_final_teste">--}}
-{{--                                                        <option value="">Selecione</option>--}}
-{{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-{{--                                                        <option value="favoravel">Favorável</option>--}}
-{{--                                                        <option value="restricao">Restrição</option>--}}
-{{--                                                        <option value="desfavoravel">Desfavorável</option>--}}
-{{--                                                    </select>--}}
-{{--                                                </div>--}}
-{{--                                            </div>--}}
+                                {{--                                            <div class="col-12 col-sm-6">--}}
+                                {{--                                                <div class="form-group">--}}
+                                {{--                                                    <label>Resultado do Teste</label>--}}
+                                {{--                                                    <select class="form-control"--}}
+                                {{--                                                            v-model="formAvulsa.parecer_teste.parecer_final_teste">--}}
+                                {{--                                                        <option value="">Selecione</option>--}}
+                                {{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
+                                {{--                                                        <option value="favoravel">Favorável</option>--}}
+                                {{--                                                        <option value="restricao">Restrição</option>--}}
+                                {{--                                                        <option value="desfavoravel">Desfavorável</option>--}}
+                                {{--                                                    </select>--}}
+                                {{--                                                </div>--}}
+                                {{--                                            </div>--}}
 
-{{--                                        </div>--}}
-{{--                                    </fieldset>--}}
-{{--                                </div>--}}
+                                {{--                                        </div>--}}
+                                {{--                                    </fieldset>--}}
+                                {{--                                </div>--}}
 
-{{--                                <div class="col-12">--}}
-{{--                                    <fieldset>--}}
-{{--                                        <legend>Técnica</legend>--}}
-{{--                                        <div class="row">--}}
+                                {{--                                <div class="col-12">--}}
+                                {{--                                    <fieldset>--}}
+                                {{--                                        <legend>Técnica</legend>--}}
+                                {{--                                        <div class="row">--}}
 
-{{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
-{{--                                                <div class="form-group">--}}
-{{--                                                    <label>Experiência com cargas rigger</label>--}}
-{{--                                                    <select class="form-control"--}}
-{{--                                                            v-model="formAvulsa.parecer_tecnica.experiencia_cargas_rigger">--}}
-{{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
-{{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-{{--                                                        <option value="Sim">Sim</option>--}}
-{{--                                                        <option value="Não">Não</option>--}}
-{{--                                                    </select>--}}
-{{--                                                </div>--}}
-{{--                                            </div>--}}
+                                {{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
+                                {{--                                                <div class="form-group">--}}
+                                {{--                                                    <label>Experiência com cargas rigger</label>--}}
+                                {{--                                                    <select class="form-control"--}}
+                                {{--                                                            v-model="formAvulsa.parecer_tecnica.experiencia_cargas_rigger">--}}
+                                {{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
+                                {{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
+                                {{--                                                        <option value="Sim">Sim</option>--}}
+                                {{--                                                        <option value="Não">Não</option>--}}
+                                {{--                                                    </select>--}}
+                                {{--                                                </div>--}}
+                                {{--                                            </div>--}}
 
 
-{{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
-{{--                                                <div class="form-group">--}}
-{{--                                                    <label>Opera plataforma móvel</label>--}}
-{{--                                                    <select class="form-control"--}}
-{{--                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_movel">--}}
-{{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
-{{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-{{--                                                        <option value="Sim">Sim</option>--}}
-{{--                                                        <option value="Não">Não</option>--}}
-{{--                                                    </select>--}}
-{{--                                                </div>--}}
-{{--                                            </div>--}}
+                                {{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
+                                {{--                                                <div class="form-group">--}}
+                                {{--                                                    <label>Opera plataforma móvel</label>--}}
+                                {{--                                                    <select class="form-control"--}}
+                                {{--                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_movel">--}}
+                                {{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
+                                {{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
+                                {{--                                                        <option value="Sim">Sim</option>--}}
+                                {{--                                                        <option value="Não">Não</option>--}}
+                                {{--                                                    </select>--}}
+                                {{--                                                </div>--}}
+                                {{--                                            </div>--}}
 
-{{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
-{{--                                                <div class="form-group">--}}
-{{--                                                    <label>Opera ponte rolante</label>--}}
-{{--                                                    <select class="form-control"--}}
-{{--                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_ponte">--}}
-{{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
-{{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-{{--                                                        <option value="true">Sim</option>--}}
-{{--                                                        <option value="false">Não</option>--}}
-{{--                                                    </select>--}}
-{{--                                                </div>--}}
-{{--                                            </div>--}}
+                                {{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
+                                {{--                                                <div class="form-group">--}}
+                                {{--                                                    <label>Opera ponte rolante</label>--}}
+                                {{--                                                    <select class="form-control"--}}
+                                {{--                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_ponte">--}}
+                                {{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
+                                {{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
+                                {{--                                                        <option value="true">Sim</option>--}}
+                                {{--                                                        <option value="false">Não</option>--}}
+                                {{--                                                    </select>--}}
+                                {{--                                                </div>--}}
+                                {{--                                            </div>--}}
 
-{{--                                        </div>--}}
-{{--                                    </fieldset>--}}
-{{--                                </div>--}}
+                                {{--                                        </div>--}}
+                                {{--                                    </fieldset>--}}
+                                {{--                                </div>--}}
 
                                 <div class="col-12">
                                     <fieldset>
                                         <legend>RESULTADO INTEGRADO</legend>
                                         <form-resultado-integrado
-                                            :form="formAvulsa.resultado_integrado"></form-resultado-integrado>
+                                                :form="formAvulsa.resultado_integrado"></form-resultado-integrado>
                                     </fieldset>
                                 </div>
 
@@ -597,7 +600,8 @@
                         <fieldset>
                             <legend>Admissão</legend>
                             <form-admissao :form="form.admissao"></form-admissao>
-                            <dependentes :model="formAvulsa.curriculo.dependentes" :model-delete="formAvulsa.curriculo.dependentesDelete"></dependentes>
+                            <dependentes :model="formAvulsa.curriculo.dependentes"
+                                         :model-delete="formAvulsa.curriculo.dependentesDelete"></dependentes>
                             <dados-bancarios :model="formAvulsa.feedback.banco_conta"></dados-bancarios>
 
                             <div class="col-12">
@@ -685,9 +689,9 @@
                             <div class="form-group">
                                 <label>Sexo</label>
                                 <select
-                                    class="form-control"
-                                    v-model="form.curriculo.sexo"
-                                    :disabled="visualizar"
+                                        class="form-control"
+                                        v-model="form.curriculo.sexo"
+                                        :disabled="visualizar"
                                 >
                                     <option value="">Selecione</option>
                                     <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
@@ -699,9 +703,9 @@
                             <div class="form-group">
                                 <label>Estado Civil</label>
                                 <select
-                                    class="form-control"
-                                    :disabled="visualizar"
-                                    v-model="form.curriculo.estado_civil"
+                                        class="form-control"
+                                        :disabled="visualizar"
+                                        v-model="form.curriculo.estado_civil"
                                 >
                                     <option value="">Selecione</option>
                                     <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
@@ -830,8 +834,8 @@
                             <div class="form-group">
                                 <label>Bota</label>
                                 <select
-                                    class="form-control" :disabled="visualizar"
-                                    v-model="form.parecer_rh.bota"
+                                        class="form-control" :disabled="visualizar"
+                                        v-model="form.parecer_rh.bota"
                                 >
                                     <option value="">Selecione</option>
                                     @foreach(range(33,50) as $i)
@@ -956,7 +960,8 @@
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="">Data admissão prevista</label>
-                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa" v-mascara:data
+                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                                       v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
                                        @blur.prevent="valida_data($event.target)"
                                        :disabled="visualizar"
@@ -1067,8 +1072,8 @@
                 <fieldset>
                     <legend>RESULTADO INTEGRADO</legend>
                     <form-resultado-integrado
-                        :form="form.resultado_integrado" :disabled="visualizar"
-                        :visualizar="visualizar"></form-resultado-integrado>
+                            :form="form.resultado_integrado" :disabled="visualizar"
+                            :visualizar="visualizar"></form-resultado-integrado>
                 </fieldset>
 
 
@@ -1079,13 +1084,14 @@
                                    :visualizar="visualizar"></form-admissao>
 
                     <div class="col-12">
-                        <dependentes :model="form.curriculo.dependentes" :visualizar='visualizar' :model-delete="form.curriculo.dependentesDelete"></dependentes>
+                        <dependentes :model="form.curriculo.dependentes" :visualizar='visualizar'
+                                     :model-delete="form.curriculo.dependentesDelete"></dependentes>
                     </div>
 
-{{--                    <div class="col-12">--}}
-{{--                        <ferias-adquiridas :model="form.admissao.ferias_adquiridas" :visualizar='visualizar'--}}
-{{--                                     :model-delete="form.admissao.ferias_adquiridasDelete"></ferias-adquiridas>--}}
-{{--                    </div>--}}
+                    {{--                    <div class="col-12">--}}
+                    {{--                        <ferias-adquiridas :model="form.admissao.ferias_adquiridas" :visualizar='visualizar'--}}
+                    {{--                                     :model-delete="form.admissao.ferias_adquiridasDelete"></ferias-adquiridas>--}}
+                    {{--                    </div>--}}
 
                     <div class="col-12">
                         <dados-bancarios :model="form.banco_conta" :visualizar='visualizar'></dados-bancarios>
@@ -1411,7 +1417,7 @@
             <div class="row">
                 <button type="button" class="btn btn-sm btn-success mr-1 mb-2" :disabled="controle.carregando"
                         @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                            :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
                 @can('admissao_pos_admissao_insert')
@@ -1462,9 +1468,9 @@
             <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
         </div>
         <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
+            <table class="table table-centered bg-white">
                 <thead>
-                <tr class="bg-default">
+                <tr>
                     <th class="text-center">
 
                         <input type="checkbox"
@@ -1473,18 +1479,18 @@
                                :style="comAdm.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                                @click="selecionaTodos">
                     </th>
-                    <th>Nome</th>
-                    <th>Cargo</th>
-                    <th v-if="colunasTabela.pcd">PCD</th>
-                    <th>Enc. Doc</th>
-                    <th>Enc. Exame</th>
-                    <th>Enc. Treinamento</th>
-                    <th>Resp. Encaminhamento</th>
-                    <th>Crachá</th>
-                    <th>Foto 3x4</th>
-                    <th v-if="controle.dados.filtroAso">Data ASO</th>
-                    <th v-if="controle.dados.filtroDataAdmissao">Data da Admissao</th>
-                    <th>Status Admissão</th>
+                    <th class="text-center text-nowrap">Nome</th>
+                    <th class="text-center text-nowrap">Cargo</th>
+                    <th class="text-center text-nowrap" v-if="colunasTabela.pcd">PCD</th>
+                    <th class="text-center text-nowrap">Enc. Doc</th>
+                    <th class="text-center text-nowrap">Enc. Exame</th>
+                    <th class="text-center text-nowrap">Enc. Treinamento</th>
+                    <th class="text-center text-nowrap">Resp. Encaminhamento</th>
+                    <th class="text-center text-nowrap">Crachá</th>
+                    <th class="text-center text-nowrap">Foto 3x4</th>
+                    <th class="text-center text-nowrap" v-if="controle.dados.filtroAso">Data ASO</th>
+                    <th class="text-center text-nowrap" v-if="controle.dados.filtroDataAdmissao">Data da Admissao</th>
+                    <th class="text-center text-nowrap">Status Admissão</th>
                     <th>
                         <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
                                 data-toggle="modal"
@@ -1495,17 +1501,17 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="item in lista">
-                    <td>
+                <tr v-for="item in lista" :key="item.id">
+                    <td class="text-center">
                         <label :for="item.id">
                             <input
-                                type="checkbox"
-                                v-model="selecionados"
-                                :value="item.id"
-                                :id="item.id"
-                                :style="item.admissao ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                :title="item.admissao ? null : 'Não possui cadastro em Admissão'"
-                                v-if="item.admissao"
+                                    type="checkbox"
+                                    v-model="selecionados"
+                                    :value="item.id"
+                                    :id="item.id"
+                                    :style="item.admissao ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                    :title="item.admissao ? null : 'Não possui cadastro em Admissão'"
+                                    v-if="item.admissao"
                             >
                             <input type="checkbox" v-else disabled="disabled"
                                    title="Sem parecer Informação em Admissão">
@@ -1513,11 +1519,11 @@
                         </label>
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         @{{item.curriculo.nome}}
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         @{{item.vaga_aberta.vaga_selecionada.nome}} - @{{item.vaga_aberta.municipio.nome}} -
                         @{{item.vaga_aberta.municipio.uf}}
                     </td>
@@ -1525,7 +1531,7 @@
                         @{{item.curriculo.pcd ? 'Sim' : 'Não'}}
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         <span v-if="item.resultado_integrado">
                            @{{item.resultado_integrado.documentos_entregue ? 'Sim' : 'Não'}} <br>
                            @{{item.resultado_integrado.documentos_entregue_data}} <br>
@@ -1533,7 +1539,7 @@
                         <span v-else>---</span>
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         <span v-if="item.resultado_integrado">
                            @{{item.resultado_integrado.encaminhado_exame ? 'Sim' : 'Não'}} <br>
                            @{{item.resultado_integrado.encaminhado_exame_data}} <br>
@@ -1541,7 +1547,7 @@
                         <span v-else>---</span>
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         <span v-if="item.resultado_integrado">
                            @{{item.resultado_integrado.encaminhado_treinamento ? 'Sim' : 'Não'}} <br>
                            @{{item.resultado_integrado.encaminhado_treinamento_data}} <br>
@@ -1549,18 +1555,18 @@
                         <span v-else>---</span>
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         <span v-if="item.resultado_integrado">
                            @{{item.resultado_integrado.responsavel_envio}}
                         </span>
                         <span v-else>---</span>
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         @{{item.admissao ? item.admissao.numero_cracha : ''}}
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         @{{item.curriculo.foto_tres.length > 0 ? 'SIM' : 'NÃO' }}
                     </td>
 
@@ -1572,7 +1578,7 @@
                         @{{item.admissao ? item.admissao.data_admissao : '' }}
                     </td>
 
-                    <td>
+                    <td class="text-center">
                         @{{item.admissao ? item.admissao.status : ''}}
                     </td>
 

@@ -41,7 +41,7 @@ class SincronizandoFeriasCommand extends Command
     public function handle()
     {
         try {
-            $ferias_gozando_sistema = \DB::table('ferias')
+            \DB::table('ferias')
                 ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
                 ->where('aprovado_via_script', true)
                 ->where('data_saida', '<=', (new DataHora())->dataInsert())
@@ -52,7 +52,7 @@ class SincronizandoFeriasCommand extends Command
                 ]);
             Log::info("Ferias gozando");
 
-            $ferias_gozando_rh = \DB::table('ferias')
+            \DB::table('ferias')
                 ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
                 ->where('data_saida', '<=', (new DataHora())->dataInsert())
                 ->where('data_retorno', '>=', (new DataHora())->dataInsert())
@@ -62,7 +62,7 @@ class SincronizandoFeriasCommand extends Command
                 ]);
             Log::info("Ferias gozando rh");
 
-            $ferias_gozadas_sistema = \DB::table('ferias')
+            \DB::table('ferias')
                 ->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
                 ->where('aprovado_via_script', true)
                 ->where('data_retorno', '<', (new DataHora())->dataInsert())
@@ -73,7 +73,7 @@ class SincronizandoFeriasCommand extends Command
 
             Log::info("Ferias gozadas");
 
-            $ferias_gozadas_rh = \DB::table('ferias')
+            \DB::table('ferias')
                 ->where('status_aprovacao_rh', Ferias::STATUS_APROVADO)
                 ->where('data_retorno', '<', (new DataHora())->dataInsert())
                 ->update([
