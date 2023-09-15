@@ -21,5 +21,5 @@ export default {
             ed.execCommand("fontSize", false, "12pt");
         });
     },
-    key: 'n166eatov70tbex79f7fll7p0fmngp7n7dosnk8rhxn5cdng',
+    key: 'wzkms4fz0wu195zp09juqfwqdipwvqhwwtklz7my9f2xjj6k',
 }
