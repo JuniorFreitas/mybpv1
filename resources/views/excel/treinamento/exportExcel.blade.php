@@ -37,7 +37,7 @@
             <td>{{$row->Curriculo->pcd = $row->Curriculo->pcd ? 'Sim' : 'Não'}}</td>
             <td>{{$row->Curriculo->nascimento}}</td>
             <td>{{$row->Curriculo->idade}}</td>
-            <td>{{$row->FeedbackCurriculo->TelPrincipal ? $row->FeedbackCurriculo->TelPrincipal->numero : 'não informado'}}</td>
+            <td>{{\App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id)}}</td>
             <td>{{$row->Curriculo->email}}</td>
             <td>{{$row->FeedbackCurriculo->Cliente->cnpj ? $row->FeedbackCurriculo->Cliente->nome_fantasia : $row->FeedbackCurriculo->Cliente->nome}}</td>
             <td>{{$row->FeedbackCurriculo->VagaAberta->VagaSelecionada->nome . ' - ' . $row->FeedbackCurriculo->VagaAberta->Municipio->uf}}</td>

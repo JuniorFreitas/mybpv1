@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
@@ -179,7 +178,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Curriculo extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use LogsActivity, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'curriculo';
@@ -496,6 +495,7 @@ class Curriculo extends Model
     {
         return $this->hasMany(TelefoneCurriculo::class, 'curriculo_id', 'id');
     }
+
     public function TelPrincipal()
     {
         return $this->hasOne(TelefoneCurriculo::class, 'curriculo_id', 'id')->where('principal', true);
@@ -662,10 +662,11 @@ class Curriculo extends Model
         return $this->belongsToMany(Arquivo::class, 'documentos_curriculos', 'curriculo_id', 'arquivo_id')->whereTipo('carta_oferta');
     }
 
-    public static function getTelPrincipal($curriculo_id)
+    public static function getTelPrincipal($curriculo_id, $mostraTipo = true): ?string
     {
         $TelPrincipal = TelefoneCurriculo::whereCurriculoId($curriculo_id)->wherePrincipal(true)->first();
-        return $TelPrincipal ? $TelPrincipal->numero . " ({$TelPrincipal->tipo})" : null;
+        $mostraTipo = $mostraTipo ? " ({$TelPrincipal->tipo})" : "";
+        return $TelPrincipal ? $TelPrincipal->numero . $mostraTipo : null;
     }
 
     //Scopo de ClienteID (Empresa)

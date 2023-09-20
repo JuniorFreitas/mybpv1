@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Scopes\ScopeOrderFeedback;
 use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
@@ -199,7 +198,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class FeedbackCurriculo extends Model
 {
-    use HasFactory, LogsActivity, TenantTrait, SoftDeletes;
+    use LogsActivity, TenantTrait, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'Feedback';
@@ -827,26 +826,29 @@ class FeedbackCurriculo extends Model
         return $this->hasOne(ExameFuncionario::class, 'feedback_id', 'id');
     }
 
-    public function Sesmt(){
+    public function Sesmt()
+    {
         return $this->hasMany(Examesesmt::class, 'feedback_id', 'id');
     }
 
-    public function UltimoAso(){
+    public function UltimoAso()
+    {
         return $this->hasOne(Examesesmt::class, 'feedback_id', 'id')
-                    ->whereJsonContains('resultado->aprovado', 'Sim')
-                    ->whereExameRealizado(true)
-                    ->whereAtual(true)
-                    ->orderByDesc('data_vencimento');
+            ->whereJsonContains('resultado->aprovado', 'Sim')
+            ->whereExameRealizado(true)
+            ->whereAtual(true)
+            ->orderByDesc('data_vencimento');
     }
 
-    public function AsoAdmissional(){
+    public function AsoAdmissional()
+    {
         return $this->hasOne(Examesesmt::class, 'feedback_id', 'id')
-                    ->whereJsonContains('resultado->aprovado', 'Sim')
-                    ->whereExameRealizado(true)
-                    ->whereHas('ExameFuncionario.ExameTipo', function($query){
-                        $query->where('label', 'Admissional');
-                    })
-                    ->orderByDesc('data_vencimento');
+            ->whereJsonContains('resultado->aprovado', 'Sim')
+            ->whereExameRealizado(true)
+            ->whereHas('ExameFuncionario.ExameTipo', function ($query) {
+                $query->where('label', 'Admissional');
+            })
+            ->orderByDesc('data_vencimento');
     }
 
 

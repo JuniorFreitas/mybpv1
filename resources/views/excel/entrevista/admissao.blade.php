@@ -93,7 +93,7 @@
             <td>{{$row->FeedbackCurriculo->Cliente->cnpj ? $row->FeedbackCurriculo->Cliente->nome_fantasia : $row->FeedbackCurriculo->Cliente->nome}}</td>
             <td>{{$row->FeedbackCurriculo->VagaAberta->VagaSelecionada->nome . ' - ' . $feedback->VagaAberta->Municipio->uf}}</td>
             <td>{{$row->parecerRh->ex_funcionario ? 'Sim' : 'Não'}}</td>
-            <td>{{$row->FeedbackCurriculo->TelPrincipal ? $row->FeedbackCurriculo->TelPrincipal->numero : 'não informado'}}</td>
+            <td>{{\App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id)}}</td>
             <td>{{$row->Curriculo->email}}</td>
             <td>{{$row->parecerRh ? $row->parecerRh->turnos_seis_por_dois ? 'Sim' : 'Não' : 'NÃO INFORMADO'}}</td>
             <td>{{ $row->FeedbackCurriculo->ParecerRh->indicado_por ? $row->FeedbackCurriculo->ParecerRh->indicado_por : null }}</td>

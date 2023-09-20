@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\carteiraEtiquetaExport;
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
-use App\Models\Cliente;
 use App\Models\ClienteConfig;
-use App\Models\ExameTreinamento;
 use App\Models\FeedbackCurriculo;
-use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
 use App\Models\Treinamento;
 use App\Models\Vencimento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 use Mail;
 use MasterTag\DataHora;
 
@@ -345,8 +340,8 @@ class TreinamentoController extends Controller
         $campoVencimento = $request->campoVencimento == 'true';
         if ($campoVencimento) {
             $periodo = explode(' até ', $request->vencimento);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
             $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
                 $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
                     $q->where('data_vencimento', '>=', $dataInicio->dataHoraInsert())->where('data_vencimento', '<=', $dataFim->dataHoraInsert());
@@ -357,8 +352,8 @@ class TreinamentoController extends Controller
         $campoPeriodoTreinado = $request->campoPeriodoTreinado == 'true';
         if ($campoPeriodoTreinado) {
             $periodo_treinado = explode(' até ', $request->periodoTreinado);
-            $dataInicio_treinado = new DataHora($periodo_treinado[0].' 00:00:00');
-            $dataFim_treinado = new DataHora($periodo_treinado[1]. '23:59:59');
+            $dataInicio_treinado = new DataHora($periodo_treinado[0] . ' 00:00:00');
+            $dataFim_treinado = new DataHora($periodo_treinado[1] . '23:59:59');
             $resultado->whereHas('Treinamento', function ($query) use ($dataInicio_treinado, $dataFim_treinado) {
                 $query->where('created_at', '>=', $dataInicio_treinado->dataInsert())->where('created_at', '<=', $dataFim_treinado->dataInsert());
             });
@@ -510,7 +505,6 @@ class TreinamentoController extends Controller
         }
 
 
-
         return $resultado->orderByDesc('created_at');
     }
 
@@ -587,7 +581,7 @@ class TreinamentoController extends Controller
         //ToDo: Melhoria ajustar query para trazer apenas os dados necessários
         $telefone_supervisor = ClienteConfig::where('cliente_id', auth()->user()->empresa_id)->first()->supervisor_etiqueta_bloqueio;
         $treinamentos = Treinamento::whereIn('feedback_id', $request->selecionados)->get()->transform(function ($item) use ($telefone_supervisor) {
-            $item->telefone = $telefone_supervisor ? Admissao::getNumeroSupervisor($item->FeedbackCurriculo->empresa_id,$item->FeedbackCurriculo->Admissao->area_etiqueta_id) : $item->FeedbackCurriculo->TelPrincipal->numero;
+            $item->telefone = $telefone_supervisor ? Admissao::getNumeroSupervisor($item->FeedbackCurriculo->empresa_id, $item->FeedbackCurriculo->Admissao->area_etiqueta_id) : \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id, false);
             return $item;
         });
 

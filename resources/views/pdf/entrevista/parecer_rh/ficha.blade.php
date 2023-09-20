@@ -33,7 +33,7 @@
         <br>
         Endereço: <span>{{ $dados->FeedbackCurriculo->Curriculo->endereco_completo }}</span><br>
         Contato:
-        <span>{{ $dados->FeedbackCurriculo->TelPrincipal ? $dados->FeedbackCurriculo->TelPrincipal->Formatado() : 'não informado' }}</span>
+        <span>{{ \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id) }}</span>
         |
         E-mail: <span>{{ $dados->FeedbackCurriculo->Curriculo->email }}</span>
         <br/>
