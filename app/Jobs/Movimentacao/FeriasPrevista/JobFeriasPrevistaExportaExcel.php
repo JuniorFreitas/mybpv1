@@ -65,7 +65,7 @@ class JobFeriasPrevistaExportaExcel implements ShouldQueue
     {
         return [
             $row->Admissao->Feedback->Curriculo->nome,
-            $row->Admissao->FeedBack->VagaSelecionada->nome,
+            $row->Admissao->cargo,
             $row->Admissao->data_admissao,
             $row->Admissao->CentroCusto ? $row->Admissao->CentroCusto->label : 'Não Informado',
             $row->PeriodoAquisitivo->label,
