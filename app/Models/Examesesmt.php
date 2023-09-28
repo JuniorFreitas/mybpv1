@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Scopes\ScopeEmpresa;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 
@@ -48,7 +47,6 @@ use MasterTag\DataHora;
  */
 class Examesesmt extends Model
 {
-    use HasFactory;
 
     protected $fillable = [
         'exame_funcionario_id',

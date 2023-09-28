@@ -15,9 +15,7 @@ use App\Models\User;
 use App\Rules\TenantUniqueRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use MasterTag\DataHora;
-use PDF;
 
 class AvaliacaoController extends Controller
 {
@@ -206,28 +204,30 @@ class AvaliacaoController extends Controller
         $this->authorize('avaliacoes_listar');
         $resultado = $this->filtroAvaliar($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
-
+        
         $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
-            $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
-            $avaliacaoPar = clone $avaliacaoFeedbackFunc;
-            $avaliacaoPar = $avaliacaoPar->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->where('principal', false);
-            $totalAvaliacaoPar = $avaliacaoPar->count();
-            $totalAvaliacaoParConcluida = $avaliacaoPar->where('status', AvaliacaoFeedback::STATUS_CONCLUIDA)->count();
 
-            $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
-            $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
-            $item->total_avaliacoes_concluidas = $totalAvaliacoesFuncConcluidas->count();
-            $item->fez_auto_avaliacao = $totalAvaliacoesFuncConcluidas->count() > 0;
-            $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes;
+            if (!$item->Avaliacao->auto_avaliacao) {
+                $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
+                $avaliacaoPar = clone $avaliacaoFeedbackFunc;
+                $avaliacaoPar = $avaliacaoPar->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->where('principal', false);
+                $totalAvaliacaoPar = $avaliacaoPar->count();
+                $totalAvaliacaoParConcluida = $avaliacaoPar->where('status', AvaliacaoFeedback::STATUS_CONCLUIDA)->count();
 
-            $item->pendente_autoavaliacao = $item->avaliador_id == $item->funcionario_id && !$item->fez_auto_avaliacao;
-            $item->pendente_autoavaliacao_colaborador = $item->avaliador_id != $item->funcionario_id && $item->status == 'Pendente' && !$item->fez_auto_avaliacao;
-            $item->pendente_avaliacao_par = $totalAvaliacaoPar != $totalAvaliacaoParConcluida;
-            $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
-            $item->token = \Crypt::encrypt($item->id);
-            $item->titulo_avaliacao = $item->Avaliacao->titulo;
-            $item->tipo_avaliacao = $item->Avaliacao->AvaliacaoTipo->nome;
+                $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
+                $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
+                $item->total_avaliacoes_concluidas = $totalAvaliacoesFuncConcluidas->count();
+                $item->fez_auto_avaliacao = $totalAvaliacoesFuncConcluidas->count() > 0;
+                $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes;
 
+                $item->pendente_autoavaliacao = $item->avaliador_id == $item->funcionario_id && !$item->fez_auto_avaliacao;
+                $item->pendente_autoavaliacao_colaborador = $item->avaliador_id != $item->funcionario_id && $item->status == 'Pendente' && !$item->fez_auto_avaliacao;
+                $item->pendente_avaliacao_par = $totalAvaliacaoPar != $totalAvaliacaoParConcluida;
+                $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
+                $item->token = \Crypt::encrypt($item->id);
+                $item->titulo_avaliacao = $item->Avaliacao->titulo;
+                $item->tipo_avaliacao = $item->Avaliacao->AvaliacaoTipo->nome;
+            }
             return $item;
         });
 
@@ -552,7 +552,7 @@ class AvaliacaoController extends Controller
         }
 
         $total_questoes = collect($result_topico_agrupado)->collapse()->count();
-        $nota_final = (float)number_format((($totalAval / count($avaliacoesFeedbacks)) / $total_questoes) / count($result_topico_agrupado),2,'.','.');// total de avaliações / total de avaliadores / total de questoes / total de topicos
+        $nota_final = (float)number_format((($totalAval / count($avaliacoesFeedbacks)) / $total_questoes) / count($result_topico_agrupado), 2, '.', '.');// total de avaliações / total de avaliadores / total de questoes / total de topicos
 
         return [
             'dados_do_funcionario' => $dadosDoFuncionario,

@@ -65,10 +65,21 @@ class Avaliacao extends Model
         'data_fim_prazo',
         'empresa_id',
         'status',
-        'ativo'
+        'ativo',
+        'auto_avaliacao'
     ];
 
-    protected $casts = ['id' => 'int', 'avaliacao_tipo_id' => 'int', 'titulo' => 'string', 'data_inicio_prazo' => 'string', 'data_fim_prazo' => 'string', 'empresa_id' => 'int', 'status' => 'string', 'ativo' => 'boolean'];
+    protected $casts = [
+        'id' => 'int',
+        'avaliacao_tipo_id' => 'int',
+        'titulo' => 'string',
+        'data_inicio_prazo' => 'string',
+        'data_fim_prazo' => 'string',
+        'empresa_id' => 'int',
+        'status' => 'string',
+        'ativo' => 'boolean',
+        'auto_avaliacao' => 'boolean'
+    ];
 
     public $timestamps = false;
 
@@ -101,7 +112,7 @@ class Avaliacao extends Model
     public function setDataInicioPrazoAttribute($value)
     {
         if ($value) {
-            $dt = $value.' 00:00:00';
+            $dt = $value . ' 00:00:00';
             $data = new DataHora($dt);
             $this->attributes['data_inicio_prazo'] = $data->dataHoraInsert();
         }
@@ -120,7 +131,7 @@ class Avaliacao extends Model
     public function setDataFimPrazoAttribute($value)
     {
         if ($value) {
-            $dt = $value.' 23:59:59';
+            $dt = $value . ' 23:59:59';
             $data = new DataHora($dt);
             $this->attributes['data_fim_prazo'] = $data->dataHoraInsert();
         }

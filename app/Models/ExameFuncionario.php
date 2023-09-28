@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeClientesEmpresa;
 use App\Scopes\ScopeEmpresa;
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 
@@ -54,7 +52,6 @@ use MasterTag\DataHora;
  */
 class ExameFuncionario extends Model
 {
-    use HasFactory;
 
     const TABELA = 'exame_funcionarios';
 
@@ -109,7 +106,8 @@ class ExameFuncionario extends Model
         }
     }
 
-    protected function serializeDate(DateTimeInterface $date) {
+    protected function serializeDate(DateTimeInterface $date)
+    {
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -123,7 +121,8 @@ class ExameFuncionario extends Model
         return $this->hasOne(EmpresaExame::class, 'id', 'empresa_exame_id');
     }
 
-    public function Sesmt(){
+    public function Sesmt()
+    {
         return $this->hasOne(Examesesmt::class, 'exame_funcionario_id', 'id');
     }
 

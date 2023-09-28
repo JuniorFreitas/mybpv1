@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
@@ -173,7 +172,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Admissao extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use LogsActivity, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'admissao';
@@ -834,6 +833,7 @@ class Admissao extends Model
     {
         return $query->whereDoesntHave('Afastamento');
     }
+
     public function scopeAdmitidos($query)
     {
         return $query->whereDoesntHave('Demissao');
@@ -886,7 +886,8 @@ class Admissao extends Model
         return $this->hasOne(AdmissaoAso::class, 'admissao_id', 'id')->whereAtivo(true);
     }
 
-    public function UltimoAso(){
+    public function UltimoAso()
+    {
         return $this->hasOne(Examesesmt::class, 'feedback_id', 'feedback_id')
             ->whereJsonContains('resultado->aprovado', 'Sim')
             ->whereExameRealizado(true)

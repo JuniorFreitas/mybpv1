@@ -16,7 +16,8 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Título</label>
-                                    <input v-model="form.titulo" class="form-control form-control-sm validacampo" type="text"
+                                    <input v-model="form.titulo" class="form-control form-control-sm validacampo"
+                                           type="text"
                                            placeholder="Informe o titulo da avaliação"
                                            @keyup.prevent="valida_campo_vazio($event.target, 1);"
                                            @blur.prevent="valida_campo_vazio($event.target, 1)"
@@ -26,7 +27,8 @@
                             <div class="col-lg-4">
                                 <div class="form-group">
                                     <label>Tipo de avaliação</label>
-                                    <select class="form-control form-control-sm validacampo" v-model="form.avaliacao_tipo_id"
+                                    <select class="form-control form-control-sm validacampo"
+                                            v-model="form.avaliacao_tipo_id"
                                             @change.prevent="valida_campo_vazio($event.target, 1);"
                                             @blur.prevent="valida_campo_vazio($event.target, 1)"
                                     >
@@ -56,6 +58,17 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Auto Avaliação</label>
+                                    <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
+                                            onchange="valida_campo_vazio(this,1)" v-model="form.auto_avaliacao">
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="col-lg-3">
                                 <div class="form-group">
                                     <label>Ativo</label>
@@ -241,6 +254,7 @@ export default {
                 data_fim_prazo: "",
                 status: "",
                 ativo: true,
+                auto_avaliacao: true,
                 avaliacao_tipo_id: ''
             },
 
