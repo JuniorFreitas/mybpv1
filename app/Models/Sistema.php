@@ -835,8 +835,8 @@ class Sistema
      */
     public static function getFilial($empresa_id, $centro_custo_filial_id): array
     {
-        $centroCustoFilial = CentroCustoFilial::withoutGlobalScopes()->with(['Filial' => function($q){
-            $q->select(['id','empresa_id','dados'])->withoutGlobalScopes();
+        $centroCustoFilial = CentroCustoFilial::withoutGlobalScopes()->with(['Filial' => function ($q) {
+            $q->select(['id', 'empresa_id', 'dados'])->withoutGlobalScopes();
         }])->find($centro_custo_filial_id);
 
         if (!$centroCustoFilial) {
@@ -896,6 +896,7 @@ class Sistema
             'pertence_filial' => $feedbackCurriculo->Admissao->filial ?? "NÃO INFORMADO",
             'ctps' => $ctps_numero . '-' . $ctps_serie,
             'centro_custo_filial' => self::getFilial($empresa_id, $feedbackCurriculo->Admissao->centro_custo_filial_id) ?: null,
+            'cnpj_lotacao' => self::getEmpresaFilialMatriz($feedbackCurriculo->Admissao->centro_custo_filial_id, $empresa_id) ?? null,
         ];
     }
 
@@ -944,7 +945,8 @@ class Sistema
         return $nomedocache;
     }
 
-    public static function gerarCPF() {
+    public static function gerarCPF()
+    {
         $cpf = '';
 
         for ($i = 0; $i < 9; $i++) {

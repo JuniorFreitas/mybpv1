@@ -2,8 +2,8 @@
 @section('title','Avaliacao Desempenho')
 @section('conteudo')
     <div style="margin-top: 20px; margin-bottom: 20px">
-{{--        <p class="observacao">OBS: Se o download nao iniciar automaticamente clique no botão.</p>--}}
-{{--        <button id="printPageButton" onClick="window.print();">IMPRIMIR</button>--}}
+        {{--        <p class="observacao">OBS: Se o download nao iniciar automaticamente clique no botão.</p>--}}
+        {{--        <button id="printPageButton" onClick="window.print();">IMPRIMIR</button>--}}
     </div>
 
     <div id="app">
@@ -11,6 +11,12 @@
         <div style="width: 97%; margin-top: 15px">
             <fieldset>
                 <legend>DADOS DO COLABORADOR</legend>
+                <div class="row mb-3" v-if="formAvaliarFinal.dados_do_funcionario.cnpj_lotacao">
+                    <div class="col-12"><strong>CNPJ:</strong>
+                        @{{ formAvaliarFinal.dados_do_funcionario.cnpj_lotacao.razao_social }}
+                        (@{{ formAvaliarFinal.dados_do_funcionario.pertence_filial ? 'Filial' : 'Matriz' }})
+                    </div>
+                </div>
                 <div class="row">
                     <div><strong>Nome:</strong>
                         @{{ formAvaliarFinal.dados_do_funcionario.nome }}
@@ -26,10 +32,15 @@
                     <div class="col-12 col-lg-4"><strong>Cargo:</strong>
                         @{{ formAvaliarFinal.dados_do_funcionario.cargo }}
                     </div>
+                    <div class="col-12 col-lg-4"><strong>Centro de Custo:</strong>
+                        @{{ formAvaliarFinal.dados_do_funcionario.centro_custo }}
+                    </div>
                     <div class="col-12 col-lg-4"><strong>Área:</strong>
                         @{{ formAvaliarFinal.dados_do_funcionario.area }}
                     </div>
                 </div>
+
+
             </fieldset>
 
             <table class="table2" style="margin-top: 20px"
@@ -94,7 +105,8 @@
             <div style="page-break-before: always"></div>
 
             <h2>OPORTUNIDADES DE MELHORIA / PLANO DE AÇÃO</h2>
-            <table class="table" style="width: 100%; background:white;" v-for="(item, index) in formAvaliarFinal.planos_acoes" :key="index">
+            <table class="table" style="width: 100%; background:white;"
+                   v-for="(item, index) in formAvaliarFinal.planos_acoes" :key="index">
                 <tr>
                     <td
                         style="border-bottom: 1px solid black">

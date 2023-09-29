@@ -86,6 +86,7 @@ class AvaliacaoController extends Controller
     public function edit(Avaliacao $avaliacao)
     {
         $this->authorize('cadastro_avaliacao_update');
+
         return $avaliacao;
     }
 
@@ -204,30 +205,35 @@ class AvaliacaoController extends Controller
         $this->authorize('avaliacoes_listar');
         $resultado = $this->filtroAvaliar($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
-        
+
         $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
 
+            $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
+            $avaliacaoPar = clone $avaliacaoFeedbackFunc;
+            $avaliacaoPar = $avaliacaoPar->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->where('principal', false);
+            $totalAvaliacaoPar = $avaliacaoPar->count();
+            $totalAvaliacaoParConcluida = $avaliacaoPar->where('status', AvaliacaoFeedback::STATUS_CONCLUIDA)->count();
+
+            $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
+            $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
+            $item->total_avaliacoes_concluidas = $totalAvaliacoesFuncConcluidas->count();
+            $item->fez_auto_avaliacao = $totalAvaliacoesFuncConcluidas->count() > 0;
+            $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes;
+
+            $item->pendente_autoavaliacao = $item->avaliador_id == $item->funcionario_id && !$item->fez_auto_avaliacao;
+            $item->pendente_autoavaliacao_colaborador = $item->avaliador_id != $item->funcionario_id && $item->status == 'Pendente' && !$item->fez_auto_avaliacao;
+            $item->pendente_avaliacao_par = $totalAvaliacaoPar != $totalAvaliacaoParConcluida;
+            $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
+            $item->token = \Crypt::encrypt($item->id);
+            $item->titulo_avaliacao = $item->Avaliacao->titulo;
+            $item->tipo_avaliacao = $item->Avaliacao->AvaliacaoTipo->nome;
+
             if (!$item->Avaliacao->auto_avaliacao) {
-                $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
-                $avaliacaoPar = clone $avaliacaoFeedbackFunc;
-                $avaliacaoPar = $avaliacaoPar->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->where('principal', false);
-                $totalAvaliacaoPar = $avaliacaoPar->count();
-                $totalAvaliacaoParConcluida = $avaliacaoPar->where('status', AvaliacaoFeedback::STATUS_CONCLUIDA)->count();
-
                 $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
-                $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
-                $item->total_avaliacoes_concluidas = $totalAvaliacoesFuncConcluidas->count();
-                $item->fez_auto_avaliacao = $totalAvaliacoesFuncConcluidas->count() > 0;
-                $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes;
-
-                $item->pendente_autoavaliacao = $item->avaliador_id == $item->funcionario_id && !$item->fez_auto_avaliacao;
-                $item->pendente_autoavaliacao_colaborador = $item->avaliador_id != $item->funcionario_id && $item->status == 'Pendente' && !$item->fez_auto_avaliacao;
-                $item->pendente_avaliacao_par = $totalAvaliacaoPar != $totalAvaliacaoParConcluida;
                 $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
-                $item->token = \Crypt::encrypt($item->id);
-                $item->titulo_avaliacao = $item->Avaliacao->titulo;
-                $item->tipo_avaliacao = $item->Avaliacao->AvaliacaoTipo->nome;
+                $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes && $item->status != 'Finalizada';
             }
+
             return $item;
         });
 
@@ -309,7 +315,7 @@ class AvaliacaoController extends Controller
             }
         }
 
-        $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
+        $feedbackCurriculo = FeedbackCurriculo::select(['id', 'curriculo_id', 'empresa_id'])->whereCurriculoId($avaliacaoFeedback->funcionario_id)
             ->whereEmpresaId(auth()->user()->empresa_id)
             ->first();
 
@@ -320,17 +326,12 @@ class AvaliacaoController extends Controller
             'data_admissao' => 'NÃO INFORMADO',
             'cargo' => 'NÃO INFORMADO',
             'area' => 'NÃO INFORMADO',
+            'centro_custo' => 'NÃO INFORMADO',
+            'pertence_filial' => false,
         ];
 
         if ($feedbackCurriculo) {
-            $admissao = $feedbackCurriculo->Admissao;
-            $dadosDoFuncionario = [
-                'nome' => $avaliacaoFeedback->Funcionario->nome,
-                'matricula' => $admissao->matricula ?: "NÃO INFORMADO",
-                'data_admissao' => $admissao->data_admissao,
-                'cargo' => $admissao->cargo,
-                'area' => $admissao->AreaEtiqueta ? $admissao->AreaEtiqueta->label : "NÃO INFORMADO",
-            ];
+            $dadosDoFuncionario = Sistema::getColaboradorDados($feedbackCurriculo->curriculo_id, $feedbackCurriculo->empresa_id);
         }
 
         return response()->json([
@@ -537,18 +538,14 @@ class AvaliacaoController extends Controller
             'data_admissao' => 'NÃO INFORMADO',
             'cargo' => 'NÃO INFORMADO',
             'area' => 'NÃO INFORMADO',
+            'centro_custo' => 'NÃO INFORMADO',
+            'pertence_filial' => false,
         ];
 
 
         if ($feedbackCurriculo) {
-            $admissao = $feedbackCurriculo->Admissao;
-            $dadosDoFuncionario = [
-                'nome' => $avaliacaoFeedback->Funcionario->nome,
-                'matricula' => $admissao->matricula ?: "NÃO INFORMADO",
-                'data_admissao' => $admissao->data_admissao,
-                'cargo' => $admissao->cargo,
-                'area' => $admissao->AreaEtiqueta ? $admissao->AreaEtiqueta->label : "NÃO INFORMADO",
-            ];
+            $dadosDoFuncionario = Sistema::getColaboradorDados($feedbackCurriculo->curriculo_id, $feedbackCurriculo->empresa_id);
+
         }
 
         $total_questoes = collect($result_topico_agrupado)->collapse()->count();

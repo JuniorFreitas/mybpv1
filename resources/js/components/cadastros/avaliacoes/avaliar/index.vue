@@ -4,8 +4,15 @@
             <template slot="conteudo">
                 <preload v-show="preloadAvalFinal"></preload>
                 <div v-if="!preloadAvalFinal">
+
                     <fieldset>
                         <legend>DADOS</legend>
+                        <div class="row mb-3" v-if="formAvaliarFinal.dados_do_funcionario.cnpj_lotacao">
+                            <div class="col-12"><strong>CNPJ:</strong>
+                                {{ formAvaliarFinal.dados_do_funcionario.cnpj_lotacao.razao_social }}
+                                ({{ formAvaliarFinal.dados_do_funcionario.pertence_filial ? 'Filial' : 'Matriz' }})
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-12 col-lg-4"><strong>Nome:</strong>
                                 {{ formAvaliarFinal.dados_do_funcionario.nome }}
@@ -17,10 +24,15 @@
                                 {{ formAvaliarFinal.dados_do_funcionario.data_admissao }}
                             </div>
                         </div>
+
                         <div class="row mt-3">
                             <div class="col-12 col-lg-4"><strong>Cargo:</strong>
                                 {{ formAvaliarFinal.dados_do_funcionario.cargo }}
                             </div>
+                            <div class="col-12 col-lg-4"><strong>Centro de Custo:</strong>
+                                {{ formAvaliarFinal.dados_do_funcionario.centro_custo }}
+                            </div>
+
                             <div class="col-12 col-lg-4"><strong>Área:</strong>
                                 {{ formAvaliarFinal.dados_do_funcionario.area }}
                             </div>
@@ -170,6 +182,12 @@
                 <div v-if="!preload">
                     <fieldset>
                         <legend>DADOS</legend>
+                        <div class="row mb-3" v-if="formAvaliar.dados_do_funcionario.cnpj_lotacao">
+                            <div class="col-12"><strong>CNPJ:</strong>
+                                {{ formAvaliar.dados_do_funcionario.cnpj_lotacao.razao_social }}
+                                ({{ formAvaliar.dados_do_funcionario.pertence_filial ? 'Filial' : 'Matriz' }})
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-12 col-lg-4"><strong>Nome:</strong>
                                 {{ formAvaliar.dados_do_funcionario.nome }}
@@ -181,10 +199,15 @@
                                 {{ formAvaliar.dados_do_funcionario.data_admissao }}
                             </div>
                         </div>
+
                         <div class="row mt-3">
                             <div class="col-12 col-lg-4"><strong>Cargo:</strong>
                                 {{ formAvaliar.dados_do_funcionario.cargo }}
                             </div>
+                            <div class="col-12 col-lg-4"><strong>Centro de Custo:</strong>
+                                {{ formAvaliar.dados_do_funcionario.centro_custo }}
+                            </div>
+
                             <div class="col-12 col-lg-4"><strong>Área:</strong>
                                 {{ formAvaliar.dados_do_funcionario.area }}
                             </div>

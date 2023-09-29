@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Tenant\Traits\TenantTrait;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
@@ -38,7 +37,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Avaliacao extends Model
 {
-    use HasFactory, TenantTrait, LogsActivity;
+    use TenantTrait, LogsActivity;
 
     protected static $logFillable = true;
     protected static $logName = 'avaliacoes';
