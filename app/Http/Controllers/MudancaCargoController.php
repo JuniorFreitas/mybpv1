@@ -283,11 +283,11 @@ class MudancaCargoController extends Controller
     {
         $this->authorize('privilegio_aprovar_por_rh');
         $dados = $request->input();
+        $mudancaCargo = MudancaCargo::find($dados['id']);
         try {
             DB::beginTransaction();
 
-            if($dados['status_aprovacao_rh'] === 'aprovado') {
-                $mudancaCargo = MudancaCargo::find($dados['id']);
+            if ($dados['status_aprovacao_rh'] === 'aprovado') {
 
                 $mudancaCargo->update([
                     'rh_aprovacao_id' => auth()->id(),
@@ -356,7 +356,7 @@ class MudancaCargoController extends Controller
 
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = PeriodoAquisitivo::whereIn('ano_inicial', [date('Y')-2, date('Y')-1, date('Y')])->get();
+        $periodo = PeriodoAquisitivo::whereIn('ano_inicial', [date('Y') - 2, date('Y') - 1, date('Y')])->get();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -393,8 +393,8 @@ class MudancaCargoController extends Controller
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0].' 00:00:00');
-            $dataFim = new DataHora($periodo[1].' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
             $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())
                 ->where('created_at', '<=', $dataFim->dataHoraInsert());
         }
@@ -408,14 +408,13 @@ class MudancaCargoController extends Controller
 
         if ($request->filled('campoStatusAprovacao')) {
             $status = $request->campoStatusAprovacao;
-            if ($request->campoStatusAprovacao == "aberto"){
+            if ($request->campoStatusAprovacao == "aberto") {
                 $resultado->whereNull('status_aprovacao_gestor');
-            }
-            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
-                $resultado->where('status_aprovacao_gestor',Ferias::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
-            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
+            } elseif ($request->campoStatusAprovacao == "aprovado_gestor") {
+                $resultado->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            } elseif ($request->campoStatusAprovacao == "aprovado_rh") {
                 $resultado->where('status_aprovacao_rh', Ferias::STATUS_APROVADO);
-            }else{
+            } else {
                 $resultado->whereStatusAprovacaoGestor(Ferias::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', Ferias::STATUS_REPROVADO);
             }
         }
@@ -430,7 +429,7 @@ class MudancaCargoController extends Controller
     //Excel
     public function export(Request $request)
     {
-        JobMudaCargoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
+        JobMudaCargoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 }
