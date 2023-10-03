@@ -287,14 +287,14 @@ class MudancaCargoController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($dados['status_aprovacao_rh'] === 'aprovado') {
+            $mudancaCargo->update([
+                'rh_aprovacao_id' => auth()->id(),
+                'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
+                'obs_rh' => $dados['obs_rh'],
+                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
+            ]);
 
-                $mudancaCargo->update([
-                    'rh_aprovacao_id' => auth()->id(),
-                    'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
-                    'obs_rh' => $dados['obs_rh'],
-                    'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
-                ]);
+            if ($dados['status_aprovacao_rh'] === 'aprovado') {
 
                 $admissao = Admissao::find($dados['admissao_id']);
                 if (!$dados['mantem_cargo']) {
