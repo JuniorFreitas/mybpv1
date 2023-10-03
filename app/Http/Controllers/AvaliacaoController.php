@@ -19,6 +19,12 @@ use MasterTag\DataHora;
 
 class AvaliacaoController extends Controller
 {
+
+    protected function temPrivilegioGestaoRh(): bool
+    {
+        return (bool)in_array('privilegio_gestao_rh', auth()->user()->listaDeHabilidades());
+    }
+
     public function index(Request $request)
     {
         return view('g.cadastros.avaliacoes.avaliacao.index');
@@ -205,7 +211,7 @@ class AvaliacaoController extends Controller
         $this->authorize('avaliacoes_listar');
         $resultado = $this->filtroAvaliar($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
-
+        $lista_avaliacoes = Avaliacao::whereAtivo(true)->orderBy('titulo')->get();
         $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
 
             $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
@@ -244,7 +250,9 @@ class AvaliacaoController extends Controller
             'dados' => [
                 'itens' => $avaliacoesFeedbacks,
                 'avaliacoes_tipos' => $avaliacoes_tipos,
+                'lista_avaliacoes' => $lista_avaliacoes,
                 'lista_status' => Avaliacao::LISTA_STATUS,
+                'tem_privilegio_gestao_rh' => $this->temPrivilegioGestaoRh(),
             ]
         ]);
     }
@@ -256,16 +264,26 @@ class AvaliacaoController extends Controller
      */
     private function filtroAvaliar(Request $request)
     {
+
+//        $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'Funcionario:id,nome,login,temp,ativo,deleted_at', 'Avaliador:id,nome,login')
+//            ->whereHas('Funcionario', function ($query) {
+//                $query->ativoNaoExcluido();
+//            })->whereHas('Avaliador', function ($query) {
+//                $query->ativoNaoExcluido();
+//            })->whereAvaliadorId(auth()->user()->id);
+
         $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'Funcionario:id,nome,login,temp,ativo,deleted_at', 'Avaliador:id,nome,login')
             ->whereHas('Funcionario', function ($query) {
                 $query->ativoNaoExcluido();
             })->whereHas('Avaliador', function ($query) {
                 $query->ativoNaoExcluido();
-            })
-            ->whereAvaliadorId(auth()->user()->id);
+            });
+        if (!$this->temPrivilegioGestaoRh()) {
+            $resultado->whereAvaliadorId(auth()->user()->id);
+        }
 
         $resultado->whereHas('Avaliacao', function ($query) {
-            $query->whereStatus(Avaliacao::STATUS_ABERTA)
+            $query->whereIn('status', [Avaliacao::STATUS_ABERTA, Avaliacao::STATUS_ENCERRADA])
                 ->whereAtivo(true);
         });
 
@@ -273,6 +291,27 @@ class AvaliacaoController extends Controller
             $resultado->where("titulo", "like", "%$request->campoBusca%")
                 ->orWhere('id', $request->campoBusca);
         }
+
+        $Avaliacao = Avaliacao::select(['id', 'auto_avaliacao'])->whereAtivo(true)->orderBy('titulo')->limit(1)->first();
+
+
+        if ($request->filled('campoAvaliacao')) {
+            $Avaliacao = Avaliacao::select(['id', 'auto_avaliacao'])->whereId($request->campoAvaliacao)->first();
+            if (!$Avaliacao->auto_avaliacao) {
+                if ($request->filled('campoStatus')) {
+                    $resultado->whereStatus($request->campoStatus);
+                }
+
+                $resultado->where('principal', true);
+            }
+            $resultado->where('avaliacao_id', $request->campoAvaliacao);
+        } else {
+            if (!$Avaliacao->auto_avaliacao) {
+                $resultado->where('principal', true);
+            }
+            $resultado->where('avaliacao_id', $Avaliacao->id);
+        }
+
         return $resultado;
     }
 
@@ -427,7 +466,7 @@ class AvaliacaoController extends Controller
 
         $avaliacaoFeedback = AvaliacaoFeedback::find($avaliacaoFeedback);
 
-        if (!$avaliacaoFeedback->principal || $avaliacaoFeedback->avaliador_id != auth()->id()) {
+        if (!$avaliacaoFeedback->principal || $avaliacaoFeedback->avaliador_id != auth()->id() && !$this->temPrivilegioGestaoRh()) {
             return response()->json([
                 'msg' => 'Você não tem permissão para acessar essa avaliação',
                 'error' => true,
