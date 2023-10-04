@@ -86,7 +86,7 @@ class DemissaoPrevistaController extends Controller
         $demissaoPrevista->anexosDel = [];
         $demissaoPrevista->user_aprovacao = $demissaoPrevista->UserAprovacao ? $demissaoPrevista->UserAprovacao->nome : '';
         $demissaoPrevista->rh_aprovacao = $demissaoPrevista->RhAprovacao ? $demissaoPrevista->RhAprovacao->nome : '';
-        $demissaoPrevista->status_aprovacao= $demissaoPrevista->status_aprovacao ?: '';
+        $demissaoPrevista->status_aprovacao = $demissaoPrevista->status_aprovacao ?: '';
         $demissaoPrevista->status_aprovacao_rh = $demissaoPrevista->status_aprovacao_rh ?: '';
         $demissaoPrevista->load('Anexos');
 
@@ -171,51 +171,98 @@ class DemissaoPrevistaController extends Controller
 
     public function filtro(Request $request)
     {
-        $resultado = DemissaoPrevista::with(
-            'CentroCusto',
-            'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo',
-            'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
-            'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao,cargo',
-            'Colaborador.FeedBack.VagaSelecionada',
-            'GestorAprovacao:id,nome', 'UserAprovacao:id,nome', 'RhAprovacao:id,nome');
+        $resultado = DB::table('demissao_previstas as dp')
+            ->select(
+                'dp.id',
+                'us.nome as solicitante_nome',
+                'dp.empresa_id',
+                'dp.colaborador_id',
+                'c.nome as colaborador_nome',
+                'dp.centro_custo_id',
+                'cc.label as centro_custo',
+                'dp.filial',
+                'dp.centro_custo_filial_id',
+                'dp.data_aprovacao',
+                'dp.data_aprovacao_rh',
+                DB::raw("DATE_FORMAT(d.data_desmobilizacao, '%d/%m/%Y') as data_desmobilizacao"),
+                DB::raw("DATE_FORMAT(a.data_admissao, '%d/%m/%Y') as data_admissao"),
+                DB::raw("DATE_FORMAT(dp.data_demissao, '%d/%m/%Y') as data_demissao"),
+                DB::raw("DATE_FORMAT(dp.created_at, '%d/%m/%Y às %H:%i:%s') as data_solicitacao"),
+                DB::raw("DATE_FORMAT(dp.data_aprovacao_rh, '%d/%m/%Y às %H:%i:%s') as data_aprovacao_rh"),
+                DB::raw("DATE_FORMAT(dp.data_aprovacao, '%d/%m/%Y às %H:%i:%s') as data_aprovacao"),
+                'a.cargo',
+                'dp.tipo_aviso',
+                'dp.aprovado_via_script',
+                'dp.status',
+                'dp.status_aprovacao',
+                'dp.status_aprovacao_rh',
+                'ugestor.nome as gestor_nome',
+                'usa.nome as user_aprovacao_nome',
+                'urh.nome as rh_aprovacao_nome',
+                'dp.created_at',
+                'dp.obs',
+                'dp.obs_rh'
+            )
+            ->join('users as u', 'dp.colaborador_id', '=', 'u.id')
+            ->join('users as us', 'dp.user_id', '=', 'us.id')
+            ->join('curriculos as c', 'u.id', '=', 'c.id')
+            ->join('feedback_curriculos as fc', function ($join) {
+                $join->on('u.id', '=', 'fc.curriculo_id')->whereNull('fc.deleted_at');
+            })
+            ->join('admissoes as a', 'fc.id', '=', 'a.feedback_id')
+            ->leftjoin('centro_custos as cc', 'dp.centro_custo_id', '=', 'cc.id')
+            ->leftjoin('centro_custo_filials as ccf', 'dp.centro_custo_filial_id', '=', 'ccf.id')
+            ->leftjoin('users as ugestor', 'ugestor.id', '=', 'dp.gestor_id')
+            ->leftjoin('users as urh', 'urh.id', '=', 'dp.rh_aprovacao_id')
+            ->leftjoin('users as usa', 'dp.user_aprovacao_id', '=', 'usa.id')
+            ->leftjoin('demissaos as d', 'fc.id', '=', 'd.feedback_id')
+            ->where('dp.empresa_id', '=', auth()->user()->empresa_id)
+            ->whereNull('dp.deleted_at');
 
         $filtroPeriodo = $request->filtroPeriodo == 'true';
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())
-                ->where('created_at', '<=', $dataFim->dataHoraInsert());
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
+            $resultado->where('dp.created_at', '>=', $dataInicio->dataHoraInsert())
+                ->where('dp.created_at', '<=', $dataFim->dataHoraInsert());
         }
 
         if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Colaborador', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
+            $resultado->where(function ($r) use ($request) {
+                $r->where('c.nome', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('dp.id', $request->campoBusca);
             });
         }
 
         if ($request->filled('campoStatusAprovacao')) {
-            $status = $request->campoStatusAprovacao;
-            if ($request->campoStatusAprovacao == "aberto"){
-                $resultado->whereNull('status_aprovacao');
-            }
-            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
-                $resultado->where('status_aprovacao',DemissaoPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
-            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
-                $resultado->where('status_aprovacao_rh', DemissaoPrevista::STATUS_APROVADO);
-            }else{
-                $resultado->whereStatusAprovacao(DemissaoPrevista::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', DemissaoPrevista::STATUS_REPROVADO);
-            }
+            $resultado->when($request->campoStatusAprovacao == 'aberto', function ($query) {
+                return $query->whereNull('dp.status_aprovacao');
+            })
+                ->when($request->campoStatusAprovacao == 'aprovado_gestor', function ($query) {
+                    return $query->where('dp.status_aprovacao', DemissaoPrevista::STATUS_APROVADO)
+                        ->whereNull('dp.status_aprovacao_rh');
+                })
+                ->when($request->campoStatusAprovacao == 'aprovado_rh', function ($query) {
+                    return $query->where('dp.status_aprovacao_rh', DemissaoPrevista::STATUS_APROVADO);
+                })
+                ->when($request->campoStatusAprovacao == 'reprovado', function ($query) {
+                    return $query->where(function ($query) {
+                        $query->where('dp.status_aprovacao', DemissaoPrevista::STATUS_REPROVADO)
+                            ->orWhere('dp.status_aprovacao_rh', DemissaoPrevista::STATUS_REPROVADO);
+                    });
+                });
         }
 
-        if (!auth()->user()->can('privilegio_gestao_rh')) {
-            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
+        if (!auth()->user()->temPrivilegioGestaoRh()) {
+            $resultado->where(function ($query) {
+                $query->where('dp.user_id', auth()->user()->id)
+                    ->orWhere('dp.gestor_id', auth()->user()->id);
+            });
         }
 
-        return $resultado->orderByDesc('created_at');
+        return $resultado->orderByDesc('dp.created_at');
     }
 
     public function aprovar(Request $request, DemissaoPrevista $demissaoPrevista)
@@ -297,9 +344,6 @@ class DemissaoPrevistaController extends Controller
     //Excel
     public function export(Request $request)
     {
-
-
-
         JobDemissaoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }

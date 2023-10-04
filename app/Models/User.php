@@ -536,6 +536,11 @@ class User extends Authenticatable
         return $this->EmpresaConfiguracoes->envia_whatsapp;
     }
 
+    public function temPrivilegioGestaoRh(): bool
+    {
+        return (bool)auth()->user()->can('privilegio_gestao_rh');
+    }
+
     protected static function booted()
     {
         static::creating(function ($model) {

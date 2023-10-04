@@ -388,6 +388,7 @@
                         </th>
                         <th class="text-center">CÓD</th>
                         <th class="text-center">Colaborador</th>
+                        <th class="text-center">Cargo</th>
                         <th class="text-center text-nowrap">Centro de custo</th>
                         <th class="text-center text-nowrap">Data demissão</th>
                         <th class="text-center">Solicitante</th>
@@ -419,11 +420,15 @@
                         </td>
 
                         <td class="text-center vertical-align-middle">
-                            {{ item.colaborador.nome }}
+                            {{ item.colaborador_nome }}
                         </td>
 
                         <td class="text-center vertical-align-middle">
-                            {{ item.centro_custo.label }}
+                            {{ item.cargo }}
+                        </td>
+
+                        <td class="text-center vertical-align-middle">
+                            {{ item.centro_custo }}
                         </td>
 
                         <td class="text-center vertical-align-middle">
@@ -431,43 +436,48 @@
                         </td>
 
                         <td class="text-center vertical-align-middle">
-                            {{ item.user_cadastrou.nome }} <br/>
-                            {{ item.created_at }}
+                            {{ item.solicitante_nome }} <br/>
+                            {{ item.data_solicitacao }}
                         </td>
 
                         <td class="text-center font-weight-bold vertical-align-middle"
                             :class="{
-                                'bg-danger text-white': item.status_aprovacao === 'reprovado' || item.status_aprovacao_rh === 'reprovado',
-                                'bg-success':
-                                    item.status_aprovacao_rh === 'aprovado' ||
-                                    (item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null && item.aprovado_via_script),
-                                'bg-warning': item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null && !item.aprovado_via_script,
-                                'bg-light': !item.status_aprovacao
-                            }">
-                            <span class="text-uppercase" v-if="item.user_aprovacao || item.rh_aprovacao">
-                            <span
-                                v-if="item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null">
-                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
-                                Por gestor(a): {{ item.user_aprovacao.nome }}
-                            </span>
-                            <span
-                                v-if="item.status_aprovacao_rh === 'aprovado'">
-                                {{ item.status_aprovacao_rh }} em {{ item.data_aprovacao_rh }}<br/>
-                                Por RH: {{ item.rh_aprovacao.nome }}
-                            </span>
-                            <span
-                                v-if="item.status_aprovacao === 'reprovado' && item.status_aprovacao_rh === null">
-                                {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
-                                Por gestor(a): {{ item.user_aprovacao.nome }}
-                            </span>
-                            <span v-if="item.status_aprovacao_rh === 'reprovado'">
-                                {{ item.status_aprovacao_rh }} em {{ item.data_aprovacao_rh }}<br/>
-                                Por RH: {{ item.rh_aprovacao.nome }}
-                            </span>
-                        </span>
+                                                        'bg-danger text-white': item.status_aprovacao === 'reprovado' || item.status_aprovacao_rh === 'reprovado',
+                                                        'bg-success':
+                                                            item.status_aprovacao_rh === 'aprovado' ||
+                                                            (item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null && item.aprovado_via_script),
+                                                        'bg-warning': item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null && !item.aprovado_via_script,
+                                                        'bg-light': !item.status_aprovacao
+                                                    }">
+                                                    <span class="text-uppercase"
+                                                          v-if="item.user_aprovacao_nome || item.rh_aprovacao_nome">
+                                                    <span
+                                                        v-if="item.status_aprovacao === 'aprovado' && item.status_aprovacao_rh === null">
+                                                        {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
+                                                        Por gestor(a): {{ item.user_aprovacao_nome }}
+                                                    </span>
+                                                    <span
+                                                        v-if="item.status_aprovacao_rh === 'aprovado'">
+                                                        {{ item.status_aprovacao_rh }} em {{
+                                                            item.data_aprovacao_rh
+                                                        }}<br/>
+                                                        Por RH: {{ item.rh_aprovacao_nome }}
+                                                    </span>
+                                                    <span
+                                                        v-if="item.status_aprovacao === 'reprovado' && item.status_aprovacao_rh === null">
+                                                        {{ item.status_aprovacao }} em {{ item.data_aprovacao }}<br/>
+                                                        Por gestor(a): {{ item.user_aprovacao_nome }}
+                                                    </span>
+                                                    <span v-if="item.status_aprovacao_rh === 'reprovado'">
+                                                        {{ item.status_aprovacao_rh }} em {{
+                                                            item.data_aprovacao_rh
+                                                        }}<br/>
+                                                        Por RH: {{ item.rh_aprovacao_nome }}
+                                                    </span>
+                                                </span>
                             <span v-else>
-                            EM ABERTO
-                        </span>
+                                                    EM ABERTO
+                                                </span>
                         </td>
                         <td class="text-center vertical-align-middle">
                             <div class="dropdown show">
@@ -482,7 +492,7 @@
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoRh = false; podeanexar = false"
-                                       v-if="item.user_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor">
+                                       v-if="!item.user_aprovacao_nome && !item.rh_aprovacao_nome && !item.aprovado_via_script && aprovaGestor">
                                         Aprovação Gestor
                                     </a>
 
@@ -490,7 +500,7 @@
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoRh = true; podeanexar = false"
-                                       v-if="item.status_aprovacao === 'aprovado' && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh">
+                                       v-if="item.status_aprovacao === 'aprovado' && !item.aprovado_via_script && item.rh_aprovacao_nome === null && aprovaRh">
                                         Aprovação Rh
                                     </a>
 
@@ -666,7 +676,7 @@ export default {
             return this.controle.dados
         },
         centroCustoSelecionado() {
-            if (this.form.centro_custo_id === undefined || this.form.centro_custo_id === null || this.form.centro_custo_id === '') {
+            if ([undefined, null, ''].includes(this.form.centro_custo_id)) {
                 return []
             }
             let centroSelecionado = _.find(this.centro_custos, {id: this.form.centro_custo_id})

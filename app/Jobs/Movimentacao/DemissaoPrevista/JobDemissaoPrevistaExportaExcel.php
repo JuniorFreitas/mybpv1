@@ -9,7 +9,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use MasterTag\CsvExporter;
-use MasterTag\DataHora;
 
 class JobDemissaoPrevistaExportaExcel implements ShouldQueue
 {
@@ -39,6 +38,7 @@ class JobDemissaoPrevistaExportaExcel implements ShouldQueue
             "Centro de Custo",
             "Filial",
             "Colaborador",
+            "Data Admissão",
             "Cargo",
             "Data Demissão",
             "Tipo de Aviso",
@@ -61,24 +61,25 @@ class JobDemissaoPrevistaExportaExcel implements ShouldQueue
     private function getDataRow($row): array
     {
         return [
-            $row->UserCadastrou->nome,
-            (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-            $row->CentroCusto->label,
-            $row->filial ? $row->CentroCustoFilial->label : '',
-            $row->Colaborador->nome,
-            $row->Colaborador->FeedBack->Admissao->cargo,
-            (new DataHora($row->data_demissao))->dataCompleta(),
+            $row->solicitante_nome,
+            $row->data_solicitacao,
+            $row->centro_custo,
+            $row->filial > 0 ? $row->centro_custo_filial_id : '',
+            $row->colaborador_nome,
+            $row->data_admissao,
+            $row->cargo,
+            $row->data_demissao,
             $row->tipo_aviso,
-            $row->GestorAprovacao->nome,
+            $row->gestor_nome,
             $row->obs,
             $row->status_aprovacao ?: "aberto",
-            $row->UserAprovacao ? $row->UserAprovacao->nome : "aguardando",
-            $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
-            $row->obs_aprovacao,
+            $row->UserAprovacao->nome ?? "aguardando",
+            $row->data_aprovacao ?? '',
+            $row->obs,
             $row->status_aprovacao ?: "",
-            $row->RhAprovacao ? $row->RhAprovacao->nome : "",
-            $row->data_aprovacao_rh ? (new DataHora($row->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_rh))->horaCompleta(), 0, 5) : '',
-            $row->obs_aprovacao_rh,
+            $row->rh_aprovacao_nome ?? "",
+            $row->data_aprovacao_rh ?? '',
+            $row->obs_rh,
         ];
     }
 }
