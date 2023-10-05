@@ -59,12 +59,12 @@ class AniversariantesController extends Controller
             'empresa_id' => auth()->user()->empresa_id
         ];
 
-        foreach ($request->selecionados as $selecionado){
+        foreach ($request->selecionados as $selecionado) {
             ParabensEnviado::withoutGlobalScopes()->create([
                 'empresa_id' => auth()->user()->empresa_id,
                 'status' => ParabensEnviado::STATUS_ENVIANDO,
                 'curriculo_id' => $selecionado,
-                'ano' => (int) date('Y'),
+                'ano' => (int)date('Y'),
             ]);
         }
 
@@ -80,23 +80,25 @@ class AniversariantesController extends Controller
         $ano = $dataHoje->ano();
         $ano = intval($ano);
 
-        $funcionarios = Curriculo::select(['id','nome','email','nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function($q){
-            $q->admitidos();
-        })->whereRaw('month(nascimento) = month(now())')
-          ->with('Parabens', function ($query) use ($ano) {
-             $query->where('ano', $ano);
-          })->orderByRaw('day(nascimento)')->get()->map(function ($item) {
-              $data_nascimento = new DataHora($item->nascimento);
-              $dia_nascimento = $data_nascimento->dia();
-              return [
-                  'idade' => $item->idade,
-                  'nome' => $item->nome,
-                  'email' => $item->email,
-                  'id' => $item->id,
-                  'aniversario' => $data_nascimento->dia().'/'.$data_nascimento->mes(),
-                  'enviado' => $item->Parabens()->count() > 0 ? $item->Parabens->status : 'Não',
-                  'hoje' => date('d') == $dia_nascimento,
-              ];
+        $funcionarios = Curriculo::select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])
+            ->whereHas('FeedBack', function ($q) {
+                $q->admitidos();
+            })->whereRaw('month(nascimento) = month(now())')
+            ->with('Parabens', function ($query) use ($ano) {
+                $query->where('ano', $ano);
+            })->orderByRaw('day(nascimento)')->get()
+            ->map(function ($item) {
+                $data_nascimento = new DataHora($item->nascimento);
+                $dia_nascimento = $data_nascimento->dia();
+                return [
+                    'idade' => $item->idade,
+                    'nome' => $item->nome,
+                    'email' => $item->email,
+                    'id' => $item->id,
+                    'aniversario' => $data_nascimento->dia() . '/' . $data_nascimento->mes(),
+                    'enviado' => $item->Parabens->status ?? 'Não',
+                    'hoje' => date('d') == $dia_nascimento,
+                ];
             });
 
         return response()->json(['dados' => $funcionarios], 200);
@@ -116,14 +118,15 @@ class AniversariantesController extends Controller
     public function relatorioAtualizar(Request $request)
     {
         $this->authorize('relatorio_aniversariantes');
-        $campoMes = (int) $request->campoMes;
+        $campoMes = (int)$request->campoMes;
         $dataHoje = new DataHora();
         $ano = $dataHoje->ano();
         $ano = intval($ano);
 
-        $funcionarios = Curriculo::select(['id','nome','email','nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function($q){
-            $q->admitidos();
-        })->whereRaw('month(nascimento) ='.$campoMes)
+        $funcionarios = Curriculo::select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])
+            ->whereHas('FeedBack', function ($q) {
+                $q->admitidos();
+            })->whereRaw('month(nascimento) =' . $campoMes)
             ->with('Parabens', function ($query) use ($ano) {
                 $query->where('ano', $ano);
             })->orderByRaw('day(nascimento)')->get()->map(function ($item) {
@@ -135,8 +138,8 @@ class AniversariantesController extends Controller
                     'nome' => $item->nome,
                     'email' => $item->email,
                     'id' => $item->id,
-                    'aniversario' => $data_nascimento->dia().'/'.$data_nascimento->mes(),
-                    'enviado' => $item->Parabens()->count() > 0 ? $item->Parabens->status : 'Não',
+                    'aniversario' => $data_nascimento->dia() . '/' . $data_nascimento->mes(),
+                    'enviado' => $item->Parabens->status ?? 'Não',
                     'hoje' => date('d') == $dia_nascimento && date('m') == $mes_nascimento,
                 ];
             });
@@ -156,15 +159,15 @@ class AniversariantesController extends Controller
      */
     public function exporRelatorioPdf(Request $request)
     {
-        $campoMes = (int) $request->campoMes;
+        $campoMes = (int)$request->campoMes;
         $mes = ParabensEnviado::LISTA_MESES[$campoMes];
         $dataHoje = new DataHora();
         $ano = $dataHoje->ano();
         $ano = intval($ano);
 
-        $funcionarios = Curriculo::select(['id','nome','email','nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function($q){
+        $funcionarios = Curriculo::select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function ($q) {
             $q->admitidos();
-        })->whereRaw('month(nascimento) ='.$campoMes)
+        })->whereRaw('month(nascimento) =' . $campoMes)
             ->with('Parabens', function ($query) use ($ano) {
                 $query->where('ano', $ano);
             })->orderByRaw('day(nascimento)')->get()->map(function ($item) {
@@ -172,7 +175,7 @@ class AniversariantesController extends Controller
                 return [
                     'nome' => $item->nome,
                     'email' => $item->email,
-                    'aniversario' => $data_nascimento->dia().'/'.$data_nascimento->mes()
+                    'aniversario' => $data_nascimento->dia() . '/' . $data_nascimento->mes()
                 ];
             });
 
@@ -195,7 +198,7 @@ class AniversariantesController extends Controller
             $usuario['logo'] = auth()->user()->ClientesLogo[0]->urlThumb;
         }
 
-        JobExportaPdf::dispatch($usuario, "Relatório - Aniversariantes de ".$mes." (PDF)", $dados, $nameArquivo, $view);
+        JobExportaPdf::dispatch($usuario, "Relatório - Aniversariantes de " . $mes . " (PDF)", $dados, $nameArquivo, $view);
         return response()->json(['msg' => 'Estamos gerando seu arquivo pdf, assim que finalizado você será notificado.']);
     }
 
@@ -212,15 +215,15 @@ class AniversariantesController extends Controller
             "Data"
         ];
 
-        $campoMes = (int) $request->campoMes;
+        $campoMes = (int)$request->campoMes;
         $mes = ParabensEnviado::LISTA_MESES[$campoMes];
         $dataHoje = new DataHora();
         $ano = $dataHoje->ano();
         $ano = intval($ano);
 
-        $funcionarios = Curriculo::select(['id','nome','email','nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function($q){
+        $funcionarios = Curriculo::select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function ($q) {
             $q->admitidos();
-        })->whereRaw('month(nascimento) ='.$campoMes)
+        })->whereRaw('month(nascimento) =' . $campoMes)
             ->with('Parabens', function ($query) use ($ano) {
                 $query->where('ano', $ano);
             })->orderByRaw('day(nascimento)')->get()->map(function ($item) {
@@ -228,7 +231,7 @@ class AniversariantesController extends Controller
                 return [
                     'nome' => $item->nome,
                     'email' => $item->email,
-                    'aniversario' => $data_nascimento->dia().'/'.$data_nascimento->mes()
+                    'aniversario' => $data_nascimento->dia() . '/' . $data_nascimento->mes()
                 ];
             });
 
@@ -241,8 +244,8 @@ class AniversariantesController extends Controller
             ];
         }
 
-        $nameArquivo = "aniversariantes_".mb_strtolower($mes).'_'.rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Aniversarientes de ".$mes, $head, $rows, $nameArquivo);
+        $nameArquivo = "aniversariantes_" . mb_strtolower($mes) . '_' . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+        JobExportaExcel::dispatch(auth()->id(), "Aniversarientes de " . $mes, $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 }
