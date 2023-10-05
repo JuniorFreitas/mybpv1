@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\admissao\apontamento\cihExport;
 use App\Jobs\Admissao\Apontamento\Cih\JobCihAprovarReprovar;
 use App\Jobs\Admissao\Apontamento\Cih\JobCihStore;
 use App\Jobs\JobExportaExcel;
@@ -20,7 +19,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
-use PDF;
 
 class CihController extends Controller
 {
@@ -103,9 +101,9 @@ class CihController extends Controller
             $dados['centro_custo_id'] = $dados['centro_custo_id'] > 0 ? $dados['centro_custo_id'] : null;
             $dados['empresa_id'] = auth()->user()->empresa_id;
 
-            if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+            if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
                 $centroDeCusto = CentroCusto::find($dados['centro_custo_id']);
-                $dados['gestor_id'] = $centroDeCusto->Gestor  ? $centroDeCusto->Gestor->id : null;
+                $dados['gestor_id'] = $centroDeCusto->Gestor ? $centroDeCusto->Gestor->id : null;
             }
 
             $cih = Cih::create($dados);
@@ -147,10 +145,10 @@ class CihController extends Controller
                     'cih_id' => $cih->id
                 ];
 
-                if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+                if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
                     $gestor = $centroDeCusto->Gestor;
                     $jobDados['centro_de_custo'] = $centroDeCusto->label;
-                }else {
+                } else {
                     $gestor = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($dados['gestor_id'])->first();
                     $jobDados['area'] = $dados['area_id'] == 0 ? $dados['outra_area'] : AreaEtiqueta::find($dados['area_id'])->label;
                 }
@@ -187,11 +185,19 @@ class CihController extends Controller
         $cih->autocomplete_label_gestor_modal_anterior = $cih->GestorAprovacao ? $cih->GestorAprovacao->nome : '';
 
         $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
-        if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
-            return $cih->load('Anexos', 'Tag', 'CentroDeCusto', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome', 'RhAprovacao:id,nome');
-        }
 
-        return $cih->load('Anexos', 'Tag', 'Area', 'Colaboradores', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome', 'RhAprovacao:id,nome');
+        $cih->load(['Colaboradores.Demissao' => function ($query) {
+            $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
+        }, 'Anexos', 'Tag', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome', 'RhAprovacao:id,nome']);
+
+        $modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO ? $cih->load('CentroDeCusto') : $cih->load('Area');
+
+        $cih->Colaboradores->each(function ($colaborador) {
+            $colaborador->curriculo->nome = isset($colaborador->Demissao) ? $colaborador->curriculo->nome . ' - Demitido(a)' : $colaborador->curriculo->nome;
+            $colaborador->demitido = isset($colaborador->Demissao);
+        });
+
+        return $cih;
     }
 
     /**
@@ -210,7 +216,7 @@ class CihController extends Controller
 
         try {
             DB::beginTransaction();
-            if(is_null($dados['resposta_rh'])){
+            if (is_null($dados['resposta_rh'])) {
                 $dadosValidados = \Validator::make($dados, [
                     'status' => 'required',
                 ]);
@@ -242,7 +248,7 @@ class CihController extends Controller
                     'status' => ucfirst($cih->status),
                     'cih_id' => $cih->id
                 ];
-            }else{
+            } else {
                 $dadosValidados = \Validator::make($dados, [
                     'resposta_rh' => 'required',
                 ]);
@@ -276,9 +282,9 @@ class CihController extends Controller
             }
 
             $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
-            if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+            if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
                 $jobDados['centro_de_custo'] = $cih->CentroDeCusto->label;
-            }else{
+            } else {
                 $jobDados['area'] = $cih->area_id == 0 ? $cih->outra_area : AreaEtiqueta::find($cih->area_id)->label;
             }
 
@@ -329,12 +335,20 @@ class CihController extends Controller
 
         $usuario = auth()->user();
 
+        $items = collect($resultado->items())->transform(function ($item) {
+            $item->colaboradores = $item->Colaboradores->map(function ($colaborador) {
+                $colaborador->curriculo->nome = isset($colaborador->Demissao) ? $colaborador->curriculo->nome . ' - Demitido(a)' : $colaborador->curriculo->nome;
+                return $colaborador;
+            });
+            return $item;
+        });
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $items,
                 'tags' => $tags,
 //                'periodo' => $periodo,
                 'intervalo' => $intervalo,
@@ -369,31 +383,34 @@ class CihController extends Controller
      */
     public function filtro(Request $request)
     {
-        if(auth()->user()->can('admissao_cih_privilegio_adm')){
-            $resultado = Cih::with('Tag:id,label',
-                'Area',
-                'CentroDeCusto',
-                'Colaboradores',
-                'ResponsavelLancamento:id,nome',
-                'ResponsavelAprovacao:id,nome',
-                'RhAprovacao:id,nome'
+        if (auth()->user()->can('admissao_cih_privilegio_adm')) {
+            $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
+                    $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
+                }, 'Tag:id,label',
+                    'Area',
+                    'CentroDeCusto',
+                    'ResponsavelLancamento:id,nome',
+                    'ResponsavelAprovacao:id,nome',
+                    'RhAprovacao:id,nome']
             );
-        }else{
-            $resultado = Cih::vinculados()->with('Tag:id,label',
-                'Area',
-                'CentroDeCusto',
-                'Colaboradores',
-                'ResponsavelLancamento:id,nome',
-                'ResponsavelAprovacao:id,nome',
-                'RhAprovacao:id,nome'
+        } else {
+            $resultado = Cih::vinculados()->with(
+                ['Colaboradores.Demissao' => function ($query) {
+                    $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
+                }, 'Tag:id,label',
+                    'Area',
+                    'CentroDeCusto',
+                    'ResponsavelLancamento:id,nome',
+                    'ResponsavelAprovacao:id,nome',
+                    'RhAprovacao:id,nome']
             );
         }
 
         $filtroPeriodo = $request->filtroPeriodo == 'true';
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
             $resultado->where('data_lancamento', '>=', $dataInicio->dataHoraInsert())
                 ->where('data_lancamento', '<=', $dataFim->dataHoraInsert());
         }
@@ -406,16 +423,21 @@ class CihController extends Controller
 
         if ($request->filled('campoStatus')) {
             $status = $request->campoStatus;
-            if ($request->campoStatus == "aberto"){
-                $resultado->whereStatus($request->campoStatus);
-            }
-            elseif ($request->campoStatus == "aprovado_gestor"){
-                $resultado->whereStatus('aprovado')->whereNull('resposta_rh');
-            }elseif ($request->campoStatus == "aprovado_rh"){
-                $resultado->whereRespostaRh('aprovado');
-            }else{
-                $resultado->whereStatus('reprovado')->orWhere('resposta_rh','reprovado');
-            }
+            $resultado->when($status == 'aberto', function ($query) {
+                return $query->whereStatus('aberto');
+            })
+                ->when($status == 'aprovado_gestor', function ($query) {
+                    return $query->where('status', 'aprovado')->whereNull('resposta_rh');
+                })
+                ->when($status == 'aprovado_rh', function ($query) {
+                    return $query->where('resposta_rh', 'aprovado');
+                })
+                ->when($status == 'reprovado', function ($query) {
+                    return $query->where(function ($q) {
+                        $q->where('status', 'reprovado')->orWhere('resposta_rh', 'reprovado');
+                    });
+
+                });
         }
 
         if ($request->filled('campoTags')) {
@@ -470,7 +492,7 @@ class CihController extends Controller
         ];
 
         $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
-        if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+        if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
             $head = [
                 "Colaborador",
                 "Cargo",
@@ -493,7 +515,7 @@ class CihController extends Controller
         foreach ($resultado as $row) {
             foreach ($row->colaboradores as $colaborador) {
                 $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
-                if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+                if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
                     $rows[] = [
                         'colaborador' => $colaborador->Curriculo->nome,
                         'cargo' => $colaborador->VagaAberta->Vaga->nome,
@@ -509,7 +531,7 @@ class CihController extends Controller
                         'data_aprovacao_rh' => $row->data_aprovacao_rh ?: '',
                         'rh_aprovacao' => $row->RhAprovacao ? $row->RhAprovacao->nome : '',
                     ];
-                }else{
+                } else {
                     $rows[] = [
                         'colaborador' => $colaborador->Curriculo->nome,
                         'cargo' => $colaborador->VagaAberta->Vaga->nome,
@@ -697,9 +719,9 @@ class CihController extends Controller
                 ];
 
                 $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
-                if($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO){
+                if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
                     $rows[$key]['centro_de_custo'] = $row->CentroDeCusto->label;
-                }else{
+                } else {
                     $rows[$key]['area'] = $row->area_id ? $row->Area->label : $row->outra_area;
                 }
             }

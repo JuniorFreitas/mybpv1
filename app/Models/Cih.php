@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeClientesEmpresa;
-use App\Scopes\ScopeEmpresa;
 use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -184,7 +182,7 @@ class Cih extends Model
     /**
      * Scope a query para mostrar apenas cihs vinculados ao user autenticado.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeVinculados($query)

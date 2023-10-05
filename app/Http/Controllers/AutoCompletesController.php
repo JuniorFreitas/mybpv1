@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Vaga;
 use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AutoCompletesController extends Controller
 {
@@ -260,15 +261,43 @@ class AutoCompletesController extends Controller
         $quantidade = $request->query('rows');
 
         $busca = $request->query('busca');
-        return $feedback = FeedbackCurriculo::select(['id', 'vagas_abertas_id', 'curriculo_id'])->Admitidos()->whereHas('Admissao', function ($q) {
-            $q->whereIn('status', ['ADMITIDO']);
-        })->whereHas('Curriculo', function ($q) use ($busca) {
-            $q->where('nome', 'like', '%' . $busca . '%');
-        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome')->take($quantidade)
-            ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->Vaga->nome}";
+
+        $consulta = DB::table('feedback_curriculos as fc')
+            ->select('fc.id', 'c.nome', 'a.cargo', 'd2.data_desmobilizacao', DB::raw('DATEDIFF(NOW(), d2.data_desmobilizacao) AS dias'))
+            ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
+            ->join('admissoes as a', function ($join) {
+                $join->on('fc.id', '=', 'a.feedback_id')
+                    ->where('a.status', '=', 'admitido')
+                    ->whereNull('a.deleted_at');
+            })
+            ->leftJoin('mybp.demissaos as d2', 'fc.id', '=', 'd2.feedback_id')
+            ->whereNull('fc.deleted_at')
+            ->where('fc.empresa_id', '=', auth()->user()->empresa_id)
+            ->where('c.nome', 'like', '%' . $busca . '%')
+            ->whereRaw('DATEDIFF(NOW(), d2.data_desmobilizacao) <= 90')->union(function ($query) use ($busca) {
+                $query->select('fc.id', 'c.nome', 'a.cargo', DB::raw('NULL AS data_desmobilizacao'), DB::raw('NULL AS dias'))
+                    ->from('feedback_curriculos as fc')
+                    ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
+                    ->join('admissoes as a', function ($join) {
+                        $join->on('fc.id', '=', 'a.feedback_id')
+                            ->where('a.status', '=', 'admitido')
+                            ->whereNull('a.deleted_at');
+                    })
+                    ->whereNull('fc.deleted_at')
+                    ->where('c.nome', 'like', '%' . $busca . '%')
+                    ->where('fc.empresa_id', '=', auth()->user()->empresa_id)
+                    ->whereNotExists(function ($subquery) {
+                        $subquery->select('fc.id', 'd.feedback_id')
+                            ->from('demissaos as d')
+                            ->whereRaw('fc.id = d.feedback_id');
+                    });
+            })->take($quantidade)->get()->map(function ($item) {
+                $demitido = $item->dias ? ' - DEMITIDO(A)' : '';
+                $item->label = "{$item->nome} - {$item->cargo} {$demitido}";
                 return $item;
             });
+
+        return $consulta;
     }
 
     public function colaboradorIntermitente(Request $request)

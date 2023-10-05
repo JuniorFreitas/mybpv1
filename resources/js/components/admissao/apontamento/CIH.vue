@@ -141,8 +141,14 @@
                                         </thead>
                                         <tbody>
                                         <tr v-for="(colaborador, index) in form.colaboradores">
-                                            <td class="text-center">{{ colaborador.curriculo.nome }}</td>
-                                            <td class="text-center">{{ colaborador.vaga_aberta.vaga.nome }}</td>
+                                            <!--                                            <td class="text-center">{{ colaborador.curriculo.nome }}</td>
+                                                                                        <td class="text-center">{{ colaborador.vaga_aberta.vaga.nome }}</td> -->
+                                            <td class="text-center">
+                                                {{ !editando ? colaborador.label : colaborador.curriculo.nome }}
+                                            </td>
+                                            <td class="text-center">
+                                                {{ !editando ? colaborador.cargo : colaborador.vaga_aberta.vaga.nome }}
+                                            </td>
                                             <td class="text-center" v-if="!editando">
                                                 <a href="javascript://" class="btn btn-sm btn-danger"
                                                    @click.prevent="removerLIColaborador(index)">
