@@ -197,6 +197,7 @@ class Admissao extends Model
         'centro_custo_filial_id',
         'filial',
         'formulario_id',
+        'matricula',
         'centro_custo_id',
         'funcao',
         'cargo',
@@ -254,6 +255,7 @@ class Admissao extends Model
     ];
     protected $casts = [
         'id' => 'int',
+        'matricula' => 'string',
         'centro_custo_filial_id' => 'int',
         'filial' => 'boolean',
         'feedback_id' => 'int',
