@@ -4,23 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
 use App\Jobs\ControleExames\JobExame;
-use App\Jobs\Entrevista\ResultadoIntegrado\JobEncaminhamentoExame;
 use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
-use App\Models\Curriculo;
 use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
 use App\Models\Examesesmt;
 use App\Models\ExameTipo;
 use App\Models\FeedbackCurriculo;
-use App\Models\Formulario;
 use App\Models\Pcmso;
 use App\Models\RespostaAlternativas;
 use App\Models\Sistema;
 use App\Models\User;
-use App\Scopes\ScopeClientesEmpresa;
-use App\Scopes\ScopeEmpresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
@@ -44,7 +39,7 @@ class ControleExameController extends Controller
             $resposta->transform(function ($item) {
                 if (is_null($item->exame_tipo_id)) {
                     $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first()->id;
-                    $item->tipo_exame = RespostaAlternativas::whereValue($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->first()->label;
+                    $item->tipo_exame = RespostaAlternativas::whereValue($item->respostas['alternativa_id_' . $tipoOrdem]['valor'])->first()?->label;
                 } else {
                     $item->tipo_exame = ExameTipo::find($item->exame_tipo_id)->label;
                 }
@@ -115,7 +110,7 @@ class ControleExameController extends Controller
                     ]);
                 }
 
-                $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id','telefone_id'])->find($request->feedback_id);
+                $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id', 'telefone_id'])->find($request->feedback_id);
 
                 if ($request->envia_email) {
                     $dtEmailClinica = [
@@ -355,7 +350,7 @@ class ControleExameController extends Controller
         $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'telefone_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'])->with(
             'Curriculo:id,nome,nascimento,id,nome,email,nascimento,rg,orgao_expeditor,logradouro,cep,end_numero,complemento,bairro,municipio,uf',
             'Cliente:id,razao_social,area_id',
-            'VagaAberta','telCadPrincipal');
+            'VagaAberta', 'telCadPrincipal');
 
         if ($request->filled('status')) {
             if ($request->status == 'em_processo') {
@@ -383,8 +378,8 @@ class ControleExameController extends Controller
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
             $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
                 $q->where('created_at', '>=', $dataInicio->dataHoraInsert())
                     ->where('created_at', '<=', $dataFim->dataHoraInsert());
