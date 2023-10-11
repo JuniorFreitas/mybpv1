@@ -123,6 +123,7 @@ class ControleExameController extends Controller
                         'tipoExame' => $tipoExame->label,
                         'empresa_id' => $empExame->empresa_id,
                         'encaminhamento_data' => $data_encaminhamento,
+                        'data_realizacao' => $data_realizacao,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
 
@@ -134,6 +135,7 @@ class ControleExameController extends Controller
                         'tipoExame' => $tipoExame->label,
                         'empresa_id' => $empExame->empresa_id,
                         'encaminhamento_data' => $data_encaminhamento,
+                        'data_realizacao' => $data_realizacao,
                         'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
                     ];
 
