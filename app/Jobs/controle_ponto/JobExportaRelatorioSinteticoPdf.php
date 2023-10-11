@@ -5,12 +5,9 @@ namespace App\Jobs\controle_ponto;
 use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\EmpresaConfig;
 use App\Models\Exportacao;
-use App\Models\FeedbackCurriculo;
-use App\Models\Feriado;
 use App\Models\OcorrenciaJornada;
 use App\Models\PontoEletronico;
 use App\Models\Sistema;
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -54,7 +51,7 @@ class JobExportaRelatorioSinteticoPdf implements ShouldQueue
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', '-1');
 
-        $nome_arquivo = "relatorio_aniversariantes_" . (new DataHora())->nomeUnico() . ".pdf";
+        $nome_arquivo = "folhadepontomanual_" . (new DataHora())->nomeUnico() . ".pdf";
 
         $pdf = PDF::setOptions([
             'logOutputFile' => storage_path('logs/log.htm'),

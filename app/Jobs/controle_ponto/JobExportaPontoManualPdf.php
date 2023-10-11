@@ -104,7 +104,7 @@ class JobExportaPontoManualPdf implements ShouldQueue
             'repouso' => $repouso,
             'dias_normais' => $dias_normais,
             'empresa' => $resultado[0]['empresa'],
-            'empresa_logo' => Sistema::convertBase3($resultado[0]['empresa']['logo'][0]['urlThumb'],true),
+            'empresa_logo' => Sistema::convertBase3($resultado[0]['empresa']['logo'][0]['urlThumb'], true),
             'quem_gerou' => $request['quem_gerou'],
         ];
 
@@ -121,13 +121,13 @@ class JobExportaPontoManualPdf implements ShouldQueue
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', '-1');
 
-        $nome_arquivo = "relatorio_aniversariantes_" . (new DataHora())->nomeUnico() . ".pdf";
+        $nome_arquivo = "folhadepontomanual_" . (new DataHora())->nomeUnico() . ".pdf";
 
         $pdf = PDF::setOptions([
             'logOutputFile' => storage_path('logs/log.htm'),
             'tempDir' => storage_path('logs/')
         ])->loadView('pdf.controle-ponto.ponto-manual.manual', [
-            'dados' => $this->model]
+                'dados' => $this->model]
         )
             ->setPaper('A4', 'landscape');
 

@@ -134,10 +134,10 @@
             <thead>
             <tr>
                 <th style="font-size: 15pt; font-weight: normal !important; padding-right: 10px; width: 20%">
-                        <img
-                            src="{{ $dados['empresa_logo'] }}"
-                            alt="BPSE" title="BPSE" style="height: 70px; margin-top: 10px;">
-                        <br>
+                    <img
+                        src="{{ $dados['empresa_logo'] }}"
+                        alt="BPSE" title="BPSE" style="height: 70px; margin-top: 10px;">
+                    <br>
                 </th>
                 <th style="color: black">
                     <h1 style="text-align: center; font-size: 15px">
@@ -285,6 +285,7 @@
             </p>
         </div>
     </div>
+    <div style="page-break-after: always;"></div>
 @endforeach
 </body>
 </html>
