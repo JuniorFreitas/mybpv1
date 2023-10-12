@@ -135,18 +135,18 @@
             <tr>
                 <th style="font-size: 15pt; font-weight: normal !important; padding-right: 10px; width: 20%">
                     <img
-                        src="{{ $dados['empresa_logo'] }}"
+                        src="{{ $colaborador['empresa']['logo'] }}"
                         alt="BPSE" title="BPSE" style="height: 70px; margin-top: 10px;">
                     <br>
                 </th>
                 <th style="color: black">
                     <h1 style="text-align: center; font-size: 15px">
-                        {{$dados['empresa']['razao_social']}}
+                        {{$colaborador['empresa']['razao_social']}}
                     </h1>
                     <p style="font-size: 9pt; text-align: center; margin-top: -10px ">
-                        CNPJ: {{$dados['empresa']['cnpj']}}
+                        CNPJ: {{$colaborador['empresa']['cnpj']}}
                         <br>
-                        {{$dados['empresa']['endereco_completo']}}
+                        {{$colaborador['empresa']['endereco_completo']}}
                     </p>
                     <br>
                 </th>
@@ -267,7 +267,7 @@
             <tr>
                 <th style="text-align: center" width="50%">
                     <hr style="width: 90%">
-                    {{$dados['empresa']['razao_social']}}
+                    {{$colaborador['empresa']['razao_social']}}
                 </th>
                 <th style="text-align: center">
                     <hr style="width: 90%">

@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\controle_ponto\JobExportaPontoManualPdf;
-use App\Models\FeedbackCurriculo;
-use App\Models\Feriado;
+use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
 
@@ -17,107 +16,141 @@ class FolhaManualController extends Controller
 
     public function filtro(Request $request)
     {
-        $query = FeedbackCurriculo::select(['id', 'curriculo_id', 'empresa_id', 'vagas_abertas_id'])
-            ->whereHas('Admissao', function ($query) {
-                $query->where('status', 'admitido');
+        $query = DB::table('feedback_curriculos AS fc')
+            ->join('curriculos AS c', 'fc.curriculo_id', '=', 'c.id')
+            ->join('admissoes AS a', function ($join) {
+                $join->on('fc.id', '=', 'a.feedback_id')
+                    ->where('a.status', '=', 'admitido')
+                    ->whereNull('a.deleted_at');
             })
-            ->admitidos()
-            ->with(
-                'Admissao:id,feedback_id,data_admissao,cargo,funcao,pis,centro_custo_id,matricula',
-                'Admissao.DadosAdmissoes',
-                'Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-                'Empresa:id,cnpj,razao_social,nome_fantasia,cep,logradouro,numero,complemento,bairro,municipio,uf,contato',
-                'Empresa.Logo:id,nome,layout,disco,imagem,file,thumb',
-                'Admissao.CentroCusto:id,label'
-            );
+            ->join('centro_custos AS cc', 'a.centro_custo_id', '=', 'cc.id')
+            ->leftJoin('centro_custo_filials AS ccf', 'cc.id', '=', 'ccf.centro_custo_id')
+            ->leftJoin('cliente_filials AS cf', 'ccf.cliente_filial_id', '=', 'cf.id')
+            ->leftJoin('dados_admissaos AS da2', 'a.id', '=', 'da2.admissao_id')
+            ->leftJoin('demissaos AS d2', 'fc.id', '=', 'd2.feedback_id')
+            ->whereNull('fc.deleted_at')
+            ->where('fc.empresa_id', auth()->user()->empresa_id);
 
         if ($request->filled('campoBusca')) {
-            $query->whereHas('Curriculo', function ($query) use ($request) {
-                $query->where('nome', 'like', '%' . $request->campoBusca . '%');
-            });
+            $query->where('c.nome', 'like', "%$request->campoBusca%");
         }
 
-        return $query;
+        if ($request->filled('campoCentroDeCusto')) {
+            $query->where('cc.id', $request->campoCentroDeCusto);
+        }
+
+        if ($request->filled('campoCargo')) {
+            $query->where('a.cargo', $request->campoCargo);
+        }
+
+        if ($request->campoStatus == 'demitido') {
+            $query->where('a.status', 'admitido')
+                ->where('a.deleted_at', null)
+                ->where('d2.data_desmobilizacao', '<>', null)
+                ->whereRaw('DATEDIFF(NOW(), d2.data_desmobilizacao) <= 30')
+                ->select(
+                    'fc.id',
+                    DB::raw("CONCAT(c.nome, CASE WHEN d2.data_desmobilizacao IS NOT NULL THEN ' (Demitido)' ELSE '' END) AS nome"),
+                    'c.nome AS nome_sem_status',
+                    DB::raw("DATE_FORMAT(a.data_admissao, '%d/%m/%Y') AS data_admissao"),
+                    'a.cargo',
+                    'a.funcao',
+                    'a.pis',
+                    DB::raw("CONCAT(da2.ctps_numero, '-', da2.ctps_serie) AS ctps"),
+                    'a.filial',
+                    'cc.label AS centro_custo_label',
+                    'cf.dados AS centro_custo_dados',
+                    'a.centro_custo_filial_id',
+                    'd2.data_desmobilizacao',
+                    DB::raw('DATEDIFF(NOW(), d2.data_desmobilizacao) AS dias')
+                );
+        } else {
+            $query->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('demissaos AS d')
+                    ->whereRaw('fc.id = d.feedback_id');
+            })
+                ->select(
+                    'fc.id',
+                    DB::raw("CONCAT(c.nome, '') AS nome"),
+                    'c.nome AS nome_sem_status',
+                    DB::raw("DATE_FORMAT(a.data_admissao, '%d/%m/%Y') AS data_admissao"),
+                    'a.cargo',
+                    'a.funcao',
+                    'a.pis',
+                    DB::raw("CONCAT(da2.ctps_numero, '-', da2.ctps_serie) AS ctps"),
+                    'a.filial',
+                    'cc.label AS centro_custo_label',
+                    'cf.dados AS centro_custo_dados',
+                    'a.centro_custo_filial_id',
+                    DB::raw('NULL AS data_desmobilizacao'),
+                    DB::raw('NULL AS dias')
+                );
+        }
+
+        return $query->orderBy('nome', 'ASC');
+    }
+
+    private function listaCentroCustos()
+    {
+        return DB::table('feedback_curriculos AS fc')
+            ->join('admissoes AS a', function ($join) {
+                $join->on('fc.id', '=', 'a.feedback_id')
+                    ->where('a.status', '=', 'admitido')
+                    ->whereNull('a.deleted_at');
+            })
+            ->join('centro_custos AS cc', 'a.centro_custo_id', '=', 'cc.id')
+            ->leftJoin('centro_custo_filials AS ccf', 'cc.id', '=', 'ccf.centro_custo_id')
+            ->select('cc.label AS centro_custo_label', 'cc.id AS cc_id')
+            ->whereNull('fc.deleted_at')
+            ->where('fc.empresa_id', auth()->user()->empresa_id)
+            ->orderBy('centro_custo_label', 'ASC')
+            ->distinct()
+            ->get();
+    }
+
+    private function listaCargos()
+    {
+        return DB::table('feedback_curriculos AS fc')
+            ->join('admissoes AS a', function ($join) {
+                $join->on('fc.id', '=', 'a.feedback_id')
+                    ->where('a.status', '=', 'admitido')
+                    ->whereNull('a.deleted_at');
+            })
+            ->select('a.cargo AS cargo')
+            ->whereNull('fc.deleted_at')
+            ->where('fc.empresa_id', auth()->user()->empresa_id)
+            ->whereNotNull('a.cargo')
+            ->orderBy('a.cargo', 'ASC')
+            ->distinct()
+            ->get();
     }
 
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
+                'lista_centro_custos' => $this->listaCentroCustos(),
+                'lista_cargos' => $this->listaCargos(),
             ]
         ]);
     }
 
     public function imprimir(Request $request)
     {
-//        $resultado = $this->filtro($request)->whereIn('id', $request->selecionados)->get()->map(function ($item) {
-//            $ctps_numero = $item->Admissao->DadosAdmissoes ? $item->Admissao->DadosAdmissoes->ctps_numero : '';
-//            $ctps_serie = $item->Admissao->DadosAdmissoes ? $item->Admissao->DadosAdmissoes->ctps_serie : '';
-//            return [
-//                'nome' => $item->Curriculo->nome,
-//                'cargo' => $item->Admissao->cargo,
-//                'centro_custo' => $item->Admissao->CentroCusto ? $item->Admissao->CentroCusto->label : 'Não Informado',
-//                'data_admissao' => $item->Admissao->data_admissao,
-//                'funcao' => $item->Admissao->funcao,
-//                'pis' => $item->Admissao->pis,
-//                'ctps' => $ctps_numero . '-' . $ctps_serie,
-//                'empresa' => $item->Empresa,
-//                'matricula' => $item->Admissao->matricula
-//            ];
-//        })->toArray();
-//
-//        $dataInicio = new DataHora($request->data_inicio);
-//        $dataFim = new DataHora($request->data_fim);
-//
-//        $calendario = [];
-//        $qntDias = DataHora::diferencaDias($dataInicio->dataInsert(), $dataFim->dataInsert());
-//
-//        $dataInicio->subtrairDia(1);
-//
-//
-//        $repouso = collect($request->dias)->filter(function ($item) {
-//            return $item['repouso'];
-//        })->map(function ($item) {
-//            return $item['label'];
-//        })->toArray();
-//
-//        $dias_normais = collect($request->dias)->filter(function ($item) {
-//            return !$item['repouso'];
-//        });
-//
-//        foreach (range(0, $qntDias) as $d) {
-//            $dia = $dataInicio->addDia(1);
-//            $calendario[] = [
-//                'feriado' => (bool)Feriado::where('data', (new DataHora($dia))->dataInsert())->select(['id'])->where('ativo', true)->first(),
-//                'dia' => substr($dia,0,2),
-//                'diaExt' => substr((new DataHora($dia))->diaSemanaExtM(), 0, (new DataHora($dia))->diaSemanaExtM() == 'Sábado' ? 4 : 3),
-//                'repouso' => in_array((new DataHora($dia))->diaSemanaExtM(), $repouso),
-//                'entrada' => isset($dias_normais[(new DataHora($dia))->diaSemanaExtCarac()]) ? $dias_normais[(new DataHora($dia))->diaSemanaExtCarac()]['entrada'] : '',
-//                'intervalo_almoco' => isset($dias_normais[(new DataHora($dia))->diaSemanaExtCarac()]) ? $dias_normais[(new DataHora($dia))->diaSemanaExtCarac()]['intervalo_almoco'] : '',
-//                'fim_intervalo_almoco' => isset($dias_normais[(new DataHora($dia))->diaSemanaExtCarac()]) ? $dias_normais[(new DataHora($dia))->diaSemanaExtCarac()]['fim_intervalo_almoco'] : '',
-//                'saida' => isset($dias_normais[(new DataHora($dia))->diaSemanaExtCarac()]) ? $dias_normais[(new DataHora($dia))->diaSemanaExtCarac()]['saida'] : '',
-//            ];
-//        }
-//
-//        $dados = [
-//            'periodo' => DataHora::dataFormatada($request->data_inicio) . ' à ' . DataHora::dataFormatada($request->data_fim),
-//            'calendario' => $calendario,
-//            'selecionados' => $resultado,
-//            'repouso' => $repouso,
-//            'dias_normais' => $dias_normais,
-//            'empresa' => $resultado[0]['empresa'],
-//        ];
 
         $dados = collect($request->input())->toArray();
+
         $dados['usuario_id'] = auth()->id();
         $dados['quem_gerou'] = auth()->user()->nome;
 
-         JobExportaPontoManualPdf::dispatch(auth()->user()->id, $dados);
+        JobExportaPontoManualPdf::dispatch(auth()->user()->id, $dados);
 
         return 'ok';
 //        return view('pdf.controle-ponto.ponto-manual.manual', $dados);

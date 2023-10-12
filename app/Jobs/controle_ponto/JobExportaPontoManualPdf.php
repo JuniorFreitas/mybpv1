@@ -4,10 +4,10 @@ namespace App\Jobs\controle_ponto;
 
 use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\Exportacao;
-use App\Models\FeedbackCurriculo;
 use App\Models\Feriado;
 use App\Models\Sistema;
 use App\Models\User;
+use DB;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -27,7 +27,7 @@ class JobExportaPontoManualPdf implements ShouldQueue
 
     public $usuario;
     public $model;
-//    public $timeout = 600;
+    public $timeout = 600;
 
     /**
      * Create a new job instance.
@@ -37,32 +37,45 @@ class JobExportaPontoManualPdf implements ShouldQueue
     public function __construct($usuario, $request)
     {
         $this->usuario = User::find($request['usuario_id']);
-        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'empresa_id', 'vagas_abertas_id'])
-            ->whereHas('Admissao', function ($query) {
-                $query->where('status', 'admitido');
+        $resultado = DB::table('feedback_curriculos AS fc')
+            ->join('curriculos AS c', 'fc.curriculo_id', '=', 'c.id')
+            ->join('admissoes AS a', function ($join) {
+                $join->on('fc.id', '=', 'a.feedback_id')
+                    ->where('a.status', '=', 'admitido')
+                    ->whereNull('a.deleted_at');
             })
-            ->with(
-                'Admissao:id,feedback_id,data_admissao,cargo,funcao,pis,centro_custo_id,matricula',
-                'Admissao.DadosAdmissoes',
-                'Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-                'Empresa:id,cnpj,razao_social,nome_fantasia,cep,logradouro,numero,complemento,bairro,municipio,uf,contato',
-                'Empresa.Logo:id,nome,layout,disco,imagem,file,thumb',
-                'Admissao.CentroCusto:id,label'
-            )->whereIn('id', $request['selecionados'])->get()->map(function ($item) {
-                $ctps_numero = $item->Admissao->DadosAdmissoes ? $item->Admissao->DadosAdmissoes->ctps_numero : '';
-                $ctps_serie = $item->Admissao->DadosAdmissoes ? $item->Admissao->DadosAdmissoes->ctps_serie : '';
-                return [
-                    'nome' => $item->Curriculo->nome,
-                    'cargo' => $item->Admissao->cargo,
-                    'centro_custo' => $item->Admissao->CentroCusto ? $item->Admissao->CentroCusto->label : 'Não Informado',
-                    'data_admissao' => $item->Admissao->data_admissao,
-                    'funcao' => $item->Admissao->funcao,
-                    'pis' => $item->Admissao->pis,
-                    'ctps' => $ctps_numero . '-' . $ctps_serie,
-                    'empresa' => $item->Empresa,
-                    'matricula' => $item->Admissao->matricula
-                ];
-            })->toArray();
+            ->join('mybp.centro_custos AS cc', 'a.centro_custo_id', '=', 'cc.id')
+            ->leftJoin('mybp.centro_custo_filials AS ccf', 'cc.id', '=', 'ccf.centro_custo_id')
+            ->leftJoin('mybp.cliente_filials AS cf', 'ccf.cliente_filial_id', '=', 'cf.id')
+            ->leftJoin('mybp.dados_admissaos AS da2', 'a.id', '=', 'da2.admissao_id')
+            ->whereIn('fc.id', $request['selecionados'])  // Filtra pelos IDs desejados
+            ->whereNull('fc.deleted_at')
+            ->where('fc.empresa_id', $this->usuario->empresa_id)
+            ->select(
+                'fc.id',
+                DB::raw("CONCAT(c.nome, '') AS nome"),
+                'c.nome AS nome_sem_status',
+                DB::raw("DATE_FORMAT(a.data_admissao, '%d/%m/%Y') AS data_admissao"),
+                'a.cargo',
+                'a.matricula',
+                'a.funcao',
+                'a.pis',
+                DB::raw("CONCAT(da2.ctps_numero, '-', da2.ctps_serie) AS ctps"),
+                'a.filial',
+                'a.centro_custo_filial_id',
+                'cc.label AS centro_custo_label',
+                'cf.dados AS centro_custo_dados',
+                'a.centro_custo_filial_id',
+                DB::raw('NULL AS data_desmobilizacao'),
+                DB::raw('NULL AS dias')
+            )
+            ->orderBy('nome', 'ASC')->get()
+            ->transform(function ($item) {
+                $item->empresa = Sistema::getEmpresaFilialMatriz($item->centro_custo_filial_id, $this->usuario->empresa_id);
+                return $item;
+            })
+            ->toArray();
+
 
         $dataInicio = new DataHora($request['data_inicio']);
         $dataFim = new DataHora($request['data_fim']);
@@ -71,7 +84,6 @@ class JobExportaPontoManualPdf implements ShouldQueue
         $qntDias = DataHora::diferencaDias($dataInicio->dataInsert(), $dataFim->dataInsert());
 
         $dataInicio->subtrairDia(1);
-
 
         $repouso = collect($request['dias'])->filter(function ($item) {
             return $item['repouso'];
@@ -103,12 +115,10 @@ class JobExportaPontoManualPdf implements ShouldQueue
             'selecionados' => $resultado,
             'repouso' => $repouso,
             'dias_normais' => $dias_normais,
-            'empresa' => $resultado[0]['empresa'],
-            'empresa_logo' => Sistema::convertBase3($resultado[0]['empresa']['logo'][0]['urlThumb'], true),
             'quem_gerou' => $request['quem_gerou'],
         ];
 
-        $this->model = $dados;
+        $this->model = json_decode(json_encode($dados), true);
     }
 
     /**

@@ -798,6 +798,10 @@ class Sistema
      */
     public static function getEmpresa($empresa_id): array
     {
+        if (cache()->get('getEmpresa_' . $empresa_id)) {
+            return cache()->get('getEmpresa_' . $empresa_id);
+        }
+
         $cliente = Cliente::withoutGlobalScopes()->select([
             'id',
             'razao_social',
@@ -816,16 +820,18 @@ class Sistema
             return [];
         }
 
-        return [
-            'id' => $cliente->id,
-            'empresa_id' => $empresa_id,
-            'razao_social' => $cliente->razao_social,
-            'cnpj' => $cliente->cnpj,
-            'nome_fantasia' => $cliente->nome_fantasia,
-            'endereco_completo' => mb_strtoupper($cliente->endereco_completo),
-            'logo' => self::convertBase3($cliente->Logo->first()->urlThumb, true),
-            'filial' => false,
-        ];
+        return cache()->remember('getEmpresa_' . $empresa_id, now()->addDays(120), function () use ($cliente, $empresa_id) {
+            return [
+                'id' => $cliente->id,
+                'empresa_id' => $empresa_id,
+                'razao_social' => $cliente->razao_social,
+                'cnpj' => $cliente->cnpj,
+                'nome_fantasia' => $cliente->nome_fantasia,
+                'endereco_completo' => mb_strtoupper($cliente->endereco_completo),
+                'logo' => self::convertBase3($cliente->Logo->first()->urlThumb, true),
+                'filial' => false,
+            ];
+        });
     }
 
     /**
@@ -835,29 +841,36 @@ class Sistema
      */
     public static function getFilial($empresa_id, $centro_custo_filial_id): array
     {
-        $centroCustoFilial = CentroCustoFilial::withoutGlobalScopes()->with(['Filial' => function ($q) {
-            $q->select(['id', 'empresa_id', 'dados'])->withoutGlobalScopes();
-        }])->find($centro_custo_filial_id);
 
-        if (!$centroCustoFilial) {
-            return [];
+        if (cache()->get('getFilial_' . $empresa_id . '_' . $centro_custo_filial_id)) {
+            return cache()->get('getFilial_' . $empresa_id . '_' . $centro_custo_filial_id);
         }
 
-        $filial = $centroCustoFilial->Filial;
-        $dados = (object)$filial->dados;
+        return cache()->remember('getFilial_' . $empresa_id . '_' . $centro_custo_filial_id, now()->addDays(120), function () use ($empresa_id, $centro_custo_filial_id) {
+            $centroCustoFilial = CentroCustoFilial::withoutGlobalScopes()->with(['Filial' => function ($q) {
+                $q->select(['id', 'empresa_id', 'dados'])->withoutGlobalScopes();
+            }])->find($centro_custo_filial_id);
 
-        $logo = isset($dados->logo) ? self::convertBase3($dados->Logo->first()->urlThumb, true) : self::convertBase3(Cliente::withoutGlobalScopes()->find($empresa_id)->Logo->first()->urlThumb, true);
+            if (!$centroCustoFilial) {
+                return [];
+            }
 
-        return [
-            'id' => $filial->id,
-            'empresa_id' => $empresa_id,
-            'razao_social' => $dados->razao_social,
-            'cnpj' => $dados->cnpj,
-            'nome_fantasia' => $dados->nome_fantasia,
-            'endereco_completo' => mb_strtoupper($filial->getEnderecoCompletoAttribute()),
-            'logo' => $logo,
-            'filial' => true,
-        ];
+            $filial = $centroCustoFilial->Filial;
+            $dados = (object)$filial->dados;
+
+            $logo = isset($dados->logo) ? self::convertBase3($dados->Logo->first()->urlThumb, true) : self::convertBase3(Cliente::withoutGlobalScopes()->find($empresa_id)->Logo->first()->urlThumb, true);
+
+            return [
+                'id' => $filial->id,
+                'empresa_id' => $empresa_id,
+                'razao_social' => $dados->razao_social,
+                'cnpj' => $dados->cnpj,
+                'nome_fantasia' => $dados->nome_fantasia,
+                'endereco_completo' => mb_strtoupper($filial->getEnderecoCompletoAttribute()),
+                'logo' => $logo,
+                'filial' => true,
+            ];
+        });
     }
 
     /**

@@ -77,6 +77,45 @@
                     </div>
                 </div>
 
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label for="">Por Centro de Custo</label>
+                        <select class="form-control form-control-sm" @change="atualizar()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.campoCentroDeCusto">
+                            <option value="">Todos...</option>
+                            <option v-for="item in lista_centro_custos" :value="item.cc_id" :key="item.cc_id">
+                                {{ item.centro_custo_label }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label for="">Por Cargo</label>
+                        <select class="form-control form-control-sm" @change="atualizar()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.campoCargo">
+                            <option value="">Todos...</option>
+                            <option v-for="item in lista_cargos" :value="item.cargo" :key="item.cargo">
+                                {{ item.cargo }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <label for="">Status</label>
+                        <select class="form-control form-control-sm" @change="atualizar()"
+                                v-model="controle.dados.campoStatus"
+                        >
+                            <option value="">Admitidos</option>
+                            <option value="demitido">Demitidos</option>
+                        </select>
+                    </div>
+                </div>
 
                 <div class="col-12 col-md-3">
                     <div class="form-group">
@@ -118,53 +157,55 @@
         </fieldset>
 
         <preload class="text-center" v-if="controle.carregando"></preload>
-        <div class="mb-2 mt-2 pt-1 pb-1 border-bottom" v-show="!controle.carregando && lista.length > 0">
+
+        <div class="mb-2 mt-2 pt-1 pb-1 border-bottom" v-show="!controle.carregando && lista.length === 0">
             <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
-
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                <table class="table table-striped table-bordered table-condensed">
-                    <thead>
-                    <tr class="bg-white">
-                        <th class="text-center" style="width: 30px">
-                            <input type="checkbox"
-                                   :checked="tudoMarcado"
-                                   @click="selecionaTodos"
-                                   style="cursor:pointer">
-                        </th>
-                        <th>Nome</th>
-                        <th>Cargo</th>
-                        <th>Centro de Custo</th>
-                    </tr>
-                    </thead>
-                    <tbody class="bg-white">
-                    <tr v-if="listaCheck.length" v-for="item in listaCheck" :key="item.id">
-                        <td class="text-center">
-                            <label :for="item.id">
-                                <input
-                                    type="checkbox"
-                                    v-model="form.selecionados"
-                                    :value="item.id"
-                                    :id="item.id"
-                                    :style="item.id ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                >
-                            </label>
-                        </td>
-                        <td><i class="fa fa-birthday-cake mr-2" v-if="item.hoje"></i>{{ item.curriculo.nome }}</td>
-                        <td>{{ item.admissao.cargo }}</td>
-                        <td>{{ item.admissao.centro_custo ? item.admissao.centro_custo.label : 'Não informado' }}</td>
-
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                                :url="urlPaginacao" :por-pagina="controle.dados.pages"
-                                :dados="controle.dados"
-                                v-on:carregou="carregou" v-on:carregando="carregando"/>
         </div>
+
+        <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
+            <table class="table table-striped table-bordered table-condensed">
+                <thead>
+                <tr class="bg-white">
+                    <th class="text-center" style="width: 30px">
+                        <input type="checkbox"
+                               :checked="tudoMarcado"
+                               @click="selecionaTodos"
+                               style="cursor:pointer">
+                    </th>
+                    <th>Nome</th>
+                    <th>Cargo</th>
+                    <th>Centro de Custo</th>
+                </tr>
+                </thead>
+                <tbody class="bg-white">
+                <tr v-if="listaCheck.length" v-for="item in listaCheck" :key="item.id">
+                    <td class="text-center">
+                        <label :for="item.id">
+                            <input
+                                type="checkbox"
+                                v-model="form.selecionados"
+                                :value="item.id"
+                                :id="item.id"
+                                :style="item.id ? 'cursor:pointer' : 'cursor: not-allowed'"
+                            >
+                        </label>
+                    </td>
+                    <td>{{ item.nome }}</td>
+                    <td>{{ item.cargo }}</td>
+                    <td>{{ item.centro_custo_label }}</td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
+                            :url="urlPaginacao" :por-pagina="controle.dados.pages"
+                            :dados="controle.dados"
+                            v-on:carregou="carregou" v-on:carregando="carregando"/>
+
     </div>
 </template>
 
@@ -198,6 +239,8 @@ export default {
             URL_ADMIN,
 
             lista: [],
+            lista_centro_custos: [],
+            lista_cargos: [],
 
             selecionaTudo: false,
 
@@ -274,6 +317,8 @@ export default {
                     pages: 20,
                     campoBusca: "",
                     campoStatus: "",
+                    campoCargo: "",
+                    campoCentroDeCusto: "",
                     filtroPeriodo: false,
                     periodo: "",
                 }
@@ -344,6 +389,8 @@ export default {
 
         carregou(dados) {
             this.lista = dados.itens;
+            this.lista_centro_custos = dados.lista_centro_custos;
+            this.lista_cargos = dados.lista_cargos;
             this.controle.carregando = false;
         },
         carregando() {
