@@ -2,8 +2,6 @@
 
 namespace App\Jobs\controle_ponto;
 
-use App\Events\Notificacoes\NotificacaoEvent;
-use App\Models\Exportacao;
 use App\Models\Feriado;
 use App\Models\Sistema;
 use App\Models\User;
@@ -13,9 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Event;
 use MasterTag\DataHora;
-use PDF;
 
 
 class JobExportaPontoManualPdf implements ShouldQueue
@@ -109,6 +105,12 @@ class JobExportaPontoManualPdf implements ShouldQueue
             ];
         }
 
+        $labeldia = '';
+
+        foreach ($dias_normais as $dia) {
+            $labeldia .= mb_strtoupper(substr($dia['label'], 0, $dia['label'] == 'Sábado' ? 4 : 3)) . ' - ' . $dia['entrada'] . ' às ' . $dia['saida'] . ' | ';
+        }
+
         $dados = [
             'periodo' => DataHora::dataFormatada($request['data_inicio']) . ' à ' . DataHora::dataFormatada($request['data_fim']),
             'calendario' => $calendario,
@@ -116,9 +118,15 @@ class JobExportaPontoManualPdf implements ShouldQueue
             'repouso' => $repouso,
             'dias_normais' => $dias_normais,
             'quem_gerou' => $request['quem_gerou'],
+            'labeldia' => substr($labeldia, 0, strlen($labeldia) - 3),
+            'data_geracao' => (new DataHora())->dataHoraCompleta(),
+            'nome_arquivo' => "folhadepontomanual_" . $this->usuario->empresa_id . "_" . (new DataHora())->nomeUnico() . ".pdf"
         ];
 
-        $this->model = json_decode(json_encode($dados), true);
+        cache()->remember('getfolha_manual', now()->addMinutes(20), function () use ($dados) {
+            return $dados;
+        });
+//        $this->model = json_decode(json_encode($dados), true);
     }
 
     /**
@@ -128,31 +136,32 @@ class JobExportaPontoManualPdf implements ShouldQueue
      */
     public function handle()
     {
-        ini_set('memory_limit', '-1');
-        ini_set('max_execution_time', '-1');
 
-        $nome_arquivo = "folhadepontomanual_" . (new DataHora())->nomeUnico() . ".pdf";
-
-        $pdf = PDF::setOptions([
-            'logOutputFile' => storage_path('logs/log.htm'),
-            'tempDir' => storage_path('logs/')
-        ])->loadView('pdf.controle-ponto.ponto-manual.manual', [
-                'dados' => $this->model]
-        )
-            ->setPaper('A4', 'landscape');
-
-        \Storage::disk('disco-exportacao')->put($nome_arquivo, $pdf->output());
-
-        Exportacao::create([
-            'user_id' => $this->usuario->id,
-            'arquivo' => $nome_arquivo,
-            'local' => 'Folha de Ponto Manual PDF',
-            'removido' => false,
-        ]);
-
-        Event::dispatch(new NotificacaoEvent([
-            'user_id' => $this->usuario->id,
-            'local' => 'Folha de Ponto Manual PDF',
-        ], NotificacaoEvent::EXPORTACAO_PDF, NotificacaoEvent::TIPO_PADRAO));
+//        ini_set('memory_limit', '-1');
+//        ini_set('max_execution_time', '-1');
+//
+//        $nome_arquivo = "folhadepontomanual_" . (new DataHora())->nomeUnico() . ".pdf";
+//
+//        $pdf = PDF::setOptions([
+//            'logOutputFile' => storage_path('logs/log.htm'),
+//            'tempDir' => storage_path('logs/')
+//        ])->loadView('pdf.controle-ponto.ponto-manual.manual', [
+//                'dados' => $this->model]
+//        )
+//            ->setPaper('A4', 'landscape');
+//
+//        \Storage::disk('disco-exportacao')->put($nome_arquivo, $pdf->output());
+//
+//        Exportacao::create([
+//            'user_id' => $this->usuario->id,
+//            'arquivo' => $nome_arquivo,
+//            'local' => 'Folha de Ponto Manual PDF',
+//            'removido' => false,
+//        ]);
+//
+//        Event::dispatch(new NotificacaoEvent([
+//            'user_id' => $this->usuario->id,
+//            'local' => 'Folha de Ponto Manual PDF',
+//        ], NotificacaoEvent::EXPORTACAO_PDF, NotificacaoEvent::TIPO_PADRAO));
     }
 }
