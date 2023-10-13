@@ -40,10 +40,10 @@ class JobExportaPontoManualPdf implements ShouldQueue
                     ->where('a.status', '=', 'admitido')
                     ->whereNull('a.deleted_at');
             })
-            ->join('mybp.centro_custos AS cc', 'a.centro_custo_id', '=', 'cc.id')
-            ->leftJoin('mybp.centro_custo_filials AS ccf', 'cc.id', '=', 'ccf.centro_custo_id')
-            ->leftJoin('mybp.cliente_filials AS cf', 'ccf.cliente_filial_id', '=', 'cf.id')
-            ->leftJoin('mybp.dados_admissaos AS da2', 'a.id', '=', 'da2.admissao_id')
+            ->join('centro_custos AS cc', 'a.centro_custo_id', '=', 'cc.id')
+            ->leftJoin('centro_custo_filials AS ccf', 'cc.id', '=', 'ccf.centro_custo_id')
+            ->leftJoin('cliente_filials AS cf', 'ccf.cliente_filial_id', '=', 'cf.id')
+            ->leftJoin('dados_admissaos AS da2', 'a.id', '=', 'da2.admissao_id')
             ->whereIn('fc.id', $request['selecionados'])  // Filtra pelos IDs desejados
             ->whereNull('fc.deleted_at')
             ->where('fc.empresa_id', $this->usuario->empresa_id)
