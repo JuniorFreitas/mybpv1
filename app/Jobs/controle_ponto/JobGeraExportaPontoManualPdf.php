@@ -9,16 +9,15 @@ use App\Models\Sistema;
 use App\Models\User;
 use DB;
 use Event;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use MasterTag\DataHora;
-use PDF;
 
-
-class JobExportaPontoManualPdf implements ShouldQueue
+class JobGeraExportaPontoManualPdf implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -28,6 +27,7 @@ class JobExportaPontoManualPdf implements ShouldQueue
     public $usuario;
     public $model;
     public $timeout = 600;
+    private $nome_arquivo;
 
     /**
      * Create a new job instance.
@@ -97,9 +97,8 @@ class JobExportaPontoManualPdf implements ShouldQueue
 
         foreach (range(0, $qntDias) as $d) {
             $dia = $dataInicio->addDia(1);
-            $isFeriado = (bool)Feriado::select('id')->where('data', (new DataHora($dia))->dataInsert())->select(['id'])->where('ativo', true)->first();
             $calendario[] = [
-                'feriado' => $isFeriado,
+                'feriado' => (bool)Feriado::where('data', (new DataHora($dia))->dataInsert())->select(['id'])->where('ativo', true)->first(),
                 'dia' => substr($dia, 0, 2),
                 'diaExt' => substr((new DataHora($dia))->diaSemanaExtM(), 0, (new DataHora($dia))->diaSemanaExtM() == 'Sábado' ? 4 : 3),
                 'repouso' => in_array((new DataHora($dia))->diaSemanaExtM(), $repouso),
@@ -116,20 +115,23 @@ class JobExportaPontoManualPdf implements ShouldQueue
             $labeldia .= mb_strtoupper(substr($dia['label'], 0, $dia['label'] == 'Sábado' ? 4 : 3)) . ' - ' . $dia['entrada'] . ' às ' . $dia['saida'] . ' | ';
         }
 
+        $this->nome_arquivo = "folhadepontomanual_" . $this->usuario->empresa_id . "_" . (new DataHora())->nomeUnico() . ".pdf";
+
         $dados = [
             'periodo' => DataHora::dataFormatada($request['data_inicio']) . ' à ' . DataHora::dataFormatada($request['data_fim']),
             'calendario' => $calendario,
             'selecionados' => $resultado,
-            'repouso' => mb_strtoupper(implode('/', $repouso)),
+            'repouso' => $repouso,
             'dias_normais' => $dias_normais,
             'quem_gerou' => $request['quem_gerou'],
             'labeldia' => substr($labeldia, 0, strlen($labeldia) - 3),
             'data_geracao' => (new DataHora())->dataHoraCompleta(),
-            'nome_arquivo' => "folhadepontomanual_" . $this->usuario->empresa_id . "_" . (new DataHora())->nomeUnico() . ".pdf"
+            'nome_arquivo' => $this->nome_arquivo,
         ];
 
-
-        $this->model = json_decode(json_encode($dados), true);
+        cache()->remember($this->nome_arquivo, now()->addSeconds(20), function () use ($dados) {
+            return $dados;
+        });
     }
 
     /**
@@ -140,31 +142,54 @@ class JobExportaPontoManualPdf implements ShouldQueue
     public function handle()
     {
 
-        ini_set('memory_limit', '-1');
-        ini_set('max_execution_time', '-1');
+        $url = 'http://192.168.1.20:8089/api/gerapdf?chave=' . $this->nome_arquivo;
+        \Log::info($url);
 
-        $nome_arquivo = "folhadepontomanual_" . (new DataHora())->nomeUnico() . ".pdf";
+        $client = new \GuzzleHttp\Client();
+        $promise = $client->requestAsync('GET', $url);
 
-        $pdf = PDF::setOptions([
-            'logOutputFile' => storage_path('logs/log.htm'),
-            'tempDir' => storage_path('logs/')
-        ])->loadView('pdf.controle-ponto.ponto-manual.manual', [
-                'dados' => $this->model]
-        )
-            ->setPaper('A4', 'landscape');
+        $promise->then(function ($response) {
+            $response->getStatusCode();
+        });
 
-        \Storage::disk('disco-exportacao')->put($nome_arquivo, $pdf->output());
+        try {
+            json_decode($promise->wait()->getBody()->getContents(), true);
 
-        Exportacao::create([
-            'user_id' => $this->usuario->id,
-            'arquivo' => $nome_arquivo,
-            'local' => 'Folha de Ponto Manual PDF',
-            'removido' => false,
-        ]);
+            Exportacao::create([
+                'user_id' => $this->usuario->id,
+                'arquivo' => $this->nome_arquivo,
+                'local' => 'Folha de Ponto Manual PDF',
+                'removido' => false,
+            ]);
 
-        Event::dispatch(new NotificacaoEvent([
-            'user_id' => $this->usuario->id,
-            'local' => 'Folha de Ponto Manual PDF',
-        ], NotificacaoEvent::EXPORTACAO_PDF, NotificacaoEvent::TIPO_PADRAO));
+            Event::dispatch(new NotificacaoEvent([
+                'user_id' => $this->usuario->id,
+                'local' => 'Folha de Ponto Manual PDF',
+            ], NotificacaoEvent::EXPORTACAO_PDF, NotificacaoEvent::TIPO_PADRAO));
+
+
+        } catch (ClientException $e) {
+            \Log::debug($e->getResponse()->getBody() . ' - ' . $this->nome_arquivo . ' - ' . $url);
+            return;
+        }
+
+
+//
+//        ini_set('memory_limit', '-1');
+//        ini_set('max_execution_time', '-1');
+//
+//        $nome_arquivo = "folhadepontomanual_" . (new DataHora())->nomeUnico() . ".pdf";
+//
+//        $pdf = PDF::setOptions([
+//            'logOutputFile' => storage_path('logs/log.htm'),
+//            'tempDir' => storage_path('logs/')
+//        ])->loadView('pdf.controle-ponto.ponto-manual.manual', [
+//                'dados' => $this->model]
+//        )
+//            ->setPaper('A4', 'landscape');
+//
+//        \Storage::disk('disco-exportacao')->put($nome_arquivo, $pdf->output());
+//
+
     }
 }

@@ -118,16 +118,6 @@
     </style>
 </head>
 <body>
-@php
-    $labeldia= '';
-@endphp
-
-@foreach($dados['dias_normais'] as $dia)
-    @php
-        $labeldia .= mb_strtoupper(substr($dia['label'],0,$dia['label'] == 'Sábado' ? 4 : 3)) . ' - ' . $dia['entrada'] . ' às ' . $dia['saida'] . ' | ';
-    @endphp
-@endforeach
-
 @foreach($dados['selecionados'] as $key => $colaborador)
     <div class="a4">
         <table class="table" style="width: 100%; border-bottom: 2px black double">
@@ -163,8 +153,8 @@
                 <th style="text-align: left" width="68%">
                     {{$colaborador['matricula']}} - {{$colaborador['nome']}}
                 </th>
-                <th style="text-align: left">REPOUSO: {{ mb_strtoupper(implode('/',$dados['repouso'])) }}
-
+                <th style="text-align: left">REPOUSO:
+                    {{ $dados['repouso'] }}
                 </th>
             </tr>
             <tr>
@@ -186,8 +176,7 @@
             <tr style="border: none">
                 <th style="border: none">
                     <strong>HORÁRIOS:</strong>
-
-                    {{ substr($labeldia,0,strlen($labeldia)-3) }}
+                    {{ $dados['labeldia'] }}
                 </th>
             </tr>
             </thead>
@@ -280,8 +269,7 @@
         <div style="font-size: 8.4pt; margin-top: 7px">
             <p style="font-size: 7.4pt; color: #444444; margin-bottom: 2.5px;">
                 Esse documento foi gerado automaticamente pelo usuário {{ $dados['quem_gerou'] }} Via Sistema Integrado
-                MYBP em {{ (new \MasterTag\DataHora())->dataCompleta() }}
-                às {{ (new \MasterTag\DataHora())->horaCompleta() }}.
+                MYBP em {{ $dados['data_geracao'] }}.
             </p>
         </div>
     </div>
