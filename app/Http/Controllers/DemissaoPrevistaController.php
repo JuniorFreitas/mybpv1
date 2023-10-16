@@ -209,7 +209,9 @@ class DemissaoPrevistaController extends Controller
             ->join('feedback_curriculos as fc', function ($join) {
                 $join->on('u.id', '=', 'fc.curriculo_id')->whereNull('fc.deleted_at');
             })
-            ->join('admissoes as a', 'fc.id', '=', 'a.feedback_id')
+            ->join('admissoes as a', function ($join) {
+                $join->on('fc.id', '=', 'a.feedback_id')->whereNull('a.deleted_at')->whereNull('fc.deleted_at');
+            })
             ->leftjoin('centro_custos as cc', 'dp.centro_custo_id', '=', 'cc.id')
             ->leftjoin('centro_custo_filials as ccf', 'dp.centro_custo_filial_id', '=', 'ccf.id')
             ->leftjoin('users as ugestor', 'ugestor.id', '=', 'dp.gestor_id')
