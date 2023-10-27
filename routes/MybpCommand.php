@@ -117,8 +117,7 @@ Artisan::command('mybp:calculoAvos', function () {
         AND fc.deleted_at is null
         ORDER BY a.data_admissao ASC");
 
-//    dd($admissoes);
-
+    $cont = 1;
     $periodos_aquisitivos = DB::select("SELECT * FROM periodos_aquisitivos WHERE ano_inicial >= 1996 ORDER BY ano_inicial ASC");
     $periodo_aquisitivo = [];
     foreach ($periodos_aquisitivos as $pa) {
@@ -159,13 +158,13 @@ Artisan::command('mybp:calculoAvos', function () {
                 $periodo_aquisitivo_id = (int)$periodo_aquisitivo[$chave]['id'];
                 $cadastrado = DB::table('ferias_calculo_avos')
                     ->where('admissao_id', $admissao_id)
-                    ->where('periodo_aquisitivo_id', $periodo_aquisitivo_id)
-                    ->get();
+                    ->where('periodo_aquisitivo_id', $periodo_aquisitivo_id);
 
-                if (count($cadastrado) == 0 && $ultimo_total_avos_admissao > 0) {
+                if ($cadastrado->count() == 0 && $ultimo_total_avos_admissao > 0) {
                     DB::table('ferias_calculo_avos')->insert($calculo_avos_admissao);
                     echo "ID : " . $linha->admissao_id . " | " . $cont++ . " CADASTRADA\n";
-                }else{
+                } else {
+                    $cadastrado->update($calculo_avos_admissao);
                     echo "ID : " . $linha->admissao_id . " | " . $cont++ . " JÁ CADASTRADA\n";
                 }
 
