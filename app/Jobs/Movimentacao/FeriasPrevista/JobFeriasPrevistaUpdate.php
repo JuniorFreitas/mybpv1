@@ -18,20 +18,12 @@ class JobFeriasPrevistaUpdate implements ShouldQueue
      *
      * @return void
      */
-    public $mail;
-    public $tries = 3;
+    public array $mail;
+    public int $tries = 3;
 
     public function __construct($feriasPrevista)
     {
-        $this->mail = [
-            'nome_de' => auth()->user()->nome,
-            'email_de' => auth()->user()->login,
-            'nome_para' => $feriasPrevista->Gestor->nome,
-            'email_para' => $feriasPrevista->Gestor->login,
-            'ferias_id' => $feriasPrevista->id,
-            'colaborador' => $feriasPrevista->Admissao->Feedback->Curriculo->nome,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
+        $this->mail = $feriasPrevista;
 
     }
 

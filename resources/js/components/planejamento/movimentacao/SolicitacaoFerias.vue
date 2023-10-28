@@ -611,7 +611,7 @@
                                     <a class="dropdown-item" href="javascript://" title="Aprovação Gestor"
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; aprovandoRh = false; podeanexar = false"
+                                       @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; aprovandoRh = false; podeanexar = false; editando = false;"
                                        v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor">
                                         Aprovação Gestor
                                     </a>
@@ -619,7 +619,7 @@
                                     <a class="dropdown-item" href="javascript://" title="Aprovação RH"
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoRh = true; podeanexar = false"
+                                       @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoRh = true; editando = false; podeanexar = false"
                                        v-if="item.status_aprovacao_gestor === 'aprovado' && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh">
                                         Aprovação Rh
                                     </a>
@@ -643,7 +643,7 @@
                                     <a class="dropdown-item" href="javascript://" title="Visualizar"
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoRh = false; podeanexar = false">
+                                       @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoRh = false; editando = false; podeanexar = false">
                                         Visualizar
                                     </a>
                                 </div>

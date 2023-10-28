@@ -129,6 +129,7 @@ class FeriasPrevistaController extends Controller
                     $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
                     if ($arquivo) {
                         $arquivo->temporario = false;
+                        $arquivo->nome = $anexo['nome'];
                         $arquivo->chave = '';
                         $arquivo->save();
                         $feriasPrevista->Anexos()->attach($arquivo->id);
@@ -203,38 +204,33 @@ class FeriasPrevistaController extends Controller
     public function update(Request $request, Ferias $ferias)
     {
         $this->authorize('planejamento_movimentacao_ferias_editar');
-
-        $dados = $request->input();
+        $dados = $request->only(['admissao_id', 'centro_custo_id', 'periodo_aquisitivo_id', 'data_saida',
+            'data_retorno', 'ultima_data', 'qnt_dias', 'dias_saldo', 'tem_faltas', 'qnt_faltas', 'gestor_id',
+            'solicitante_id', 'abono_pecuniario', 'adiantamento_decimo_terceiro',
+            'obs_solicitante', 'anexosDel', 'anexos'
+        ]);
 
         // Converter as datas para o formato desejado
-        $camposData = ['ultima_data', 'data_retorno', 'data_saida', 'data_solicitacao'];
+        $camposData = ['ultima_data', 'data_retorno', 'data_saida'];
         foreach ($camposData as $campo) {
             if (isset($dados[$campo])) {
                 $dados[$campo] = (new DataHora($dados[$campo]))->dataInsert();
             }
         }
 
-        // Remover campos desnecessários
-        $camposRemover = [
-            'colaborador_id',
-            'data_aprovacao_gestor',
-            'data_aprovacao_rh',
-            'data_status_ferias',
-            'created_at'
-        ];
-        foreach ($camposRemover as $campo) {
-            unset($dados[$campo]);
-        }
-
         // Validar os dados
         $dadosValidados = \Validator::make($dados, [
-            'centro_custo_id' => 'required',
+            'periodo_aquisitivo_id' => 'required',
+            'data_saida' => 'required',
+            'data_retorno' => 'required',
+            'ultima_data' => 'required',
             'qnt_dias' => 'required',
             'dias_saldo' => 'required',
-            'periodo_aquisitivo_id' => 'required',
-            'colaborador_id' => 'required',
-            'gestor_id' => 'required',
-            'data_admissao' => 'required',
+            'tem_faltas' => 'required|boolean',
+            'qnt_faltas' => 'required',
+            'solicitante_id' => 'required',
+            'abono_pecuniario' => 'required|boolean',
+            'adiantamento_decimo_terceiro' => 'required|boolean',
         ]);
 
         if ($dadosValidados->fails()) {
@@ -253,7 +249,21 @@ class FeriasPrevistaController extends Controller
             ]);
 
             // Atualizar informações da solicitação de férias
-            $ferias->update($dados);
+            $ferias->update([
+                'periodo_aquisitivo_id' => $dados['periodo_aquisitivo_id'],
+                'data_saida' => $dados['data_saida'],
+                'data_retorno' => $dados['data_retorno'],
+                'ultima_data' => $dados['ultima_data'],
+                'qnt_dias' => $dados['qnt_dias'],
+                'dias_saldo' => $dados['dias_saldo'],
+                'tem_faltas' => $dados['tem_faltas'],
+                'qnt_faltas' => $dados['tem_faltas'] ? $dados['qnt_faltas'] : 0,
+                'solicitante_id' => $dados['solicitante_id'],
+                'obs_solicitante' => $dados['obs_solicitante'],
+                'abono_pecuniario' => $dados['abono_pecuniario'],
+                'gestor_id' => $dados['gestor_id'],
+                'adiantamento_decimo_terceiro' => $dados['adiantamento_decimo_terceiro'],
+            ]);
 
             // Remover anexos
             if (isset($dados['anexosDel'])) {
@@ -264,20 +274,34 @@ class FeriasPrevistaController extends Controller
             }
 
             // Associar novos anexos
-            if (isset($dados['anexos'])) {
-                foreach ($dados['anexos'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $ferias->Anexos()->attach($arquivo->id);
-                    }
+            foreach ($dados['anexos'] as $index => $anexo) {
+                Arquivo::find($anexo['id'])->update([
+                    'nome' => $anexo['nome'],
+                ]);
+
+                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                if ($arquivo) {
+                    $arquivo->temporario = false;
+                    $arquivo->nome = $anexo['nome'];
+                    $arquivo->chave = '';
+                    $arquivo->save();
+                    $ferias->Anexos()->attach($arquivo->id);
                 }
             }
 
             DB::commit();
-            JobFeriasPrevistaUpdate::dispatch($ferias);
+
+            $dadosJobsEmail = [
+                'nome_de' => auth()->user()->nome,
+                'email_de' => auth()->user()->login,
+                'nome_para' => $ferias->Gestor->nome,
+                'email_para' => $ferias->Gestor->login,
+                'ferias_id' => $ferias->id,
+                'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
+                'empresa_id' => auth()->user()->empresa_id
+            ];
+
+            JobFeriasPrevistaUpdate::dispatch($dadosJobsEmail);
 
             return response()->json('', 201);
         } catch (\Exception $e) {
@@ -285,7 +309,8 @@ class FeriasPrevistaController extends Controller
             $msg = "Erro ao atualizar Solicitação de Férias:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             Sistema::LogFormatado($dados);
-            return response()->json(['msg' => 'Houve um erro, por favor tente novamente!'], 400);
+            return $e->getTrace();
+            return response()->json(['msg' => $msg], 400);
         }
     }
 
