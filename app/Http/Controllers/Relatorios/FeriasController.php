@@ -170,16 +170,17 @@ class FeriasController extends Controller
                         'centro_custo' => !is_null($item->first()->centro_custo_id) ? $item->first()->centro_custo_label : 'Não informado',
                         'todos_periodos' => $todos_periodos,
                     ];
-                })->sortByDesc('dias_atraso')->values()->filter(function ($item) {
-                    return $item['dias_atraso'] >= 360;
-                })->values();
+                })->sortByDesc('dias_atraso')->values();
+//                ->filter(function ($item) {
+//                    return $item['dias_atraso'] >= 360;
+//                })->values();
             \Cache::set($this->nomeRelatorio(), json_encode($result), 60 * 24);
             Redis::set($this->nomeRelatorio(), \Cache::get($this->nomeRelatorio()));
         }
 
         $cargos = collect($result)->unique('cargo')->pluck('cargo')->sort()->values()->toArray();
         $centro_custos = collect($result)->unique('centro_custo')->pluck('centro_custo')->sort()->values()->toArray();
-        $funcao= collect($result)->unique('funcao')->pluck('funcao')->sort()->values()->toArray();
+        $funcao = collect($result)->unique('funcao')->pluck('funcao')->sort()->values()->toArray();
 
         if ($request->filled('campoBusca')) {
             $result = collect($result)->filter(function ($item) use ($request) {
@@ -219,8 +220,8 @@ class FeriasController extends Controller
     {
         if ($request->filled('periodo_range') && $request->filled('tipo') && $request->tipo == 'data') {
             $periodo = explode(' até ', $request->periodo_range);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
         }
 
         $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->verifica_mes_vencimento];
