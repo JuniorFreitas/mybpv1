@@ -44,28 +44,6 @@ class FeriasController extends Controller
 
     public function showVencimentoFerias(Request $request)
     {
-
-//        $result = FeriasCalculoAvos::select(['admissao_id', 'empresa_id', 'total_avos', 'periodo_aquisitivo_id','historico'])
-//            ->whereHas('admissao', function ($query) {
-//                $query->admitidos();
-//            })
-//            ->with([
-//                'admissao' => function ($query) {
-//                    $query->admitidos()
-//                        ->select(['id','feedback_id','data_admissao','status','centro_custo_id','centro_custo_filial_id','cargo','funcao'])
-//                        ->with([
-//                            'Feedback:id,curriculo_id,empresa_id',
-//                            'Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-//                        ])
-//                    ;
-//                },
-//            ])
-//            ->groupBy('admissao_id', 'empresa_id', 'total_avos', 'periodo_aquisitivo_id', 'historico')
-//            ->orderBy('admissao_id', 'asc')
-//            ->get()->groupBy('admissao_id')->values()->toArray();
-//
-//        return $result;
-
         $empresa_id = auth()->user()->empresa_id;
 
         if (\Cache::has($this->nomeRelatorio())) {
@@ -109,7 +87,7 @@ class FeriasController extends Controller
                         'ferias_calculo_avos.historico',
                         'periodos_aquisitivos.label', 'periodos_aquisitivos.ano_inicial'])
                         ->join('periodos_aquisitivos', 'ferias_calculo_avos.periodo_aquisitivo_id', '=', 'periodos_aquisitivos.id')
-                        ->whereAdmissaoId($item->first()->admissao_id)->orderByDesc('periodos_aquisitivos.ano_inicial')->limit(5)->get()->map(function ($t) use ($item) {
+                        ->whereAdmissaoId($item->first()->admissao_id)->orderByDesc('periodos_aquisitivos.ano_inicial')->limit(4)->get()->map(function ($t) use ($item) {
 
                             $ferias = $item->where('admissao_id', $t->admissao_id)->where('periodo_aquisitivo_id', $t->periodo_aquisitivo_id)->first();
                             if ($t->total_avos < 30) {
@@ -120,15 +98,55 @@ class FeriasController extends Controller
                                 $status_ferias = isset($ferias->status_ferias) ? ucfirst($ferias->status_ferias == 'aguardando' ? 'Solicitada' : $ferias->status_ferias) : 'Disponivel';
                             }
 
+                            $ultimo_dia_avo = collect($t->historico)->sortByDesc('data_mes')->first()['data_mes'];
+
+
+                            switch ($status_ferias) {
+                                case 'Reprovado':
+                                case 'Cancelado':
+                                    $colorir = 'badge-danger';
+                                    break;
+                                case 'Gozada':
+                                    $colorir = 'badge-success';
+                                    break;
+                                case 'Solicitada':
+                                    $colorir = 'badge-warning text-black';
+                                    break;
+                                case 'Aprovado':
+                                    $colorir = 'badge-info';
+                                    break;
+                                case 'Saldo insuficiente':
+                                    $colorir = 'badge-soft-pink';
+                                    break;
+                                default:
+                                    $colorir = 'badge-white';
+                                    break;
+                            }
+
+
+                            $atraso = Carbon::now()->diffInDays((new DataHora($ultimo_dia_avo))->dataInsert());
+
+                            if ($atraso >= self::VINTEMESES && in_array($status_ferias, ['Disponivel'])) {
+                                $colorir = 'badge-danger';
+                            }
+                            if ($atraso >= self::DEZOITOMESES && $atraso < self::VINTEMESES && in_array($status_ferias, ['Disponivel'])) {
+                                $colorir = 'badge-warning';
+                            }
+
+                            if ($atraso < self::DEZOITOMESES && $atraso < self::VINTEMESES && in_array($status_ferias, ['Disponivel'])) {
+                                $colorir = 'badge-soft-dark';
+                            }
 
                             return [
                                 'id' => $t->id,
                                 'admissao_id' => $t->admissao_id,
+                                'tempo_atrasado' => in_array($status_ferias, ['Disponivel']) && $atraso > 0 ? Carbon::now()->subDays($atraso)->diffForHumans(null, true, false, 2) : null,
+                                'colorir' => $colorir,
                                 'empresa_id' => $t->empresa_id,
                                 'total_avos' => $t->total_avos,
                                 'periodo_aquisitivo' => $t->label,
                                 'periodo_aquisitivo_id' => $t->periodo_aquisitivo_id,
-                                'ultimo_dia_avo' => collect($t->historico)->sortByDesc('data_mes')->first()['data_mes'],
+                                'ultimo_dia_avo' => $ultimo_dia_avo,
                                 'data_saida' => isset($ferias->data_saida) ? (new DataHora($ferias->data_saida))->dataCompleta() : null,
                                 'data_retorno' => isset($ferias->data_retorno) ? (new DataHora($ferias->data_retorno))->dataCompleta() : null,
                                 'ultima_atualizacao' => (new DataHora(collect($t->historico)->sortByDesc('data_mes')->first()['data_mes']))->dataCompleta(),
@@ -170,12 +188,30 @@ class FeriasController extends Controller
                         'centro_custo' => !is_null($item->first()->centro_custo_id) ? $item->first()->centro_custo_label : 'Não informado',
                         'todos_periodos' => $todos_periodos,
                     ];
-                })->sortByDesc('dias_atraso')->values();
-//                ->filter(function ($item) {
-//                    return $item['dias_atraso'] >= 360;
-//                })->values();
+                })
+                ->sortByDesc('dias_atraso')->values();
             \Cache::set($this->nomeRelatorio(), json_encode($result), 60 * 24);
             Redis::set($this->nomeRelatorio(), \Cache::get($this->nomeRelatorio()));
+        }
+
+        if ($request->filled('campoPeriodoVencido')) {
+            $result = collect($result)->sortByDesc('dias_atraso')->values()->filter(function ($item) use ($request) {
+                switch ($request->campoPeriodoVencido) {
+                    case 'apartirdoperiodoconcessivel':
+                        $campoPeriodoVencido = $item['dias_atraso'] >= 1 && $item['dias_atraso'] <= 546;
+                        break;
+                    case '1anoseismesesate1anoe8meses':
+                        $campoPeriodoVencido = $item['dias_atraso'] >= 547 && $item['dias_atraso'] <= 607;
+                        break;
+                    case '1anoe8meseisesuperior':
+                        $campoPeriodoVencido = $item['dias_atraso'] >= 608;
+                        break;
+                    default:
+                        $campoPeriodoVencido = $item['dias_atraso'] >= 360;
+                        break;
+                }
+                return $item['dias_atraso'] = $campoPeriodoVencido;
+            })->values();
         }
 
         $cargos = collect($result)->unique('cargo')->pluck('cargo')->sort()->values()->toArray();
@@ -194,9 +230,14 @@ class FeriasController extends Controller
             })->values();
         }
 
-        if ($request->filled('campoFuncao')) {
+        if ($request->filled('campoSituacao')) {
             $result = collect($result)->filter(function ($item) use ($request) {
-                return stripos($item['funcao'], $request->campoFuncao) !== false;
+                foreach ($item['todos_periodos'] as $periodo) {
+                    if ($periodo['status_ferias'] === $request->campoSituacao) {
+                        return true;
+                    }
+                }
+                return false;
             })->values();
         }
 
@@ -315,12 +356,11 @@ class FeriasController extends Controller
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
-    public function exportExcelVencimentoFerias()
+    public function exportExcelVencimentoFerias(Request $request)
     {
         $nameArquivo = "vencimento_ferias_" . \Str::slug('Vencimento Ferias') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportarExcel::dispatch(auth()->id(), "Vencimento Ferias", Redis::get($this->nomeRelatorio()), $nameArquivo);
+        JobExportarExcel::dispatch(auth()->id(), "Vencimento Ferias", $this->showVencimentoFerias($request)['result'], $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
     }
 
     public function nomeRelatorio()

@@ -31,11 +31,26 @@
                     </div>
 
                     <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                        <label>Função</label>
+                        <label>Situação</label>
                         <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload"
-                                v-model="filtrar.campoFuncao">
-                            <option value="">Todos</option>
-                            <option v-for="item in lista_funcao" :value="item" :key="item" v-text="item"></option>
+                                v-model="filtrar.campoSituacao">
+                            <option value="">Todas</option>
+                            <option value="Saldo insuficiente">Saldo insuficiente</option>
+                            <option value="Solicitada">Solicitada</option>
+                            <option value="Disponivel">Disponivel</option>
+                            <option value="Gozada">Gozada</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                        <label>Periodo</label>
+                        <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload"
+                                v-model="filtrar.campoPeriodoVencido">
+                            <option value="">Todos os periodos</option>
+                            <option value="apartirdoperiodoconcessivel">Do período concessível à 1 ano e 6 meses
+                            </option>
+                            <option value="1anoseismesesate1anoe8meses">De 1 ano e 6 meses até 1 ano e 8 meses</option>
+                            <option value="1anoe8meseisesuperior">Maior que 1 ano e 8 meses</option>
                         </select>
                     </div>
 
@@ -44,7 +59,8 @@
                         <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload"
                                 v-model="filtrar.campoCentroCusto">
                             <option value="">Todos</option>
-                            <option v-for="item in lista_centro_custos" :value="item" :key="item" v-text="item"></option>
+                            <option v-for="item in lista_centro_custos" :value="item" :key="item"
+                                    v-text="item"></option>
                         </select>
                     </div>
 
@@ -72,30 +88,27 @@
                 <div v-for="(item, index) in dados" :key="index" class="mb-3" v-show="dados.length">
                     <div class="row">
                         <div class="col-md-12">
-                            <table :class="item.pintar" class="mt-4 table table-bordered">
+                            <table class="mt-4 table bg-white table-bordered">
                                 <thead>
                                 <tr class="text-center">
-                                    <th :rowspan="item.todos_periodos.length + 3"
+                                    <th :rowspan="item.todos_periodos.length + 3" :class="item.pintar"
                                         style="display: table-cell; vertical-align: middle; text-align: center; /* Não necessário */">
                                         {{ index + 1 }}
                                     </th>
-                                    <th colspan="6">{{ item.nome }}<br>(Admitido em: {{ item.data_admissao }}) - (Centro
+                                    <th colspan="6">{{ item.nome }} ({{ item.cargo }})
+                                        <br>(Admitido em: {{ item.data_admissao }}) - (Centro
                                         de Custo: {{ item.centro_custo }})
                                         <br><span
-                                            v-if="item.dias_atraso > 0">Férias atrasadas {{
+                                            v-if="item.dias_atraso > 0">Férias vencidas {{
                                                 item.tempo_atrasado
                                             }}</span>
                                     </th>
                                 </tr>
 
-                                <tr :class="item.pintar" class="text-center">
-                                    <th colspan="6">{{ item.cargo }}</th>
-                                </tr>
-
-                                <tr :class="item.pintar">
+                                <tr>
                                     <th style="text-align: center">Período Aquisitivo</th>
-                                    <th style="text-align: center">Status</th>
-                                    <th style="text-align: center">Qnt. Avos</th>
+                                    <th style="text-align: center">Situação</th>
+                                    <th style="text-align: center">Saldo</th>
                                     <th style="text-align: center">Última Atualização</th>
                                 </tr>
 
@@ -103,8 +116,14 @@
                                     <th style="text-align: center; vertical-align: middle;">
                                         {{ periodo.periodo_aquisitivo }}
                                     </th>
-                                    <th style="text-align: center; vertical-align: middle; text-transform: capitalize">
-                                        {{ periodo.status_ferias }}
+                                    <th style="text-align: center; vertical-align: middle;">
+                                        <div class="badge font-size-12 p-2 text-cappitalize" :class="periodo.colorir">
+                                            {{ periodo.status_ferias }}
+                                        </div>
+                                        <span v-show="periodo.tempo_atrasado">
+                                            <br>
+                                                Vencida à {{ periodo.tempo_atrasado }}
+                                            </span>
                                         <span v-if="periodo.tem_tb_ferias">
                                                <br> ({{ periodo.data_saida }} à {{ periodo.data_retorno }})
                                             </span>
@@ -147,8 +166,9 @@ export default {
                 status_ferias: '',
                 campoBusca: '',
                 campoCargo: '',
-                campoFuncao: '',
-                campoCentroCusto: ''
+                campoSituacao: '',
+                campoCentroCusto: '',
+                campoPeriodoVencido: ''
             }
         };
     },
