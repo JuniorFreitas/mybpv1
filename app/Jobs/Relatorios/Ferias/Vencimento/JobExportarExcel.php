@@ -16,21 +16,23 @@ class JobExportarExcel implements ShouldQueue
     public $tries = 3;
 //    public $delay;
     public $queue;
-    public $dados;
-    public $local;
-    public $usuario;
-    public $usuario_id;
-    public $nome_arquivo;
-    public $timeout = 0;
+    public array|object $dados;
+    public string $local;
+    public string $usuario;
+    public int|string $usuario_id;
+    public string $nome_arquivo;
+    public int $timeout = 0;
 
 
     /**
-     * @param $usuario_id
-     * @param $local
-     * @param $dados
-     * @param $nome_arquivo
+     * Create a new job instance.
+     *
+     * @param string|int $usuario_id
+     * @param string $local
+     * @param array|object $dados
+     * @param string $nome_arquivo
      */
-    public function __construct($usuario_id, $local, $dados, $nome_arquivo)
+    public function __construct(string|int $usuario_id, string $local, array|object $dados, string $nome_arquivo)
     {
         $this->local = $local;
         $this->usuario_id = $usuario_id;
@@ -57,10 +59,10 @@ class JobExportarExcel implements ShouldQueue
             "Período aquisitivo",
             "Quantidade de dias de atraso",
             "Tempo atrasado",
-            "Status férias",
+            "Situação",
             "Data saida",
             "Data retorno",
-            "Total avos",
+            "Saldo",
             "Última atualização",
         ]];
 
@@ -87,7 +89,6 @@ class JobExportarExcel implements ShouldQueue
                 ];
             }
         }
-
 
         $array = [
             'usuario' => $Usuario,
