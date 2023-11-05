@@ -189,9 +189,7 @@ class FeriasController extends Controller
                         'todos_periodos' => $todos_periodos,
                     ];
                 })
-                ->sortByDesc('dias_atraso')->values();//Aqui é o filtro dos 360 dias
-
-            ;
+                ->sortByDesc('dias_atraso')->values();
             \Cache::set($this->nomeRelatorio(), json_encode($result), 60 * 24);
             Redis::set($this->nomeRelatorio(), \Cache::get($this->nomeRelatorio()));
         }
@@ -212,7 +210,6 @@ class FeriasController extends Controller
                         $campoPeriodoVencido = $item['dias_atraso'] >= 360;
                         break;
                 }
-//                return $item['dias_atraso'] >= $campoPeriodoVencido;
                 return $item['dias_atraso'] = $campoPeriodoVencido;
             })->values();
         }
@@ -361,23 +358,9 @@ class FeriasController extends Controller
 
     public function exportExcelVencimentoFerias(Request $request)
     {
-//        $linhas = [];
-//        $chunks = $this->showVencimentoFerias($request)['result']->chunk(100);
-//
-//        $chunks->each(function ($rows) use (&$linhas) {
-//            foreach ($rows as $row) {
-//                $linhas[] = $row; // Adicionando cada linha ao array $linhas
-//            }
-//        });
-//
-//
-//        dd($linhas);
         $nameArquivo = "vencimento_ferias_" . \Str::slug('Vencimento Ferias') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-//        JobExportarExcel::dispatch(auth()->id(), "Vencimento Ferias", Redis::get($this->nomeRelatorio()), $nameArquivo);
         JobExportarExcel::dispatch(auth()->id(), "Vencimento Ferias", $this->showVencimentoFerias($request)['result'], $nameArquivo);
-//        JobExportarExcel::dispatch(auth()->user(), $this->showVencimentoFerias($request)['result']);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
     }
 
     public function nomeRelatorio()
