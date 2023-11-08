@@ -383,14 +383,14 @@ class PosAdmissaoController extends Controller
     public function filtro(Request $request)
     {
         $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) use ($request) {
-            $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO']);
+            $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO', 'DEMITIDO']);
             if ($request->filled('campoArea')) {
                 $q->whereAreaEtiquetaId($request->campoArea);
             }
             if ($request->filled('campoCargo')) {
                 $q->where('cargo', 'like', '%' . $request->campoCargo . '%');
             }
-        })->with('Admissao:id,feedback_id,area_etiqueta_id,cargo,data_admissao','Admissao.AreaEtiqueta', 'Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
+        })->with('Admissao:id,feedback_id,area_etiqueta_id,cargo,data_admissao', 'Admissao.AreaEtiqueta', 'Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
@@ -417,9 +417,9 @@ class PosAdmissaoController extends Controller
         }
 
         if ($request->filled('campoFeedback')) {
-            if($request->campoFeedback == "nao"){
+            if ($request->campoFeedback == "nao") {
                 $resultado->whereDoesntHave('EntrevistaDesligamento');
-            }else{
+            } else {
                 $resultado->whereHas('EntrevistaDesligamento');
             }
         }
