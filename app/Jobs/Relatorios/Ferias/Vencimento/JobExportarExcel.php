@@ -16,7 +16,7 @@ class JobExportarExcel implements ShouldQueue
     public $tries = 3;
 //    public $delay;
     public $queue;
-    public array|object $dados;
+    public array $dados;
     public string $local;
     public string $usuario;
     public int|string $usuario_id;
@@ -29,10 +29,10 @@ class JobExportarExcel implements ShouldQueue
      *
      * @param string|int $usuario_id
      * @param string $local
-     * @param array|object $dados
+     * @param array $dados
      * @param string $nome_arquivo
      */
-    public function __construct(string|int $usuario_id, string $local, array|object $dados, string $nome_arquivo)
+    public function __construct(string|int $usuario_id, string $local, array $dados, string $nome_arquivo)
     {
         $this->local = $local;
         $this->usuario_id = $usuario_id;
@@ -67,9 +67,9 @@ class JobExportarExcel implements ShouldQueue
         ]];
 
         $rows = [];
-        $filtrados = json_decode($this->dados, true);
+//        $filtrados = json_decode($this->dados, true);
 
-        foreach ($filtrados as $row) {
+        foreach ($this->dados as $row) {
             $todos_periodos = $row['todos_periodos'];
             foreach ($todos_periodos as $p) {
                 $rows[] = [
