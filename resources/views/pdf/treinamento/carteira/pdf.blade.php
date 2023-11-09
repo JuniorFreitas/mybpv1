@@ -144,7 +144,7 @@
                         <div style="display: flex; margin: 0 auto; margin-top: 1cm;">
                             <img
                                 src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
-                                alt="Logo" title="Logo" style="width: 3.5cm">
+                                alt="Logo" title="Logo" style="width: 3cm">
                         </div>
                         <br>
                     @endif
