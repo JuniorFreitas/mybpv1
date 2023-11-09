@@ -237,6 +237,12 @@ class DocumentosPreAdmissaoController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
+        if ($request->query('thumb')) {
+            $extensaoArquivo = substr($arquivo, strrpos($arquivo, '.') + 1);
+            $nomeArquivo = substr($arquivo, 0, strrpos($arquivo, '.'));
+            $arquivo = $nomeArquivo . '_p.' . $extensaoArquivo;
+        }
+
         return Arquivo::anexoShow(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);
     }
 

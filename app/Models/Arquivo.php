@@ -642,6 +642,20 @@ class Arquivo extends Model
      * @param $arquivo
      * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
+    public static function anexoThumb($disco, $arquivo)
+    {
+        if (Storage::disk($disco)->exists($arquivo)) {
+            return \Storage::disk($disco)->response($arquivo);
+        }
+        abort(404);
+    }
+
+
+    /**
+     * @param $disco
+     * @param $arquivo
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
     public static function anexoDownload($disco, $arquivo)
     {
         if (Storage::disk($disco)->exists($arquivo)) {

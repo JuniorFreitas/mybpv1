@@ -305,7 +305,7 @@ class AdmissaoController extends Controller
                 is_null($dados['resultado_integrado']['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['resultado_integrado']['empresa_exame_id']);
                 is_null($dados['resultado_integrado']['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['resultado_integrado']['pcmso_id'])->label;
 
-                if(!is_null($empresaExame) && !is_null($tipo_pcmso)){
+                if (!is_null($empresaExame) && !is_null($tipo_pcmso)) {
                     $empresaExameId = $dados['resultado_integrado']['empresa_exame_id'];
                     $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
                     $token = Sistema::uuid();
@@ -315,18 +315,18 @@ class AdmissaoController extends Controller
                     $encaminhamento_data = $dadosResultadoIntegrado['encaminhado_exame_data'];
 
                     $temExameFuncionario = ExameFuncionario::whereFeedbackId($feedback->id)
-                                                           ->whereEmpresaExameId($empresaExameId)
-                                                           ->where('exame_tipo_id', $exame_tipo_id)
-                                                           ->where('pcmso_id', $pcmso_id)
-                                                           ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
+                        ->whereEmpresaExameId($empresaExameId)
+                        ->where('exame_tipo_id', $exame_tipo_id)
+                        ->where('pcmso_id', $pcmso_id)
+                        ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
 
-                    if(is_null($temExameFuncionario)) {
+                    if (is_null($temExameFuncionario)) {
                         $exameFuncionario = ExameFuncionario::create([
                             'feedback_id' => $feedback->id,
                             'empresa_id' => $empresa_id,
                             'empresa_exame_id' => $empresaExameId,
                             'formulario_id' => $formulario_id,
-                            'respostas' => (object) [],
+                            'respostas' => (object)[],
                             'token' => $token,
                             'pcmso' => true,
                             'pcmso_id' => $pcmso_id,
@@ -1022,7 +1022,7 @@ class AdmissaoController extends Controller
 
                 $feedback->ResultadoIntegrado ? $feedback->ResultadoIntegrado->update($dadosResultadoIntegrado) : $feedback->ResultadoIntegrado()->create($dadosResultadoIntegrado);
 
-                if(!is_null($dados['resultado_integrado']['empresa_exame_id']) && !is_null($dados['resultado_integrado']['pcmso_id'])){
+                if (!is_null($dados['resultado_integrado']['empresa_exame_id']) && !is_null($dados['resultado_integrado']['pcmso_id'])) {
                     $empresaExameId = $dados['resultado_integrado']['empresa_exame_id'];
                     $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
                     $token = Sistema::uuid();
@@ -1037,13 +1037,13 @@ class AdmissaoController extends Controller
                         ->where('pcmso_id', $pcmso_id)
                         ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
 
-                    if(is_null($temExameFuncionario)) {
+                    if (is_null($temExameFuncionario)) {
                         $exameFuncionario = ExameFuncionario::create([
                             'feedback_id' => $feedback->id,
                             'empresa_id' => $empresa_id,
                             'empresa_exame_id' => $empresaExameId,
                             'formulario_id' => $formulario_id,
-                            'respostas' => (object) [],
+                            'respostas' => (object)[],
                             'token' => $token,
                             'pcmso' => true,
                             'pcmso_id' => $pcmso_id,
@@ -1413,8 +1413,8 @@ class AdmissaoController extends Controller
 
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
             $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
                 $q->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
             });
@@ -1430,8 +1430,8 @@ class AdmissaoController extends Controller
 
         if ($filtroAso) {
             $periodo = explode(' até ', $request->campoAso);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
             $resultado->whereHas('UltimoAso', function ($q) use ($dataInicio, $dataFim) {
                 $q->where('data_realizacao', '>=', $dataInicio->dataHoraInsert())->where('data_realizacao', '<=', $dataFim->dataHoraInsert());
             });
@@ -1441,8 +1441,8 @@ class AdmissaoController extends Controller
 
         if ($filtroDataAdmissao) {
             $periodo = explode(' até ', $request->campoAdmisaoData);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
             $resultado->whereHas('Admissao', function ($q) use ($dataInicio, $dataFim) {
                 $q->where('data_admissao', '>=', $dataInicio->dataHoraInsert())->where('data_admissao', '<=', $dataFim->dataHoraInsert());
             });
@@ -1549,6 +1549,12 @@ class AdmissaoController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
+        if ($request->query('thumb')) {
+            $extensaoArquivo = substr($arquivo, strrpos($arquivo, '.') + 1);
+            $nomeArquivo = substr($arquivo, 0, strrpos($arquivo, '.'));
+            $arquivo = $nomeArquivo . '_p.' . $extensaoArquivo;
+        }
+
         return Arquivo::anexoShow(Arquivo::DISCO_FOTOCURRICULO, $arquivo);
     }
 

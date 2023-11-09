@@ -20,12 +20,7 @@
         @page {
             margin: 0cm 0cm;
             margin-top: 10px;
-        /*    margin-bottom: 1px;*/
             margin-left: 30px;
-        /*    margin-right: 0px;*/
-        /*    width: 40cm;*/
-        /*    background: #0c5460;*/
-        /*    !*height: 29.70cm;*!*/
         }
 
 
@@ -132,16 +127,17 @@
         }
 
         .etiqueta {
-            height: 135.39999mm;
-            width: 78.400002mm;
+            height: 12cm;
+            width: 7.8cm;
             float: left;
-            margin-top: 10px;
+            margin-top: 1cm;
+            margin-bottom: 1.2cm;
             margin-right: 1cm;
         }
 
         .etiqueta::before {
-            height: 135.39999mm;
-            width: 78.400002mm;
+            height: 12cm;
+            width: 7.8cm;
             content: url({{ asset('etiqueta.svg') }});
             position: absolute;
             z-index: -1;
@@ -181,11 +177,11 @@
             justify-content: center;
             align-items: center;
             background: red;
-            width: 90%;
+            width: 70%;
             height: 1.4cm;
             margin: 0 auto;
-            border: 3px solid white;
-            border-radius: 0.7cm;
+            border: 4px solid white;
+            border-radius: 50%;
         }
 
         .tituloPerigo {
@@ -211,9 +207,10 @@
         }
 
         .fotoTres {
-            max-height: 4cm;
-            max-width: 3cm;
+            height: 4cm !important;
+            width: 3cm !important;
             background: white;
+            border: 1px solid #7e7e7e;
         }
 
         .clearfix::after {
@@ -222,7 +219,7 @@
             content: "";
         }
 
-        .observacao{
+        .observacao {
             padding: 5px 13px 5px 13px;
             width: 600px;
             margin-top: 20px;

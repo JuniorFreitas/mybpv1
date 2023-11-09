@@ -580,10 +580,16 @@ class TreinamentoController extends Controller
     {
         //ToDo: Melhoria ajustar query para trazer apenas os dados necessários
         $telefone_supervisor = ClienteConfig::where('cliente_id', auth()->user()->empresa_id)->first()->supervisor_etiqueta_bloqueio;
-        $treinamentos = Treinamento::whereIn('feedback_id', $request->selecionados)->get()->transform(function ($item) use ($telefone_supervisor) {
-            $item->telefone = $telefone_supervisor ? Admissao::getNumeroSupervisor($item->FeedbackCurriculo->empresa_id, $item->FeedbackCurriculo->Admissao->area_etiqueta_id) : \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id, false);
-            return $item;
-        });
+        $treinamentos = Treinamento::whereIn('feedback_id', $request->selecionados)
+            ->get()->transform(function ($item) use ($telefone_supervisor) {
+                $telefone = "";
+                if ($item->FeedbackCurriculo->Admissao) {
+                    $telefone = $telefone_supervisor ? Admissao::getNumeroSupervisor($item->FeedbackCurriculo->empresa_id, $item->FeedbackCurriculo->Admissao->area_etiqueta_id) : \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id, false);
+                }
+
+                $item->telefone = $telefone;
+                return $item;
+            });
 
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
     }
