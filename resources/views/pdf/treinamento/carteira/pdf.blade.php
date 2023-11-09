@@ -141,7 +141,7 @@
                     </h3>
 
                     @if(count(auth()->user()->ClientesLogo) > 0)
-                        <div style="display: flex; margin: 0 auto; margin-top: 1cm;">
+                        <div style="display: flex; margin: 0 auto; margin-top: 0.7cm;">
                             <img
                                 src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
                                 alt="Logo" title="Logo" style="width: 3cm">
