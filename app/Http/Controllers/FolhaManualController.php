@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\controle_ponto\JobExportaPontoManualPdf;
+use App\Models\Admissao;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -20,7 +21,7 @@ class FolhaManualController extends Controller
             ->join('curriculos AS c', 'fc.curriculo_id', '=', 'c.id')
             ->join('admissoes AS a', function ($join) {
                 $join->on('fc.id', '=', 'a.feedback_id')
-                    ->where('a.status', '=', 'admitido')
+                    ->where('a.status', '=', [Admissao::STATUS_ADMISSAO_ADMITIDO])
                     ->whereNull('a.deleted_at');
             })
             ->join('centro_custos AS cc', 'a.centro_custo_id', '=', 'cc.id')
@@ -44,7 +45,7 @@ class FolhaManualController extends Controller
         }
 
         if ($request->campoStatus == 'demitido') {
-            $query->where('a.status', 'admitido')
+            $query->where('a.status', [Admissao::STATUS_DEMITIDO])
                 ->where('a.deleted_at', null)
                 ->where('d2.data_desmobilizacao', '<>', null)
                 ->whereRaw('DATEDIFF(NOW(), d2.data_desmobilizacao) <= 30')
