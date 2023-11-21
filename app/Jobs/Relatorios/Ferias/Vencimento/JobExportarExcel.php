@@ -39,6 +39,7 @@ class JobExportarExcel implements ShouldQueue
         $this->nome_arquivo = $nome_arquivo;
 
         $this->dados = $dados;
+
     }
 
     /**
@@ -54,7 +55,7 @@ class JobExportarExcel implements ShouldQueue
             "Nome do colaborador",
             "Data de admissão",
             "Cargo",
-            "Função",
+//            "Função",
             "Centro de Custo",
             "Período aquisitivo",
             "Quantidade de dias de atraso",
@@ -70,17 +71,17 @@ class JobExportarExcel implements ShouldQueue
 //        $filtrados = json_decode($this->dados, true);
 
         foreach ($this->dados as $row) {
-            $todos_periodos = $row['todos_periodos'];
+            $todos_periodos = $row['todos_periodos']->toArray();
             foreach ($todos_periodos as $p) {
                 $rows[] = [
                     $row['nome'],
                     $row['data_admissao'],
                     $row['cargo'],
-                    $row['funcao'],
+//                    $row['funcao'],
                     $row['centro_custo'],
                     $p['periodo_aquisitivo'],
                     $row['dias_atraso'],
-                    $row['tempo_atrasado'],
+                    $row['dias_atraso'] > 0 ? $row['tempo_atrasado'] : '',
                     $p['status_ferias'],
                     is_null($p['data_saida']) ? '---' : $p['data_saida'],
                     is_null($p['data_retorno']) ? '---' : $p['data_retorno'],
