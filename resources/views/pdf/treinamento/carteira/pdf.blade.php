@@ -175,7 +175,7 @@
                              style="object-fit: cover;
                                 background-size: cover;
                                 background-image: url(
-                                {{ count($treinamento->FeedbackCurriculo->Curriculo->FotoTres) > 0 ? $treinamento->FeedbackCurriculo->Curriculo->FotoTres[0]->url.'?thumb=true': asset('sem_foto.png')}}
+                                {{ count($treinamento->FeedbackCurriculo->Curriculo->FotoTres) > 0 ? $treinamento->FeedbackCurriculo->Curriculo->FotoTres[0]->url: asset('sem_foto.png')}}
                                 )">
                         </div>
                     </div>
