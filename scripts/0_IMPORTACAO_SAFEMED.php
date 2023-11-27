@@ -35,7 +35,7 @@ ini_set('max_execution_time', '-1');
 
 unset($argv[0]);
 $import = new Admissaoimport;
-\Excel::import($import, base_path('scripts/xls/2023-10-15_importacao_safemed_log.xlsx'));
+\Excel::import($import, base_path('scripts/xls/2023-11-26_importacao_safemed.xlsx'));
 
 $empresa_id = 66216;
 $user_id = $empresa_id;
@@ -44,9 +44,11 @@ $count = 0;
 
 
 $ignoreCpf = ['020.988.633-14', '444.841.603-82', '563.713.903-25', '019.527.053-39', '610.413.423-81', '056.314.293-65'];
-
+//dd($import->dados);
 
 //$dados = $import->dados->whereNotIn($ignoreCpf)->map(function ($line) use ($empresa_id, &$count) {
+
+
 $dados = $import->dados->map(function ($line) use ($empresa_id, &$count) {
     /*    DB::beginTransaction();
         $cadastraCargo = firstOrCreateCargo($line['vaga'], $empresa_id);
@@ -70,41 +72,41 @@ $dados = $import->dados->map(function ($line) use ($empresa_id, &$count) {
     )->whereId($line['vaga'])->first()->toArray();
 
 
-    return [
-        "curriculo" => [
-            'cpf' => Sistema::mascaraCpf($line['cpf']),
-            "nome" => (string)$line['nome'],
-            "naturalidade" => null,
-            "email" => (string)mb_strtolower(trim($line['email'])) ?? Sistema::EMAILPADRAO,
-            "cnh" => null,
-            "cnh_vencimento" => null,
-            "estado_civil" => null,
-            "rg" => null,
-            "rg_data_emissao" => null,
-            "nascimento" => Date::excelToDateTimeObject($line['nascimento'])->format('Y-m-d'),
-            "sexo" => null,
-            "filiacao_pai" => null,
-            "filiacao_mae" => null,
-            "pcd" => null,
-            "cid" => null,
-            "vaga_pretendida" => intval($vagaAberta['id']),
-            "vaga_id" => intval($vagaAberta['vaga_id']),
-            'uf_vaga' => $vagaAberta['municipio']['uf'],
-            'municipio_id' => $vagaAberta['municipio']['id'],
-            "telefone" => [
-                "whatsapp" => "celular",
-                "numero" => Sistema::mascaraTelefone($line['telefone_numero']),
-            ],
-            "endereco" => [
-                "cep" => Sistema::mascaraCep($line['cep']) ?? null,
-                "logradouro" => (string)$line['endereco'] ?? null,
-                "numero" => (string)$line['numero'] ?? null,
-                "complemento" => null,
-                "bairro" => (string)$line['bairro'] ?? null,
-                "municipio" => (string)$line['municipio'] ?? null,
-                "uf" => (string)$line['uf'] ?? null,
-            ],
+    $arrayDados = ["curriculo" => [
+        'cpf' => Sistema::mascaraCpf($line['cpf']),
+        "nome" => (string)$line['nome'],
+        "naturalidade" => null,
+        "email" => (string)mb_strtolower(trim($line['email'])) ?? Sistema::EMAILPADRAO,
+        "cnh" => null,
+        "cnh_vencimento" => null,
+        "estado_civil" => null,
+        "rg" => null,
+        "rg_data_emissao" => null,
+        "nascimento" => (new \MasterTag\DataHora($line['nascimento']))->dataInsert(),
+//            "nascimento" => '2001-01-01',
+        "sexo" => null,
+        "filiacao_pai" => null,
+        "filiacao_mae" => null,
+        "pcd" => null,
+        "cid" => null,
+        "vaga_pretendida" => intval($vagaAberta['id']),
+        "vaga_id" => intval($vagaAberta['vaga_id']),
+        'uf_vaga' => $vagaAberta['municipio']['uf'],
+        'municipio_id' => $vagaAberta['municipio']['id'],
+        "telefone" => [
+            "whatsapp" => "celular",
+            "numero" => Sistema::mascaraTelefone($line['telefone_numero']),
         ],
+        "endereco" => [
+            "cep" => Sistema::mascaraCep($line['cep']) ?? null,
+            "logradouro" => (string)$line['endereco'] ?? null,
+            "numero" => (string)$line['numero'] ?? null,
+            "complemento" => null,
+            "bairro" => (string)$line['bairro'] ?? null,
+            "municipio" => (string)$line['municipio'] ?? null,
+            "uf" => (string)$line['uf'] ?? null,
+        ],
+    ],
         "admissao" => [
             "cargo" => $vagaAberta['vaga']['nome'],
             "funcao" => $vagaAberta['vaga']['nome'],
@@ -112,7 +114,7 @@ $dados = $import->dados->map(function ($line) use ($empresa_id, &$count) {
             "centro_custo_id" => $line['centro_custo_id'],
             "filial" => $line['filial'] == 'sim',
             "centro_custo_filial_id" => $line['filial'] == 'sim' ? $line['centro_custo_filial_id'] : null,
-            "data_entrega_area" => Date::excelToDateTimeObject($line['data_admissao'])->format('Y-m-d'),
+            "data_entrega_area" => (new \MasterTag\DataHora($line['data_admissao']))->dataInsert(),
             "salario" => number_format(0.00, 2, ',', '.'),
             "pis" => null,
             "ctps_numero" => null,
@@ -122,8 +124,8 @@ $dados = $import->dados->map(function ($line) use ($empresa_id, &$count) {
             "titulo_eleitor_sessao" => null,
             "titulo_eleitor_zona" => null,
             "tipo_admissao" => Admissao::TIPO_ADMISSAO_FIXO,
-            "data_admissao" => Date::excelToDateTimeObject($line['data_admissao'])->format('Y-m-d'),
-            "data_aso" => Date::excelToDateTimeObject($line['data_aso'])->format('Y-m-d'),
+            "data_admissao" => (new \MasterTag\DataHora($line['data_admissao']))->dataInsert(),
+            "data_aso" => (new \MasterTag\DataHora($line['data_admissao']))->dataInsert(),
             "admissao_encerramento" => null,
             "prazo_experiencia" => Admissao::QUARENTAECINCO_MAIS_QUARENTAECINCO,
             "encaminhado_documento" => null,
@@ -144,6 +146,9 @@ $dados = $import->dados->map(function ($line) use ($empresa_id, &$count) {
             ]
         ]
     ];
+
+
+    return $arrayDados;
 
 })->filter(function ($item) {
     return $item['curriculo']['cpf'] != '';
