@@ -35,7 +35,7 @@ ini_set('max_execution_time', '-1');
 
 unset($argv[0]);
 $import = new Admissaoimport;
-\Excel::import($import, base_path('scripts/xls/2023-11-26_importacao_safemed.xlsx'));
+\Excel::import($import, base_path('scripts/xls/2023-11-29_importacao_safemed.xlsx'));
 
 $empresa_id = 66216;
 $user_id = $empresa_id;
@@ -44,12 +44,13 @@ $count = 0;
 
 
 $ignoreCpf = ['020.988.633-14', '444.841.603-82', '563.713.903-25', '019.527.053-39', '610.413.423-81', '056.314.293-65'];
-//dd($import->dados);
 
 //$dados = $import->dados->whereNotIn($ignoreCpf)->map(function ($line) use ($empresa_id, &$count) {
 
 
 $dados = $import->dados->map(function ($line) use ($empresa_id, &$count) {
+    $count++;
+    echo "Linha: " . $count . " - " . $line['nome'] . PHP_EOL;
     /*    DB::beginTransaction();
         $cadastraCargo = firstOrCreateCargo($line['vaga'], $empresa_id);
         $vagaAberta = firstOrCreateVagaAberta($cadastraCargo->id, $line['vaga_cidade'], $empresa_id, $cadastraCargo->nome);
@@ -165,7 +166,7 @@ if ($dados->count() == 0) {
 $dados = $dados->toArray();
 
 
-$outputFile = base_path('scripts/xls/logs_import/' . (new \MasterTag\DataHora())->dataInsert() . '_importacao_safemed_log.txt');
+$outputFile = base_path("scripts/xls/logs_import/" . (new \MasterTag\DataHora())->dataInsert() . '_importacao_safemed_log.txt');
 $outputHandle = fopen($outputFile, 'w');
 
 $inserido = 1;
@@ -424,7 +425,7 @@ $dadosCollection = collect($dados)->chunk(200)->each(function ($records) use ($e
                         'titulo_eleitor_zona' => $record['admissao']['titulo_eleitor_zona'],
                     ]);
                 DB::commit();
-                $msg = $novoUsuario ? 'Novo Colaborador ' : 'Atualizado Colaborador ' . 'Importacao realizada com sucesso do CPF: ' . $record['curriculo']['cpf'] . ' - ' . (new \MasterTag\DataHora())->dataHoraCompleta() . PHP_EOL;
+                $msg = $novoUsuario ? 'Novo Colaborador Importação realizada com sucesso do CPF: ' . $record['curriculo']['cpf'] . ' - ' . (new \MasterTag\DataHora())->dataHoraCompleta() . PHP_EOL : 'Atualizado Colaborador ' . 'Importação realizada com sucesso do CPF: ' . $record['curriculo']['cpf'] . ' - ' . (new \MasterTag\DataHora())->dataHoraCompleta() . PHP_EOL;
                 fwrite($outputHandle, $msg);
 
 //                print_r([
