@@ -296,8 +296,16 @@ class TreinamentoController extends Controller
 
         $itens->transform(function ($item) {
             if ($item->Treinamento) {
-                $item->nr_33 = $item->Treinamento->Vencimentos()->where('label', 'like', '%NR33%')->count() > 0 ? $item->Treinamento->Vencimentos()->where('label', 'like', '%NR33%')->first()->pivot : null;
-                $item->nr_35 = $item->Treinamento->Vencimentos()->where('label', 'like', '%NR35%')->count() > 0 ? $item->Treinamento->Vencimentos()->where('label', 'like', '%NR35%')->first()->pivot : null;
+                $item->nr_33 = $item->Treinamento->Vencimentos()->where(function ($q) {
+                    $q->where('label', 'like', '%NR33%')->orWhere('label', 'like', '%NR-33%');
+                })->count() > 0 ? $item->Treinamento->Vencimentos()->where(function ($q) {
+                    $q->where('label', 'like', '%NR33%')->orWhere('label', 'like', '%NR-33%');
+                })->first()->pivot : null;
+                $item->nr_35 = $item->Treinamento->Vencimentos()->where(function ($q) {
+                    $q->where('label', 'like', '%NR35%')->orWhere('label', 'like', '%NR-35%');
+                })->count() > 0 ? $item->Treinamento->Vencimentos()->where(function ($q) {
+                    $q->where('label', 'like', '%NR35%')->orWhere('label', 'like', '%NR-35%');
+                })->first()->pivot : null;
                 $item->ebtv = $item->Treinamento->Vencimentos()->where('label', 'like', '%EBTV%')->count() > 0 ? $item->Treinamento->Vencimentos()->where('label', 'like', '%EBTV%')->first()->pivot : null;
             } else {
                 $item->nr_33 = null;
