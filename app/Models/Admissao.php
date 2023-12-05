@@ -383,6 +383,7 @@ class Admissao extends Model
     ];
 
     const PRAZO_NENHUM = 'Nenhum';
+    const TRINTA_MAIS_QUINZE = '30+15';
     const TRINTA_MAIS_TRINTA = '30+30';
     const QUARENTAECINCO_MAIS_QUARENTAECINCO = '45+45';
     const TRINTA_MAIS_SESSENTA = '30+60';
@@ -426,6 +427,8 @@ class Admissao extends Model
         switch ($this->attributes['prazo_experiencia']) {
             case self::PRAZO_NENHUM:
                 return false;
+            case self::TRINTA_MAIS_QUINZE:
+                return [30, 15];
             case self::TRINTA_MAIS_TRINTA:
                 return [30, 30];
             case self::QUARENTAECINCO_MAIS_QUARENTAECINCO:

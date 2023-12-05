@@ -11,6 +11,7 @@
             <div v-if="!preload && form.docs_curriculo_pre_adm.length" id="formDocumentos">
                 <fieldset v-for="item in form.docs_curriculo_pre_adm">
                     <legend>@{{ item.label }}</legend>
+                    <p>@{{ item.descricao }}</p>
                     <div class="alert alert-info" v-if="!item.docs_curriculo_anexos.length">
                         Nenhum anexo enviado
                     </div>
@@ -35,10 +36,14 @@
                     <div class="row">
                         <div class="col-12">
                             <p>
-                                Nome: <strong>@{{ dadosFinalizar.curriculo.nome }}</strong> - @{{ dadosFinalizar.curriculo.idade }} anos <br>
+                                Nome: <strong>@{{ dadosFinalizar.curriculo.nome }}</strong> - @{{
+                                dadosFinalizar.curriculo.idade }} anos <br>
                                 Cargo: <strong>@{{ dadosFinalizar.vaga_aberta.vaga.nome }}</strong> <br>
-                                Contato: <span v-if="dadosFinalizar.tel_principal && dadosFinalizar.tel_principal.tipo === 'whatsapp'"><strong><i class="fab fa-whatsapp text-success"></i> @{{
-                                    dadosFinalizar.tel_principal.numero }}</strong> - </span>E-mail: <strong>@{{dadosFinalizar.curriculo.email}}</strong> <br>
+                                Contato: <span
+                                    v-if="dadosFinalizar.tel_principal && dadosFinalizar.tel_principal.tipo === 'whatsapp'"><strong><i
+                                            class="fab fa-whatsapp text-success"></i> @{{
+                                    dadosFinalizar.tel_principal.numero }}</strong> - </span>E-mail: <strong>@{{dadosFinalizar.curriculo.email}}</strong>
+                                <br>
                             </p>
                         </div>
                     </div>
@@ -75,7 +80,8 @@
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
                                 <label for="">PCMSO</label>
-                                <select class='form-control' v-model='formFinalizar.pcmso_id'  onblur='valida_campo_vazio(this,1)'
+                                <select class='form-control' v-model='formFinalizar.pcmso_id'
+                                        onblur='valida_campo_vazio(this,1)'
                                         onchange='valida_campo_vazio(this,1)'>
                                     <option value=''>Selecione ...</option>
                                     <option v-for='pcmso in listaPcmsos' :value='pcmso.id'>
@@ -107,7 +113,8 @@
             </div>
         </template>
         <template slot="rodape">
-            <button class="btn btn-primary btn-sm" v-if="!preloadFinalizar" @click="finalizarEncaminhar(dadosFinalizar.id)">
+            <button class="btn btn-primary btn-sm" v-if="!preloadFinalizar"
+                    @click="finalizarEncaminhar(dadosFinalizar.id)">
                 <i class="fa fa-save"></i> Finalizar e Salvar
             </button>
         </template>
@@ -117,7 +124,8 @@
         <template slot="conteudo">
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preload">
-                <div class="alert alert-warning">Observação: Comunicamos que a troca do e-mail, implicará também na mudança do acesso ao Sistema.
+                <div class="alert alert-warning">Observação: Comunicamos que a troca do e-mail, implicará também na
+                    mudança do acesso ao Sistema.
                     <span v-if="whatsappLiberado && authconfiguracao.empresa_id === 65974">
                         <br> Quando o Campo mensagem for preenchido e o colaborador possuir Whatsapp será enviado junto ao e-mail uma mensagem via Whatsapp.
                        </span>
@@ -142,7 +150,8 @@
                         </div>
                     </div>
 
-                    <div class="col-3" v-if="whatsappLiberado && authconfiguracao.empresa_id === 65974 && formEmail.temwhatsapp">
+                    <div class="col-3"
+                         v-if="whatsappLiberado && authconfiguracao.empresa_id === 65974 && formEmail.temwhatsapp">
                         <label for="">Envia WhatsApp</label>
                         <select class="form-control form-control-sm" v-model="formEmail.envia_whatsapp">
                             <option :value="true">Sim</option>
@@ -323,13 +332,13 @@
                                     data-toggle="modal"
                                     data-target="#janelaEnviarEmail"><i class="fa fa-share-square"></i></button>
                         @endcan
-{{--                        @can('privilegio_admissao_pre_admissao_reencaminhar_email')--}}
-                            <button class="btn btn-sm btn-primary" title="Finalizar"
-                                    @click.prevent="abrirFormFinalizar(resultado.id)"
-                                    data-toggle="modal"
-                                    v-if="!resultado.finalizado"
-                                    data-target="#janelaFinalizar"><i class="fa fa-check-circle"></i></button>
-{{--                        @endcan--}}
+                        {{--                        @can('privilegio_admissao_pre_admissao_reencaminhar_email')--}}
+                        <button class="btn btn-sm btn-primary" title="Finalizar"
+                                @click.prevent="abrirFormFinalizar(resultado.id)"
+                                data-toggle="modal"
+                                v-if="!resultado.finalizado"
+                                data-target="#janelaFinalizar"><i class="fa fa-check-circle"></i></button>
+                        {{--                        @endcan--}}
                     </td>
 
                 </tr>
