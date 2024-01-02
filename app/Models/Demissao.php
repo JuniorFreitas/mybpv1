@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -14,21 +15,21 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property int $feedback_id
  * @property bool $cipa
- * @property \Illuminate\Support\Carbon $data_desmobilizacao
+ * @property Carbon $data_desmobilizacao
  * @property int $motivo_rescisao_id
  * @property string|null $outro_motivo
  * @property int $tipo_aviso_id
  * @property string $solicitado_por
  * @property string|null $comentario
  * @property int $user_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\FeedbackCurriculo $Feedback
- * @property-read \App\Models\User $User
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read FeedbackCurriculo $Feedback
+ * @property-read User $User
+ * @property-read Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @property-read \App\Models\MotivoRescisao $motivoRescisao
- * @property-read \App\Models\TipoAviso $tipoAviso
+ * @property-read MotivoRescisao $motivoRescisao
+ * @property-read TipoAviso $tipoAviso
  * @method static \Illuminate\Database\Eloquent\Builder|Demissao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Demissao newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Demissao query()
@@ -48,19 +49,19 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Demissao extends Model
 {
-    use HasFactory, LogsActivity;
+    use LogsActivity;
 
-    protected static $logFillable = true;
-    protected static $logName = 'demissão';
-    protected static $logOnlyDirty = true;
-    protected static $submitEmptyLogs = false;
+    protected static bool $logFillable = true;
+    protected static string $logName = 'demissão';
+    protected static bool $logOnlyDirty = true;
+    protected static bool $submitEmptyLogs = false;
 
     public function getDescriptionForEvent(string $eventName): string
     {
         return $eventName;
     }
 
-    public function tapActivity(Activity $activity, string $eventName)
+    public function tapActivity(Activity $activity, string $eventName): void
     {
         $activity->descricao = "";
     }
@@ -89,7 +90,7 @@ class Demissao extends Model
     ];
 
 
-    public function setDataDesmobilizacaoAttribute($value)
+    public function setDataDesmobilizacaoAttribute($value): void
     {
         if (!is_null($value)) {
             $data = new DataHora($value);
@@ -99,27 +100,27 @@ class Demissao extends Model
         }
     }
 
-    public function Feedback()
+    public function Feedback(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(\App\Models\FeedbackCurriculo::class, 'feedback_id');
+        return $this->belongsTo(FeedbackCurriculo::class, 'feedback_id');
     }
 
-    public function motivoRescisao()
+    public function motivoRescisao(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(\App\Models\MotivoRescisao::class, 'motivo_rescisao_id');
+        return $this->belongsTo(MotivoRescisao::class, 'motivo_rescisao_id');
     }
 
-    public function tipoAviso()
+    public function tipoAviso(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(\App\Models\TipoAviso::class, 'tipo_aviso_id');
+        return $this->belongsTo(TipoAviso::class, 'tipo_aviso_id');
     }
 
-    public function User()
+    public function User(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::creating(function ($model) {
             $model->user_id = auth()->id();
