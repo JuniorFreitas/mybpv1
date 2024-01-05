@@ -26,17 +26,17 @@
                         </select>
                     </div>
 
-<!--                    <div class="col-md-4">-->
-<!--                        <label>Definição</label>-->
-<!--                        <select class="form-control" v-model="obj.definicao" :disabled="!obj.novo"-->
-<!--                                onchange="valida_campo_vazio(this,1)"-->
-<!--                                onblur="valida_campo_vazio(this,1)">-->
-<!--                            <option value="">Selecione ...</option>-->
-<!--                            <option v-for="item in definicao" :value="item">-->
-<!--                                {{ item }}-->
-<!--                            </option>-->
-<!--                        </select>-->
-<!--                    </div>-->
+                    <!--                    <div class="col-md-4">-->
+                    <!--                        <label>Definição</label>-->
+                    <!--                        <select class="form-control" v-model="obj.definicao" :disabled="!obj.novo"-->
+                    <!--                                onchange="valida_campo_vazio(this,1)"-->
+                    <!--                                onblur="valida_campo_vazio(this,1)">-->
+                    <!--                            <option value="">Selecione ...</option>-->
+                    <!--                            <option v-for="item in definicao" :value="item">-->
+                    <!--                                {{ item }}-->
+                    <!--                            </option>-->
+                    <!--                        </select>-->
+                    <!--                    </div>-->
 
                     <div class="col-md-4">
                         <label>Causa</label>
@@ -63,11 +63,14 @@
                     </div>
 
                     <div class="col-md-2">
-                        <date-picker label="Data Solicitação" v-model="obj.data_solicitacao" :max="restricao" :disabled="!obj.novo"></date-picker>
+                        <date-picker label="Data Solicitação" v-model="obj.data_solicitacao" :max="restricao"
+                                     :disabled="!obj.novo"></date-picker>
                     </div>
 
                     <div class="col-md-2">
-                        <date-picker v-if="obj.tipo != 'Advertência Verbal' && obj.tipo != 'Advertência Escrita'" label="Data Retorno" v-model="obj.data_retorno" :min="hoje" :disabled="!obj.novo"></date-picker>
+                        <date-picker v-if="obj.tipo != 'Advertência Verbal' && obj.tipo != 'Advertência Escrita'"
+                                     label="Data Retorno" v-model="obj.data_retorno" :min="hoje"
+                                     :disabled="!obj.novo"></date-picker>
                     </div>
 
                     <div class="col-12">
@@ -93,10 +96,7 @@
                     </div>
 
                     <div class="col-12 mt-3"
-                         v-show="!obj.novo && obj.tipo === 'Advertência Escrita' ||
-                         obj.tipo === 'Suspensão de 1 dia' ||
-                         obj.tipo === 'Suspensão de 2 ou 3 dias' ||
-                         obj.tipo === 'Suspensão acima de 3 dias'">
+                         v-show="!obj.novo && validTypes.includes(obj.tipo)">
                         <button class="btn btn-sm btn-outline-primary" @click="gerarPdf(obj)" v-show="!obj.novo"><i
                             class="fas fa-file-pdf"></i> GERAR PDF
                         </button>
@@ -143,6 +143,14 @@ export default {
 
             hoje: '',
             restricao: '',
+
+            validTypes: [
+                'Advertência Escrita',
+                'Advertência Verbal',
+                'Suspensão de 1 dia',
+                'Suspensão de 2 ou 3 dias',
+                'Suspensão acima de 3 dias'
+            ],
 
             form: {
                 medidas_administrativas: [],
