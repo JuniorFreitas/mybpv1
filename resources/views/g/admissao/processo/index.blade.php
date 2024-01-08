@@ -1302,6 +1302,7 @@
                                 :keys="key">
                             @{{item.label}}
                         </option>
+                        <option value="--naoinformado--">--- Não Informado ---</option>
                     </select>
                 </div>
             </div>
