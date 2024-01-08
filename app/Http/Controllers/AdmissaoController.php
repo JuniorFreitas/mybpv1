@@ -1526,7 +1526,7 @@ class AdmissaoController extends Controller
 
         $itens = collect($pg->items())->transform(function ($item) use ($cc) {
             if ($item->admissao) {
-                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->Admissao->centro_custo_id)->first();
+                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
                 $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
                 $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
                 $item->admissao->emp_centro_custo = $cc_colaborador['label'];

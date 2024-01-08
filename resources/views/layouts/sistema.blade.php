@@ -85,13 +85,13 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        © 2019 - <?=date('Y')?> MyBP
+                        © 2019 - <?= date('Y') ?> MyBP
                     </div>
-{{--                    <div class="col-sm-6">--}}
-{{--                        <div class="text-sm-right d-none d-sm-block">--}}
-{{--                            <a href="">Suporte <i class="fab fa-whatsapp"></i> (98) 999023762</a>--}}
-{{--                        </div>--}}
-{{--                    </div>--}}
+                    {{--                    <div class="col-sm-6">--}}
+                    {{--                        <div class="text-sm-right d-none d-sm-block">--}}
+                    {{--                            <a href="">Suporte <i class="fab fa-whatsapp"></i> (98) 999023762</a>--}}
+                    {{--                        </div>--}}
+                    {{--                    </div>--}}
                 </div>
             </div>
         </footer>
@@ -104,11 +104,11 @@
 <script src="{{ mix('js/app.js') }}"></script>
 <script src="{{ asset('js/funcoes.js') }}"></script>
 <script>
-    (function($) {
+    (function ($) {
         "use strict";
 
         function initActiveMenu() {/* === following js will activate the menu in left side bar based on url ====*/
-            $("#sidebar-menu a").each(function() {
+            $("#sidebar-menu a").each(function () {
                 var pageUrl = window.location.href.split(/[?#]/)[0];
                 if (this.href === pageUrl) {
                     $(this).addClass("active");
@@ -123,19 +123,19 @@
         }
 
         function initMenuItemScroll() {/* focus active menu in left sidebar*/
-            $(document).ready(function() {
+            $(document).ready(function () {
                 if ($("#sidebar-menu").length > 0 && $("#sidebar-menu .mm-active .active").length > 0) {
                     var activeMenu = $("#sidebar-menu .mm-active .active").offset().top;
                     if (activeMenu > 300) {
                         activeMenu = activeMenu - 300;
-                        $(".simplebar-content-wrapper").animate({ scrollTop: activeMenu }, "slow");
+                        $(".simplebar-content-wrapper").animate({scrollTop: activeMenu}, "slow");
                     }
                 }
             });
         }
 
         function initDropdownMenu() {
-            $(".dropdown-menu a.dropdown-toggle").on("click", function(e) {
+            $(".dropdown-menu a.dropdown-toggle").on("click", function (e) {
                 if (!$(this).next().hasClass("show")) {
                     $(this).parents(".dropdown-menu").first().find(".show").removeClass("show");
                 }
@@ -146,10 +146,10 @@
         }
 
         function initComponents() {
-            $(function() {
+            $(function () {
                 $("[data-toggle=\"tooltip\"]").tooltip();
             });
-            $(function() {
+            $(function () {
                 $("[data-toggle=\"popover\"]").popover();
             });
         }
