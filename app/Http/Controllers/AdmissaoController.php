@@ -1527,10 +1527,17 @@ class AdmissaoController extends Controller
         $itens = collect($pg->items())->transform(function ($item) use ($cc) {
             if ($item->admissao) {
                 $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
-                $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
-                $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
-                $item->admissao->emp_centro_custo = $cc_colaborador['label'];
-                $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+                $item->admissao->emp_cnpj = null;
+                $item->admissao->emp_nome_fantasia = null;;
+                $item->admissao->emp_centro_custo = null;;
+                $item->admissao->emp_tipo = null;
+
+                if ($cc_colaborador) {
+                    $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
+                    $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
+                    $item->admissao->emp_centro_custo = $cc_colaborador['label'];
+                    $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+                }
             }
             return $item;
         });
