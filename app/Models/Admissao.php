@@ -391,6 +391,7 @@ class Admissao extends Model
 
     const TODOS_PRAZOS = [
         self::PRAZO_NENHUM,
+        self::TRINTA_MAIS_QUINZE,
         self::TRINTA_MAIS_TRINTA,
         self::QUARENTAECINCO_MAIS_QUARENTAECINCO,
         self::TRINTA_MAIS_SESSENTA,
