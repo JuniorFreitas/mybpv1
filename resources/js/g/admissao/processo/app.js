@@ -1119,6 +1119,9 @@ const app = new Vue({
             this.selecionaTudo = this.tudoMarcado;
             this.permissoes = dados.permissoes;
             this.lista_ccs = dados.cc;
+            if (!this.AUTENTICADO.temFilial) {
+                this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0];
+            }
             this.controle.carregando = false;
         },
         carregando() {

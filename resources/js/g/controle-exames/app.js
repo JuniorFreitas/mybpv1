@@ -387,12 +387,9 @@ const app = new Vue({
             this.lista = dados.itens;
             this.listaEmpresasExames = dados.emp_exames;
             this.lista_ccs = dados.cc;
-
             if (!this.AUTENTICADO.temFilial) {
                 this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0];
-                // return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
             }
-
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;
         },
