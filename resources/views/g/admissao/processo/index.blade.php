@@ -1541,9 +1541,7 @@
                     </td>
 
                     <td class="text-center">
-                        {{--                        @{{item.vaga_aberta.vaga_selecionada.nome}} - @{{item.vaga_aberta.municipio.nome}} ---}}
-                        {{--                        @{{item.vaga_aberta.municipio.uf}}--}}
-                        @{{ item.admissao.cargo }}
+                        @{{item.vaga_aberta_municipio}}
                     </td>
                     <td class="text-center"
                         v-show="colunasTabela.find(item => item.id === 'pcd').checked"
