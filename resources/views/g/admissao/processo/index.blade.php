@@ -1530,10 +1530,13 @@
                     </td>
 
                     <td class="text-center"
-                        v-if="AUTENTICADO.temFilial && item.admissao && item.admissao.emp_cnpj"
+                        v-if="AUTENTICADO.temFilial"
                     >
-                        @{{item.admissao.emp_nome_fantasia}}<br>
-                        (@{{item.admissao.emp_tipo}})
+                        <span v-if="item.admissao && item.admissao.emp_cnpj">
+                            @{{item.admissao.emp_nome_fantasia}}<br>
+                            (@{{item.admissao.emp_tipo}})
+                        </span>
+                        <span v-else>---</span>
                     </td>
 
                     <td class="text-center">
