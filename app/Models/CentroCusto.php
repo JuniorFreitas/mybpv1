@@ -162,7 +162,7 @@ class CentroCusto extends Model
     {
         static::created(function ($model) {
             cache()->forget("lista_cc_{$model->empresa_id}");
-            $this->listaCentroCustoPorCnpj($model->empresa_id);
+            (new CentroCusto())->listaCentroCustoPorCnpj($model->empresa_id);
         });
         static::updated(function ($model) {
             cache()->forget("lista_cc_{$model->empresa_id}");
