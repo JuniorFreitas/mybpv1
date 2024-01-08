@@ -503,7 +503,7 @@ class FeriasPrevistaController extends Controller
 
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = PeriodoAquisitivo::whereIn('ano_inicial', [date('Y') - 2, date('Y') - 1, date('Y')])->get();
+        $periodo = PeriodoAquisitivo::whereIn('ano_inicial', [date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3])->get();
 
         $permissoes = [
             'update' => auth()->user()->can('planejamento_movimentacao_ferias_editar'),
@@ -591,8 +591,10 @@ class FeriasPrevistaController extends Controller
             }
         }
 
+
         if (!auth()->user()->can('privilegio_gestao_rh')) {
-            $resultado->whereSolicitanteId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
+            $resultado->whereSolicitanteId(auth()->user()->id)
+                ->orWhere('gestor_id', auth()->user()->id);
         }
 
         if ($request->filled('filtroPeriodoAquisitivo')) {
@@ -601,7 +603,7 @@ class FeriasPrevistaController extends Controller
             });
         } else {
             $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
-                $q->whereIn('ano_inicial', [date('Y') - 2, date('Y') - 1, date('Y')]);
+                $q->whereIn('ano_inicial', [date('Y') - 3, date('Y') - 2, date('Y') - 1, (int)date('Y')]);
             });
         }
 
