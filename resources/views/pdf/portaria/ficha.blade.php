@@ -94,6 +94,7 @@
             #printPageButton {
                 display: none;
             }
+
             #openModalButton {
                 display: none;
             }
@@ -257,12 +258,15 @@
             display: flex;
             flex-direction: row;
         }
-        .text{
+
+        .text {
             padding: 20px;
         }
+
         .text h4 {
             margin-bottom: 15px;
         }
+
         .text p {
             margin-bottom: 25px;
         }
@@ -284,14 +288,16 @@
                 <img src="https://mybp-prod.s3.amazonaws.com/public/imprimir_portaria.jpeg">
             </div>
             <div class="text">
-                <p>Para imprimir um documento com escala 80%, você pode seguir as instruções a seguir, dependendo do navegador que estiver usando:</p>
+                <p>Para imprimir um documento com escala 80%, você pode seguir as instruções a seguir, dependendo do
+                    navegador que estiver usando:</p>
                 <h4>Google Chrome/Firefox:</h4>
                 <p>
                     1. Abra o documento que deseja imprimir.<br>
                     2. Pressione "Ctrl + P" (ou "Cmd + P" em um Mac) para abrir a caixa de diálogo de impressão.<br>
                     3. Na seção "Configurações", procure a opção "Escala" ou "Dimensionar".<br>
                     4. Selecione a opção "Personalizado" ou "Porcentagem" e digite "80%".<br>
-                    5. Verifique as outras configurações de impressão, como orientação do papel, margens, cabeçalho/rodapé, etc.<br>
+                    5. Verifique as outras configurações de impressão, como orientação do papel, margens,
+                    cabeçalho/rodapé, etc.<br>
                     6. Clique em "Imprimir" para iniciar o processo de impressão com a escala de 80%.
                 </p>
                 <h4>Microsoft Edge:</h4>
@@ -300,7 +306,8 @@
                     2. Pressione "Ctrl + P" (ou "Cmd + P" em um Mac) para abrir a caixa de diálogo de impressão.<br>
                     3. Na seção "Configurações", procure a opção "Mais configurações".<br>
                     4. Em "Escala", selecione a opção "Personalizado" e digite "80%".<br>
-                    5. Verifique as outras configurações de impressão, como orientação do papel, margens, cabeçalho/rodapé, etc.<br>
+                    5. Verifique as outras configurações de impressão, como orientação do papel, margens,
+                    cabeçalho/rodapé, etc.<br>
                     6. Clique em "Imprimir" para iniciar o processo de impressão com a escala de 80%.
                 </p>
             </div>
@@ -451,13 +458,22 @@
                     <div class="txtComum" style="margin-top: 5px">Uso Exclusivo da ALUMAR:</div>
                     <div class="rsptxtComum"></div>
                     <div class=" float-left"
-                         style="width: 71%;">
+                         style="width: 46%;">
                         <div class="txtComum" style="color: white"></div>
-                        <div class="rsptxtComum"><strong>CENTRO DE
-                                CUSTO:</strong> {{ $candidato->Admissao->CentroCusto->label ?? "" }}</div>
+                        <div class="rsptxtComum"
+                             style=" word-break: break-all; margin-left: 0px; margin-right: 0px;"
+                        ><strong>Centro de
+                                Custo:</strong> {{ $candidato->Admissao->CentroCusto->label ?? "" }}</div>
+                    </div>
+                    <div class=" float-left"
+                         style="width: 25%;">
+                        <div class="txtComum" style="color: white"></div>
+                        <div class="rsptxtComum"
+                             style=" margin-left: 10px; margin-right: 0px;"
+                        ><strong>Nº
+                                Contrato:</strong> {{ $candidato->Admissao->contrato ?? "" }}</div>
                     </div>
                 </div>
-
 
 
                 <div class="b-bottom b-left float-left"

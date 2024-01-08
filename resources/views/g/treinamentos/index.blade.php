@@ -361,7 +361,8 @@
                            :disabled="controle.carregando"
                            id="filtroPeriodoTreinado"
                            v-model="controle.dados.campoPeriodoTreinado">
-                    <label class="form-check-label cursor-pointer" for="filtroPeriodoTreinado">Por período treinado</label>
+                    <label class="form-check-label cursor-pointer" for="filtroPeriodoTreinado">Por período
+                        treinado</label>
                 </div>
                 <div class="form-group">
                     <datepicker range formsm label="" @onselect="atualizar()"
@@ -471,7 +472,8 @@
 
             <div class="col-12 col-sm-4 col-md-2">
                 <label>Treinados</label>
-                <select class="custom-select custom-select-sm" @change="selecionaTreinados($event.target.value)" :disabled="controle.carregando"
+                <select class="custom-select custom-select-sm" @change="selecionaTreinados($event.target.value)"
+                        :disabled="controle.carregando"
                         v-model="controle.dados.campo_treinados">
                     <option value="">Sem filtro</option>
                     <option value="S">Sim</option>
@@ -481,7 +483,8 @@
 
             <div class="col-12 col-md-6">
                 <label>Treinamentos</label>
-                <select class="custom-select custom-select-sm" @change="addTreinamento($event.target.value)" :disabled="controle.carregando"
+                <select class="custom-select custom-select-sm" @change="addTreinamento($event.target.value)"
+                        :disabled="controle.carregando"
                         v-model="controle.dados.treinamentos">
                     <option value="">Selecionar ...</option>
                     <option value="todos">---- ADICIONAR TODOS ----</option>
@@ -497,8 +500,10 @@
                 <div class="p-2" style="border: 1px dashed #cccbcb">
                     <h6>TREINAMENTOS SELECIONADOS:</h6>
                     <div class="row">
-                        <small class="p-2 ml-2 mb-2 table-secondary text-dark rounded" v-for="(item, ind) in controle.dados.treinamentos_selecionados">
-                            @{{ item }} <a href="javascript://" @click.prevent="removeTreinamento(ind)"><i class="fa fa-times ml-1"></i></a>
+                        <small class="p-2 ml-2 mb-2 table-secondary text-dark rounded"
+                               v-for="(item, ind) in controle.dados.treinamentos_selecionados">
+                            @{{ item }} <a href="javascript://" @click.prevent="removeTreinamento(ind)"><i
+                                    class="fa fa-times ml-1"></i></a>
                         </small>
                     </div>
                 </div>
@@ -923,7 +928,7 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </a>
 
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuLink">
                                 <a class="dropdown-item" href="javascript://" title="Atualizar treinamento"
                                    @click.prevent="formAlterar(resultado.id)"
                                    data-toggle="modal"

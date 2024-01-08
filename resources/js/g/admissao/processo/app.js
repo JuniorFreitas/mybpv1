@@ -54,16 +54,43 @@ const app = new Vue({
 
         formulario_open: '',
 
-        colunasTabela: {
-            cliente: false,
-            pcd: false,
-            rh_nota: true,
-            rota_transporte: true,
-            entrevista_tecnica: true,
-            teste_pratico: true,
-            parecer_individual: true,
-            nota_individual: true
-        },
+        colunasTabela: [
+            {
+                label: "PCD",
+                checked: false,
+                id: 'pcd'
+            },
+            {
+                label: "ENC. DOCUMENTO",
+                checked: true,
+                id: 'enc_documento'
+            },
+            {
+                label: "ENC. EXAME",
+                checked: true,
+                id: 'enc_exame'
+            },
+            {
+                label: "ENC. TREINAMENTO",
+                checked: true,
+                id: 'enc_treinamento'
+            },
+            {
+                label: "RESP. ECAMINHAMENTO",
+                checked: true,
+                id: 'resp_encaminhamento'
+            },
+            {
+                label: "CRACHÁ",
+                checked: true,
+                id: 'cracha'
+            },
+            {
+                label: "FOTO 3x4",
+                checked: true,
+                id: 'foto_3x4'
+            },
+        ],
 
         exibiFormulario: false,
         possuiCadastro: false,
@@ -83,6 +110,7 @@ const app = new Vue({
 
         lista_sexos: [],
         lista_estados_civis: [],
+        lista_ccs: null,
 
         formAvulsa: {
             preload: false,
@@ -566,7 +594,9 @@ const app = new Vue({
                 campoUf: "",
                 campoAso: "",
                 campoAdmissao: "",
-                campoDemitido: false
+                campoDemitido: false,
+                campoCnpj: "",
+                campoCentroCusto: "",
             }
         }
     },
@@ -601,8 +631,24 @@ const app = new Vue({
             let params = {
                 selecionados: this.selecionados,
             }
-            return  _.merge(params, this.controle.dados);
+            return _.merge(params, this.controle.dados);
+        },
+
+        // Autenticado() {
+        //     console.log(this.$root.$data.AUTENTICADO)
+        //     return this.$root.$data.AUTENTICADO;
+        // },
+
+        filtroListaCentroCustoCnpj() {
+            if (this.controle.dados.campoCnpj !== "" && this.AUTENTICADO.temFilial) {
+                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj];
+            }
+            if (!this.AUTENTICADO.temFilial && this.lista_ccs) {
+                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
+            }
+            return [];
         }
+
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
@@ -618,6 +664,18 @@ const app = new Vue({
         this.listaVagas();
     },
     methods: {
+        exibiColunaTabela(label) {
+            let coluna = this.colunasTabela.find(item => item.label === label);
+            return coluna.checked;
+        },
+        exibiColunaSingleCheckedTabela(label) {
+            let coluna = this.colunasTabela.find(item => item.label === label);
+            return coluna.checked;
+        },
+        changeCnpj() {
+            this.controle.dados.campoCentroCusto = "";
+            this.atualizar();
+        },
         buscaProjeto(vaga_aberta_id) {
             this.listaProjetos = [];
             axios.get(`${URL_ADMIN}/busca-projetos/${vaga_aberta_id}`).then(response => {
@@ -1060,6 +1118,7 @@ const app = new Vue({
             this.lista_estados_civis = dados.lista_estados_civis;
             this.selecionaTudo = this.tudoMarcado;
             this.permissoes = dados.permissoes;
+            this.lista_ccs = dados.cc;
             this.controle.carregando = false;
         },
         carregando() {

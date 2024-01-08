@@ -1,6 +1,7 @@
 <template>
     <div>
-        <div ref="listaDeNotificoes" style="position: absolute; top: 10px; right: 10px;" v-show="Z_INDEX > 0" :style="Z_INDEX > 0 ? `z-index: ${Z_INDEX}`:''">
+        <div ref="listaDeNotificoes" style="position: absolute; top: 10px; right: 10px;" v-show="Z_INDEX > 0"
+             :style="Z_INDEX > 0 ? `z-index: ${Z_INDEX}`:''">
             <div class="toast bg-white" role="alert" aria-live="assertive" aria-atomic="true"
                  v-for="(not,index) in lista" :id="`notificacaoID${not.id}`" v-if="!not.visto">
                 <div class="toast-header">
@@ -25,7 +26,7 @@
                 <span class="badge badge-danger badge-pill"
                       v-if="notificacoesNovas.length > 0">{{ notificacoesNovas.length }}</span>
             </button>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p-0"
+            <div class="dropdown-menu dropdown-menu-custom dropdown-menu-lg dropdown-menu-right p-0"
                  aria-labelledby="page-header-notifications-dropdown">
                 <div class="p-3">
                     <div class="row align-items-center">
@@ -67,19 +68,19 @@
                                     <h6 class="mt-0 mb-1">{{ not.payload.titulo }}</h6>
                                     <div class="font-size-12 text-muted">
                                         <p class="mb-1">{{ not.payload.descricao }}</p>
-<!--                                        <p class="mb-0"><i class="mdi mdi-clock-outline"></i> <span>3 min ago</span></p>-->
+                                        <!--                                        <p class="mb-0"><i class="mdi mdi-clock-outline"></i> <span>3 min ago</span></p>-->
                                     </div>
                                 </div>
                             </div>
                         </a>
                     </div>
-<!--                    <div class="p-2 border-top">
-                        <a class="btn btn-sm btn-link font-size-14 btn-block text-center"
-                           href="javascript:void(0)">
-                            <i class="mdi mdi-arrow-right-circle mr-1"></i> <span
-                            key="t-view-more">View More..</span>
-                        </a>
-                    </div>-->
+                    <!--                    <div class="p-2 border-top">
+                                            <a class="btn btn-sm btn-link font-size-14 btn-block text-center"
+                                               href="javascript:void(0)">
+                                                <i class="mdi mdi-arrow-right-circle mr-1"></i> <span
+                                                key="t-view-more">View More..</span>
+                                            </a>
+                                        </div>-->
                 </template>
 
             </div>
@@ -106,7 +107,7 @@ export default {
             lista: [],
             URL_SITE,
             URL_ADMIN,
-            Z_INDEX:0
+            Z_INDEX: 0
         }
     },
     computed: {
@@ -126,7 +127,7 @@ export default {
                 // this.mostrarToast();
             })
             .catch(error => {
-                mostraErro('','Erro ao carregar novas notificações');
+                mostraErro('', 'Erro ao carregar novas notificações');
             });
         //real time
         if (this.usuario.empresa_id) {
@@ -153,7 +154,7 @@ export default {
     },
     methods: {
         mostrarToast() {
-            this.Z_INDEX=2000;
+            this.Z_INDEX = 2000;
             setTimeout(() => {
                 this.lista.forEach((not) => {
 
@@ -171,17 +172,17 @@ export default {
                 })
             }, 100)
         },
-        lerNotificacoes(){
-            this.Z_INDEX=2000;
-            let lista = this.notificacoesNovas.map(not=>not.id);
-            if(lista.length){
-                lista.forEach((id)=>{
+        lerNotificacoes() {
+            this.Z_INDEX = 2000;
+            let lista = this.notificacoesNovas.map(not => not.id);
+            if (lista.length) {
+                lista.forEach((id) => {
                     let notificacao = _.find(this.lista, {id: id});
                     if (notificacao) {
                         notificacao.visto = true;
                     }
                 });
-                axios.post(`${URL_ADMIN}/notificacoes/${this.usuario.id}`,{lista:lista});
+                axios.post(`${URL_ADMIN}/notificacoes/${this.usuario.id}`, {lista: lista});
             }
         }
     }

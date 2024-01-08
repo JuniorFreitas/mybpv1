@@ -279,9 +279,10 @@
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
                                         <label for="">PCMSO</label>
-                                        <select class='form-control' v-model='form.pcmso_id'  onblur='valida_campo_vazio(this,1)'
+                                        <select class='form-control' v-model='form.pcmso_id'
+                                                onblur='valida_campo_vazio(this,1)'
                                                 onchange='valida_campo_vazio(this,1)'>
-{{--                                            <option value=''>Nenhum</option>--}}
+                                            {{--                                            <option value=''>Nenhum</option>--}}
                                             <option value=''>Selecione ...</option>
                                             <option v-for='pcmso in listaPcmsos' :value='pcmso.id'>
                                                 @{{ pcmso.label }}
@@ -743,11 +744,44 @@
                 <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                     <div class="form-group">
                         <label for="">Status</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+                        <select class="form-control form-control-sm"
+                                @change="changeStatus()"
+                                :disabled="controle.carregando"
                                 v-model="controle.dados.status">
                             <option value="em_processo">Em processo</option>
                             <option value="admitidos">Admitidos</option>
                             <option value="demitidos">Demitidos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-4 col-md-3"
+                     v-if="lista_ccs && AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">
+                    <div class="form-group">
+                        <label for="">Por Cnpj</label>
+                        <select class="form-control form-control-sm" @change="changeCnpj()"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.campoCnpj">
+                            <option value="">Todos</option>
+                            <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
+                                @{{item.nome_fantasia}} - @{{item.cnpj}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-4 col-md-3"
+                     v-if="lista_ccs && filtroStatusDemitidoOuAdmitido">
+                    <div class="form-group">
+                        <label for="">Centro de Custo</label>
+                        <select class="form-control form-control-sm" @change="atualizar"
+                                :disabled="controle.carregando"
+                                v-model="controle.dados.campoCentroCusto">
+                            <option value="">Todos</option>
+                            <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
+                                    :value="item.matriz ? item.id : item.filial_id"
+                                    :keys="key">
+                                @{{item.label}}
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -780,11 +814,13 @@
     </div>
 
     <div id="conteudo">
-        <table class="tabela table-striped" v-show="!controle.carregando && lista.length > 0">
+        <table class="tabela table-striped" v-if="!controle.carregando && lista.length > 0">
             <thead>
             <tr class="bg-default">
                 <th>ID</th>
                 <th>Nome</th>
+                <th v-if="AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">CNPJ</th>
+                <th v-if="filtroStatusDemitidoOuAdmitido">Centro de Custos</th>
                 <th>Cargo</th>
                 <th>Ultimo Encaminhamento</th>
                 <th>
@@ -796,7 +832,25 @@
             <tr style="background: white !important; border-bottom: none">
                 <td>@{{ colaborador.id }}</td>
                 <td>@{{ colaborador.curriculo.nome }}</td>
-                <td>@{{ colaborador.vaga_aberta.vaga.nome }}</td>
+                <td v-if="AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">
+                    @{{ colaborador.admissao.emp_nome_fantasia }}
+                    <br>
+                    (@{{colaborador.admissao.emp_tipo}})
+                </td>
+                <td v-if="filtroStatusDemitidoOuAdmitido">
+                    <span v-if="colaborador.admissao && colaborador.admissao.emp_centro_custo">
+                             @{{colaborador.admissao.emp_centro_custo}}
+                        </span>
+                    <span v-else>---</span>
+                </td>
+                <td>
+                    <span v-if="filtroStatusDemitidoOuAdmitido">
+                        @{{ colaborador.admissao.cargo }}
+                    </span>
+                    <span v-else>
+                        @{{ colaborador.vaga_aberta.vaga.nome }}
+                    </span>
+                </td>
                 <td>@{{ colaborador.ultimo_encaminhamento }}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-primary mb-2" content="Encaminhar/historico" v-tippy

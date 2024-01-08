@@ -149,7 +149,8 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Data e hora</label>
-                                            <datepicker v-model="formLancamento.data_hora" label=""  style="margin-top: -19px" :hora="true"></datepicker>
+                                            <datepicker v-model="formLancamento.data_hora" label=""
+                                                        style="margin-top: -19px" :hora="true"></datepicker>
                                         </div>
                                     </div>
                                 </div>
@@ -509,7 +510,8 @@
                                                 type="button">
                                             Opções
                                         </button>
-                                        <div aria-labelledby="dropdownMenuButton" class="dropdown-menu">
+                                        <div aria-labelledby="dropdownMenuButton"
+                                             class="dropdown-menu dropdown-menu-custom">
                                             <template v-if="formRealizar.preload && pode_realizar">
                                                 <a v-if="!formRealizar.preload && pode_realizar"
                                                    class="dropdown-item disabled">

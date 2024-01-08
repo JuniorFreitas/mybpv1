@@ -58,7 +58,9 @@
                             <tr v-for="download in downloads">
                                 <td>{{ download.local }}</td>
                                 <td>{{ download.data_hora_criacao }}</td>
-                                <td><a :href="`${URL_ADMIN}/downloads/exportacao/${download.arquivo}`" class="btn btn-primary" target="_blank"><i class="fa fa-download"></i> Download</a></td>
+                                <td><a :href="`${URL_ADMIN}/downloads/exportacao/${download.arquivo}`"
+                                       class="btn btn-primary" target="_blank"><i class="fa fa-download"></i>
+                                    Download</a></td>
                             </tr>
                             </tbody>
                         </table>
@@ -209,7 +211,7 @@
                         <span class="d-none d-xl-inline-block ml-1 text-left text-white">{{ usuario.nome }}</span>
                         <i class="mdi mdi-chevron-down text-white d-none d-xl-inline-block"></i>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-right">
+                    <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right">
                         <!-- item-->
                         <span class="dropdown-item d-xl-inline-block ml-1"><span
                             class="d-block d-sm-none">{{ usuario.nome }} / </span>{{ usuario.papel.nome }}</span>
@@ -356,8 +358,8 @@ export default {
         meusDownloads() {
             this.preloadDownload = true;
             axios.post(`${URL_ADMIN}/downloads`).then(response => {
-               this.downloads = response.data;
-               this.preloadDownload = false;
+                this.downloads = response.data;
+                this.preloadDownload = false;
             });
             // axios.post(`${URL_ADMIN}/downloads`.then(response => {
             //     this.preloadDownload = false;
@@ -379,7 +381,7 @@ export default {
                 $("#janelaPerfil").modal("hide");
                 mostraSucesso("", "Perfil Atualizado com sucesso!");
                 this.preload = false;
-                setTimeout(function() {
+                setTimeout(function () {
                     document.location.reload(true);
                 }, 1000);
             }).catch(error => (this.preload = false));

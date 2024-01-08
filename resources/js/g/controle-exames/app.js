@@ -102,6 +102,7 @@ const app = new Vue({
         historico: [],
         listaPcmsos: [],
         listaExameTipos: [],
+        lista_ccs: null,
 
         controle: {
             carregando: true,
@@ -112,7 +113,9 @@ const app = new Vue({
                 campoCPF: "",
                 campoUf: "",
                 status: "em_processo",
-                pages: EXIBICAO[0]
+                pages: EXIBICAO[0],
+                campoCnpj: "",
+                campoCentroCusto: "",
             }
         }
     },
@@ -155,9 +158,32 @@ const app = new Vue({
 
         dataHoje() {
             return new Date(Date.now()).toLocaleString().split(',')[0];
+        },
+        filtroListaCentroCustoCnpj() {
+            if (this.controle.dados.campoCnpj !== "" && this.AUTENTICADO.temFilial) {
+                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj];
+            }
+            if (!this.AUTENTICADO.temFilial && this.lista_ccs) {
+                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
+            }
+            return [];
+        },
+        filtroStatusDemitidoOuAdmitido() {
+            return ['admitidos', 'demitidos'].includes(this.controle.dados.status);
         }
     },
     methods: {
+        changeCnpj() {
+            this.controle.dados.campoCentroCusto = "";
+            this.atualizar();
+        },
+        changeStatus() {
+            if (this.controle.dados.status === "em_processo") {
+                this.controle.dados.campoCnpj = "";
+                this.controle.dados.campoCentroCusto = "";
+            }
+            this.atualizar();
+        },
         async carregaFormulario() {
             await axios.get(`${URL_ADMIN}/formulario/buscaFormulario/${this.tipo}`)
                 .then(response => {
@@ -360,6 +386,13 @@ const app = new Vue({
         carregou(dados) {
             this.lista = dados.itens;
             this.listaEmpresasExames = dados.emp_exames;
+            this.lista_ccs = dados.cc;
+
+            if (!this.AUTENTICADO.temFilial) {
+                this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0];
+                // return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
+            }
+
             this.selecionaTudo = this.tudoMarcado;
             this.controle.carregando = false;
         },

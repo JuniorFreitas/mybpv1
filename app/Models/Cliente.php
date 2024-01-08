@@ -117,7 +117,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Cliente extends Model
 {
-    use HasFactory, LogsActivity;
+    use LogsActivity;
 
     protected static $logFillable = true;
     protected static $logName = 'cliente';
@@ -443,6 +443,79 @@ class Cliente extends Model
 //    {
 //        return $this->hasMany(EmpresaHabilidade::class, 'empresa_id', 'id');
 //    }
+
+    /**
+     * @param int $idDaEmpresa
+     * @return \Illuminate\Support\Collection
+     * @throws \Exception
+     */
+    public function Cnpjs(int $idDaEmpresa): \Illuminate\Support\Collection
+    {
+        $cache_key = "cnpjs_{$idDaEmpresa}";
+
+        if (is_null(cache()->get($cache_key))) {
+            $empresa = $this::where('id', $idDaEmpresa)
+                ->with('Filiais')
+                ->first();
+
+            $cnpjs = [
+                'matriz' => [
+                    'id' => $empresa->id,
+                    'cnpj' => $empresa->cnpj,
+                    'nome_fantasia' => $empresa->nome_fantasia,
+                    'razao_social' => $empresa->razao_social,
+                    'endereco' => $empresa->endereco_completo,
+                    'ativo' => $empresa->ativo,
+                ],
+                'filiais' => $empresa->Filiais->map(function ($filial) {
+                    return $this->prepararDadosDaFilial($filial);
+                })
+            ];
+
+            $result = collect($cnpjs);
+
+            cache()->put($cache_key, $result, now()->addDays(7));
+
+            return $result;
+        }
+
+        return cache()->get($cache_key);
+    }
+
+    /**
+     * @param $filial
+     * @return array
+     */
+    private function prepararDadosDaFilial($filial): array
+    {
+        $enderecoCompleto = $this->prepararEndereco($filial->dados);
+
+        return [
+            'id' => $filial->id,
+            'cnpj' => $filial->dados->cnpj,
+            'nome_fntasia' => $filial->dados->nome_fantasia,
+            'razao_social' => $filial->dados->razao_social,
+            'endereco' => $enderecoCompleto,
+            'ativo' => $filial->ativo,
+        ];
+    }
+
+    /**
+     * @param $dadosDaFilial
+     * @return string
+     */
+    private function prepararEndereco($dadosDaFilial): string
+    {
+        $numero = $dadosDaFilial->end_numero ?: 'S/N';
+        $complemento = $dadosDaFilial->complemento;
+        $enderecoCompleto = "{$dadosDaFilial->logradouro}, {$numero}, {$dadosDaFilial->bairro}, {$dadosDaFilial->cep}, {$dadosDaFilial->municipio}-{$dadosDaFilial->uf}";
+
+        if ($complemento) {
+            $enderecoCompleto = "{$dadosDaFilial->logradouro}, {$complemento}, {$numero}, {$dadosDaFilial->bairro}, {$dadosDaFilial->cep}, {$dadosDaFilial->municipio}-{$dadosDaFilial->uf}";
+        }
+
+        return $enderecoCompleto;
+    }
 
     protected static function booted()
     {

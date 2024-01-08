@@ -662,7 +662,7 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </a>
 
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuLink">
                                 <a class="dropdown-item" href="javascript://" title="Avaliar"
                                    @click.prevent="formAvaliar(item.id)"
                                    data-toggle="modal"

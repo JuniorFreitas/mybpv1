@@ -525,3 +525,10 @@ $color-grey: #555;
 .quebra_linha_textarea {
     white-space: pre-wrap !important;
 }
+
+
+.dropdown-menu-custom {
+    right: auto; /* Reset para evitar a posição fixa à direita */
+    left: 0; /* Alinha o menu à esquerda */
+    margin-left: -100px; /* Ajuste o valor conforme necessário para o posicionamento desejado */
+}

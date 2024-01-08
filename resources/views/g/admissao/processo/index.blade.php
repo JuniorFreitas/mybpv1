@@ -7,67 +7,16 @@
 @section('content')
     <modal id="filtroColunas" titulo="Mostrar e Ocultar colunas">
         <template slot="conteudo">
-            <div class="custom-control custom-switch mb-2" v-if="cliente_id === 0">
-                <input type="checkbox" v-model="colunasTabela.cliente"
-                       @click="colunasTabela.cliente = !colunasTabela.cliente" class="custom-control-input"
-                       id="cliente">
-                <label class="custom-control-label"
-                       for="cliente">EMPRESA</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2">
-                <input type="checkbox" v-model="colunasTabela.pcd" @click="colunasTabela.pcd = !colunasTabela.pcd"
-                       class="custom-control-input" id="pcd">
-                <label class="custom-control-label"
-                       for="pcd">PCD</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id === 1">
-                <input type="checkbox" v-model="colunasTabela.rota_transporte"
-                       @click="colunasTabela.rota_transporte = !colunasTabela.rota_transporte"
-                       class="custom-control-input" id="rota_transporte">
-                <label class="custom-control-label"
-                       for="rota_transporte">ROTA TRANSPORTE</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id === 1">
-                <input type="checkbox" v-model="colunasTabela.rh_nota"
-                       @click="colunasTabela.rh_nota = !colunasTabela.rh_nota"
-                       class="custom-control-input" id="rh_nota">
-                <label class="custom-control-label"
-                       for="rh_nota">PARECER RH NOTA</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id === 1">
-                <input type="checkbox" v-model="colunasTabela.entrevista_tecnica"
-                       @click="colunasTabela.entrevista_tecnica = !colunasTabela.entrevista_tecnica"
-                       class="custom-control-input" id="entrevista_tecnica">
-                <label class="custom-control-label"
-                       for="entrevista_tecnica">ENTREVISTA TÉCNICA NOTA</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id === 1">
-                <input type="checkbox" v-model="colunasTabela.teste_pratico"
-                       @click="colunasTabela.teste_pratico = !colunasTabela.teste_pratico" class="custom-control-input"
-                       id="teste_pratico">
-                <label class="custom-control-label"
-                       for="teste_pratico">TESTE PRÁTICO</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id > 1">
-                <input type="checkbox" v-model="colunasTabela.parecer_individual"
-                       @click="colunasTabela.parecer_individual = !colunasTabela.parecer_individual"
-                       class="custom-control-input" id="parecer_individual">
-                <label class="custom-control-label"
-                       for="parecer_individual">PARECER INDIVIDUAL</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id > 1">
-                <input type="checkbox" v-model="colunasTabela.nota_individual"
-                       @click="colunasTabela.nota_individual = !colunasTabela.nota_individual"
-                       class="custom-control-input" id="nota_individual">
-                <label class="custom-control-label"
-                       for="nota_individual">NOTA INDIVIDUAL</label>
+            <div class="row">
+                <div class="col-sm-6" v-for="item in colunasTabela">
+                    <div class="custom-control custom-switch mb-2">
+                        <input type="checkbox" @click="item.checked = !item.checked"
+                               v-model="item.checked"
+                               class="custom-control-input" :id="item.id">
+                        <label class="custom-control-label"
+                               :for="item.id">@{{item.label}}</label>
+                    </div>
+                </div>
             </div>
         </template>
     </modal>
@@ -178,8 +127,8 @@
                                     <div class="form-group">
                                         <label>Estado Civil</label>
                                         <select
-                                                class="form-control"
-                                                v-model="formAvulsa.curriculo.estado_civil"
+                                            class="form-control"
+                                            v-model="formAvulsa.curriculo.estado_civil"
                                         >
                                             <option value="">Selecione</option>
                                             <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
@@ -589,7 +538,7 @@
                                     <fieldset>
                                         <legend>RESULTADO INTEGRADO</legend>
                                         <form-resultado-integrado
-                                                :form="formAvulsa.resultado_integrado"></form-resultado-integrado>
+                                            :form="formAvulsa.resultado_integrado"></form-resultado-integrado>
                                     </fieldset>
                                 </div>
 
@@ -689,9 +638,9 @@
                             <div class="form-group">
                                 <label>Sexo</label>
                                 <select
-                                        class="form-control"
-                                        v-model="form.curriculo.sexo"
-                                        :disabled="visualizar"
+                                    class="form-control"
+                                    v-model="form.curriculo.sexo"
+                                    :disabled="visualizar"
                                 >
                                     <option value="">Selecione</option>
                                     <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
@@ -703,9 +652,9 @@
                             <div class="form-group">
                                 <label>Estado Civil</label>
                                 <select
-                                        class="form-control"
-                                        :disabled="visualizar"
-                                        v-model="form.curriculo.estado_civil"
+                                    class="form-control"
+                                    :disabled="visualizar"
+                                    v-model="form.curriculo.estado_civil"
                                 >
                                     <option value="">Selecione</option>
                                     <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
@@ -834,8 +783,8 @@
                             <div class="form-group">
                                 <label>Bota</label>
                                 <select
-                                        class="form-control" :disabled="visualizar"
-                                        v-model="form.parecer_rh.bota"
+                                    class="form-control" :disabled="visualizar"
+                                    v-model="form.parecer_rh.bota"
                                 >
                                     <option value="">Selecione</option>
                                     @foreach(range(33,50) as $i)
@@ -1072,8 +1021,8 @@
                 <fieldset>
                     <legend>RESULTADO INTEGRADO</legend>
                     <form-resultado-integrado
-                            :form="form.resultado_integrado" :disabled="visualizar"
-                            :visualizar="visualizar"></form-resultado-integrado>
+                        :form="form.resultado_integrado" :disabled="visualizar"
+                        :visualizar="visualizar"></form-resultado-integrado>
                 </fieldset>
 
 
@@ -1327,6 +1276,34 @@
                                 v-model="controle.dados.campoAdmisaoData"></datepicker>
                 </div>
             </div>
+            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs && AUTENTICADO.temFilial">
+                <div class="form-group">
+                    <label for="">Por Cnpj</label>
+                    <select class="form-control form-control-sm" @change="changeCnpj"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoCnpj">
+                        <option value="">Todos</option>
+                        <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
+                            @{{item.nome_fantasia}} - @{{item.cnpj}}
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs">
+                <div class="form-group">
+                    <label for="">Centro de Custo</label>
+                    <select class="form-control form-control-sm" @change="atualizar"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoCentroCusto">
+                        <option value="">Todos</option>
+                        <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
+                                :value="item.matriz ? item.id : item.filial_id"
+                                :keys="key">
+                            @{{item.label}}
+                        </option>
+                    </select>
+                </div>
+            </div>
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-4">
                 <div class="form-group">
@@ -1352,7 +1329,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+            <div class="col-12 col-sm-5 col-md-5 col-lg-5">
                 <div class="form-group">
                     <label>Cargo</label>
                     <autocomplete :caminho="controle.dados.caminho_autocomplete"
@@ -1417,7 +1394,7 @@
             <div class="row">
                 <button type="button" class="btn btn-sm btn-success mr-1 mb-2" :disabled="controle.carregando"
                         @click="atualizar"><i
-                            :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
                 @can('admissao_pos_admissao_insert')
@@ -1480,14 +1457,40 @@
                                @click="selecionaTodos">
                     </th>
                     <th class="text-center text-nowrap">Nome</th>
+                    <th class="text-center text-nowrap"
+                        v-if="AUTENTICADO.temFilial"
+                    >CNPJ
+                    </th>
+                    <th class="text-center text-nowrap">Centro de Custo</th>
                     <th class="text-center text-nowrap">Cargo</th>
-                    <th class="text-center text-nowrap" v-if="colunasTabela.pcd">PCD</th>
-                    <th class="text-center text-nowrap">Enc. Doc</th>
-                    <th class="text-center text-nowrap">Enc. Exame</th>
-                    <th class="text-center text-nowrap">Enc. Treinamento</th>
-                    <th class="text-center text-nowrap">Resp. Encaminhamento</th>
-                    <th class="text-center text-nowrap">Crachá</th>
-                    <th class="text-center text-nowrap">Foto 3x4</th>
+                    <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'pcd').checked">
+                        PCD
+                    </th>
+                    <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'enc_documento').checked">
+                        Enc. Doc
+                    </th>
+                    <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'enc_exame').checked"
+                    >Enc. Exame
+                    </th>
+                    <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'enc_treinamento').checked"
+                    >Enc. Treinamento
+                    </th>
+                    <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'resp_encaminhamento').checked"
+                    >Resp. Encaminhamento
+                    </th>
+                    <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'cracha').checked"
+                    >Crachá
+                    </th>
+                    <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'foto_3x4').checked"
+                    >Foto 3x4
+                    </th>
                     <th class="text-center text-nowrap" v-if="controle.dados.filtroAso">Data ASO</th>
                     <th class="text-center text-nowrap" v-if="controle.dados.filtroDataAdmissao">Data da Admissao</th>
                     <th class="text-center text-nowrap">Status Admissão</th>
@@ -1505,13 +1508,13 @@
                     <td class="text-center">
                         <label :for="item.id">
                             <input
-                                    type="checkbox"
-                                    v-model="selecionados"
-                                    :value="item.id"
-                                    :id="item.id"
-                                    :style="item.admissao ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                    :title="item.admissao ? null : 'Não possui cadastro em Admissão'"
-                                    v-if="item.admissao"
+                                type="checkbox"
+                                v-model="selecionados"
+                                :value="item.id"
+                                :id="item.id"
+                                :style="item.admissao ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                :title="item.admissao ? null : 'Não possui cadastro em Admissão'"
+                                v-if="item.admissao"
                             >
                             <input type="checkbox" v-else disabled="disabled"
                                    title="Sem parecer Informação em Admissão">
@@ -1523,15 +1526,34 @@
                         @{{item.curriculo.nome}}
                     </td>
 
-                    <td class="text-center">
-                        @{{item.vaga_aberta.vaga_selecionada.nome}} - @{{item.vaga_aberta.municipio.nome}} -
-                        @{{item.vaga_aberta.municipio.uf}}
-                    </td>
-                    <td v-show="colunasTabela.pcd">
-                        @{{item.curriculo.pcd ? 'Sim' : 'Não'}}
+                    <td class="text-center"
+                        v-if="AUTENTICADO.temFilial"
+                    >
+                        @{{item.admissao.emp_nome_fantasia}}<br>
+                        (@{{item.admissao.emp_tipo}})
                     </td>
 
                     <td class="text-center">
+                        <span v-if="item.admissao && item.admissao.emp_centro_custo">
+                             @{{item.admissao.emp_centro_custo}}
+                        </span>
+                        <span v-else>---</span>
+                    </td>
+
+                    <td class="text-center">
+                        {{--                        @{{item.vaga_aberta.vaga_selecionada.nome}} - @{{item.vaga_aberta.municipio.nome}} ---}}
+                        {{--                        @{{item.vaga_aberta.municipio.uf}}--}}
+                        @{{ item.admissao.cargo }}
+                    </td>
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'pcd').checked"
+                    >
+                        @{{item.curriculo.pcd ? 'Sim' : 'Não'}}
+                    </td>
+
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'enc_documento').checked"
+                    >
                         <span v-if="item.resultado_integrado">
                            @{{item.resultado_integrado.documentos_entregue ? 'Sim' : 'Não'}} <br>
                            @{{item.resultado_integrado.documentos_entregue_data}} <br>
@@ -1539,7 +1561,9 @@
                         <span v-else>---</span>
                     </td>
 
-                    <td class="text-center">
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'enc_exame').checked"
+                    >
                         <span v-if="item.resultado_integrado">
                            @{{item.resultado_integrado.encaminhado_exame ? 'Sim' : 'Não'}} <br>
                            @{{item.resultado_integrado.encaminhado_exame_data}} <br>
@@ -1547,7 +1571,9 @@
                         <span v-else>---</span>
                     </td>
 
-                    <td class="text-center">
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'enc_treinamento').checked"
+                    >
                         <span v-if="item.resultado_integrado">
                            @{{item.resultado_integrado.encaminhado_treinamento ? 'Sim' : 'Não'}} <br>
                            @{{item.resultado_integrado.encaminhado_treinamento_data}} <br>
@@ -1555,18 +1581,24 @@
                         <span v-else>---</span>
                     </td>
 
-                    <td class="text-center">
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'resp_encaminhamento').checked"
+                    >
                         <span v-if="item.resultado_integrado">
                            @{{item.resultado_integrado.responsavel_envio}}
                         </span>
                         <span v-else>---</span>
                     </td>
 
-                    <td class="text-center">
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'cracha').checked"
+                    >
                         @{{item.admissao ? item.admissao.numero_cracha : ''}}
                     </td>
 
-                    <td class="text-center">
+                    <td class="text-center"
+                        v-if="colunasTabela.find(item => item.id === 'foto_3x4').checked"
+                    >
                         @{{item.curriculo.foto_tres.length > 0 ? 'SIM' : 'NÃO' }}
                     </td>
 
@@ -1583,28 +1615,41 @@
                     </td>
 
                     <td>
-                        @can('admissao_pos_admissao_insert')
-                            <button class="btn btn-sm btn-primary mb-2" content="Admitir" v-tippy
-                                    v-if="!filtrarDemitidos"
-                                    @click.prevent="formEntrevistar(item.id); visualizar = false"
-                                    data-toggle="modal"
-                                    data-target="#janelaCadastrar">
-                                <i class="fa fa-check"></i>
-                            </button>
-                        @endcan
 
-                        <button class="btn btn-sm btn-primary mb-2" content="Visualizar" v-tippy
-                                @click.prevent="formEntrevistar(item.id); visualizar = true"
-                                data-toggle="modal"
-                                data-target="#janelaCadastrar">
-                            <i class="fa fa-search-plus"></i>
-                        </button>
+                        <div class="dropdown show">
+                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                               id="dropdownMenuLink"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
 
-                        <a v-if="item.admissao" :href="`${item.fc_token}/pdf`"
-                           class="btn btn-sm btn-primary mb-2" content="Gerar PDF" v-tippy
-                           target="_blank">
-                            <i class="fa fa-file-pdf"></i>
-                        </a>
+                            <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                 aria-labelledby="dropdownMenuLink">
+                                <a class="dropdown-item" href="javascript://" title="Admitir"
+                                   @click.prevent="formEntrevistar(item.id); visualizar = false"
+                                   v-if="!filtrarDemitidos"
+                                   data-toggle="modal"
+                                   data-target="#janelaCadastrar"
+                                >
+                                    Admitir
+                                </a>
+
+                                <a class="dropdown-item" href="javascript://" title="Visualizar"
+                                   @click.prevent="formEntrevistar(item.id); visualizar = true"
+                                   data-toggle="modal"
+                                   data-target="#janelaCadastrar"
+                                >
+                                    Visualizar
+                                </a>
+
+                                <a class="dropdown-item" v-if="item.admissao" :href="`${item.fc_token}/pdf`"
+                                   title="Gerar PDFs"
+                                   target="_blank">
+                                    Gerar PDF
+                                </a>
+                            </div>
+                        </div>
+
                     </td>
                 </tr>
                 </tbody>

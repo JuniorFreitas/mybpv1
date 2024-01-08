@@ -415,7 +415,8 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                     aria-labelledby="dropdownMenuLink">
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
                                        v-if="(item.status === 'Pendente' && item.fez_auto_avaliacao  && !item.principal) || (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par)">
@@ -519,7 +520,8 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                     aria-labelledby="dropdownMenuLink">
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
                                        v-if="(item.status === 'Pendente' && item.principal)">
