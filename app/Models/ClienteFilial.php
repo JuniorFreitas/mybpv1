@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
@@ -40,7 +39,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class ClienteFilial extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use SoftDeletes, LogsActivity;
 
     protected static $logFillable = true;
     protected static $logName = 'ClienteFilial';
@@ -68,6 +67,7 @@ class ClienteFilial extends Model
         'dados' => 'json',
         'ativo' => 'boolean'
     ];
+
     public function getEnderecoCompletoAttribute()
     {
         $endereco = $this->dados->logradouro;
@@ -133,17 +133,29 @@ class ClienteFilial extends Model
     public function temFilial($empresa_id = null)
     {
         $empresa_id = $empresa_id ?? auth()->user()->empresa_id;
-        return $this->where('empresa_id', $empresa_id)->where('ativo',true)->count() > 0;
+        return $this->where('empresa_id', $empresa_id)->where('ativo', true)->count() > 0;
     }
 
     public function getListaFilialAtiva($empresa_id = null)
     {
         $empresa_id = $empresa_id ?? auth()->user()->empresa_id;
-        return $this->select(['id','dados','ativo'])->where('empresa_id', $empresa_id)->where('ativo',true)->orderBy('dados->razao_social')->get();
+        return $this->select(['id', 'dados', 'ativo'])->where('empresa_id', $empresa_id)->where('ativo', true)->orderBy('dados->razao_social')->get();
     }
 
     public function scopeUserEmpresa($query)
     {
         return $query->where('empresa_id', auth()->user()->empresa_id);
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($model) {
+            cache()->forget("lista_cc_{$model->empresa_id}");
+            (new CentroCusto())->listaCentroCustoPorCnpj($model->empresa_id);
+        });
+        static::updated(function ($model) {
+            cache()->forget("lista_cc_{$model->empresa_id}");
+            (new CentroCusto())->listaCentroCustoPorCnpj($model->empresa_id);
+        });
     }
 }

@@ -5,14 +5,10 @@ namespace App\Http\Controllers;
 use App\Imports\Admissaoimport;
 use App\Jobs\Admissao\Importacao\ImportJob;
 use App\Jobs\Admissao\Processo\JobExportarExcel;
-use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
-use App\Models\AdmissaoAso;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaVencimento;
-use App\Models\Cliente;
-use App\Models\ClienteConfig;
-use App\Models\ClienteFilial;
+use App\Models\CentroCusto;
 use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
 use App\Models\EmpresaConfig;
@@ -1383,15 +1379,6 @@ class AdmissaoController extends Controller
         $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'telefone_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'])
             ->whereHas('ResultadoIntegrado')
             ->with([
-                'Admissao:id,feedback_id,area_etiqueta_id,centro_custo_id,centro_custo_filial_id,filial,funcao,cargo,salario,documento,documento_portaria,tipo_admissao,treinamento,tipo_treinamento,data_treinamento,numero_cracha,pis,status_carteira_treinamento,status,data_admissao',
-                'Admissao.AreaEtiqueta:id,label,empresa_id,gestor_id,centro_custo_id',
-                'Admissao.CentroCusto:id,label',
-                'Admissao.CentroCustoFilial',
-                'Admissao.CentroCustoFilial.Filial:id,dados',
-                'Admissao.DadosAdmissoes',
-                'Admissao.UltimoAsoAtivo',
-                'Admissao.QuemAdmitiu:id,nome',
-                'Admissao.QuemAlterou:id,nome',
                 'BancoConta',
                 'ResultadoIntegrado:id,feedback_id,documentos_entregue,documentos_entregue,encaminhado_exame,encaminhado_exame,encaminhado_treinamento,encaminhado_treinamento,responsavel_envio',
                 'Curriculo:id,nome,estado_civil,naturalidade,nacionalidade,carteira_trabalho,cnh,cnh_vencimento,sexo,cpf,rg,rg_data_emissao,orgao_expeditor,logradouro,end_numero,complemento,bairro,municipio,uf,cep,filiacao_pai,filiacao_mae,pcd,nascimento,email,disponibilidade_sabado,disponibilidade_domingo',
@@ -1494,6 +1481,35 @@ class AdmissaoController extends Controller
             });
         }
 
+        if ($request->filled('campoCnpj')) {
+            $centros_custos = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            if (!$request->filled('campoCentroCusto')) {
+                $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
+                    $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                    if ($cc[0]['matriz']) {
+                        $query->whereIn('centro_custo_id', $cc->pluck('id')
+                            ->toArray())
+                            ->where('filial', false);
+                    } else {
+                        $query->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')
+                            ->toArray())->where('filial', true);
+                    }
+//                    $query->whereIn('centro_custo_id', $centros_custos['centros_custos'][$request->campoCnpj]->pluck('id')->toArray());
+                });
+            } else {
+                $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
+                    $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                    if ($cc[0]['matriz']) {
+                        $query->where('centro_custo_id', $request->campoCentroCusto)
+                            ->where('filial', false);
+                    } else {
+                        $query->where('centro_custo_filial_id', $request->campoCentroCusto)
+                            ->where('filial', true);
+                    }
+                });
+            }
+        }
+
         $resultado = $resultado->orderByDesc('created_at');
 
         return $resultado;
@@ -1506,7 +1522,21 @@ class AdmissaoController extends Controller
     public function atualizar(Request $request)
     {
         $pg = $this->filtro($request)->paginate($request->pages ?: 20);
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+
+        $itens = collect($pg->items())->transform(function ($item) use ($cc) {
+            if ($item->admissao) {
+                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->Admissao->centro_custo_id)->first();
+                $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
+                $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
+                $item->admissao->emp_centro_custo = $cc_colaborador['label'];
+                $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+            }
+            return $item;
+        });
+
         $dados = [
+            'itens' => $itens,
             'admissao_processo_dados_editar' => auth()->user()->can('privilegio_admissao_processo_dados_editar'),
             'status_admissao' => array_merge(['EM PROCESSO'], Admissao::TODOS_STATUS_ADMISSAO),
             'tipos_admissao' => Admissao::TODOS_TIPOS_ADMISSAO,
@@ -1516,8 +1546,15 @@ class AdmissaoController extends Controller
             'permissoes' => [
                 'filtrar_demitido' => auth()->user()->can('admissao_historico_filtrar_demitido')
             ],
+            'cc' => $cc
         ];
-        return Sistema::pg($pg, $dados);
+
+        return response()->json([
+            'atual' => $pg->currentPage(),
+            'ultima' => $pg->lastPage(),
+            'total' => $pg->total(),
+            'dados' => $dados
+        ]);
     }
 
     public function getTiposDependentes()

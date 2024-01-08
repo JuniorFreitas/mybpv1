@@ -73,6 +73,11 @@ class PublicoController extends Controller
         return ['centro_custos' => $centros];
     }
 
+    public function listaCentroCustoPorCnpj(Request $request)
+    {
+        return (new CentroCusto())->listaCentroCustoPorCnpj($request);
+    }
+
     public function cnpjbusca(Request $request)
     {
         return \App\Models\Sistema::cnpjSearch($request->cnpj);

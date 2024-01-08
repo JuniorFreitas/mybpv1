@@ -22,6 +22,7 @@ Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
     Route::get('lista-areas', [\App\Http\Controllers\PublicoController::class, 'listaAreasEtiquetas'])->name('lista-areas');
     Route::get('lista-areas/{cliente}', [\App\Http\Controllers\PublicoController::class, 'listaAreasEtiquetasCliente'])->name('lista-areas-cliente');
     Route::post('centro-custos', [\App\Http\Controllers\PublicoController::class, 'listaCentroCusto'])->name('lista-centro');
+    Route::get('centro-custos-cnpj', [\App\Http\Controllers\PublicoController::class, 'listaCentroCustoPorCnpj'])->name('lista-centro');
     Route::post('upload', [\App\Http\Controllers\PublicoController::class, 'upload'])->name('upload');
     Route::get('foto/{nome}', [\App\Http\Controllers\PublicoController::class, 'download'])->name('foto-download');
 

@@ -82,11 +82,13 @@
                 </div>
             </template>
             <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && (!preload_pasta)"
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="editando && !atualizado && (!preload_pasta)"
                         @click="alterarPasta()">
                     Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && (!preload_pasta)"
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="!editando && !cadastrado && (!preload_pasta)"
                         @click="criaPasta">
                     <i class="far fa-save"></i> Salvar
                 </button>
@@ -257,7 +259,8 @@
             </template>
             <template slot="rodape">
                 <div v-show="!preloadDel">
-                    <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+                    <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar
+                    </button>
                 </div>
             </template>
         </modal>
@@ -279,7 +282,8 @@
             </template>
             <template slot="rodape">
                 <div v-show="!preloadAprovado">
-                    <button type="button" class="btn btn-sm btn-danger" @click="aprovar()" v-show="!aprovado">Sim</button>
+                    <button type="button" class="btn btn-sm btn-danger" @click="aprovar()" v-show="!aprovado">Sim
+                    </button>
                 </div>
             </template>
         </modal>
@@ -507,7 +511,8 @@
                                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             {{ item.label }}{{ item.arquivo.extensao }}
                                         </button>
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" role="menu">
+                                        <div class="dropdown-menu dropdown-menu-custom"
+                                             aria-labelledby="dropdownMenuButton" role="menu">
                                             <div class="col-12 py-1"
                                                  v-if="habilidades.find( habilidade => habilidade.nome === 'Download')">
                                                 <a :href="`${url_publico}/anexoDownload/${item.arquivo.file}`"
@@ -651,7 +656,7 @@
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="dropdown-menu">
+                                    <div class="dropdown-menu dropdown-menu-custom">
                                         <div class="col-12 py-1"
                                              v-show="item.pertence && habilidades.find( habilidade => habilidade.nome === 'Mover')">
                                             <a class="btn btn-sm btn-block btn-outline-primary"

@@ -7,6 +7,7 @@ use App\Jobs\ControleExames\JobExame;
 use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
 use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
 use App\Models\Examesesmt;
@@ -346,9 +347,9 @@ class ControleExameController extends Controller
         }
     }
 
-
     public function atualizar(Request $request)
     {
+
         $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'telefone_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'])->with(
             'Curriculo:id,nome,nascimento,id,nome,email,nascimento,rg,orgao_expeditor,logradouro,cep,end_numero,complemento,bairro,municipio,uf',
             'Cliente:id,razao_social,area_id',
@@ -358,21 +359,85 @@ class ControleExameController extends Controller
             if ($request->status == 'em_processo') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
                     $q->whereEncaminhadoExame(true);
-                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao')->orWhereHas('Admissao', function ($q) {
-                    $q->whereNotIn('status', [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_DESISTENCIA]);
-                });
+                })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao')
+                    ->orWhereHas('Admissao', function ($q) {
+                        $q->whereNotIn('status', [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_ADMISSAO_DESISTENCIA, Admissao::STATUS_DEMITIDO]);
+                    });
             }
+
             if ($request->status == 'admitidos') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
                     $q->whereEncaminhadoExame(true);
                 })->whereHas('Admissao', function ($q) {
                     $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
                 })->whereDoesntHave('Demissao');
+
+                if ($request->filled('campoCnpj')) {
+                    $centros_custos = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+                    if (!$request->filled('campoCentroCusto')) {
+                        $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
+                            $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                            if ($cc[0]['matriz']) {
+                                $query->whereIn('centro_custo_id', $cc->pluck('id')
+                                    ->toArray())
+                                    ->where('filial', false);
+                            } else {
+                                $query->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')
+                                    ->toArray())->where('filial', true);
+                            }
+//                    $query->whereIn('centro_custo_id', $centros_custos['centros_custos'][$request->campoCnpj]->pluck('id')->toArray());
+                        });
+                    } else {
+                        $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
+                            $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                            if ($cc[0]['matriz']) {
+                                $query->where('centro_custo_id', $request->campoCentroCusto)
+                                    ->where('filial', false);
+                            } else {
+                                $query->where('centro_custo_filial_id', $request->campoCentroCusto)
+                                    ->where('filial', true);
+                            }
+                        });
+                    }
+                }
+
             }
+
             if ($request->status == 'demitidos') {
                 $resultado->whereHas('ResultadoIntegrado', function ($q) {
                     $q->whereEncaminhadoExame(true);
-                })->demitidos();
+                })->whereHas('Admissao', function ($q) {
+                    $q->where('status', Admissao::STATUS_DEMITIDO);
+                })->Has('Demissao')->with('Demissao');
+
+                if ($request->filled('campoCnpj')) {
+                    $centros_custos = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+                    if (!$request->filled('campoCentroCusto')) {
+                        $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
+                            $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                            if ($cc[0]['matriz']) {
+                                $query->whereIn('centro_custo_id', $cc->pluck('id')
+                                    ->toArray())
+                                    ->where('filial', false);
+                            } else {
+                                $query->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')
+                                    ->toArray())->where('filial', true);
+                            }
+//                    $query->whereIn('centro_custo_id', $centros_custos['centros_custos'][$request->campoCnpj]->pluck('id')->toArray());
+                        });
+                    } else {
+                        $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
+                            $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                            if ($cc[0]['matriz']) {
+                                $query->where('centro_custo_id', $request->campoCentroCusto)
+                                    ->where('filial', false);
+                            } else {
+                                $query->where('centro_custo_filial_id', $request->campoCentroCusto)
+                                    ->where('filial', true);
+                            }
+                        });
+                    }
+                }
             }
         }
 
@@ -401,8 +466,15 @@ class ControleExameController extends Controller
         }
 
         $resultado = $resultado->paginate($request->pages);
-
-        $items = collect($resultado->items())->transform(function ($item) {
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $items = collect($resultado->items())->transform(function ($item) use ($cc) {
+            if ($item->Admissao) {
+                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->Admissao->centro_custo_id)->first();
+                $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
+                $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
+                $item->admissao->emp_centro_custo = $cc_colaborador['label'];
+                $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+            }
             $exameFuncionario = ExameFuncionario::whereFeedbackId($item->id)->orderByDesc('id')->first();
             $item->ultimo_encaminhamento = 'Sem encaminhamento';
             if (!is_null($exameFuncionario)) {
@@ -418,7 +490,11 @@ class ControleExameController extends Controller
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $items, 'emp_exames' => $empresaExames]
+            'dados' => [
+                'itens' => $items,
+                'emp_exames' => $empresaExames,
+                'cc' => $cc
+            ]
         ]);
     }
 

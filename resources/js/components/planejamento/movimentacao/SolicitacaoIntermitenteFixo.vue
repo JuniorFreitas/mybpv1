@@ -93,7 +93,6 @@
                                 <div class="form-group">
                                     <label>Salário Anterior</label>
                                     <input type="text" class="form-control form-control-sm" v-mascara:dinheiro
-                                           onblur="valida_dinheiro(this)"
                                            :disabled="true"
                                            v-model="form.salario_anterior_format">
                                 </div>
@@ -489,7 +488,8 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                     aria-labelledby="dropdownMenuLink">
                                     <a class="dropdown-item" href="javascript://" title="Aprovação Gestor"
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"

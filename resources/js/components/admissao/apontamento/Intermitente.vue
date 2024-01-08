@@ -41,7 +41,8 @@
         <!--            </template>-->
         <!--        </modal>-->
         <!--        </modal>-->
-        <modal :titulo="tituloJanelaTreinamentos" size="g" :fechar="!preloadAjax" id="janelaTreinamentos" modal-pai="janelaCadastrar">
+        <modal :titulo="tituloJanelaTreinamentos" size="g" :fechar="!preloadAjax" id="janelaTreinamentos"
+               modal-pai="janelaCadastrar">
             <template slot="conteudo">
                 <p class=" mt-2 text-center" v-if="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div v-if="!preloadAjax">
@@ -147,7 +148,8 @@
             </template>
         </modal>
 
-        <modal :titulo="titulo_janela_form_editar_tipo" size="g" :fechar="!preloadTipo" modal-pai="janelaFormTipo" id="janelaFormEditarTipo">
+        <modal :titulo="titulo_janela_form_editar_tipo" size="g" :fechar="!preloadTipo" modal-pai="janelaFormTipo"
+               id="janelaFormEditarTipo">
             <template slot="conteudo">
                 <p class=" mt-2 text-center" v-if="preloadTipo"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div v-if="!preloadTipo && !cadastrado">
@@ -170,8 +172,9 @@
                 </div>
             </template>
             <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo && !preloadTipoLista">
-<!--                        @click="editaTipo">-->
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="!cadastrado && !preloadTipo && !preloadTipoLista">
+                    <!--                        @click="editaTipo">-->
                     <i class="fa fa-save"></i> Editar
                 </button>
             </template>
@@ -203,32 +206,33 @@
                             <tr class="bg-default">
                                 <td class="text-center">Nome</td>
                                 <td class="text-center">Ativo</td>
-<!--                                <td class="text-center">Opções</td>-->
+                                <!--                                <td class="text-center">Opções</td>-->
                             </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="tipo in listaTiposCadastro">
-                                    <td class="text-center">{{tipo.label}}</td>
-                                    <td class="text-center">
-                                        <bt-ativo :rota="`apontamento/intermitente/tipo/ativa-desativa/${tipo.id}`"
-                                                  :model="tipo" @atualizou="$refs.componente.buscar()"></bt-ativo>
-                                    </td>
-<!--                                    <td class="text-center">-->
-<!--                                        <button type="button" class="btn btn-sm btn-primary"-->
-<!--                                            @click="editarTipo(tipo.id)"-->
-<!--                                            data-toggle="modal"-->
-<!--                                            data-target="#janelaFormEditarTipo">-->
-<!--                                            <i class="fa fa-edit"></i>-->
-<!--                                        </button>-->
-<!--                                    </td>-->
-                                </tr>
+                            <tr v-for="tipo in listaTiposCadastro">
+                                <td class="text-center">{{ tipo.label }}</td>
+                                <td class="text-center">
+                                    <bt-ativo :rota="`apontamento/intermitente/tipo/ativa-desativa/${tipo.id}`"
+                                              :model="tipo" @atualizou="$refs.componente.buscar()"></bt-ativo>
+                                </td>
+                                <!--                                    <td class="text-center">-->
+                                <!--                                        <button type="button" class="btn btn-sm btn-primary"-->
+                                <!--                                            @click="editarTipo(tipo.id)"-->
+                                <!--                                            data-toggle="modal"-->
+                                <!--                                            data-target="#janelaFormEditarTipo">-->
+                                <!--                                            <i class="fa fa-edit"></i>-->
+                                <!--                                        </button>-->
+                                <!--                                    </td>-->
+                            </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </template>
             <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo && !preloadTipoLista"
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="!cadastrado && !preloadTipo && !preloadTipoLista"
                         @click="cadastraTipo">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
@@ -301,7 +305,10 @@
                                     class="form-control"
                                 >
                                     <option value="">Selecione</option>
-                                    <option v-for="item in centro_custos" :value="item.id" :key="item.id">{{ item.label }}</option>
+                                    <option v-for="item in centro_custos" :value="item.id" :key="item.id">{{
+                                            item.label
+                                        }}
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -424,33 +431,33 @@
                             </fieldset>
                         </div>
 
-<!--                        <div class="col-12">-->
-<!--                            <fieldset>-->
-<!--                                <legend>Exames</legend>-->
-                                <!--                                <div class="table-responsive">-->
-                                <!--                                    <table class="tabela">-->
-                                <!--                                        <thead>-->
-                                <!--                                        <tr class="bg-default">-->
-                                <!--                                            <th class="text-center">Tipo</th>-->
-                                <!--                                            <th class="text-center">Data do Treinamento</th>-->
-                                <!--                                            <th class="text-center">Data do Vencimento</th>-->
-                                <!--                                            <th class="text-center">Prazo Fixo</th>-->
-                                <!--                                            <th class="text-center">Prazo Parada</th>-->
-                                <!--                                        </tr>-->
-                                <!--                                        </thead>-->
-                                <!--                                        <tbody>-->
-                                <!--                                        <tr v-for="t in form.treinamentos">-->
-                                <!--                                            <td class="text-center">{{t.label}}</td>-->
-                                <!--                                            <td class="text-center">{{t.pivot.data_treinamento}}</td>-->
-                                <!--                                            <td class="text-center">{{t.pivot.data_vencimento}}</td>-->
-                                <!--                                            <td class="text-center">{{t.prazo_fixo}}</td>-->
-                                <!--                                            <td class="text-center">{{t.prazo_parada}}</td>-->
-                                <!--                                        </tr>-->
-                                <!--                                        </tbody>-->
-                                <!--                                    </table>-->
-                                <!--                                </div>-->
-<!--                            </fieldset>-->
-<!--                        </div>-->
+                        <!--                        <div class="col-12">-->
+                        <!--                            <fieldset>-->
+                        <!--                                <legend>Exames</legend>-->
+                        <!--                                <div class="table-responsive">-->
+                        <!--                                    <table class="tabela">-->
+                        <!--                                        <thead>-->
+                        <!--                                        <tr class="bg-default">-->
+                        <!--                                            <th class="text-center">Tipo</th>-->
+                        <!--                                            <th class="text-center">Data do Treinamento</th>-->
+                        <!--                                            <th class="text-center">Data do Vencimento</th>-->
+                        <!--                                            <th class="text-center">Prazo Fixo</th>-->
+                        <!--                                            <th class="text-center">Prazo Parada</th>-->
+                        <!--                                        </tr>-->
+                        <!--                                        </thead>-->
+                        <!--                                        <tbody>-->
+                        <!--                                        <tr v-for="t in form.treinamentos">-->
+                        <!--                                            <td class="text-center">{{t.label}}</td>-->
+                        <!--                                            <td class="text-center">{{t.pivot.data_treinamento}}</td>-->
+                        <!--                                            <td class="text-center">{{t.pivot.data_vencimento}}</td>-->
+                        <!--                                            <td class="text-center">{{t.prazo_fixo}}</td>-->
+                        <!--                                            <td class="text-center">{{t.prazo_parada}}</td>-->
+                        <!--                                        </tr>-->
+                        <!--                                        </tbody>-->
+                        <!--                                    </table>-->
+                        <!--                                </div>-->
+                        <!--                            </fieldset>-->
+                        <!--                        </div>-->
 
                     </div>
                 </fieldset>
@@ -556,7 +563,8 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Tipos</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoTipo" :disabled="controle.carregando" @change="atualizar()">
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoTipo"
+                                :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Tipos</option>
                             <option v-for="item in listaTipos" :value="item.id">{{ item.label }}</option>
                         </select>
@@ -566,7 +574,8 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Áreas</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoArea" :disabled="controle.carregando" @change="atualizar()">
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoArea"
+                                :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os áreas</option>
                             <option v-for="item in listaAreas" :value="item.id">{{ item.label }}</option>
                         </select>
@@ -576,7 +585,8 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Centros de Custo</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoCentroDeCusto" :disabled="controle.carregando" @change="atualizar()">
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoCentroDeCusto"
+                                :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os centros de custo</option>
                             <option v-for="item in centro_custos" :value="item.id">{{ item.label }}</option>
                         </select>
@@ -586,7 +596,8 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" :disabled="controle.carregando" @change="atualizar()">
+                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
+                                :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Status</option>
                             <option v-for="item in listaStatus" :value="item">{{ item }}</option>
                         </select>
@@ -611,11 +622,11 @@
                             data-target="#janelaFormTipo">
                         <i class="fa fa-plus"></i> Cadastrar Tipo
                     </button>
-<!--                    <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"-->
-<!--                            @click.prevent="exportaExcel()"-->
-<!--                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">-->
-<!--                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL-->
-<!--                    </button>-->
+                    <!--                    <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"-->
+                    <!--                            @click.prevent="exportaExcel()"-->
+                    <!--                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">-->
+                    <!--                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL-->
+                    <!--                    </button>-->
                 </div>
             </form>
         </fieldset>
@@ -676,11 +687,11 @@
                                     Encerrado por {{ item.responsavel_aprovacao.nome }} <br>
                                     em {{ item.data_aprovacao }}
                                 </span>
-                                <span v-if="item.status === 'Encerrado' && item.resposta_colaborador === 'Não'">
+                            <span v-if="item.status === 'Encerrado' && item.resposta_colaborador === 'Não'">
                                     Encerrado pelo colaborador <br>
                                     em {{ item.data_resposta_colaborador }}
                                 </span>
-                                <span v-if="item.status === 'Expirado'">
+                            <span v-if="item.status === 'Expirado'">
                                     Convocação Expirada <br>
                                     em {{ item.data_resposta_colaborador }}
                                 </span>
@@ -697,7 +708,8 @@
                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                     aria-labelledby="dropdownMenuLink">
                                     <a v-show="item.status === 'Aberto'" class="dropdown-item" href="javascript://"
                                        @click="formNovoProrrogacao(item.id)"
                                        data-toggle="modal"
@@ -710,7 +722,8 @@
                                        data-target="#janelaCadastrar">
                                         <i class="fa fa-times"></i> Encerrar Convocação
                                     </a>
-                                    <a v-show="item.status === 'Encerrado' || item.status === 'Expirado'" class="dropdown-item" href="javascript://"
+                                    <a v-show="item.status === 'Encerrado' || item.status === 'Expirado'"
+                                       class="dropdown-item" href="javascript://"
                                        @click="visualizar(item.id)"
                                        data-toggle="modal"
                                        data-target="#janelaCadastrar">

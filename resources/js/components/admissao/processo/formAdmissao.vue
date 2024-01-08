@@ -4,6 +4,15 @@
         <div class="row" v-if="!preload">
             <div class="col-12 col-sm-6">
                 <div class="form-group">
+                    <label>Número do Contrato</label>
+                    <input type="text" class="form-control"
+                           :disabled="visualizar || disabled"
+                           v-model="form.contrato">
+                </div>
+            </div>
+            <div class="col-12"></div>
+            <div class="col-12 col-sm-6">
+                <div class="form-group">
                     <label>Área</label>
                     <select class="form-control" v-model="form.area_etiqueta_id"
                             :disabled="visualizar || disabled">
@@ -74,7 +83,8 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Salário R$</label>
-                    <input type="text" class="form-control" v-mascara:dinheiro :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
+                    <input type="text" class="form-control" v-mascara:dinheiro
+                           :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
                            v-model="form.salario">
                 </div>
             </div>
@@ -219,7 +229,7 @@
                             v-model="form.status">
                         <option value="">Selecione</option>
                         <option v-for="item in listSelects.status_admissao" :key="item" :value="item">{{
-                                item
+                            item
                             }}
                         </option>
                     </select>
