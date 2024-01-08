@@ -1289,6 +1289,7 @@
                     </select>
                 </div>
             </div>
+
             <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs">
                 <div class="form-group">
                     <label for="">Centro de Custo</label>
@@ -1305,16 +1306,6 @@
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text"
-                           placeholder="Buscar por nome"
-                           autocomplete="off"
-                           class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoBusca">
-                </div>
-            </div>
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
                 <div class="form-group">
@@ -1326,6 +1317,18 @@
                            v-mascara:cpf
                            class="form-control form-control-sm" :disabled="controle.carregando"
                            v-model="controle.dados.campoCPF">
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text"
+                           placeholder="Buscar por nome"
+                           autocomplete="off"
+                           class="form-control form-control-sm"
+                           :disabled="controle.carregando"
+                           v-model="controle.dados.campoBusca">
                 </div>
             </div>
 
@@ -1529,8 +1532,11 @@
                     <td class="text-center"
                         v-if="AUTENTICADO.temFilial"
                     >
-                        @{{item.admissao.emp_nome_fantasia}}<br>
-                        (@{{item.admissao.emp_tipo}})
+                        <span v-if="item.admissao && item.admissao.emp_cnpj">
+                            @{{item.admissao.emp_nome_fantasia}}<br>
+                            (@{{item.admissao.emp_tipo}})
+                        </span>
+                        <span v-else>---</span>
                     </td>
 
                     <td class="text-center">
