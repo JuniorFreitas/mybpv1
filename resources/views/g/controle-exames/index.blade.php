@@ -834,7 +834,7 @@
                 <td>@{{ colaborador.id }}</td>
                 <td>@{{ colaborador.curriculo.nome }}</td>
                 <td v-if="AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">
-                    <span v-if="item.admissao && item.admissao.emp_cnpj">
+                    <span v-if="colaborador.admissao && colaborador.admissao.emp_cnpj">
                             @{{ colaborador.admissao.emp_nome_fantasia }}<br>
                             (@{{colaborador.admissao.emp_tipo}})
                     </span>
