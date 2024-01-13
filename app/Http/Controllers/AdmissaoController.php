@@ -1502,11 +1502,11 @@ class AdmissaoController extends Controller
                 $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
                     $cc = $centros_custos['centros_custos'][$request->campoCnpj];
                     if ($cc[0]['matriz']) {
-                        $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ?: null;
+                        $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
                         $query->where('centro_custo_id', $campoCentroCusto)
                             ->where('filial', false);
                     } else {
-                        $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ?: null;
+                        $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
                         $query->where('centro_custo_filial_id', $campoCentroCusto)
                             ->where('filial', true);
                     }

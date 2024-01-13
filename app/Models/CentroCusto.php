@@ -144,29 +144,44 @@ class CentroCusto extends Model
     /**
      * @return CentroCusto[]|Builder[]|\Illuminate\Database\Eloquent\Collection|Collection|_IH_CentroCusto_C|_IH_CentroCusto_QB[]
      */
-    private function buscarCentrosDeCusto()
+    private function buscarCentrosDeCusto(): \Illuminate\Database\Eloquent\Collection|_IH_CentroCusto_C|array|Collection
     {
-        return CentroCusto::select(['id', 'label', 'ativo'])->whereAtivo(true)
+        return CentroCusto::select(['id', 'label', 'ativo'])
+//            ->whereAtivo(true)
             ->with('Filiais', function ($query) {
                 $query->select(['id', 'centro_custo_id', 'cliente_filial_id', 'empresa_id'])
                     ->whereAtivo(true)
                     ->with('Filial:id,dados->razao_social as razao_social,dados->nome_fantasia as nome_fantasia,dados->cnpj as cnpj');
             })
             ->get()->transform(function ($item) {
+                $is_ativo = $item->ativo == 1 ? '' : ' - (-- Inativo --)';
                 $item->text = $item->label;
+                $item->label = $item->label . $is_ativo;
                 return $item;
             });
     }
 
-    protected static function booted()
+    /**
+     * @param $empresaId
+     * @return void
+     * @throws \Exception
+     */
+    private function forgetsCache($empresaId): void
+    {
+        cache()->forget("cc_list_{$empresaId}");
+        $this->generateAndCacheReports($empresaId);
+    }
+
+    /**
+     * @return void
+     */
+    protected static function booted(): void
     {
         static::created(function ($model) {
-            cache()->forget("lista_cc_{$model->empresa_id}");
-            (new CentroCusto())->listaCentroCustoPorCnpj($model->empresa_id);
+            $this->forgetsCache($model->empresa_id);
         });
         static::updated(function ($model) {
-            cache()->forget("lista_cc_{$model->empresa_id}");
-            (new CentroCusto())->listaCentroCustoPorCnpj($model->empresa_id);
+            $this->forgetsCache($model->empresa_id);
         });
     }
 }
