@@ -517,6 +517,28 @@ class Cliente extends Model
         return $enderecoCompleto;
     }
 
+
+    public function temFilial($empresaId)
+    {
+        return $this->Cnpjs($empresaId)['filiais']->count() > 0;
+    }
+
+    public function temFilialAtiva($empresaId)
+    {
+        return $this->Cnpjs($empresaId)['filiais']->where('ativo', true)->count() > 0;
+    }
+
+    public function findFiliarOuMatriz($empresaId)
+    {
+        if ($this->temFilial($empresaId)) {
+            return $this->Cnpjs($empresaId)['filiais'];
+        }
+        $matriz = $this->Cnpjs($empresaId)['matriz'];
+        $matriz['matriz'] = true;
+        $matriz['cnpjkey'] = preg_replace("/[^0-9]/", "", $matriz['cnpj']);;
+        return $matriz;
+    }
+
     protected static function booted()
     {
         static::updating(function ($model) {

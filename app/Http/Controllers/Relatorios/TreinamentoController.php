@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\JobExportaExcel;
+use App\Models\CentroCusto;
+use App\Models\Cliente;
+use App\Models\FeedbackCurriculo;
 use App\Models\Treinamento;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -20,47 +23,91 @@ class TreinamentoController extends Controller
         $empresa_id = auth()->user()->empresa_id;
 
         $periodo = explode(' até ', $request->periodo);
-        $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-        $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+        $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+        $dataFim = new DataHora($periodo[1] . ' 23:59:59');
 
-        $treinamentos = Treinamento::select(['id', 'feedback_id', 'tipo'])
-            ->whereHas('FeedbackCurriculo', function ($q) use ($empresa_id) {
-                $q->Admitidos()->whereEmpresaId($empresa_id);
-            })->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataHoraInsert())
-                    ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataHoraInsert());
-            })->with(['Vencimentos' => function ($q) use ($dataInicio, $dataFim) {
-                $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataHoraInsert())
-                    ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataHoraInsert());
-            }, 'FeedbackCurriculo:id,empresa_id,vaga_id,vagas_abertas_id,curriculo_id',
-                'FeedbackCurriculo.VagaAberta:id,vaga_id,titulo',
-                'FeedbackCurriculo.Curriculo:id,nome,nascimento,rg,orgao_expeditor'])
-            ->get();
+
+        $colaboradores = FeedbackCurriculo::select([
+            'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id'
+        ])->Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
+            $q->whereEncaminhadoTreinamento(true);
+        })->whereEmpresaId($empresa_id)->with(
+            'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
+            'Admissao:id,feedback_id,area_etiqueta_id,data_admissao,matricula,funcao,nr_trinta_cinco,nr_trinta_tres,numero_cracha,status,cargo,centro_custo_filial_id,centro_custo_id,filial',
+            'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
+            'Treinamento.Vencimentos',
+            'Treinamento.QuemCadastrou:id,nome'
+        )->filtrarPorCnpjECentroCusto($request);
+
+        $colaboradores = $colaboradores->whereHas('Treinamento.Vencimentos', function ($q) use ($dataInicio, $dataFim) {
+            $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataHoraInsert())
+                ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataHoraInsert());
+        })->orderByDesc('created_at')->get();
+
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresa_id);
+
+        $colaboradores->transform(function ($model) use ($cc) {
+            if ($model->Admissao) {
+                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $model->Admissao->centro_custo_id)->first();
+                $model->Admissao->emp_cnpj = null;
+                $model->Admissao->emp_nome_fantasia = null;
+                $model->Admissao->emp_centro_custo = null;
+                $model->Admissao->emp_tipo = null;
+
+                if ($cc_colaborador) {
+                    $model->Admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
+                    $model->Admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
+                    $model->Admissao->emp_centro_custo = $cc_colaborador['label'];
+                    $model->Admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+                }
+            }
+            return $model;
+        });
+
 
         $resultado = collect();
 
-        foreach ($treinamentos as $treinamento) {
 
+        foreach ($colaboradores as $colaborador) {
             $vencimentos = collect();
-            $treinamento->Vencimentos->each(function ($model) use ($vencimentos) {
+            $colaborador->treinamento->Vencimentos->each(function ($model) use ($vencimentos) {
+                $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $model->pivot->data_vencimento);
                 $vencimentos->push([
                     'label' => $model->label,
                     'descricao' => $model->descricao,
                     'data_vencimento' => $model->pivot->data_vencimento,
                     'data_treinamento' => $model->pivot->data_treinamento,
-                    'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert(), $model->pivot->data_vencimento)
+                    'dias_vencer' => $dias_vencer,
+                    'pintar' => $dias_vencer <= 30
                 ]);
             });
 
             $resultado->push([
-                'nome' => $treinamento->FeedbackCurriculo->Curriculo->nome,
-                'cargo' => $treinamento->FeedbackCurriculo->VagaAberta->Vaga->nome ?? 'NÃO ENCONTRADO',
-                'tipo' => $treinamento->tipo,
-                'treinamentos' => $vencimentos,
+                'nome' => $colaborador->Curriculo->nome,
+                'cargo' => $colaborador->VagaAberta->Vaga->nome ?? 'NÃO ENCONTRADO',
+                'emp_cnpj' => $colaborador->Admissao->emp_cnpj ?? '--',
+                'emp_nome_fantasia' => $colaborador->Admissao->emp_nome_fantasia ?? '--',
+                'emp_centro_custo' => $colaborador->Admissao->emp_centro_custo ?? '--',
+                'emp_tipo' => $colaborador->Admissao->emp_tipo ?? '--',
+                'tipo' => $colaborador->treinamento->tipo,
+                'treinamentos' => collect($vencimentos)->sortBy('dias_vencer')->values(),
             ]);
         }
 
-        return $resultado;
+
+        $resultado = $resultado->transform(function ($item) {
+            $tCollect = collect($item['treinamentos']);
+            $item['pintar'] = $tCollect->where('pintar', true)->count() == $tCollect->count();
+            $item['count_pintar'] = $tCollect->where('pintar', true)->count();
+            return $item;
+        })->sortByDesc('count_pintar')
+            ->sortBy('pintar', SORT_REGULAR, true)->values();
+
+
+        return response()->json([
+            'cc' => $cc,
+            'itens' => $resultado,
+        ]);
     }
 
     public function exportExcel(Request $request)

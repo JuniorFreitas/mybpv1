@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
+use App\Models\CentroCusto;
 use App\Models\ClienteConfig;
 use App\Models\FeedbackCurriculo;
 use App\Models\ResultadoIntegrado;
@@ -285,6 +286,7 @@ class TreinamentoController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
 
         $itens = collect($resultado->items());
         $vencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get();
@@ -294,7 +296,7 @@ class TreinamentoController extends Controller
             return $i;
         });
 
-        $itens->transform(function ($item) {
+        $itens->transform(function ($item) use ($cc) {
             if ($item->Treinamento) {
                 $item->nr_33 = $item->Treinamento->Vencimentos()->where(function ($q) {
                     $q->where('label', 'like', '%NR33%')->orWhere('label', 'like', '%NR-33%');
@@ -312,6 +314,21 @@ class TreinamentoController extends Controller
                 $item->nr_35 = null;
                 $item->ebtv = null;
             }
+
+            if ($item->admissao) {
+                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
+                $item->admissao->emp_cnpj = null;
+                $item->admissao->emp_nome_fantasia = null;
+                $item->admissao->emp_centro_custo = null;
+                $item->admissao->emp_tipo = null;
+
+                if ($cc_colaborador) {
+                    $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
+                    $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
+                    $item->admissao->emp_centro_custo = $cc_colaborador['label'];
+                    $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+                }
+            }
             return $item;
         });
 
@@ -322,6 +339,7 @@ class TreinamentoController extends Controller
             'dados' => [
                 'itens' => $itens,
                 'vencimentos' => $vencimentos,
+                'cc' => $cc
             ]
         ]);
     }
@@ -337,13 +355,13 @@ class TreinamentoController extends Controller
         })->with(
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
             'Curriculo.FotoTres:id',
-            'Admissao:id,feedback_id,area_etiqueta_id,data_admissao,matricula,funcao,nr_trinta_cinco,nr_trinta_tres,numero_cracha,status,cargo',
+//            'Admissao:id,feedback_id,area_etiqueta_id,data_admissao,matricula,funcao,nr_trinta_cinco,nr_trinta_tres,numero_cracha,status,cargo',
             'Admissao.AreaEtiqueta',
             'VagaSelecionada:id,nome',
             'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
             'Treinamento.Vencimentos',
             'Treinamento.QuemCadastrou:id,nome'
-        );
+        )->filtrarPorCnpjECentroCusto($request);
 
         $campoVencimento = $request->campoVencimento == 'true';
         if ($campoVencimento) {
@@ -504,14 +522,12 @@ class TreinamentoController extends Controller
             }
         }
 
-
         if ($request->filled('campoPcd')) {
             $campoPcd = $request->campoPcd == 'true' ? true : false;
             $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
                 $query->wherePcd($campoPcd);
             });
         }
-
 
         return $resultado->orderByDesc('created_at');
     }

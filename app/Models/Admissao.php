@@ -866,6 +866,26 @@ class Admissao extends Model
             ->withPivot(['quem_classificou']);
     }*/
 
+    // No seu modelo Colaborador.php (ou outro nome se for diferente)
+    public function scopeCentroCustoPorCnpj($query, $request, $centros_custos)
+    {
+        $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+
+        return $query->where(function ($query) use ($cc) {
+            $query->whereIn('centro_custo_id', $cc->pluck('id')->toArray())
+                ->orWhere('centro_custo_id', null);
+
+            if ($cc[0]['matriz']) {
+                $query->where('filial', false);
+            } else {
+                $query->where(function ($query) use ($cc) {
+                    $query->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')->toArray())
+                        ->orWhere('centro_custo_filial_id', null);
+                })->where('filial', true);
+            }
+        });
+    }
+
 
     public function FeriasAdquiridasCriaOuAtualiza($dados)
     {
@@ -899,7 +919,6 @@ class Admissao extends Model
             ->whereAtual(true)
             ->orderByDesc('data_vencimento');
     }
-
 
     /**
      * @param $feedback_id

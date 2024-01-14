@@ -54,7 +54,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Treinamento extends Model
 {
-    use HasFactory, LogsActivity;
+    use LogsActivity;
 
     protected static $logFillable = true;
     protected static $logName = 'treinamento';
@@ -108,7 +108,8 @@ class Treinamento extends Model
         return \Crypt::encrypt($this->attributes['id']);
     }
 
-    protected function serializeDate(DateTimeInterface $date) {
+    protected function serializeDate(DateTimeInterface $date)
+    {
         return $date->format('Y-m-d H:i:s');
     }
 

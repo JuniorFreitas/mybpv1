@@ -12,25 +12,27 @@
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
-    <script src="https://www.google.com/recaptcha/api.js?hl=pt-BR" async defer></script>
-    <script type="text/javascript">
-        function onSubmit(token) {
-            document.getElementById("demo-form").submit();
-        }
+    @if(env('APP_ENV') !== 'local')
+        <script src="https://www.google.com/recaptcha/api.js?hl=pt-BR" async defer></script>
+        <script type="text/javascript">
+            function onSubmit(token) {
+                document.getElementById("demo-form").submit();
+            }
 
-        function getToken(dados) {
-            document.getElementById('token').value = dados;
-        }
+            function getToken(dados) {
+                document.getElementById('token').value = dados;
+            }
 
-        function limpaToken() {
-            document.getElementById('token').value = '';
-        }
+            function limpaToken() {
+                document.getElementById('token').value = '';
+            }
 
-        function erroToken() {
-            alert('Erro ao validar o reCapTcha. Tente mais tarde')
-            document.getElementById('token').value = '';
-        }
-    </script>
+            function erroToken() {
+                alert('Erro ao validar o reCapTcha. Tente mais tarde')
+                document.getElementById('token').value = '';
+            }
+        </script>
+    @endif
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
           integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
     <style>
@@ -65,6 +67,7 @@
             background: #031E2D;
             color: #fff;
         }
+
         [v-cloak] {
             display: none;
         }
@@ -82,7 +85,8 @@
                     <div class="col-lg-6 col-md-8 mx-auto">
                         <div class="card rounded shadow shadow-sm">
                             <div class="card-header bg-white text-center">
-                                <img src="{{ asset('images/bpin_mybp_color.svg') }}" class="" alt="logo_bpse" style="height: 120px">
+                                <img src="{{ asset('images/bpin_mybp_color.svg') }}" class="" alt="logo_bpse"
+                                     style="height: 120px">
                             </div>
                             <div class="card-body">
                                 <form method="POST" id="demo-form" v-show="!recuperaSenha"
@@ -103,7 +107,8 @@
 
                                     <div class="form-group">
                                         <label for="password">Senha</label>
-                                        <input id="password" type="password" class="form-control {{ $errors->has('password') ? ' is-invalid' : '' }}"
+                                        <input id="password" type="password"
+                                               class="form-control {{ $errors->has('password') ? ' is-invalid' : '' }}"
                                                name="password" required>
                                         @if($errors->has('password'))
                                             <span class="invalid-feedback" role="alert">
@@ -116,13 +121,13 @@
                                         </a>
                                     </div>
 
-{{--                                    <div class="form-group" style="display: none">--}}
-{{--                                        <div class="custom-checkbox custom-control">--}}
-{{--                                            <input type="checkbox" name="remember" id="remember"--}}
-{{--                                                   class="custom-control-input tbtn-default">--}}
-{{--                                            <label for="remember" class="custom-control-label">Lembrar-me</label>--}}
-{{--                                        </div>--}}
-{{--                                    </div>--}}
+                                    {{--                                    <div class="form-group" style="display: none">--}}
+                                    {{--                                        <div class="custom-checkbox custom-control">--}}
+                                    {{--                                            <input type="checkbox" name="remember" id="remember"--}}
+                                    {{--                                                   class="custom-control-input tbtn-default">--}}
+                                    {{--                                            <label for="remember" class="custom-control-label">Lembrar-me</label>--}}
+                                    {{--                                        </div>--}}
+                                    {{--                                    </div>--}}
 
                                     <div class="pb-3 ">
                                         {{--                                        <div class="g-recaptcha form-group" data-sitekey="{{env('RECAPTCHA_SITE_KEY')}}"--}}
@@ -169,7 +174,8 @@
                                     </div>
                                 </form>
 
-                                <div class="py-3" style="display: flex; justify-content: space-around; align-items: center;">
+                                <div class="py-3"
+                                     style="display: flex; justify-content: space-around; align-items: center;">
                                     <img src="{{ asset('images/inova_maranhao.png') }}" alt=""
                                          class=" " style="height: 60px">
                                     <img src="{{ asset('images/fapema-logo.png') }}" alt=""

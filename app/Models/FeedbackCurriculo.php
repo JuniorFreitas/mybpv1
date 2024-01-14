@@ -7,7 +7,10 @@ use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Request;
 use MasterTag\DataHora;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -876,7 +879,97 @@ class FeedbackCurriculo extends Model
         return $query->has('Demissao');
     }
 
+    /**
+     * @param $query
+     * @param $request
+     * @return mixed
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function scopeFiltrarPorCnpjECentroCusto($query, $request)
+    {
+        $cliente = new Cliente();
+        $centroCusto = new CentroCusto();
+        $semfilial = isset($cliente->findFiliarOuMatriz(auth()->user()->empresa_id)['matriz']);
+
+        $campoCnpj = $semfilial ? $cliente->findFiliarOuMatriz(auth()->user()->empresa_id)['cnpjkey'] : $request->campoCnpj;
+        $request->merge(['campoCnpj' => $campoCnpj]);
+
+        return $query->when($request->filled('campoCnpj'), function ($query) use ($request, $centroCusto) {
+            $centros_custos = $centroCusto->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            if (!$request->filled('campoCentroCusto')) {
+                return $query->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
+                    $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                    return $cc[0]['matriz']
+                        ? $this->filtrarPorMatriz($query, $cc)
+                        : $this->filtrarPorFilial($query, $cc);
+                });
+            }
+            return $query->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
+                $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                return $cc[0]['matriz']
+                    ? $this->filtrarPorMatrizComCentroCusto($query, $request, $cc)
+                    : $this->filtrarPorFilialComCentroCusto($query, $request, $cc);
+            });
+        });
+
+    }
+
+    /**
+     * @param $query
+     * @param $cc
+     * @return mixed
+     */
+    private function filtrarPorMatriz($query, $cc)
+    {
+        return $query->where(function ($query) use ($cc) {
+            $query->whereIn('centro_custo_id', $cc->pluck('id')->toArray())->orWhere('centro_custo_id', null);
+        })->where('filial', false);
+    }
+
+    /**
+     * @param $query
+     * @param $cc
+     * @return mixed
+     */
+    private function filtrarPorFilial($query, $cc)
+    {
+        return $query->where(function ($query) use ($cc) {
+            $query->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')->toArray())->orWhere('centro_custo_filial_id', null);
+        })->where('filial', true);
+    }
+
+    /**
+     * @param $query
+     * @param $request
+     * @param $cc
+     * @return mixed
+     */
+    private function filtrarPorMatrizComCentroCusto($query, $request, $cc)
+    {
+        $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
+
+        return $query->where('centro_custo_id', $campoCentroCusto)->where('filial', false);
+    }
+
+    /**
+     * @param $query
+     * @param $request
+     * @param $cc
+     * @return mixed
+     */
+    private function filtrarPorFilialComCentroCusto($query, $request, $cc)
+    {
+        $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
+
+        return $query->where('centro_custo_filial_id', $campoCentroCusto)->where('filial', true);
+    }
+
     //Scopo de ClienteID (Empresa)
+
+    /**
+     * @return void
+     */
     protected static function booted()
     {
         static::creating(function ($model) {
