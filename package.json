@@ -44,6 +44,7 @@
         "uuid": "^8.3.2",
         "vue-chartjs": "^3.5.1",
         "vue-tippy": "^4.7.2",
-        "vuedraggable": "^2.24.3"
+        "vuedraggable": "^2.24.3",
+        "xlsx": "^0.18.5"
     }
 }

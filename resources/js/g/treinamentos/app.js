@@ -22,6 +22,7 @@ const app = new Vue({
         preloadExportacao: false,
 
         URL_ADMIN,
+        AUTENTICADO,
 
         urlExportacao: `${URL_ADMIN}/treinamento/export`,
         hash: `mastertag_${parseInt((Math.random() * 999999))}`,
@@ -85,8 +86,13 @@ const app = new Vue({
             }
         },
         formMassaDefault: null,
+
         vencimentos: [],
         listaTodosTreinamentos: [],
+
+        listaColunasTreinamentos: null,
+
+        lista_ccs: null,
 
         formEnviar: {
             enviado: false,
@@ -143,6 +149,9 @@ const app = new Vue({
                 treinamentos_selecionados: [],
                 campoPeriodoTreinado: false,
                 periodoTreinado: '',
+                campoCnpj: "",
+                campoCentroCusto: "",
+
             }
         }
     },
@@ -158,6 +167,23 @@ const app = new Vue({
         this.listaVagas()
         this.listaAreasGeral()
         this.atualizar()
+
+        let intervalId = setInterval(() => {
+            if (this.listaTodosTreinamentos.length > 0) {
+                // Realiza o mapeamento
+                this.listaColunasTreinamentos = this.listaTodosTreinamentos.map(item => {
+                    return {
+                        id: item.id,
+                        label: item.label,
+                        label_reduzida: item.label_reduzida,
+                        checked: true
+                    }
+                });
+
+                clearInterval(intervalId);
+            }
+        }, 200);
+
     },
     computed: {
         emTreinamentos() {
@@ -216,21 +242,42 @@ const app = new Vue({
             let dados = this.controle.dados
             dados.selecionados = this.selecionados
             return dados
+        },
+        filtroListaCentroCustoCnpj() {
+            if (this.controle.dados.campoCnpj !== "" && this.AUTENTICADO.temFilial) {
+                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj];
+            }
+            if (!this.AUTENTICADO.temFilial && this.lista_ccs) {
+                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
+            }
+            return [];
         }
     },
     methods: {
+        marcarDesmarcarTodosTreinamentosColuna(valor) {
+
+            this.listaColunasTreinamentos.map(item => {
+                item.checked = valor
+            });
+
+
+        },
+        changeCnpj() {
+            this.controle.dados.campoCentroCusto = "";
+            this.atualizar();
+        },
         selecionaTreinados(valor) {
-            if (valor !== 'S'){
+            if (valor !== 'S') {
                 this.controle.dados.treinamentos_selecionados = [];
             }
             this.atualizar()
         },
         addTreinamento(valor) {
-            if(valor !== ''){
-                if(!this.controle.dados.treinamentos_selecionados.includes(valor)) {
+            if (valor !== '') {
+                if (!this.controle.dados.treinamentos_selecionados.includes(valor)) {
                     this.controle.dados.treinamentos_selecionados.push(valor)
-                }else{
-                    mostraErro('','Treinamento já adicionado na lista')
+                } else {
+                    mostraErro('', 'Treinamento já adicionado na lista')
                 }
             }
             if (valor === 'rm') {
@@ -582,6 +629,10 @@ const app = new Vue({
             this.listaTodosTreinamentos = dados.vencimentos
             this.selecionaTudo = this.tudoMarcado
             this.formMassa.listaVencimentos = dados.vencimentos
+            this.lista_ccs = dados.cc;
+            if (!this.AUTENTICADO.temFilial) {
+                this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0];
+            }
 
             this.controle.carregando = false
         },

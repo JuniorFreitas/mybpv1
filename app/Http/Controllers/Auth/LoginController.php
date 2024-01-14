@@ -50,20 +50,28 @@ class LoginController extends Controller
     protected function credentials(Request $request)
     {
         $request->request->add([
-            'ativo'=>true,
-            'temp'=>false,
+            'ativo' => true,
+            'temp' => false,
         ]);
 
-        return $request->only($this->username(), 'password','ativo','temp');
+        return $request->only($this->username(), 'password', 'ativo', 'temp');
     }
 
     protected function validateLogin(Request $request)
     {
-        $this->validate($request, [
-            $this->username() => 'required',
-            'password' => 'required',
-            'g-recaptcha-response' => ['required', new Recaptcha()]
-        ]);
+        if (env('APP_ENV') != 'local') {
+            $this->validate($request, [
+                $this->username() => 'required',
+                'password' => 'required',
+                'g-recaptcha-response' => ['required', new Recaptcha()]
+            ]);
+        } else {
+            $this->validate($request, [
+                $this->username() => 'required',
+                'password' => 'required',
+            ]);
+        }
+
     }
 
     protected function sendLoginResponse(Request $request)
@@ -88,7 +96,9 @@ class LoginController extends Controller
             ? new JsonResponse([], 204)
             : redirect()->intended($this->redirectPath());
     }
-    public function teste(Request $request){
+
+    public function teste(Request $request)
+    {
         return view('teste');
     }
 }

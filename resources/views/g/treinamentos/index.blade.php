@@ -6,6 +6,38 @@
 @stop
 @section('content')
 
+    <modal id="filtroColunas" size="g" titulo="Mostrar e Ocultar Treinamentos">
+        <template slot="conteudo">
+            <div class="row">
+                <div class="col-sm-6" v-for="item in listaColunasTreinamentos">
+                    <div class="custom-control custom-switch mb-2">
+                        <input type="checkbox" @click="item.checked = !item.checked"
+                               v-model="item.checked"
+                               class="custom-control-input" :id="item.id">
+                        <label class="custom-control-label"
+                               :for="item.id">@{{item.label}}</label>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template slot="rodape">
+            <div v-if="listaColunasTreinamentos && listaColunasTreinamentos.length">
+                <button class="btn btn-sm btn-primary"
+                        :disabled="listaColunasTreinamentos.length === listaColunasTreinamentos.filter(item => item.checked).length"
+                        @click.prevent="marcarDesmarcarTodosTreinamentosColuna(true)"
+                >
+                    Selecionar todos
+                </button>
+                <button class="btn btn-sm btn-primary"
+                        :disabled="listaColunasTreinamentos.filter(item => item.checked).length === 0"
+                        @click.prevent="marcarDesmarcarTodosTreinamentosColuna(false)"
+                >
+                    Desmarcar todos
+                </button>
+            </div>
+        </template>
+    </modal>
+
     <modal id="janelaTreinamento" titulo="Treinamentos" :size="95">
         <template slot="conteudo">
             <div class="alert alert-success text-center" v-show="cadastrado">
@@ -381,6 +413,36 @@
                        v-model="controle.dados.campoCPF">
             </div>
 
+            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs && AUTENTICADO.temFilial">
+                <div class="form-group">
+                    <label for="">Por Cnpj</label>
+                    <select class="form-control form-control-sm" @change="changeCnpj"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoCnpj">
+                        <option value="">Todos</option>
+                        <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
+                            @{{item.nome_fantasia}} - @{{item.cnpj}}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs">
+                <div class="form-group">
+                    <label for="">Centro de Custo</label>
+                    <select class="form-control form-control-sm" @change="atualizar"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoCentroCusto">
+                        <option value="">Todos</option>
+                        <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
+                                :value="item.matriz ? item.id : item.filial_id"
+                                :keys="key">
+                            @{{item.label}}
+                        </option>
+                        <option value="--naoinformado--">--- Não Informado ---</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="col-12 col-md-7">
                 <label>Buscar</label>
@@ -790,8 +852,186 @@
     </p>
 
     <div id="conteudo">
+        {{-- <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
+             <table class="table table-centered bg-white">
+                 <thead>
+                 <tr class="bg-default">
+                     <th class="text-center" width="30px">
+                         <input type="checkbox"
+                                :style="!emTreinamentos.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                                :disabled="!emTreinamentos.length" :checked="tudoMarcado"
+                                @click="selecionaTodos">
+                     </th>
+                     <th class="text-center" width="30px">
+                         <input type="checkbox"
+                                :checked="tudoMarcadoMassa"
+                                @click="selecionaTodosMassa">
+                     </th>
+                     <th>Nome</th>
+                     <th class="text-center">Vaga</th>
+                     <th class="text-center">Cargo</th>
+                     <th class="text-center">Área</th>
+                     <th class="text-center">Foto 3x4</th>
+                     <th class="text-center">NR-33</th>
+                     <th class="text-center">NR-35</th>
+                     <th class="text-center">EBTV</th>
+
+                     <th class="text-center">Ultima Atualização</th>
+                     <th class="text-center">Data Admissão</th>
+                     <th class="text-center">
+                     </th>
+                 </tr>
+                 </thead>
+                 <tbody>
+                 <tr v-for="resultado in lista">
+                     <td class="text-center">
+                         <label :for="resultado.id">
+                             <input
+                                 type="checkbox"
+                                 v-model="selecionados"
+                                 :value="resultado.id"
+                                 :id="resultado.id"
+                                 :style="resultado.treinamento ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                 :title="resultado.treinamento ? null : 'Não possui treinamento'"
+                                 v-if="resultado.treinamento"
+                             >
+                             <input type="checkbox" v-else disabled="disabled" title="Candidato sem treinamento">
+
+                         </label>
+                     </td>
+                     <td class="text-center">
+                         <label :for="resultado.id">
+                             <input
+                                 type="checkbox"
+                                 v-model="selecionadosMassa"
+                                 :value="resultado.id"
+                                 :id="resultado.id"
+                                 :style="resultado.id ? 'cursor:pointer' : 'cursor: not-allowed'"
+                             >
+                         </label>
+                     </td>
+
+                     <td>
+                         @{{resultado.curriculo.nome}} <br>
+                         CPF: @{{resultado.curriculo.cpf}}
+                     </td>
+                     <td class="text-center">
+                         @{{resultado.vaga_aberta_municipio }}
+                     </td>
+
+                     <td class="text-center">
+                         @{{resultado.admissao ? resultado.admissao.cargo : null}}
+                     </td>
+
+                     <td class="text-center">
+                         @{{resultado.admissao ? resultado.admissao.area_etiqueta ?
+                         resultado.admissao.area_etiqueta.label : null : null}}
+                     </td>
+
+                     <td class="text-center">
+                         @{{resultado.curriculo.foto_tres.length > 0 ? 'SIM' : 'Não'}}
+                     </td>
+
+                     <td>
+                         <template v-if="resultado.admissao && resultado.admissao.nr_trinta_tres === 'NÃO SE APLICA'">NÃO
+                             SE APLICA
+                         </template>
+                         <template v-else>
+                             <template v-if="resultado.nr_33">
+                                 Data Treinamento: <strong>@{{resultado.nr_33.data_treinamento}}</strong>
+                                 <br>
+                                 Data Vencimento: <strong>@{{resultado.nr_33.data_vencimento}}</strong>
+                             </template>
+                             <template v-else>
+                                 Não realizado
+                             </template>
+                         </template>
+                     </td>
+
+                     <td>
+                         <template v-if="resultado.admissao && resultado.admissao.nr_trinta_cinco === 'NÃO SE APLICA'">
+                             NÃO SE APLICA
+                         </template>
+                         <template v-else>
+                             <template v-if="resultado.nr_35">
+                                 Data Treinamento: <strong>@{{resultado.nr_35.data_treinamento}}</strong>
+                                 <br>
+                                 Data Vencimento: <strong>@{{resultado.nr_35.data_vencimento}}</strong>
+                             </template>
+                             <template v-else>
+                                 Não realizado
+                             </template>
+                         </template>
+                     </td>
+                     <td>
+                         <template v-if="resultado.ebtv">
+                             Data Treinamento: <strong>@{{resultado.ebtv.data_treinamento}}</strong>
+                             <br>
+                             Data Vencimento: <strong>@{{resultado.ebtv.data_vencimento}}</strong>
+                         </template>
+                         <template v-else>
+                             Não realizado
+                         </template>
+                     </td>
+
+                     <td class="text-center">
+                         @{{ resultado.treinamento ? resultado.treinamento.updated_at : null }} <br>
+                         @{{ resultado.treinamento ? resultado.treinamento.quem_cadastrou.nome : null }}
+                     </td>
+
+                     <td class="text-center">
+                         @{{ resultado.admissao ? resultado.admissao.data_admissao : null }}
+                     </td>
+
+                     <td class="text-center" width="30px">
+                         <div class="dropdown dropleft show">
+                             <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                 <i class="fas fa-ellipsis-v"></i>
+                             </a>
+
+                             <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuLink">
+                                 <a class="dropdown-item" href="javascript://" title="Atualizar treinamento"
+                                    @click.prevent="formAlterar(resultado.id)"
+                                    data-toggle="modal"
+                                    data-target="#janelaTreinamento">
+                                     Atualizar
+                                 </a>
+                                 <a class="dropdown-item" href="javascript://" title="Enviar via e-mail"
+                                    v-if="resultado.treinamento"
+                                    @click.prevent="abriJanelaEnviar(resultado)"
+                                    data-toggle="modal"
+                                    data-target="#janelaAvaliar">
+                                     Enviar via e-mail
+                                 </a>
+
+                             </div>
+                         </div>
+
+
+                         --}}{{--                        <button href="javascript://" class="btn btn-sm btn-default" title="Enviar Via e-mail"--}}{{--
+                         --}}{{--                                v-if="resultado.carteira"--}}{{--
+                         --}}{{--                                @click.prevent="formAlterar(resultado.curriculo_id)"--}}{{--
+                         --}}{{--                                data-toggle="modal"--}}{{--
+                         --}}{{--                                data-target="#janelaCadastrar">--}}{{--
+                         --}}{{--                            <i class="fas fa-share-square"></i> Enviar--}}{{--
+                         --}}{{--                        </button>--}}{{--
+                         --}}{{--                        <a v-if="resultado.admissao" :href="`admissao/${resultado.curriculo.id}/pdf`"--}}{{--
+                         --}}{{--                           class="btn btn-sm btn-default" title="Ficha"--}}{{--
+                         --}}{{--                           target="_blank">--}}{{--
+                         --}}{{--                            <i class="fa fa-file-pdf"></i> Ficha--}}{{--
+                         --}}{{--                        </a>--}}{{--
+                     </td>
+                 </tr>
+                 </tbody>
+             </table>
+         </div>--}}
+        <div class="alert alert-warning" v-show="!controle.carregando && lista.length==0">
+            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+        </div>
+
         <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
+            <table class="table table-centered bg-white">
                 <thead>
                 <tr class="bg-default">
                     <th class="text-center" width="30px">
@@ -806,166 +1046,130 @@
                                @click="selecionaTodosMassa">
                     </th>
                     <th>Nome</th>
-                    <th class="text-center">Vaga</th>
                     <th class="text-center">Cargo</th>
-                    <th class="text-center">Área</th>
-                    <th class="text-center">Foto 3x4</th>
-                    <th class="text-center">NR-33</th>
-                    <th class="text-center">NR-35</th>
-                    <th class="text-center">EBTV</th>
-
-                    <th class="text-center">Ultima Atualização</th>
-                    <th class="text-center">Data Admissão</th>
+                    <th class="text-center" v-if="AUTENTICADO.temFilial">CNPJ</th>
+                    <th class="text-center">Centro de Custo</th>
+                    {{--                    <th class="text-center">Área</th>--}}
+                    {{--                    <th>Foto 3x4</th>--}}
+                    {{--                    <th>Ultima Atualização</th>--}}
+                    {{--                    <th>Data Admissão</th>--}}
                     <th class="text-center">
+                        <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Treinamentos" v-tippy
+                                data-toggle="modal"
+                                data-target="#filtroColunas">
+                            <i class="bx bxs-filter-alt" aria-hidden="true"></i>
+                        </button>
                     </th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="resultado in lista">
-                    <td class="text-center">
-                        <label :for="resultado.id">
-                            <input
-                                type="checkbox"
-                                v-model="selecionados"
-                                :value="resultado.id"
-                                :id="resultado.id"
-                                :style="resultado.treinamento ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                :title="resultado.treinamento ? null : 'Não possui treinamento'"
-                                v-if="resultado.treinamento"
-                            >
-                            <input type="checkbox" v-else disabled="disabled" title="Candidato sem treinamento">
+                <template v-for="(item, key) in lista">
+                    <tr>
+                        <td class="text-center">
+                            <label :for="item.id">
+                                <input
+                                    type="checkbox"
+                                    v-model="selecionados"
+                                    :value="item.id"
+                                    :id="item.id"
+                                    :style="item.treinamento ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                    :title="item.treinamento ? null : 'Não possui treinamento'"
+                                    v-if="item.treinamento"
+                                >
+                                <input type="checkbox" v-else disabled="disabled" title="Candidato sem treinamento">
 
-                        </label>
-                    </td>
-                    <td class="text-center">
-                        <label :for="resultado.id">
-                            <input
-                                type="checkbox"
-                                v-model="selecionadosMassa"
-                                :value="resultado.id"
-                                :id="resultado.id"
-                                :style="resultado.id ? 'cursor:pointer' : 'cursor: not-allowed'"
-                            >
-                        </label>
-                    </td>
+                            </label>
+                        </td>
+                        <td class="text-center">
+                            <label :for="item.id">
+                                <input
+                                    type="checkbox"
+                                    v-model="selecionadosMassa"
+                                    :value="item.id"
+                                    :id="item.id"
+                                    :style="item.id ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                >
+                            </label>
+                        </td>
+                        <td class="text-center">
+                            @{{item.curriculo.nome}} <br>
+                            CPF: @{{item.curriculo.cpf}}
+                        </td>
+                        <td class="text-center">
+                            @{{item.vaga_aberta.vaga.nome }}
+                        </td>
 
-                    <td>
-                        @{{resultado.curriculo.nome}} <br>
-                        CPF: @{{resultado.curriculo.cpf}}
-                    </td>
-                    <td class="text-center">
-                        @{{resultado.vaga_aberta_municipio }}
-                    </td>
+                        <td class="text-center"
+                            v-if="AUTENTICADO.temFilial"
+                        >
+                        <span v-if="item.admissao && item.admissao.emp_cnpj">
+                            @{{item.admissao.emp_nome_fantasia}}<br>
+                            (@{{item.admissao.emp_tipo}})
+                        </span>
+                            <span v-else>---</span>
+                        </td>
 
-                    <td class="text-center">
-                        @{{resultado.admissao ? resultado.admissao.cargo : null}}
-                    </td>
-
-                    <td class="text-center">
-                        @{{resultado.admissao ? resultado.admissao.area_etiqueta ?
-                        resultado.admissao.area_etiqueta.label : null : null}}
-                    </td>
-
-                    <td class="text-center">
-                        @{{resultado.curriculo.foto_tres.length > 0 ? 'SIM' : 'Não'}}
-                    </td>
-
-                    <td>
-                        <template v-if="resultado.admissao && resultado.admissao.nr_trinta_tres === 'NÃO SE APLICA'">NÃO
-                            SE APLICA
-                        </template>
-                        <template v-else>
-                            <template v-if="resultado.nr_33">
-                                Data Treinamento: <strong>@{{resultado.nr_33.data_treinamento}}</strong>
-                                <br>
-                                Data Vencimento: <strong>@{{resultado.nr_33.data_vencimento}}</strong>
-                            </template>
-                            <template v-else>
-                                Não realizado
-                            </template>
-                        </template>
-                    </td>
-
-                    <td>
-                        <template v-if="resultado.admissao && resultado.admissao.nr_trinta_cinco === 'NÃO SE APLICA'">
-                            NÃO SE APLICA
-                        </template>
-                        <template v-else>
-                            <template v-if="resultado.nr_35">
-                                Data Treinamento: <strong>@{{resultado.nr_35.data_treinamento}}</strong>
-                                <br>
-                                Data Vencimento: <strong>@{{resultado.nr_35.data_vencimento}}</strong>
-                            </template>
-                            <template v-else>
-                                Não realizado
-                            </template>
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="resultado.ebtv">
-                            Data Treinamento: <strong>@{{resultado.ebtv.data_treinamento}}</strong>
-                            <br>
-                            Data Vencimento: <strong>@{{resultado.ebtv.data_vencimento}}</strong>
-                        </template>
-                        <template v-else>
-                            Não realizado
-                        </template>
-                    </td>
-
-                    <td class="text-center">
-                        @{{ resultado.treinamento ? resultado.treinamento.updated_at : null }} <br>
-                        @{{ resultado.treinamento ? resultado.treinamento.quem_cadastrou.nome : null }}
-                    </td>
-
-                    <td class="text-center">
-                        @{{ resultado.admissao ? resultado.admissao.data_admissao : null }}
-                    </td>
-
-                    <td class="text-center" width="30px">
-                        <div class="dropdown dropleft show">
-                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </a>
-
-                            <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item" href="javascript://" title="Atualizar treinamento"
-                                   @click.prevent="formAlterar(resultado.id)"
-                                   data-toggle="modal"
-                                   data-target="#janelaTreinamento">
-                                    Atualizar
-                                </a>
-                                <a class="dropdown-item" href="javascript://" title="Enviar via e-mail"
-                                   v-if="resultado.treinamento"
-                                   @click.prevent="abriJanelaEnviar(resultado)"
-                                   data-toggle="modal"
-                                   data-target="#janelaAvaliar">
-                                    Enviar via e-mail
+                        <td class="text-center">
+                        <span v-if="item.admissao && item.admissao.emp_centro_custo">
+                             @{{item.admissao.emp_centro_custo}}
+                        </span>
+                            <span v-else>---</span>
+                        </td>
+                        <td>
+                            <div class="dropdown dropleft show">
+                                <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                                   id="dropdownMenuLink"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
-                            </div>
-                        </div>
+                                <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item" href="javascript://" title="Atualizar treinamento"
+                                       @click.prevent="formAlterar(item.id)"
+                                       data-toggle="modal"
+                                       data-target="#janelaTreinamento">
+                                        Atualizar
+                                    </a>
+                                    <a class="dropdown-item" href="javascript://" title="Enviar via e-mail"
+                                       v-if="item.treinamento"
+                                       @click.prevent="abriJanelaEnviar(item)"
+                                       data-toggle="modal"
+                                       data-target="#janelaAvaliar">
+                                        Enviar via e-mail
+                                    </a>
 
-
-                        {{--                        <button href="javascript://" class="btn btn-sm btn-default" title="Enviar Via e-mail"--}}
-                        {{--                                v-if="resultado.carteira"--}}
-                        {{--                                @click.prevent="formAlterar(resultado.curriculo_id)"--}}
-                        {{--                                data-toggle="modal"--}}
-                        {{--                                data-target="#janelaCadastrar">--}}
-                        {{--                            <i class="fas fa-share-square"></i> Enviar--}}
-                        {{--                        </button>--}}
-                        {{--                        <a v-if="resultado.admissao" :href="`admissao/${resultado.curriculo.id}/pdf`"--}}
-                        {{--                           class="btn btn-sm btn-default" title="Ficha"--}}
-                        {{--                           target="_blank">--}}
-                        {{--                            <i class="fa fa-file-pdf"></i> Ficha--}}
-                        {{--                        </a>--}}
-                    </td>
-                </tr>
+                                </div>
+                        </td>
+                    </tr>
+                    <tr v-if="item.treinamento && item.treinamento.vencimentos.length">
+                        <td colspan="7">
+                            <table class="table table-bordered table-sm table-secondary" cellspacing="0"
+                                   cellpadding="0">
+                                <tr>
+                                    <th class="text-center">Treinamento</th>
+                                    <th class="text-center">Data Treinamento</th>
+                                    <th class="text-center">Data Vencimento</th>
+                                    <th class="text-center">Exibi na Carteira</th>
+                                </tr>
+                                <tr v-for="v in item.treinamento.vencimentos"
+                                    v-if="listaColunasTreinamentos && listaColunasTreinamentos.find(col => col.id === v.id).checked"
+                                >
+                                    <td class="text-center">@{{ v.label }}</td>
+                                    <td class="text-center">@{{ v.pivot.data_treinamento }}</td>
+                                    <td class="text-center">@{{ v.pivot.data_vencimento }}</td>
+                                    <td class="text-center">@{{ v.exibir_na_carteira ? 'Sim' : 'Não' }}</td>
+                                </tr>
+                            </table>
+                        </td>
+                        {{--                        <table v-for="v in item.treinamento.vencimentos">--}}
+                        {{--                            <tr>--}}
+                        {{--                                <td>@{{ v }}</td>--}}
+                        {{--                            </tr>--}}
+                        {{--                        </table>--}}
+                    </tr>
+                </template>
                 </tbody>
             </table>
-        </div>
-        <div class="alert alert-warning" v-show="!controle.carregando && lista.length==0">
-            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
         </div>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"

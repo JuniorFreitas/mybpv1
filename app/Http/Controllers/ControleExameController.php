@@ -370,41 +370,7 @@ class ControleExameController extends Controller
                     $q->whereEncaminhadoExame(true);
                 })->whereHas('Admissao', function ($q) {
                     $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
-                })->whereDoesntHave('Demissao');
-
-                if ($request->filled('campoCnpj')) {
-                    $centros_custos = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
-                    if (!$request->filled('campoCentroCusto')) {
-                        $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
-                            $cc = $centros_custos['centros_custos'][$request->campoCnpj];
-                            if ($cc[0]['matriz']) {
-                                $query->where(function ($query) use ($cc) {
-                                    $query->whereIn('centro_custo_id', $cc->pluck('id')
-                                        ->toArray())->orWhere('centro_custo_id', null);
-                                })->where('filial', false);
-                            } else {
-                                $query->where(function ($query) use ($cc) {
-                                    $query->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')
-                                        ->toArray())->orWhere('centro_custo_filial_id', null);
-                                })->where('filial', true);
-                            }
-                        });
-                    } else {
-                        $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
-                            $cc = $centros_custos['centros_custos'][$request->campoCnpj];
-                            if ($cc[0]['matriz']) {
-                                $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
-                                $query->where('centro_custo_id', $campoCentroCusto)
-                                    ->where('filial', false);
-                            } else {
-                                $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
-                                $query->where('centro_custo_filial_id', $campoCentroCusto)
-                                    ->where('filial', true);
-                            }
-                        });
-                    }
-                }
-
+                })->whereDoesntHave('Demissao')->filtrarPorCnpjECentroCusto($request);
             }
 
             if ($request->status == 'demitidos') {
@@ -412,40 +378,9 @@ class ControleExameController extends Controller
                     $q->whereEncaminhadoExame(true);
                 })->whereHas('Admissao', function ($q) {
                     $q->where('status', Admissao::STATUS_DEMITIDO);
-                })->Has('Demissao')->with('Demissao');
-
-                if ($request->filled('campoCnpj')) {
-                    $centros_custos = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
-                    if (!$request->filled('campoCentroCusto')) {
-                        $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
-                            $cc = $centros_custos['centros_custos'][$request->campoCnpj];
-                            if ($cc[0]['matriz']) {
-                                $query->where(function ($query) use ($cc) {
-                                    $query->whereIn('centro_custo_id', $cc->pluck('id')
-                                        ->toArray())->orWhere('centro_custo_id', null);
-                                })->where('filial', false);
-                            } else {
-                                $query->where(function ($query) use ($cc) {
-                                    $query->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')
-                                        ->toArray())->orWhere('centro_custo_filial_id', null);
-                                })->where('filial', true);
-                            }
-                        });
-                    } else {
-                        $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
-                            $cc = $centros_custos['centros_custos'][$request->campoCnpj];
-                            if ($cc[0]['matriz']) {
-                                $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
-                                $query->where('centro_custo_id', $campoCentroCusto)
-                                    ->where('filial', false);
-                            } else {
-                                $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
-                                $query->where('centro_custo_filial_id', $campoCentroCusto)
-                                    ->where('filial', true);
-                            }
-                        });
-                    }
-                }
+                })->Has('Demissao')
+                    ->with('Demissao')
+                    ->filtrarPorCnpjECentroCusto($request);;
             }
         }
 
