@@ -102,26 +102,7 @@
                             </tr>
                             </thead>
                         </table>
-                        <!--                    <h5 class="text-center">{{ item.nome }}</h5>-->
-                        <!--                    <h6 class="text-center">{{ item.cargo }}</h6>-->
-                        <!--                    <div class="row">-->
-                        <!--                        <div class="col-md-6" v-for="(tr, idx) in item.treinamentos" :key="idx">-->
-                        <!--                            <ul class="list-group list-group-flush mb-3">-->
-                        <!--                                <li class="list-group-item" :class="tr.dias_vencer <= 30 ? 'text-white bg-danger': ''">-->
-                        <!--                                    <strong>Treinamento: </strong>{{ tr.label }} / ({{ item.tipo }})-->
-                        <!--                                </li>-->
-                        <!--                                <li class="list-group-item" :class="tr.dias_vencer <= 30 ? 'text-white bg-danger': ''">-->
-                        <!--                                    <strong>Data do treinamento: </strong>{{ tr.data_treinamento }}-->
-                        <!--                                </li>-->
-                        <!--                                <li class="list-group-item" :class="tr.dias_vencer <= 30 ? 'text-white bg-danger': ''">-->
-                        <!--                                    <strong>Data de vencimento: </strong>{{ tr.data_vencimento }}-->
-                        <!--                                </li>-->
-                        <!--                                <li class="list-group-item" :class="tr.dias_vencer <= 30 ? 'text-white bg-danger': ''">-->
-                        <!--                                    <strong>Vence em {{ tr.dias_vencer }} dias</strong>-->
-                        <!--                                </li>-->
-                        <!--                            </ul>-->
-                        <!--                        </div>-->
-                        <!--                    </div>-->
+
                     </div>
                 </div>
             </template>
@@ -131,7 +112,6 @@
 <script>
 import ExportacaoMixin from '../../../mixins/Exportacoes';
 
-const XLSX = require("xlsx");
 export default {
     mixins: [ExportacaoMixin],
     data() {
@@ -176,22 +156,19 @@ export default {
     },
     methods: {
         async gerarArquivoXls() {
+            const XLSX = require("xlsx");
+
             const dataHoraAtual = new Date().toLocaleString("en-US", {
                 timeZone: "America/Sao_Paulo",
                 hour12: false,
-            });
-
-            const dataHoraFormatada = dataHoraAtual
-                .replace(/\/|,|\s|:/g, "_")
+            }).replace(/\/|,|\s|:/g, "_")
                 .replace(/\//g, "-");
 
+            const filename = `relatorio_treinamento_${AUTENTICADO.empresa_id}_${AUTENTICADO.user_id}_${dataHoraAtual}.xlsx`;
             const jsonDataArray = this.dados;
 
-            // Cria um objeto de workbook
             const wb = XLSX.utils.book_new();
-
-            // Cria uma planilha de treinamentos
-            const wsTreinamentos = XLSX.utils.json_to_sheet([]);
+            const ws = XLSX.utils.json_to_sheet([]);
 
             let cabecalho = [
                 "Nome",
@@ -209,14 +186,13 @@ export default {
             ];
 
 
-            XLSX.utils.sheet_add_aoa(wsTreinamentos, [
+            XLSX.utils.sheet_add_aoa(ws, [
                 cabecalho
             ], {origin: 0});
 
-            // Adiciona todas as linhas dos treinamentos à planilha
             jsonDataArray.forEach(function (jsonData) {
                 jsonData.treinamentos.forEach(function (treinamento) {
-                    XLSX.utils.sheet_add_aoa(wsTreinamentos, [
+                    XLSX.utils.sheet_add_aoa(ws, [
                         [
                             jsonData.nome,
                             jsonData.cargo,
@@ -235,11 +211,10 @@ export default {
                 });
             });
 
-            // Adiciona a planilha de treinamentos ao workbook
-            XLSX.utils.book_append_sheet(wb, wsTreinamentos, 'Treinamentos');
+            XLSX.utils.book_append_sheet(wb, ws, 'planilha');
 
-            // Salva o arquivo XLSX
-            XLSX.writeFile(wb, `relatorio_treinamento_${AUTENTICADO.empresa_id}_${AUTENTICADO.user_id}__${dataHoraFormatada}.xlsx`);
+
+            XLSX.writeFile(wb, filename);
         },
 
         async changeCnpj() {
