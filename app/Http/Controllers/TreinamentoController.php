@@ -379,15 +379,10 @@ class TreinamentoController extends Controller
         if ($campoPeriodoTreinado) {
             $periodo_treinado = explode(' até ', $request->periodoTreinado);
             $dataInicio_treinado = new DataHora($periodo_treinado[0] . ' 00:00:00');
-            $dataFim_treinado = new DataHora($periodo_treinado[1] . '23:59:59');
+            $dataFim_treinado = new DataHora($periodo_treinado[1] . ' 23:59:59');
             $resultado->whereHas('Treinamento', function ($query) use ($dataInicio_treinado, $dataFim_treinado) {
                 $query->where('created_at', '>=', $dataInicio_treinado->dataInsert())->where('created_at', '<=', $dataFim_treinado->dataInsert());
             });
-//            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio_treinado, $dataFim_treinado) {
-//                $query->whereHas('Vencimentos', function ($q) use ($dataInicio_treinado, $dataFim_treinado) {
-//                    $q->where('data_treinamento', '>=', $dataInicio_treinado->dataInsert())->where('data_treinamento', '<=', $dataFim_treinado->dataInsert());
-//                });
-//            });
         }
 
         if ($request->filled('campoBusca')) {

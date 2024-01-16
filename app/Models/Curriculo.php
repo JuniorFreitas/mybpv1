@@ -666,6 +666,7 @@ class Curriculo extends Model
     public static function getTelPrincipal($curriculo_id, $mostraTipo = true): ?string
     {
         $TelPrincipal = TelefoneCurriculo::whereCurriculoId($curriculo_id)->wherePrincipal(true)->first();
+        $tipo = '';
         if ($TelPrincipal && $mostraTipo) {
             $tipo = " ({$TelPrincipal->tipo})";
         }
