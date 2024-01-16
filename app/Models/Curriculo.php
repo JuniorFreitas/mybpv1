@@ -174,6 +174,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo whereViajar($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Curriculo withoutTrashed()
+ * @property-read \App\Models\TelefoneCurriculo|null $TelPrincipal
  * @mixin \Eloquent
  */
 class Curriculo extends Model

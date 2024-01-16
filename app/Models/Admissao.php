@@ -168,6 +168,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsuarioId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao withoutTrashed()
+ * @property-read \App\Models\Afastamento|null $Afastamento
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao centroCustoPorCnpj($request, $centros_custos)
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao naoAfastados()
  * @mixin \Eloquent
  */
 class Admissao extends Model

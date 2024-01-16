@@ -33,6 +33,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereTitulo($value)
+ * @property bool $auto_avaliacao
+ * @property mixed|null $fluxo
+ * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereAutoAvaliacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereFluxo($value)
  * @mixin \Eloquent
  */
 class Avaliacao extends Model

@@ -43,6 +43,7 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereVencido($value)
+ * @property-read \App\Models\FeedbackCurriculo|null $Feedback
  * @mixin \Eloquent
  */
 class Examesesmt extends Model
@@ -119,6 +120,12 @@ class Examesesmt extends Model
     {
         return $this->hasMany(ExameFuncionario::class, 'id', 'exame_funcionario_id');
     }
+
+    public function Feedback()
+    {
+        return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
+    }
+
 
     protected static function booted()
     {

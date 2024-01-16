@@ -197,6 +197,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo whereVagasAbertasId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo withoutTrashed()
+ * @property-read \App\Models\Examesesmt|null $AsoAdmissional
+ * @property-read \App\Models\TelefoneCurriculo|null $telCadPrincipal
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo filtrarPorCnpjECentroCusto($request)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo filtrarPorNome($dados)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo filtrarPorTipoExame($dados)
+ * @method static \Illuminate\Database\Eloquent\Builder|FeedbackCurriculo filtrarPorUltimoAso($dados)
  * @mixin \Eloquent
  */
 class FeedbackCurriculo extends Model
@@ -319,6 +325,16 @@ class FeedbackCurriculo extends Model
             $this->attributes['updated_at'] = (new DataHora())->dataHoraInsert();
         } else {
             $this->attributes['updated_at'] = null;
+        }
+    }
+
+    private function formatDate($value, $field)
+    {
+        if (!is_null($value)) {
+            $data = new DataHora($this->attributes[$field]);
+            return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto();
+        } else {
+            $this->attributes[$field] = null;
         }
     }
 
@@ -913,6 +929,42 @@ class FeedbackCurriculo extends Model
             });
         });
 
+    }
+
+    public function scopeFiltrarPorUltimoAso($query, $dados)
+    {
+        return $query->whereHas('UltimoAso', function ($q) use ($dados) {
+            $filtroVencimento = $dados['filtroVencimento'] == 'true';
+            if ($filtroVencimento) {
+                $periodo = explode(' até ', $dados['campoVencimento']);
+                $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+                $dataFim = new DataHora($periodo[1] . ' 23:59:59');
+                $q->whereBetween('data_vencimento', [
+                    $dataInicio->dataHoraInsert(), $dataFim->dataHoraInsert()
+                ]);
+            }
+            if (!is_null($dados['campoVencido'])) {
+                $q->where('vencido', $dados['campoVencido']);
+            }
+        });
+    }
+
+    public function scopeFiltrarPorTipoExame($query, $dados)
+    {
+        return $query->whereHas('UltimoAso.ExameFuncionario', function ($q) use ($dados) {
+            if (!is_null($dados['campoTipoExame'])) {
+                $q->where('exame_tipo_id', $dados['campoTipoExame']);
+            }
+        });
+    }
+
+    function scopeFiltrarPorNome($query, $dados)
+    {
+        return $query->whereHas('Curriculo', function ($q) use ($dados) {
+            if (!is_null($dados['campoBusca'])) {
+                $q->where('nome', 'like', '%' . $dados['campoBusca'] . '%');
+            }
+        });
     }
 
     /**
