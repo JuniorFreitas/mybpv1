@@ -186,10 +186,16 @@ const app = new Vue({
 
     },
     computed: {
+        isColunaTreinamentoSelecionada() {
+            return (v) => {
+                return (
+                    this.listaColunasTreinamentos &&
+                    this.listaColunasTreinamentos.some((col) => col.id === v.id && col.checked)
+                );
+            };
+        },
         emTreinamentos() {
-            return this.lista.filter(item => {
-                return item.treinamento
-            })
+            return this.lista.filter(item => item.treinamento)
         },
         tudoMarcado() {
             let totalTreinamento = this.emTreinamentos.length
@@ -213,31 +219,23 @@ const app = new Vue({
             return resultado
         },
         emTreinamentosMassa() {
-            return this.lista.filter(item => {
-                return item.treinamento
-            })
+            return this.lista.filter(item => item.treinamento)
         },
+
         tudoMarcadoMassa() {
-            let totalTreinamento = this.emTreinamentosMassa.length
-            let totalEncontrado = 0
+            const totalTreinamento = this.emTreinamentosMassa.length;
 
-            if (totalTreinamento === 0) {
-                return false
-            }
+            if (totalTreinamento === 0) return false;
 
-            this.emTreinamentosMassa.forEach(item => {
-                let id = item.id
-                if (this.selecionadosMassa.indexOf(id) >= 0) {
-                    totalEncontrado++
-                    //faz nada
-                } else {
-                    return false
-                }
-            })
-            let resultado = totalTreinamento === totalEncontrado
-            this.selecionaTudoMassa = resultado
-            return resultado
+            const todosSelecionados = this.emTreinamentosMassa.every(item => {
+                const id = item.id;
+                return this.selecionadosMassa.includes(id);
+            });
+
+            this.selecionaTudoMassa = todosSelecionados;
+            return todosSelecionados;
         },
+
         paramsExport() {
             let dados = this.controle.dados
             dados.selecionados = this.selecionados
@@ -255,12 +253,9 @@ const app = new Vue({
     },
     methods: {
         marcarDesmarcarTodosTreinamentosColuna(valor) {
-
             this.listaColunasTreinamentos.map(item => {
                 item.checked = valor
             });
-
-
         },
         changeCnpj() {
             this.controle.dados.campoCentroCusto = "";
@@ -301,50 +296,35 @@ const app = new Vue({
             this.atualizar()
         },
         selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo
-            if (this.selecionaTudo) {
-                this.emTreinamentos.map(item => {
-                    let id = item.id
-                    if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id)
-                    }
-                })
-            } else {
-                this.emTreinamentos.map(item => {
-                    let id = item.id
-                    let index = this.selecionados.indexOf(id)
-                    if (index >= 0) {
-                        this.selecionados.splice(index, 1)
-                    }
-                })
-            }
+            this.selecionaTudo = !this.selecionaTudo;
+
+            const selectedSet = new Set(this.selecionados);
+
+            this.emTreinamentos.forEach(item => {
+                const id = item.id;
+                this.selecionaTudo ? selectedSet.add(id) : selectedSet.delete(id);
+            });
+
+            this.selecionados = Array.from(selectedSet);
         },
 
         selecionaTodosMassa() {
-            this.selecionaTudoMassa = !this.selecionaTudoMassa
-            if (this.selecionaTudoMassa) {
-                this.lista.map(item => {
-                    let id = item.id
-                    if (this.selecionadosMassa.indexOf(id) === -1) {
-                        this.selecionadosMassa.push(id)
-                    }
-                })
-            } else {
-                this.lista.map(item => {
-                    let id = item.id
-                    let index = this.selecionadosMassa.indexOf(id)
-                    if (index >= 0) {
-                        this.selecionadosMassa.splice(index, 1)
-                    }
-                })
-            }
+            this.selecionaTudoMassa = !this.selecionaTudoMassa;
+
+            const selectedSet = new Set(this.selecionadosMassa);
+
+            this.lista.forEach(item => {
+                const id = item.id;
+                this.selecionaTudoMassa ? selectedSet.add(id) : selectedSet.delete(id);
+            });
+
+            this.selecionadosMassa = Array.from(selectedSet);
         },
 
         gerarCarteiras() {
             axios.get(`${URL_ADMIN}/treinamento/carteiras`, {selecionados: this.selecionados})
                 .then(response => {
                     let data = response.data
-
                 })
                 .catch(error => {
 
@@ -357,23 +337,21 @@ const app = new Vue({
             setupCampo()
         },
 
-        abrirFormMassa() {
-            this.preload = true
+        async abrirFormMassa() {
+            this.preload = true;
 
             if (this.formMassa.listaVencimentos.length > 0 && !this.formMassaDefault) {
-                this.formMassaDefault = _.cloneDeep(this.formMassa) //copia
+                this.formMassaDefault = await _.cloneDeep(this.formMassa); // Cópia profunda assíncrona
             }
 
-            Object.assign(this.formMassa, this.formMassaDefault)
+            _.assign(this.formMassa, this.formMassaDefault);
 
-            this.atualizado = false
-            this.cadastrando = false
-            this.visualizar = false
-            this.cadastrado = false
+            this.atualizado = false;
+            this.cadastrando = false;
+            this.visualizar = false;
+            this.cadastrado = false;
 
-            setTimeout(() => {
-                this.preload = false
-            }, 1000)
+            this.preload = false; // Remova o indicador de carregamento
         },
 
         formAlterar(curriculo_id) {
@@ -633,7 +611,6 @@ const app = new Vue({
             if (!this.AUTENTICADO.temFilial) {
                 this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0];
             }
-
             this.controle.carregando = false
         },
         carregando() {
