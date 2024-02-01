@@ -169,7 +169,7 @@ class CentroCusto extends Model
     private function forgetsCache($empresaId): void
     {
         cache()->forget("cc_list_{$empresaId}");
-        $this->generateAndCacheReports($empresaId);
+        $this->listaCentroCustoPorCnpj($empresaId);
     }
 
     /**
@@ -178,10 +178,10 @@ class CentroCusto extends Model
     protected static function booted(): void
     {
         static::created(function ($model) {
-            $this->forgetsCache($model->empresa_id);
+            $model->forgetsCache($model->empresa_id);
         });
         static::updated(function ($model) {
-            $this->forgetsCache($model->empresa_id);
+            $model->forgetsCache($model->empresa_id);
         });
     }
 }
