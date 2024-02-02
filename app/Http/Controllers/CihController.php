@@ -383,6 +383,9 @@ class CihController extends Controller
      */
     public function filtro(Request $request)
     {
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $ccMatriz = collect($cc['centros_custos']['12557849000140'])->where('ativo', '=', true);
+
         if (auth()->user()->can('admissao_cih_privilegio_adm')) {
             $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
                     $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
@@ -393,6 +396,18 @@ class CihController extends Controller
                     'ResponsavelAprovacao:id,nome',
                     'RhAprovacao:id,nome']
             );
+        } elseif (auth()->user()->grupo_id == 113) { //pog para Montisol
+            $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
+                    $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
+                }, 'Tag:id,label',
+                    'Area',
+                    'CentroDeCusto',
+                    'ResponsavelLancamento:id,nome',
+                    'ResponsavelAprovacao:id,nome',
+                    'RhAprovacao:id,nome']
+            )->whereHas('CentroDeCusto', function ($query) use ($ccMatriz) {
+                $query->whereIn('id', $ccMatriz->pluck('id')->toArray());
+            });
         } else {
             $resultado = Cih::vinculados()->with(
                 ['Colaboradores.Demissao' => function ($query) {
@@ -406,7 +421,8 @@ class CihController extends Controller
             );
         }
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        $filtroPeriodo = $request->filtroPeriodo;
+
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
             $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
@@ -425,10 +441,9 @@ class CihController extends Controller
             $status = $request->campoStatus;
             $resultado->when($status == 'aberto', function ($query) {
                 return $query->whereStatus('aberto');
+            })->when($status == 'aprovado_gestor', function ($query) {
+                return $query->where('status', 'aprovado')->whereNull('resposta_rh');
             })
-                ->when($status == 'aprovado_gestor', function ($query) {
-                    return $query->where('status', 'aprovado')->whereNull('resposta_rh');
-                })
                 ->when($status == 'aprovado_rh', function ($query) {
                     return $query->where('resposta_rh', 'aprovado');
                 })
