@@ -383,8 +383,7 @@ class CihController extends Controller
      */
     public function filtro(Request $request)
     {
-        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
-        $ccMatriz = collect($cc['centros_custos']['12557849000140'])->where('ativo', '=', true);
+
 
         if (auth()->user()->can('admissao_cih_privilegio_adm')) {
             $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
@@ -397,6 +396,8 @@ class CihController extends Controller
                     'RhAprovacao:id,nome']
             );
         } elseif (auth()->user()->grupo_id == 113) { //pog para Montisol
+            $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            $ccMatriz = collect($cc['centros_custos']['12557849000140'])->where('ativo', '=', true);
             $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
                     $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
                 }, 'Tag:id,label',
