@@ -43,10 +43,25 @@ const app = new Vue({
         this.formAvaliarFinal.resultChart = dados.resultChart;
         this.formAvaliarFinal.planos_acoes = dados.planos_acoes;
 
-        window.print();
+        this.print();
+
+
+        // Chamar a função quando a página estiver completamente carregada
+        window.onload = () => {
+            this.fecharJanela();
+        };
+        // window.print();
 
         // window.addEventListener("afterprint", function() {
         //     window.close();
         // });
+    },
+    methods: {
+        print: function () {
+            window.print();
+        },
+        fecharJanela: function () {
+            window.close();
+        },
     }
 });

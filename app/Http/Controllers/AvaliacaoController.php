@@ -288,20 +288,22 @@ class AvaliacaoController extends Controller
         });
 
         if ($request->filled('campoBusca')) {
-            $resultado->where("titulo", "like", "%$request->campoBusca%")
-                ->orWhere('id', $request->campoBusca);
+            $resultado->where(function ($query) use ($request) {
+                $query->where('titulo', 'like', "%$request->campoBusca%")
+                    ->orWhere('id', $request->campoBusca);
+            });
         }
 
         $Avaliacao = Avaliacao::select(['id', 'auto_avaliacao'])->whereAtivo(true)->orderBy('titulo')->limit(1)->first();
 
-
         if ($request->filled('campoAvaliacao')) {
             $Avaliacao = Avaliacao::select(['id', 'auto_avaliacao'])->whereId($request->campoAvaliacao)->first();
-            if (!$Avaliacao->auto_avaliacao) {
-                if ($request->filled('campoStatus')) {
-                    $resultado->whereStatus($request->campoStatus);
-                }
 
+            if ($request->filled('campoStatus')) {
+                $resultado->whereStatus($request->campoStatus);
+            }
+
+            if (!$Avaliacao->auto_avaliacao) {
                 $resultado->where('principal', true);
             }
             $resultado->where('avaliacao_id', $request->campoAvaliacao);
@@ -474,13 +476,22 @@ class AvaliacaoController extends Controller
             ], 401);
         }
 
+//        $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
+//            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
+//            ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
+//            ->withSum('Respostas', 'nota')
+//            ->with('Respostas')
+//            ->orderBy('principal', 'desc')
+//            ->get();
+
         $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
-            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
+//            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
             ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
             ->withSum('Respostas', 'nota')
             ->with('Respostas')
             ->orderBy('principal', 'desc')
             ->get();
+
 
         $avaliacaoFeedbackFuncionario = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
             ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_FUNCIONARIO)
@@ -509,6 +520,7 @@ class AvaliacaoController extends Controller
                     $nome_avaliador = $nome_exp[0] . ' ' . $nome_exp[count($nome_exp) - 1];
                     return [
                         'id' => $item->avaliador_id,
+                        'origem' => $item->origem_feedback,
                         'comentario' => $item->comentario,
                         'nome' => mb_strtoupper($nome_avaliador),
                         'nota' => $item->respostas->where('topico_id', $key)->first()->nota
@@ -588,7 +600,9 @@ class AvaliacaoController extends Controller
         }
 
         $total_questoes = collect($result_topico_agrupado)->collapse()->count();
-        $nota_final = (float)number_format((($totalAval / count($avaliacoesFeedbacks)) / $total_questoes) / count($result_topico_agrupado), 2, '.', '.');// total de avaliações / total de avaliadores / total de questoes / total de topicos
+        $nota_final = (float)number_format((($totalAval / count($avaliacoesFeedbacks)) / $total_questoes) / count($result_topico_agrupado), 2, '.', '.');
+        // total de avaliações / total de avaliadores / total de questoes / total de topicos
+
 
         return [
             'dados_do_funcionario' => $dadosDoFuncionario,

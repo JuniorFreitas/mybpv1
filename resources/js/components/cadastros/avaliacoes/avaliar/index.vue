@@ -46,7 +46,9 @@
                         <tr>
                             <th>{{ item[index].topico_pai }}</th>
                             <th class="text-center" v-for="(avaliador, id) in item[0].avaliadores" :key="avaliador.id">
-                                Avaliador {{ id + 1 }}
+                                <span>
+                                    {{ avaliador.origem === 'Funcionario' ? 'Autoavaliação' : 'Avaliador ' + (id + 1) }}
+                                </span>
                             </th>
                             <th class="text-center">MÉDIA</th>
                         </tr>
@@ -73,7 +75,10 @@
                         <tr>
                             <th class="text-center"
                                 v-for="(avaliador,id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                :key="avaliador.id">Avaliador {{ id + 1 }}
+                                :key="avaliador.id">
+                                <span>
+                                    {{ avaliador.origem === 'Funcionario' ? 'Autoavaliação' : 'Avaliador ' + (id + 1) }}
+                                </span>
                             </th>
                         </tr>
                         </thead>
@@ -690,7 +695,11 @@ export default {
                 {label: 'Avaliada pelo Gestor', value: 'Avaliada'},
                 {label: 'Completa', value: 'Finalizada'},
             ];
-            let statusComAutoAvaliacao = ['Pendente', 'Avaliada', 'Finalizada'];
+            let statusComAutoAvaliacao = [
+                {label: 'Pendente', value: 'Pendente'},
+                {label: 'Avaliada', value: 'Avaliada'},
+                {label: 'Finalizada', value: 'Finalizada'},
+            ];
 
             let status = this.selecionadaAvaliacao?.auto_avaliacao ? statusComAutoAvaliacao : statusSemAutoAvaliacao;
             return status ?? [];

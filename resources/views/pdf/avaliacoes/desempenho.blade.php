@@ -50,7 +50,7 @@
                 <tr>
                     <th style="text-align: left">@{{ item[index].topico_pai }}</th>
                     <th class="text-center" v-for="(avaliador, id) in item[0].avaliadores" :key="avaliador.id">
-                        AVALIADOR @{{id + 1}}
+                        @{{ avaliador.origem === 'Funcionario' ? 'AUTOAVALIAÇÃO' : 'AVALIADOR ' + (id + 1) }}
                     </th>
                     <th class="text-center">MÉDIA</th>
                 </tr>
@@ -75,11 +75,15 @@
             </table>
 
             <table class="table" v-if="formAvaliarFinal.result_topico_pai_agrupado.length > 0">
-                <tr>
-                    <td v-for="(avaliador,id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                <tr v-for="(avaliador,id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                    :key="avaliador.id">
+                    <td
                         style="border-bottom: 1px solid black"
-                        :key="avaliador.id">
-                        <h3>CONSIDERAÇÕES DO AVALIADOR @{{ id+1 }}</h3>
+                    >
+                        <h3>
+                            CONSIDERAÇÕES @{{ avaliador.origem === 'Funcionario' ? 'DA AUTOAVALIAÇÃO' : 'DO AVALIADOR '
+                            + (id+1) }}
+                        </h3>
                         <p class="texto">
                             @{{ avaliador.comentario }}
                         </p>

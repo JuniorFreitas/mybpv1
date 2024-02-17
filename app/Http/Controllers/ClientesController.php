@@ -249,6 +249,10 @@ class ClientesController extends Controller
                 })->pluck('id');
 
                 $papel->habilidades()->attach($habilidades);
+
+                $this->criaOuAtualizaEmpresaCliente($cliente->id);
+                $this->criaOuAtualizaGrupoAdm($cliente->id);
+
                 \Artisan::call('mybp:grupoClinicaExame ' . $cliente->id);
 
                 DB::commit();
@@ -611,6 +615,10 @@ class ClientesController extends Controller
                 $papel->habilidades()->detach($habilidadesRetiradas);
             }
 
+            $this->criaOuAtualizaEmpresaCliente($cliente->id);
+            $this->criaOuAtualizaGrupoAdm($cliente->id);
+
+            (new Cliente())->Cnpjs($cliente->id);
             DB::commit();
             return response()->json([], 201);
 
@@ -624,6 +632,57 @@ class ClientesController extends Controller
             ], 400);
         }
 
+    }
+
+    private function criaOuAtualizaGrupoAdm($empresa_id)
+    {
+        $empresa = DB::table('clientes')->find($empresa_id, ['id', 'nome_fantasia']);
+
+        $nomeGrupo = 'Administrador - ' . $empresa->nome_fantasia;
+
+        $queryGrupoAdm = DB::table('papeis')
+            ->where('empresa_id', $empresa_id)
+            ->where('nome', $nomeGrupo)
+            ->first();
+
+        $queryHabilidadesEmpresa = DB::table('papeis')
+            ->where('empresa_id', $empresa_id)
+            ->where('master', true)
+            ->join('papeis_habilidades', 'papeis.id', '=', 'papeis_habilidades.papel_id')
+            ->pluck('habilidade_id')
+            ->toArray();
+
+        if (is_null($queryGrupoAdm)) {
+            $idGP = DB::table('papeis')->insertGetId([
+                'nome' => $nomeGrupo,
+                'descricao' => 'Grupo para administradores',
+                'empresa_id' => $empresa_id,
+                'email' => '',
+                'ativo' => true
+            ]);
+        } else {
+            $idGP = $queryGrupoAdm->id;
+        }
+
+        DB::table('papeis_habilidades')
+            ->where('papel_id', $idGP)
+            ->delete();
+
+        DB::table('papeis_habilidades')->insert(array_map(function ($habilidade) use ($idGP) {
+            return [
+                'papel_id' => $idGP,
+                'habilidade_id' => $habilidade
+            ];
+        }, $queryHabilidadesEmpresa));
+    }
+
+
+    private function criaOuAtualizaEmpresaCliente($empresaId)
+    {
+        $query = DB::table('empresa_clientes')->where('empresa_id', $empresaId)->where('cliente_id', $empresaId);
+        if ($query->count() == 0) {
+            $query->insert(['empresa_id' => $empresaId, 'cliente_id' => $empresaId]);
+        }
     }
 
     /**

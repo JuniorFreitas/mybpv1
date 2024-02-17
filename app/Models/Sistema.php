@@ -647,6 +647,7 @@ class Sistema
         }
     }
 
+
     public static function grupoClinicaExame($empresa_id)
     {
         $Empresas = \App\Models\User::select('id', 'nome', 'empresa_id')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true);
