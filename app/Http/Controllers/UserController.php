@@ -379,7 +379,7 @@ class UserController extends Controller
                 $exp = new DataHora();
                 $exp->addHora(6);
                 $recSenha = $usuario->RecuperacaoSenha()->create([
-                    'token' => \Str::random(8),
+                    'token' => mb_strtoupper(\Str::random(6)),
                     'expiracao' => $exp->dataHoraInsert(),
                     'ip_solicitacao' => $request->ip(),
                     'solicitacao' => (new DataHora())->dataHoraInsert(),
@@ -404,9 +404,12 @@ class UserController extends Controller
         }
     }
 
-    public function recuperaSenha(Request $request, $token)
+    public function recuperaSenhaPost(Request $request)
     {
-        $recuperacao = RecuperacaoSenha::whereToken($token)->whereRecuperado(false)->where('expiracao', '>=', (new DataHora())->dataHoraInsert())->first();
+        $recuperacao = RecuperacaoSenha::whereToken($request->token)
+            ->where('recuperado', false)
+            ->where('expiracao', '>=', (new DataHora())->dataHoraInsert())
+            ->first();
 
         if ($recuperacao) {
             $recuperacao->update([
@@ -421,7 +424,20 @@ class UserController extends Controller
 
             \Auth::login($recuperacao->user);
 
-            return redirect()->route('g.usuarios.alterar-senha.index');
+            return response()->json(['msg' => 'Senha recuperada com sucesso'], 201);
+        } else {
+            return response()->json(['msg' => 'Token inválido'], 404);
+        }
+    }
+
+    public function recuperaSenha(Request $request, $token)
+    {
+        $recuperacao = RecuperacaoSenha::whereToken($token)->whereRecuperado(false)
+            ->where('expiracao', '>=', (new DataHora())->dataHoraInsert())
+            ->first();
+
+        if ($recuperacao) {
+            return view('recupera-senha', compact('recuperacao'));
         } else {
             abort(404);
         }

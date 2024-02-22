@@ -54,6 +54,8 @@ mix.copyDirectory(folder.src + "template/images", out);*/
 
 mix.js("resources/js/app.js", "public/js")
     //Configurações
+    .js("resources/js/recuperasenha/app.js", "public/js/recuperasenha/")
+
     .js("resources/js/g/configuracoes/habilidades/app.js", "public/js/g/habilidades/")
     .js("resources/js/g/configuracoes/papeis/app.js", "public/js/g/papeis/")
     .js("resources/js/g/configuracoes/feriados/app.js", "public/js/g/feriados/")

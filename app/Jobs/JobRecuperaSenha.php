@@ -29,7 +29,7 @@ class JobRecuperaSenha implements ShouldQueue
             'email' => $dados['email'],
             'token' => $dados['token'],
             'empresa_id' => $dados['empresa_id'],
-            'expiracao' => (new DataHora($dados['expiracao']))->dataCompleta(). (new DataHora($dados['expiracao']))->horaCompleta()
+            'expiracao' => (new DataHora($dados['expiracao']))->dataCompleta() . ' às ' . (new DataHora($dados['expiracao']))->horaCompleta()
         ];
 
     }

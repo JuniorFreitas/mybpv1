@@ -3,6 +3,9 @@
 use App\Models\CartaOferta;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])->name('recuperaSenhanew');
+Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::class, 'recuperaSenhaPost'])->name('recuperaSenhaPost');
+
 Route::get('download-checklist/{empresa}', function ($empresa) {
     $path = CartaOferta::checklistArquivo($empresa);
     $type = pathinfo($path, PATHINFO_EXTENSION);
@@ -39,6 +42,7 @@ Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
 
 });
 
+
 Route::group(['prefix' => 'g'], function () {
     // Authentication Routes...
     Route::get('login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
@@ -54,7 +58,7 @@ Route::group(['prefix' => 'g'], function () {
     Route::post('password/reset', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset']);
 
     Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class, 'solicitaRecuperaSenha'])->name('solicitaRecuperaSenha');
-    Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])->name('recuperaSenha');
+
 });
 
 Route::get('carteira/{curriculo}', [\App\Http\Controllers\TreinamentoController::class, 'carteiraIndividual'])->name('treinamento.carteira');
