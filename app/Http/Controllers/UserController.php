@@ -419,7 +419,7 @@ class UserController extends Controller
             ]);
 
             $recuperacao->user()->update([
-                'password' => bcrypt($recuperacao->novaSenha)
+                'password' => $recuperacao->novaSenha
             ]);
 
             \Auth::login($recuperacao->user);
