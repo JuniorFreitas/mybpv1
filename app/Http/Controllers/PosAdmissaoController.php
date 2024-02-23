@@ -7,6 +7,7 @@ use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaVencimento;
+use App\Models\CentroCusto;
 use App\Models\ClassificacaoRescisao;
 use App\Models\DadosAdmissao;
 use App\Models\Demissao;
@@ -15,6 +16,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Formulario;
 use App\Models\MotivoRescisao;
 use App\Models\TipoAviso;
+use App\Models\User;
 use Aws\S3\S3Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -343,54 +345,24 @@ class PosAdmissaoController extends Controller
         //
     }
 
-    public function atualizar(Request $request)
-    {
-        $resultado = $this->filtro($request)->paginate($request->pages);
-
-        $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
-        $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
-        $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
-        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissão')->first();
-        $formulario->load('Setores.Alternativas');
-
-        $ids_form = array();
-        foreach ($formulario->Setores as $f) {
-            foreach ($f->alternativas as $a) {
-                $ids_form[$a->id] = false;
-            }
-        }
-
-        $formulario_vazio = collect($ids_form);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => ['items' => $resultado->items(),
-                'motivos_rescisoes' => $motivosRescisoes,
-                'tipos_rescisoes' => $tipoRescisoes,
-                'classificacoes_rescisoes' => $classificacoesRescisoes,
-                'formulario' => $formulario,
-                'form_limpo' => $formulario_vazio,
-                // ToDO ajustar na branch que vai ser feito a modificação de formulario por tabela
-                'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
-                'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
-                'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
-            ]
-        ]);
-    }
-
     public function filtro(Request $request)
     {
         $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) use ($request) {
-            $q->whereIn('status', ['PRONTO PARA ADMISSAO', 'ADMITIDO', 'DEMITIDO']);
+            $q->whereIn('status', ['ADMITIDO', 'DEMITIDO']);
             if ($request->filled('campoArea')) {
                 $q->whereAreaEtiquetaId($request->campoArea);
             }
             if ($request->filled('campoCargo')) {
                 $q->where('cargo', 'like', '%' . $request->campoCargo . '%');
             }
-        })->with('Admissao:id,feedback_id,area_etiqueta_id,cargo,data_admissao', 'Admissao.AreaEtiqueta', 'Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor', 'Demissao.motivoRescisao', 'Empresa', 'VagaSelecionada', 'EntrevistaDesligamento');
+        })->with(
+            'Admissao:id,feedback_id,area_etiqueta_id,cargo,data_admissao',
+            'Admissao.AreaEtiqueta', 'Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor',
+            'Demissao.motivoRescisao',
+            'Empresa',
+            'VagaSelecionada',
+            'EntrevistaDesligamento'
+        );
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
@@ -423,15 +395,276 @@ class PosAdmissaoController extends Controller
                 $resultado->whereHas('EntrevistaDesligamento');
             }
         }
-        return $resultado->orderByDesc('updated_at');
+
+        if ($request->filled('status')) {
+            if ($request->status == 'admitidos') {
+                $resultado->whereHas('Admissao', function ($q) {
+                    $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
+                })->whereDoesntHave('Demissao');
+            }
+
+            if ($request->status == 'demitidos') {
+                $resultado->whereHas('Admissao', function ($q) {
+                    $q->where('status', Admissao::STATUS_DEMITIDO);
+                })->Has('Demissao')->with('Demissao');
+            }
+        }
+
+        return $resultado->filtrarPorCnpjECentroCusto($request)->orderByDesc('updated_at');
+    }
+
+    public function atualizar(Request $request)
+    {
+        $resultado = $this->filtro($request);
+
+        $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
+        $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
+        $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
+        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissão')->first();
+        $formulario->load('Setores.Alternativas');
+
+        $ids_form = array();
+        foreach ($formulario->Setores as $f) {
+            foreach ($f->alternativas as $a) {
+                $ids_form[$a->id] = false;
+            }
+        }
+
+        $formulario_vazio = collect($ids_form);
+
+        $resultado = $resultado->paginate($request->pages);
+
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $items = collect($resultado->items())->transform(function ($item) use ($cc) {
+            if ($item->admissao) {
+                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
+                $item->admissao->emp_cnpj = null;
+                $item->admissao->emp_nome_fantasia = null;
+                $item->admissao->emp_centro_custo = null;
+                $item->admissao->emp_tipo = null;
+
+                if ($cc_colaborador) {
+                    $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
+                    $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
+                    $item->admissao->emp_centro_custo = $cc_colaborador['label'];
+                    $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+                }
+            }
+            return $item;
+        });
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'items' => $items,
+                'cc' => $cc,
+                'motivos_rescisoes' => $motivosRescisoes,
+                'tipos_rescisoes' => $tipoRescisoes,
+                'classificacoes_rescisoes' => $classificacoesRescisoes,
+                'formulario' => $formulario,
+                'form_limpo' => $formulario_vazio,
+                // ToDO ajustar na branch que vai ser feito a modificação de formulario por tabela
+                'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
+                'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
+                'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
+            ]
+        ]);
     }
 
     public function export(Request $request)
     {
         $filtros = $request->input();
 
-        JobExportaPosAdmissao::dispatch(auth()->id(), auth()->user()->empresa_id, $filtros);
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        $query = FeedbackCurriculo::has('Demissao')
+            ->select([
+                'id', 'curriculo_id', 'empresa_id', 'vagas_abertas_id', 'vaga_id'
+            ])->filtrarPorCnpjECentroCusto($request)
+            ->with('Admissao:id,feedback_id,area_etiqueta_id,cargo,data_admissao,salario,centro_custo_id',
+                'Admissao.AreaEtiqueta',
+                'Admissao.CentroCusto',
+                'Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor',
+                'Demissao.motivoRescisao',
+                'VagaSelecionada',
+                'EntrevistaDesligamento')->whereHas('Admissao', function ($q) {
+                $q->where('status', Admissao::STATUS_DEMITIDO);
+            })->Has('Demissao')->with('Demissao');
+
+
+        if (count($filtros['selecionados']) > 0) {
+            $resultado = $query->whereIn('id', $filtros['selecionados'])->get();
+        } else {
+
+            if ($request->filled('campoFeedback')) {
+                if ($request->campoFeedback == "nao") {
+                    $query->whereDoesntHave('EntrevistaDesligamento');
+                } else {
+                    $query->whereHas('EntrevistaDesligamento');
+                }
+            }
+
+            $resultado = $query->get();
+        }
+
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $resultado = collect($resultado)->transform(function ($item) use ($cc) {
+            $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
+            $item->admissao->emp_cnpj = "";
+            $item->admissao->emp_nome_fantasia = "";
+            $item->admissao->emp_centro_custo = "";
+            $item->admissao->emp_tipo = "";
+
+            if ($cc_colaborador) {
+                $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
+                $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
+                $item->admissao->emp_centro_custo = $cc_colaborador['label'];
+                $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+            }
+
+            return $item;
+        });
+
+        $entrevista = [
+            "entrevista_superior_imediato",
+            "entrevista_motivo",
+            "entrevista_trabalharia_novamente",
+            "entrevista_contr_melhoria",
+            "entrevista_relacao_interpessoal",
+            "entrevista_recursos_fisicos",
+            "entrevista_valores_normas",
+            "entrevista_planejamento",
+            "entrevista_sob_superior_imediato",
+            "entrevista_direcao_empresa",
+            "entrevista_oportunidades",
+            "entrevista_salario_beneficio",
+            "entrevista_atividade",
+            "entrevista_comentarios",
+            "entrevista_parecer_entrevistador",
+            "entrevista_pode_voltar",
+            "entrevista_porque_pode_voltar",
+            "entrevista_quem_entrevistou",
+            "entrevista_user_entrevista",
+            "entrevista_data_entrevista",
+            "entrevista_preenchido_por",
+        ];
+
+        $head = [
+//            'ID',
+            'CNPJ',
+            'Nome',
+            'CPF',
+//            'Área',
+            'Cargo',
+            'Salario',
+            'Data Admissão',
+            'Data Demissão',
+//            'Data Entrevista',
+            'Centro de Custo',
+        ];
+
+        $head = array_merge($head, $entrevista);
+
+        $rows = [];
+        $array_chunks = array_chunk($resultado->toArray(), 100);
+
+        foreach ($array_chunks as $ch) {
+            foreach ($ch as $row) {
+                $data_admissao = $row['admissao'] ? (new DataHora($row['admissao']['data_admissao']))->dataCompleta() : 'NÃO INFORMADA';
+                $data_desmobilizacao = $row['demissao'] ? (new DataHora($row['demissao']['data_desmobilizacao']))->dataCompleta() : 'NÃO INFORMADA';
+                $entrevista = [
+                    "superior_imediato" => "",
+                    "motivo" => "",
+                    "trabalharia_novamente" => "",
+                    "contr_melhoria" => "",
+                    "relacao_interpessoal" => "",
+                    "recursos_fisicos" => "",
+                    "valores_normas" => "",
+                    "planejamento" => "",
+                    "sob_superior_imediato" => "",
+                    "direcao_empresa" => "",
+                    "oportunidades" => "",
+                    "salario_beneficio" => "",
+                    "atividade" => "",
+                    "comentarios" => "",
+                    "parecer_entrevistador" => "",
+                    "pode_voltar" => "",
+                    "porque_pode_voltar" => "",
+                    "quem_entrevistou" => "",
+                    "user_entrevista" => "",
+                    "data_entrevista" => "",
+                    "preenchido_por" => "",
+                ];
+
+                if (isset($row["entrevista_desligamento"]) && auth()->user()->can('privilegio_gestao_rh')) {
+                    $entrevista = [
+                        "superior_imediato" => $row['entrevista_desligamento']["superior_imediato"] ?? "",
+                        "motivo" => $row['entrevista_desligamento']["motivo"] ?? "",
+                        "trabalharia_novamente" => $row['entrevista_desligamento']["trabalharia_novamente"] ?? "",
+                        "contr_melhoria" => $row['entrevista_desligamento']["contr_melhoria"] ?? "",
+                        "relacao_interpessoal" => $row['entrevista_desligamento']["relacao_interpessoal"] ?? "",
+                        "recursos_fisicos" => $row['entrevista_desligamento']["recursos_fisicos"] ?? "",
+                        "valores_normas" => $row['entrevista_desligamento']["valores_normas"] ?? "",
+                        "planejamento" => $row['entrevista_desligamento']["planejamento"] ?? "",
+                        "sob_superior_imediato" => $row['entrevista_desligamento']["sob_superior_imediato"] ?? "",
+                        "direcao_empresa" => $row['entrevista_desligamento']["direcao_empresa"] ?? "",
+                        "oportunidades" => $row['entrevista_desligamento']["oportunidades"] ?? "",
+                        "salario_beneficio" => $row['entrevista_desligamento']["salario_beneficio"] ?? "",
+                        "atividade" => $row['entrevista_desligamento']["atividade"] ?? "",
+                        "comentarios" => $row['entrevista_desligamento']["comentarios"] ?? "",
+                        "parecer_entrevistador" => $row['entrevista_desligamento']["parecer_entrevistador"] ?? "",
+                        "pode_voltar" => $row['entrevista_desligamento']["pode_voltar"] ? "Sim" : "Não",
+                        "porque_pode_voltar" => $row['entrevista_desligamento']["porque_pode_voltar"] ?? "",
+                        "quem_entrevistou" => $row['entrevista_desligamento']["quem_entrevistou"] ?? "",
+                        "user_entrevista" => User::select('nome')->find($row['entrevista_desligamento']["user_entrevista"])->nome,
+                        "data_entrevista" => $row['entrevista_desligamento']["data_entrevista"] ?? "",
+                        "preenchido_por" => $row['entrevista_desligamento']["preenchido_por"] ?? "",
+                    ];
+                }
+
+                $rows[] = [
+//                $row['admissao']['id'],
+                    $row['admissao']['emp_nome_fantasia'],
+                    $row['curriculo']['nome'],
+                    $row['curriculo']['cpf'],
+//                $row['admissao']['area_etiqueta_id'] ? $row['admissao']['area_etiqueta']['label'] : '',
+                    $row['admissao']['cargo'],
+                    $row['admissao']['salario'],
+                    $data_admissao,
+                    $data_desmobilizacao,
+                    $row['admissao']['emp_centro_custo'] ?? "NÃO ENCONTRADO",
+
+//                isset($row['entrevista_desligamento']) ? ((new DataHora($row['entrevista_desligamento']['data_entrevista']))->dataHoraCompleta()) : "",
+                    $entrevista['superior_imediato'],
+                    $entrevista['motivo'],
+                    $entrevista['trabalharia_novamente'],
+                    $entrevista['contr_melhoria'],
+                    $entrevista['relacao_interpessoal'],
+                    $entrevista['recursos_fisicos'],
+                    $entrevista['valores_normas'],
+                    $entrevista['planejamento'],
+                    $entrevista['sob_superior_imediato'],
+                    $entrevista['direcao_empresa'],
+                    $entrevista['oportunidades'],
+                    $entrevista['salario_beneficio'],
+                    $entrevista['atividade'],
+                    $entrevista['comentarios'],
+                    $entrevista['parecer_entrevistador'],
+                    $entrevista['pode_voltar'],
+                    $entrevista['porque_pode_voltar'],
+                    $entrevista['quem_entrevistou'],
+                    $entrevista['user_entrevista'],
+                    $entrevista['data_entrevista'],
+                    $entrevista['preenchido_por'],
+                ];
+
+            }
+        }
+
+        return response()->json(['head' => $head, 'rows' => $rows]);
+
+//        JobExportaPosAdmissao::dispatch(auth()->id(), auth()->user()->empresa_id, $filtros);
+//        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
     public function entrevistar(Request $request)

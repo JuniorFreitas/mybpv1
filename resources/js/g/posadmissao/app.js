@@ -1,5 +1,6 @@
 import datepicker from "../../components/DatePicker";
 import ExportacaoMixin from "../../mixins/Exportacoes";
+import XLSX from "xlsx";
 
 const app = new Vue({
     mixins: [ExportacaoMixin],
@@ -9,6 +10,7 @@ const app = new Vue({
         datepicker
     },
     data: {
+        AUTENTICADO,
         tituloJanela: "Carregando ...",
         tituloJanelaEntrevista: "Carregando ...",
         preload: false,
@@ -121,6 +123,7 @@ const app = new Vue({
         formulario: [],
         vagas: [],
         listaAreas: [],
+        lista_ccs: null,
 
         posadmissao_form_rh: false,
         posadmissao_form_adm: false,
@@ -143,7 +146,10 @@ const app = new Vue({
                 campoUf: "",
                 campoFeedback: "",
                 campoCPF: "",
+                status: "",
                 campoCargo: "",
+                campoCnpj: "",
+                campoCentroCusto: "",
             }
         }
     },
@@ -183,7 +189,6 @@ const app = new Vue({
                 let id = item.id;
                 if (this.selecionados.indexOf(id) >= 0) {
                     totalEncontrado++;
-                    //faz nada
                 } else {
                     return false;
                 }
@@ -192,12 +197,23 @@ const app = new Vue({
             this.selecionaTudo = resultado;
             return resultado;
         },
-
+        filtroListaCentroCustoCnpj() {
+            if (this.controle.dados.campoCnpj !== "" && this.AUTENTICADO.temFilial) {
+                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj];
+            }
+            if (!this.AUTENTICADO.temFilial && this.lista_ccs) {
+                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
+            }
+            return [];
+        },
+        filtroStatusDemitidoOuAdmitido() {
+            return ['admitidos', 'demitidos'].includes(this.controle.dados.status);
+        },
         paramsExport() {
             let params = {
                 selecionados: this.selecionados,
             }
-            return  _.merge(params, this.controle.dados);
+            return _.merge(params, this.controle.dados);
         }
     },
 
@@ -209,6 +225,49 @@ const app = new Vue({
         this.listaAreasGeral();
     },
     methods: {
+        async gerarArquivoXls() {
+            mostraSucesso("", "Aguarde estamos gerando o seu excel");
+            const XLSX = require("xlsx");
+
+            const dataHoraAtual = new Date().toLocaleString("en-US", {
+                timeZone: "America/Sao_Paulo",
+                hour12: false,
+            }).replace(/\/|,|\s|:/g, "_")
+                .replace(/\//g, "-");
+
+            const filename = `pos_admissao_${AUTENTICADO.empresa_id}_${AUTENTICADO.user_id}_${dataHoraAtual}.xlsx`;
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet([]);
+
+            await axios.post(this.urlExportacao, this.paramsExport)
+                .then(({data}) => {
+                    let cabecalho = data.head;
+                    const jsonDataArray = data.rows;
+
+                    XLSX.utils.sheet_add_aoa(ws, [
+                        cabecalho
+                    ], {origin: 0});
+
+                    jsonDataArray.forEach(function (jsonData) {
+                        XLSX.utils.sheet_add_aoa(ws, [jsonData], {origin: -1});
+                    });
+                    //
+                    XLSX.utils.book_append_sheet(wb, ws, 'planilha');
+                    XLSX.writeFile(wb, filename);
+                });
+        },
+        changeCnpj() {
+            this.controle.dados.campoCentroCusto = "";
+            this.atualizar();
+        },
+        changeStatus() {
+            if (this.controle.dados.status === "") {
+                this.controle.dados.campoCnpj = "";
+                this.controle.dados.campoCentroCusto = "";
+            }
+            this.atualizar();
+        },
         extensao(item) {
             if (item === "demissao_com_justa_causa") {
                 this.extensaoDocumento = ".doc";
@@ -403,7 +462,7 @@ const app = new Vue({
                     if (!this.form.feedback.entrevista_desligamento) {
                         this.form.entrevista_desligamento = _.cloneDeep(this.formDefault.entrevista_desligamento);
                         // Object.assign(this.form.entrevista_desligamento, this.formDefault.entrevista_desligamento);
-                    }else{
+                    } else {
                         this.form.entrevista_desligamento = this.form.feedback.entrevista_desligamento;
                     }
                     // this.form.entrevista_desligamento = !this.form.entrevista_desligamento ? Object.assign(this.form.entrevista_desligamento, this.formDefault.entrevista_desligamento) : Object.assign(this.form, data);
@@ -462,14 +521,13 @@ const app = new Vue({
 
         listaAreasGeral() {
             this.preload = true;
-            $.get(`${URL_PUBLICO}/lista-areas`)
-                .done((data) => {
+            axios.get(`${URL_PUBLICO}/lista-areas`)
+                .then((response) => {
                     this.preload = false;
-                    this.listaAreas = data.areas;
-                })
-                .fail((data) => {
-                    this.preload = false;
-                });
+                    this.listaAreas = response.data.areas;
+                }).catch((error) => {
+                this.preload = false;
+            });
         },
         janelaConfirmar(id) {
             this.form.id = id;
@@ -501,6 +559,11 @@ const app = new Vue({
             this.selecionaTudo = this.tudoMarcado;
             this.form.alternativas = _.cloneDeep(this.alternativasDefault);
             this.controle.carregando = false;
+
+            this.lista_ccs = dados.cc;
+            if (!this.AUTENTICADO.temFilial) {
+                this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0];
+            }
 
             this.posadmissao_form_rh = dados.posadmissao_form_rh;
             this.posadmissao_form_adm = dados.posadmissao_form_adm;
