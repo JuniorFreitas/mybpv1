@@ -481,17 +481,17 @@
             </div>
 
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            {{--            <div class="col-12 col-sm-6 col-md-6 col-lg-3">--}}
 
-                <label>Áreas</label>
-                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoArea">
-                    <option value="">Sem filtro</option>
-                    <option :value="item.id" v-for="item in listaAreas">@{{ item.label }}</option>
-                </select>
-            </div>
+            {{--                <label>Áreas</label>--}}
+            {{--                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"--}}
+            {{--                        v-model="controle.dados.campoArea">--}}
+            {{--                    <option value="">Sem filtro</option>--}}
+            {{--                    <option :value="item.id" v-for="item in listaAreas">@{{ item.label }}</option>--}}
+            {{--                </select>--}}
+            {{--            </div>--}}
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
 
                 <label>Cargo</label>
                 <input type="text"
@@ -501,7 +501,53 @@
                        v-model="controle.dados.campoCargo">
             </div>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-3">
+            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
+                <div class="form-group">
+                    <label for="">Por demitidos</label>
+                    <select class="form-control form-control-sm"
+                            @change="changeStatus()"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.status">
+                        <option value="">Sem filtro</option>
+                        <option value="demitidos">Sim</option>
+                        <option value="admitidos">Não</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-3"
+                 v-if="lista_ccs && AUTENTICADO.temFilial">
+                <div class="form-group">
+                    <label for="">Por Cnpj</label>
+                    <select class="form-control form-control-sm" @change="changeCnpj()"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoCnpj">
+                        <option value="">Todos</option>
+                        <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
+                            @{{item.nome_fantasia}} - @{{item.cnpj}}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-3"
+                 v-if="lista_ccs">
+                <div class="form-group">
+                    <label for="">Centro de Custo</label>
+                    <select class="form-control form-control-sm" @change="atualizar"
+                            :disabled="controle.carregando || controle.dados.campoCnpj === ''"
+                            v-model="controle.dados.campoCentroCusto">
+                        <option value="">Todos</option>
+                        <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
+                                :value="item.matriz ? item.id : item.filial_id"
+                                :keys="key">
+                            @{{item.label}}
+                        </option>
+                        <option value="--naoinformado--">--- Não Informado ---</option>
+                    </select>
+                </div>
+            </div>
+            {{--<div class="col-12 col-sm-4 col-md-3 col-lg-3">
 
                 <label>Estado</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
@@ -535,7 +581,7 @@
                     <option value="SE">SE</option>
                     <option value="TO">TO</option>
                 </select>
-            </div>
+            </div>--}}
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-4">
 
@@ -573,8 +619,8 @@
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
                 <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                        @click.prevent="gerarArquivoXls()"
+                        :disabled="controle.carregando|| preloadExportacao  || (!controle.carregando && lista.length===0 && selecionados.length === 0) || (selecionados.length === 0 && controle.dados.status !== 'demitidos') ">
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
                                                                            v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
                 </button>
@@ -582,16 +628,13 @@
         </div>
     </fieldset>
 
-    <p class="text-center" v-if="controle.carregando">
-        <i class="fa fa-spinner fa-pulse"></i> Carregando...
-    </p>
-
+    <preload class="text-center" v-if="controle.carregando"></preload>
     <div id="conteudo">
         <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
             <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
         </div>
-        <div v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
+        <div class="table-responsive" v-if="!controle.carregando && lista.length > 0">
+            <table class="table table-striped bg-white">
                 <thead>
                 <tr class="bg-default">
                     <th class="text-center">
@@ -603,13 +646,15 @@
                     </th>
                     <th class="text-center">ID</th>
                     <th>Nome</th>
-                    <th>CPF</th>
-                    <th class="text-center">Área</th>
+                    <th v-if="AUTENTICADO.temFilial">CNPJ</th>
+                    <th>Centro de Custos</th>
+                    {{--                    <th class="text-center">Área</th>--}}
                     <th class="text-center">Cargo</th>
                     <th class="text-center">Data da Admissão</th>
                     <th class="text-center">Data da demissão</th>
-                    <th class="text-center">Ação</th>
                     <th class="text-center">Documento Demissão</th>
+                    <th class="text-center">Ação</th>
+
                 </tr>
                 </thead>
                 <tbody>
@@ -636,13 +681,23 @@
                     <td>
                         @{{item.curriculo.nome}}
                     </td>
+                    <td v-if="AUTENTICADO.temFilial">
+                        <span v-if="item.admissao.emp_cnpj">
+                                @{{ item.admissao.emp_nome_fantasia }}<br>
+                                (@{{item.admissao.emp_tipo}})
+                        </span>
+                        <span v-else>---</span>
+                    </td>
                     <td>
-                        @{{item.curriculo.cpf}}
+                        <span v-if="item.admissao.emp_centro_custo">
+                             @{{item.admissao.emp_centro_custo}}
+                        </span>
+                        <span v-else>---</span>
                     </td>
 
-                    <td class="text-center">
-                        @{{item.admissao.area_etiqueta?.label}}
-                    </td>
+                    {{--                    <td class="text-center">--}}
+                    {{--                        @{{item.admissao.area_etiqueta?.label}}--}}
+                    {{--                    </td>--}}
                     <td class="text-center">
                         @{{item.admissao.cargo}}
                     </td>
@@ -654,6 +709,21 @@
                         @{{item.demissao?.data_desmobilizacao}}
                     </td>
 
+                    <td class="text-center">
+                        <div v-if="item.demissao">
+                            <a target="_blank"
+                               v-if="item.demissao.motivo_rescisao && ['demissao_com_justa_causa','pedido_colaborador_imediato', 'pedido_colaborador_trabalhado'].includes(item.demissao.motivo_rescisao.nome_pdf)"
+                               :href="`https://mybp-prod.s3.amazonaws.com/public/${item.demissao.motivo_rescisao.nome_pdf + extensaoDocumento}`"
+                               class="btn btn-sm btn-primary" title="Download Documento Demissão"
+                               @click="extensao(item.demissao.motivo_rescisao.nome_pdf)" download>
+                                <i class="fa fa-file-download"></i>
+                            </a>
+                            <button type="button" v-else class="btn btn-sm btn-primary" title="Gerar Documento Demissão"
+                                    @click="gerarPdf(item.demissao.id)">
+                                <i class="fa fa-file-pdf"></i>
+                            </button>
+                        </div>
+                    </td>
                     <td class="text-center">
 
                         <div class="dropdown show">
@@ -670,6 +740,7 @@
                                     Demitir
                                 </a>
                                 <a class="dropdown-item" href="javascript://" title="Desmobilizar"
+                                   v-if="item.demissao && item.demissao.data_desmobilizacao"
                                    @click.prevent="formDesmobilizar(item.id)"
                                    data-toggle="modal"
                                    data-target="#janelaAvaliar">
@@ -677,6 +748,7 @@
                                 </a>
                                 @can('posadmissao_entrevista_desligamento')
                                     <a class="dropdown-item" href="javascript://" title="Entrevistar"
+                                       v-if="item.demissao && item.demissao.data_desmobilizacao"
                                        @click.prevent="formEntrevistar(item.id)"
                                        data-toggle="modal"
                                        data-target="#janelaAvaliar">
@@ -686,21 +758,6 @@
                             </div>
                         </div>
                     </td>
-
-                    <td class="text-center" v-if="item.demissao">
-                        <a target="_blank"
-                           v-if="item.demissao.motivo_rescisao && ['demissao_com_justa_causa','pedido_colaborador_imediato', 'pedido_colaborador_trabalhado'].includes(item.demissao.motivo_rescisao.nome_pdf)"
-                           :href="`https://mybp-prod.s3.amazonaws.com/public/${item.demissao.motivo_rescisao.nome_pdf + extensaoDocumento}`"
-                           class="btn btn-sm btn-primary" title="Download Documento Demissão"
-                           @click="extensao(item.demissao.motivo_rescisao.nome_pdf)" download>
-                            <i class="fa fa-file-download"></i>
-                        </a>
-                        <button type="button" v-else class="btn btn-sm btn-primary" title="Gerar Documento Demissão"
-                                @click="gerarPdf(item.demissao.id)">
-                            <i class="fa fa-file-pdf"></i>
-                        </button>
-                    </td>
-                    <td v-else></td>
                 </tr>
                 </tbody>
             </table>
