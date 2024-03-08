@@ -13,6 +13,7 @@ use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
 use App\Models\EmpresaConfig;
 use App\Models\EmpresaExame;
+use App\Models\EntrevistaDesligamento;
 use App\Models\ExameFuncionario;
 use App\Models\FeedbackCurriculo;
 use App\Models\Formulario;
@@ -1789,11 +1790,19 @@ class AdmissaoController extends Controller
                     $feedback->banco_conta = $curriculo->FeedBack->BancoConta;
                 }
 
+                //Pode voltar
+                $podeVoltar = true;
+                $entrevistaDesligamento = EntrevistaDesligamento::select(['id','feedback_id','pode_voltar'])->where('feedback_id', $curriculo->FeedBack->id)->first();
+                if ($demissao->count() > 0 && $entrevistaDesligamento) {
+                    $podeVoltar = !$entrevistaDesligamento->pode_voltar; //Se for false, não pode voltar
+                }
+
                 return response()->json(
                     [
                         'achou' => true,
                         'admissao' => $dados_admissao,
                         'ex_funcionario' => $demissao->count() > 0,
+                        'pos_admissao_verificar' => $podeVoltar,
                         'curriculo' => $curriculo->load('Telefones'),
                         'feedback' => $feedback,
                         'parecer_rh' => $parecerRH,

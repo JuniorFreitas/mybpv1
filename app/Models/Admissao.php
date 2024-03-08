@@ -652,12 +652,8 @@ class Admissao extends Model
     //Modificador ->data_admissao
     public function setDataAdmissaoAttribute($value)
     {
-        if ($value) {
-            $data = new DataHora($value);
-            $this->attributes['data_admissao'] = $data->dataInsert();
-        } else {
-            $this->attributes['data_admissao'] = null;
-        }
+        $this->attributes['data_admissao'] = $value ? (new DataHora($value))->dataInsert() : null;
+
     }
 
 

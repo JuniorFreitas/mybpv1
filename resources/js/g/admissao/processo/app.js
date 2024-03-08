@@ -117,6 +117,7 @@ const app = new Vue({
             cadastrado: false,
             cadastrando: false,
             ex_funcionario: false,
+            pos_admissao_verificar: false,
 
             curriculo: {
                 cpf: "",
@@ -726,6 +727,7 @@ const app = new Vue({
                             this.exibiFormulario = true;
                             this.formAvulsa.preload = false;
                             this.formAvulsa.ex_funcionario = data.ex_funcionario;
+                            this.formAvulsa.pos_admissao_verificar = data.pos_admissao_verificar;
                         }
 
                         if (!data.achou) {

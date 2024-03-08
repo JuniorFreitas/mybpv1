@@ -214,17 +214,25 @@ const app = new Vue({
                 selecionados: this.selecionados,
             }
             return _.merge(params, this.controle.dados);
-        }
+        },
+
     },
 
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
-
+        this.queryParamsCpf();
         this.atualizar();
         this.listaVagas();
         this.listaAreasGeral();
+
+        // ?checkcpf=015.020.903-76
     },
     methods: {
+        queryParamsCpf() {
+            const queryString = window.location.search;
+            const params = new URLSearchParams(queryString);
+            this.controle.dados.campoCPF = params.has('checkcpf') ? params.get('checkcpf') : "";
+        },
         async gerarArquivoXls() {
             mostraSucesso("", "Aguarde estamos gerando o seu excel");
             const XLSX = require("xlsx");

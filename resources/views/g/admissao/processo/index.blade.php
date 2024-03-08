@@ -34,6 +34,12 @@
                 <div v-if="!formAvulsa.preload">
                     <div class="alert alert-warning" v-show="formAvulsa.ex_funcionario">
                         <i class="fa fa-exclamation-triangle"></i> Ex-Funcionário
+                        <span v-if="formAvulsa.pos_admissao_verificar">
+                            <a :href="`${URL_ADMIN}/posadmissao?checkcpf=${formAvulsa.curriculo.cpf}`"
+                               class="btn btn-sm btn-primary"
+                               target="_blank"
+                               rel="noopener noreferrer">Verificar Pós Admissão</a>
+                        </span>
                     </div>
                     <fieldset>
                         <legend>Dados Pessoais</legend>
