@@ -795,6 +795,7 @@ class AdmissaoController extends Controller
 
         $feedback->Curriculo->foto_tres_delete = [];
         $feedback->Curriculo->dependentesDelete = [];
+        $feedback->Curriculo->telefonesDelete = [];
 
         if (!is_null($feedback->Admissao)) {
             $feedback->Admissao->ferias_adquiridasDelete = [];
@@ -877,6 +878,7 @@ class AdmissaoController extends Controller
 
         $dadosValidados = \Validator::make($dados, [
             'curriculo.email' => 'required|email:rfc,dns',
+            'curriculo.telefones' => 'required|array|min:1|tel_principal_mark',
             'admissao.status' => 'required|in:' . implode(',', Admissao::TODOS_STATUS_ADMISSAO),
             'admissao.status_carteira_treinamento' => 'sometimes|nullable|string|in:' . implode(',', Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO),
         ]);
@@ -1163,29 +1165,44 @@ class AdmissaoController extends Controller
                     isset($avaliacao) ? $avaliacao->delete() : null;
                 }
 
+                // Excluir telefones marcados para exclusão
                 if (isset($dadosCurriculo['telefonesDelete'])) {
                     foreach ($dadosCurriculo['telefonesDelete'] as $index) {
-                        TelefoneCurriculo::find($index)->delete();
+                        TelefoneCurriculo::destroy($index);
                     }
                 }
 
+                // Processar telefones
                 if (isset($dadosCurriculo['telefones'])) {
-                    foreach ($dadosCurriculo['telefones'] as $linha) {
-                        $linha['principal'] = $linha['principal'] == 'true';
-                        if ($linha['id'] == 0) {
-                            unset($linha['id']);
-                            $telPrincipal = $feedback->Telefones()->create($linha);
-                            if ($linha['principal']) {
-                                $dadosFeedback['telefone_id'] = $telPrincipal->id;
-                            }
-                        } else {
-                            TelefoneCurriculo::find($linha['id'])->update($linha);
-                            if ($linha['principal']) {
-                                $dados['telefone_id'] = $linha['id'];
-                            }
-                        }
+                    $telefones = collect($dadosCurriculo['telefones']);
+
+                    // Definir telefone principal se não existir
+                    $telPrincipal = $telefones->where('principal', true)->first();
+                    if (!$telPrincipal) {
+                        $telefones = $telefones->map(function ($item, $key) use ($feedback) {
+                            $item['id'] = $item['id'] == 0 ? null : $item['id'];
+                            $item['principal'] = $key == 0;
+                            $item['curriculo_id'] = $feedback->curriculo_id;
+                            return $item;
+                        });
                     }
+
+                    // Criar ou atualizar telefones
+                    $telefones->each(function ($item) use ($feedback) {
+                        if (isset($item['nova'])) {
+                            unset($item['id']);
+                            $tel = TelefoneCurriculo::create($item);
+                        } else {
+                            $tel = TelefoneCurriculo::findOrFail($item['id']);
+                            $tel->update($item);
+                        }
+
+                        if ($item['principal']) {
+                            $feedback->update(['telefone_id' => $tel->id]);
+                        }
+                    });
                 }
+
 
                 if (isset($dadosCurriculo['dependentesDelete'])) {
                     foreach ($dadosCurriculo['dependentesDelete'] as $id) {
@@ -1792,7 +1809,7 @@ class AdmissaoController extends Controller
 
                 //Pode voltar
                 $podeVoltar = true;
-                $entrevistaDesligamento = EntrevistaDesligamento::select(['id','feedback_id','pode_voltar'])->where('feedback_id', $curriculo->FeedBack->id)->first();
+                $entrevistaDesligamento = EntrevistaDesligamento::select(['id', 'feedback_id', 'pode_voltar'])->where('feedback_id', $curriculo->FeedBack->id)->first();
                 if ($demissao->count() > 0 && $entrevistaDesligamento) {
                     $podeVoltar = !$entrevistaDesligamento->pode_voltar; //Se for false, não pode voltar
                 }
