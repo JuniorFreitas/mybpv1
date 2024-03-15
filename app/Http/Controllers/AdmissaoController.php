@@ -1175,20 +1175,19 @@ class AdmissaoController extends Controller
                 // Processar telefones
                 if (isset($dadosCurriculo['telefones'])) {
                     $telefones = collect($dadosCurriculo['telefones']);
-
                     // Definir telefone principal se não existir
                     $telPrincipal = $telefones->where('principal', true)->first();
                     if (!$telPrincipal) {
                         $telefones = $telefones->map(function ($item, $key) use ($feedback) {
                             $item['id'] = $item['id'] == 0 ? null : $item['id'];
                             $item['principal'] = $key == 0;
-                            $item['curriculo_id'] = $feedback->curriculo_id;
                             return $item;
                         });
                     }
 
                     // Criar ou atualizar telefones
                     $telefones->each(function ($item) use ($feedback) {
+                        $item['curriculo_id'] = $feedback->curriculo_id;
                         if (isset($item['nova'])) {
                             unset($item['id']);
                             $tel = TelefoneCurriculo::create($item);
