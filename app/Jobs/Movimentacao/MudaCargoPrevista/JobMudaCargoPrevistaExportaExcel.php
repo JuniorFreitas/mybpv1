@@ -63,32 +63,38 @@ class JobMudaCargoPrevistaExportaExcel implements ShouldQueue
         $CsvExport->export();
     }
 
-    private function getDataRow($row): array
+    private function getDataRow(&$row): array
     {
-        return [
-            $row->Admissao->Feedback->Curriculo->nome,
-            $row->CentroCustoAnterior->label ?? '',
-            $row->anterior_filial ? $row->CentroCustoFilialAnterior->label : '',
-            $row->mantem_centro_custo ? '' : $row->CentroCustoNovo->label,
-            $row->novo_filial ? $row->CentroCustoFilialNovo->label : '',
-            $row->VagaAbertaAnterior->Vaga->nome ?? '',
-            $row->mantem_cargo ? '' : $row->VagaAbertaNova->Vaga->nome ?? '',
-            $row->anterior_funcao,
-            $row->mantem_funcao ? '' : $row->nova_funcao,
-            $row->anterior_salario,
-            $row->mantem_salario ? '' : $row->novo_salario,
-            $row->Solicitante->nome,
-            $row->data_solicitacao,
-            $row->obs_solicitante,
-            $row->Gestor->nome,
-            $row->GestorAprovacao ? $row->GestorAprovacao->nome : '',
-            $row->status_aprovacao_gestor ? $row->data_aprovacao_gestor : '',
-            $row->status_aprovacao_gestor,
-            $row->obs_gestor_aprovacao,
-            $row->status_aprovacao_rh ? $row->RhAprovacao->nome : '',
-            $row->status_aprovacao_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
-            $row->status_aprovacao_rh,
-            $row->obs_rh
-        ];
+        try {
+            return [
+                $row->Admissao->Feedback->Curriculo->nome,
+                $row->CentroCustoAnterior->label ?? '',
+                $row->anterior_filial ? $row->CentroCustoFilialAnterior->label : '',
+                $row->mantem_centro_custo ? '' : $row->CentroCustoNovo->label,
+                $row->novo_filial ? $row->CentroCustoFilialNovo->label : '',
+                $row->VagaAbertaAnterior->Vaga->nome ?? '',
+                $row->mantem_cargo ? '' : $row->VagaAbertaNova->Vaga->nome ?? '',
+                $row->anterior_funcao,
+                $row->mantem_funcao ? '' : $row->nova_funcao,
+                $row->anterior_salario,
+                $row->mantem_salario ? '' : $row->novo_salario,
+                $row->Solicitante->nome,
+                $row->data_solicitacao,
+                $row->obs_solicitante,
+                $row->Gestor->nome,
+                $row->GestorAprovacao ? $row->GestorAprovacao->nome : '',
+                $row->status_aprovacao_gestor ? $row->data_aprovacao_gestor : '',
+                $row->status_aprovacao_gestor,
+                $row->obs_gestor_aprovacao,
+                $row->status_aprovacao_rh ? $row->RhAprovacao->nome : '',
+                $row->status_aprovacao_rh ? (new DataHora())->dataHoraCompleta($row->data_aprovacao_rh) : '',
+                $row->status_aprovacao_rh,
+                $row->obs_rh
+            ];
+        } catch (\Exception $e) {
+            $msg = "Erro ao exportar linha {$row->id} - {$e->getMessage()}";
+            \Log::error($msg);
+            return [$msg];
+        }
     }
 }
