@@ -37,7 +37,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class TelefoneCurriculo extends Model
 {
-    use HasFactory, LogsActivity;
+    use LogsActivity;
 
     protected static $logFillable = true;
     protected static $logName = 'telefone_curriculo';

@@ -158,7 +158,11 @@ class CentroCusto extends Model
                 $item->text = $item->label;
                 $item->label = $item->label . $is_ativo;
                 return $item;
-            });
+            })->sortBy(function ($item) {
+                return strtolower($item->label); // Ordena os rótulos por ordem alfabética, ignorando maiúsculas e minúsculas
+            })->sortByDesc('ativo') // Coloca os itens ativos primeiro
+            ->values()
+            ->all();
     }
 
     /**
@@ -166,9 +170,10 @@ class CentroCusto extends Model
      * @return void
      * @throws \Exception
      */
-    private function forgetsCache($empresaId): void
+    public function forgetsCache($empresaId): void
     {
-        cache()->forget("cc_list_{$empresaId}");
+        $cache_key = "lista_cc_{$empresaId}";
+        cache()->forget($cache_key);
         $this->listaCentroCustoPorCnpj($empresaId);
     }
 
@@ -178,10 +183,11 @@ class CentroCusto extends Model
     protected static function booted(): void
     {
         static::created(function ($model) {
-            $model->forgetsCache($model->empresa_id);
+            (new self())->forgetsCache($model->empresa_id);
         });
+
         static::updated(function ($model) {
-            $model->forgetsCache($model->empresa_id);
+            (new self())->forgetsCache($model->empresa_id);
         });
     }
 }
