@@ -1808,9 +1808,12 @@ class AdmissaoController extends Controller
 
                 //Pode voltar
                 $podeVoltar = true;
-                $entrevistaDesligamento = EntrevistaDesligamento::select(['id', 'feedback_id', 'pode_voltar'])->where('feedback_id', $curriculo->FeedBack->id)->first();
-                if ($demissao->count() > 0 && $entrevistaDesligamento) {
-                    $podeVoltar = !$entrevistaDesligamento->pode_voltar; //Se for false, não pode voltar
+
+                if ($curriculo->FeedBack){
+                    $entrevistaDesligamento = EntrevistaDesligamento::select(['id', 'feedback_id', 'pode_voltar'])->where('feedback_id', $curriculo->FeedBack->id)->first();
+                    if ($demissao->count() > 0 && $entrevistaDesligamento) {
+                        $podeVoltar = !$entrevistaDesligamento->pode_voltar; //Se for false, não pode voltar
+                    }
                 }
 
                 return response()->json(
