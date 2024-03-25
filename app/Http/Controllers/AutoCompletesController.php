@@ -221,7 +221,7 @@ class AutoCompletesController extends Controller
         $busca = $request->query('busca');
 
         return FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
-            $q->whereIn('status', ['ADMITIDO']);
+            $q->whereIn('status', [Admissao::STATUS_ADMISSAO_ADMITIDO]);
         })->whereHas('Curriculo', function ($q) use ($busca) {
             $q->where('nome', 'like', '%' . $busca . '%');
         })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome', 'Admissao')->take($quantidade)
@@ -267,7 +267,7 @@ class AutoCompletesController extends Controller
             ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
             ->join('admissoes as a', function ($join) {
                 $join->on('fc.id', '=', 'a.feedback_id')
-                    ->where('a.status', '=', 'admitido')
+                    ->where('a.status', '=', [Admissao::STATUS_ADMISSAO_ADMITIDO])
                     ->whereNull('a.deleted_at');
             })
             ->leftJoin('mybp.demissaos as d2', 'fc.id', '=', 'd2.feedback_id')
@@ -280,7 +280,7 @@ class AutoCompletesController extends Controller
                     ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
                     ->join('admissoes as a', function ($join) {
                         $join->on('fc.id', '=', 'a.feedback_id')
-                            ->where('a.status', '=', 'admitido')
+                            ->where('a.status', '=', [Admissao::STATUS_DEMITIDO])
                             ->whereNull('a.deleted_at');
                     })
                     ->whereNull('fc.deleted_at')

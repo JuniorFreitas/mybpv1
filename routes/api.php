@@ -61,6 +61,12 @@ Route::middleware(['api', 'auth:sanctum', 'usuario.ativo'])->group(function () {
     Route::apiResource('usuarios', \App\Http\Controllers\Api\UsuarioController::class)->middleware('can.sanctum:usuarios');
 });
 
+
+Route::group(['as' => 'v1', 'prefix' => 'v1/{empresa_slug}', 'middleware' => ['apitoken']], function () {
+    Route::get('/', [\App\Http\Controllers\Api\IntegracaoVagaAbertaController::class, 'getVagasAbertasByEmpresa']);
+    Route::get('/dadosempresa', [\App\Http\Controllers\Api\IntegracaoVagaAbertaController::class, 'getDadosEmpresa']);
+});
+
 Route::group(['as' => 'vaga'], function () {
     Route::get('{empresa_slug}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagasAbertasByEmpresa']);
     Route::get('{empresa_slug}/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagaAberta']);

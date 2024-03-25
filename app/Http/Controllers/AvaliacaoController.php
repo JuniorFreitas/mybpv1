@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\JobAutoAvaliacaoConcluida;
 use App\Models\Avaliacao;
+use App\Models\AvaliacaoAvaliadoresTipos;
 use App\Models\AvaliacaoFeedback;
 use App\Models\AvaliacaoResposta;
 use App\Models\AvaliacaoResultado;
@@ -92,7 +93,7 @@ class AvaliacaoController extends Controller
     public function edit(Avaliacao $avaliacao)
     {
         $this->authorize('cadastro_avaliacao_update');
-
+        $avaliacao->fluxo = is_null($avaliacao->fluxo) ? [] : $avaliacao->fluxo;
         return $avaliacao;
     }
 
@@ -105,7 +106,6 @@ class AvaliacaoController extends Controller
     {
         $this->authorize('cadastro_avaliacao_update');
         $dados = $request->input();
-        $titulo = $dados['titulo'];
 
         $arrayValidacao = [
             'titulo' => [
@@ -156,6 +156,7 @@ class AvaliacaoController extends Controller
             $msg = "error UPDATE AVALIAÇÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
             Sistema::LogFormatado($dados);
+            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
@@ -163,24 +164,46 @@ class AvaliacaoController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     private function filtro(Request $request)
     {
+
         $resultado = Avaliacao::with('AvaliacaoTipo')
             ->orderBy('data_inicio_prazo');
         if ($request->filled('campoBusca')) {
-            $resultado->where("titulo", "like", "%$request->campoBusca%")
-                ->orWhere('id', $request->campoBusca);
+            $resultado->where(function ($query) use ($request) {
+                $query->where('titulo', 'like', "%$request->campoBusca%")
+                    ->orWhere('id', $request->campoBusca);
+            });
         }
+        if ($request->filled('ano_avaliacao')) {
+            $resultado->where("ano_avaliacao", $request->ano_avaliacao);
+        }
+
+        if ($request->filled('tipo_avaliacao')) {
+            $resultado->where("avaliacao_tipo_id", $request->tipo_avaliacao);
+        }
+
+        if ($request->filled('status')) {
+            $resultado->where("status", $request->status);
+        }
+
+
         return $resultado;
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function atualizar(Request $request)
     {
         $this->authorize('cadastro_avaliacao');
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
+        $lista_tipos_avaliadores = AvaliacaoAvaliadoresTipos::whereAtivo(true)->get();
+
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -189,7 +212,9 @@ class AvaliacaoController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'avaliacoes_tipos' => $avaliacoes_tipos,
+                'lista_tipos_avaliadores' => $lista_tipos_avaliadores,
                 'lista_status' => Avaliacao::LISTA_STATUS,
+                'lista_avaliacoes_por_ano' => (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresa_id)
             ]
         ]);
     }
@@ -212,6 +237,7 @@ class AvaliacaoController extends Controller
         $resultado = $this->filtroAvaliar($request)->paginate($request->porPag ?: 20);
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
         $lista_avaliacoes = Avaliacao::whereAtivo(true)->orderBy('titulo')->get();
+
         $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
 
             $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
@@ -234,6 +260,8 @@ class AvaliacaoController extends Controller
             $item->titulo_avaliacao = $item->Avaliacao->titulo;
             $item->tipo_avaliacao = $item->Avaliacao->AvaliacaoTipo->nome;
 
+            $item->fluxo = Avaliacao::fluxoAvaliacao($item->avaliacao_id);
+
             if (!$item->Avaliacao->auto_avaliacao) {
                 $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
                 $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
@@ -242,6 +270,8 @@ class AvaliacaoController extends Controller
 
             return $item;
         });
+
+        $avaliacoes_ano = (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresa_id);
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -253,6 +283,7 @@ class AvaliacaoController extends Controller
                 'lista_avaliacoes' => $lista_avaliacoes,
                 'lista_status' => Avaliacao::LISTA_STATUS,
                 'tem_privilegio_gestao_rh' => $this->temPrivilegioGestaoRh(),
+                'lista_avaliacoes_por_ano' => $avaliacoes_ano,
             ]
         ]);
     }
@@ -282,7 +313,7 @@ class AvaliacaoController extends Controller
             $resultado->whereAvaliadorId(auth()->user()->id);
         }
 
-        $resultado->whereHas('Avaliacao', function ($query) {
+        $resultado->whereHas('Avaliacao', function ($query) use ($request) {
             $query->whereIn('status', [Avaliacao::STATUS_ABERTA, Avaliacao::STATUS_ENCERRADA])
                 ->whereAtivo(true);
         });
@@ -302,6 +333,23 @@ class AvaliacaoController extends Controller
             if ($request->filled('campoStatus')) {
                 $resultado->whereStatus($request->campoStatus);
             }
+
+
+//            if ($request->filled('ano_avaliacao')) {
+//                $resultado->whereHas('Avaliacao', function ($query) use ($request) {
+//                    $query->where("ano_avaliacao", $request->ano_avaliacao);
+//                });
+//            }
+
+//            if ($request->filled('tipo_avaliacao')) {
+//                $resultado->whereHas('Avaliacao', function ($query) use ($request) {
+//                    $query->where("avaliacao_tipo_id", $request->tipo_avaliacao);
+//                });
+//            }
+
+//            if ($request->filled('status')) {
+//                $query->where("status", $request->status);
+//            }
 
             if (!$Avaliacao->auto_avaliacao) {
                 $resultado->where('principal', true);

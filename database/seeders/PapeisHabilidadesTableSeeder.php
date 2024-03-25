@@ -20,9 +20,19 @@ class PapeisHabilidadesTableSeeder extends Seeder
         $papel->habilidades()->detach();
         $papel->habilidades()->attach($habilidades);
 
+        $papel = Papel::find(80); // MONTISOL
+        $habilidades = Habilidade::all();
+        $papel->habilidades()->detach();
+        $papel->habilidades()->attach($habilidades);
 
-       /* $papel = Papel::find(2); // Administrador: Não tem a página de Habilidade para não danificar o sistema
-        $habilidades= Habilidade::where('id', '>',1 )->get();
-        $papel->habilidades()->attach($habilidades);*/
+//        $papel = Papel::find(83); // MONTISOL RH
+//        $habilidades = Habilidade::all();
+//        $papel->habilidades()->detach();
+//        $papel->habilidades()->attach($habilidades);
+
+
+        /* $papel = Papel::find(2); // Administrador: Não tem a página de Habilidade para não danificar o sistema
+         $habilidades= Habilidade::where('id', '>',1 )->get();
+         $papel->habilidades()->attach($habilidades);*/
     }
 }

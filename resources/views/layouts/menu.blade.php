@@ -253,11 +253,19 @@
                         <a href="javascript://" class="has-arrow waves-effect" parent="cadastro">
                             Avaliações</a>
                         <ul aria-expanded="false">
+                            @can('cadastro_avaliador_tipo')
+                                <li>
+                                    <a href="{{route('g.avaliadortipo.avaliadortipo.index')}}" subparent="avaliacoes"
+                                       parent="cadastro" key="avaliadortipo">
+                                        Tipos de Avaliadores
+                                    </a>
+                                </li>
+                            @endcan
                             @can('cadastro_avaliacao_tipo')
                                 <li>
                                     <a href="{{route('g.avaliacaotipo.avaliacaotipo.index')}}" subparent="avaliacoes"
                                        parent="cadastro" key="avaliacaotipo">
-                                        Tipos
+                                        Tipos de Avaliações
                                     </a>
                                 </li>
                             @endcan
@@ -265,7 +273,7 @@
                                 <li>
                                     <a href="{{route('g.avaliacaotopico.avaliacaotopico.index')}}"
                                        subparent="avaliacoes" parent="cadastro" key="avaliacaotopico">
-                                        Tópicos
+                                        Competências
                                     </a>
                                 </li>
                             @endcan

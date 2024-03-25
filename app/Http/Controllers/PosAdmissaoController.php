@@ -487,13 +487,16 @@ class PosAdmissaoController extends Controller
                 'Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor',
                 'Demissao.motivoRescisao',
                 'VagaSelecionada',
-                'EntrevistaDesligamento')->whereHas('Admissao', function ($q) {
+                'EntrevistaDesligamento')
+            ->whereHas('Admissao', function ($q) {
                 $q->where('status', Admissao::STATUS_DEMITIDO);
-            })->Has('Demissao')->with('Demissao');
+            }
+            )->Has('Demissao')->with('Demissao');
 
 
         if (count($filtros['selecionados']) > 0) {
             $resultado = $query->whereIn('id', $filtros['selecionados'])->get();
+            dd($resultado);
         } else {
 
             if ($request->filled('campoFeedback')) {
@@ -506,6 +509,9 @@ class PosAdmissaoController extends Controller
 
             $resultado = $query->get();
         }
+
+        dd($resultado);
+
 
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
         $resultado = collect($resultado)->transform(function ($item) use ($cc) {

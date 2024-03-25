@@ -8,4 +8,5 @@ ssh bpsehomologacao <<-EOF
     git pull origin develop
     docker exec -t app php artisan migrate --force
     docker exec -t app php artisan db:seed --class=HabilidadesTableSeeder --force
+    docker exec -t app php artisan db:seed --class=PapeisHabilidadesTableSeeder --force
 EOF

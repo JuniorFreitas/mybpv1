@@ -256,7 +256,6 @@ class TreinamentoController extends Controller
         try {
             DB::beginTransaction();
             DB::commit();
-
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();

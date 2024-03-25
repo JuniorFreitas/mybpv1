@@ -276,14 +276,48 @@
             <fieldset>
                 <legend>Filtro</legend>
                 <form class="row" @submit.prevent="$refs.componente.buscar()">
+
+
                     <!--                    <div class="col-12 col-md-4">-->
                     <!--                        <div class="form-group">-->
-                    <!--                            <label>Buscar</label>-->
+                    <!--                            <label>Colaborador</label>-->
                     <!--                            <input type="text"-->
                     <!--                                   placeholder="Buscar por nome"-->
                     <!--                                   autocomplete="off"-->
                     <!--                                   class="form-control form-control-sm" :disabled="controle.carregando"-->
                     <!--                                   v-model="controle.dados.campoBusca">-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
+
+                    <!--                    <div class="col-12 col-md-4">-->
+                    <!--                        <div class="form-group">-->
+                    <!--                            <label>Ano Avaliação</label>-->
+                    <!--                            <select class="form-control form-control-sm"-->
+                    <!--                                    :disabled="controle.carregando"-->
+                    <!--                                    @change.prevent="atualizar();controle.dados.tipo_avaliacao = '';controle.dados.campoStatus = ''"-->
+                    <!--                                    v-model="controle.dados.ano_avaliacao"-->
+                    <!--                            >-->
+                    <!--                                <option v-for="(item,key) in listaKeysAvaliacaoPorAnoOrdenado" :value="item">-->
+                    <!--                                    {{ item }}-->
+                    <!--                                </option>-->
+                    <!--                            </select>-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
+
+                    <!--                    <div class="col-12 col-md-4">-->
+                    <!--                        <div class="form-group">-->
+                    <!--                            <label>Tipo Avaliação</label>-->
+                    <!--                            <select class="form-control form-control-sm"-->
+                    <!--                                    :disabled="controle.carregando"-->
+                    <!--                                    @change.prevent="atualizar(); controle.dados.campoStatus = ''"-->
+                    <!--                                    v-model="controle.dados.tipo_avaliacao"-->
+                    <!--                            >-->
+                    <!--                                <option value="">Sem filtro</option>-->
+                    <!--                                <option v-for="(item,key) in groupAvaliacaoAno"-->
+                    <!--                                        :value="item.avaliacao_tipo_id">-->
+                    <!--                                    {{ item.avaliacao_tipo }}-->
+                    <!--                                </option>-->
+                    <!--                            </select>-->
                     <!--                        </div>-->
                     <!--                    </div>-->
 
@@ -371,6 +405,7 @@
                 <table class="table table-bordered" v-if="selecionadaAvaliacao && selecionadaAvaliacao.auto_avaliacao">
                     <thead class="bg-white">
                     <tr class="bg-white">
+                        <td class="text-center">Ano Avaliação</td>
                         <td class="text-center">Título</td>
                         <td class="text-center">Tipo</td>
                         <td class="text-center">Avaliar até</td>
@@ -388,6 +423,9 @@
                                 'bg-success text-white': item.status === 'Finalizada'
                             }"
                     >
+                        <td class="text-center">
+                            {{ item.avaliacao.ano_avaliacao }}
+                        </td>
                         <td class="text-center">
                             {{ item.avaliacao.titulo }}
                         </td>
@@ -478,6 +516,7 @@
                 <table class="table table-bordered" v-if="selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao">
                     <thead class="bg-white">
                     <tr class="bg-white">
+                        <td class="text-center">Ano Avaliação</td>
                         <td class="text-center">Título</td>
                         <td class="text-center">Tipo</td>
                         <td class="text-center">Avaliar até</td>
@@ -489,6 +528,9 @@
                     </thead>
                     <tbody>
                     <tr v-if="!item.avaliacao.auto_avaliacao && item.principal" v-for="item in lista" class="bg-white">
+                        <td class="text-center">
+                            {{ item.avaliacao.ano_avaliacao }}
+                        </td>
                         <td class="text-center">
                             {{ item.avaliacao.titulo }}
                         </td>
@@ -665,6 +707,8 @@ export default {
             lista_avaliacoes: [],
             lista_status: [],
 
+            lista_avaliacoes_por_ano: [],
+
             avaliacaoSelecionada: null,
 
             urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/atualizar`,
@@ -676,6 +720,8 @@ export default {
                     campoBusca: "",
                     campoAvaliacao: "",
                     campoStatus: "",
+                    ano_avaliacao: new Date().getFullYear(),
+                    tipo_avaliacao: "",
                 }
             }
         };
@@ -686,6 +732,23 @@ export default {
         }
     },
     computed: {
+        listaKeysAvaliacaoPorAnoOrdenado() {
+            return Object.keys(this.lista_avaliacoes_por_ano).sort((a, b) => b - a);
+        },
+        groupAvaliacaoAno() {
+            let group = _.groupBy(this.lista_avaliacoes_por_ano[this.controle.dados.ano_avaliacao], 'avaliacao_tipo_id');
+
+            let array = [];
+            for (let key in group) {
+                if (group[key][0].ativo) {
+                    array.push({
+                        avaliacao_tipo_id: key,
+                        avaliacao_tipo: group[key][0].avaliacao_tipo.nome,
+                    });
+                }
+            }
+            return array;
+        },
         selecionadaAvaliacao() {
             return (this.lista_avaliacoes).find(item => item.id === this.controle.dados.campoAvaliacao) ?? null;
         },
@@ -821,6 +884,7 @@ export default {
             this.lista_avaliacoes_tipos = dados.avaliacoes_tipos;
             this.lista_avaliacoes = dados.lista_avaliacoes;
             this.lista_status = dados.lista_status;
+            this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano;
             this.tem_privilegio_gestao_rh = dados.tem_privilegio_gestao_rh;
             this.controle.carregando = false;
         },

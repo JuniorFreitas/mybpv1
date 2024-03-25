@@ -8,15 +8,16 @@ services:
       dockerfile: Dockerfile
     container_name: app
     restart: unless-stopped
-#    depends_on:
-#      - mysql
-#      - redis
+    #    depends_on:
+    #      - mysql
+    #      - redis
     environment:
       - ENABLE_SCHEDULE=true
       - ENABLE_WORKER=true
       - ENABLE_HORIZON=true
       - ENABLE_WEBSOCKETS=false
       - ENABLE_SUPERVISOR_GUI=true
+      - ENABLE_CACHE_APP=false
       - SUPERVISORD_USER=admin
       - SUPERVISORD_PASS=secret
 

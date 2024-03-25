@@ -431,6 +431,13 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         });
 
         Route::group(['prefix' => 'avaliacoes'], function () {
+
+            Route::group(['as' => 'avaliadortipo.'], function () {
+                Route::put('avaliadortipo/{avaliadortipo}/ativa-desativa', [\App\Http\Controllers\AvaliadorTipoController::class, 'ativaDesativa'])->name('AvaliadorTipoAtivaDesativa')->middleware('can:cadastro_avaliador_tipo');
+                Route::post('avaliadortipo/atualizar', [\App\Http\Controllers\AvaliadorTipoController::class, 'atualizar'])->name('AvaliadorTipoAtualizar')->middleware('can:cadastro_avaliador_tipo');
+                Route::resource('avaliadortipo', \App\Http\Controllers\AvaliadorTipoController::class)->middleware('can:cadastro_avaliador_tipo');
+            });
+
             Route::group(['as' => 'avaliacaotipo.'], function () {
                 Route::put('avaliacaotipo/{avaliacaotipo}/ativa-desativa', [\App\Http\Controllers\AvaliacaoTipoController::class, 'ativaDesativa'])->name('AvaliacaoTipoAtivaDesativa')->middleware('can:cadastro_avaliacao_tipo');
                 Route::post('avaliacaotipo/atualizar', [\App\Http\Controllers\AvaliacaoTipoController::class, 'atualizar'])->name('AvaliacaoTipoAtualizar')->middleware('can:cadastro_avaliacao_tipo');

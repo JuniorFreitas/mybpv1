@@ -60,12 +60,12 @@ class HistoricoController extends Controller
 //        }])->whereIn('status', ['ADMITIDO']);
 
         $resultado = FeedbackCurriculo::whereHas('Admissao', function ($q) {
-            $q->whereIn('status', ['ADMITIDO']);
+            $q->whereIn('status', [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_DEMITIDO]);
         })->with('Admissao', 'Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
 
-        if($request->campoDemitido){
+        if ($request->campoDemitido) {
             $resultado->Demitidos();
-        }else{
+        } else {
             $resultado->Admitidos();
         }
         if ($request->filled('campoBusca')) {
@@ -80,15 +80,15 @@ class HistoricoController extends Controller
         }
         $cargos = Vaga::whereAtivo(true)->orderBy('nome')->get(['id', 'nome']);
 
-     /*   $idsCargos = DB::table('feedback_curriculos')->distinct('vaga_id')->pluck('vaga_id');
+        /*   $idsCargos = DB::table('feedback_curriculos')->distinct('vaga_id')->pluck('vaga_id');
 
-        $cargos = [];
-        foreach ($idsCargos as $id) {
-            $cargos[]=[
-                'id' => $id,
-                'nome' => Vaga::find($id)->nome
-                ];
-        }*/
+           $cargos = [];
+           foreach ($idsCargos as $id) {
+               $cargos[]=[
+                   'id' => $id,
+                   'nome' => Vaga::find($id)->nome
+                   ];
+           }*/
 
         $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
         $permissoes = [
@@ -148,7 +148,7 @@ class HistoricoController extends Controller
                 //todo Verifica se ja existe a pessoa se existir so da um increment
                 DB::beginTransaction();
                 foreach ($dados['medidas_administrativas'] as $medida) {
-                    if(isset($medida['novo'])){
+                    if (isset($medida['novo'])) {
                         $medida['user_id'] = auth()->id();
                         $medidaAdm = MedidaAdministrativa::create($medida);
                         //Remove a foto de anexo
@@ -172,7 +172,7 @@ class HistoricoController extends Controller
                                 }
                             }
                         }
-                    }else{
+                    } else {
                         if (isset($medida['anexosDel'])) {
                             foreach ($medida['anexosDel'] as $id_anexo) {
                                 $arquivo = Arquivo::find($id_anexo);

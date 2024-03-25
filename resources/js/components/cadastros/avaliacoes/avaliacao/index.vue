@@ -80,7 +80,68 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="col-lg-3">
+                                <div class="form-group">
+                                    <label>Ano Avaliação</label>
+                                    <input v-model="form.ano_avaliacao" class="form-control form-control-sm validacampo"
+                                           type="number"
+                                           placeholder="Ano Avaliação"
+                                           v-mascara:ano
+                                           @keyup.prevent="valida_campo_vazio($event.target, 4);"
+                                           @blur.prevent="valida_campo_vazio($event.target, 4)"
+                                    >
+                                </div>
+                            </div>
                         </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Fluxo</legend>
+                        <div class="alert alert-info">
+                            Se Auto Avaliação estiver marcado como sim ocupara a primeira ordem do fluxo
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo de avaliador</label>
+                            <select class="form-control form-control-sm validacampo"
+                                    v-model="selecionatipoavaliador"
+                                    @change="addTipoAvaliadorFluxo($event.target.value)"
+                            >
+                                <option value="">Selecione ...</option>
+                                <option v-for="item in lista_tipos_avaliadores" :value="`${item.id}|${item.label}`"
+                                        :key="item.id">
+                                    {{ item.label }}
+                                </option>
+
+                            </select>
+                        </div>
+
+                        <div class="my-custom-list" v-if="form.auto_avaliacao">
+                            <div class="sortable-item" style="cursor:default;">
+                                <div class="handle">
+                                    1 - Auto Avaliação
+                                </div>
+                            </div>
+                        </div>
+
+                        <draggable v-model="form.fluxo" v-bind="getOptions" class="my-custom-list"
+                                   @change="atualizarPrincipal">
+                            <div v-for="(item, key) in form.fluxo" :key="item.id"
+                                 :class="{ 'sortable-item': true, 'dragging': itemIsDragging === item.id }">
+                                <div class="handle">
+                                    <!--                                    <i class="fas fa-grip-vertical"></i> -->
+                                    {{ form.auto_avaliacao ? key + 2 : key + 1 }} - {{ item.label }}
+                                    <span class="badge badge-info" v-if="key === form.fluxo.length - 1">
+                                        <i class="fa fa-user"></i> Avaliador Final
+                                    </span>
+                                </div>
+                                <div class="delete-icon">
+                                    <i class="fa fa-trash" @click.prevent="rmTipoAvaliadorFluxo(item)"></i>
+                                </div>
+                            </div>
+                        </draggable>
+
                     </fieldset>
                 </div>
             </template>
@@ -112,6 +173,52 @@
                     </div>
                 </div>
 
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Ano Avaliação</label>
+                        <select class="form-control form-control-sm"
+                                @change.prevent="atualizar();controle.dados.tipo_avaliacao = '';controle.dados.status = '';"
+                                v-model="controle.dados.ano_avaliacao"
+                        >
+                            <option v-for="(item,key) in listaKeysAvaliacaoPorAnoOrdenado" :value="item">
+                                {{ item }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Tipo Avaliação</label>
+                        <select class="form-control form-control-sm"
+                                @change.prevent="atualizar();controle.dados.status = '';"
+                                v-model="controle.dados.tipo_avaliacao"
+                        >
+                            <option value="">Sem filtro</option>
+                            <option v-for="(item,key) in groupAvaliacaoAno"
+                                    :value="item.avaliacao_tipo_id">
+                                {{ item.avaliacao_tipo }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control form-control-sm"
+                                @change.prevent="atualizar()"
+                                v-model="controle.dados.status"
+                        >
+                            <option value="">Sem filtro</option>
+                            <option v-for="(item,key) in lista_status"
+                                    :value="item">
+                                {{ item }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="col-12 col-md-12">
                     <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
                             @click="atualizar"><i
@@ -139,10 +246,11 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
+            <div v-show="!controle.carregando && lista.length > 0" class="table-responsive">
+                <table class="table table-bordered bg-white">
                     <thead>
                     <tr class="bg-default">
+                        <td class="text-center">Ano</td>
                         <td class="text-center">Título</td>
                         <td class="text-center">Tipo Avaliação</td>
                         <td class="text-center">Data Início</td>
@@ -154,6 +262,7 @@
                     </thead>
                     <tbody>
                     <tr v-for="item in lista">
+                        <td class="text-center">{{ item.ano_avaliacao }}</td>
                         <td class="text-center">{{ item.titulo }}</td>
                         <td class="text-center">{{ item.avaliacao_tipo.nome }}</td>
                         <td class="text-center">{{ item.data_inicio_prazo }}</td>
@@ -209,13 +318,16 @@ import modal from "../../../Modal";
 import DatePicker from "../../../DatePicker";
 import vinculaAvaliador from "./vinculaAvaliador";
 import validacoes from "../../../../mixins/Validacoes";
+import vuedraggable from 'vuedraggable'
+
 
 export default {
     components: {
         modal,
         controlePaginacao,
         DatePicker,
-        vinculaAvaliador
+        vinculaAvaliador,
+        vuedraggable
     },
     mixins: [validacoes],
     props: {
@@ -238,6 +350,7 @@ export default {
     mounted() {
         this.atualizar();
         this.formDefault = _.cloneDeep(this.form);
+        this.form.ano_avaliacao = new Date().getFullYear();
     },
     data() {
         return {
@@ -251,12 +364,14 @@ export default {
 
             form: {
                 titulo: "",
+                ano_avaliacao: '',
                 data_inicio_prazo: "",
                 data_fim_prazo: "",
                 status: "",
                 ativo: true,
                 auto_avaliacao: true,
-                avaliacao_tipo_id: ''
+                avaliacao_tipo_id: '',
+                fluxo: []
             },
 
             formDefault: null,
@@ -264,17 +379,71 @@ export default {
             lista: [],
             lista_avaliacoes_tipos: [],
             lista_status: [],
+            lista_avaliacoes_por_ano: [],
+
+            lista_tipos_avaliadores: [],
+            selecionatipoavaliador: '',
 
             avaliacaoSelecionada: null,
+
+            itemIsDragging: null,
 
             urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliacao/atualizar`,
             controle: {
                 carregando: false,
                 dados: {
                     campoBusca: "",
+                    ano_avaliacao: new Date().getFullYear(),
+                    tipo_avaliacao: "",
+                    status: "",
                 }
             }
         };
+    },
+    computed: {
+        listaKeysAvaliacaoPorAnoOrdenado() {
+            return Object.keys(this.lista_avaliacoes_por_ano).sort((a, b) => b - a);
+        },
+        groupAvaliacaoAno() {
+            let group = _.groupBy(this.lista_avaliacoes_por_ano[this.controle.dados.ano_avaliacao], 'avaliacao_tipo_id');
+
+            let array = [];
+            for (let key in group) {
+                array.push({
+                    avaliacao_tipo_id: key,
+                    avaliacao_tipo: group[key][0].avaliacao_tipo.nome,
+                });
+            }
+            return array;
+        },
+        getOptions() {
+            return {
+                animation: 150, // Duração da animação de reordenação em milissegundos
+                group: 'items',   // Define um grupo para permitir arrastar e soltar entre várias listas
+                onStart: (event) => {
+                    this.itemIsDragging = event.item.id; // Define o item atual como arrastando
+                },
+                onEnd: () => {
+                    this.itemIsDragging = null; // Define o item arrastando como null quando o arrastar termina
+                }
+            };
+        },
+    },
+    watch: {
+        fluxo: {
+            handler() {
+                // Primeiro, definir todos os itens como 'principal: false'
+                this.fluxo.forEach(item => {
+                    item.principal = false;
+                });
+
+                // Então, definir o último item como 'principal: true'
+                if (this.fluxo.length > 0) {
+                    this.fluxo[this.fluxo.length - 1].principal = true;
+                }
+            },
+            deep: true // Isso garante que o watcher reaja a mudanças dentro dos objetos do array
+        }
     },
     methods: {
         associar(obj) {
@@ -292,6 +461,7 @@ export default {
             this.editando = false;
             this.cadastrado = false;
             this.preload = false;
+            this.form.ano_avaliacao = new Date().getFullYear();
             formReset();
             setupCampo();
         },
@@ -344,9 +514,13 @@ export default {
         alterar() {
             formReset();
             this.validaBlur();
+            if (this.form.fluxo.length === 0) {
+                mostraErro("", "Informe o fluxo da avaliação");
+                return false;
+            }
             let countErro = document.querySelectorAll(".is-invalid").length
             if (countErro > 0) {
-                toastr.error("Verifique os campos", "Atenção!")
+                mostraErro("", "Verifique os campos")
                 return false;
             }
             this.preload = true;
@@ -360,9 +534,54 @@ export default {
             }).catch(error => (this.preload = false));
 
         },
+
+        addTipoAvaliadorFluxo(obj) {
+            const [id, label] = obj.split('|');
+
+            if (id !== '') {
+                const objFluxo = {
+                    id: +id,
+                    label,
+                    principal: false
+                };
+
+                const existingIndex = this.form.fluxo.findIndex(item => item.id === objFluxo.id);
+
+                if (existingIndex === -1) {
+                    this.form.fluxo.push(objFluxo);
+                } else {
+                    mostraErro('', `Tipo avaliador ${label} já existe na lista`);
+                }
+            }
+
+            this.selecionatipoavaliador = '';
+        },
+
+        rmTipoAvaliadorFluxo(item) {
+            const index = this.form.fluxo.indexOf(item);
+            if (index !== -1) {
+                this.form.fluxo.splice(index, 1);
+            }
+        },
+
+        atualizarPrincipal() {
+            // Primeiro, definir todos os itens como 'principal: false'
+            this.form.fluxo.forEach(item => {
+                item.principal = false;
+            });
+
+            // Então, definir o último item como 'principal: true'
+            if (this.form.fluxo.length > 0) {
+                this.form.fluxo[this.form.fluxo.length - 1].principal = true;
+            }
+        },
+
         carregou(dados) {
             this.lista = dados.itens;
             this.lista_avaliacoes_tipos = dados.avaliacoes_tipos;
+            this.lista_tipos_avaliadores = dados.lista_tipos_avaliadores;
+
+            this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano;
             this.lista_status = dados.lista_status;
             this.controle.carregando = false;
         },
@@ -391,6 +610,47 @@ export default {
 
 .btn-link:hover {
     color: #dddddd;
+}
+
+.my-custom-list {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.sortable-item {
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-between; /* Alinha o ícone e o conteúdo à direita */
+    align-items: center; /* Centraliza verticalmente */
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: grab;
+}
+
+.delete-icon {
+    margin-left: 10px; /* Espaço entre o ícone e o conteúdo */
+}
+
+.item-content {
+    flex: 1; /* O conteúdo ocupa o espaço restante na linha */
+}
+
+/* Adicione estilos ao ícone de arrastar conforme necessário */
+.delete-icon i {
+    font-size: 14px;
+    color: #434344;
+    cursor: pointer;
+}
+
+.delete-icon i:hover {
+    color: #f85454;
+}
+
+.dragging {
+    background-color: red; /* Cor de fundo quando o item está sendo arrastado */
 }
 
 </style>

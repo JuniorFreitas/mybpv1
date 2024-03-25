@@ -470,6 +470,12 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_avaliacao_tipo_show', 'descricao' => 'Pode visualizar tipos de avaliação'];
         $lista[] = ['nome' => 'cadastro_avaliacao_tipo_active', 'descricao' => 'Pode ativar/desativar tipos de avaliação'];
 
+        $lista[] = ['nome' => 'cadastro_avaliador_tipo', 'descricao' => 'Acessar tipos de avaliadores'];
+        $lista[] = ['nome' => 'cadastro_avaliador_tipo_insert', 'descricao' => 'Pode cadastrar tipos de avaliadores'];
+        $lista[] = ['nome' => 'cadastro_avaliador_tipo_update', 'descricao' => 'Pode alterar tipos de avaliadores'];
+        $lista[] = ['nome' => 'cadastro_avaliador_tipo_show', 'descricao' => 'Pode visualizar tipos de avaliadores'];
+        $lista[] = ['nome' => 'cadastro_avaliador_tipo_active', 'descricao' => 'Pode ativar/desativar tipos de avaliadores'];
+
         $lista[] = ['nome' => 'cadastro_avaliacao_topico', 'descricao' => 'Acessar tópicos de avaliação'];
         $lista[] = ['nome' => 'cadastro_avaliacao_topico_insert', 'descricao' => 'Pode cadastrar tópicos de avaliação'];
         $lista[] = ['nome' => 'cadastro_avaliacao_topico_update', 'descricao' => 'Pode alterar tópicos de avaliação'];

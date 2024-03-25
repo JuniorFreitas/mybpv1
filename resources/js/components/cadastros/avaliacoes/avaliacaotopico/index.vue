@@ -9,16 +9,17 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label>Tópico</label>
+                                    <label>Competência</label>
                                     <input v-model="form.topico" class="form-control" type="text"
-                                           placeholder="Informe o nome do tópico"
+                                           placeholder="Informe o nome de competência"
                                            onblur="valida_campo_vazio(this,1)">
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label>Descrição do Tópico</label>
-                                    <textarea v-model="form.topico_explicacao" class="form-control" placeholder="Informe a descrição do tópico" rows="4"></textarea>
+                                    <label>Descrição de competência</label>
+                                    <textarea v-model="form.topico_explicacao" class="form-control"
+                                              placeholder="Informe a descrição de competência" rows="4"></textarea>
                                 </div>
                             </div>
                             <div class="col-12">
@@ -27,7 +28,9 @@
                                     <select class="form-control" v-model="form.avaliacao_tipo_id"
                                             onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)">
                                         <option value="">Selecione ...</option>
-                                        <option v-for="item in lista_avaliacoes_tipos" :value="item.id" :key="item.id">{{ item.nome }}</option>
+                                        <option v-for="item in lista_avaliacoes_tipos" :value="item.id" :key="item.id">
+                                            {{ item.nome }}
+                                        </option>
 
                                     </select>
                                 </div>
@@ -49,36 +52,40 @@
                     </fieldset>
 
                     <fieldset v-if="form.avaliacao_tipo_id > 0">
-                        <legend>Subtópico</legend>
+                        <legend>Indicador</legend>
                         <button class="btn btn-sm btn-primary mb-2" @click="addLiSubtopico($event.target)">Adicionar
-                            Subtópico
+                            Indicador
                         </button>
                         <div class="accordion" id="topico">
                             <div class="card mb-3 border" v-for="(objsubtopico, ind) in form.subtopicos"
                                  v-show="form.subtopicos.length> 0">
-                                <div class="card-header" style="background: #072433; color: white" :id="objsubtopico.id">
+                                <div class="card-header" style="background: #072433; color: white"
+                                     :id="objsubtopico.id">
                                     <h2 class="mb-0">
                                         <a class="btn btn-link btn-block text-left" href="javascript://"
                                            data-toggle="collapse"
                                            :data-target="`#collapse${objsubtopico.id}`" aria-expanded="true"
                                            :aria-controls="`collapse${objsubtopico.id}`">
-                                            Subtópico - {{ ind + 1 }}
+                                            Indicador - {{ ind + 1 }}
                                         </a>
                                     </h2>
                                 </div>
 
-                                <div :id="`collapse${objsubtopico.id}`" class="collapse show" :aria-labelledby="objsubtopico.id"
+                                <div :id="`collapse${objsubtopico.id}`" class="collapse show"
+                                     :aria-labelledby="objsubtopico.id"
                                      data-parent="#topico">
                                     <div class="card-body">
                                         <div class="col-12 mt-2">
-                                            <label>Subtópico</label>
+                                            <label>Indicador</label>
                                             <input v-model="objsubtopico.topico" class="form-control" type="text"
-                                                   placeholder="Informe o nome do subtópico"
+                                                   placeholder="Informe o nome do indicador"
                                                    onblur="valida_campo_vazio(this,1)">
                                         </div>
                                         <div class="col-12 mt-2">
-                                            <label>Descrição do subtópico</label>
-                                            <textarea v-model="objsubtopico.topico_explicacao" class="form-control" placeholder="Informe a descrição do tópico" rows="4"></textarea>
+                                            <label>Descrição do indicador</label>
+                                            <textarea v-model="objsubtopico.topico_explicacao" class="form-control"
+                                                      placeholder="Informe a descrição de competência"
+                                                      rows="4"></textarea>
                                         </div>
                                     </div>
                                     <a class="btn btn-sm btn-danger" href="javascript://"
@@ -97,7 +104,8 @@
                         @click="alterar()">
                     Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-if="lista_avaliacoes_tipos.length > 0" v-show="!editando && !preload"
+                <button type="button" class="btn btn-sm btn-primary" v-if="lista_avaliacoes_tipos.length > 0"
+                        v-show="!editando && !preload"
                         @click="cadastrar()">
                     Cadastrar
                 </button>
@@ -150,8 +158,8 @@
                 <table class="tabela">
                     <thead>
                     <tr class="bg-default">
-                        <td class="text-center">Tópico</td>
-                        <td class="text-center">Qnt Subtópicos</td>
+                        <td class="text-center">Competência</td>
+                        <td class="text-center">Qnt Indicadores</td>
                         <td class="text-center">Tipo Avaliação</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Ação</td>
@@ -265,7 +273,7 @@ export default {
 
         formNovo() {
             this.form = _.cloneDeep(this.formDefault); //copia
-            this.titulo_janela = "Montagem do Tópico";
+            this.titulo_janela = "Montagem de competência";
             this.editando = false;
             this.cadastrado = false;
             this.preload = false;
@@ -284,7 +292,7 @@ export default {
                 .then(res => {
                     if (res.status === 201) {
                         $("#janelaCadastrar").modal("hide");
-                        mostraSucesso("", "Tópico de Avaliação cadastrado com sucesso");
+                        mostraSucesso("", "Competência de Avaliação cadastrado com sucesso");
                         this.cadastrado = true;
                         this.preload = false;
                         this.atualizar();
@@ -299,7 +307,7 @@ export default {
         alterarForm(avaliacaotopico) {
             this.cadastrado = false;
             this.editando = true;
-            this.titulo_janela = `Alterando Tópico ${avaliacaotopico.id}`;
+            this.titulo_janela = `Alterande competência ${avaliacaotopico.id}`;
             this.preload = true;
 
             this.form = _.cloneDeep(this.formDefault); //copia
@@ -330,7 +338,7 @@ export default {
 
             axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico/${this.form.id}`, this.form).then(response => {
                 $("#janelaCadastrar").modal("hide");
-                mostraSucesso("", "Tópico de avaliação alterado com sucesso");
+                mostraSucesso("", "Competência de avaliação alterado com sucesso");
                 this.preload = false;
                 this.atualizado = true;
                 this.atualizar();

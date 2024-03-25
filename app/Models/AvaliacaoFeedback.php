@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Tenant\Traits\TenantTrait;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -54,7 +56,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AvaliacaoFeedback extends Model
 {
-    use HasFactory, TenantTrait, LogsActivity;
+    use TenantTrait, LogsActivity;
 
     protected static $logFillable = true;
     protected static $logName = 'avaliacoes_feedbacks';
@@ -79,6 +81,7 @@ class AvaliacaoFeedback extends Model
         'empresa_id',
         'funcionario_id',
         'feedback_id',
+        'avaliacao_tipo_id',
         'origem_feedback',
         'principal',
         'avaliador_id',
@@ -96,6 +99,7 @@ class AvaliacaoFeedback extends Model
         'avaliacao_id' => 'int',
         'empresa_id' => 'int',
         'feedback_id' => 'int',
+        'avaliacao_tipo_id' => 'int',
         'funcionario_id' => 'int',
         'principal' => 'boolean',
         'origem_feedback' => 'string',
@@ -129,26 +133,47 @@ class AvaliacaoFeedback extends Model
         self::STATUS_FINAL
     ];
 
+    public function TipoAvaliador()
+    {
+        return $this->hasOne(AvaliacaoAvaliadoresTipos::class, 'id', 'avaliacao_tipo_id');
+    }
+
+    /**
+     * @return HasOne
+     */
     public function Avaliador()
     {
         return $this->hasOne(User::class, 'id', 'avaliador_id');
     }
 
+    /**
+     * @return BelongsTo
+     */
     public function Avaliacao()
     {
         return $this->belongsTo(Avaliacao::class, 'avaliacao_id', 'id');
     }
 
+    /**
+     * @return HasOne
+     */
     public function Funcionario()
     {
         return $this->hasOne(User::class, 'id', 'funcionario_id');
     }
 
+    /**
+     * @return HasMany
+     */
     public function Respostas()
     {
         return $this->hasMany(AvaliacaoResposta::class, 'avaliacao_feedback_id', 'id');
     }
 
+    /**
+     * @param $query
+     * @return mixed
+     */
     public function scopeOrigemAvaliador($query)
     {
         return $query->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR);

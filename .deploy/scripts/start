@@ -17,14 +17,19 @@ fi
 
 if [ -d "$APP_PATH/vendor" ] ; then
 
-  printf "${COL_GREEN} -----> Info:${COL_RESET} Rebuilding the cached package manifest...\n"
-  php $APP_PATH/artisan package:discover --ansi
+ # Enable Laravel Schedule
+  if [ "$ENABLE_CACHE_APP" = "true" ] ; then
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Rebuilding the cached package manifest...\n"
+    php $APP_PATH/artisan package:discover --ansi
 
-  printf "${COL_GREEN} -----> Info:${COL_RESET} Running migrations...\n"
-  php ${APP_PATH}/artisan migrate --force
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Running migrations...\n"
+    php ${APP_PATH}/artisan migrate --force
 
-  printf "${COL_GREEN} -----> Info:${COL_RESET} Caching configuration...\n"
-  php $APP_PATH/artisan config:cache
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Caching configuration...\n"
+    php $APP_PATH/artisan config:cache
+  else
+    rm -f $ENABLE_CACHE_APP
+  fi
 
   # Enable Laravel Schedule
   if [ "$ENABLE_SCHEDULE" = "true" ] ; then

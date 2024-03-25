@@ -3,8 +3,13 @@
 namespace App\Models;
 
 use App\Tenant\Traits\TenantTrait;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use MasterTag\DataHora;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -43,17 +48,17 @@ class Avaliacao extends Model
 {
     use TenantTrait, LogsActivity;
 
-    protected static $logFillable = true;
-    protected static $logName = 'avaliacoes';
-    protected static $logOnlyDirty = true;
-    protected static $submitEmptyLogs = false;
+    protected static bool $logFillable = true;
+    protected static string $logName = 'avaliacoes';
+    protected static bool $logOnlyDirty = true;
+    protected static bool $submitEmptyLogs = false;
 
     public function getDescriptionForEvent(string $eventName): string
     {
         return $eventName;
     }
 
-    public function tapActivity(Activity $activity, string $eventName)
+    public function tapActivity(Activity $activity, string $eventName): void
     {
         $activity->descricao = "";
     }
@@ -63,25 +68,29 @@ class Avaliacao extends Model
 
     protected $fillable = [
         'titulo',
+        'ano_avaliacao',
         'avaliacao_tipo_id',
         'data_inicio_prazo',
         'data_fim_prazo',
         'empresa_id',
         'status',
         'ativo',
-        'auto_avaliacao'
+        'auto_avaliacao',
+        'fluxo'
     ];
 
     protected $casts = [
         'id' => 'int',
         'avaliacao_tipo_id' => 'int',
         'titulo' => 'string',
+        'ano_avaliacao' => 'int',
         'data_inicio_prazo' => 'string',
         'data_fim_prazo' => 'string',
         'empresa_id' => 'int',
         'status' => 'string',
         'ativo' => 'boolean',
-        'auto_avaliacao' => 'boolean'
+        'auto_avaliacao' => 'boolean',
+        'fluxo' => 'json'
     ];
 
     public $timestamps = false;
@@ -106,8 +115,7 @@ class Avaliacao extends Model
     public function getDataInicioPrazoAttribute($value)
     {
         if ($value) {
-            $data = new DataHora($this->attributes['data_inicio_prazo']);
-            return $data->dataCompleta();
+            return (new DataHora($this->attributes['data_inicio_prazo']))->dataCompleta();
         }
     }
 
@@ -115,9 +123,7 @@ class Avaliacao extends Model
     public function setDataInicioPrazoAttribute($value)
     {
         if ($value) {
-            $dt = $value . ' 00:00:00';
-            $data = new DataHora($dt);
-            $this->attributes['data_inicio_prazo'] = $data->dataHoraInsert();
+            $this->attributes['data_inicio_prazo'] = (new DataHora($value . ' 00:00:00'))->dataHoraInsert();
         }
     }
 
@@ -125,8 +131,7 @@ class Avaliacao extends Model
     public function getDataFimPrazoAttribute($value)
     {
         if ($value) {
-            $data = new DataHora($this->attributes['data_fim_prazo']);
-            return $data->dataCompleta();
+            return (new DataHora($this->attributes['data_fim_prazo']))->dataCompleta();
         }
     }
 
@@ -134,9 +139,101 @@ class Avaliacao extends Model
     public function setDataFimPrazoAttribute($value)
     {
         if ($value) {
-            $dt = $value . ' 23:59:59';
-            $data = new DataHora($dt);
-            $this->attributes['data_fim_prazo'] = $data->dataHoraInsert();
+            $this->attributes['data_fim_prazo'] = (new DataHora($value . ' 23:59:59'))->dataHoraInsert();
         }
+    }
+
+    /**
+     * @param $empresaId
+     * @return Repository|JsonResponse|mixed|string
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function listaTodasAvaliacoesAgrupadaAno($empresaId)
+    {
+        $empresaId = $this->getEmpresaId($empresaId);
+        $cache_key = "lista_av_grp_ano_{$empresaId}";
+
+        cache()->forget($cache_key);
+
+        if (!$empresaId) {
+            return response()->json(['msg' => 'Empresa não informada'], 400);
+        }
+
+        if (is_null(cache()->get($cache_key))) {
+            $todasAvaliacoesAgrupadaAno = Avaliacao::select([
+                'id',
+                'avaliacao_tipo_id',
+                'empresa_id',
+                'titulo',
+                'ano_avaliacao',
+                'data_inicio_prazo',
+                'data_fim_prazo',
+                'status',
+                'ativo',
+                'auto_avaliacao',
+            ])->with('AvaliacaoTipo')
+                ->get()
+                ->groupBy('ano_avaliacao');
+
+            cache()->put($cache_key,
+                collect($todasAvaliacoesAgrupadaAno
+                ), now()->addDays(7));
+        }
+
+        return cache()->get($cache_key);
+
+    }
+
+    /**
+     * @param $empresaId
+     * @return int|null
+     */
+    private function getEmpresaId($empresaId): ?int
+    {
+        return !auth()->check() ? $empresaId : auth()->user()->empresa_id;
+    }
+
+    public static function fluxoAvaliacao($avaliacao_id)
+    {
+        $avaliacao = (new self())::select(['id', 'auto_avaliacao', 'fluxo'])->where('id', $avaliacao_id)->first();
+
+        return collect($avaliacao->fluxo)->map(function ($item) {
+            $avaliador_tipo = $item['principal'] ? ' (Avaliador Final)' : '';
+            return [
+                'id' => $item['id'],
+                'label' => $item['label'] . $avaliador_tipo,
+                'principal' => $item['principal'],
+            ];
+        })->when($avaliacao->auto_avaliacao, function ($collection) {
+            return $collection->prepend(['id' => 0, 'label' => 'Auto Avaliação', 'principal' => false]);
+        });
+
+    }
+
+    /**
+     * @param $empresaId
+     * @return void
+     * @throws \Exception
+     */
+    public function forgetsCache($empresaId): void
+    {
+        $cache_key = "lista_av_grp_ano_{$empresaId}";
+        cache()->forget($cache_key);
+        $this->listaTodasAvaliacoesAgrupadaAno($empresaId);
+    }
+
+    /**
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::created(function ($model) {
+            (new self())->forgetsCache($model->empresa_id);
+        });
+
+        static::updated(function ($model) {
+            (new self())->forgetsCache($model->empresa_id);
+        });
     }
 }

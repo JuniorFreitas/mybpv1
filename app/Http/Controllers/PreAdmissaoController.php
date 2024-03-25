@@ -42,7 +42,7 @@ class PreAdmissaoController extends Controller
         $feedback = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id', 'telefone_id'])
             ->whereId($feedback)
             ->first()
-            ->load('Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf','TelPrincipal');
+            ->load('Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf', 'TelPrincipal');
 
         $feedback->docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa(auth()->user()->empresa_id)
             ->transform(function ($doc) use ($feedback) {
@@ -72,7 +72,7 @@ class PreAdmissaoController extends Controller
         $feedback = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id', 'telefone_id'])
             ->whereId($feedback)
             ->first()
-            ->load('Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf','VagaAberta.Vaga','TelPrincipal');
+            ->load('Curriculo:id,nome,cpf,email,nascimento,rg,orgao_expeditor,logradouro,complemento,bairro,municipio,uf', 'VagaAberta.Vaga', 'TelPrincipal');
 
         $feedback->docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa(auth()->user()->empresa_id)
             ->transform(function ($doc) use ($feedback) {
@@ -136,9 +136,11 @@ class PreAdmissaoController extends Controller
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
+                $query->where(function ($query) use ($request) {
+                    $query->where('nome', 'like', '%' . $request->campoBusca . '%')
+                        ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
+                        ->orWhere('id', $request->campoBusca);
+                });
             });
         }
 
@@ -178,8 +180,8 @@ class PreAdmissaoController extends Controller
             $item->docs_curriculo_pre_adm = $docs_curriculo_pre_adm;
             $item->qnt_anexos = $docs_curriculo_pre_adm->sum('qnt_anexos');
 
-            $estaFinalizado = DB::table('feedback_preadmissao')->where('feedback_id',$item->id)->first();
-            if($estaFinalizado){
+            $estaFinalizado = DB::table('feedback_preadmissao')->where('feedback_id', $item->id)->first();
+            if ($estaFinalizado) {
                 $user_finalizou = DB::table('users')->where('id', $estaFinalizado->user_finalizou_id)->first()->nome;
                 $item->finalizado = true;
                 $item->quem_finalizou = $user_finalizou;
@@ -253,7 +255,7 @@ class PreAdmissaoController extends Controller
 
             FeedbackPreadmissao::create($dados_feedback_preadmissao);
 
-            $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id','telefone_id'])->find($request->feedback_id);
+            $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id', 'telefone_id'])->find($request->feedback_id);
 
             if ($request->envia_email) {
 

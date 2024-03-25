@@ -31,7 +31,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AvaliacaoTipo extends Model
 {
-    use HasFactory, TenantTrait, LogsActivity;
+    use TenantTrait, LogsActivity;
 
     protected static $logFillable = true;
     protected static $logName = 'avaliacoes_tipos';
@@ -71,5 +71,19 @@ class AvaliacaoTipo extends Model
     public function AvaliacaoTipo()
     {
         return $this->belongsTo(AvaliacaoTopico::class, 'avaliacao_tipo_id', 'id');
+    }
+
+    /**
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::created(function ($model) {
+            (new Avaliacao())->forgetsCache($model->empresa_id);
+        });
+
+        static::updated(function ($model) {
+            (new Avaliacao())->forgetsCache($model->empresa_id);
+        });
     }
 }

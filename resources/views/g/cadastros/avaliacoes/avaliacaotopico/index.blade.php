@@ -1,6 +1,6 @@
 @extends('layouts.sistema')
-@section('title', 'Tópico Avaliação')
-@section('content_header','Tópico Avaliação')
+@section('title', 'Competências')
+@section('content_header','Competências')
 @section('content')
     <avaliacaotopico></avaliacaotopico>
 @stop
