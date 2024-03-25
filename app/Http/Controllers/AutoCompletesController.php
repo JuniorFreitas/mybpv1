@@ -267,10 +267,10 @@ class AutoCompletesController extends Controller
             ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
             ->join('admissoes as a', function ($join) {
                 $join->on('fc.id', '=', 'a.feedback_id')
-                    ->where('a.status', '=', [Admissao::STATUS_ADMISSAO_ADMITIDO])
+                    ->where('a.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
                     ->whereNull('a.deleted_at');
             })
-            ->leftJoin('mybp.demissaos as d2', 'fc.id', '=', 'd2.feedback_id')
+            ->leftJoin('demissaos as d2', 'fc.id', '=', 'd2.feedback_id')
             ->whereNull('fc.deleted_at')
             ->where('fc.empresa_id', '=', auth()->user()->empresa_id)
             ->where('c.nome', 'like', '%' . $busca . '%')
@@ -280,7 +280,7 @@ class AutoCompletesController extends Controller
                     ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
                     ->join('admissoes as a', function ($join) {
                         $join->on('fc.id', '=', 'a.feedback_id')
-                            ->where('a.status', '=', [Admissao::STATUS_DEMITIDO])
+                            ->where('a.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
                             ->whereNull('a.deleted_at');
                     })
                     ->whereNull('fc.deleted_at')
