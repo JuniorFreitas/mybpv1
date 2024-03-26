@@ -432,15 +432,7 @@ export default {
     watch: {
         fluxo: {
             handler() {
-                // Primeiro, definir todos os itens como 'principal: false'
-                this.fluxo.forEach(item => {
-                    item.principal = false;
-                });
-
-                // Então, definir o último item como 'principal: true'
-                if (this.fluxo.length > 0) {
-                    this.fluxo[this.fluxo.length - 1].principal = true;
-                }
+                this.atualizarPrincipal();
             },
             deep: true // Isso garante que o watcher reaja a mudanças dentro dos objetos do array
         }
@@ -553,7 +545,7 @@ export default {
                     mostraErro('', `Tipo avaliador ${label} já existe na lista`);
                 }
             }
-
+            this.atualizarPrincipal();
             this.selecionatipoavaliador = '';
         },
 
@@ -562,6 +554,7 @@ export default {
             if (index !== -1) {
                 this.form.fluxo.splice(index, 1);
             }
+            this.atualizarPrincipal();
         },
 
         atualizarPrincipal() {
