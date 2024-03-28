@@ -178,14 +178,17 @@ class AutoCompletesController extends Controller
             return response()->json([], 201);
         }
         $quantidade = 10;
-
-//        $usuariosSelecionados = FeedbackCurriculo::whereIn('id',$request->funcionariosSelecionados)->pluck('curriculo_id')->toArray();
-
+        
         return User::select(['id', 'nome', 'login', 'tipo', 'ativo'])
             ->TiposGerenciais()
             ->whereEmpresaId(auth()->user()->empresa_id)
             ->whereNotIn('id', $request->funcionariosSelecionados)
             ->whereAtivo(true)
+            ->where(function ($query) use ($request) {
+                $query->whereHas('Curriculo.FeedBack.Admissao', function ($q) use ($request) {
+                    $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
+                })->orWhereDoesntHave('Curriculo.FeedBack.Admissao');
+            })
             ->where('nome', 'like', '%' . $busca . '%')
             ->take($quantidade)
             ->get()
@@ -193,19 +196,6 @@ class AutoCompletesController extends Controller
                 $item->label = $item->nome;
                 return $item;
             });
-
-//        return User::whereEmpresaId(auth()->user()->empresa_id)
-//            ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
-//            ->whereNotIn('id', $usuariosSelecionados)
-////                ->whereNotIn('id', User::LISTA_SUPORTE)
-//            ->whereAtivo(true)
-//            ->where('nome', 'like', '%' . $busca . '%')
-//            ->take($quantidade)
-//            ->get()
-//            ->map(function ($item) {
-//                $item->label = $item->empresa_id == User::MYBP_EMPRESA_ID ? $item->nome . ' - MyBP' : $item->nome;
-//                return $item;
-//            });
     }
 
 
