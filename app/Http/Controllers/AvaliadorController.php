@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admissao;
 use App\Models\Avaliacao;
 use App\Models\AvaliacaoFeedback;
 use App\Models\User;
@@ -308,7 +309,11 @@ class AvaliadorController extends Controller
             ->TiposGerenciais()
             ->whereEmpresaId(auth()->user()->empresa_id)
             ->whereAtivo(true)
-            ->whereDoesntHave('Curriculo.FeedBack.Demissao') // não pode ter demissão
+            ->where(function ($query) use ($request) {
+                $query->whereHas('Curriculo.FeedBack.Admissao', function ($q) use ($request) {
+                    $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
+                })->orWhereDoesntHave('Curriculo.FeedBack.Admissao');
+            })
             ->with('Curriculo.FeedBack.Admissao')
             ->with('Avaliadores', function ($query) use ($request) {
                 $query->where('avaliacao_id', $request->avaliacao_id)
