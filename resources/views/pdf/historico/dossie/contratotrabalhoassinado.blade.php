@@ -19,11 +19,11 @@
             <strong>{{$dados['dados_empresa']['cnpj']}}</strong>, com atividade
             localizada: {{$dados['dados_empresa']['endereco_completo']}},
             doravante designada simplesmente <strong>EMPREGADORA</strong> e de outro
-            <strong>{{$dados['dados_colaborador']->nome}}</strong>
+            <strong>{{$dados['dados_colaborador']->Curriculo->nome}}</strong>
             portador(a) Carteira Profissional
-            n.º {{$dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_numero : 'NÃO INFORMADO'}}
+            n.º {{$dados['dados_colaborador']->Admissao->DadosAdmissoes? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_numero : 'NÃO INFORMADO'}}
             ,
-            Série {{$dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_serie: 'NÃO INFORMADO'}}
+            Série {{$dados['dados_colaborador']->Admissao->DadosAdmissoes? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_serie: 'NÃO INFORMADO'}}
             a seguir chamado apenas <strong>EMPREGADO</strong>, é celebrado o
             presente <strong>CONTRATO DE EXPERIÊNCIA</strong>, que terá vigência a partir da data de início da prestação
             de
@@ -35,9 +35,9 @@
             <strong>1ª (Função/Salário)</strong> – Fica o <strong>EMPREGADO</strong> admitido no quadro de funcionários
             da
             <strong>EMPREGADORA</strong> para exercer as funções de <span
-                style="text-transform: uppercase; font-weight: bold">{{ $dados['dados_colaborador']->FeedBack->VagaAberta->VagaSelecionada->nome }}</span>
-            mediante a remuneração mensal de R$ {{ $dados['dados_colaborador']->FeedBack->Admissao->salario }}
-            ({{\App\Models\Sistema::valorPorExtenso($dados['dados_colaborador']->FeedBack->Admissao->salario)}}). A
+                style="text-transform: uppercase; font-weight: bold">{{ $dados['dados_colaborador']->VagaAberta->VagaSelecionada->nome }}</span>
+            mediante a remuneração mensal de R$ {{ $dados['dados_colaborador']->Admissao->salario }}
+            ({{\App\Models\Sistema::valorPorExtenso($dados['dados_colaborador']->Admissao->salario)}}). A
             circunstância, porém, de ser
             a função especificada não importa na intransferibilidade do <strong>EMPREGADO</strong> para outro serviço,
             no
@@ -76,15 +76,15 @@
             possibilidade fica expressamente prevista em contrato.
         </p>
         <p class="f11 text-justify">
-            @if(!$dados['dados_colaborador']->FeedBack->Admissao->pExperiencia())
+            @if(!$dados['dados_colaborador']->Admissao->pExperiencia())
                 <strong>6ª (Duração)</strong> – O presente contrato vigorará por tempo inderterminado.
             @else
                 <strong>6ª (Duração)</strong> – O presente contrato vigorará
-                por {{$dados['dados_colaborador']->FeedBack->Admissao->pExperiencia()[0]}}
-                ({{ \MasterTag\GExtenso::numero($dados['dados_colaborador']->FeedBack->Admissao->pExperiencia()[0]) }})
+                por {{$dados['dados_colaborador']->Admissao->pExperiencia()[0]}}
+                ({{ \MasterTag\GExtenso::numero($dados['dados_colaborador']->Admissao->pExperiencia()[0]) }})
                 dias, podendo este ser
-                prorrogado ou não por mais {{$dados['dados_colaborador']->FeedBack->Admissao->pExperiencia()[1]}}
-                ({{ \MasterTag\GExtenso::numero($dados['dados_colaborador']->FeedBack->Admissao->pExperiencia()[1]) }})
+                prorrogado ou não por mais {{$dados['dados_colaborador']->Admissao->pExperiencia()[1]}}
+                ({{ \MasterTag\GExtenso::numero($dados['dados_colaborador']->Admissao->pExperiencia()[1]) }})
                 dias sendo celebrado para
                 as
                 partes verificarem reciprocamente,
@@ -260,7 +260,7 @@
         <br><br>
         <div class="f11" style="line-height: 26pt">
             São
-            Luís/MA, {{ (new \MasterTag\DataHora($dados['dados_colaborador']->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}
+            Luís/MA, {{ (new \MasterTag\DataHora($dados['dados_colaborador']->Admissao->data_admissao))->dataCompletaExt() }}
             .
             <br>
             <br>

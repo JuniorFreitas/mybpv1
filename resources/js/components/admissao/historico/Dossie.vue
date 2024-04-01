@@ -598,7 +598,7 @@ export default {
             });
         },
         modelo(tipo_modelo) {
-            let link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.curriculo_id}`;
+            let link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.curriculo_id}/${this.form.id}`;
             open(link, "blank");
         }
     }

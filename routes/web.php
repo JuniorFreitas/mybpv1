@@ -804,7 +804,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 //        Route::get('/{feedback_id}/pdf', [\App\Http\Controllers\DossieController::class,'medidasAdministrativasPDF'])->name('pdfDossie');
             Route::post('/{feedback}', [\App\Http\Controllers\DossieController::class, 'store'])->name('store');
             Route::get('/{feedback}', [\App\Http\Controllers\DossieController::class, 'show'])->name('show');
-            Route::get('/{tipo_modelo}/{curriculo_id}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('downloadModelo');
+            Route::get('/{tipo_modelo}/{curriculo_id}/{feedback_id}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('downloadModelo');
         });
 
         //Rotas Avaliacao Anual

@@ -921,20 +921,21 @@ class DossieController extends Controller
 
 //    DOWNLOAD MODELOS DE IMPRESSÃO COM OS DADOS DOS FUNCIONÁRIOS
 
-    public function downloadModelo($tipo_modelo, $curriculo_id)
+    public function downloadModelo($tipo_modelo, $curriculo_id, $feedback_id)
     {
-        $colaborador = Curriculo::whereId($curriculo_id)->first();
-        $cliente = Cliente::whereId($colaborador->User->empresa_id)->first();
-        $tipo_admissao = \Str::slug($colaborador->FeedBack->Admissao->tipo_admissao);
+        $colaborador = FeedbackCurriculo::whereCurriculoId($curriculo_id)->whereId($feedback_id)->first();
+
+        $cliente = Cliente::whereId($colaborador->Curriculo->User->empresa_id)->first();
+        $tipo_admissao = \Str::slug($colaborador->Admissao->tipo_admissao);
 
         $dados = [
-            'dados_empresa' => Sistema::getEmpresaFilialMatriz($colaborador->FeedBack->Admissao->centro_custo_filial_id, $colaborador->FeedBack->empresa_id),
+            'dados_empresa' => Sistema::getEmpresaFilialMatriz($colaborador->Admissao->centro_custo_filial_id, $colaborador->empresa_id),
             'dados_colaborador' => $colaborador,
             'solicitante' => User::select('nome')->find(auth()->id())->nome
         ];
 
         if ($tipo_modelo == 'contratotrabalhoassinado') {
-            if (in_array($colaborador->FeedBack->Admissao->tipo_admissao, [Admissao::TIPO_ADMISSAO_TEMPORARIO, Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO])) {
+            if (in_array($colaborador->Admissao->tipo_admissao, [Admissao::TIPO_ADMISSAO_TEMPORARIO, Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO])) {
                 $temporaria = EmpresaTemporaria::whereEmpresaId($colaborador->User->empresa_id)->first();
                 $pdf = \PDF::loadView('pdf.historico.dossie.contratos.' . $tipo_admissao, compact('dados', 'cliente', 'temporaria'));
             } else {
