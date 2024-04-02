@@ -936,7 +936,7 @@ class DossieController extends Controller
 
         if ($tipo_modelo == 'contratotrabalhoassinado') {
             if (in_array($colaborador->Admissao->tipo_admissao, [Admissao::TIPO_ADMISSAO_TEMPORARIO, Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO])) {
-                $temporaria = EmpresaTemporaria::whereEmpresaId($colaborador->User->empresa_id)->first();
+                $temporaria = EmpresaTemporaria::whereEmpresaId($colaborador->empresa_id)->first();
                 $pdf = \PDF::loadView('pdf.historico.dossie.contratos.' . $tipo_admissao, compact('dados', 'cliente', 'temporaria'));
             } else {
                 $pdf = \PDF::loadView('pdf.historico.dossie.' . $tipo_modelo, compact('dados', 'cliente'));
