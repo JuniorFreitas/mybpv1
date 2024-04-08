@@ -350,7 +350,15 @@ class ControleExameController extends Controller
     public function atualizar(Request $request)
     {
 
-        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'telefone_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'])->with(
+        $resultado = FeedbackCurriculo::select([
+            'id',
+            'curriculo_id',
+            'vaga_id',
+            'telefone_id',
+            'vagas_abertas_id',
+            'vaga_projeto_id',
+            'empresa_id'
+        ])->with(
             'Curriculo:id,nome,nascimento,id,nome,email,nascimento,rg,orgao_expeditor,logradouro,cep,end_numero,complemento,bairro,municipio,uf',
             'Cliente:id,razao_social,area_id',
             'VagaAberta', 'telCadPrincipal');

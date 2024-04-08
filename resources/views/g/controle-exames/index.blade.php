@@ -184,7 +184,12 @@
         <template slot="conteudo">
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
-                <fieldset>
+                <div class="alert alert-danger" v-if="semtelefone">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    Informe um telefone como principal para o colaborador
+                    (Em admissão Processo).
+                </div>
+                <fieldset v-if="!semtelefone">
                     <legend class="text-uppercase">Dados Pessoais</legend>
                     <div class="row">
                         <div class="col-12">
@@ -681,7 +686,7 @@
         <template slot="rodape">
             <div v-show="!visualizar">
                 <button type="button" class="btn btn-sm btn-primary"
-                        v-show="!cadastrado & nav === 'encaminhar'  && !preload"
+                        v-show="!cadastrado & nav === 'encaminhar'  && !preload && !semtelefone"
                         @click.prevent="salvarUpdate">
                     <i class="fa fa-save"></i>
                     <span v-show='cadastrando'>Salvar</span>

@@ -42,6 +42,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property mixed|null $fluxo
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereAutoAvaliacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereFluxo($value)
+ * @property int $ano_avaliacao Ano da avaliação
+ * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereAnoAvaliacao($value)
  * @mixin \Eloquent
  */
 class Avaliacao extends Model

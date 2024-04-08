@@ -127,9 +127,9 @@ const app = new Vue({
         this.abasesmt.formDefault = _.cloneDeep(this.abasesmt.form);
     },
     computed: {
-        // formulario_id() {
-        //     return this.form.formulario.id;
-        // },
+        semtelefone() {
+            return this.dados.tel_principal.numero === "" || this.dados.tel_principal.numero === null;
+        },
         comResultado() {
             return this.lista.filter(item => {
                 return item.resultado_integrado;
@@ -207,8 +207,8 @@ const app = new Vue({
                 idade: obj.curriculo.idade,
                 endereco_completo: obj.curriculo.endereco_completo,
                 tel_principal: {
-                    numero: obj.tel_cad_principal.numero,
-                    tipo: obj.tel_cad_principal.tipo
+                    numero: obj.tel_cad_principal ? obj.tel_cad_principal.numero : '',
+                    tipo: obj.tel_cad_principal ? obj.tel_cad_principal.tipo : ''
                 },
             }
 

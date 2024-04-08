@@ -52,6 +52,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereOrigemFeedback($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback wherePrincipal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereStatus($value)
+ * @property int|null $avaliacao_tipo_id
+ * @property-read \App\Models\AvaliacaoAvaliadoresTipos|null $TipoAvaliador
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereAvaliacaoTipoId($value)
  * @mixin \Eloquent
  */
 class AvaliacaoFeedback extends Model
