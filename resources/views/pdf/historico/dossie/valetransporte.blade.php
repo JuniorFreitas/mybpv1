@@ -38,7 +38,7 @@
         <br><br><br><br><br><br>
         <div class="f11" style="line-height: 18pt;text-align: center">
             <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">
-            {{ $dados['dados_colaborador']->User->nome }}
+            {{ $dados['dados_colaborador']->Curriculo->nome }}
         </div>
 
         <div style="position:fixed; bottom: 35px">

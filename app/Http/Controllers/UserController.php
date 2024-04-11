@@ -189,10 +189,12 @@ class UserController extends Controller
                 'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id(),
+                'nome' => auth()->user()->nome,
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'temFilial' => (bool)$temfilial,
                 'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
-                'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id)
+                'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id),
+                'gestao_rh' => auth()->user()->can('privilegio_gestao_rh')
             ];
 
         } else {
@@ -203,10 +205,12 @@ class UserController extends Controller
                 'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id(),
+                'nome' => auth()->user()->nome,
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'temFilial' => (bool)$temfilial,
                 'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
-                'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id)
+                'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id),
+                'gestao_rh' => auth()->user()->can('privilegio_gestao_rh')
             ];
         }
 
