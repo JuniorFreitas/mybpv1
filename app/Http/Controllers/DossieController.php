@@ -110,10 +110,10 @@ class DossieController extends Controller
 
     private function handleDocument($type, $dados, $feedback)
     {
-        // Criação de variáveis locais
         $deleteKey = $type . 'Del';
+        $relacionamento = "getDocumentoRelacionado" . \Str::studly($type);
         $label = strtoupper(str_replace('_', ' ', $type));
-        $tipo = ucwords(str_replace('_', '', $type));
+        $tipo = \Str::studly($type);
 
         // Remove documentos marcados para exclusão
         if (isset($dados[$deleteKey])) {
@@ -129,22 +129,23 @@ class DossieController extends Controller
         // Adiciona documentos
         if (isset($dados[$type])) {
             foreach ($dados[$type] as $anexo) {
+                Arquivo::whereId($anexo['id'])->update(['nome' => $anexo['nome']]);
                 $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
                 if ($arquivo) {
-                    $this->attachFileToFeedback($feedback, $tipo, $label, $arquivo);
+                    $this->attachFileToFeedback($feedback, $relacionamento, $tipo, $label, $arquivo);
                 }
             }
         }
     }
 
     // Método privado para anexar arquivo ao feedback e registrar no log
-    private function attachFileToFeedback($feedback, $tipo, $label, $arquivo)
+    private function attachFileToFeedback($feedback, $relacionamento, $tipo, $label, $arquivo)
     {
         $arquivo->temporario = false;
         $arquivo->chave = '';
         $arquivo->save();
 
-        $feedback->$tipo()->attach($arquivo->id, [
+        $feedback->$relacionamento()->attach($arquivo->id, [
             'curriculo_id' => $feedback->curriculo_id,
             'tipo' => $tipo,
             'label' => $label
