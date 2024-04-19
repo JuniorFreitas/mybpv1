@@ -308,7 +308,7 @@
                 <br>
                 <br>
                 <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">
-                {{$dados['dados_colaborador']->nome}}
+                {{$dados['dados_colaborador']->Curriculo->nome}}
             </div>
 
             <p class="f11" style="margin-bottom: 26pt; margin-top: 30pt">

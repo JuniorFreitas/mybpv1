@@ -16,11 +16,11 @@
 
         </p><br>
         <p class="f11" style="line-height: 18pt;">
-            EMPREGADO: {{$dados['dados_colaborador']->nome}}
+            EMPREGADO: {{$dados['dados_colaborador']->Curriculo->nome}}
             <br>
-            CPF: {{$dados['dados_colaborador']->cpf ?? ''}}
+            CPF: {{$dados['dados_colaborador']->Curriculo->cpf ?? ''}}
             <br>
-            CTPS: {{isset($dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes) ? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_numero : ''}}
+            CTPS: {{isset($dados['dados_colaborador']->Admissao->DadosAdmissoes) ? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_numero : ''}}
             <br>
         </p>
         <p class="f11" style="line-height: 18pt;text-align: justify">
@@ -47,8 +47,8 @@
         <div class="f11" style="line-height: 16pt;text-align: center">
             <br>
             <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;   border:none; border-top: 1px solid #333">
-            {{$dados['dados_colaborador']->nome}}<br>
-            {{$dados['dados_colaborador']->FeedBack->Admissao->cargo}}
+            {{$dados['dados_colaborador']->Curriculo->nome}}<br>
+            {{$dados['dados_colaborador']->Admissao->cargo}}
         </div>
 
         <div style="position:fixed; bottom: 35px">

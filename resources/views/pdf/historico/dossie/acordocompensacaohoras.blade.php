@@ -14,12 +14,13 @@
             @include('layouts.dadosEmpresa')
         </p>
         <p class="f11 text-justify" style="">
-            EMPREGADO: {{$dados['dados_colaborador']->nome}}, {{$dados['dados_colaborador']->FeedBack->Admissao->cargo}}
+            EMPREGADO: {{$dados['dados_colaborador']->Curriculo->nome}}
+            , {{$dados['dados_colaborador']->Admissao->cargo}}
             , portador da carteira profissional n.º
-            {{isset($dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes)?$dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_numero : '__________________________'}}
-            Série {{isset($dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes)?$dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_serie : '___________________________'}}
-            inscrita no CPF sob nº {{$dados['dados_colaborador']->cpf}},
-            com admissão em {{$dados['dados_colaborador']->FeedBack->Admissao->data_admissao}}.
+            {{isset($dados['dados_colaborador']->Admissao->DadosAdmissoes)?$dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_numero : '__________________________'}}
+            Série {{isset($dados['dados_colaborador']->Admissao->DadosAdmissoes)?$dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_serie : '___________________________'}}
+            inscrita no CPF sob nº {{$dados['dados_colaborador']->Curriculo->cpf ?? '__________________________'}},
+            com admissão em {{$dados['dados_colaborador']->Admissao->data_admissao}}.
             <br>
             <br>
             As partes acima identificadas celebram o presente ACORDO DE COMPENSAÇÃO DE HORAS, que se regerá pelas
@@ -67,7 +68,7 @@
             <br>
             <br>
             <hr style="width: 10cm;  margin-left: 24%;  border:none; border-top: 1px solid #333">
-            {{$dados['dados_colaborador']->nome}}
+            {{$dados['dados_colaborador']->Curriculo->nome}}
         </div>
         <br>
         <p class="f11" style="">

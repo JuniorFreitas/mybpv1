@@ -294,6 +294,39 @@ class FeedbackCurriculo extends Model
 
     protected $appends = ['vaga_aberta_municipio', 'fc_token'];
 
+    const RELACIONAMENTOS_DOCS = [
+        'DocSelecao',
+        'DocChecklist',
+        'FichaRegistrada',
+        'AutodeclaracaoEtnicoRacial',
+        'ContratoTrabalhoAssinado',
+        'TermoConfiabilidade',
+        'ValeTransporteAssinado',
+        'AcordoHora',
+        'SalarioFamiliaAssinado',
+        'DeclaracaoDependentesImposto',
+        'ComprovanteDevCtp',
+        'OrdemServicoAssinada',
+        'CertificadoTreinSeg',
+        'FichaEntregaEpi',
+        'ContraChequeMensais',
+        'CartoesPonto',
+        'AvisoFerias',
+        'ControleAsos',
+        'BookRescisao',
+        'TermoRescisao',
+        'GuiaSeguroDesemprego',
+        'ChaveFgts',
+        'ComprovantePagamento',
+        'ExameDemissional',
+        'NadaConstaFichaEpi',
+        'ComprovanteDevolucaoCtps',
+        'PppAssinado',
+        'PlanoSaudeAssinado',
+        'ArquivamentoEletronico',
+        'ArquivamentoDossie'
+    ];
+
     public function getFCTokenAttribute()
     {
         return \Crypt::encrypt($this->id);
@@ -617,207 +650,30 @@ class FeedbackCurriculo extends Model
         return $this->hasOne(AvaliacaoNoventaVencimento::class, 'feedback_id', 'id');
     }
 
-    public function DocSelecao()
+    public function __call($method, $args)
     {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('DocSelecao');
+        // Verifica se o método chamado começa com 'getDocumentoRelacionado'
+        if (strpos($method, 'getDocumentoRelacionado') === 0) {
+            // Extrai o tipo do método chamado
+            $tipo = substr($method, strlen('getDocumentoRelacionado'));
+
+            // Verifica se o tipo é válido
+            if (in_array($tipo, self::RELACIONAMENTOS_DOCS)) {
+                // Retorna uma instância de Builder com o relacionamento
+                return $this->getDocumentoRelacionado($tipo);
+            }
+        }
+
+        // Se o método chamado não corresponder ao padrão esperado, lança uma exceção
+        return parent::__call($method, $args);
     }
 
-    public function DocChecklist()
+    // Método genérico para obter relacionamento de documento
+    public function getDocumentoRelacionado($tipo)
     {
         return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
             ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('DocChecklist');
-    }
-
-    public function FichaRegistrada()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('FichaRegistrada');
-    }
-
-    public function ContratoTrabalhoAssinado()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ContratoTrabalhoAssinado');
-    }
-
-    public function TermoConfiabilidade()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('TermoConfiabilidade');
-    }
-
-    public function ValeTransporteAssinado()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ValeTransporteAssinado');
-    }
-
-    public function AcordoHora()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('AcordoHora');
-    }
-
-    public function SalarioFamiliaAssinado()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('SalarioFamiliaAssinado');
-    }
-
-    public function DeclaracaoDependentesImposto()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('DeclaracaoDependentesImposto');
-    }
-
-    public function ComprovanteDevCtp()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ComprovanteDevCtp');
-    }
-
-    public function OrdemServicoAssinada()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('OrdemServicoAssinada');
-    }
-
-    public function CertificadoTreinSeg()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('CertificadoTreinSeg');
-    }
-
-    public function FichaEntregaEpi()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('FichaEntregaEpi');
-    }
-
-    public function ContraChequeMensais()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ContraChequeMensais');
-    }
-
-    public function CartoesPonto()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('CartoesPonto');
-    }
-
-    public function AvisoFerias()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('AvisoFerias');
-    }
-
-    public function ControleAsos()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ControleAsos');
-    }
-
-    public function BookRescisao()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('BookRescisao');
-    }
-
-    public function TermoRescisao()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('TermoRescisao');
-    }
-
-    public function GuiaSeguroDesemprego()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('GuiaSeguroDesemprego');
-    }
-
-    public function ChaveFgts()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ChaveFgts');
-    }
-
-    public function ComprovantePagamento()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ComprovantePagamento');
-    }
-
-    public function ExameDemissional()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ExameDemissional');
-    }
-
-    public function NadaConstaFichaEpi()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('NadaConstaFichaEpi');
-    }
-
-    public function ComprovanteDevolucaoCtps()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ComprovanteDevolucaoCtps');
-    }
-
-    public function PppAssinado()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('PppAssinado');
-    }
-
-    public function PlanoSaudeAssinado()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('PlanoSaudeAssinado');
-    }
-
-    public function ArquivamentoEletronico()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ArquivamentoEletronico');
-    }
-
-    public function ArquivamentoDossie()
-    {
-        return $this->belongsToMany(Arquivo::class, 'dossie', 'feedback_id', 'arquivo_id')
-            ->withPivot(['tipo', 'feedback_id', 'label'])
-            ->whereTipo('ArquivamentoDossie');
+            ->wherePivot('tipo', $tipo);
     }
 
     public function Demissao()

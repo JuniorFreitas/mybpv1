@@ -49,6 +49,23 @@
             </fieldset>
 
             <fieldset>
+                <legend>AUTODECLARAÇÃO ÉTNICO-RACIAL</legend>
+                <upload label="Selecionar anexo(s)"
+                        :dados-ajax="{
+                            tipo:'AutodeclaracaoEtnicoRacial',
+                            // curriculo_id: curriculo.id,
+                            label: 'AUTODECLARAÇÃO ÉTNICO-RACIAL'
+                        }"
+                        :model="form.autodeclaracao_etnico_racial"
+                        :model-delete="form.autodeclaracao_etnico_racialDel" :url="urlAnexoUpload"
+                        @onprogresso="anexoUploadAndamento=true"
+                        @onfinalizado="anexoUploadAndamento=false"></upload>
+                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('autodeclaracao_etnico_racial')">
+                    <span class="fas fa-file-pdf"></span> Baixar Modelo
+                </button>
+            </fieldset>
+
+            <fieldset>
                 <legend>CONTRATO DE TRABALHO ASSINADO</legend>
                 <upload label="Selecionar anexo(s)"
                         :dados-ajax="{
@@ -441,6 +458,7 @@
 import Upload from "../../Upload";
 
 export default {
+    name: "Dossie",
     props: {
         feedback_id: {
             type: Number,
@@ -471,104 +489,28 @@ export default {
                 foto_tres: [], //FOTO 3X4
                 foto_tresDel: [],
 
-                doc_selecao: [],
-                doc_selecaoDel: [],
-
-                doc_checklist: [],
-                doc_checklistDel: [],
-
-                ficha_registrada: [],
-                ficha_registradaDel: [],
-
-                contrato_trabalho_assinado: [],
-                contrato_trabalho_assinadoDel: [],
-
-                termo_confiabilidade: [],
-                termo_confiabilidadeDel: [],
-
-                vale_transporte_assinado: [],
-                vale_transporte_assinadoDel: [],
-
-                acordo_hora: [],
-                acordo_horaDel: [],
-
-                salario_familia_assinado: [],
-                salario_familia_assinadoDel: [],
-
-                declaracao_dependentes_imposto: [],
-                declaracao_dependentes_impostoDel: [],
-
-                comprovante_dev_ctp: [],
-                comprovante_dev_ctpDel: [],
-
-                ordem_servico_assinada: [],
-                ordem_servico_assinadaDel: [],
-
-                certificado_trein_seg: [],
-                certificado_trein_segDel: [],
-
-                ficha_entrega_epi: [],
-                ficha_entrega_epiDel: [],
-
-                contra_cheque_mensais: [],
-                contra_cheque_mensaisDel: [],
-
-                cartoes_ponto: [],
-                cartoes_pontoDel: [],
-
-                aviso_ferias: [],
-                aviso_feriasDel: [],
-
-                controle_asos: [],
-                controle_asosDel: [],
-
-                book_rescisao: [],
-                book_rescisaoDel: [],
-
-                termo_rescisao: [],
-                termo_rescisaoDel: [],
-
-                guia_seguro_desemprego: [],
-                guia_seguro_desempregoDel: [],
-
-                chave_fgts: [],
-                chave_fgtsDel: [],
-
-                comprovante_pagamento: [],
-                comprovante_pagamentoDel: [],
-
-                exame_demissional: [],
-                exame_demissionalDel: [],
-
-                nada_consta_ficha_epi: [],
-                nada_consta_ficha_epiDel: [],
-
-                comprovante_devolucao_ctps: [],
-                comprovante_devolucao_ctpsDel: [],
-
-                ppp_assinado: [],
-                ppp_assinadoDel: [],
-
-                arquivamento_eletronico: [],
-                arquivamento_eletronicoDel: [],
-
-                arquivamento_dossie: [],
-                arquivamento_dossieDel: [],
-
-                plano_saude_assinado: [],
-                plano_saude_assinadoDel: [],
-
-
             },
             formDefault: null
 
         };
     },
     mounted() {
+        // const dynamicKeys = ['doc_selecao', 'doc_checklist', 'ficha_registrada', 'contrato_trabalho_assinado'];
+        // dynamicKeys.forEach(key => {
+        //     this.addDynamicKey(key);
+        // });
         this.formDefault = _.cloneDeep(this.form);
         this.atualizar();
     },
     methods: {
+        addDynamicKey(key) {
+            this.$set(this.form, `${key}`, []);
+            this.$set(this.form, `${key}Del`, []);
+        },
+        removeDynamicKey(key) {
+            this.$delete(this.form, key);
+            this.$delete(this.form, `${key}Del`);
+        },
         salvar() {
             formReset();
             $(`#form_${this.hash} :input:visible`).trigger("blur");
@@ -592,7 +534,11 @@ export default {
             this.preload = true;
             this.form = _.cloneDeep(this.formDefault);
             axios.get(`${URL_ADMIN}/historico/dossie/${this.feedback_id}`).then(res => {
-                Object.assign(this.form, res.data);
+                const dynamicKeysComum = res.data.relacionamentos.map(relacionamento => relacionamento.comum);
+                dynamicKeysComum.forEach(key => {
+                    this.addDynamicKey(key);
+                });
+                Object.assign(this.form, res.data.dossie);
                 // this.form = data;
                 this.preload = false;
             });
@@ -600,7 +546,6 @@ export default {
         modelo(tipo_modelo) {
             let link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.curriculo_id}/${this.form.id}`;
             open(link, "blank");
-            
         }
     }
 };
