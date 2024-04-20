@@ -970,7 +970,7 @@ class AdmissaoController extends Controller
                 if ($feedback->parecerRh) {
                     $feedback->parecerRh->update(
                         [
-                            'indicacao' => $dados['parecer_rh']['indicado_por'],
+                            'indicacao' => $dados['parecer_rh']['indicacao'],
                             'indicado_por' => $dados['parecer_rh']['indicado_por'],
                             'calca' => $dados['parecer_rh']['calca'],
                             'bota' => $dados['parecer_rh']['bota'],
@@ -1238,7 +1238,6 @@ class AdmissaoController extends Controller
                 \Log::info("-------FIM DE DADOS-------");
                 Sistema::LogFormatado($dados);
 
-                return response()->json(['msg' => $msg], 400);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
@@ -1809,7 +1808,7 @@ class AdmissaoController extends Controller
                 //Pode voltar
                 $podeVoltar = true;
 
-                if ($curriculo->FeedBack){
+                if ($curriculo->FeedBack) {
                     $entrevistaDesligamento = EntrevistaDesligamento::select(['id', 'feedback_id', 'pode_voltar'])->where('feedback_id', $curriculo->FeedBack->id)->first();
                     if ($demissao->count() > 0 && $entrevistaDesligamento) {
                         $podeVoltar = !$entrevistaDesligamento->pode_voltar; //Se for false, não pode voltar
