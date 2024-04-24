@@ -6,6 +6,51 @@
 @stop
 
 @section('content')
+    <modal id="janelaRetornarStatus" ref="janelaRetornarStatus" :titulo="tituloJanela" :fechar="!preload" :size="75">
+        <template slot="conteudo">
+            <div v-if="!preload && revertendo_status">
+                <fieldset>
+                    <legend>Informações do Colaborador</legend>
+                    <div style="text-transform: uppercase">
+                        <p>Nome: <strong>@{{ form.feedback.curriculo.nome }}</strong><br>
+                            CPF: <strong>@{{ form.feedback.curriculo.cpf }}</strong><br>
+                            Empresa: <strong>@{{form.feedback.empresa.nome_fantasia ?
+                                form.feedback.empresa.nome_fantasia :
+                                form.feedback.empresa.nome}}</strong>
+                            <br>
+                            Vaga: <strong>
+                                @{{ form.feedback.vaga_aberta.vaga.nome }}
+                            </strong>
+                            <br>
+
+                            Cargo: <strong>@{{ form.cargo }}</strong> |
+                            Função: <strong>@{{ form.funcao }}</strong><br>
+                            Data de admissão: <strong>@{{ form.data_admissao }}</strong><br>
+                            Data da demissão: <strong>@{{ form.demissao.data_desmobilizacao }}</strong>
+
+                        </p>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Termo de Responsabilidade para Reverter Status no Sistema</legend>
+                    <div v-html="textoDefaultAuditoria"></div>
+                    <div class="form-group">
+                        <label for="">Motivo da reversão</label>
+                        <textarea v-model="auditoria_form.descricao" class="form-control" cols="5" rows="5"></textarea>
+                    </div>
+                </fieldset>
+
+            </div>
+        </template>
+        <template slot="rodape">
+            <button class="btn btn-sm btn-primary" v-if="!preload && auditoria_form.descricao.length"
+                    @click="reverterDemissao">
+                Reverter
+            </button>
+        </template>
+    </modal>
+
     <modal id="janelaAvaliar" :titulo="tituloJanela" :fechar="!preload" :size="75">
         <template slot="conteudo">
             <div class="alert alert-success text-center" v-show="atualizado">
@@ -628,7 +673,7 @@
         </div>
     </fieldset>
 
-    <preload class="text-center" v-if="controle.carregando"></preload>
+    <preload class="text-center" v-if="controle.carregando && !preload"></preload>
     <div id="conteudo">
         <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
             <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
@@ -753,6 +798,15 @@
                                        data-toggle="modal"
                                        data-target="#janelaAvaliar">
                                         Entrevistar
+                                    </a>
+                                @endif
+                                @can('privilegio_gestao_rh')
+                                    <a class="dropdown-item" href="javascript://" title="Entrevistar"
+                                       v-if="item.demissao && item.demissao.data_desmobilizacao"
+                                       @click.prevent="formRetornarStatus(item.id)"
+                                       data-toggle="modal"
+                                       data-target="#janelaRetornarStatus">
+                                        Remover Demissão
                                     </a>
                                 @endif
                             </div>

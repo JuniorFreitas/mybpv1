@@ -410,6 +410,7 @@
                         <td class="text-center">Tipo</td>
                         <td class="text-center">Avaliar até</td>
                         <td class="text-center">Funcionário</td>
+                        <td class="text-center">Avaliador</td>
                         <td class="text-center">Avaliar Como</td>
                         <td class="text-center">Ação</td>
                     </tr>
@@ -434,6 +435,9 @@
                         <td class="text-center">
                             <i class="fa fa-user" v-if="item.avaliador_id === item.funcionario_id"></i>
                             {{ item.funcionario.nome }}
+                        </td>
+                        <td class="text-center">
+                            {{ item.avaliador.nome }}
                         </td>
                         <td class="text-center">
                                 <span
@@ -462,14 +466,15 @@
                                      aria-labelledby="dropdownMenuLink">
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
-                                       v-if="(item.status === 'Pendente' && item.fez_auto_avaliacao  && !item.principal) || (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par)">
+                                       v-if="(item.status === 'Pendente' && item.fez_auto_avaliacao  && !item.principal) || (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par)"
+                                    >
                                         Avaliar
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
                                        v-if="item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id)">
-                                        Avaliar
+                                        Avaliar - {{ AUTENTICADO }}
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"

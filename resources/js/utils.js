@@ -115,8 +115,8 @@ exports.tinyPadrao = {
     paste_remove_styles_if_webkit: true,
     paste_strip_class_attributes: true,
     content_style: 'body { font-size: 12pt; font-family: Arial; }',
-    setup: function(ed) {
-        ed.on('init', function(e) {
+    setup: function (ed) {
+        ed.on('init', function (e) {
             ed.execCommand('fontName', false, 'Arial')
             ed.execCommand('fontSize', false, '12pt')
         })
@@ -147,8 +147,8 @@ exports.tinyProva = {
     image_class_list: [
         {title: 'Responsiva', value: 'img-fluid'},
     ],
-    setup: function(ed) {
-        ed.on('init', function(e) {
+    setup: function (ed) {
+        ed.on('init', function (e) {
             ed.execCommand('fontName', false, 'Arial')
             ed.execCommand('fontSize', false, '12pt')
         })
@@ -173,8 +173,8 @@ exports.tinyEntrevista = {
     paste_remove_styles_if_webkit: true,
     paste_strip_class_attributes: true,
     content_style: 'body { font-size: 12pt; font-family: Arial; }',
-    setup: function(ed) {
-        ed.on('init', function(e) {
+    setup: function (ed) {
+        ed.on('init', function (e) {
             ed.execCommand('fontName', false, 'Arial')
             ed.execCommand('fontSize', false, '12pt')
         })
@@ -199,15 +199,13 @@ exports.tinySimples = {
     paste_remove_styles_if_webkit: true,
     paste_strip_class_attributes: true,
     content_style: 'body { font-size: 12pt; font-family: Arial; }',
-    setup: function(ed) {
-        ed.on('init', function(e) {
+    setup: function (ed) {
+        ed.on('init', function (e) {
             ed.execCommand('fontName', false, 'Arial')
             ed.execCommand('fontSize', false, '12pt')
         })
     },
     key: process.env.MIX_TYNEKEY
 }
-
-
 
 exports.AUTENTICADO = GETAUTH

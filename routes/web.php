@@ -758,6 +758,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::post('posadmissao/demitir', [\App\Http\Controllers\PosAdmissaoController::class, 'demitir'])->name('posadmissao.demitir'); // manter essa rota antes do resource
         Route::get('posadmissao/demitir/pdf/{id}', [\App\Http\Controllers\PosAdmissaoController::class, 'demissaoPdf'])->name('posadmissao.demissaoPdf'); // manter essa rota antes do resource
         Route::post('posadmissao/export', [\App\Http\Controllers\PosAdmissaoController::class, 'export'])->name('posadmissao.excel');
+        Route::put('posadmissao/remover-demissao', [\App\Http\Controllers\PosAdmissaoController::class, 'removerDemissao'])->middleware('can:privilegio_gestao_rh');
         Route::resource('posadmissao', \App\Http\Controllers\PosAdmissaoController::class, ['parameters' => ['posadmissao' => 'admissao']])->middleware('can:admissao_pos_admissao');
     });
 

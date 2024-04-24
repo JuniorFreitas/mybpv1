@@ -6,6 +6,7 @@ use App\Jobs\Excel\JobExportaPosAdmissao;
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
+use App\Models\AuditoriaInterna;
 use App\Models\AvaliacaoNoventaVencimento;
 use App\Models\CentroCusto;
 use App\Models\ClassificacaoRescisao;
@@ -96,6 +97,9 @@ class PosAdmissaoController extends Controller
             DB::beginTransaction();
             $feedback = FeedbackCurriculo::find($dados['feedback_id']);
             $feedback->Demissao()->create($dadosDemissao);
+            User::find($feedback->curriculo_id)->update([
+                'ativo' => false
+            ]);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -713,5 +717,32 @@ class PosAdmissaoController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
+    }
+
+    public function removerDemissao(Request $request)
+    {
+        $this->authorize('privilegio_gestao_rh');
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $admissao = Admissao::whereFeedbackId($dados['feedback_id'])
+                ->whereHas('Demissao')
+                ->first();
+            $admissao->update(['status' => Admissao::STATUS_ADMISSAO_ADMITIDO]);
+            $demissao = Demissao::whereFeedbackId($admissao->feedback_id)->first();
+            $demissao->delete();
+            User::find($dados['colaborador_id'])->update([
+                'ativo' => true
+            ]);
+            AuditoriaInterna::create($dados);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error POS ADMISSÃO - REMOVER DEMISSÃO : {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+
     }
 }

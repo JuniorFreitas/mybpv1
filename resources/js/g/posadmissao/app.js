@@ -1,9 +1,10 @@
 import datepicker from "../../components/DatePicker";
 import ExportacaoMixin from "../../mixins/Exportacoes";
+import Utils from "../../mixins/Utils";
 import XLSX from "xlsx";
 
 const app = new Vue({
-    mixins: [ExportacaoMixin],
+    mixins: [ExportacaoMixin, Utils],
 
     el: "#app",
     components: {
@@ -24,6 +25,7 @@ const app = new Vue({
         avaliacao: false,
         desmobilizacao: false,
         entrevista: false,
+        revertendo_status: false,
         extensaoDocumento: null,
         preloadExportacao: false,
 
@@ -129,6 +131,28 @@ const app = new Vue({
         posadmissao_form_adm: false,
         posadmissao_form_ssma: false,
 
+        auditoria_form: {
+            empresa_id: "",
+            usuario_id: "",
+            feedback_id: "",
+            colaborador_id: "",
+            tipo: "remover_demissao",
+            descricao: "",
+            dados: {
+                nome: "",
+                cpf: "",
+                vaga: "",
+                cargo: "",
+                funcao: "",
+                data_admissao: "",
+                data_demissao: "",
+                autenticado_nome: "",
+                termo: "",
+                motivo: "",
+                token: "",
+            },
+        },
+
         controle: {
             carregando: false,
             dados: {
@@ -154,6 +178,30 @@ const app = new Vue({
         }
     },
     computed: {
+        textoDefaultAuditoria() {
+            return `<p>
+                        Ao clicar em "Remover Demissão" e reverter o status de demissão para admissão do colaborador
+                        <strong>${this.auditoria_form.dados.nome ?? ""}</strong>, eu,
+                        <strong>${this.auditoria_form.dados.autenticado_nome ?? ""}</strong>, reconheço e aceito que estou assumindo a
+                        responsabilidade por esta ação.
+                        <br>
+                        Além disso, declaro que:
+                        <br><br>
+                        Estou ciente de que a reversão do status de demissão para admissão implica em uma ação
+                        irreversível no sistema.
+                        <br><br>
+                        Confirmo que revisei cuidadosamente todas as informações relevantes relacionadas à remoção da
+                        demissão e à restauração do status de admissão.
+                        <br><br>
+                        Comprometo-me a fornecer um motivo válido e justificável para esta ação, conforme solicitado
+                        pelo sistema.
+                        <br><br>
+                        Aceito total responsabilidade por quaisquer consequências decorrentes da reversão do status.
+                        <br><br>
+                        Assumo que, ao clicar em "Remover Demissão" e reverter o status de demissão para admissão no
+                        sistema MyBP, estou ciente e concordo com as disposições deste termo de responsabilidade.
+                    </p>`
+        },
         comDemissao() {
             return this.lista.filter(item => {
                 return item.demissao;
@@ -224,7 +272,6 @@ const app = new Vue({
         this.atualizar();
         this.listaVagas();
         this.listaAreasGeral();
-
         // ?checkcpf=015.020.903-76
     },
     methods: {
@@ -514,6 +561,70 @@ const app = new Vue({
                         this.preload = false;
                     });
             }
+        },
+        formRetornarStatus(curriculo_id) {
+            this.tituloJanela = `Remoção de demissão ${curriculo_id}`;
+            this.form.curriculo_id = curriculo_id;
+            this.cadastrando = false;
+            this.atualizado = false;
+            this.atualizado = false;
+            this.preload = true;
+            this.revertendo_status = true;
+
+            axios.get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
+                .then(response => {
+                    let data = response.data;
+                    this.demitido = !!data.demissao;
+                    this.tituloJanela = `Remoção de demissão: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
+                    this.auditoria_form = {
+                        empresa_id: AUTENTICADO.empresa_id,
+                        usuario_id: AUTENTICADO.user_id,
+                        feedback_id: data.feedback.id,
+                        colaborador_id: data.feedback.curriculo.id,
+                        tipo: "remover_demissao",
+                        descricao: "",
+                        dados: {
+                            nome: data.feedback.curriculo.nome,
+                            cpf: data.feedback.curriculo.cpf,
+                            vaga: data.feedback.vaga_aberta.vaga.nome,
+                            cargo: data.cargo,
+                            termo: this.textoDefaultAuditoria,
+                            funcao: data.funcao,
+                            data_admissao: data.data_admissao,
+                            data_demissao: data.demissao.data_desmobilizacao,
+                            autenticado_nome: AUTENTICADO.nome,
+                            motivo: "",
+                            token: this.generateUuid(),
+                        },
+                    }
+                    Object.assign(this.form, data);
+                    this.form.demissao = data.demissao ? data.demissao : _.cloneDeep(this.formDefault.demissao);
+                    this.preload = false;
+                })
+                .catch(error => {
+                    this.preload = false;
+                });
+        },
+        reverterDemissao() {
+            if (this.auditoria_form.descricao.length === 0) {
+                mostraErro("", "Informe o motivo da reversão da demissão");
+                return false;
+            }
+            this.auditoria_form.dados.motivo = this.auditoria_form.descricao;
+            this.preload = true;
+
+            axios.put(`${URL_ADMIN}/posadmissao/remover-demissao`, this.auditoria_form)
+                .then(response => {
+                    mostraSucesso("", "Reversão de demissaão concluida");
+                    this.atualizar();
+                    this.$refs.janelaRetornarStatus.fecharModal();
+                    this.revertendo_status = false;
+                    this.preload = false;
+
+                })
+                .catch(error => {
+                    this.preload = false;
+                });
         },
         listaVagas() {
             this.preload = true;

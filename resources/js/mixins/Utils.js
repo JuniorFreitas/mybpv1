@@ -30,14 +30,33 @@ const Utils = {
                 paste_remove_styles_if_webkit: true,
                 paste_strip_class_attributes: true,
                 content_style: "body { font-size: 12pt; font-family: Arial; }",
-                setup: function(ed) {
-                    ed.on("init", function(e) {
+                setup: function (ed) {
+                    ed.on("init", function (e) {
                         ed.execCommand("fontName", false, "Arial");
                         ed.execCommand("fontSize", false, "12pt");
                     });
                 },
                 key: process.env.MIX_TYNEKEY
             };
+        }
+    },
+    methods: {
+        generateUuid() {
+            // Create 32 random hexadecimal characters (0-9, a-f) with dashes in between
+            const randomHex = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+
+            // Create the UUID with specific sections: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+            return (
+                randomHex() + randomHex() + // 8 characters
+                '-' +
+                randomHex() + // 4 characters
+                '-' +
+                '4' + randomHex().substring(0, 3) + // 13th character is '4' (UUID version 4)
+                '-' +
+                ((8 + Math.floor(Math.random() * 4)).toString(16)) + randomHex().substring(0, 3) + // 17th character is '8', '9', 'A', or 'B'
+                '-' +
+                randomHex() + randomHex() + randomHex() // 12 characters
+            );
         }
     }
 };
