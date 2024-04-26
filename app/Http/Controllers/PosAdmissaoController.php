@@ -500,7 +500,6 @@ class PosAdmissaoController extends Controller
 
         if (count($filtros['selecionados']) > 0) {
             $resultado = $query->whereIn('id', $filtros['selecionados'])->get();
-            dd($resultado);
         } else {
 
             if ($request->filled('campoFeedback')) {
@@ -513,8 +512,6 @@ class PosAdmissaoController extends Controller
 
             $resultado = $query->get();
         }
-
-        dd($resultado);
 
 
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
