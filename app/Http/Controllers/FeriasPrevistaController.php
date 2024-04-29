@@ -98,8 +98,18 @@ class FeriasPrevistaController extends Controller
                 ->where('status_ferias', Ferias::STATUS_GOZADA)
                 ->orderByDesc('id')
                 ->first();
+            
+            $ferias_saldo = $ferias->dias_saldo ?? 0;
 
-            if (!is_null($ferias)) {
+            $dados['dias_saldo'] = $ferias_saldo - $dados['qnt_dias'];
+
+            if ($dados['dias_saldo'] < 0) {
+                return response()->json([
+                    'msg' => 'Tentando tirar mais dias do que tem de saldo o maximo que pode tirar é ' . $ferias_saldo . ' dias.'
+                ], 400);
+            }
+
+            if (!is_null($ferias) && $ferias->dias_saldo == 0) {
                 return response()->json([
                     'msg' => 'Colaborador sem saldo de férias para este período aquisitivo'
                 ], 400);
