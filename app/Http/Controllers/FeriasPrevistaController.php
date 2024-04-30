@@ -98,11 +98,13 @@ class FeriasPrevistaController extends Controller
                 ->where('status_ferias', Ferias::STATUS_GOZADA)
                 ->orderByDesc('id')
                 ->first();
+
+
+            if ($ferias) {
+                $ferias_saldo = $ferias->dias_saldo ?? 0;
+                $dados['dias_saldo'] = $ferias_saldo - $dados['qnt_dias'];
+            }
             
-            $ferias_saldo = $ferias->dias_saldo ?? 0;
-
-            $dados['dias_saldo'] = $ferias_saldo - $dados['qnt_dias'];
-
             if ($dados['dias_saldo'] < 0) {
                 return response()->json([
                     'msg' => 'Tentando tirar mais dias do que tem de saldo o maximo que pode tirar é ' . $ferias_saldo . ' dias.'
