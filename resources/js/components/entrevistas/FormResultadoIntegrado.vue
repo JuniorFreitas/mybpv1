@@ -31,13 +31,16 @@
                 </div>
                 <div class="col-2" v-if="form.documentos_entregue">
                     <div class="switchToggle">
-                        <input type="checkbox" v-model="form.envia_email_documentos" :disabled="visualizar || disabled || encaminhado.documentos" id="envia_email_documentos">
+                        <input type="checkbox" v-model="form.envia_email_documentos"
+                               :disabled="visualizar || disabled || encaminhado.documentos" id="envia_email_documentos">
                         <label for="envia_email_documentos">Enviar E-mail</label>
                     </div>
                 </div>
                 <div class="col-2" v-if="form.documentos_entregue">
                     <div class="switchToggle" v-show="whatsappLiberado">
-                        <input type="checkbox" v-model="form.envia_whatsapp_documentos" :disabled="visualizar || disabled || encaminhado.documentos" id="envia_whatsapp_documentos">
+                        <input type="checkbox" v-model="form.envia_whatsapp_documentos"
+                               :disabled="visualizar || disabled || encaminhado.documentos"
+                               id="envia_whatsapp_documentos">
                         <label for="envia_whatsapp_documentos">Enviar Whatsapp</label>
                     </div>
                 </div>
@@ -106,13 +109,15 @@
 
                 <div class="col-2" v-if="form.encaminhado_exame">
                     <div class="switchToggle">
-                        <input type="checkbox" v-model="form.envia_email_exame" :disabled="visualizar || disabled || encaminhado.exame" id="envia_email_exame">
+                        <input type="checkbox" v-model="form.envia_email_exame"
+                               :disabled="visualizar || disabled || encaminhado.exame" id="envia_email_exame">
                         <label for="envia_email_exame">Enviar E-mail</label>
                     </div>
                 </div>
                 <div class="col-2" v-if="form.encaminhado_exame">
                     <div class="switchToggle" v-show="whatsappLiberado">
-                        <input type="checkbox" v-model="form.envia_whatsapp_exame" :disabled="visualizar || disabled || encaminhado.exame" id="envia_whatsapp_exame">
+                        <input type="checkbox" v-model="form.envia_whatsapp_exame"
+                               :disabled="visualizar || disabled || encaminhado.exame" id="envia_whatsapp_exame">
                         <label for="envia_whatsapp_exame">Enviar Whatsapp</label>
                     </div>
                 </div>
@@ -204,7 +209,8 @@
             <div class="col-12">
                 <div class="form-group">
                     <label>Observações</label>
-                    <input type="text" :disabled="visualizar || disabled || form.obs === 'ADMISSÃO AVULSA' || form.obs === 'RECONTRATAÇÃO'"
+                    <input type="text"
+                           :disabled="visualizar || disabled || form.obs === 'ADMISSÃO AVULSA' || form.obs === 'RECONTRATAÇÃO'"
                            autocomplete="off"
                            class="form-control" v-model="form.obs"/>
                 </div>
@@ -215,8 +221,10 @@
 
 <script>
 import MixinConfig from '../../mixins/Configuracoes';
+
 export default {
     mixins: [MixinConfig],
+    name: "FormResultadoIntegrado",
     props: {
         form: {
             type: Object,
@@ -259,8 +267,8 @@ export default {
             listaPcmso: [],
             listaEmpresaExame: [],
             encaminhado: {
-                documentos:false,
-                exame:false,
+                documentos: false,
+                exame: false,
                 treinamento: false
             }
         };

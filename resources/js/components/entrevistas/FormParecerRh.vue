@@ -10,7 +10,7 @@
                     :disabled='visualizar || disabledParecerRh'
                     onchange='valida_campo_vazio(this,1)'
                     @change='changeTipoEntrevista'
-                    onblur='valida_campo_vazio(this,1)'
+                    v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                     v-model='form.parecer_rh.tipo_entrevista'
                 >
                     <option value='Fixo'>Fixo</option>
@@ -28,8 +28,8 @@
                      v-for='prova in form.simulados'>
                     <p>
                         Teste: <strong>{{ prova.simulado_vaga.simulado.titulo }}</strong> Acertos:
-                        <strong>{{ prova.acertos }} </strong><br />
-                        Tempo executado: <strong>{{ prova.tempo_execucao }} min </strong><br />
+                        <strong>{{ prova.acertos }} </strong><br/>
+                        Tempo executado: <strong>{{ prova.tempo_execucao }} min </strong><br/>
                         Finalizado em <strong>{{ prova.data_finalizacao }}h</strong>
                     </p>
                 </div>
@@ -53,8 +53,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.destro'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             >
@@ -83,8 +82,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.ex_funcionario'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             >
@@ -109,12 +107,10 @@
                     <div class='col-12 col-sm-6' v-if='!cliente_servico'>
                         <div class='form-group'>
                             <label>CNH</label>
-
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.cnh'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             >
@@ -144,7 +140,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.cnh_tipo'
                             />
                         </div>
@@ -158,7 +154,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)" } : {}'
                                 v-model='form.parecer_rh.rota_bairro'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             />
@@ -181,8 +177,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.dinamicadegrupo'
                             >
                                 <option value=''>Selecione</option>
@@ -215,8 +210,7 @@
                         <div class='form-group'>
                             <label>Camisa de Meia</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.camisa_meia'
@@ -235,8 +229,7 @@
                         <div class='form-group'>
                             <label>Camisa Proteção</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.camisa_protecao'
@@ -251,8 +244,7 @@
                         <div class='form-group'>
                             <label>Calça</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.calca'
@@ -267,8 +259,7 @@
                         <div class='form-group'>
                             <label>Bota</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.bota'
@@ -292,7 +283,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,2)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 2)", onblur: "valida_campo_vazio(this, 2)", } : {}'
                                 v-model='form.parecer_rh.mora_com_quem'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             />
@@ -316,8 +307,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.casado'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             >
@@ -347,7 +337,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.tempodeconvivencia'
                             />
                         </div>
@@ -361,8 +351,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.filhos'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             >
@@ -393,7 +382,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.qnt_filhos'
                             />
                         </div>
@@ -407,8 +396,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.conjuge_trabalha'
                             >
                                 <option value=''>Selecione</option>
@@ -426,7 +414,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.trabalho_conjuge'
                             />
                         </div>
@@ -438,8 +426,7 @@
                         <div class='form-group'>
                             <label>Praticante de alguma religião?</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.religioso'
@@ -471,7 +458,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.religiao_praticante'
                             />
                         </div>
@@ -483,8 +470,7 @@
                         <div class='form-group'>
                             <label>Fuma?</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.fuma'
@@ -516,7 +502,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.frequencia_fuma'
                             />
                         </div>
@@ -528,8 +514,7 @@
                         <div class='form-group'>
                             <label>Bebe?</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.bebe'
@@ -561,7 +546,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.frequencia_bebe'
                             />
                         </div>
@@ -573,8 +558,7 @@
                         <div class='form-group'>
                             <label>Indicado por alguém?</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.indicacao'
@@ -606,7 +590,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.indicado_por'
                             />
                         </div>
@@ -622,8 +606,7 @@
                         <div class='form-group'>
                             <label>Experiência na ALUMAR?</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.alumar_experiencia'
@@ -655,7 +638,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.alumar_experiencia_area'
                             />
                         </div>
@@ -667,8 +650,7 @@
                         <div class='form-group'>
                             <label>Experiência na área?</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.experiencia_callcenter'
@@ -703,7 +685,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 autocomplete='off'
                                 class='form-control'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-model='form.parecer_rh.grau_instrucao'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             />
@@ -726,8 +708,7 @@
                             <div class='form-group'>
                                 <label>Disponibilidade de hora extra?</label>
                                 <select
-                                    onchange='valida_campo_vazio(this,1)'
-                                    onblur='valida_campo_vazio(this,1)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                     class='form-control'
                                     :disabled='visualizar || disabledParecerRh'
                                     v-model='form.parecer_rh.horaextra'
@@ -755,8 +736,7 @@
                             <div class='form-group'>
                                 <label>Disponibilidade para turnos 6X2?</label>
                                 <select
-                                    onchange='valida_campo_vazio(this,1)'
-                                    onblur='valida_campo_vazio(this,1)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                     class='form-control'
                                     :disabled='visualizar || disabledParecerRh'
                                     v-model='form.parecer_rh.turnos_seis_por_dois'
@@ -784,8 +764,7 @@
                             <div class='form-group'>
                                 <label>Disponibilidade para noturno?</label>
                                 <select
-                                    onchange='valida_campo_vazio(this,1)'
-                                    onblur='valida_campo_vazio(this,1)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                     class='form-control'
                                     :disabled='visualizar || disabledParecerRh'
                                     v-model='form.parecer_rh.noturno'
@@ -815,8 +794,7 @@
                             <div class='form-group'>
                                 <label>Acidente de trabalho anterior?</label>
                                 <select
-                                    onchange='valida_campo_vazio(this,1)'
-                                    onblur='valida_campo_vazio(this,1)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                     class='form-control'
                                     :disabled='visualizar || disabledParecerRh'
                                     v-model='form.parecer_rh.acidente_trabalho'
@@ -848,7 +826,7 @@
                                     :disabled='visualizar || disabledParecerRh'
                                     autocomplete='off'
                                     class='form-control'
-                                    onblur='valida_campo_vazio(this,1)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                     v-model='form.parecer_rh.acidente_trabalho_qual'
                                 />
                             </div>
@@ -860,8 +838,7 @@
                             <div class='form-group'>
                                 <label>Afastamento INSS anterior?</label>
                                 <select
-                                    onchange='valida_campo_vazio(this,1)'
-                                    onblur='valida_campo_vazio(this,1)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                     class='form-control'
                                     :disabled='visualizar || disabledParecerRh'
                                     v-model='form.parecer_rh.afastamento_inss'
@@ -893,7 +870,7 @@
                                     :disabled='visualizar || disabledParecerRh'
                                     autocomplete='off'
                                     class='form-control'
-                                    onblur='valida_campo_vazio(this,1)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                     v-model='form.parecer_rh.afastamento_inss_qual'
                                 />
                             </div>
@@ -906,8 +883,7 @@
                         <div class='form-group'>
                             <label>Disponibilidade de horários</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.disponibilidade_horarios'
@@ -931,8 +907,7 @@
                         <div class='form-group'>
                             <label>Disponibilidade para turnos 6X1</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.turnos_seis_por_um'
@@ -948,8 +923,7 @@
                         <div class='form-group'>
                             <label>Horário Preferencial</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.horario_preferencial'
@@ -987,7 +961,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.situacao_saude'
                                 cols='3'
-                                onblur='valida_campo_vazio(this,2)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 2)", onblur: "valida_campo_vazio(this, 2)", } : {}'
                                 rows='3'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             ></textarea>
@@ -1009,8 +983,7 @@
                         <div class='form-group'>
                             <label>Certificado NR 10</label>
                             <select
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onchange: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.nr_dez'
@@ -1066,7 +1039,7 @@
                                     :disabled='visualizar || disabledParecerRh'
                                     autocomplete='off'
                                     class='form-control'
-                                    onblur='valida_campo_vazio(this,2)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 2)", onblur: "valida_campo_vazio(this, 2)", } : {}'
                                     v-model='obj.nr_dez_instituicao'
                                 />
                             </div>
@@ -1130,7 +1103,7 @@
                                     :disabled='visualizar || disabledParecerRh'
                                     autocomplete='off'
                                     class='form-control'
-                                    onblur='valida_campo_vazio(this,2)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 2)", onblur: "valida_campo_vazio(this, 2)", } : {}'
                                     v-model='obj.curso'
                                 />
                             </div>
@@ -1144,7 +1117,7 @@
                                     :disabled='visualizar || disabledParecerRh'
                                     autocomplete='off'
                                     class='form-control'
-                                    onblur='valida_campo_vazio(this,2)'
+                                    v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 2)", onblur: "valida_campo_vazio(this, 2)", } : {}'
                                     v-model='obj.instituicao'
                                 />
                             </div>
@@ -1191,7 +1164,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.comportamento_seguro'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
@@ -1222,7 +1195,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.energia_para_trabalho'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
@@ -1253,7 +1226,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.postura'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
@@ -1294,7 +1267,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.historico_profissional'
                                 cols='3'
-                                onblur='valida_campo_vazio(this,2)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 2)", onblur: "valida_campo_vazio(this, 2)", } : {}'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                                 rows='3'
                             ></textarea>
@@ -1323,7 +1296,7 @@
                                 :disabled='visualizar || disabledParecerRh'
                                 v-model='form.parecer_rh.historico_educacional'
                                 cols='3'
-                                onblur='valida_campo_vazio(this,2)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 2)", onblur: "valida_campo_vazio(this, 2)", } : {}'
                                 v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                                 rows='3'
                             ></textarea>
@@ -1397,7 +1370,7 @@
                                 profissional. Caso a situação
                                 perguntada não faça parte do seu histórico profissional, busque-a na sua formação
                                 acadêmica e por fim na sua vida pessoal.
-                                <br />
+                                <br/>
                                 Ao contar o fato lembre-se de citar o contexto, a ação e o resultado, ou seja, o momento
                                 em que aconteceu, o que você fez para
                                 resolvê-la e o resultado da sua ação.
@@ -1465,11 +1438,11 @@
                         <div class='form-group'>
                             <label class='labeltext'
                             >Descreva um fato em que alguém solicitou que você procedesse contra uma norma ou regra.
-                                <br />
+                                <br/>
                                 Conte-me um fato em que foi solicitado um procedimento fora dos padrões, em que
                                 precisaria agir inadequadamente. O que você fez?
                                 Quais foram os resultados?
-                                <br />
+                                <br/>
                                 Conte uma situação em que lhe foi solicitado agir em desacordo com a política da
                                 empresa.
                             </label>
@@ -1540,9 +1513,9 @@
                         <div class='form-group'>
                             <label class='labeltext'
                             >Descreva uma situação na qual o seu comprometimento com a empresa foi primordial para que
-                                um problema fosse resolvido. <br />
+                                um problema fosse resolvido. <br/>
                                 Descreva um fato no qual a sua disciplina e organização foram essenciais para o sucesso
-                                de uma ação. <br />
+                                de uma ação. <br/>
                                 Conte-me uma situação em que você demonstrou disponibilidade para a empresa na qual
                                 trabalhava
                             </label>
@@ -1613,7 +1586,7 @@
                             >Todos nós já passamos por situações em que não compreendemos o que nos foi comunicado. Por
                                 exemplo: um prazo de entrega,
                                 instruções complicadas, etc. Conte uma situação vivenciada onde isso aconteceu com você.
-                                Como você solucionou? <br />
+                                Como você solucionou? <br/>
                                 Qual foi o pior problema de comunicação que você já enfrentou? Relate-nos essa
                                 experiência.
                             </label>
@@ -1681,9 +1654,9 @@
                             <label class='labeltext'
                             >Conte-me um fato em que foi necessário ser obediente aos procedimentos e regras
                                 organizacionais, sendo preciso ajustar a ação a
-                                ser tomada para que esta se adequasse à política da empresa. <br />
+                                ser tomada para que esta se adequasse à política da empresa. <br/>
                                 Cite uma situação que você recorreu ao sistema de gestão da qualidade para resolver um
-                                problema. <br />
+                                problema. <br/>
                                 Cite uma situação que você precisou desenvolver uma nova metodologia ou um novo
                                 procedimento para resolver ou evitar algum
                                 problema na empresa.
@@ -1753,11 +1726,11 @@
                         <div class='form-group'>
                             <label class='labeltext'
                             >Conte uma situação em que você direcionou seus esforços para satisfazer as necessidades do
-                                cliente (interno ou externo). <br />
+                                cliente (interno ou externo). <br/>
                                 Cite um fato no qual foi necessário agir com atenção, respeito e cortesia para com um
                                 cliente (interno ou externo), mesmo já
                                 estando irritado com a situação. Você conseguiu controlar a sua irritação e resolver a
-                                questão do cliente? <br />
+                                questão do cliente? <br/>
                                 Ao tratar com um cliente, cite uma situação na qual você conseguiu identificar a
                                 necessidade do cliente, surpreendendo-o com a
                                 sua iniciativa. O que você sentiu quando isso aconteceu?
@@ -1824,10 +1797,10 @@
                     <div class='col-12'>
                         <div class='form-group'>
                             <label class='labeltext'
-                            >Conte uma situação na qual você precisou se antecipar para resolucionar um problema. <br />
+                            >Conte uma situação na qual você precisou se antecipar para resolucionar um problema. <br/>
                                 Fale sobre algum projeto ou idéia que foram aceitos, introduzidos ou realizados com
                                 sucesso, principalmente em decorrência de
-                                sua iniciativa. <br />
+                                sua iniciativa. <br/>
                                 O que você fez recentemente para tornar seu trabalho mais interessante, desafiador,
                                 motivante?
                             </label>
@@ -1895,9 +1868,9 @@
                             <label class='labeltext'
                             >Descreva algumas metas desafiadoras que você planejou para si mesmo e de que forma agiu
                                 frente a elas? Conseguiu atingi-las?
-                                <br />
+                                <br/>
                                 Fale sobre a meta mais desafiadora que você teve que alcançar. De que forma agiu? Quais
-                                foram os resultados?<br />
+                                foram os resultados?<br/>
                             </label>
                             <div class='clearfix'></div>
                             <div class='form-check form-check-inline cursor-pointer'>
@@ -2107,7 +2080,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.parecer_final'
                                 v-if='!cliente_servico'
@@ -2122,7 +2095,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.individual_rh.parecer'
                                 v-if='cliente_servico'
@@ -2142,7 +2115,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.parecer_final_um'
                             >
@@ -2160,7 +2133,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.nota'
                                 v-if='!cliente_servico'
@@ -2172,7 +2145,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar || disabledParecerRh'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.individual_rh.nota'
                                 v-if='cliente_servico'
@@ -2243,7 +2216,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-if='!entrevistaGestorDisabled'
                                 v-model='form.parecer_rh.gestor_rh.parecer'
@@ -2272,7 +2245,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-if='!entrevistaGestorDisabled'
                                 v-model='form.parecer_rh.gestor_rh.indicado_para'
@@ -2303,7 +2276,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-if='!entrevistaGestorDisabled'
                                 v-model='form.parecer_rh.gestor_rh.nota'
@@ -2327,7 +2300,7 @@
                                 type='text'
                                 class='form-control'
                                 :disabled='visualizar'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 v-if='!entrevistaGestorDisabled'
                                 v-model='form.parecer_rh.gestor_rh.entrevistado_por'
                             />
@@ -2368,7 +2341,7 @@
                             <select
                                 class='form-control'
                                 :disabled='visualizar'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-if='!entrevistaRhDisabled'
                                 v-model='form.parecer_rh.entrevista_rh.parecer'
@@ -2403,7 +2376,7 @@
                                 class='form-control'
                                 :disabled='visualizar'
                                 v-if='!entrevistaRhDisabled'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.entrevista_rh.indicado_para'
                             >
@@ -2434,7 +2407,7 @@
                                 class='form-control'
                                 :disabled='visualizar'
                                 v-if='!entrevistaRhDisabled'
-                                onblur='valida_campo_vazio(this,1)'
+                                v-bind='!visualizar || !disabledParecerRh ? { onkeyup: "valida_campo_vazio(this, 1)", onblur: "valida_campo_vazio(this, 1)", } : {}'
                                 onchange='valida_campo_vazio(this,1)'
                                 v-model='form.parecer_rh.entrevista_rh.nota'
                             >
@@ -2455,10 +2428,10 @@
                             <label>Entrevistado Por:</label>
                             <input type='text' :disabled='visualizar' autocomplete='off' v-if='!entrevistaRhDisabled'
                                    class='form-control' onblur='valida_campo_vazio(this,3)'
-                                   v-model='form.parecer_rh.entrevista_rh.entrevistado_por' />
+                                   v-model='form.parecer_rh.entrevista_rh.entrevistado_por'/>
 
                             <input type='text' disabled autocomplete='off' v-if='entrevistaRhDisabled'
-                                   class='form-control' v-model='form.parecer_rh.entrevista_rh.entrevistado_por' />
+                                   class='form-control' v-model='form.parecer_rh.entrevista_rh.entrevistado_por'/>
                         </div>
                     </div>
                 </div>
@@ -2709,11 +2682,11 @@ export default {
                 this.preload = false
             })
 
-            if(this.disabledParecerRh){
-                setTimeout(() => {
-                    $('#formParecerRh select').removeAttr('onblur');
-                },8000)
-            }
+        if (this.disabledParecerRh) {
+            setTimeout(() => {
+                $('#formParecerRh select').removeAttr('onblur');
+            }, 8000)
+        }
     },
 
     components: {
@@ -2812,7 +2785,7 @@ export default {
         },
         changeTipoEntrevista() {
             formReset()
-            setTimeout(function() {
+            setTimeout(function () {
                 $('#janelaParecerEntrevista :input:visible').trigger('blur')
             }, 100)
         }

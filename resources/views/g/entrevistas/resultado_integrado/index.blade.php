@@ -62,7 +62,7 @@
         <template slot="conteudo">
             <preload v-if="preloadForm"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
-                <form-rh :form="form" :cliente_id="cliente_id" :visualizar="visualizar" :entrevistado-rh="false"
+                <form-rh :form="form" :cliente_id="cliente_id" :visualizar="true" :entrevistado-rh="false"
                          :entrevista-rh="false" disabled-parecer-rh :entrevista-gestor="false"
                          entrevista-gestor-disabled
                          entrevista-rh-disabled @finalizou="()=>{preloadForm = false}"></form-rh>
@@ -270,7 +270,7 @@
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                    v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
                 </button>
             </div>
         </div>
@@ -292,7 +292,7 @@
                 </th>
                 {{-- <th>Cód</th> --}}
                 <th>Nome</th>
-{{--                <th>Empresa</th>--}}
+                {{--                <th>Empresa</th>--}}
                 <th v-if="colunasTabela.pcd">PCD</th>
                 <th>Cargo</th>
                 <th>Enc. Doc</th>
@@ -332,9 +332,9 @@
                 <td class="text-center">
                     @{{ entrevista . curriculo . nome }}
                 </td>
-{{--                <td class="text-center" v-if="cliente_id === 0  && colunasTabela.cliente">--}}
-{{--                    @{{ entrevista . cliente . razao_social }}--}}
-{{--                </td>--}}
+                {{--                <td class="text-center" v-if="cliente_id === 0  && colunasTabela.cliente">--}}
+                {{--                    @{{ entrevista . cliente . razao_social }}--}}
+                {{--                </td>--}}
                 <td class="text-center" v-show="colunasTabela.pcd">
                     @{{ entrevista . curriculo . pcd ? 'Sim' : 'Não' }}
                 </td>
