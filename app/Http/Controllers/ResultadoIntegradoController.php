@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\JobExportaExcel;
+use App\Models\CentroCusto;
 use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
 use App\Models\FeedbackCurriculo;
@@ -11,6 +12,7 @@ use App\Models\Pcmso;
 use App\Models\ResultadoIntegrado;
 use App\Models\SimuladoVaga;
 use App\Models\Sistema;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Log;
@@ -68,7 +70,7 @@ class ResultadoIntegradoController extends Controller
                 \DB::beginTransaction();
                 $feedback = FeedbackCurriculo::whereId($dados['feedback_id'])->with('Curriculo')->first();
                 ResultadoIntegrado::create($dados);
-                if(!is_null($dados['empresa_exame_id']) && !is_null($dados['pcmso_id'])){
+                if (!is_null($dados['empresa_exame_id']) && !is_null($dados['pcmso_id'])) {
                     $empresaExameId = $dados['empresa_exame_id'];
                     $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
                     $token = Sistema::uuid();
@@ -83,13 +85,13 @@ class ResultadoIntegradoController extends Controller
                         ->where('pcmso_id', $pcmso_id)
                         ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
 
-                    if(is_null($temExameFuncionario)) {
-                        $exameFuncionario = ExameFuncionario::create([
+                    if (is_null($temExameFuncionario)) {
+                        ExameFuncionario::create([
                             'feedback_id' => $feedback->id,
                             'empresa_id' => $empresa_id,
                             'empresa_exame_id' => $empresaExameId,
                             'formulario_id' => $formulario_id,
-                            'respostas' => (object) [],
+                            'respostas' => (object)[],
                             'token' => $token,
                             'pcmso' => true,
                             'pcmso_id' => $pcmso_id,
@@ -104,6 +106,7 @@ class ResultadoIntegradoController extends Controller
                 is_null($dados['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
 
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dados, $empresaExame, $tipo_pcmso);
+                $this->criaProcessoAdmissaoEncaminhadoExame($dados['feedback_id']);
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
@@ -112,6 +115,22 @@ class ResultadoIntegradoController extends Controller
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
 
+        }
+    }
+
+    private function criaProcessoAdmissaoEncaminhadoExame($feedbackId)
+    {
+        $admissao = DB::table('admissoes')
+            ->where('feedback_id', $feedbackId)
+            ->first();
+
+        if (!$admissao) {
+            DB::table('admissoes')
+                ->insert([
+                    'feedback_id' => $feedbackId,
+                    'filial' => false,
+                    'status' => \App\Models\Admissao::STATUS_ADMISSAO_ENCAMINHADOEXAME
+                ]);
         }
     }
 
@@ -207,7 +226,7 @@ class ResultadoIntegradoController extends Controller
 
                 $resultadoIntegrado->update($dados);
 
-                if(!is_null($dados['empresa_exame_id']) && !is_null($dados['pcmso_id'])){
+                if (!is_null($dados['empresa_exame_id']) && !is_null($dados['pcmso_id'])) {
                     $empresaExameId = $dados['empresa_exame_id'];
                     $formulario_id = Formulario::whereTitulo('Exames')->first()->id;
                     $token = Sistema::uuid();
@@ -222,13 +241,13 @@ class ResultadoIntegradoController extends Controller
                         ->where('pcmso_id', $pcmso_id)
                         ->where('encaminhamento_data', '=', (new DataHora($encaminhamento_data))->dataInsert())->first();
 
-                    if(is_null($temExameFuncionario)) {
-                        $exameFuncionario = ExameFuncionario::create([
+                    if (is_null($temExameFuncionario)) {
+                        ExameFuncionario::create([
                             'feedback_id' => $feedback->id,
                             'empresa_id' => $empresa_id,
                             'empresa_exame_id' => $empresaExameId,
                             'formulario_id' => $formulario_id,
-                            'respostas' => (object) [],
+                            'respostas' => (object)[],
                             'token' => $token,
                             'pcmso' => true,
                             'pcmso_id' => $pcmso_id,
@@ -237,6 +256,7 @@ class ResultadoIntegradoController extends Controller
                         ]);
                     }
                 }
+                $this->criaProcessoAdmissaoEncaminhadoExame($dados['feedback_id']);
                 \DB::commit();
                 return response()->json([], 201);
             } catch (\Exception $e) {
@@ -266,12 +286,33 @@ class ResultadoIntegradoController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+
+//        $itens = collect($resultado->items())->transform(function ($item) use ($cc) {
+//            if ($item->admissao) {
+//                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
+//                $item->admissao->emp_cnpj = null;
+//                $item->admissao->emp_nome_fantasia = null;
+//                $item->admissao->emp_centro_custo = null;
+//                $item->admissao->emp_tipo = null;
+//
+//                if ($cc_colaborador) {
+//                    $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
+//                    $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
+//                    $item->admissao->emp_centro_custo = $cc_colaborador['label'];
+//                    $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+//                }
+//            }
+//            return $item;
+//        });
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $resultado->items(),
+                'cc' => $cc
             ]
         ]);
     }
@@ -291,8 +332,8 @@ class ResultadoIntegradoController extends Controller
         $filtroPeriodo = $request->filtroPeriodo == 'true';
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
             $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
                 $q->where('created_at', '>=', $dataInicio->dataHoraInsert())
                     ->where('created_at', '<=', $dataFim->dataHoraInsert());
@@ -355,7 +396,7 @@ class ResultadoIntegradoController extends Controller
             $rows[] = [
                 $row->Curriculo->nome,
                 $row->vaga_aberta_municipio,
-                $row->Curriculo->pcd = false ? "SIM":"NÂO",
+                $row->Curriculo->pcd = false ? "SIM" : "NÂO",
                 $row->parecerRh->nota,
                 $row->obs,
                 $row->Curriculo->email,
@@ -370,6 +411,7 @@ class ResultadoIntegradoController extends Controller
         JobExportaExcel::dispatch(auth()->id(), "Resultado - Integrado", $head, $rows, $nameArquivo);
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
+
     public function getFichaPdf(Request $request, FeedbackCurriculo $feedback)
     {
         $dados = $feedback;
