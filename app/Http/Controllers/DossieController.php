@@ -197,7 +197,12 @@ class DossieController extends Controller
                 $temporaria = EmpresaTemporaria::whereEmpresaId($colaborador->empresa_id)->first();
                 $pdf = \PDF::loadView('pdf.historico.dossie.contratos.' . $tipo_admissao, compact('dados', 'cliente', 'temporaria'));
             } else {
-                $pdf = \PDF::loadView('pdf.historico.dossie.' . $tipo_modelo, compact('dados', 'cliente'));
+                $view = "pdf.historico.dossie.customizado.{$cliente->apelido}.contratos.{$tipo_modelo}";
+                if (view()->exists($view)) {
+                    $pdf = \PDF::loadView($view, compact('dados', 'cliente'));
+                } else {
+                    $pdf = \PDF::loadView('pdf.historico.dossie.default.contratos.' . $tipo_modelo, compact('dados', 'cliente'));
+                }
             }
         } else {
             $pdf = \PDF::loadView('pdf.historico.dossie.' . $tipo_modelo, compact('dados', 'cliente'));

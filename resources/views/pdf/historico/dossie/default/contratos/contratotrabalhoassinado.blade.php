@@ -4,7 +4,7 @@
     <div style="margin-left: 9px">
         @include('layouts.cabecalioFilialEmpresaJob')
     </div>
-    <div style="margin-left: 9px; width: 96%">
+    <div style="margin-left: 6%; width: 85%">
         <p class="f11"
            style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase"><br>
             <strong>CONTRATO DE TRABALHO A TÍTULO DE EXPERIÊNCIA</strong><br>
@@ -116,27 +116,21 @@
         <p class="f11 text-justify">
             <strong>10ª</strong> Fica ainda autorizado, de livre e espontânea vontade, para os mesmos fins, a cessão de
             direitos da veiculação das imagens em todo e qualquer material entre imagens de vídeo, fotos e documentos,
-            para
-            ser utilizada pela empresa <strong>CONTRATANTE</strong> destinado a divulgação ao público em geral não
-            recebendo
-            para tanto qualquer tipo de remuneração.
+            para ser utilizada pela empresa <strong>CONTRATANTE</strong> destinado a divulgação ao público em geral não
+            recebendo para tanto qualquer tipo de remuneração.
         </p>
         <p class="f11 text-justify">
             <strong>11ª (Rescisão)</strong> – Opera-se a rescisão do presente contrato pela decorrência do prazo supra
-            ou
-            por vontade de uma das partes; rescindindo-se por vontade do <strong>EMPREGADO</strong> ou pela <strong>EMPREGADORA</strong>
+            ou por vontade de uma das partes; rescindindo-se por vontade do <strong>EMPREGADO</strong> ou pela <strong>EMPREGADORA</strong>
             com justa causa, nenhuma indenização é devida; rescindindo-se antes do prazo, pela
             <strong>EMPREGADORA</strong>,
             fica esta obrigada a pagar 50% dos salários devidos até o final (metade do tempo combinado restante), nos
-            termos
-            do Artigo 479 da CLT, sem prejuízo do disposto no Regimento do FGTS.
+            termos do Artigo 479 da CLT, sem prejuízo do disposto no Regimento do FGTS.
         </p>
         <p class="f11 text-justify">
             <strong>12ª (Proteção de Dados Pessoais)</strong> – O <strong>EMPREGADO</strong> está ciente de que informa
-            os
-            dados contidos na Ficha Registro de Funcionário à <strong>EMPREGADORA</strong>, os quais são necessários
-            para a
-            execução do contrato de trabalho de experiência.
+            os dados contidos na Ficha Registro de Funcionário à <strong>EMPREGADORA</strong>, os quais são necessários
+            para a execução do contrato de trabalho de experiência.
         </p>
         <p class="f11 text-justify">
             <strong>12.1</strong> - Durante a vigência do contrato, outros dados pessoais poderão ser gerados, os quais
@@ -145,11 +139,9 @@
         </p>
         <p class="f11 text-justify">
             <strong>12.2</strong> - O <strong>EMPREGADO</strong> ao assinar o presente contrato, está ciente que a
-            empresa
-            contratante poderá solicitar dados extras, para o cumprimento de uma obrigação legal, uso de sistemas de
-            controle de pessoal, pagamento de impostos e informações sociais aos órgãos públicos, bem como, para a
-            execução
-            do presente contrato.
+            empresa contratante poderá solicitar dados extras, para o cumprimento de uma obrigação legal, uso de
+            sistemas de controle de pessoal, pagamento de impostos e informações sociais aos órgãos públicos, bem como,
+            para a execução do presente contrato.
         </p>
         <p class="f11 text-justify">
             <strong>12.3</strong> - Os dados fornecidos pelo <strong>EMPREGADO</strong> serão utilizados para as
@@ -323,12 +315,12 @@
         </div>
 
         <br><br><br><br>
-        <div style="margin-left: 1px !important; text-align: left">
-            @include('layouts.rodapePdfFilialJob')
-        </div>
+
     </div>
 @stop
-
+<div style="position: fixed; right: -3.8cm; top: 16cm; text-align: left;transform: rotate(90deg);">
+    @include('layouts.rodapePdfFilialJob')
+</div>
 @push('style')
     <style type="text/css">
 
@@ -338,6 +330,9 @@
             margin-bottom: 10px;
         }
 
+        .rodapeAssinatura {
+            color: #b2acac !important;
+        }
 
     </style>
 @endpush
