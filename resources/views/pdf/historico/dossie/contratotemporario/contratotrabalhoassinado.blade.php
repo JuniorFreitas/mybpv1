@@ -145,8 +145,8 @@
     <div class="f11">
         <strong>QUADRO II - TRABALHADOR TEMPORÁRIO</strong><br>
         <hr>
-        Nome: {{$dados['dados_colaborador']->nome}}<br>
-        Endereço: {{ $dados['dados_colaborador']->endereco_completo }}<br>
+        Nome: {{$dados['dados_colaborador']->Curriculo->nome}}<br>
+        Endereço: {{ $dados['dados_colaborador']->Curriculo->endereco_completo }}<br>
         CTPS: {{ $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes ? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_numero: 'Não Informado' }}
         ,
         Serie: {{ $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes ? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_serie: 'Não Informado' }}
@@ -259,7 +259,9 @@
 </div>
 <br>
 <div class="f11" style="line-height: 26pt; text-align: right">
-    São Luís, MA. {{ (new \MasterTag\DataHora($dados['dados_colaborador']->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}.
+    São Luís,
+    MA. {{ (new \MasterTag\DataHora($dados['dados_colaborador']->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}
+    .
     <br>
     <br>
 </div>

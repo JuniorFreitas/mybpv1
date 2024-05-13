@@ -145,8 +145,8 @@
     <div class="f11">
         <strong>QUADRO II - TRABALHADOR TEMPORÁRIO</strong><br>
         <hr>
-        Nome: {{$dados['dados_colaborador']->nome}}<br>
-        Endereço: {{ $dados['dados_colaborador']->endereco_completo }}<br>
+        Nome: {{$dados['dados_colaborador']->Curriculo->nome}}<br>
+        Endereço: {{ $dados['dados_colaborador']->Curriculo->endereco_completo }}<br>
         CTPS: {{ $dados['dados_colaborador']->Admissao->DadosAdmissoes ? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_numero: 'Não Informado' }}
         ,
         Serie: {{ $dados['dados_colaborador']->Admissao->DadosAdmissoes ? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_serie: 'Não Informado' }}
