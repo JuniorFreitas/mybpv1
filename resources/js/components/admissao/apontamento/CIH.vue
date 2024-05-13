@@ -774,6 +774,45 @@ export default {
         },
     },
     methods: {
+        exportaExcel() {
+            if (!this.controle.dados.filtroPeriodo) {
+                mostraErro("", "Selecione um periodo por favor!");
+                return false;
+            }
+            this.preloadExportacao = true;
+            mostraSucesso("Estamos gerando seu arquivo excel, assim que finalizado você será notificado.");
+            setTimeout(() => {
+                this.preloadExportacao = false;
+            }, 500);
+            axios.post(`${this.urlExportacao}`,
+                this.paramsExport
+            ).then(({data}) => {
+                this.preloadExportacao = false;
+            }).catch(erro => {
+                mostraErro(erro);
+                this.preloadExportacao = false;
+            });
+        },
+
+        exportaPdf() {
+            if (!this.controle.dados.filtroPeriodo) {
+                mostraErro("", "Selecione um periodo por favor!");
+                return false;
+            }
+            this.preloadExportacao = true;
+            mostraSucesso("Estamos gerando seu arquivo pdf, assim que finalizado você será notificado.");
+            setTimeout(() => {
+                this.preloadExportacao = false;
+            }, 500);
+            axios.post(`${this.urlPdf}`,
+                this.paramsExport
+            ).then(({data}) => {
+                this.preloadExportacao = false;
+            }).catch(erro => {
+                mostraErro(erro);
+                this.preloadExportacao = false;
+            });
+        },
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo;
             if (this.selecionaTudo) {
