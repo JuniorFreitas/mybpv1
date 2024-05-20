@@ -5,12 +5,14 @@
         @include('layouts.cabecalioFilialEmpresaJob')
     </div>
     <div style="margin-left: 5.2%; width: 87%">
-        <p class="f11"
-           style="text-align: center; margin-top: -0.3cm; text-transform: uppercase"><br>
+        <p
+            style="text-align: center; margin-top: -0.3cm; font-size: 13pt; text-transform: uppercase">
+            <br><br>
             <strong>CONTRATO INDIVIDUAL DE TRABALHO</strong>
         </p>
 
         <p class="f11 text-justify">
+            <br>
             Pelo presente instrumento particular, de um lado <br>
             {{$dados['dados_empresa']['razao_social']}}, razão social, inscrita no CPF/CNPJ sob o
             n.º {{$dados['dados_empresa']['cnpj']}}, com sede em
