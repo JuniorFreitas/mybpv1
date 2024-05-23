@@ -97,6 +97,8 @@
                                         <input id="login" type="text"
                                                class="form-control{{ $errors->has('login') ? ' is-invalid' : '' }}"
                                                name="login"
+                                               onblur="removeEspaco(this);validaEmailVazio(this);"
+                                               onkeyup="removeEspaco(this);validaEmailVazio(this);"
                                                value="" required autofocus>
                                         @if($errors->has('login'))
                                             <span class="invalid-feedback" role="alert">
@@ -154,7 +156,8 @@
                                     <div class="form-group">
                                         <label for="login">E-mail</label>
                                         <input id="login" type="text"
-                                               onblur="validaEmailVazio(this)"
+                                               onblur="removeEspaco(this);validaEmailVazio(this);"
+                                               onkeyup="removeEspaco(this);validaEmailVazio(this);"
                                                class="form-control"
                                                v-model="form.login">
                                     </div>
@@ -240,6 +243,10 @@
 
         },
     });
+
+    function removeEspaco(campo) {
+        campo.value = campo.value.replace(/\s/g, '');
+    }
 </script>
 </body>
 </html>
