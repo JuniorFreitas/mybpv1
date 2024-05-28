@@ -38,7 +38,9 @@ class JobDesclassificacao implements ShouldQueue
         if ($this->mail['email'] != Sistema::EMAILPADRAO) {
             \Mail::send(new DesclassificacaoMail([
                 'nome' => $this->mail['nome'],
-                'email' => trim($this->mail['email'])
+                'email' => trim($this->mail['email']),
+                'razao_social' => $this->mail['razao_social'],
+                'empresa_id' => $this->mail['empresa_id'],
             ]));
         }
     }

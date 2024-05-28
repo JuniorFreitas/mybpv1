@@ -200,9 +200,12 @@ class RecrutamentoController extends Controller
 
                         JobDesclassificacao::dispatch([
                             'nome' => $infCurriculo['nome'],
-                            'email' => $infCurriculo['email']
+                            'email' => $infCurriculo['email'],
+                            'razao_social' => $empresa->razao_social,
+                            'empresa_id' => $empresa->id,
                         ]);
                     }
+
                     $curriculo->FeedBack()->create($dados);
                 } else {
                     if ($dados['selecionado'] == 'sim') {
@@ -290,7 +293,9 @@ class RecrutamentoController extends Controller
                         $dados['user_envia_mail_desclassificacao'] = auth()->id();
                         JobDesclassificacao::dispatch([
                             'nome' => $infCurriculo['nome'],
-                            'email' => $infCurriculo['email']
+                            'email' => $infCurriculo['email'],
+                            'razao_social' => $empresa->razao_social,
+                            'empresa_id' => $empresa->id,
                         ]);
                     }
                 } else {
@@ -300,7 +305,6 @@ class RecrutamentoController extends Controller
                             $dados['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
                             $dados['user_envia_mail_provas'] = auth()->id();
                             $vaga_aberta = VagasAbertas::find($dados['vagas_abertas_id']);
-                            $empresa = Cliente::find(auth()->user()->empresa_id);
                             JobProximaEtapa::dispatch(
                                 [
                                     'nome' => $infCurriculo['nome'],
@@ -454,8 +458,8 @@ class RecrutamentoController extends Controller
         $filtroPeriodo = $request->filtroPeriodo == 'true';
         if ($filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
+            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
 
             $resultado->where('updated_at', '>=', $dataInicio->dataHoraInsert())
                 ->where('updated_at', '<=', $dataFim->dataHoraInsert());
