@@ -30,7 +30,20 @@
     <link rel="icon" type="image/png" sizes="96x96" href="{{asset('images/icons/favicon-96x96.png')}}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{asset('images/icons/favicon-16x16.png')}}">
     <link rel="manifest" href="{{asset('manifest.json')}}">
-
+    @if(env('APP_ENV') !== 'local')
+        <script type="text/javascript">
+            (function (c, l, a, r, i, t, y) {
+                c[a] = c[a] || function () {
+                    (c[a].q = c[a].q || []).push(arguments)
+                };
+                t = l.createElement(r);
+                t.async = 1;
+                t.src = "https://www.clarity.ms/tag/" + i;
+                y = l.getElementsByTagName(r)[0];
+                y.parentNode.insertBefore(t, y);
+            })(window, document, "clarity", "script", "mltvhh6s7v");
+        </script>
+    @endif
     @stack('css')
 </head>
 <body data-sidebar="dark">
@@ -168,8 +181,6 @@
 @stack('js')
 <script>
     $("#side-menu").metisMenu();
-
-
 </script>
 </body>
 </html>
