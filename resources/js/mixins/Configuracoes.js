@@ -21,7 +21,7 @@ const configuracoes = {
         },
         urlVaga() {
             let ambiente = process.env.MIX_AMBIENTE;
-            let urlPadrao = ambiente === 'dev' ? 'https://hvagas.mybp.com.br/' : 'https://vagas.mybp.com.br/';
+            let urlPadrao = ambiente === 'dev' ? 'https://hvagas.mybp.com.br' : 'https://vagas.mybp.com.br';
             return `${urlPadrao}/${this.authconfiguracao?.apelido}`;
         }
     }
