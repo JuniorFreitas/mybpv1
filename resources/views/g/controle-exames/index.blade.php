@@ -277,7 +277,6 @@
                                         label="DATA PARA REALIZAÇÃO"
                                         :disabled="visualizar"
                                         v-model="form.encaminhado_exame_data"
-                                        :min="dataHoje"
                                     ></datepicker>
                                 </div>
 
