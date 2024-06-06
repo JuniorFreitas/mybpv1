@@ -96,6 +96,9 @@ class PosAdmissaoController extends Controller
         try {
             DB::beginTransaction();
             $feedback = FeedbackCurriculo::find($dados['feedback_id']);
+            $feedback->Admissao()->update([
+                'status' => Admissao::STATUS_DEMITIDO
+            ]);
             $feedback->Demissao()->create($dadosDemissao);
             User::find($feedback->curriculo_id)->update([
                 'ativo' => false
@@ -278,6 +281,8 @@ class PosAdmissaoController extends Controller
                 'preenchido_por_rh' => $dados['preenchido_por_rh'],
                 'preenchido_por_adm' => $dados['preenchido_por_adm'],
                 'preenchido_por_ssma' => $dados['preenchido_por_ssma'],
+                'data_desmobilizacao' => (new DataHora($dados['data_desmobilizacao']))->dataInsert(),
+                'usuario_desmob' => auth()->id(),
             ]);
 
             DB::commit();
@@ -495,7 +500,8 @@ class PosAdmissaoController extends Controller
             ->whereHas('Admissao', function ($q) {
                 $q->where('status', Admissao::STATUS_DEMITIDO);
             }
-            )->Has('Demissao')->with('Demissao');
+            )->Has('Demissao')
+            ->with('Demissao');
 
 
         if (count($filtros['selecionados']) > 0) {
