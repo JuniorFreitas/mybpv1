@@ -7,34 +7,37 @@
 
     <p class="f14"
        style="text-align: center; font-weight: bold; margin-top: 1cm; margin-bottom: 1.5cm; text-transform: uppercase">
-        CARTA DE {{$medida->tipo}}</p>
-    <p class="f12" style="">De: <strong>{{$medida->Feedback->Empresa->nome_fantasia}}</strong></p>
-    <p class="f12" style="">Para: {{$medida->Feedback->Curriculo->nome}}</p>
+        CARTA DE {{$medida->tipo == 'Re-orientação' ? 'Orientação' : $medida->tipo}}</p>
+    <p class="f12" style="">DE: <strong>{{$medida->Feedback->Empresa->nome_fantasia}}</strong></p>
+    <p class="f12" style="">PARA: {{$medida->Feedback->Curriculo->nome}}</p>
     <br>
     <p class="f12" style="text-transform: uppercase">NESTA <br>
         REF.: {{$medida->causa}}.
     </p>
     <br>
     <p class="f12">
-        Prezado Senhor: <strong>{{$medida->Feedback->Curriculo->nome}}</strong>
+        Prezado(a) Senhor(a): <strong>{{$medida->Feedback->Curriculo->nome}}</strong>
     </p>
     <br>
     <div class="f12" style="line-height: 22pt;text-align: justify">
-        O Senhor trabalhando nesta empresa desde {{$medida->Feedback->Admissao->data_admissao}}, esta sendo {{$medida->TipoMedida}} no
+        O(A) Senhor(a) trabalhando nesta empresa desde {{$medida->Feedback->Admissao->data_admissao}}, esta
+        sendo {{$medida->TipoMedida}} no
         dia {{$medida->data_solicitacao}}, em virtude de <strong>{{$medida->definicao}}</strong>
-        ({{$medida->motivo}}) @if($medida->tipo != 'Advertência Escrita')
+        ({{$medida->motivo}}
+        )
+        @if(!in_array($medida->tipo,['Advertência Escrita', 'Advertência Verbal', 'Desligamento', 'Re-orientação',]))
             com retorno no dia ({{$medida->data_retorno}})
-        @endif(). Em razão disso e na forma do artigo 482
-        alínea h, o Sr., está sendo advertido, para que
-        repense suas atitudes e passe a se adequar nas regras internas da empresa, evitando a reincidência, que poderá
-        provocar outras medidas disciplinares.
+        @endif().
+        Em razão disso e na forma do artigo 482 alínea h, o(a) Sr(a)., está sendo advertido(a), para que repense suas
+        atitudes e passe a se adequar nas regras internas da empresa, evitando a reincidência, que poderá provocar
+        outras medidas disciplinares.
         <br>
         <br>
         Sem mais <br>
         Assino a presente,
         <br>
         <br>
-        São Luís-MA, {{ (new \MasterTag\DataHora($medida->data_solicitacao))->dataCompletaExt() }}
+        São Luís-MA, {{ (new \MasterTag\DataHora($medida->data_solicitacao))->dataCompletaExt() }}.
         <br>
         <br>
         <br>
@@ -53,12 +56,7 @@
 
 @push('style')
     <style type="text/css">
-        .footer {
-            position: absolute;
-            bottom: 0px;
-            font-size: 8.4pt;
-            /*width: 10cm;*/
-        }
+
 
         .f14 {
             font-size: 14pt;

@@ -127,7 +127,7 @@ class MedidaAdministrativa extends Model
     {
         switch ($this->attributes['tipo']) {
             case 'Re-orientação':
-                return 'reorientado';
+                return 'orientado';
             case 'Advertência Verbal':
             case 'Advertência Escrita':
                 return 'advertido';

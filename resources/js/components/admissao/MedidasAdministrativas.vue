@@ -38,7 +38,7 @@
                     <!--                        </select>-->
                     <!--                    </div>-->
 
-                    <div class="col-md-4">
+                    <div class="col-md-8">
                         <label>Causa</label>
                         <select class="form-control" v-model="obj.causa" :disabled="!obj.novo"
                                 onchange="valida_campo_vazio(this,1)"
@@ -68,7 +68,7 @@
                     </div>
 
                     <div class="col-md-2">
-                        <date-picker v-if="obj.tipo != 'Advertência Verbal' && obj.tipo != 'Advertência Escrita'"
+                        <date-picker v-if="!naoExibiRetorno.includes(obj.tipo)"
                                      label="Data Retorno" v-model="obj.data_retorno" :min="hoje"
                                      :disabled="!obj.novo"></date-picker>
                     </div>
@@ -149,7 +149,15 @@ export default {
                 'Advertência Verbal',
                 'Suspensão de 1 dia',
                 'Suspensão de 2 ou 3 dias',
-                'Suspensão acima de 3 dias'
+                'Suspensão acima de 3 dias',
+                'Re-orientação'
+            ],
+            naoExibiRetorno: [
+                'Advertência Escrita',
+                'Advertência Verbal',
+                'Desligamento',
+                'Re-orientação',
+                ''
             ],
 
             form: {
@@ -166,6 +174,7 @@ export default {
     mounted() {
         this.atualizar();
     },
+
     methods: {
         addLIMedida() {
             const obj = {};
