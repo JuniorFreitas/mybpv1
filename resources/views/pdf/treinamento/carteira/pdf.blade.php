@@ -34,6 +34,16 @@
                                                 <strong>Chapa:</strong> {!! $treinamento->FeedbackCurriculo->Admissao->numero_cracha ??"&nbsp" !!}
                                             </div>
                                         </li>
+                                        {{--TODO incrementado para PILLAR em 27/06/2024 uma acao deles --}}
+                                        @if($treinamento->FeedbackCurriculo->empresa_id == 39765)
+                                            <li style="font-size: 5.5pt; margin-top: 1.5px; margin-bottom: 0.7mm; display: flex; align-items: center;">
+                                                <div
+                                                    style="float: left; width: 100%; margin-bottom: 0px; background: #d9d9d9; padding: 4px; border-radius: 6px">
+                                                    <strong>Faz uso de Lentes
+                                                        Corretivas:</strong> {{ mb_strtoupper($treinamento->FeedbackCurriculo->Admissao->usa_lentes_corretivas ? 'Sim' : 'Não') }}
+                                                </div>
+                                            </li>
+                                        @endif
                                     </ul>
                                     <div style="
                                             background: white;height: 9px;width: 269px; padding-top: 0.7mm; padding-bottom: 0.3mm; font-size: 5.5pt;font-family: 'Arial', Verdana, sans-serif;font-weight: bold;display: flex;justify-content: space-between;">

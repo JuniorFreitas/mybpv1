@@ -79,12 +79,14 @@ class PortariaController extends Controller
                     'funcao' => $dados['admissao']['funcao'],
                     'acessar_area_porto' => $dados['admissao']['acessar_area_porto'],
                     'avaliacao_psicologica' => $dados['admissao']['avaliacao_psicologica'],
+                    'usa_lentes_corretivas' => $dados['admissao']['usa_lentes_corretivas'],
                 ]);
             } else {
                 $resultado->Admissao()->create([
                     'funcao' => $dados['admissao']['funcao'],
                     'acessar_area_porto' => $dados['admissao']['acessar_area_porto'],
                     'avaliacao_psicologica' => $dados['admissao']['avaliacao_psicologica'],
+                    'usa_lentes_corretivas' => $dados['admissao']['usa_lentes_corretivas'],
                 ]);
             }
             \DB::commit();
@@ -120,7 +122,7 @@ class PortariaController extends Controller
             $q->whereEncaminhadoTreinamento(true);
         })->whereHas('Admissao', function ($q) {
             $q->Admitidos();
-    }   )->with(
+        })->with(
             'Curriculo.FotoTres:id',
             'Admissao:id,feedback_id,funcao,cargo',
         );
@@ -175,8 +177,8 @@ class PortariaController extends Controller
                 $row->Admissao->id,
                 $row->Curriculo->nome,
                 $row->Curriculo->cpf,
-                $row->Curriculo->rg .' '. $row->Curriculo->orgao_expeditor,
-                'Mãe: '.$row->Curriculo->filiacao_mae .' - Pai: '.$row->Curriculo->filiacao_pai,
+                $row->Curriculo->rg . ' ' . $row->Curriculo->orgao_expeditor,
+                'Mãe: ' . $row->Curriculo->filiacao_mae . ' - Pai: ' . $row->Curriculo->filiacao_pai,
                 $row->Admissao->cargo,
                 $row->Admissao->funcao,
                 $row->Curriculo->endereco_completo,

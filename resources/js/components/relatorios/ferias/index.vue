@@ -23,7 +23,8 @@
                     </div>
 
                     <div class="col-12 col-md-3" v-if="filtrar.tipo === 'data'">
-                        <datepicker range formsm label="Escolha a data de saida:" :disabled="preload" @onselect="buscarDados()"
+                        <datepicker range formsm label="Escolha a data de saida:" :disabled="preload"
+                                    @onselect="buscarDados()"
                                     v-model="filtrar.periodo_range"></datepicker>
                     </div>
 
@@ -146,7 +147,7 @@ export default {
         this.filtrar.periodo = this.filtro.periodo_aquisitivo[1].id
         await this.buscarDados();
     },
-    filters:{
+    filters: {
         letterCase(value) {
             return value.charAt(0).toUpperCase() + value.slice(1);
         }
@@ -160,7 +161,6 @@ export default {
         async periodosAquisitivosList() {
             await axios.post(`${URL_ADMIN}/relatorios/ferias/listaperiodos`)
                 .then(({data}) => {
-                    console.log(data)
                     this.filtro = data.filtro;
                 });
         },

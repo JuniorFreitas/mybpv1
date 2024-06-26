@@ -240,7 +240,6 @@ export default {
             this.form.medidas_administrativasDelete = [];
             axios.get(`${URL_ADMIN}/historico/${this.feedback_id}`).then(res => {
                 let data = res.data;
-                console.log(data.hoje)
                 this.form.medidas_administrativas = data.feedback.medidas_administrativas;
                 this.causas = data.causas;
                 this.tipos = data.tipos;

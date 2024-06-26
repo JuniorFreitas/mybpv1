@@ -14,6 +14,7 @@ const app = new Vue({
         telefone
     },
     data: {
+        AUTENTICADO,
         tituloJanela: "Curriculo",
 
         anexoUploadAndamento: false,
@@ -67,6 +68,7 @@ const app = new Vue({
                     funcao: "",
                     avaliacao_psicologica: "",
                     acessar_area_porto: "",
+                    usa_lentes_corretivas: false
                 }
             }
 
@@ -239,7 +241,7 @@ const app = new Vue({
             if ($("#janelaPortaria :input:visible.is-invalid").length) {
                 $("#janelaPortaria").animate({
                     scrollTop: $($(".is-invalid")[0]).offset().top
-                }, 800, function() {
+                }, 800, function () {
                 });
                 mostraErro("", "Verifique os erros");
                 return false;

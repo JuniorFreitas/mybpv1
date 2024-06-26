@@ -109,7 +109,7 @@
                                               :disabled="true"
                                               :id="`vaga_${hash}`"
                                               @onblur="resetaCampoVagaModal"
-                                             @onselect="selecionaVagaModal"></autocomplete>
+                                              @onselect="selecionaVagaModal"></autocomplete>
                             </div>
                         </div>
 
@@ -123,7 +123,7 @@
                                               :disabled="true"
                                               :id="`mun_${hash}`"
                                               @onblur="resetaCampoMunicipioModal"
-                                             @onselect="selecionaMunicipioModal"></autocomplete>
+                                              @onselect="selecionaMunicipioModal"></autocomplete>
                             </div>
                         </div>
 
@@ -152,6 +152,16 @@
                                 <option :value="null">Não informado</option>
                                 <option value="Sim">Sim</option>
                                 <option value="Não">Não</option>
+                            </select>
+                        </div>
+
+                        {{--TODO incrementado para PILLAR em 27/06/2024 uma acao deles --}}
+                        <div class="col-12 col-md-4 col-lg-4" v-if="AUTENTICADO.empresa_id == 39765">
+                            <label>Faz uso de lentes corretivas</label>
+                            <select class="custom-select custom-select-sm" :disabled="controle.carregando"
+                                    v-model="form.admissao.usa_lentes_corretivas">
+                                <option :value="true">Sim</option>
+                                <option :value="false">Não</option>
                             </select>
                         </div>
 
@@ -203,7 +213,7 @@
                                   v-model="controle.dados.autocomplete_label"
                                   placeholder="Por vaga"
                                   @onblur="resetaCampo"
-                                 @onselect="selecionaVaga"></autocomplete>
+                                  @onselect="selecionaVaga"></autocomplete>
                 </div>
             </div>
 

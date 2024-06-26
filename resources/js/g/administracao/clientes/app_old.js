@@ -159,7 +159,6 @@ const app = new Vue({
 
             $.post(`${URL_ADMIN}/clientes/${this.form.id}`, this.form)
                 .done((data) => {
-                    console.log(data);
                     app.preloadAjax = false;
                     app.apagado = true;
                     $('#controle button:eq(0)').click();

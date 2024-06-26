@@ -114,7 +114,7 @@ export default {
         }
     },
     methods: {
-        geraRealatorio(){
+        geraRealatorio() {
             let url = `${URL_ADMIN}/controle-ponto/folha-ponto/relatorio-sintetico/exportacao?mes=${this.form.mes}&ano=${this.form.ano}&centro_custo_filial_id=${this.form.centro_custo_filial_id}`;
             window.open(url, '_blank');
         },
@@ -125,7 +125,6 @@ export default {
                 this.lista = response.data;
                 this.preload = false;
             }).catch(error => {
-                console.log(error);
                 this.preload = false;
             });
         },

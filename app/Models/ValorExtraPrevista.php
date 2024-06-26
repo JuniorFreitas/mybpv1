@@ -81,7 +81,7 @@ use MasterTag\DataHora;
  */
 class ValorExtraPrevista extends Model
 {
-    use HasFactory, TenantTrait;
+    use TenantTrait;
 
     protected $fillable = [
         'colaborador_id',

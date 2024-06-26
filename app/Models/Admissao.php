@@ -201,6 +201,7 @@ class Admissao extends Model
         'filial',
         'formulario_id',
         'matricula',
+        'usa_lentes_corretivas',
         'centro_custo_id',
         'funcao',
         'cargo',
@@ -259,6 +260,7 @@ class Admissao extends Model
     protected $casts = [
         'id' => 'int',
         'matricula' => 'string',
+        'usa_lentes_corretivas' => 'boolean',
         'centro_custo_filial_id' => 'int',
         'filial' => 'boolean',
         'feedback_id' => 'int',

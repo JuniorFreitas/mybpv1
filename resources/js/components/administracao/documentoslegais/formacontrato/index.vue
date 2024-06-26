@@ -17,7 +17,7 @@
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
                                 <label class="custom-control-label"
-                                       for="ativo">{{form.ativo ? 'Ativo' : 'Inativo'}}</label>
+                                       for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
                             </div>
                         </div>
 
@@ -84,10 +84,11 @@
                     </thead>
                     <tbody>
                     <tr v-for="formacontrato in lista">
-                        <td class="text-center">{{formacontrato.titulo}}</td>
+                        <td class="text-center">{{ formacontrato.titulo }}</td>
                         <td class="text-center">
-                            <bt-ativo :rota="`administracao/documentoslegais/formacontrato/${formacontrato.id}/ativa-desativa`"
-                                      :model="formacontrato"></bt-ativo>
+                            <bt-ativo
+                                :rota="`administracao/documentoslegais/formacontrato/${formacontrato.id}/ativa-desativa`"
+                                :model="formacontrato"></bt-ativo>
                         </td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-primary" v-if="permissoes.update"
@@ -234,7 +235,7 @@ export default {
         alterarForm() {
             this.validaBlur();
             this.$nextTick(() => {
-                    $('#janelaForm :input:visible').trigger('blur');
+                $('#janelaForm :input:visible').trigger('blur');
                 if ($('#janelaForm :input:visible.is-invalid').length) {
                     mostraErro('', 'Verificar os erros');
                     return false;
@@ -253,7 +254,6 @@ export default {
             });
         },
         carregou(dados) {
-            console.log(dados);
             this.lista = dados.items;
             this.permissoes = dados.permissoes;
             this.controle.carregando = false;
