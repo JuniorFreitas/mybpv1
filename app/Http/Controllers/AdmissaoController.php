@@ -458,7 +458,7 @@ class AdmissaoController extends Controller
                     'municipio_id' => $dadosCurriculo['municipio_id'],
                     'filiacao_pai' => $dadosCurriculo['filiacao_pai'],
                     'formacao' => $dadosCurriculo['formacao'],
-                    'formacao_curso' => $dadosCurriculo['formacao_curso'],
+                    'formacao_curso' => $dadosCurriculo['formacao'] >= 8 ? $dadosCurriculo['formacao_curso'] : null,
                     'estado_civil' => $dadosCurriculo['estado_civil'],
                     'sexo' => $dadosCurriculo['sexo'],
                 ]);
@@ -965,6 +965,8 @@ class AdmissaoController extends Controller
                     'municipio_id' => $dados['curriculo']['municipio_id'],
                     'estado_civil' => $dados['curriculo']['estado_civil'],
                     'sexo' => $dados['curriculo']['sexo'],
+                    'formacao' => $dados['curriculo']['formacao']['id'],
+                    'formacao_curso' => $dados['curriculo']['formacao']['id'] >= 8 ? $dados['curriculo']['formacao_curso'] : null,
                 ]);
 
                 if ($feedback->parecerRh) {

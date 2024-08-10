@@ -832,6 +832,36 @@
                     </div>
                 </fieldset>
 
+                <div class="col-12">
+                    <fieldset>
+                        <legend>Formação</legend>
+                        <div class="row">
+                            <div class="col-12 col-sm-6">
+                                <div class="form-group">
+                                    <label>Formação</label>
+                                    <select class="form-control"
+                                            :disabled="visualizar"
+                                            v-model="form.curriculo.formacao.id">
+                                        @foreach(\App\Models\Escolaridade::get() as $item)
+                                            <option :value="{{$item->id}}">{{$item->tipo}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
+                                 v-if="form.curriculo.formacao.id >=8">
+                                <div class="form-group">
+                                    <label>Curso</label>
+                                    <input type="text" class="form-control"
+                                           :disabled="visualizar"
+                                           v-model="form.curriculo.formacao_curso"
+                                           placeholder="Ex: Administração"
+                                           autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
 
                 <fieldset>
                     <legend>Técnica</legend>
