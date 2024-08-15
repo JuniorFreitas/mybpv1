@@ -336,6 +336,7 @@ const app = new Vue({
                 autocomplete_label_municipio_modal_anterior: "",
                 foto_tres: [],
                 foto_tres_delete: [],
+                formacao: '',
 
                 telefones: [{
                     detalhe: "",
@@ -1018,6 +1019,7 @@ const app = new Vue({
                     this.form.parecer_rh.camisa_meia = data.feedback.parecer_rh ? data.feedback.parecer_rh.camisa_meia : "";
                     this.form.admissao.area_etiqueta_id = admissao.area_etiqueta_id == null ? "" : admissao.area_etiqueta_id;
                     this.form.curriculo.pcd = data.feedback.curriculo.pcd ?? "false";
+                    this.form.curriculo.formacao = data.feedback.curriculo.formacao ?? "";
 
                     this.form.vaga_projeto_id = !data.feedback.vaga_projeto_id ? "" : data.feedback.vaga_projeto_id;
                     this.form.parecer_rh.indicacao = !data.feedback.parecer_rh.indicacao ? "" : data.feedback.parecer_rh.indicacao;

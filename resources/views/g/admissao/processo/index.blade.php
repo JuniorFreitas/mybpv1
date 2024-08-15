@@ -840,8 +840,11 @@
                                 <div class="form-group">
                                     <label>Formação</label>
                                     <select class="form-control"
+                                            onblur="valida_campo_vazio(this,1)"
+                                            onchange="valida_campo_vazio(this,1)"
                                             :disabled="visualizar"
-                                            v-model="form.curriculo.formacao.id">
+                                            v-model="form.curriculo.formacao">
+                                        <option value="">Selecione ...</option>
                                         @foreach(\App\Models\Escolaridade::get() as $item)
                                             <option :value="{{$item->id}}">{{$item->tipo}}</option>
                                         @endforeach
@@ -849,7 +852,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
-                                 v-if="form.curriculo.formacao.id >=8">
+                                 v-if="form.curriculo.formacao >=8">
                                 <div class="form-group">
                                     <label>Curso</label>
                                     <input type="text" class="form-control"
