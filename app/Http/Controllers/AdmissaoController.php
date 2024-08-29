@@ -965,8 +965,8 @@ class AdmissaoController extends Controller
                     'municipio_id' => $dados['curriculo']['municipio_id'],
                     'estado_civil' => $dados['curriculo']['estado_civil'],
                     'sexo' => $dados['curriculo']['sexo'],
-                    'formacao' => $dados['curriculo']['escolaridade']['id'],
-                    'formacao_curso' => $dados['curriculo']['escolaridade']['id'] >= 8 ? $dados['curriculo']['formacao_curso'] : null,
+                    'formacao' => $dados['curriculo']['formacao'],
+                    'formacao_curso' => $dados['curriculo']['formacao'] >= 8 ? $dados['curriculo']['formacao_curso'] : null,
                 ]);
 
                 if ($feedback->parecerRh) {
