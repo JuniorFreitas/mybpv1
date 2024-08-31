@@ -238,8 +238,8 @@ class JobExportarExcel implements ShouldQueue
                 $row->ResultadoIntegrado?->encaminhado_treinamento ? (new \MasterTag\DataHora($row->ResultadoIntegrado?->encaminhado_treinamento_data))->dataCompleta() : '',
                 $row->Admissao->AreaEtiqueta->label ?? "NÃO INFORMADO",
                 $row->Admissao->CentroCusto->label ?? "NÃO INFORMADO",
-                $row->Admissao->filial ? 'SIM' : 'NÃO',
-                $row->Admissao->CentroCustoFilial->Filial->dados->razao_social ?? "",
+                $row->Admissao?->filial ? 'SIM' : 'NÃO',
+                $row->Admissao->CentroCustoFilial?->Filial?->dados->razao_social ?? "",
                 $row->Admissao->funcao ?? "NÃO INFORMADO",
                 $row->Admissao->cargo ?? "NÃO INFORMADO",
                 $row->Admissao->salario ?? "NÃO INFORMADO",
@@ -290,7 +290,11 @@ class JobExportarExcel implements ShouldQueue
     public function getEscolaridade($row)
     {
         try {
-            return $row->Curriculo?->Escolaridade?->id >= 8 ? ($row->Curriculo?->Escolaridade?->tipo ? $row->Curriculo?->Escolaridade?->tipo . ' - ' . $row->Curriculo?->formacao_curso : 'NÃO INFORMADO') : 'NÃO INFORMADO';
+            if ($row->Curriculo?->Escolaridade && $row->Curriculo?->Escolaridade?->id >= 8) {
+                return $row->Curriculo?->Escolaridade?->tipo . ' - ' . $row->Curriculo?->formacao_curso ?? 'NÃO INFORMADO';
+            } else {
+                return 'NÃO INFORMADO';
+            }
         } catch (\Exception $e) {
             \Log::debug($e->getMessage() . ' - ' . $row->Curriculo->nome);
         }
