@@ -203,7 +203,7 @@ class JobExportarExcel implements ShouldQueue
                 $row->parecerRh?->cnh_tipo ?? 'NÃO INFORMADO',
                 $row->Curriculo?->nascimento,
                 $row->Curriculo?->idade,
-                $row->Curriculo?->Escolaridade?->id >= 8 ? ($row->Curriculo?->Escolaridade?->tipo ? $row->Curriculo?->Escolaridade?->tipo . ' - ' . $row->Curriculo?->formacao_curso : 'NÃO INFORMADO') : 'NÃO INFORMADO',
+                $this->getEscolaridade($row),
                 $row->parecerRh?->calca ?? 'NÃO INFORMADO',
                 $row->parecerRh?->bota ?? 'NÃO INFORMADO',
                 $row->parecerRh?->camisa_meia ?? 'NÃO INFORMADO',
@@ -285,5 +285,14 @@ class JobExportarExcel implements ShouldQueue
         ];
 
         \Artisan::call("mybp:exportarExcel", $array);
+    }
+
+    public function getEscolaridade($row)
+    {
+        try {
+            return $row->Curriculo?->Escolaridade?->id >= 8 ? ($row->Curriculo?->Escolaridade?->tipo ? $row->Curriculo?->Escolaridade?->tipo . ' - ' . $row->Curriculo?->formacao_curso : 'NÃO INFORMADO') : 'NÃO INFORMADO';
+        } catch (\Exception $e) {
+            \Log::debug($e->getMessage() . ' - ' . $row->Curriculo->nome);
+        }
     }
 }
