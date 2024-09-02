@@ -114,6 +114,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('todos-clientes-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'clientesAtivos'])->name('clientes-ativos');
         Route::get('todos-usuarios-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'usuariosAtivos'])->name('usuarios-ativos');
         Route::get('todos-gestores-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'gestoresAtivos'])->name('gestores-ativos');
+        Route::get('todos-gestores', [\App\Http\Controllers\AutoCompletesController::class, 'todosGestores'])->name('todos-gestores');
 
         Route::get('todos-municipios', [\App\Http\Controllers\AutoCompletesController::class, 'municipiosAll'])->name('municipiosAll');
         Route::get('todos-estados', function () {

@@ -178,7 +178,7 @@ class AutoCompletesController extends Controller
             return response()->json([], 201);
         }
         $quantidade = 10;
-        
+
         return User::select(['id', 'nome', 'login', 'tipo', 'ativo'])
             ->TiposGerenciais()
             ->whereEmpresaId(auth()->user()->empresa_id)
@@ -438,5 +438,19 @@ class AutoCompletesController extends Controller
                 $item->label = $item->tipo == DocumentoContratos::TIPO_PESSOA_FISICA ? $item->nome : $item->razao_social;
                 return $item;
             });
+    }
+
+    public function todosGestores(Request $request)
+    {
+        $user = \App\Models\User::select(['id', 'nome', 'login as email', 'empresa_id', 'ativo'])
+            ->whereGestor(true)
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->orderBy('nome');
+
+        if ($request->query('ativo')) {
+            $user->where('ativo', $request->query('ativo') == 'sim');
+        }
+
+        return $user->get();
     }
 }
