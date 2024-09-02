@@ -295,15 +295,34 @@
 
                         <div class="form-group">
                             <label for="">Superior Imediato:</label>
+                            <select class="form-control form-select"
+                                    v-model="form.entrevista_desligamento.superior_imediato"
+                                    v-if="lista_supervisor_imediato.includes(form.entrevista_desligamento.superior_imediato) || form.entrevista_desligamento.superior_imediato == ''">
+                                <option value="">Selecione...</option>
+                                <option :value="item" :key="item" v-for="item in lista_supervisor_imediato">
+                                    @{{ item }}
+                                </option>
+                            </select>
+
                             <input type="text" class="form-control"
-                                   v-model="form.entrevista_desligamento.superior_imediato">
+                                   v-if="!lista_supervisor_imediato.includes(form.entrevista_desligamento.superior_imediato) && form.entrevista_desligamento.superior_imediato !== ''">
+
                         </div>
 
                         <div class="form-group">
                             <label for="">Motivo do Desligamento ?</label>
+                            <select class="form-control form-select" v-model="form.entrevista_desligamento.motivo"
+                                    v-if="lista_motivo_desligamentos.includes(form.entrevista_desligamento.motivo) || form.entrevista_desligamento.motivo == ''">
+                                <option value="">Selecione...</option>
+                                <option :value="item" :key="item" v-for="item in lista_motivo_desligamentos">
+                                    @{{ item }}
+                                </option>
+                            </select>
+
                             <textarea v-model="form.entrevista_desligamento.motivo"
-                                      class="form-control" cols="5"
-                                      rows="5"></textarea>
+                                      v-if="!lista_motivo_desligamentos.includes(form.entrevista_desligamento.motivo) && form.entrevista_desligamento.motivo !== ''"
+                                      class="form-control" cols="5" rows="5">
+                            </textarea>
                         </div>
 
                         <div class="form-group">

@@ -1,14 +1,14 @@
 import datepicker from "../../components/DatePicker";
 import ExportacaoMixin from "../../mixins/Exportacoes";
 import Utils from "../../mixins/Utils";
-import XLSX from "xlsx";
+import gestoraprovacao from "../../components/GestorAprovacao.vue";
 
 const app = new Vue({
     mixins: [ExportacaoMixin, Utils],
 
-    el: "#app",
-    components: {
-        datepicker
+    el: "#app", components: {
+        datepicker,
+        gestoraprovacao
     },
     data: {
         AUTENTICADO,
@@ -38,6 +38,18 @@ const app = new Vue({
 
         selecionados: [],
         selecionaTudo: false,
+
+        lista_motivo_desligamentos: [
+            'Iniciativa do empregado: Mudança de Cidade',
+            'Iniciativa do empregado: Proposta superior de outra empresa',
+            'Iniciativa do empregado: Motivos de Saúde',
+            'Iniciativa da empresa: Baixa performance',
+            'Iniciativa da empresa: Questões comportamentais',
+            'Iniciativa da empresa: Redução de Quadro',
+            'Iniciativa da empresa: Fim de Contrato de Experiência'
+        ],
+
+        lista_supervisor_imediato: [],
 
         form: {
 
@@ -208,23 +220,16 @@ const app = new Vue({
             });
         },
         formulariosAtivos() {
-            const formularios = [];
-            if (this.posadmissao_form_rh) {
-                formularios.push(this.formulario.setores.filter(item => {
-                    return item.nome === "Recursos Humanos";
-                })[0]);
-            }
-            if (this.posadmissao_form_adm) {
-                formularios.push(this.formulario.setores.filter(item => {
-                    return item.nome === "ALMOXARIFADO / ADM";
-                })[0]);
-            }
-            if (this.posadmissao_form_ssma) {
-                formularios.push(this.formulario.setores.filter(item => {
-                    return item.nome === "SEGURANÇA DO TRABALHO / SSMA";
-                })[0]);
-            }
-            return formularios;
+            const setoresMap = {
+                posadmissao_form_rh: "Recursos Humanos",
+                posadmissao_form_adm: "ALMOXARIFADO / ADM",
+                posadmissao_form_ssma: "SEGURANÇA DO TRABALHO / SSMA"
+            };
+
+            return Object.keys(setoresMap)
+                .filter(key => this[key]) // Filtra as chaves onde o valor booleano é true
+                .map(key => this.formulario.setores.find(item => item.nome === setoresMap[key]))
+                .filter(Boolean); // Remove valores undefined caso algum setor não seja encontrado
         },
         tudoMarcado() {
             let totalItens = this.comDemissao.length;
@@ -266,15 +271,22 @@ const app = new Vue({
 
     },
 
-    mounted() {
+    async mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
         this.queryParamsCpf();
         this.atualizar();
         this.listaVagas();
         this.listaAreasGeral();
+        await this.selectTodosGestoresAtivos();
         // ?checkcpf=015.020.903-76
     },
     methods: {
+        async selectTodosGestoresAtivos() {
+            const busca = await axios.get(`${URL_ADMIN}/autocomplete/todos-gestores?ativo=sim`);
+            this.lista_supervisor_imediato = busca.data.map(item => {
+                return item.nome
+            });
+        },
         queryParamsCpf() {
             const queryString = window.location.search;
             const params = new URLSearchParams(queryString);
@@ -348,8 +360,7 @@ const app = new Vue({
                     }
                 });
             }
-        },
-        //GERAL
+        }, //GERAL
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
                 this.controle.dados.autocomplete_label_anterior = "";
@@ -667,7 +678,6 @@ const app = new Vue({
             }
             open(`https://mybp-prod.s3.amazonaws.com/public/${item}${extensao}`, "blank");
         },
-
         carregou(dados) {
             this.lista = dados.items;
             this.listaMotivos = dados.motivos_rescisoes;
@@ -687,12 +697,10 @@ const app = new Vue({
             this.posadmissao_form_rh = dados.posadmissao_form_rh;
             this.posadmissao_form_adm = dados.posadmissao_form_adm;
             this.posadmissao_form_ssma = dados.posadmissao_form_ssma;
-        }
-        ,
+        },
         carregando() {
             this.controle.carregando = true;
-        }
-        ,
+        },
         atualizar() {
             this.$refs.componente.atual = 1;
             this.$refs.componente.buscar();
