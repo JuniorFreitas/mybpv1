@@ -43,6 +43,7 @@ const app = new Vue({
             'Iniciativa do empregado: Mudança de Cidade',
             'Iniciativa do empregado: Proposta superior de outra empresa',
             'Iniciativa do empregado: Motivos de Saúde',
+            'Iniciativa do empregado: Outros Motivos',
             'Iniciativa da empresa: Baixa performance',
             'Iniciativa da empresa: Questões comportamentais',
             'Iniciativa da empresa: Redução de Quadro',
