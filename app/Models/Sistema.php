@@ -915,6 +915,45 @@ class Sistema
     }
 
 
+    public static function redmensionaBase64($base64_image, $nova_largura_desejada = 150)
+    {
+        // Verifica se há um cabeçalho (data:image) e remove, caso exista
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64_image, $type)) {
+            $base64_image = substr($base64_image, strpos($base64_image, ',') + 1);
+            $type = strtolower($type[1]); // jpeg, png, etc.
+        }
+
+        // Decodifica a string base64 em dados binários
+        $image_data = base64_decode($base64_image);
+
+        // Verifica se a decodificação foi bem-sucedida
+        if ($image_data === false) {
+            die('Falha ao decodificar a imagem base64');
+        }
+
+        // Usa getimagesizefromstring para obter as dimensões da imagem
+        $image_info = getimagesizefromstring($image_data);
+
+        // Verifica se a função conseguiu obter as dimensões
+        if ($image_info === false) {
+            die('Não foi possível obter as informações da imagem');
+        }
+
+        // Largura e altura originais da imagem
+        $largura_original = $image_info[0];
+        $altura_original = $image_info[1];
+
+        // Calcula a nova altura proporcional
+        return [
+            'proporcional' => (int)round(($altura_original / $largura_original) * $nova_largura_desejada),
+            'largura_orginal' => $largura_original,
+            '$altura_original' => $altura_original,
+            'horizontal' => $largura_original > $altura_original,
+            'vertical' => $largura_original < $altura_original,
+            'quadrada' => $largura_original == $altura_original,
+        ];
+    }
+
     public static function exportaExcelPython($usuario, $local, $dados, $nome_arquivo)
     {
         try {

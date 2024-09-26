@@ -2,8 +2,18 @@
     <thead>
     <tr>
         <th style="text-align: center; font-weight: normal !important; padding-right: 10px; width: 60px">
-            <img src="{{ $dados['dados_empresa']['logo'] }}"
-            alt="{{$dados['dados_empresa']['razao_social']}}" title="{{$dados['dados_empresa']['razao_social']}}" style="height: 80px; margin-top: 10px;">
+            @if(\App\Models\Sistema::redmensionaBase64($dados['dados_empresa']['logo'])['vertical'])
+                <img src="{{ $dados['dados_empresa']['logo'] }}"
+                     alt="{{$dados['dados_empresa']['razao_social']}}"
+                     title="{{$dados['dados_empresa']['razao_social']}}"
+                     style="margin-top: 10px; height: {{\App\Models\Sistema::redmensionaBase64($dados['dados_empresa']['logo'],80)['proporcional']}}px">
+            @else
+                <img src="{{ $dados['dados_empresa']['logo'] }}"
+                     alt="{{$dados['dados_empresa']['razao_social']}}"
+                     title="{{$dados['dados_empresa']['razao_social']}}"
+                     style="margin-top: 10px; height: {{\App\Models\Sistema::redmensionaBase64($dados['dados_empresa']['logo'],180)['proporcional']}}px">
+            @endif
+
         </th>
         <th style="color: black">
             <h1 style="text-align: center; font-size: 19px">
