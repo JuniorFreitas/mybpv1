@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Excel\JobExportaPosAdmissao;
-use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
-use App\Models\Arquivo;
 use App\Models\AuditoriaInterna;
 use App\Models\AvaliacaoNoventaVencimento;
 use App\Models\CentroCusto;
 use App\Models\ClassificacaoRescisao;
-use App\Models\DadosAdmissao;
 use App\Models\Demissao;
 use App\Models\EntrevistaDesligamento;
 use App\Models\FeedbackCurriculo;
@@ -18,12 +14,13 @@ use App\Models\Formulario;
 use App\Models\MotivoRescisao;
 use App\Models\TipoAviso;
 use App\Models\User;
-use Aws\S3\S3Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use MasterTag\DataHora;
 use PDF;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class PosAdmissaoController extends Controller
 {
@@ -422,65 +419,119 @@ class PosAdmissaoController extends Controller
         return $resultado->filtrarPorCnpjECentroCusto($request)->orderByDesc('updated_at');
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function atualizar(Request $request)
     {
+        // Obtenção dos dados
         $resultado = $this->filtro($request);
-
-        $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
-        $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
-        $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
-        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissão')->first();
-        $formulario->load('Setores.Alternativas');
-
-        $ids_form = array();
-        foreach ($formulario->Setores as $f) {
-            foreach ($f->alternativas as $a) {
-                $ids_form[$a->id] = false;
-            }
-        }
-
-        $formulario_vazio = collect($ids_form);
-
-        $resultado = $resultado->paginate($request->pages);
-
+        $formulario = $this->getFormularioPosAdmissao(auth()->user()->empresa_id);
+        $formulario_vazio = $this->getFormularioVazio($formulario);
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
-        $items = collect($resultado->items())->transform(function ($item) use ($cc) {
-            if ($item->admissao) {
-                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
-                $item->admissao->emp_cnpj = null;
-                $item->admissao->emp_nome_fantasia = null;
-                $item->admissao->emp_centro_custo = null;
-                $item->admissao->emp_tipo = null;
 
-                if ($cc_colaborador) {
-                    $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
-                    $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
-                    $item->admissao->emp_centro_custo = $cc_colaborador['label'];
-                    $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
-                }
-            }
-            return $item;
+        // Paginação do resultado
+        $resultadoPaginado = $resultado->paginate($request->get('pages', 15));
+
+        // Transformação dos itens
+        $items = $resultadoPaginado->getCollection()->map(function ($item) use ($cc) {
+            return $this->transformItem($item, $cc);
         });
 
+        // Resposta JSON
         return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
+            'atual' => $resultadoPaginado->currentPage(),
+            'ultima' => $resultadoPaginado->lastPage(),
+            'total' => $resultadoPaginado->total(),
             'dados' => [
                 'items' => $items,
                 'cc' => $cc,
-                'motivos_rescisoes' => $motivosRescisoes,
-                'tipos_rescisoes' => $tipoRescisoes,
-                'classificacoes_rescisoes' => $classificacoesRescisoes,
+                'motivos_rescisoes' => $this->getMotivosRescisoes(),
+                'tipos_rescisoes' => $this->getTiposRescisoes(),
+                'classificacoes_rescisoes' => $this->getClassificacoesRescisoes(),
                 'formulario' => $formulario,
                 'form_limpo' => $formulario_vazio,
-                // ToDO ajustar na branch que vai ser feito a modificação de formulario por tabela
                 'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
                 'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
                 'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
             ]
         ]);
     }
+
+    /**
+     * Obtém o formulário de checklist de pós-admissão
+     */
+    protected function getFormularioPosAdmissao($empresaId)
+    {
+        return Formulario::whereEmpresaId($empresaId)
+            ->whereTitulo('Formulario CheckList Pos Admissão')
+            ->with('Setores.Alternativas')
+            ->first();
+    }
+
+    /**
+     * Cria uma coleção de formulário vazio
+     */
+    protected function getFormularioVazio($formulario)
+    {
+        return $formulario ? $formulario->Setores->flatMap(function ($setor) {
+            return $setor->alternativas->mapWithKeys(function ($alternativa) {
+                return [$alternativa->id => false];
+            });
+        }) : collect();
+    }
+
+    /**
+     * Transforma um item incluindo dados do centro de custo
+     */
+    protected function transformItem($item, $cc)
+    {
+        if ($item->admissao) {
+            $cc_colaborador = collect($cc['centros_custos'])
+                ->collapse()
+                ->where('id', $item->admissao->centro_custo_id)
+                ->first();
+
+            $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'] ?? null;
+            $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'] ?? null;
+            $item->admissao->emp_centro_custo = $cc_colaborador['label'] ?? null;
+            $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
+        }
+
+        return $item;
+    }
+
+    /**
+     * Obtém os motivos de rescisão ativos (pode ser cacheado)
+     */
+    protected function getMotivosRescisoes()
+    {
+        return Cache::remember('motivos_rescisoes_ativos', 60, function () {
+            return MotivoRescisao::whereAtivo(true)->get();
+        });
+    }
+
+    /**
+     * Obtém os tipos de aviso ativos (pode ser cacheado)
+     */
+    protected function getTiposRescisoes()
+    {
+        return Cache::remember('tipos_rescisoes_ativos', 60, function () {
+            return TipoAviso::whereAtivo(true)->get();
+        });
+    }
+
+    /**
+     * Obtém as classificações de rescisão ativas (pode ser cacheado)
+     */
+    protected function getClassificacoesRescisoes()
+    {
+        return Cache::remember('classificacoes_rescisoes_ativas', 60, function () {
+            return ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
+        });
+    }
+
 
     public function export(Request $request)
     {
