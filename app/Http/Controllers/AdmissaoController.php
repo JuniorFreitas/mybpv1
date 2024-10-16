@@ -1644,6 +1644,8 @@ class AdmissaoController extends Controller
                 ['label' => 'RESP. ENCAMINHAMENTO', 'checked' => true, 'id' => 'resp_encaminhamento'],
                 ['label' => 'CRACHÁ', 'checked' => true, 'id' => 'cracha'],
                 ['label' => 'FOTO 3x4', 'checked' => true, 'id' => 'foto_3x4'],
+                ['label' => 'DATA ADMISSÃO', 'checked' => true, 'id' => 'tbl_dt_admissao'],
+                ['label' => 'CONTATO', 'checked' => true, 'id' => 'tbl_contato'],
             ];
 
             // Armazena o valor no cache indefinidamente usando a tag
