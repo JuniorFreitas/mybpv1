@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Events\Notificacoes\NotificacaoEvent;
 use DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Validation\Rule;
@@ -1029,6 +1030,17 @@ class Sistema
         $cpf .= $digito2;
 
         return $cpf;
+    }
+
+    /**
+     * Método para resetar todos os caches que começam com 'tabelas_filtro_processo'.
+     */
+    public static function resetarCachesTabelasFiltro($tbl = 'tabelas_filtro_processo')
+    {
+        // Limpa todos os caches associados à tag 'tabelas_filtro_processo'
+        Cache::tags([$tbl])->flush();
+
+        return response()->json(['success' => 'Todos os caches tabelas_filtro_processo foram resetados']);
     }
 
 }

@@ -652,7 +652,9 @@ const app = new Vue({
         }
 
     },
-    mounted() {
+    async mounted() {
+        await this.getColunaTabelas();
+
         this.formDefault = _.cloneDeep(this.form); //copia
         this.formAvulsaDefault = _.cloneDeep(this.formAvulsa); //copia
         this.form_massaDefault = _.cloneDeep(this.form_massa); //copia
@@ -666,6 +668,16 @@ const app = new Vue({
         this.listaVagas();
     },
     methods: {
+        async getColunaTabelas() {
+            await axios.get(`${URL_ADMIN}/admissao/colunas-tabela-processo`).then(response => {
+                this.colunasTabela = response.data
+            });
+        },
+        async atualizaColunaTabelas() {
+            await axios.put(`${URL_ADMIN}/admissao/colunas-tabela-processo`, {
+                colunasTabela: this.colunasTabela
+            });
+        },
         exibiColunaTabela(label) {
             let coluna = this.colunasTabela.find(item => item.label === label);
             return coluna.checked;

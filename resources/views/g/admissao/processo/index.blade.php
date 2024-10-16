@@ -10,7 +10,7 @@
             <div class="row">
                 <div class="col-sm-6" v-for="item in colunasTabela">
                     <div class="custom-control custom-switch mb-2">
-                        <input type="checkbox" @click="item.checked = !item.checked"
+                        <input type="checkbox" @click="item.checked = !item.checked;atualizaColunaTabelas()"
                                v-model="item.checked"
                                class="custom-control-input" :id="item.id">
                         <label class="custom-control-label"
@@ -1507,6 +1507,15 @@
                     <th class="text-center text-nowrap">Centro de Custo</th>
                     <th class="text-center text-nowrap">Cargo</th>
                     <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'tbl_dt_admissao')?.checked"
+                    >Dt. Admissão
+                    </th>
+                    <th class="text-center text-nowrap"
+                        style="width: 150px;"
+                        v-if="colunasTabela.find(item => item.id === 'tbl_contato')?.checked"
+                    >Contato
+                    </th>
+                    <th class="text-center text-nowrap"
                         v-if="colunasTabela.find(item => item.id === 'pcd').checked">
                         PCD
                     </th>
@@ -1589,6 +1598,19 @@
                     <td class="text-center">
                         @{{item.vaga_aberta_municipio}}
                     </td>
+
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'tbl_dt_admissao')?.checked"
+                    >
+                        @{{ item.admissao ? item.admissao.data_admissao : '---' }}
+                    </td>
+
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'tbl_contato')?.checked"
+                    >
+                        @{{ item.curriculo.tel_principal ? item.curriculo.tel_principal.numero : '---' }}
+                    </td>
+
                     <td class="text-center"
                         v-show="colunasTabela.find(item => item.id === 'pcd').checked"
                     >

@@ -736,6 +736,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::get('/script', [\App\Http\Controllers\AdmissaoController::class, 'script'])->name('admissao.script')->middleware('can:admissao_processo'); // manter essa rota antes do resource
 
             Route::get('/import', [\App\Http\Controllers\AdmissaoController::class, 'import'])->name('admissao.import');
+
+            Route::get('/colunas-tabela-processo', [\App\Http\Controllers\AdmissaoController::class, 'getColunasTabela'])->name('admissao.colunas-tabela-processo');
+            Route::put('/colunas-tabela-processo', [\App\Http\Controllers\AdmissaoController::class, 'atualizarColunasTabela'])->name('admissao.atualizarColunasTabela');
+
             Route::resource('admissao', \App\Http\Controllers\AdmissaoController::class)->middleware('can:admissao_processo');
 
             Route::group(['as' => 'documentos.', 'prefix' => 'documentos'], function () {
@@ -1158,7 +1162,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::post('feriados/search', [\App\Http\Controllers\FeriadoController::class, 'searchFeriado'])->name('search')->middleware('can:controle_ponto_feriados');
             Route::post('feriados/atualizar', [\App\Http\Controllers\FeriadoController::class, 'atualizar'])->name('atualizar')->middleware('can:controle_ponto_feriados');
         });
-        Route::resource('feriados', \App\Http\Controllers\FeriadoController::class,)->middleware('can:controle_ponto_feriados');
+        Route::resource('feriados', \App\Http\Controllers\FeriadoController::class)->middleware('can:controle_ponto_feriados');
 
         //Perimetro
         Route::group(['as' => 'perimetros.'], function () {

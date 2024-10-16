@@ -32,6 +32,7 @@ use App\Rules\VagaAbertaEmpresaRules;
 use App\Rules\VerificaCpfEmpresaRules;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
 use PDF;
@@ -1401,6 +1402,7 @@ class AdmissaoController extends Controller
                 'ResultadoIntegrado:id,feedback_id,documentos_entregue,documentos_entregue,encaminhado_exame,encaminhado_exame,encaminhado_treinamento,encaminhado_treinamento,responsavel_envio',
                 'Curriculo:id,nome,estado_civil,naturalidade,nacionalidade,carteira_trabalho,cnh,cnh_vencimento,sexo,cpf,rg,rg_data_emissao,orgao_expeditor,logradouro,end_numero,complemento,bairro,municipio,uf,cep,filiacao_pai,filiacao_mae,pcd,nascimento,email,disponibilidade_sabado,disponibilidade_domingo',
                 'Curriculo.FotoTres:id',
+                'Curriculo.TelPrincipal',
                 'parecerRh:id,feedback_id,destro,cnh_tipo,calca,bota,camisa_meia,camisa_protecao,ex_funcionario,turnos_seis_por_dois,indicado_por',
                 'parecerTecnica:id,feedback_id,indicado_area,experiencia_cargas_rigger,opera_plat_movel,opera_plat_ponte',
                 'parecerRota:id,feedback_id,tem_rota,qual,bairro_rota,ponto_referencia_rota,pega_onibus,pega_onibus_qual_ponto,bairro_residencia,ponto_referencia_residencia',
@@ -1616,6 +1618,64 @@ class AdmissaoController extends Controller
             'total' => $pg->total(),
             'dados' => $dados
         ]);
+    }
+
+    /**
+     * Método para obter colunas com cache indefinido para uma empresa e usuário específicos.
+     */
+    public function getColunasTabela()
+    {
+        $empresa_id = auth()->user()->empresa_id;
+        $usuario_id = auth()->id();
+
+        // Gera o nome do cache com base na empresa e usuário
+        $cacheKey = "tabelas_filtro_processo_{$empresa_id}_{$usuario_id}";
+
+        // Usar tags para armazenar o cache (relacionando ao processo)
+        $colunasTabela = Cache::tags(['tabelas_filtro_processo'])->get($cacheKey);
+
+        if (!$colunasTabela) {
+            // Valor padrão inicial (ou você pode pegar do banco de dados)
+            $colunasTabela = [
+                ['label' => 'PCD', 'checked' => false, 'id' => 'pcd'],
+                ['label' => 'ENC. DOCUMENTO', 'checked' => true, 'id' => 'enc_documento'],
+                ['label' => 'ENC. EXAME', 'checked' => true, 'id' => 'enc_exame'],
+                ['label' => 'ENC. TREINAMENTO', 'checked' => true, 'id' => 'enc_treinamento'],
+                ['label' => 'RESP. ENCAMINHAMENTO', 'checked' => true, 'id' => 'resp_encaminhamento'],
+                ['label' => 'CRACHÁ', 'checked' => true, 'id' => 'cracha'],
+                ['label' => 'FOTO 3x4', 'checked' => true, 'id' => 'foto_3x4'],
+            ];
+
+            // Armazena o valor no cache indefinidamente usando a tag
+            Cache::tags(['tabelas_filtro_processo'])->forever($cacheKey, $colunasTabela);
+        }
+
+        return response()->json($colunasTabela);
+    }
+
+    /**
+     * Método para atualizar as colunas e cache
+     */
+    public function atualizarColunasTabela(Request $request)
+    {
+        $empresa_id = auth()->user()->empresa_id;
+        $usuario_id = auth()->id();
+
+        // Receber os dados das colunas que foram enviadas via request
+        $colunasTabela = $request->input('colunasTabela', []);
+
+        // Validação básica para garantir que o formato do array está correto
+        if (!is_array($colunasTabela)) {
+            return response()->json(['error' => 'Formato de dados inválido'], 400);
+        }
+
+        // Gera o nome do cache com base na empresa e usuário
+        $cacheKey = "tabelas_filtro_processo_{$empresa_id}_{$usuario_id}";
+
+        // Atualiza o cache com os novos valores indefinidamente usando a tag
+        Cache::tags(['tabelas_filtro_processo'])->forever($cacheKey, $colunasTabela);
+
+        return response()->json(['success' => 'Colunas atualizadas e cache atualizado']);
     }
 
     public function getTiposDependentes()
