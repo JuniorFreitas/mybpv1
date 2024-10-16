@@ -90,6 +90,7 @@ class JobExportarExcel implements ShouldQueue
 
         $head = [[
             "Nome",
+            "Naturalidade",
             "Estado Civil",
             "Sexo",
             "CPF",
@@ -193,6 +194,7 @@ class JobExportarExcel implements ShouldQueue
 
             $rows[] = array(
                 $row->Curriculo?->nome,
+                $row->Curriculo?->naturalidade ?? 'NÃO INFORMADO',
                 $row->Curriculo?->estado_civil ?? 'NÃO INFORMADO',
                 $row->Curriculo?->sexo ?? 'NÃO INFORMADO',
                 $row->Curriculo?->cpf,
@@ -203,7 +205,7 @@ class JobExportarExcel implements ShouldQueue
                 $row->parecerRh?->cnh_tipo ?? 'NÃO INFORMADO',
                 $row->Curriculo?->nascimento,
                 $row->Curriculo?->idade,
-                $this->getEscolaridade($row),
+                $row->Curriculo?->formacao <= 7 ? $row->Curriculo?->Escolaridade?->tipo : $this->getEscolaridade($row),
                 $row->parecerRh?->calca ?? 'NÃO INFORMADO',
                 $row->parecerRh?->bota ?? 'NÃO INFORMADO',
                 $row->parecerRh?->camisa_meia ?? 'NÃO INFORMADO',
@@ -292,9 +294,13 @@ class JobExportarExcel implements ShouldQueue
         try {
             if ($row->Curriculo?->Escolaridade && $row->Curriculo?->Escolaridade?->id >= 8) {
                 return $row->Curriculo?->Escolaridade?->tipo . ' - ' . $row->Curriculo?->formacao_curso ?? 'NÃO INFORMADO';
-            } else {
-                return 'NÃO INFORMADO';
             }
+
+            if ($row->Curriculo?->Escolaridade && $row->Curriculo?->Escolaridade?->id <= 7) {
+                return $row->Curriculo?->Escolaridade?->tipo ?? 'NÃO INFORMADO';
+            }
+
+            return 'NÃO INFORMADO';
         } catch (\Exception $e) {
             \Log::debug($e->getMessage() . ' - ' . $row->Curriculo->nome);
         }
