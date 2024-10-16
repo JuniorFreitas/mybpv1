@@ -1501,6 +1501,10 @@
                     </th>
                     <th class="text-center text-nowrap">Nome</th>
                     <th class="text-center text-nowrap"
+                        v-if="colunasTabela.find(item => item.id === 'tbl_cpf')?.checked"
+                    >CPF
+                    </th>
+                    <th class="text-center text-nowrap"
                         v-if="AUTENTICADO.temFilial"
                     >CNPJ
                     </th>
@@ -1576,6 +1580,12 @@
 
                     <td class="text-center">
                         @{{item.curriculo.nome}}
+                    </td>
+
+                    <td class="text-center"
+                        v-show="colunasTabela.find(item => item.id === 'tbl_cpf')?.checked"
+                    >
+                        @{{ item.curriculo.cpf ? item.curriculo.cpf : '---' }}
                     </td>
 
                     <td class="text-center"

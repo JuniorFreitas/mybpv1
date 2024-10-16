@@ -1638,6 +1638,7 @@ class AdmissaoController extends Controller
             // Valor padrão inicial (ou você pode pegar do banco de dados)
             $colunasTabela = [
                 ['label' => 'PCD', 'checked' => false, 'id' => 'pcd'],
+                ['label' => 'CPF', 'checked' => false, 'id' => 'tbl_cpf'],
                 ['label' => 'ENC. DOCUMENTO', 'checked' => true, 'id' => 'enc_documento'],
                 ['label' => 'ENC. EXAME', 'checked' => true, 'id' => 'enc_exame'],
                 ['label' => 'ENC. TREINAMENTO', 'checked' => true, 'id' => 'enc_treinamento'],
