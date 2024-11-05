@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Curriculo;
 use App\Models\EmpresaConfig;
 use App\Models\EmpresaEscala;
 use App\Models\FeedbackCurriculo;
@@ -10,6 +11,7 @@ use App\Models\OcorrenciaJornada;
 use App\Models\PontoEletronico;
 use App\Models\Sistema;
 use App\Models\User;
+use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
@@ -142,6 +144,7 @@ class FolhaDePontoController extends Controller
         if (!$funcionario) {
             return response()->json(['msg' => 'Funcionário não encontrado'], 400);
         }
+
         $intervalo = explode(" até ", $request->intervalo);
         $inicio = new DataHora($intervalo[0] . " 00:00:00");
         $fim = new DataHora($intervalo[1] . " 23:59:59");
@@ -206,28 +209,55 @@ class FolhaDePontoController extends Controller
         ], 200);
     }
 
+    // Função para formatar valores menores que 10 com zero à esquerda
+    public function formataTempo($value)
+    {
+        return str_pad($value, 2, '0', STR_PAD_LEFT);
+    }
+
+// Função para formatar uma quantidade de minutos em horas e minutos
+    function formataHoras($quantidade_minutos)
+    {
+        // Retorna "00h:00m" se a quantidade de minutos for zero
+        if ($quantidade_minutos === 0) {
+            return "00h:00m";
+        }
+
+        // Cria o intervalo de tempo com base na quantidade de minutos
+        $intervalo = CarbonInterval::minutes(abs($quantidade_minutos));
+
+        // Calcula as horas totais e minutos restantes
+        $horas = floor($intervalo->totalHours); // Total de horas (inclui dias convertidos para horas)
+        $minutos = $intervalo->minutes % 60;    // Minutos restantes entre 0 e 59
+
+        // Retorna o resultado no formato "Xh:Ym" com zero à esquerda quando necessário
+        return sprintf("%02dh:%02dm", $horas, $minutos);
+    }
+
     public function imprimir(Request $request, $user)
     {
         $u_token = \Crypt::decrypt($user);
         $funcionario = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($u_token)->first();
+
         if (!$funcionario) {
             return response()->json(['msg' => 'Funcionário não encontrado'], 400);
         }
+
         $intervaloText = $request->intervalo;
         $intervalo = explode(" até ", $request->intervalo);
         $inicio = new DataHora($intervalo[0] . " 00:00:00");
         $fim = new DataHora($intervalo[1] . " 23:59:59");
 
-        $consulta = PontoEletronico::whereBetween('created_at', [$inicio->dataHoraInsert(), $fim->dataHoraInsert()])
-            //$lista = PontoEletronico::whereBetween('created_at',[$inicio->dataHoraInsert(),$fim->dataHoraInsert()])
+        $lista = PontoEletronico::whereBetween('created_at', [$inicio->dataHoraInsert(), $fim->dataHoraInsert()])
             ->whereFuncionarioId($funcionario->id)
             ->with([
                 'Ocorrencia:id,descricao,trabalhado,conta_horas',
                 'Periodos' => function ($q) {
-                    $q->select(['id', 'ponto_id', 'entrada', 'saida'])->withTrashed()->orderBy('created_at');
+                    $q->select(['id', 'arquivo_id_entrada', 'arquivo_id_saida', 'ponto_id', 'entrada', 'saida'])
+                        ->withTrashed()->orderBy('created_at');
                 },
                 'PeriodosEmAberto' => function ($q) {
-                    $q->select(['id', 'ponto_id'])->withTrashed();
+                    $q->select(['id', 'ponto_id'])->with(['FotoEntrada', 'FotoSaida'])->withTrashed();
                 },
                 'Jornada' => function ($q) {
                     $q->withTrashed()
@@ -239,27 +269,17 @@ class FolhaDePontoController extends Controller
                         ]);
                 },
             ])
-            ->orderBy('created_at');
-
-        //Total horas normais
-        $totalHorasNormais = clone $consulta;
-        $totalHorasNoturnas = clone $consulta;
-        $totalHorasExtra = clone $consulta;
-        $totalHorasNegativas = clone $consulta;
-
-        $totalHorasNormais = $totalHorasNormais->whereDoesntHave('PeriodosEmAberto')->sum('duracao_normal');
-        $totalHorasNoturnas = $totalHorasNoturnas->whereDoesntHave('PeriodosEmAberto')->sum('duracao_noturna');
-        $totalHorasExtra = $totalHorasExtra->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '>', 0)->sum('duracao_extra');
-        $totalHorasNegativas = abs($totalHorasNegativas->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '<', 0)->sum('duracao_extra'));
+            ->orderBy('created_at')
+            ->get();
 
         $dias = [];
-
         $qnt_dias = DataHora::diferencaDias($inicio->dataHoraInsert(), $fim->dataHoraInsert());
+
         foreach (range(0, $qnt_dias) as $d) {
             $dataD = new DataHora($inicio->dataHoraInsert());
             $dh = $dataD->addDia($d, true);
             $feriado = Feriado::whereData($dataD->dataInsert())->whereAtivo(true)->first(['descricao', 'id']);
-            $ponto = $consulta->get()->where('dia', '=', $dh)->first();
+            $ponto = $lista->where('dia', '=', $dh)->first();
 
             $dias[] = [
                 'dia' => $dh,
@@ -270,22 +290,63 @@ class FolhaDePontoController extends Controller
             ];
         }
 
-        $pdf = PDF::loadView('pdf.controle-ponto.folha-ponto.pdf', [
-            'dados' => $funcionario,
-            'lista' => $dias,
-            'intervaloText' => $intervaloText,
-            'totalHorasNormais' => PontoEletronico::formataTempo($totalHorasNormais),
-            'totalHorasNoturnas' => PontoEletronico::formataTempo($totalHorasNoturnas),
-            'totalHorasExtra' => PontoEletronico::formataTempo($totalHorasExtra),
-            'totalHorasNegativas' => PontoEletronico::formataTempo($totalHorasNegativas),
-            'saldoValor' => ($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas,
-            'saldoDeHoras' => PontoEletronico::formataTempo(($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas),
-            'escala' => $funcionario->EmpresaEscalas[0],
-            'razao_social' => auth()->user()->DadosEmpresa->razao_social,
+        $quantidadeFaltas = $lista->filter(function ($ponto) {
+            return $ponto->ocorrencia_id === OcorrenciaJornada::FALTA;
+        })->count();
 
-        ]);
+        $totalHorasNormais = $lista->filter(function ($ponto) {
+            return empty($ponto->periodos_em_aberto);
+        })->sum('duracao_normal');
+
+        $totalHorasNoturnas = $lista->filter(function ($ponto) {
+            return empty($ponto->periodos_em_aberto);
+        })->sum('duracao_noturna');
+
+        $totalHorasExtra = $lista->filter(function ($ponto) {
+            return empty($ponto->periodos_em_aberto);
+        })->sum(function ($ponto) {
+            return $ponto->duracao_extra > 0 ? $ponto->duracao_extra : 0;
+        });
+
+        $totalHorasNegativas = $lista->filter(function ($ponto) {
+            return empty($ponto->periodos_em_aberto);
+        })->sum(function ($ponto) {
+            return $ponto->duracao_extra < 0 ? abs($ponto->duracao_extra) : 0;
+        });
+
+        $saldoHoras = ($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas;
+
+        $escalasUnicas = collect($lista)
+            ->pluck('jornada.escala')              // Pega todas as escalas dos registros
+            ->unique('id')                         // Filtra por ID para remover duplicatas
+            ->filter()                             // Remove quaisquer valores nulos
+            ->values();                            // Reorganiza os índices
+
+        $curriculo = \DB::table('curriculos')->select(['id', 'cpf'])->where('id', $funcionario->id)->first();
+        $cpf = $curriculo && $curriculo->cpf ? $curriculo->cpf : "";
+
+        $arrayDados = [
+            'dados' => $funcionario,
+            'lista' => $lista,
+            'ocorrencia_falta' => OcorrenciaJornada::FALTA,
+            'calendario' => $dias,
+            'quantidade_faltas' => $quantidadeFaltas,
+            'totalHorasNormais' => $this->formataHoras($totalHorasNormais),
+            'totalHorasNoturnas' => $this->formataHoras($totalHorasNoturnas),
+            'totalHorasExtra' => $this->formataHoras($totalHorasExtra),
+            'totalHorasNegativas' => $this->formataHoras($totalHorasNegativas),
+            'saldoValor' => ($totalHorasExtra + $totalHorasNoturnas) - $totalHorasNegativas,
+            'saldoDeHoras' => $this->formataHoras($saldoHoras),
+            'razao_social' => auth()->user()->DadosEmpresa->razao_social,
+            'intervaloText' => $intervaloText,
+            'escala' => $escalasUnicas,
+            'multi_escalas' => $escalasUnicas->count() > 1,
+            'cpf' => $cpf
+        ];
+
+        $pdf = PDF::loadView('pdf.controle-ponto.folha-ponto.pdf2', $arrayDados);
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("Folha de ponto" . STR::slug($funcionario->nome) . ".pdf");
+        return $pdf->stream("Folha de ponto" . Str::slug($funcionario->nome) . ".pdf");
 
     }
 
