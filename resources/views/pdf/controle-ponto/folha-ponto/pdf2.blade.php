@@ -153,10 +153,8 @@
 
                     </td>
                     <td>
-                        @if(isset($calend->ponto, $calend->ponto->jornada, $calend->ponto->jornada->ocorrencia, $calend->ponto->ocorrencia) &&
-                            $calend->ponto->jornada->ocorrencia->trabalhado &&
-                            $calend->ponto->ocorrencia->conta_horas)
-                            {{ $calend->ponto->horasNormalOriginalFormat }}
+                        @if(isset($calend['ponto']) && $calend['ponto']->jornada->ocorrencia->trabalhado && $calend['ponto']->ocorrencia->conta_horas)
+                            {{ $calend['ponto']->horasNormalOriginalFormat }}
                         @else
                             --
                         @endif
