@@ -6,6 +6,33 @@ use Illuminate\Support\Facades\Route;
 Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])->name('recuperaSenhanew');
 Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::class, 'recuperaSenhaPost'])->name('recuperaSenhaPost');
 
+Route::get('testezap', function () {
+
+//    $zap = new \App\Services\Dynamus\ZapDynamusService();
+//    $zap->sendMessage('5598985071828', 'Teste de mensagem');
+//
+//    dd();
+    $zap = new \App\Classes\ZapNotificacao();
+    $response = $zap->enviar([
+        'telefone' => '5598999023762',
+        'mensagem' => "👏🏽👏🏽Parabéns, *JJ*. Você foi *selecionado(a)*! Para a vaga *AJUDANTE DE PRODUCAO - Barcarena/PA* fique atento as próximas etapas do processo!\n\n
+📆 Data da entrevista: 26/12/2024 às 00:00
+📍Local da entrevista: MONTISOL
+
+Sucesso e esperamos vê-lo em breve.
+
+*☺️ Um forte abraço da equipe MONTISOL CONSTRUÇÃO E MANUTENÇÃO LTDA*
+
+_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda.",
+        'enviado_id' => 1,
+        'anexo' => [
+            'arquivo' => 'https://www.google.com.br/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',
+            'tipo' => \App\Classes\ZapNotificacao::TIPO_IMAGEM
+        ]
+    ]);
+//    dd($response);
+});
+
 Route::get('download-checklist/{empresa}', function ($empresa) {
     $path = CartaOferta::checklistArquivo($empresa);
     $type = pathinfo($path, PATHINFO_EXTENSION);
