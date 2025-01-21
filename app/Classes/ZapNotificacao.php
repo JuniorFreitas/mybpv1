@@ -3,8 +3,7 @@
 namespace App\Classes;
 
 use App\Jobs\JobSendNotificacaoWhatsApp;
-use App\Models\Sistema;
-use ZapMeSdk\Base as ZapMeSdk;
+use App\Services\Dynamus\ZapDynamusService;
 
 class ZapNotificacao
 {
@@ -24,20 +23,18 @@ class ZapNotificacao
 
     public function __construct()
     {
-        $this->Zap = (new ZapMeSdk())
-            ->withApi(env('API_ZAPME'))
-            ->withSecret(env('SECRET_ZAPME'));
+        $this->Zap = (new ZapDynamusService());
     }
 
-    public function status()
-    {
-        return $this->Zap->accountStatus();
-    }
-
-    public function requestQRCode()
-    {
-        dd($this->Zap->requestQRCode());
-    }
+//    public function status()
+//    {
+//        return $this->Zap->accountStatus();
+//    }
+//
+//    public function requestQRCode()
+//    {
+//        dd($this->Zap->requestQRCode());
+//    }
 
     public function enviar(array $dados)
     {
@@ -45,16 +42,16 @@ class ZapNotificacao
 
         if ($ambiente != 'prod') {
             $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
-            $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
+            $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '5598999023762';
 //            $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '5598991140405';
         }
 
-        $upload = isset($dados['anexo']) ? [
-            'file_content' => Sistema::convertBase2($dados['anexo']['arquivo'],true),
-            'file_extension' => $dados['anexo']['tipo'] == self::TIPO_IMAGEM ? self::EXTENSAO_IMG : self::EXTENSAO_PDF
-        ] : [];
+//        $upload = isset($dados['anexo']) ? [
+//            'file_content' => Sistema::convertBase2($dados['anexo']['arquivo'], true),
+//            'file_extension' => $dados['anexo']['tipo'] == self::TIPO_IMAGEM ? self::EXTENSAO_IMG : self::EXTENSAO_PDF
+//        ] : [];
 
-        JobSendNotificacaoWhatsApp::dispatch($dados, $upload);
+        JobSendNotificacaoWhatsApp::dispatch($dados);
     }
 
     public function SgiEnvia(array $dados)
@@ -76,9 +73,15 @@ class ZapNotificacao
         return $send;
     }
 
-    public function send($dados, $upload)
+    public function send($dados)
     {
-        return $this->Zap->sendMessage($dados['telefone'], $dados['mensagem'], $upload);
+        if (isset($dados['anexo']) && $dados['anexo']['tipo'] == self::TIPO_IMAGEM) {
+            return $this->Zap->sendImagem($dados['telefone'], $dados['mensagem'], $dados['anexo']['arquivo']);
+        }
+        if (isset($dados['anexo']) && $dados['anexo']['tipo'] == self::TIPO_PDF) {
+            return $this->Zap->sendPdf($dados['telefone'], $dados['mensagem'], $dados['anexo']['arquivo']);
+        }
+        return $this->Zap->sendMessage($dados['telefone'], $dados['mensagem']);
     }
 
     private function convertPngToJpg($path)
