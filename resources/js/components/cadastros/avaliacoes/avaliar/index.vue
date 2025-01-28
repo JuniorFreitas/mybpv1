@@ -474,7 +474,7 @@
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
                                        v-if="item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id)">
-                                        Avaliar - {{ AUTENTICADO }}
+                                        Avaliar
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
@@ -518,105 +518,109 @@
                 </table>
 
 
-                <table class="table table-bordered" v-if="selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao">
-                    <thead class="bg-white">
-                    <tr class="bg-white">
-                        <td class="text-center">Ano Avaliação</td>
-                        <td class="text-center">Título</td>
-                        <td class="text-center">Tipo</td>
-                        <td class="text-center">Avaliar até</td>
-                        <td class="text-center">Funcionário</td>
-                        <td class="text-center">Avaliador</td>
-                        <td class="text-center">Status</td>
-                        <td class="text-center">Ação</td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-if="!item.avaliacao.auto_avaliacao && item.principal" v-for="item in lista" class="bg-white">
-                        <td class="text-center">
-                            {{ item.avaliacao.ano_avaliacao }}
-                        </td>
-                        <td class="text-center">
-                            {{ item.avaliacao.titulo }}
-                        </td>
-                        <td class="text-center">{{ item.avaliacao.avaliacao_tipo.nome }}</td>
-                        <td class="text-center">{{ item.avaliacao.data_fim_prazo }}</td>
-                        <td class="text-center">
-                            <i class="fa fa-user" v-if="item.avaliador_id === item.funcionario_id"></i>
-                            {{ item.funcionario.nome }}
-                        </td>
-                        <td class="text-center">
-                            {{ item.avaliador.nome }}
-                        </td>
+                <template>
+                    <table class="table table-bordered"
+                           v-if="selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao">
+                        <thead class="bg-white">
+                        <tr class="bg-white">
+                            <td class="text-center">Ano Avaliação</td>
+                            <td class="text-center">Título</td>
+                            <td class="text-center">Tipo</td>
+                            <td class="text-center">Avaliar até</td>
+                            <td class="text-center">Funcionário</td>
+                            <td class="text-center">Avaliador</td>
+                            <td class="text-center">Status</td>
+                            <td class="text-center">Ação</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-if="!item.avaliacao.auto_avaliacao && item.principal" v-for="item in lista"
+                            class="bg-white">
+                            <td class="text-center">
+                                {{ item.avaliacao.ano_avaliacao }}
+                            </td>
+                            <td class="text-center">
+                                {{ item.avaliacao.titulo }}
+                            </td>
+                            <td class="text-center">{{ item.avaliacao.avaliacao_tipo.nome }}</td>
+                            <td class="text-center">{{ item.avaliacao.data_fim_prazo }}</td>
+                            <td class="text-center">
+                                <i class="fa fa-user" v-if="item.avaliador_id === item.funcionario_id"></i>
+                                {{ item.funcionario.nome }}
+                            </td>
+                            <td class="text-center">
+                                {{ item.avaliador.nome }}
+                            </td>
 
-                        <td class="text-center" :class="{
+                            <td class="text-center" :class="{
                                 'bg-cinza': item.status === 'Pendente',
                                 'bg-info text-white': item.status === 'Avaliada',
                                 'bg-success text-white': item.status === 'Finalizada'
                             }">
-                            <span v-if="item.status === 'Pendente'">Pendente Avaliação do Gestor</span>
-                            <span v-if="item.status === 'Avaliada'">Avaliada pelo Gestor</span>
-                            <span v-if="item.status === 'Finalizada'">Completa</span>
-                        </td>
+                                <span v-if="item.status === 'Pendente'">Pendente Avaliação do Gestor</span>
+                                <span v-if="item.status === 'Avaliada'">Avaliada pelo Gestor</span>
+                                <span v-if="item.status === 'Finalizada'">Completa</span>
+                            </td>
 
-                        <td class="text-center">
+                            <td class="text-center">
 
-                            <div class="dropdown show"
-                                 v-show="
+                                <div class="dropdown show"
+                                     v-show="
                                      (item.status === 'Pendente' && item.principal && !item.pendente_avaliacao_par)  || item.status === 'Avaliada' || (item.status === 'Avaliada' && item.fazer_avaliacao_final) // Avaliacao final
                                   || (item.status === 'Finalizada' && !item.fazer_avaliacao_final) // successo
                                 ">
-                                <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
-                                   id="dropdownMenuLink"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                     aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item" href="javascript://" title="Avaliar"
-                                       data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
-                                       v-if="(item.status === 'Pendente' && item.principal)">
-                                        Avaliar
+                                    <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                                       id="dropdownMenuLink"
+                                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
-                                       data-toggle="modal" data-target="#janelaCadastrar"
-                                       @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'">
-                                        Visualizar Avaliação
-                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                         aria-labelledby="dropdownMenuLink">
+                                        <a class="dropdown-item" href="javascript://" title="Avaliar"
+                                           data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
+                                           v-if="(item.status === 'Pendente' && item.principal)">
+                                            Avaliar
+                                        </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
-                                       data-toggle="modal" data-target="#janelaAvaliacaoFinal"
-                                       @click="avaliarFinalForm(item)"
-                                       v-if="item.status === 'Avaliada'  && item.fazer_avaliacao_final">
-                                        Fazer Avaliação Final
-                                    </a>
+                                        <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
+                                           data-toggle="modal" data-target="#janelaCadastrar"
+                                           @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'">
+                                            Visualizar Avaliação
+                                        </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação Final"
-                                       data-toggle="modal" data-target="#janelaAvaliacaoFinal"
-                                       @click="avaliarFinalForm(item, true)"
-                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">
-                                        Visualizar Avaliação Final
-                                    </a>
+                                        <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
+                                           data-toggle="modal" data-target="#janelaAvaliacaoFinal"
+                                           @click="avaliarFinalForm(item)"
+                                           v-if="item.status === 'Avaliada'  && item.fazer_avaliacao_final">
+                                            Fazer Avaliação Final
+                                        </a>
 
-                                    <!--                                        <a class="dropdown-item" :href="`${urlImpressao}/${item.token}`" target="_blank"-->
-                                    <!--                                           title="Imprimir Avaliação Final"-->
-                                    <!--                                           v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">-->
-                                    <!--                                            Imprimir Avaliação Final-->
-                                    <!--                                        </a> -->
+                                        <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação Final"
+                                           data-toggle="modal" data-target="#janelaAvaliacaoFinal"
+                                           @click="avaliarFinalForm(item, true)"
+                                           v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">
+                                            Visualizar Avaliação Final
+                                        </a>
 
-                                    <a class="dropdown-item" :href="`${urlImpressao}/${item.token}`" target="_blank"
-                                       title="Imprimir Avaliação Final"
-                                       v-if="item.status === 'Finalizada' || ( item.total_avaliacoes_concluidas > 0 && ( item.principal || tem_privilegio_gestao_rh) )">
-                                        Imprimir Avaliação Final
-                                    </a>
+                                        <!--                                        <a class="dropdown-item" :href="`${urlImpressao}/${item.token}`" target="_blank"-->
+                                        <!--                                           title="Imprimir Avaliação Final"-->
+                                        <!--                                           v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">-->
+                                        <!--                                            Imprimir Avaliação Final-->
+                                        <!--                                        </a> -->
+
+                                        <a class="dropdown-item" :href="`${urlImpressao}/${item.token}`" target="_blank"
+                                           title="Imprimir Avaliação Final"
+                                           v-if="item.status === 'Finalizada' || ( item.total_avaliacoes_concluidas > 0 && ( item.principal || tem_privilegio_gestao_rh) )">
+                                            Imprimir Avaliação Final
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </template>
             </div>
 
 
@@ -661,10 +665,12 @@ export default {
         }
     },
     async mounted() {
-        await this.atualizar();
+        await this.listaAvaliacao();
         this.formAvaliarDefault = _.cloneDeep(this.formAvaliar);
         this.formAvaliarFinalDefault = _.cloneDeep(this.formAvaliarFinal);
         this.controle.dados.campoAvaliacao = this.lista_avaliacoes[0].id;
+        await this.atualizar();
+
     },
     data() {
         return {
@@ -710,6 +716,7 @@ export default {
             lista_topicos: [],
             lista_avaliacoes_tipos: [],
             lista_avaliacoes: [],
+            lista_anos: [],
             lista_status: [],
 
             lista_avaliacoes_por_ano: [],
@@ -774,6 +781,16 @@ export default {
         }
     },
     methods: {
+        async listaAvaliacao() {
+            await axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/lista/listavaliacoes`)
+                .then(response => {
+                    this.lista_avaliacoes = response.data.lista_avaliacoes;
+                    this.lista_anos = response.data.lista_anos;
+
+                }).catch(
+                    error => (this.preloadAjax = false)
+                );
+        },
         addPlanoAcao() {
             let obj = {
                 nova: true,
@@ -887,7 +904,7 @@ export default {
         carregou(dados) {
             this.lista = dados.itens;
             this.lista_avaliacoes_tipos = dados.avaliacoes_tipos;
-            this.lista_avaliacoes = dados.lista_avaliacoes;
+            // this.lista_avaliacoes = dados.lista_avaliacoes;
             this.lista_status = dados.lista_status;
             this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano;
             this.tem_privilegio_gestao_rh = dados.tem_privilegio_gestao_rh;

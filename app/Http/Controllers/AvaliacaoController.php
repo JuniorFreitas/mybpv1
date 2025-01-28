@@ -247,9 +247,9 @@ class AvaliacaoController extends Controller
             $totalAvaliacaoParConcluida = $avaliacaoPar->where('status', AvaliacaoFeedback::STATUS_CONCLUIDA)->count();
 
             $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
-            $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereStatus(AvaliacaoFeedback::STATUS_CONCLUIDA);
+            $totalAvaliacoesFuncConcluidas = $avaliacaoFeedbackFunc->whereIn('status', [AvaliacaoFeedback::STATUS_CONCLUIDA]);
             $item->total_avaliacoes_concluidas = $totalAvaliacoesFuncConcluidas->count();
-            $item->fez_auto_avaliacao = $totalAvaliacoesFuncConcluidas->count() > 0;
+            $item->fez_auto_avaliacao = is_null($item->avaliacao_tipo_id) && $item->status == AvaliacaoFeedback::STATUS_CONCLUIDA || $item->status == AvaliacaoFeedback::STATUS_FINAL || $totalAvaliacoesFuncConcluidas->count() > 0;
             $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes;
 
             $item->pendente_autoavaliacao = $item->avaliador_id == $item->funcionario_id && !$item->fez_auto_avaliacao;
@@ -288,10 +288,29 @@ class AvaliacaoController extends Controller
         ]);
     }
 
+    public function getListaAvaliacoes(Request $request)
+    {
+//        $this->authorize('cadastro_avaliacao');
+        $resultado = Avaliacao::whereAtivo(true)
+            ->whereHas('AvaliacaoFeedbacks', function ($query) {
+                if (!$this->temPrivilegioGestaoRh()) {
+                    $query->where('funcionario_id', auth()->user()->id)
+                        ->orWhere('avaliador_id', auth()->user()->id);
+                }
+            })
+            ->orderBy('titulo')->get();
+
+        return response()->json([
+            'lista_avaliacoes' => $resultado,
+            'lista_anos' => $resultado->groupBy('ano_avaliacao')->keys(),
+        ]);
+    }
+
+
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder|\LaravelIdea\Helper\App\Models\_IH_AvaliacaoFeedback_QB
      */
     private function filtroAvaliar(Request $request)
     {

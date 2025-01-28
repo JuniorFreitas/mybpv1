@@ -113,6 +113,11 @@ class Avaliacao extends Model
         return $this->belongsTo(AvaliacaoTipo::class, 'avaliacao_tipo_id', 'id');
     }
 
+    public function AvaliacaoFeedbacks()
+    {
+        return $this->hasMany(AvaliacaoFeedback::class, 'avaliacao_id', 'id');
+    }
+
     //Acessor ->data_inicio
     public function getDataInicioPrazoAttribute($value)
     {
@@ -186,6 +191,7 @@ class Avaliacao extends Model
         return cache()->get($cache_key);
 
     }
+
 
     /**
      * @param $empresaId

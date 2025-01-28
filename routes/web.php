@@ -493,6 +493,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             });
 
             Route::group(['as' => 'avaliar.'], function () {
+                Route::get('avaliar/lista/listavaliacoes', [\App\Http\Controllers\AvaliacaoController::class, 'getListaAvaliacoes'])->name('getListaAvaliacoes')->middleware('can:avaliacoes_listar');
                 Route::post('avaliar/atualizar', [\App\Http\Controllers\AvaliacaoController::class, 'atualizarAvaliar'])->name('avaliarAtualizar')->middleware('can:avaliacoes_listar');
                 Route::get('avaliar/{avaliacaoFeedback}/edit', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarEdit'])->name('avaliarEdit')->middleware('can:avaliacoes_listar');
                 Route::put('avaliar/{avaliacaoFeedback}', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarUpdate'])->name('avaliarUpdate')->middleware('can:avaliacoes_listar');
