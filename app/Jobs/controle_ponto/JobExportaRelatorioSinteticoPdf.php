@@ -132,7 +132,7 @@ class JobExportaRelatorioSinteticoPdf implements ShouldQueue
             $totalHorasExtra = $totalHorasExtra->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '>', 0)->sum('duracao_extra');
             $totalHorasNegativas = abs($totalHorasNegativas->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '<', 0)->sum('duracao_extra'));
 
-            $dadosDoFuncionario = Sistema::getColaboradorDados($funcionario_id, $empresa_id);
+            $dadosDoFuncionario = Sistema::getColaboradorDados($funcionario_id, $empresa_id, $request->status == 'admitidos');
 
             $ll[] = [
                 'funcionario_id' => (int)$funcionario_id,
