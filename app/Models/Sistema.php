@@ -8,8 +8,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 use MasterTag\DataHora;
 use MasterTag\GExtenso;
+use RuntimeException;
 
 class Sistema
 {
@@ -876,15 +878,23 @@ class Sistema
     }
 
     /**
-     * @param $funcionario_id
-     * @param $empresa_id
+     * @param $funcionarioId
+     * @param $empresaId
      * @return object
      */
-    public static function getColaboradorDados($funcionario_id, $empresa_id): object
+    public static function getColaboradorDados(int $funcionarioId, int $empresaId, bool $admitido = true): object
     {
+        if ($funcionarioId <= 0 || $empresaId <= 0) {
+            throw new InvalidArgumentException('funcionarioId ou empresaId invalidos');
+        }
+
+        $status = $admitido
+            ? Admissao::STATUS_ADMISSAO_ADMITIDO
+            : Admissao::STATUS_DEMITIDO;
+
         $feedbackCurriculo = FeedbackCurriculo::select(['id', 'curriculo_id'])
-            ->whereCurriculoId($funcionario_id)
-            ->whereEmpresaId($empresa_id)
+            ->whereCurriculoId($funcionarioId)
+            ->whereEmpresaId($empresaId)
             ->with([
                 'Curriculo:id,nome,nascimento,rg,orgao_expeditor,cpf',
                 'Admissao:id,centro_custo_id,filial,centro_custo_filial_id,cargo,funcao,matricula,data_admissao,feedback_id',
@@ -892,14 +902,17 @@ class Sistema
                 'Admissao.AreaEtiqueta:id,label',
                 'Admissao.DadosAdmissoes',
                 'Admissao.CentroCustoFilial:id,empresa_id,centro_custo_id,cliente_filial_id',
-            ])
-            ->first();
+            ])->whereHas('Admissao', fn($q) => $q->where('status', $status))->first();
+
+        if (!$feedbackCurriculo) {
+            throw new RuntimeException("Nenhum dado de funcionário (feedback) encontrado para ID: {$funcionarioId}");
+        }
 
         $ctps_numero = $feedbackCurriculo->Admissao->DadosAdmissoes->ctps_numero ?? '';
         $ctps_serie = $feedbackCurriculo->Admissao->DadosAdmissoes->ctps_serie ?? '';
 
         return (object)[
-            'nome' => mb_strtoupper(User::select(['nome'])->whereId($funcionario_id)->first()->nome ?? "NÃO INFORMADO {$funcionario_id}"),
+            'nome' => mb_strtoupper(User::select(['nome'])->whereId($funcionarioId)->first()->nome ?? "NÃO INFORMADO {$funcionarioId}"),
             'nascimento' => $feedbackCurriculo->Curriculo->nascimento ?? "NÃO INFORMADO",
             'cpf' => $feedbackCurriculo->Curriculo->cpf ?? "NÃO INFORMADO",
             'matricula' => $feedbackCurriculo->Admissao->matricula ?? "NÃO INFORMADO",
@@ -910,8 +923,8 @@ class Sistema
             'area' => $feedbackCurriculo->Admissao->AreaEtiqueta->label ?? "NÃO INFORMADO",
             'pertence_filial' => $feedbackCurriculo->Admissao->filial ?? "NÃO INFORMADO",
             'ctps' => $ctps_numero . '-' . $ctps_serie,
-            'centro_custo_filial' => self::getFilial($empresa_id, $feedbackCurriculo->Admissao->centro_custo_filial_id) ?: null,
-            'cnpj_lotacao' => self::getEmpresaFilialMatriz($feedbackCurriculo->Admissao->centro_custo_filial_id, $empresa_id) ?? null,
+            'centro_custo_filial' => self::getFilial($empresaId, $feedbackCurriculo->Admissao->centro_custo_filial_id) ?: null,
+            'cnpj_lotacao' => self::getEmpresaFilialMatriz($feedbackCurriculo->Admissao->centro_custo_filial_id, $empresaId) ?? null,
         ];
     }
 

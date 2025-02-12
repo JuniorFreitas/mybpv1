@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Curriculo;
 use App\Models\EmpresaConfig;
 use App\Models\EmpresaEscala;
 use App\Models\FeedbackCurriculo;
@@ -488,7 +487,9 @@ class FolhaDePontoController extends Controller
             $totalHorasExtra = $totalHorasExtra->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '>', 0)->sum('duracao_extra');
             $totalHorasNegativas = abs($totalHorasNegativas->whereDoesntHave('PeriodosEmAberto')->where('duracao_extra', '<', 0)->sum('duracao_extra'));
 
-            $dadosDoFuncionario = Sistema::getColaboradorDados($funcionario_id, $empresa_id);
+            $admitido = $request->status == 'admitidos';
+
+            $dadosDoFuncionario = Sistema::getColaboradorDados($funcionario_id, $empresa_id, $admitido);
 
             $ll[] = [
                 'funcionario_id' => (int)$funcionario_id,
