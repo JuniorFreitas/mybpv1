@@ -377,27 +377,41 @@ class TreinamentoController extends Controller
         $campoPeriodoTreinado = $request->campoPeriodoTreinado == 'true';
         if ($campoPeriodoTreinado) {
             $periodo_treinado = explode(' até ', $request->periodoTreinado);
-            $dataInicio_treinado = new DataHora($periodo_treinado[0] . ' 00:00:00');
-            $dataFim_treinado = new DataHora($periodo_treinado[1] . ' 23:59:59');
-            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio_treinado, $dataFim_treinado) {
-                $query->where('created_at', '>=', $dataInicio_treinado->dataInsert())->where('created_at', '<=', $dataFim_treinado->dataInsert());
+            $dataInicio = new DataHora($periodo_treinado[0] . ' 00:00:00');
+            $dataFim = new DataHora($periodo_treinado[1] . ' 23:59:59');
+//            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio_treinado, $dataFim_treinado) {
+//                $query->where('created_at', '>=', $dataInicio_treinado->dataInsert())->where('created_at', '<=', $dataFim_treinado->dataInsert());
+//            });
+            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
+                $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
+                    $q->where('data_treinamento', '>=', $dataInicio->dataHoraInsert())->where('data_treinamento', '<=', $dataFim->dataHoraInsert());
+                });
             });
         }
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
+                $query->where(function ($q) use ($request) {
+                    $q->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
+                });
+//                $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
+            });
+        }
+
+        if ($request->filled('campoCPF')) {
+            $resultado->whereHas('Curriculo', function ($q) use ($request) {
+                $q->whereCpf($request->campoCPF);
             });
         }
 
         if ($request->filled('campoVaga')) {
-            $resultado->whereHas('Feedback.VagaSelecionada', function ($query) use ($request) {
+            $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
                 $query->whereId($request->campoVaga);
             });
         }
 
         if ($request->filled('campoUf')) {
-            $resultado->whereHas('Feedback.Curriculo', function ($q) use ($request) {
+            $resultado->whereHas('Curriculo', function ($q) use ($request) {
                 $q->whereUfVaga($request->campoUf);
             });
         }
@@ -509,10 +523,10 @@ class TreinamentoController extends Controller
 
         if ($request->filled('campoFoto')) {
             if ($request->campoFoto == 'true') {
-                $resultado->has('FotoTres');
+                $resultado->has('Admissao.FotoTres');
             }
             if ($request->campoFoto == 'false') {
-                $resultado->whereDoesntHave('FotoTres');
+                $resultado->whereDoesntHave('Admissao.FotoTres');
             }
         }
 

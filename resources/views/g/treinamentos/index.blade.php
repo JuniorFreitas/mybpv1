@@ -371,7 +371,7 @@
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <div class="row">
-            <div class="col-12 col-md-3 ">
+            <div class="col-12 col-lg-3">
                 <div class="form-check" style="margin-bottom: -11px;">
                     <input type="checkbox" class="form-check-input" @change="atualizar()"
                            :disabled="controle.carregando"
@@ -387,7 +387,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-md-3 ">
+            <div class="col-12 col-lg-3 ">
                 <div class="form-check" style="margin-bottom: -11px;">
                     <input type="checkbox" class="form-check-input" @change="atualizar()"
                            :disabled="controle.carregando"
@@ -403,106 +403,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-md-2">
-                <label>CPF</label>
-                <input type="text"
-                       placeholder="Buscar por cpf"
-                       autocomplete="mastertag"
-                       v-mascara:cpf
-                       class="form-control form-control-sm" :disabled="controle.carregando"
-                       v-model="controle.dados.campoCPF">
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs && AUTENTICADO.temFilial">
-                <div class="form-group">
-                    <label for="">Por Cnpj</label>
-                    <select class="form-control form-control-sm" @change="changeCnpj"
-                            :disabled="controle.carregando"
-                            v-model="controle.dados.campoCnpj">
-                        <option value="">Todos</option>
-                        <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
-                            @{{item.nome_fantasia}} - @{{item.cnpj}}
-                        </option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs">
-                <div class="form-group">
-                    <label for="">Centro de Custo</label>
-                    <select class="form-control form-control-sm" @change="atualizar"
-                            :disabled="controle.carregando"
-                            v-model="controle.dados.campoCentroCusto">
-                        <option value="">Todos</option>
-                        <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
-                                :value="item.matriz ? item.id : item.filial_id"
-                                :keys="key">
-                            @{{item.label}}
-                        </option>
-                        <option value="--naoinformado--">--- Não Informado ---</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-7">
-                <label>Buscar</label>
-                <input type="text"
-                       placeholder="Buscar por nome"
-                       autocomplete="off"
-                       class="form-control form-control-sm" :disabled="controle.carregando"
-                       v-model="controle.dados.campoBusca">
-            </div>
-
-            <div class="col-12 col-md-3">
-                <div class="form-group">
-                    <label>Por Vaga</label>
-                    <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"
-                                  :valido="controle.dados.campoVaga !== ''"
-                                  v-model="controle.dados.autocomplete_label"
-                                  placeholder="Por vaga"
-                                  @onblur="resetaCampo"
-                                  @onselect="selecionaVaga"></autocomplete>
-                </div>
-            </div>
-
-            <div class="col-12 col-lg-2">
-                <div class="form-group">
-                    <label>Estados</label>
-                    <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoUf">
-                        <option value="">Todos</option>
-                        <option value="AC">AC</option>
-                        <option value="AL">AL</option>
-                        <option value="AP">AP</option>
-                        <option value="AM">AM</option>
-                        <option value="BA">BA</option>
-                        <option value="CE">CE</option>
-                        <option value="DF">DF</option>
-                        <option value="ES">ES</option>
-                        <option value="GO">GO</option>
-                        <option value="MA">MA</option>
-                        <option value="MT">MT</option>
-                        <option value="MS">MS</option>
-                        <option value="MG">MG</option>
-                        <option value="PA">PA</option>
-                        <option value="PB">PB</option>
-                        <option value="PR">PR</option>
-                        <option value="PE">PE</option>
-                        <option value="PI">PI</option>
-                        <option value="RJ">RJ</option>
-                        <option value="RN">RN</option>
-                        <option value="RS">RS</option>
-                        <option value="RO">RO</option>
-                        <option value="RR">RR</option>
-                        <option value="SC">SC</option>
-                        <option value="SP">SP</option>
-                        <option value="SE">SE</option>
-                        <option value="TO">TO</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-2">
+            <div class="col-12 col-lg-3">
                 <label>Admitidos</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
                         v-model="controle.dados.campoAdmitido">
@@ -512,27 +413,7 @@
                 </select>
             </div>
 
-            <div class="col-12 col-lg-2">
-                <label>Nº Crachá</label>
-                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoCracha">
-                    <option value="">Geral</option>
-                    <option value="S">Sim</option>
-                    <option value="N">Não</option>
-                </select>
-            </div>
-
-            <div class="col-12 col-lg-2">
-                <label>Foto 3x4</label>
-                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoFoto">
-                    <option value="">Geral</option>
-                    <option :value="true">Sim</option>
-                    <option :value="false">Não</option>
-                </select>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-2">
+            <div class="col-12 col-lg-3">
                 <label>Treinados</label>
                 <select class="custom-select custom-select-sm" @change="selecionaTreinados($event.target.value)"
                         :disabled="controle.carregando"
@@ -543,7 +424,132 @@
                 </select>
             </div>
 
-            <div class="col-12 col-md-6">
+
+            <div class="col-12 col-lg-4 mb-3">
+                <label>Buscar</label>
+                <input type="text"
+                       placeholder="Buscar por nome"
+                       autocomplete="off"
+                       class="form-control form-control-sm" :disabled="controle.carregando"
+                       v-model="controle.dados.campoBusca">
+            </div>
+
+            <div class="col-12 col-lg-3 mb-3">
+                <label>CPF</label>
+                <input type="text"
+                       placeholder="Buscar por cpf"
+                       autocomplete="mastertag"
+                       v-mascara:cpf
+                       class="form-control form-control-sm" :disabled="controle.carregando"
+                       v-model="controle.dados.campoCPF">
+            </div>
+
+            <div class="col-12 col-lg-3 mb-3">
+                <label>Foto 3x4</label>
+                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
+                        v-model="controle.dados.campoFoto">
+                    <option value="">Geral</option>
+                    <option :value="true">Sim</option>
+                    <option :value="false">Não</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-lg-2 mb-3">
+                <label>Nº Crachá</label>
+                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
+                        v-model="controle.dados.campoCracha">
+                    <option value="">Geral</option>
+                    <option value="S">Sim</option>
+                    <option value="N">Não</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-lg-4 mb-3"
+                 v-if="lista_ccs && AUTENTICADO.temFilial">
+                <label for="">Por Cnpj</label>
+                <select class="form-control form-control-sm" @change="changeCnpj"
+                        :disabled="controle.carregando"
+                        v-model="controle.dados.campoCnpj">
+                    <option value="">Todos</option>
+                    <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
+                        @{{item.nome_fantasia}} - @{{item.cnpj}}
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-12 mb-3" :class="AUTENTICADO.temFilial ? 'col-lg-3' : 'col-lg-5'" v-if="lista_ccs">
+                <label for="">Centro de Custo</label>
+                <select class="form-control form-control-sm" @change="atualizar"
+                        :disabled="controle.carregando"
+                        v-model="controle.dados.campoCentroCusto">
+                    <option value="">Todos</option>
+                    <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
+                            :value="item.matriz ? item.id : item.filial_id"
+                            :keys="key">
+                        @{{item.label}}
+                    </option>
+                    <option value="--naoinformado--">--- Não Informado ---</option>
+                </select>
+            </div>
+
+
+            {{--<div class="col-12 col-md-3">
+                <div class="form-group">
+                    <label>Por Vaga</label>
+                    <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"
+                                  :valido="controle.dados.campoVaga !== ''"
+                                  v-model="controle.dados.autocomplete_label"
+                                  placeholder="Por vaga"
+                                  @onblur="resetaCampo"
+                                  @onselect="selecionaVaga"></autocomplete>
+                </div>
+            </div>--}}
+
+            <div class="col-12 mb-3" :class="AUTENTICADO.temFilial ? 'col-lg-3' : 'col-lg-5'">
+                <label>Cargo</label>
+                <input type="text"
+                       placeholder="Buscar por cargo"
+                       autocomplete="off"
+                       class="form-control form-control-sm" :disabled="controle.carregando"
+                       v-model="controle.dados.campoCargo">
+            </div>
+
+            <div class="col-12 col-lg-2 mb-3">
+                <label>Estados</label>
+                <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
+                        v-model="controle.dados.campoUf">
+                    <option value="">Todos</option>
+                    <option value="AC">AC</option>
+                    <option value="AL">AL</option>
+                    <option value="AP">AP</option>
+                    <option value="AM">AM</option>
+                    <option value="BA">BA</option>
+                    <option value="CE">CE</option>
+                    <option value="DF">DF</option>
+                    <option value="ES">ES</option>
+                    <option value="GO">GO</option>
+                    <option value="MA">MA</option>
+                    <option value="MT">MT</option>
+                    <option value="MS">MS</option>
+                    <option value="MG">MG</option>
+                    <option value="PA">PA</option>
+                    <option value="PB">PB</option>
+                    <option value="PR">PR</option>
+                    <option value="PE">PE</option>
+                    <option value="PI">PI</option>
+                    <option value="RJ">RJ</option>
+                    <option value="RN">RN</option>
+                    <option value="RS">RS</option>
+                    <option value="RO">RO</option>
+                    <option value="RR">RR</option>
+                    <option value="SC">SC</option>
+                    <option value="SP">SP</option>
+                    <option value="SE">SE</option>
+                    <option value="TO">TO</option>
+                </select>
+            </div>
+
+            <div class="col-12">
                 <label>Treinamentos</label>
                 <select class="custom-select custom-select-sm" @change="addTreinamento($event.target.value)"
                         :disabled="controle.carregando"
