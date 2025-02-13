@@ -180,6 +180,7 @@
                                 @change.prevent="atualizar();controle.dados.tipo_avaliacao = '';controle.dados.status = '';"
                                 v-model="controle.dados.ano_avaliacao"
                         >
+                            <option value="">Sem filtro</option>
                             <option v-for="(item,key) in listaKeysAvaliacaoPorAnoOrdenado" :value="item">
                                 {{ item }}
                             </option>
@@ -393,7 +394,7 @@ export default {
                 carregando: false,
                 dados: {
                     campoBusca: "",
-                    ano_avaliacao: new Date().getFullYear(),
+                    ano_avaliacao: "",
                     tipo_avaliacao: "",
                     status: "",
                 }
