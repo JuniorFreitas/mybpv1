@@ -1,28 +1,28 @@
-image: node:14
-
-pipelines:
-  default:
-    - step:
-        name: Criando host
-        script:
-          - apt-get update
-          - apt-get install -yqq openssh-client
-          - cd /root
-          - ls -la
-          - mkdir -p /root/.ssh
-          - ls -la
-          - echo "$MYBPIN" | base64 -d > /root/.ssh/aws.pem
-          - ls -la
-          - cd /root/.ssh/
-          - cat /root/.ssh/aws.pem
-          - chmod 600 /root/.ssh/aws.pem
-          - ls -la
-          - pwd
-          - ssh -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
-          - ssh -o StrictHostKeyChecking=no -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
-          - ssh -i "/root/.ssh/aws.pem" ubuntu@3.224.176.151 "ls -la"
-          
-    - step:
-        name: Connecting to server
-        script:
-          - ssh -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
+#image: node:14
+#
+#pipelines:
+#  default:
+#    - step:
+#        name: Criando host
+#        script:
+#          - apt-get update
+#          - apt-get install -yqq openssh-client
+#          - cd /root
+#          - ls -la
+#          - mkdir -p /root/.ssh
+#          - ls -la
+#          - echo "$MYBPIN" | base64 -d > /root/.ssh/aws.pem
+#          - ls -la
+#          - cd /root/.ssh/
+#          - cat /root/.ssh/aws.pem
+#          - chmod 600 /root/.ssh/aws.pem
+#          - ls -la
+#          - pwd
+#          - ssh -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
+#          - ssh -o StrictHostKeyChecking=no -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
+#          - ssh -i "/root/.ssh/aws.pem" ubuntu@3.224.176.151 "ls -la"
+#
+#    - step:
+#        name: Connecting to server
+#        script:
+#          - ssh -i /root/.ssh/aws.pem ubuntu@3.224.176.151 "ls -la"
