@@ -11,7 +11,7 @@ use App\Models\AvaliacaoNoventaVencimento;
 use App\Models\CentroCusto;
 use App\Models\Curriculo;
 use App\Models\DadosAdmissao;
-use App\Models\EmpresaConfig;
+use App\Models\Demissao;
 use App\Models\EmpresaExame;
 use App\Models\EntrevistaDesligamento;
 use App\Models\ExameFuncionario;
@@ -26,11 +26,9 @@ use App\Models\UsuarioConta;
 use App\Models\UsuarioDependente;
 use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
-use App\Rules\AreaEmpresaRules;
 use App\Rules\CpfValidoEmpresaRules;
 use App\Rules\VagaAbertaEmpresaRules;
 use App\Rules\VerificaCpfEmpresaRules;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -1607,7 +1605,8 @@ class AdmissaoController extends Controller
             'lista_sexos' => Curriculo::TIPOS_SEXOS,
             'lista_estados_civis' => Curriculo::ESTADOS_CIVIS,
             'permissoes' => [
-                'filtrar_demitido' => auth()->user()->can('admissao_historico_filtrar_demitido')
+                'filtrar_demitido' => auth()->user()->can('admissao_historico_filtrar_demitido'),
+                'privilegio_processo_demitir' => auth()->user()->can('privilegio_processo_demitir'),
             ],
             'cc' => $cc
         ];
@@ -1899,6 +1898,37 @@ class AdmissaoController extends Controller
                 return response()->json(['achou' => false, 'ex_funcionario' => false], 200);
             }
         }
+    }
+
+    public function getDadosDemitidoViaPrivilegio(Request $request)
+    {
+
+    }
+
+    public function demitirViaPrivilegio(Request $request)
+    {
+        $dados = $request->input();
+
+        try {
+            DB::beginTransaction();
+            Admissao::where('id', $dados['admissao_id'])->update([
+                'status' => Admissao::STATUS_DEMITIDO
+            ]);
+
+            Demissao::create($dados);
+
+            User::where('id', $dados['curriculo_id'])->update([
+                'ativo' => false
+            ]);
+
+            DB::commit();
+            return response()->json(['msg' => 'Colaborador demitido com sucesso!'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error("| Erro ao demitir colaborador: " . $e->getFile() . " - " . $e->getMessage() . " - " . $e->getCode());
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
+        }
+
     }
 
 

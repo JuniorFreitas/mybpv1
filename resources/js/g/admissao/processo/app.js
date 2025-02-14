@@ -574,6 +574,32 @@ const app = new Vue({
         areasEtiquetas: [],
         listaProjetos: [],
 
+        modeldemissao: {
+            preload: false,
+            form: {
+                admissao_id: "",
+                feedback_id: "",
+                curriculo_id: "",
+                nome: "",
+                cpf: "",
+                cargo: "",
+                funcao: "",
+                data_admissao: "",
+                status: "",
+
+                cipa: 0,
+                data_desmobilizacao: "",
+                motivo_rescisao_id: 1,
+                outro_motivo: "Demissão avulsa via sistema",
+                tipo_aviso_id: 1,
+                solicitado_por: "",
+                comentario: "Demissão avulsa via sistema",
+                user_id: "",
+            }
+        },
+
+        modeldemissaoDefault: null,
+
         controle: {
             carregando: false,
             dados: {
@@ -659,6 +685,7 @@ const app = new Vue({
         this.formAvulsaDefault = _.cloneDeep(this.formAvulsa); //copia
         this.form_massaDefault = _.cloneDeep(this.form_massa); //copia
         this.formResultadoIntegradoDefault = _.cloneDeep(this.formResultadoIntegrado); //copia
+        this.modeldemissaoDefault = _.cloneDeep(this.modeldemissao); //copia
         this.cliente_id = $("#cliente_id").val();
         if (this.cliente_id) { //diferente de BPSE
             this.controle.dados.campoCliente = parseInt(this.cliente_id);
@@ -676,6 +703,37 @@ const app = new Vue({
         async atualizaColunaTabelas() {
             await axios.put(`${URL_ADMIN}/admissao/colunas-tabela-processo`, {
                 colunasTabela: this.colunasTabela
+            });
+        },
+        formDemitir(item) {
+            this.modeldemissao = _.cloneDeep(this.modeldemissaoDefault);
+            this.modeldemissao.preload = true;
+
+            this.modeldemissao.form.admissao_id = item.admissao.id;
+            this.modeldemissao.form.curriculo_id = item.curriculo.id;
+            this.modeldemissao.form.feedback_id = item.admissao.feedback_id;
+            this.modeldemissao.form.status = item.admissao.status;
+            this.modeldemissao.form.nome = item.curriculo.nome;
+            this.modeldemissao.form.cpf = item.curriculo.cpf;
+            this.modeldemissao.form.cargo = item.admissao.cargo;
+            this.modeldemissao.form.funcao = item.admissao.funcao;
+            this.modeldemissao.form.data_admissao = item.admissao.data_admissao;
+
+            this.modeldemissao.form.user_id = this.AUTENTICADO.user_id;
+            this.modeldemissao.form.solicitado_por = this.AUTENTICADO.nome;
+
+            this.modeldemissao.preload = false;
+        },
+
+        async demiteColaborador() {
+            this.modeldemissao.preload = true;
+            await axios.post(`${URL_ADMIN}/admissao/demitir-via-privilegio`, this.modeldemissao.form).then(response => {
+                $("#janelaDemitir").modal("hide");
+                toastr.success(`Colaborador(a) ${this.modeldemissao.form.nome} foi demitido(a)!`, "Sucesso!");
+                this.modeldemissao = _.cloneDeep(this.modeldemissaoDefault);
+                this.atualizar();
+            }).catch(error => {
+                this.modeldemissao.preload = false;
             });
         },
         exibiColunaTabela(label) {

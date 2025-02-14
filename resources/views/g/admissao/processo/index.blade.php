@@ -1271,6 +1271,44 @@
         </template>
     </modal>
 
+    <modal id="janelaDemitir" titulo="Demissão Avulsa" size="g">
+        <template slot="conteudo">
+            <preload v-if="modeldemissao.preload"></preload>
+            <div v-if="!modeldemissao.preload">
+                <fieldset style="margin-top: 0px">
+                    <legend>Informações do Colaborador</legend>
+                    <div style="text-transform: uppercase">
+                        <span>Nome: <strong>@{{ modeldemissao.form.nome }}</strong></span><br>
+                        <span>CPF: <strong>@{{ modeldemissao.form.cpf }}</strong></span><br>
+                        <span>
+                            Cargo: <strong>@{{ modeldemissao.form.cargo }}</strong> | Função: <strong>
+                                @{{ modeldemissao.form.funcao }}</strong></span><br>
+                        <span>Data de admissão: <strong>@{{ modeldemissao.form.data_admissao }}</strong></span><br>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Dados da demissão</legend>
+                    <div class="row">
+                        <div class="col-12">
+                            <datepicker label="Data demissão" :disabled="modeldemissao.form.status === 'DEMITIDO'"
+                                        v-model="modeldemissao.form.data_desmobilizacao"></datepicker>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </template>
+        <template slot="rodape">
+            <div v-if="modeldemissao.form.status !== 'DEMITIDO'">
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="!modeldemissao.preload"
+                        @click.prevent="demiteColaborador">
+                    <i class="fa fa-save"></i> Demitir
+                </button>
+            </div>
+        </template>
+    </modal>
+
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <form class="row" @submit.prevent="$refs.componente.buscar()">
@@ -1708,6 +1746,15 @@
                                    data-target="#janelaCadastrar"
                                 >
                                     Admitir
+                                </a>
+
+                                <a class="dropdown-item" href="javascript://" title="Demitir"
+                                   @click.prevent="formDemitir(item); visualizar = false"
+                                   v-if="permissoes.privilegio_processo_demitir && !filtrarDemitidos"
+                                   data-toggle="modal"
+                                   data-target="#janelaDemitir"
+                                >
+                                    Demitir
                                 </a>
 
                                 <a class="dropdown-item" href="javascript://" title="Visualizar"

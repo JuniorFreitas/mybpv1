@@ -768,6 +768,10 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
             Route::get('/colunas-tabela-processo', [\App\Http\Controllers\AdmissaoController::class, 'getColunasTabela'])->name('admissao.colunas-tabela-processo');
             Route::put('/colunas-tabela-processo', [\App\Http\Controllers\AdmissaoController::class, 'atualizarColunasTabela'])->name('admissao.atualizarColunasTabela');
 
+            //Demissao Avulsa via privilegio
+            Route::get('/dados-demitido-via-privilegio', [\App\Http\Controllers\AdmissaoController::class, 'getDadosDemitidoViaPrivilegio'])->name('admissao.getDadosDemitidoViaPrivilegio')->middleware('can:privilegio_processo_demitir');
+            Route::post('/demitir-via-privilegio', [\App\Http\Controllers\AdmissaoController::class, 'demitirViaPrivilegio'])->name('admissao.demitirViaPrivilegio')->middleware('can:privilegio_processo_demitir');
+
             Route::resource('admissao', \App\Http\Controllers\AdmissaoController::class)->middleware('can:admissao_processo');
 
             Route::group(['as' => 'documentos.', 'prefix' => 'documentos'], function () {

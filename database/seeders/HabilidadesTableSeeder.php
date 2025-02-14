@@ -320,7 +320,6 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'financeiro_fluxo-caixa_insert', 'descricao' => 'Pode cadastrar um novo lançamento'];
         $lista[] = ['nome' => 'financeiro_fluxo-caixa_update', 'descricao' => 'Pode alterar um lançamento'];
         $lista[] = ['nome' => 'financeiro_fluxo-caixa_delete', 'descricao' => 'Pode excluir um lançamento'];
-        $lista[] = ['nome' => 'privilegio_realizar-lancamento', 'descricao' => 'Definir lançamento como realizado ou não'];
 
         //Migração
         $lista[] = ['nome' => 'cadastro_instrutor', 'descricao' => 'Acessar Cadastro Instrutor'];
@@ -365,8 +364,6 @@ class HabilidadesTableSeeder extends Seeder
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
-        $lista[] = ['nome' => 'privilegio_aprovar_por_gestor', 'descricao' => 'Aprovação de Gestor'];
-        $lista[] = ['nome' => 'privilegio_aprovar_por_rh', 'descricao' => 'Aprovação de Rh'];
 
         //weekly-report
         $lista[] = ['nome' => 'weekly_report', 'descricao' => 'Acessar rota Weekley report'];
@@ -507,6 +504,12 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_mudanca_de_intermitente_para_fixo', 'descricao' => 'Exibir aba mudança de intermitente'];
         $lista[] = ['nome' => 'planejamento_movimentacao_exibir_aba_transferencia', 'descricao' => 'Exibir aba transferencia'];
 
+
+        // PRIVILEGIOS
+        $lista[] = ['nome' => 'privilegio_aprovar_por_gestor', 'descricao' => 'Aprovação de Gestor'];
+        $lista[] = ['nome' => 'privilegio_aprovar_por_rh', 'descricao' => 'Aprovação de Rh'];
+        $lista[] = ['nome' => 'privilegio_realizar-lancamento', 'descricao' => 'Definir lançamento como realizado ou não'];
+        $lista[] = ['nome' => 'privilegio_processo_demitir', 'descricao' => 'Pode demitir um funcionário, diretamente no menu processo'];
 
         try {
             DB::beginTransaction();
