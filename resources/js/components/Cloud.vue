@@ -959,6 +959,7 @@ export default {
                 return false;
             }
             this.preload_pasta = true;
+            // delete this.form.id;
             axios.post(`${URL_ADMIN}/itenscloud/`, this.form)
                 .then(response => {
                     let data = response.data;

@@ -1,7 +1,7 @@
 <template>
     <div>
         <div v-if="open && !openGroup">
-            <h4 class="text-default">{{ tituloJanela | upper}}</h4>
+            <h4 class="text-default">{{ tituloJanela | upper }}</h4>
 
             <button class="btn btn-sm btn-secondary" @click.prevent="voltar">
                 <i class="fa fa-arrow-left"></i> Voltar
@@ -39,6 +39,9 @@
 
             <fieldset v-if="editando">
                 <legend>Membros</legend>
+                <div class="alert alert-info">
+                    Todos os membros do Grupo Administradores automaticamente são adicionados.
+                </div>
 
                 <div class="form-group">
                     <label>Colaborador </label>
@@ -61,7 +64,7 @@
                         </thead>
                         <tbody>
                         <tr v-for="(colaborador, index) in form.usuarios">
-                            <td class="text-center">{{colaborador.nome}}</td>
+                            <td class="text-center">{{ colaborador.nome }}</td>
                             <td class="text-center">
                                 <a href="javascript://" class="btn btn-sm btn-danger"
                                    @click.prevent="removerLIColaborador(index)">
@@ -80,7 +83,7 @@
             <button class="btn btn-sm btn-secondary" @click.prevent="voltar">
                 <i class="fa fa-arrow-left"></i> Voltar
             </button>
-<!--            <grupo></grupo>-->
+            <!--            <grupo></grupo>-->
         </div>
 
         <div v-show="!open && !openGroup">
@@ -104,9 +107,9 @@
                 Cloud
             </button>
 
-<!--            <button type="button" class="btn btn-sm btn-primary" @click="openGroup=true">-->
-<!--                <i class="fas fa-users-cog"></i> Grupo-->
-<!--            </button>-->
+            <!--            <button type="button" class="btn btn-sm btn-primary" @click="openGroup=true">-->
+            <!--                <i class="fas fa-users-cog"></i> Grupo-->
+            <!--            </button>-->
 
             <preload class="mt-2" v-if="controle.carregando"></preload>
 
@@ -139,11 +142,11 @@
                                    data-target="#janelaCadastrar">
                                     <i class="fa fa-edit"></i>
                                 </a>
-<!--                                <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"-->
-<!--                                   @click.prevent="janelaConfirmar(item.id)" data-toggle="modal"-->
-<!--                                   data-target="#janelaConfirmar">-->
-<!--                                    <i class="fa fa-trash" aria-hidden="true"></i>-->
-<!--                                </a>-->
+                                <!--                                <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"-->
+                                <!--                                   @click.prevent="janelaConfirmar(item.id)" data-toggle="modal"-->
+                                <!--                                   data-target="#janelaConfirmar">-->
+                                <!--                                    <i class="fa fa-trash" aria-hidden="true"></i>-->
+                                <!--                                </a>-->
                             </td>
                         </tr>
                         </tbody>
@@ -162,6 +165,7 @@
 
 <script>
 import grupo from "./grupo";
+
 export default {
     components: {
         grupo
@@ -271,7 +275,7 @@ export default {
             this.editando ? this.alterar() : this.cadastrar();
         },
 
-        cadastrar() {
+        async cadastrar() {
             $("#janelaCadastrar :input:visible").trigger("blur");
             if ($("#janelaCadastrar :input:visible.is-invalid").length) {
                 alert("Verificar os erros");
@@ -279,17 +283,19 @@ export default {
             }
 
             this.preloadAjax = true;
-            axios.post(`${URL_ADMIN}/clouds/cadastro`, this.form)
+            await axios.post(`${URL_ADMIN}/clouds/cadastro`, this.form)
                 .then(response => {
                     mostraSucesso("Cadastro realizado com sucesso!");
                     this.preloadAjax = false;
+                    this.openGroup = false;
+                    this.open = false;
                     this.atualizar();
                 }).catch(error => {
-                this.preloadAjax = false;
-            });
+                    this.preloadAjax = false;
+                });
         },
 
-        formAlterar(id) {
+        async formAlterar(id) {
             this.form = _.cloneDeep(this.formDefault); //copia
             this.form.id = id;
             this.open = true;
@@ -302,14 +308,14 @@ export default {
             this.preloadAjax = true;
 
             formReset();
-            axios.get(`${URL_ADMIN}/clouds/cadastro/${id}/editar`)
-                .then(({ data }) => {
+            await axios.get(`${URL_ADMIN}/clouds/cadastro/${id}/editar`)
+                .then(({data}) => {
                     this.editando = true;
                     Object.assign(this.form, data);
                     this.preloadAjax = false;
                 }).catch(error => {
-                this.preloadAjax = false;
-            });
+                    this.preloadAjax = false;
+                });
         },
 
         alterar() {
@@ -322,7 +328,7 @@ export default {
             this.preloadAjax = true;
 
             axios.put(`${URL_ADMIN}/clouds/cadastro/${this.form.id}`, this.form)
-                .then(({ data }) => {
+                .then(({data}) => {
                     mostraSucesso("Altereção realizada com sucesso!");
                     this.open = false;
                     this.preloadAjax = false;
@@ -343,7 +349,7 @@ export default {
             this.preloadAjax = true;
 
             axios.delete(`${URL_ADMIN}/clouds/cadastro/${this.form.id}`, this.form)
-                .then(({ data }) => {
+                .then(({data}) => {
                     this.preloadAjax = false;
                     this.apagado = true;
                     this.atualizar();

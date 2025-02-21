@@ -700,13 +700,13 @@
                 <span>CLOUD</span>
             </a>
             <ul aria-expanded="false">
-
-
+                {{--                auth()->user()->GrupoCloud?->nome == 'Administradores'--}}
                 @foreach(auth()->user()->CloudsAtivo as $cloud)
                     <li>
                         <a href="{{route('g.cloud.cloud.single', [$cloud->id, $cloud->nome])}}" parent="cloud"
                            key="{{$cloud->nome}}">
-                            {{$cloud->nome}}
+                            <i class="fas fa-folder"
+                               style="color: #EECD6D; font-size: 0.85rem;"></i> {{$cloud->nome}}
                         </a>
                     </li>
                 @endforeach
@@ -935,6 +935,20 @@
 
 @push('js')
     <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            // Verifica se o menu 'cloud' está ativo
+            let cloudMenu = document.getElementById("cloud");
+            if (cloudMenu && cloudMenu.classList.contains("mm-active")) {
+                // Seleciona apenas os itens ativos dentro do menu
+                let activeItems = cloudMenu.querySelectorAll("li.mm-active i.fas.fa-folder");
+
+                // Troca a classe de cada ícone dentro dos itens ativos
+                activeItems.forEach(icon => {
+                    icon.classList.remove("fa-folder");
+                    icon.classList.add("fa-folder-open");
+                });
+            }
+        });
 
         $.expr[":"].contains = $.expr.createPseudo(function (arg) {
             return function (elem) {

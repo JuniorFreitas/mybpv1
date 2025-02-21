@@ -92,10 +92,10 @@ class CloudController extends Controller
         $this->authorize('cloud');
 
         $cloud = Cloud::with('Itens', 'Raiz')->find($id);
-        if(!$cloud){
+        if (!$cloud) {
             return abort(404);
         }
-        if(!auth()->user()->Clouds()->find($id)){
+        if (!auth()->user()->Clouds()->find($id)) {
             return abort(403);
         }
         return view('g.cloud.index', compact('cloud'));
@@ -109,7 +109,7 @@ class CloudController extends Controller
      */
     public function atualizar(Request $request, $cloud, $id = null)
     {
-        if(!auth()->user()->Clouds()->find($cloud)){
+        if (!auth()->user()->Clouds()->find($cloud)) {
             return abort(403);
         }
 
@@ -224,7 +224,12 @@ class CloudController extends Controller
 
         try {
             DB::beginTransaction();
-            Cloud::create($dados);
+            $cloud = Cloud::create($dados);
+
+            foreach ($this->grupoAdmin()->pluck('id') as $uadmin) {
+                $cloud->Usuarios()->detach($uadmin);
+                $cloud->Usuarios()->attach($uadmin);
+            }
             DB::commit();
             return response()->json([]);
         } catch (\Exception $e) {
@@ -239,6 +244,16 @@ class CloudController extends Controller
     public function edit(Request $request, Cloud $cloud)
     {
         return $cloud->load('Usuarios');
+    }
+
+    protected function grupoAdmin()
+    {
+        return GrupoCloud::where('nome', 'Administradores')
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->with('Usuarios', function ($query) {
+                $query->select(['id', 'nome', 'grupo_cloud_id'])->where('ativo', true);
+            })
+            ->first()->usuarios;
     }
 
     public function updateCloud(Request $request, Cloud $cloud)
@@ -270,6 +285,11 @@ class CloudController extends Controller
 
             foreach ($request->usuarios as $usuario) {
                 $cloud->Usuarios()->attach($usuario['id']);
+            }
+
+            foreach ($this->grupoAdmin()->pluck('id') as $uadmin) {
+                $cloud->Usuarios()->detach($uadmin);
+                $cloud->Usuarios()->attach($uadmin);
             }
 
             DB::commit();

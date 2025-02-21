@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Arquivo;
 use App\Models\GrupoCloud;
 use App\Models\ItensCloud;
-use App\Models\Sistema;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +25,7 @@ class ItensCloudController extends Controller
         $this->authorize('cloud_insert');
         $dados = $request->input();
 
+
         $regra = Rule::unique('itens_cloud')->where(function ($query) use ($dados) {
             return $query->whereCloudId($dados['cloud_id'])
                 ->whereLabel($dados['label'])
@@ -34,40 +34,44 @@ class ItensCloudController extends Controller
                 ->wherePertence($dados['pertence']);
         });
 
+
         $dadosValidados = \Validator::make($dados, [
             'label' => ['required', $regra]
         ]);
+
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao criar nova pasta',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $dados['quem_criou'] = auth()->id();
-                $item = ItensCloud::create($dados);
-                $permissoes = collect([$this->grupoAdmin()]);
-                if ($request->filled('permissoes')) {
-                    $dadosPermissao = [];
-                    foreach ($dados['permissoes'] as $grupo_cloud) {
-                        $dadosPermissao[] = $grupo_cloud['id'];
-                    }
-                    $permissoes = $permissoes->concat($dadosPermissao);
+        }
+
+
+        try {
+            DB::beginTransaction();
+            $dados['quem_criou'] = auth()->id();
+
+            $item = ItensCloud::create($dados);
+            $permissoes = collect([$this->grupoAdmin()]);
+            if ($request->filled('permissoes')) {
+                $dadosPermissao = [];
+                foreach ($dados['permissoes'] as $grupo_cloud) {
+                    $dadosPermissao[] = $grupo_cloud['id'];
                 }
-                $item->Permissoes()->attach($permissoes);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $msg = "error ITENS CLOUD: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                \Log::info("-------DADOS-------");
-                Sistema::telegram(print_r($dados, true));
-                \Log::info("-------FIM DE DADOS-------");
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
+                $permissoes = $permissoes->concat($dadosPermissao);
             }
+            $item->Permissoes()->attach($permissoes);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $msg = "error ITENS CLOUD: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            \Log::info("-------DADOS-------");
+            Sistema::telegram(print_r($dados, true));
+            \Log::info("-------FIM DE DADOS-------");
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente, Caso persista entre em contato com o suporte!'], 400);
         }
     }
 

@@ -57,7 +57,7 @@ class Cloud extends Model
         $activity->descricao = "";
     }
 
-    protected $fillable = ['nome','empresa_id','ativo'];
+    protected $fillable = ['nome', 'empresa_id', 'ativo'];
     protected $casts = ['id' => 'int', 'empresa_id' => 'int', 'nome' => 'string', 'ativo' => 'boolean'];
 
     public function Empresa()
@@ -78,6 +78,11 @@ class Cloud extends Model
     public function Usuarios()
     {
         return $this->belongsToMany(User::class, 'user_clouds', 'cloud_id', 'user_id')->select(['id', 'nome']);
+    }
+    
+    public static function todosCloudsAdminAtivo($usuarioId, $empresaId)
+    {
+        return Cloud::where('empresa_id', $empresaId)->where('ativo', true)->get();
     }
 
 }
