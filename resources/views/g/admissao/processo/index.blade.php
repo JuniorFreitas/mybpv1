@@ -46,7 +46,7 @@
                         <div class="row">
                             <div class="col-12 col-sm-6 col-md-4">
                                 <div class="form-group">
-                                    <label>CPF</label>
+                                    <label>CPF <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" v-model="formAvulsa.curriculo.cpf"
                                            placeholder="CPF"
                                            ref="cpf"
@@ -59,7 +59,7 @@
                             <template v-if="exibiFormulario">
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
-                                        <label>Nome</label>
+                                        <label>Nome <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" v-model="formAvulsa.curriculo.nome"
                                                placeholder="Nome"
                                                autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
@@ -68,7 +68,7 @@
 
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
-                                        <label>E-mail</label>
+                                        <label>E-mail <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" v-model="formAvulsa.curriculo.email"
                                                placeholder="Ex.: email@email.com"
                                                autocomplete="mybp" onblur="validaEmail(this)">
@@ -77,7 +77,7 @@
 
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
-                                        <label>Nascimento</label>
+                                        <label>Nascimento <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control validacampo"
                                                v-model="formAvulsa.curriculo.nascimento"
                                                placeholder="Ex: 10/10/2010"
@@ -98,7 +98,7 @@
 
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
-                                        <label>Cota PCD (Lei nº 8.213/91)</label>
+                                        <label>Cota PCD (Lei nº 8.213/91) <span class="text-danger">*</span></label>
                                         <select class="form-control" onchange="valida_campo_vazio(this,1)"
                                                 onblur="valida_campo_vazio(this,1)"
                                                 v-model="formAvulsa.curriculo.pcd">
@@ -111,7 +111,7 @@
 
                                 <div class="col-12 col-sm-6 col-md-4" v-if="formAvulsa.curriculo.pcd">
                                     <div class="form-group">
-                                        <label>CID (Código Internacional de Doenças)</label>
+                                        <label>CID (Código Internacional de Doenças) <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
                                                placeholder="Informe o CID" v-model="formAvulsa.curriculo.cid">
                                     </div>
@@ -154,7 +154,7 @@
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-4">
                                     <div class="form-group">
-                                        <label>Mãe</label>
+                                        <label>Mãe <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control"
                                                v-model="formAvulsa.curriculo.filiacao_mae"
                                                placeholder="Nome da Mãe"
@@ -175,7 +175,7 @@
 
                                 <div class="col-12">
                                     <fieldset>
-                                        <legend>Contato</legend>
+                                        <legend>Contato <span class="text-danger">*</span></legend>
                                         <div class="row">
                                             <div class="col-12">
                                                 <telefone :model="formAvulsa.curriculo.telefones" :pais="false"
@@ -228,7 +228,7 @@
                                         <div class="row">
                                             <div class="col-12 col-sm-6">
                                                 <div class="form-group">
-                                                    <label>Formação</label>
+                                                    <label>Formação </label>
                                                     <select class="form-control"
                                                             v-model="formAvulsa.curriculo.formacao">
                                                         @foreach(\App\Models\Escolaridade::get() as $item)
@@ -262,7 +262,7 @@
 
                                 <div class="col-12 col-sm-12 col-md-12">
                                     <div class="form-group">
-                                        <label>Vaga</label>
+                                        <label>Vaga <span class="text-danger">*</span></label>
                                         <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                                       :valido="formAvulsa.feedback.vaga_id !== ''"
                                                       v-model="formAvulsa.feedback.autocomplete_label_vaga_modal"
@@ -328,7 +328,7 @@
 
                                 <div class="col-12 col-sm-6 col-md-3">
                                     <div class="form-group">
-                                        <label>Indicado</label>
+                                        <label>Indicado <span class="text-danger">*</span></label>
                                         <select class="form-control" onchange="valida_campo_vazio(this,1)"
                                                 onblur="valida_campo_vazio(this,1)"
                                                 v-model="formAvulsa.parecer_rh.indicacao">
@@ -341,7 +341,7 @@
 
                                 <div class="col-12 col-sm-6 col-md-3" v-show="formAvulsa.parecer_rh.indicacao">
                                     <div class="form-group">
-                                        <label>Quem indicou</label>
+                                        <label>Quem indicou <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control"
                                                v-model="formAvulsa.parecer_rh.indicado_por"
                                                placeholder="Nome"
@@ -603,7 +603,7 @@
                     <div class="row">
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
-                                <label>Nome</label>
+                                <label>Nome <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        v-model="form.curriculo.nome">
                             </div>
@@ -611,7 +611,7 @@
 
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
-                                <label>E-mail</label>
+                                <label>E-mail <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control"
                                        :disabled="visualizar"
                                        onblur="validaEmailVazio(this)"
@@ -621,7 +621,7 @@
 
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>Nascimento</label>
+                                <label>Nascimento <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control validacampo"
                                        :disabled="visualizar"
                                        v-model="form.curriculo.nascimento"
@@ -670,7 +670,7 @@
 
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>Cota PCD (Lei nº 8.213/91)</label>
+                                <label>Cota PCD (Lei nº 8.213/91) <span class="text-danger">*</span></label>
                                 <select class="form-control" onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)"
                                         :disabled="visualizar"
@@ -684,7 +684,7 @@
 
                         <div class="col-12 col-sm-6 col-md-4" v-if="form.curriculo.pcd">
                             <div class="form-group">
-                                <label>CID (Código Internacional de Doenças)</label>
+                                <label>CID (Código Internacional de Doenças) <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
                                        placeholder="Informe o CID" v-model="form.curriculo.cid">
                             </div>
@@ -702,7 +702,7 @@
 
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
-                                <label>Mãe</label>
+                                <label>Mãe <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control"
                                        v-model="form.curriculo.filiacao_mae" :disabled="visualizar"
                                        placeholder="Nome da Mãe"
@@ -838,7 +838,7 @@
                         <div class="row">
                             <div class="col-12 col-sm-6">
                                 <div class="form-group">
-                                    <label>Formação</label>
+                                    <label>Formação <span class="text-danger">*</span></label>
                                     <select class="form-control"
                                             onblur="valida_campo_vazio(this,1)"
                                             onchange="valida_campo_vazio(this,1)"
@@ -917,7 +917,7 @@
                     <div class="row">
                         <div class="col-12 col-sm-12 col-md-12">
                             <div class="form-group">
-                                <label>Vaga</label>
+                                <label>Vaga <span class="text-danger">*</span></label>
                                 <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                               :valido="form.vagas_abertas_id !== ''"
                                               v-model="form.autocomplete_label_vaga_modal"
@@ -995,7 +995,7 @@
 
                         <div class="col-12 col-sm-6 col-md-3" v-show="form.parecer_rh.indicacao">
                             <div class="form-group">
-                                <label>Quem indicou</label>
+                                <label>Quem indicou <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control"
                                        v-model="form.parecer_rh.indicado_por" :disabled="visualizar"
                                        placeholder="Nome"

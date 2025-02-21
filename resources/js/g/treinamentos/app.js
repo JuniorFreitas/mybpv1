@@ -139,6 +139,7 @@ const app = new Vue({
                 campoNr_trinta_cinco: '',
                 campoNr_ebtv: '',
                 campoAdmitido: '',
+                campoDemitido: false,
                 campoCracha: '',
                 campoFoto: '',
                 campo_dataInicio: '',

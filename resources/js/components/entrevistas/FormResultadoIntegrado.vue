@@ -55,8 +55,6 @@
                         <label>Encaminhado para Exame</label>
                         <select
                             class="form-control"
-                            onchange="valida_campo_vazio(this,1)"
-                            onblur="valida_campo_vazio(this,1)"
                             :disabled="visualizar || disabled || encaminhado.exame"
                             v-model="form.encaminhado_exame"
                         >
@@ -71,8 +69,8 @@
                     <label>PCMSO</label>
                     <select
                         class="form-control"
-                        onchange="valida_campo_vazio(this,1)"
-                        onblur="valida_campo_vazio(this,1)"
+                        v-bind:onchange="!empresasSemValidacao.includes(AUTENTICADO.cliente_id) ? 'valida_campo_vazio(this,1)' : null"
+                        v-bind:onblur="!empresasSemValidacao.includes(AUTENTICADO.cliente_id) ? 'valida_campo_vazio(this,1)' : null"
                         :disabled="visualizar || disabled || encaminhado.exame"
                         v-model="form.pcmso_id"
                     >
@@ -86,8 +84,8 @@
                     <label>Empresa Exame</label>
                     <select
                         class="form-control"
-                        onchange="valida_campo_vazio(this,1)"
-                        onblur="valida_campo_vazio(this,1)"
+                        v-bind:onchange="!empresasSemValidacao.includes(AUTENTICADO.cliente_id) ? 'valida_campo_vazio(this,1)' : null"
+                        v-bind:onblur="!empresasSemValidacao.includes(AUTENTICADO.cliente_id) ? 'valida_campo_vazio(this,1)' : null"
                         :disabled="visualizar || disabled || encaminhado.exame"
                         v-model="form.empresa_exame_id"
                     >
@@ -262,6 +260,7 @@ export default {
             default: false
         }
     },
+
     data() {
         return {
             listaPcmso: [],
@@ -270,7 +269,9 @@ export default {
                 documentos: false,
                 exame: false,
                 treinamento: false
-            }
+            },
+            AUTENTICADO,
+            empresasSemValidacao: [78862]
         };
     },
     mounted() {

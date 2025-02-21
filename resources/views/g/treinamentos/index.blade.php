@@ -413,6 +413,19 @@
                 </select>
             </div>
 
+            <div class="col-12 col-sm-2">
+                <div class="form-group">
+                    <label>Por Demitido</label>
+                    <select class="form-control form-control-sm"
+                            @change="atualizar"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoDemitido">
+                        <option :value="true">Sim</option>
+                        <option :value="false">Não</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="col-12 col-lg-3">
                 <label>Treinados</label>
                 <select class="custom-select custom-select-sm" @change="selecionaTreinados($event.target.value)"

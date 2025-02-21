@@ -10,11 +10,22 @@
                     <td style="width: 50%; height: 8.30cm; vertical-align: top;">
                         <table>
                             <tr>
-                                <td style="text-align: center;">
-                                    <img src="{{asset('images/carteira/cabecalho_carteira_alumar.webp')}}"
-                                         style="width: 5.7cm; margin-bottom: -1mm;">
-                                </td>
+                                @if(auth()->user()->empresa_id !== 78862)
+                                    <td style="text-align: center;">
+                                        <img src="{{asset('images/carteira/cabecalho_carteira_alumar.webp')}}"
+                                             style="width: 5.7cm; margin-bottom: -1mm;">
+                                    </td>
+                                @else
+                                    <td style="text-align: center;">
+                                        <img
+                                            src="{{env('AWS_URL')}}/arquivos/disco-cliente/{{auth()->user()->ClientesLogo[0]->thumb}}"
+                                            alt="Logo" title="Logo" style="width: 1.6cm">
+                                        <img src="{{asset('images/carteira/cabecalho_carteira_alumar.webp')}}"
+                                             style="width: 5cm; margin-bottom: -1mm;">
+                                    </td>
+                                @endif
                             </tr>
+
                             <tr>
                                 <td style="text-align: left; height: 6cm; vertical-align: top">
                                     <ul style="list-style: none; top: 29px; padding-left: 0.6mm">

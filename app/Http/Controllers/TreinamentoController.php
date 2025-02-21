@@ -349,9 +349,7 @@ class TreinamentoController extends Controller
 
         $resultado = FeedbackCurriculo::select([
             'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id'
-        ])->Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
-            $q->whereEncaminhadoTreinamento(true);
-        })->with(
+        ])->with(
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
             'Curriculo.FotoTres:id',
 //            'Admissao:id,feedback_id,area_etiqueta_id,data_admissao,matricula,funcao,nr_trinta_cinco,nr_trinta_tres,numero_cracha,status,cargo',
@@ -388,6 +386,15 @@ class TreinamentoController extends Controller
                 });
             });
         }
+
+        if ($request->campoDemitido) {
+            $resultado->Demitidos();
+        } else {
+            $resultado->Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
+                $q->whereEncaminhadoTreinamento(true);
+            });
+        }
+
 
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
