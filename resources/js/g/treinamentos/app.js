@@ -124,7 +124,7 @@ const app = new Vue({
                 autocomplete_label: '',
                 autocomplete_label_cliente_anterior: '',
                 autocomplete_label_cliente: '',
-                pages: 20,
+                pages: 50,
                 cliente_custom: '',
                 campoBusca: '',
                 campoVaga: '',
