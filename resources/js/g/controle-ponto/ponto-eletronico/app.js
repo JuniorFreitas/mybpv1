@@ -1,6 +1,5 @@
 import preload from '../../../components/preload';
 import datepicker from '../../../components/DatePicker';
-import {Loader} from "@googlemaps/js-api-loader"
 import {now} from "moment";
 
 const app = new Vue({
@@ -11,10 +10,9 @@ const app = new Vue({
     },
     data: {
         URL_ADMIN,
-        GOOGLE_MAPS_KEY,
         EMPRESA_ID: null,
         preload: true,
-        preloadGoogleMaps: true,
+        mapLoading: false,
 
         listaPerimetros: [],
         listaEscalas: [],
@@ -26,7 +24,7 @@ const app = new Vue({
             long: -44.2322,
             perimetro: 50,
             obrigatorio: true,
-            dentro: false, // gps
+            dentro: false,
             telaGPS: true,
             telaCamera: false,
             preload: false,
@@ -36,7 +34,11 @@ const app = new Vue({
         formPontoDefault: null,
         registros: [],
 
-        //Historico ------------
+        // Contador regressivo para captura de foto
+        contadorRegressivo: 0,
+        contadorTimer: null,
+
+        // Histórico
         historico: [],
         formHistorico: {
             data: moment().format('DD/MM/YYYY'),
@@ -49,30 +51,16 @@ const app = new Vue({
         },
         modelRegistro: null,
 
-
+        // Mapa e localização
         map: null,
         marker: null,
-        atual: null,
-        timeMapa: null,
+        userLocation: null,
+        locationTimer: null,
         webCam: null,
         agora: moment(),
         hoje: ''
-
     },
     mounted() {
-
-        //this.atualizarListaFuncionarios();
-        //this.atualizarListaPeriemetros();
-        const loader = new Loader({
-            apiKey: this.GOOGLE_MAPS_KEY,
-            version: "weekly",
-            libraries: ['places', 'geometry']
-        });
-
-        loader.load().then(() => {
-            this.preloadGoogleMaps = false;
-        });
-
         this.init();
         this.atualizarHistorico();
 
@@ -89,361 +77,364 @@ const app = new Vue({
         }
     },
     methods: {
-        //Marcar ponto ------------------------------------
-        init() {
+        // Inicialização da aplicação
+        async init() {
             this.preload = true;
-            axios.get(`${URL_ADMIN}/controle-ponto/ponto-eletronico/init/`,)
-                .then(response => {
-                    this.preload = false;
-                    this.listaPerimetros = response.data.lista_perimetros;
-                    this.listaEscalas = response.data.lista_escalas;
-                    this.agora = moment(response.data.agora, 'YYYY-MM-DD HH:mm:ss');
-                    this.registros = response.data.registros;
+            try {
+                const response = await axios.get(`${URL_ADMIN}/controle-ponto/ponto-eletronico/init/`);
+                this.preload = false;
+                this.listaPerimetros = response.data.lista_perimetros;
+                this.listaEscalas = response.data.lista_escalas;
+                this.agora = moment(response.data.agora, 'YYYY-MM-DD HH:mm:ss');
+                this.registros = response.data.registros;
 
-
-                    /*if (!this.perimetroUsuario.obrigatorio) { // senao é obrigatorio tela de gps
-                        this.formPonto.obrigatorio = false;
-                        this.formPonto.telaGPS = true;
-                        this.formPonto.telaCamera = false;
-                    }*/
+                if (this.perimetroUsuario) {
                     this.formPonto.obrigatorio = this.perimetroUsuario.obrigatorio;
-                    this.formPontoDefault = _.cloneDeep(this.formPonto);
+                }
+                this.formPontoDefault = _.cloneDeep(this.formPonto);
 
-                    setInterval(() => {
-                        this.agora.add(1, 'seconds');
-                        this.hoje = `${this.agora.format('DD/MM/YYYY')} - ${this.agora.format('HH')}h:${this.agora.format('mm')} - ${this.agora.format('dddd').capitalize()}`;
-                    }, 1000);
+                // Iniciar o relógio
+                setInterval(() => {
+                    this.agora.add(1, 'seconds');
+                    this.hoje = `${this.agora.format('DD/MM/YYYY')} - ${this.agora.format('HH')}h:${this.agora.format('mm')} - ${this.agora.format('dddd').capitalize()}`;
+                }, 1000);
+            } catch (error) {
+                console.error("Erro ao inicializar aplicação:", error);
+                this.preload = false;
+            }
+        },
 
-                }).catch(error => {
-                //this.preload = false;
+        // Função auxiliar para encapsular a geolocalização em uma Promise
+        getPosition(options = {}) {
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, options);
             });
         },
-        initMap() {
-            this.marker = null;
-            this.map = null;
-            let latLong = null;
-            this.map = new google.maps.Map(document.getElementById("mapaPrimetro"), {
-                center: {lat: this.formPonto.lat, lng: this.formPonto.long},
-                zoom: 8,
-                //streetViewControl: false,
-                disableDefaultUI: true,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            });
-            if (this.formPonto.obrigatorio) {
-                console.log(this.listaPerimetros);
-                this.listaPerimetros.forEach((p) => {
-                    p.circulo = new google.maps.Circle({
-                        strokeColor: '#ff0000',
-                        strokeWeigth: 2,
-                        strokeOpacity: 1,
-                        fillColor: '#ff0000',
-                        fillOpacity: .4,
-                        center: {lat: p.lat, lng: p.long},
-                        radius: p.perimetro,
-                        map: this.map,
-                        editable: false,
-                        draggable: false
-                    });
 
-                    /*this.perimetro.addListener('bounds_changed', (event) => {
-                        //console.log(event,this.perimetro);
-                        this.formPonto.perimetro = this.perimetro.radius;
-                        /!*let distancia = google.maps.geometry.spherical.computeDistanceBetween(this.marker.getPosition(), this.perimetro.getCenter());
-                        if((distancia - this.perimetro.radius) < 0){
-                            this.perimetro.setOptions({
-                                fillColor:'#3f9827',
-                                strokeColor:'#3f9827',
-                            })
-                        }else{
-                            this.perimetro.setOptions({
-                                fillColor:'#ff0000',
-                                strokeColor:'#ff0000',
-                            })
-                        }*!/
-                    });*/
-                    /*this.perimetro.addListener('dragend', (event) => {
-                        //this.formPonto.perimetro = this.perimetro.radius;
-                        this.formPonto.lat = event.latLng.lat();
-                        this.formPonto.long = event.latLng.lng();
+        // Inicialização do mapa Leaflet
+        async initMap() {
+            this.mapLoading = true;
 
-                        /!*let distancia = google.maps.geometry.spherical.computeDistanceBetween(this.marker.getPosition(), this.perimetro.getCenter());
-                        if((distancia - this.perimetro.radius) < 0){
-                            this.perimetro.setOptions({
-                                fillColor:'#3f9827',
-                                strokeColor:'#3f9827',
-                            })
-                        }else{
-                            this.perimetro.setOptions({
-                                fillColor:'#ff0000',
-                                strokeColor:'#ff0000',
-                            })
-                        }*!/
-
-                    });*/
-                });
+            // Limpar mapa anterior se existir
+            if (this.map) {
+                this.map.remove();
+                this.map = null;
+                this.marker = null;
             }
 
+            // Inicializar mapa após o DOM estar pronto
+            await new Promise(resolve => Vue.nextTick(resolve));
 
-            //buscar a localizacao
-            navigator.geolocation.getCurrentPosition((dados) => {
-                latLong = new google.maps.LatLng(dados.coords.latitude, dados.coords.longitude);
-                this.atual = latLong
+            try {
+                // Criar mapa Leaflet
+                this.map = L.map('mapaPrimetro').setView([this.formPonto.lat, this.formPonto.long], 13);
 
-                this.formPonto.lat = this.atual.lat();
-                this.formPonto.long = this.atual.lng();
+                // Adicionar camada de mapa base
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(this.map);
 
-                this.map.setCenter(new google.maps.LatLng(this.formPonto.lat, this.formPonto.long));
-                this.map.setZoom(19);
+                // Forçar recálculo de tamanho após renderização
+                await new Promise(resolve => setTimeout(() => {
+                    this.map.invalidateSize();
+                    resolve();
+                }, 300));
 
-                //this.perimetro.setCenter(latLong);
-                if (!this.marker) {
-                    this.map.setCenter(this.atual);
-                    this.map.setZoom(19);
-                    this.marker = new google.maps.Marker({
-                        map: this.map,
-                        position: latLong,
-                        title: "Você está aqui",
-                        //icon: `${URL_SITE}/imagens/map_icon.png`,
-                        flat: false,
-                        draggable: false
-                    });
+                this.mapLoading = false;
+
+                // Adicionar perímetros ao mapa
+                this.adicionarPerimetros();
+
+                // Iniciar rastreamento de localização
+                await this.iniciarRastreamento();
+            } catch (e) {
+                console.error("Erro ao inicializar mapa:", e);
+                this.mapLoading = false;
+            }
+        },
+
+        // Adicionar perímetros ao mapa
+        adicionarPerimetros() {
+            if (!this.map || !this.formPonto.obrigatorio || !this.listaPerimetros) return;
+
+            this.listaPerimetros.forEach(perimetro => {
+                if (!perimetro.lat || !perimetro.long) return;
+
+                // Definir raio do perímetro (com valor padrão se não for definido)
+                const raio = perimetro.perimetro || 50;
+
+                // Criar círculo no mapa
+                perimetro.circulo = L.circle([perimetro.lat, perimetro.long], {
+                    color: '#ff0000',
+                    weight: 2,
+                    fillColor: '#ff0000',
+                    fillOpacity: 0.4,
+                    radius: raio
+                }).addTo(this.map);
+            });
+        },
+
+        // Iniciar rastreamento de localização do usuário
+        async iniciarRastreamento() {
+            // Opções para a API de geolocalização
+            const geoOptions = {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            };
+
+            try {
+                // Obter posição inicial
+                const posicao = await this.getPosition(geoOptions);
+                this.atualizarPosicao(posicao);
+            } catch (erro) {
+                this.handleGeoError(erro);
+            }
+
+            // Configurar atualização contínua da posição
+            this.locationTimer = setInterval(async () => {
+                if (this.formPonto.telaGPS && this.map) {
+                    try {
+                        const posicao = await this.getPosition(geoOptions);
+                        this.atualizarPosicao(posicao);
+                    } catch (erro) {
+                        this.handleGeoError(erro);
+                    }
                 }
-                //this.marker.setMap(null); //limpar
+            }, 5000);
+        },
 
-                this.marker.setPosition(latLong);
+        // Atualizar a posição do usuário
+        atualizarPosicao(posicao) {
+            if (!this.map) return;
 
-                //verificando todos os perimetros se esta dentro deles
-                if (this.formPonto.obrigatorio) {
-                    this.formPonto.dentro = false;
-                    this.listaPerimetros.forEach((p) => {
+            const coords = posicao.coords;
+            const latLng = [coords.latitude, coords.longitude];
 
-                        let distancia = google.maps.geometry.spherical.computeDistanceBetween(this.marker.getPosition(), p.circulo.getCenter());
-                        if ((distancia - p.circulo.radius) < 0) {
-                            this.formPonto.dentro = true;
-                            p.circulo.setOptions({
-                                fillColor: '#3f9827',
-                                strokeColor: '#3f9827',
-                            })
-                        } else {
-                            p.circulo.setOptions({
-                                fillColor: '#ff0000',
-                                strokeColor: '#ff0000',
-                            })
-                        }
+            // Armazenar posição atual
+            this.userLocation = {
+                lat: coords.latitude,
+                lng: coords.longitude
+            };
+
+            this.formPonto.lat = coords.latitude;
+            this.formPonto.long = coords.longitude;
+
+            // Centralizar mapa na posição
+            this.map.setView(latLng, this.map.getZoom() || 16);
+
+            // Criar ou atualizar marcador
+            if (!this.marker) {
+                this.marker = L.marker(latLng, {
+                    title: "Sua localização atual"
+                }).addTo(this.map);
+            } else {
+                this.marker.setLatLng(latLng);
+            }
+
+            // Verificar se está dentro de algum perímetro
+            this.verificarPerimetros(latLng);
+        },
+
+        // Tratar erro de geolocalização
+        handleGeoError(erro) {
+            console.error("Erro ao obter localização: ", erro.message);
+
+            // Se não conseguir obter a localização, definir como não estando dentro de nenhum perímetro
+            if (this.formPonto.obrigatorio) {
+                this.formPonto.dentro = false;
+            } else {
+                this.formPonto.dentro = true;
+            }
+        },
+
+        // Verificar se o usuário está dentro de algum perímetro
+        verificarPerimetros(posicao) {
+            if (!this.formPonto.obrigatorio || !this.listaPerimetros) {
+                this.formPonto.dentro = true;
+                return;
+            }
+
+            // Começar assumindo que não está dentro de nenhum perímetro
+            this.formPonto.dentro = false;
+
+            this.listaPerimetros.forEach(perimetro => {
+                if (!perimetro.lat || !perimetro.long || !perimetro.circulo) return;
+
+                // Calcular distância entre usuário e centro do perímetro
+                const distancia = this.calcularDistancia(
+                    posicao,
+                    [perimetro.lat, perimetro.long]
+                );
+
+                const raio = perimetro.perimetro || 50;
+
+                // Verificar se está dentro do perímetro
+                if (distancia < raio) {
+                    this.formPonto.dentro = true;
+                    perimetro.circulo.setStyle({
+                        color: '#3f9827',
+                        fillColor: '#3f9827'
                     });
                 } else {
-                    this.formPonto.dentro = true;
+                    perimetro.circulo.setStyle({
+                        color: '#ff0000',
+                        fillColor: '#ff0000'
+                    });
                 }
-
-
-                //atualizar de 5 em 5 segundos
-                this.timeMapa = setInterval(() => {
-                    if (this.formPonto.telaGPS) {
-                        navigator.geolocation.getCurrentPosition((dados) => {
-                            latLong = new google.maps.LatLng(dados.coords.latitude, dados.coords.longitude);
-                            this.atual = latLong
-
-                            this.formPonto.lat = this.atual.lat();
-                            this.formPonto.long = this.atual.lng();
-
-                            //this.perimetro.setCenter(latLong);
-                            if (this.marker) {
-                                this.marker.setPosition(latLong);
-                                console.log('gps');
-                            }
-                            //verificando todos os perimetros se esta dentro deles
-                            if (this.formPonto.obrigatorio) {
-                                this.formPonto.dentro = false;
-                                this.listaPerimetros.forEach((p) => {
-
-                                    let distancia = google.maps.geometry.spherical.computeDistanceBetween(this.marker.getPosition(), p.circulo.getCenter());
-                                    if ((distancia - p.circulo.radius) < 0) {
-                                        this.formPonto.dentro = true;
-                                        p.circulo.setOptions({
-                                            fillColor: '#3f9827',
-                                            strokeColor: '#3f9827',
-                                        })
-                                    } else {
-                                        p.circulo.setOptions({
-                                            fillColor: '#ff0000',
-                                            strokeColor: '#ff0000',
-                                        })
-                                    }
-                                });
-                            } else {
-                                this.formPonto.dentro = true;
-                            }
-
-                            //this.marker.setMap(null); //limpar
-
-
-                            /* this.marker.addListener('drag', (event) => {
-                                 this.marcarMapa(event.latLng);
-                             });*/
-
-
-                            //this.marcarMapa(this.atual);
-
-                            //this.calcularRota();
-                        });
-                    }
-
-                }, 5000);
-
-                /* this.marker.addListener('drag', (event) => {
-                     this.marcarMapa(event.latLng);
-                 });*/
-
-
-                //this.marcarMapa(this.atual);
-
-                //this.calcularRota();
             });
-
         },
+
+        // Calcular distância entre dois pontos usando fórmula de Haversine
+        calcularDistancia(ponto1, ponto2) {
+            const R = 6371e3; // Raio da Terra em metros
+            const lat1 = Array.isArray(ponto1) ? ponto1[0] : ponto1.lat || 0;
+            const lng1 = Array.isArray(ponto1) ? ponto1[1] : ponto1.lng || 0;
+            const lat2 = Array.isArray(ponto2) ? ponto2[0] : ponto2.lat || 0;
+            const lng2 = Array.isArray(ponto2) ? ponto2[1] : ponto2.lng || 0;
+
+            const φ1 = this.toRadians(lat1);
+            const φ2 = this.toRadians(lat2);
+            const Δφ = this.toRadians(lat2 - lat1);
+            const Δλ = this.toRadians(lng2 - lng1);
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // Distância em metros
+        },
+
+        // Converter graus para radianos
+        toRadians(degrees) {
+            return degrees * Math.PI / 180;
+        },
+
+        // Parar rastreamento GPS e limpar recursos
         stopGPS() {
-            clearInterval(this.timeMapa);
+            if (this.locationTimer) {
+                clearInterval(this.locationTimer);
+                this.locationTimer = null;
+            }
+
+            if (this.map) {
+                this.map.remove();
+                this.map = null;
+                this.marker = null;
+            }
         },
 
-        atualizarHistorico() {
+        // Atualizar histórico de registros
+        async atualizarHistorico() {
             this.formHistorico.preload = true;
-            axios.post(`${URL_ADMIN}/controle-ponto/ponto-eletronico/atualizarHistorico/`, this.formHistorico)
-                .then(response => {
-                    this.formHistorico.preload = false;
-                    this.historico = response.data.historicos;
-                    this.duracaoDiaHistorico = moment('00:00', 'HH:mm');
-                    this.tempoTrabalhadoHistorico = moment('00:00', 'HH:mm');
-                    this.duracaoDiaHistorico.add(response.data.duracao.total_minutos, 'minutes');
-                    this.tempoTrabalhadoHistorico.add(response.data.minutos_trabalhados, 'minutes');
-                }).catch(error => {
+
+            try {
+                const response = await axios.post(`${URL_ADMIN}/controle-ponto/ponto-eletronico/atualizarHistorico/`, this.formHistorico);
                 this.formHistorico.preload = false;
-            });
-        },
-        verDetalhes(ponto_id, periodo_id) {
+                this.historico = response.data.historicos;
 
+                // Inicializar tempos
+                this.duracaoDiaHistorico = moment('00:00', 'HH:mm');
+                this.tempoTrabalhadoHistorico = moment('00:00', 'HH:mm');
+
+                // Adicionar minutos
+                this.duracaoDiaHistorico.add(response.data.duracao.total_minutos, 'minutes');
+                this.tempoTrabalhadoHistorico.add(response.data.minutos_trabalhados, 'minutes');
+            } catch (error) {
+                console.error("Erro ao atualizar histórico:", error);
+                this.formHistorico.preload = false;
+            }
+        },
+
+        // Ver detalhes de um registro
+        async verDetalhes(ponto_id, periodo_id) {
             this.formRegistro.preload = true;
-            axios.get(`${URL_ADMIN}/controle-ponto/ponto-eletronico/${ponto_id}/${periodo_id}`)
-                .then(response => {
-                    this.formRegistro.preload = false;
-                    this.modelRegistro = response.data;
 
-                }).catch(error => {
+            try {
+                const response = await axios.get(`${URL_ADMIN}/controle-ponto/ponto-eletronico/${ponto_id}/${periodo_id}`);
                 this.formRegistro.preload = false;
-            });
+                this.modelRegistro = response.data;
+            } catch (error) {
+                console.error("Erro ao buscar detalhes:", error);
+                this.formRegistro.preload = false;
+            }
         },
 
-        /*calcularRota() {
-            const request = {
-                origin: this.atual,
-                destination: this.destino,
-                //travelMode: 'DRIVING',
-                travelMode: 'WALKING',
-                unitSystem: google.maps.UnitSystem.METRIC
-            }
-            this.directionService.route(request, (result, status) => {
-
-                if (status === 'OK') {
-                    this.directionDisplay.setDirections(result);
-                    console.log(result);
-
-                }
-
-            });
-
-        },*/
-        /*marcarMapa: function (latLng) {
-            //this.marker.setMap(null); //limpar
-
-            /!* this.marker = new google.maps.Marker({
-                 position: latLng,
-                 map: this.map,
-                 draggable: true,
-                 //icon: `${URL_SITE}/imagens/map_icon.png`
-             });*!/
-            //this.map.setCenter(latLng);
-            //this.map.setZoom(19);
-            this.marker.setPosition(latLng);
-            //this.perimetro.setCenter(latLng);
-
-            this.formPerimetro.lat = this.marker.position.lat();
-            this.formPerimetro.long = this.marker.position.lng();
-
-        },*/
-        formNovoRegistro() {
+        // Preparar formulário para novo registro
+        async formNovoRegistro() {
             this.formPonto = _.cloneDeep(this.formPontoDefault);
-            if (!this.preloadGoogleMaps) {
-                this.initMap();
-            }
+
+            // Inicializar mapa após um breve atraso para garantir que o modal está visível
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await this.initMap();
         },
-        continuar() {
+
+        // Continuar para a tela da câmera
+        async continuar() {
             this.formPonto.telaGPS = false;
             this.formPonto.telaCamera = true;
 
-            setTimeout(() => {
-                Webcam.set({
-                    width: 320,
-                    height: 240,
-                    image_format: 'jpeg',
-                    jpeg_quality: 90
-                });
-                Webcam.attach(this.$refs.camera);
-            }, 500)
+            // Inicializar webcam após transição
+            await new Promise(resolve => setTimeout(resolve, 500));
 
-
-        },
-        registrarPonto() {
-            Webcam.snap(data_uri => {
-                this.formPonto.foto = data_uri;
-                this.formPonto.preload = true;
-                axios.post(`${URL_ADMIN}/controle-ponto/ponto-eletronico`, this.formPonto)
-                    .then(response => {
-                        this.formPonto.preload = false;
-                        this.formPonto.save = true;
-                        this.registros = response.data.registrosHoje;
-                        // this.atualizarHistorico();
-                        window.location.reload();
-
-                    }).catch(error => {
-                    this.formPonto.preload = false;
-                });
+            // Configurar a webcam
+            Webcam.set({
+                width: 320,
+                height: 240,
+                image_format: 'jpeg',
+                jpeg_quality: 90
             });
-            /*$('#janelaFormPerimetro :input:visible:enabled').trigger('blur');
-            if ($('#janelaFormPerimetro :input:visible:enabled.is-invalid').length) {
-                alert('Verificar os erros');
-                return false;
+
+            // Iniciar a webcam
+            Webcam.attach(this.$refs.camera);
+        },
+
+        // Iniciar contagem regressiva para tirar foto
+        iniciarContagem() {
+            // Limpar contador anterior se existir
+            if (this.contadorTimer) {
+                clearInterval(this.contadorTimer);
             }
 
-            this.formPerimetro.preload = true;
-            if(this.formPerimetro.editando){
-                axios.put(`${URL_ADMIN}/controle-ponto/perimetros/${this.formPerimetro.id}`, this.formPerimetro)
-                    .then(response => {
-                        this.formPerimetro.preload = false;
-                        this.formPerimetro.save = true;
-                        this.atualizarListaPeriemetros();
-                        this.atualizarListaFuncionarios();
+            // Iniciar contagem de 3 segundos
+            this.contadorRegressivo = 3;
 
-                    }).catch(error => {
-                    this.formPerimetro.preload = false;
-                    this.atualizarListaPeriemetros();
-                    this.atualizarListaFuncionarios();
-                });
-            }else{
-                axios.post(`${URL_ADMIN}/controle-ponto/perimetros`, this.formPerimetro)
-                    .then(response => {
-                        this.formPerimetro.preload = false;
-                        this.formPerimetro.save = true;
-                        this.atualizarListaPeriemetros();
-                        this.atualizarListaFuncionarios();
+            this.contadorTimer = setInterval(() => {
+                this.contadorRegressivo--;
 
-                    }).catch(error => {
-                    this.formPerimetro.preload = false;
-                    this.atualizarListaPeriemetros();
-                    this.atualizarListaFuncionarios();
-                });
-            }*/
-
+                if (this.contadorRegressivo <= 0) {
+                    clearInterval(this.contadorTimer);
+                    this.capturarFoto();
+                }
+            }, 1000);
         },
 
+        // Capturar a foto após a contagem
+        async capturarFoto() {
+            try {
+                // Encapsular Webcam.snap em uma Promise
+                const data_uri = await new Promise(resolve => {
+                    Webcam.snap(data_uri => resolve(data_uri));
+                });
 
+                this.formPonto.foto = data_uri;
+                this.formPonto.preload = true;
+
+                const response = await axios.post(`${URL_ADMIN}/controle-ponto/ponto-eletronico`, this.formPonto);
+                this.formPonto.preload = false;
+                this.formPonto.save = true;
+                this.registros = response.data.registrosHoje;
+                window.location.reload();
+            } catch (error) {
+                console.error("Erro ao registrar ponto:", error);
+                this.formPonto.preload = false;
+            }
+        },
+
+        // Registrar ponto - inicia a contagem regressiva
+        registrarPonto() {
+            this.iniciarContagem();
+        }
     }
 });

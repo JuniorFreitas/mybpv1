@@ -1,6 +1,6 @@
 @extends('layouts.sistema')
 @section('title', 'Controle de ponto: Ponto eletrônico')
-@section('content_header', 'Controle de ponto:  ponto eletrônico')
+@section('content_header', 'Controle de ponto: ponto eletrônico')
 @section('content')
 
     <!--Janela de detalhes-->
@@ -13,98 +13,88 @@
                 <table class="tabela">
                     <tbody>
                     <tr>
-                        <td>
-                            Data/hora Entrada
-                        </td>
-                        <td>
-                            @{{ modelRegistro.entrada }}
-                        </td>
+                        <td>Data/hora Entrada</td>
+                        <td>@{{ modelRegistro.entrada }}</td>
                     </tr>
                     <tr v-if="modelRegistro.foto_entrada">
+                        <td>Foto da entrada</td>
                         <td>
-                            Foto da entrada
-                        </td>
-                        <td>
-                            <img :src="modelRegistro.foto_entrada.url" alt=""
-                                 style="width: 300px; border-radius: 6%;object-fit: cover;">
+                            <img :src="modelRegistro.foto_entrada.url" alt="Foto de entrada"
+                                 style="width: 300px; border-radius: 6%; object-fit: cover;">
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            Data/hora Saída
-                        </td>
+                        <td>Data/hora Saída</td>
                         <td>
                             <span v-if="modelRegistro.saida">@{{ modelRegistro.saida }}</span>
                             <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                         </td>
                     </tr>
                     <tr v-if="modelRegistro.foto_saida">
+                        <td>Foto da saída</td>
                         <td>
-                            Foto da saída
-                        </td>
-                        <td>
-                            <img :src="modelRegistro.foto_saida.url" alt=""
-                                 style="width: 300px; border-radius: 6%;object-fit: cover;">
+                            <img :src="modelRegistro.foto_saida.url" alt="Foto de saída"
+                                 style="width: 300px; border-radius: 6%; object-fit: cover;">
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            Justificativa
-                        </td>
-                        <td>
-                            @{{ modelRegistro.justificativa }}
-                        </td>
+                        <td>Justificativa</td>
+                        <td>@{{ modelRegistro.justificativa }}</td>
                     </tr>
-
                     </tbody>
                 </table>
             </div>
-
         </template>
         <template slot="rodape"></template>
     </modal>
+
     <!--Janela de registro-->
     <modal id="janelaFormPonto" :titulo="formPonto.titulo" :fechar="!formPonto.preload" size="g" @fechou="stopGPS">
         <template slot="conteudo">
             <h4 class="text-success text-center" v-if="!formPonto.preload && formPonto.save">
-                <i class="fas fa-check fa-2x"></i>Ponto registrado
+                <i class="fas fa-check fa-2x"></i> Ponto registrado
             </h4>
             <p class="text-center">
                 <preload v-if="formPonto.preload" label="Aguarde..."></preload>
-                <preload v-if="preloadGoogleMaps" label="Aguarde módulo Google Maps"></preload>
+                <preload v-if="mapLoading" label="Carregando mapa..."></preload>
             </p>
             <div v-show="!formPonto.preload && !formPonto.save">
-                <div class="googleMaps" id="mapaPrimetro" style="float:left;width:100%;height: 400px"
-                     v-show="formPonto.telaGPS"></div>
+                <div id="mapaPrimetro" class="mapa-container" v-show="formPonto.telaGPS"></div>
                 <div v-show="formPonto.telaCamera">
                     <div class="row">
                         <div class="col"></div>
                         <div class="col">
                             <h4 class="text-center">Registrar foto</h4>
+                            <!-- Contador regressivo -->
+                            <div class="text-center countdown-container" v-if="contadorRegressivo > 0">
+                                <div class="countdown-timer">
+                                    <h1 class="countdown-number">@{{ contadorRegressivo }}</h1>
+                                </div>
+                                <p>Preparando para capturar...</p>
+                            </div>
                             <div class="text-center" ref="camera" id="camera"></div>
                         </div>
                         <div class="col"></div>
                     </div>
-                    <div class="col-12 col-md-4 offset-md-4">
-
-                    </div>
-
                 </div>
             </div>
-
         </template>
         <template slot="rodape">
-            <button :disabled="!formPonto.dentro" v-if="!formPonto.preload && !formPonto.save && formPonto.telaGPS"
-                    class="btn btn-sm btn-success" type="button" @click="continuar">
+            <button :disabled="!formPonto.dentro"
+                    v-if="!formPonto.preload && !formPonto.save && formPonto.telaGPS"
+                    class="btn btn-sm btn-success"
+                    type="button"
+                    @click="continuar">
                 Continuar <i class="fas fa-arrow-right"></i>
             </button>
-            <button v-if="!formPonto.preload && !formPonto.save && formPonto.telaCamera" class="btn btn-sm btn-success"
-                    type="button" @click="registrarPonto">
+            <button v-if="!formPonto.preload && !formPonto.save && formPonto.telaCamera"
+                    class="btn btn-sm btn-success"
+                    type="button"
+                    @click="registrarPonto">
                 Registrar
             </button>
         </template>
     </modal>
-
 
     <div class="row">
         <preload v-if="preload"></preload>
@@ -122,25 +112,26 @@
                     </li>
                 </ul>
                 <div class="tab-content">
-                    <div class="tab-pane fade show active p-2 " id="marcao_dia" role="tabpanel"
+                    <div class="tab-pane fade show active p-2" id="marcao_dia" role="tabpanel"
                          aria-labelledby="marcao_dia-tab">
                         <div class="row">
                             <div class="col-12" v-if="preload">
                                 <preload></preload>
                             </div>
                             <div class="col-12" v-else>
-
                                 <div class="card">
                                     <div class="card-header bg-white">
-                                        <h5 class="text-center">@{{ hoje }} </h5>
+                                        <h5 class="text-center">@{{ hoje }}</h5>
                                     </div>
                                     <ul class="list-group list-group-flush">
                                         <template v-if="registros.length > 0" v-for="reg in registros">
                                             <template v-for="per in reg.periodos">
-                                                <li class="list-group-item text-center" v-if="per.entrada">ENTRADA :
-                                                    <strong>@{{ per.horaEntrada }}</strong></li>
-                                                <li class="list-group-item text-center" v-if="per.saida!=null">SAÍDA :
-                                                    <strong>@{{ per.horaSaida }}</strong></li>
+                                                <li class="list-group-item text-center" v-if="per.entrada">
+                                                    ENTRADA: <strong>@{{ per.horaEntrada }}</strong>
+                                                </li>
+                                                <li class="list-group-item text-center" v-if="per.saida!=null">
+                                                    SAÍDA: <strong>@{{ per.horaSaida }}</strong>
+                                                </li>
                                             </template>
                                         </template>
                                         <li v-if="registros.length === 0" class="list-group-item text-center">
@@ -149,23 +140,25 @@
                                     </ul>
                                 </div>
 
-                                <button :disabled="preloadGoogleMaps" type="button" class="btn btn-warning btn-block"
-                                        data-toggle="modal" data-target="#janelaFormPonto" @click="formNovoRegistro"><i
-                                        class="fas fa-user-clock"></i> Registrar ponto
+                                <button :disabled="mapLoading"
+                                        type="button"
+                                        class="btn btn-warning btn-block"
+                                        data-toggle="modal"
+                                        data-target="#janelaFormPonto"
+                                        @click="formNovoRegistro">
+                                    <i class="fas fa-user-clock"></i> Registrar ponto
                                 </button>
-
                             </div>
                         </div>
-
-
                     </div>
-                    <div class="tab-pane fade p-2" id="historico" role="tabpanel" aria-labelledby="historico-tab">
 
+                    <div class="tab-pane fade p-2" id="historico" role="tabpanel" aria-labelledby="historico-tab">
                         <div class="row mt-3">
                             <div class="col-12 col-md-4 offset-md-4">
                                 <div class="form-group">
                                     <h5 class="text-center">Registros no dia</h5>
-                                    <datepicker v-model="formHistorico.data" :disabled="formHistorico.preload"
+                                    <datepicker v-model="formHistorico.data"
+                                                :disabled="formHistorico.preload"
                                                 @onselect="atualizarHistorico"></datepicker>
                                 </div>
                             </div>
@@ -173,8 +166,9 @@
                                 <p class="text-center">
                                     <preload v-if="formHistorico.preload" label="Aguarde..."></preload>
                                 </p>
-                                <h4 class="text-center" v-if="historico.length === 0 && !formHistorico.preload">Nenhum
-                                    registro encontrado</h4>
+                                <h4 class="text-center" v-if="historico.length === 0 && !formHistorico.preload">
+                                    Nenhum registro encontrado
+                                </h4>
 
                                 <template v-if="historico.length > 0 && !formHistorico.preload"
                                           v-for="reg in historico">
@@ -194,18 +188,21 @@
                                             </td>
                                             <td class="text-center">
                                                 <span v-if="per.saida">@{{ per.saida }}</span>
-                                                <span v-else><h5><span
-                                                            class="badge badge-warning">Trabalhando</span></h5></span>
+                                                <span v-else>
+                                                    <h5><span class="badge badge-warning">Trabalhando</span></h5>
+                                                </span>
                                             </td>
                                             <td class="text-center">
                                                 <span v-if="per.saida">@{{ per.horasTrabalhadasFormat }}</span>
                                                 <span v-else> -- </span>
                                             </td>
                                             <td>
-                                                <button type="button" class="btn btn-info" data-toggle="modal"
+                                                <button type="button"
+                                                        class="btn btn-info"
+                                                        data-toggle="modal"
                                                         data-target="#janelaFormDetalhes"
-                                                        @click="verDetalhes(reg.id,per.id)"><i
-                                                        class="fas fa-info-circle"></i> Detalhes
+                                                        @click="verDetalhes(reg.id,per.id)">
+                                                    <i class="fas fa-info-circle"></i> Detalhes
                                                 </button>
                                             </td>
                                         </tr>
@@ -219,39 +216,116 @@
                                             <td>Trabalhado:</td>
                                             <td>@{{ tempoTrabalhadoHistorico.format('HH[h]:mm') }}</td>
                                         </tr>
-
                                         </tbody>
                                     </table>
                                 </template>
-
                             </div>
-
-
                         </div>
-
                     </div>
                 </div>
-
             </div>
         </template>
     </div>
 @stop
+
 @push('js')
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="{{mix('js/g/controle-ponto/ponto-eletronico/app.js')}}"></script>
     <script src="{{mix('js/g/controle-ponto/ponto-eletronico/webcam.min.js')}}"></script>
+    <script>
+        $(document).ready(function () {
+            // Atualizar o mapa quando o modal é aberto
+            $('#janelaFormPonto').on('shown.bs.modal', function () {
+                if (window.app && window.app.map) {
+                    window.app.map.invalidateSize();
+                }
+            });
+        });
+    </script>
 @endpush
 
 @push('css')
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <style type="text/css">
-        .googleMaps {
-            height: 100%;
+        /* Estilos para o mapa */
+        .mapa-container {
+            height: 400px !important;
+            width: 100% !important;
             border: 1px solid #aeb9c2;
+            position: relative;
+            z-index: 100;
         }
 
-        .pac-container {
-            z-index: 1051 !important;
+        /* Garantir que o modal exibe o mapa corretamente */
+        .modal-content {
+            overflow: hidden;
         }
 
+        /* Garantir que os controles do Leaflet fiquem visíveis no modal */
+        .leaflet-control-container .leaflet-top,
+        .leaflet-control-container .leaflet-bottom {
+            z-index: 1000;
+        }
+
+        /* Estilos para o contador regressivo */
+        .countdown-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .countdown-number {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: rgba(0, 123, 255, 0.7);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Estilos adicionais */
         .pointer {
             cursor: pointer;
         }
