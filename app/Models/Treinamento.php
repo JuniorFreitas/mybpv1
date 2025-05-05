@@ -126,11 +126,33 @@ class Treinamento extends Model
         return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
     }
 
+    public function arquivosVencimentos()
+    {
+        return $this->hasManyThrough(
+            Arquivo::class,
+            'treinamento_vencimento',
+            'treinamento_id',
+            'id',
+            'id',
+            'arquivo_id'
+        );
+    }
+
     public function Vencimentos()
     {
         return $this->belongsToMany(Vencimento::class, 'treinamento_vencimento', 'treinamento_id', 'vencimento_id')
             ->using(TreinamentoVencimento::class)
-            ->withPivot(['data_vencimento', 'data_treinamento', 'numero_fat'])->orderBy('id');
+            ->withPivot(['data_vencimento', 'data_treinamento', 'numero_fat', 'arquivo_id'])->orderBy('id');
+
+//        return $this
+//            ->belongsToMany(Vencimento::class, 'treinamento_vencimento')
+//            ->using(TreinamentoVencimento::class)           // pivot customizado
+//            ->withPivot([
+//                'data_vencimento',
+//                'data_treinamento',
+//                'numero_fat',
+//                'arquivo_id',                              // novo campo
+//            ]);
     }
 
     public function Curriculo()

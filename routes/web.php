@@ -905,12 +905,23 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
     // TREINAMENTOS
     Route::group(['as' => 'treinamentos.'], function () {
         //anexo
-        Route::post('treinamento/uploadAnexos', [\App\Http\Controllers\TreinamentoEventoController::class, 'uploadAnexos'])->name('treinamento.upload-anexos');
-        Route::get('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoEventoController::class, 'anexoShow'])->name('treinamento.anexo-show');
-        Route::get('treinamento/anexoDownload/{arquivo}', [\App\Http\Controllers\TreinamentoEventoController::class, 'download'])->name('treinamento.anexo-download');
-        Route::delete('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoEventoController::class, 'anexoDelete'])->name('treinamento.anexo-delete');
+        Route::post('treinamento-evento/uploadAnexos', [\App\Http\Controllers\TreinamentoEventoController::class, 'uploadAnexos'])->name('treinamento-evento.upload-anexos');
+        Route::get('treinamento-evento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoEventoController::class, 'anexoShow'])->name('treinamento-evento.anexo-show');
+        Route::get('treinamento-evento/anexoDownload/{arquivo}', [\App\Http\Controllers\TreinamentoEventoController::class, 'download'])->name('treinamento-evento.anexo-download');
+        Route::delete('treinamento-evento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoEventoController::class, 'anexoDelete'])->name('treinamento-evento.anexo-delete');
+
+        Route::get('controle-exames-resultado/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoShow'])->name('anexo-show');
+        Route::get('controle-exames-resultado/anexoDownload/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'download'])->name('anexo-download');
+        Route::delete('controle-exames-resultado/anexo/{arquivo}', [\App\Http\Controllers\ControleExameController::class, 'anexoDelete'])->name('anexo-delete');
+        Route::post('controle-exames-resultado/uploadAnexos', [\App\Http\Controllers\ControleExameController::class, 'uploadAnexos'])->name('.upload-anexos');
+
 
         //Enviar para Revisao
+        Route::post('treinamento/uploadAnexos', [\App\Http\Controllers\TreinamentoController::class, 'uploadAnexos'])->name('treinamento.upload-anexos');
+        Route::get('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'anexoShow'])->name('treinamento.anexo-show');
+        Route::get('treinamento/anexoDownload/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'download'])->name('treinamento.anexo-download');
+        Route::delete('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'anexoDelete'])->name('treinamento.anexo-delete');
+        
         Route::post('treinamento/enviar-carteira', [\App\Http\Controllers\TreinamentoController::class, 'enviarCarteiraEmail']);
         Route::post('treinamento/carteiras', [\App\Http\Controllers\TreinamentoController::class, 'carteiraPdf'])->name('carteiraPdf');
         Route::post('treinamento/export', [\App\Http\Controllers\TreinamentoController::class, 'export'])->name('excel');

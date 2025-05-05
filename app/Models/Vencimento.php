@@ -84,4 +84,15 @@ class Vencimento extends Model
         'empresa_id' => 'int'
     ];
 
+    public function arquivosVencimentos()
+    {
+        return $this->hasManyThrough(
+            Arquivo::class,
+            'treinamento_vencimento',
+            'vencimento_id',
+            'id',
+            'id',
+            'arquivo_id'
+        );
+    }
 }

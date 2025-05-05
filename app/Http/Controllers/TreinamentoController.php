@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
+use App\Models\Arquivo;
 use App\Models\CentroCusto;
 use App\Models\ClienteConfig;
 use App\Models\FeedbackCurriculo;
+use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
 use App\Models\Treinamento;
 use App\Models\Vencimento;
@@ -85,6 +87,7 @@ class TreinamentoController extends Controller
                 $treinamento = Treinamento::create($dados);
             }
 
+
             foreach ($listaVencimentos as $lista) {
                 $dataHora = new DataHora($lista['data_treinamento']);
                 $dataTreinamento = $dataHora->dataInsert();
@@ -95,10 +98,32 @@ class TreinamentoController extends Controller
                     $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
                 }
 
+                if (isset($lista['arquivoDel'])) {
+                    foreach ($lista['arquivoDel'] as $id_anexo) {
+                        $arquivo = Arquivo::find($id_anexo);
+                        $arquivo->update([
+                            'temporario' => true,
+                            'chave' => \Str::uuid(),
+                        ]);
+                    }
+                }
+
+                if (isset($lista['arquivo'][0]) && $lista['arquivo'][0]['temporario'] && strlen($lista['arquivo'][0]['chave']) > 0 && !$lista['arquivo'][0]['falhou']) {
+                    $arquivo = Arquivo::find($lista['arquivo'][0]['id']);
+                    if ($arquivo) {
+                        $arquivo->update([
+                            'chave' => '',
+                            'nome' => $lista['arquivo'][0]['nome'],
+                            'temporario' => false,
+                        ]);
+                    }
+                }
+
                 $treinamento->Vencimentos()->attach($lista['id'], [
                     'data_treinamento' => $dataTreinamento,
                     'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
-                    'numero_fat' => $lista['numero_fat']
+                    'numero_fat' => $lista['numero_fat'],
+                    'arquivo_id' => isset($lista['arquivo'][0]) ? $lista['arquivo'][0]['id'] : null
                 ]);
             }
 
@@ -197,7 +222,7 @@ class TreinamentoController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\Treinamento $treinamento
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function edit($treinamento)
     {
@@ -205,9 +230,12 @@ class TreinamentoController extends Controller
 
         $treinamento = $treinamento->load(
             'Treinamento',
+            'Treinamento.Vencimentos',
+            'Treinamento.QuemCadastrou:id,nome',
             'Curriculo:id,nome,nascimento,id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
             'Admissao',
-            'Feedback.Exame'
+            'Feedback.Exame',
+            'Feedback.Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
         );
 
         if (!is_null($treinamento->Admissao)) {
@@ -218,28 +246,131 @@ class TreinamentoController extends Controller
             $treinamento->nr_trinta_cinco = true;
         }
 
-        $treinamento->listaVencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get()->transform(function ($item) use ($treinamento) {
-            if ($treinamento->Treinamento) {
-                $pivo = $treinamento->Treinamento->Vencimentos()->whereId($item->id);
-                $item->data_treinamento = $pivo->count() > 0 ? $pivo->first()->pivot->data_treinamento : null;
-                $item->data_vencimento = $pivo->count() > 0 ? $pivo->first()->pivot->data_vencimento : null;
-                $item->numero_fat = $pivo->count() > 0 ? $pivo->first()->pivot->numero_fat : null;
-                $item->fez_treinamento = $pivo->count() > 0 ? true : false;
-            } else {
-                $item->data_treinamento = null;
-                $item->data_vencimento = null;
-                $item->fez_treinamento = false;
-                $item->numero_fat = null;
+        // Obter todos os relacionamentos treinamento_vencimento com seus arquivos
+        $treinamentoVencimentos = null;
+        if ($treinamento->Treinamento) {
+            $treinamentoVencimentos = TreinamentoVencimento::with('arquivo')
+                ->where('treinamento_id', $treinamento->Treinamento->id)
+                ->get();
+
+            // Adicionar os arquivos aos vencimentos já carregados
+            foreach ($treinamento->Treinamento->Vencimentos as $vencimento) {
+                $pivotData = $treinamentoVencimentos->where('vencimento_id', $vencimento->id)->first();
+                $vencimento->arquivo = [];
+                $vencimento->arquivoDel = [];
+                if ($pivotData) {
+                    $vencimento->arquivo = [$pivotData->arquivo];
+                }
             }
+        }
 
-            return $item;
-        });
+        $treinamento->listaVencimentos = Vencimento::whereAtivo(true)
+            ->orderBy('ordem')
+            ->get()
+            ->transform(function ($item) use ($treinamento, $treinamentoVencimentos) {
+                if ($treinamento->Treinamento) {
+                    $pivo = $treinamento->Treinamento->Vencimentos()->whereId($item->id);
+                    $item->data_treinamento = $pivo->count() > 0 ? $pivo->first()->pivot->data_treinamento : null;
+                    $item->data_vencimento = $pivo->count() > 0 ? $pivo->first()->pivot->data_vencimento : null;
+                    $item->numero_fat = $pivo->count() > 0 ? $pivo->first()->pivot->numero_fat : null;
+                    $item->fez_treinamento = $pivo->count() > 0 ? true : false;
+                    $item->arquivo = [];
+                    $item->arquivoDel = [];
 
-        return response()->json($treinamento, 200);
+                    // Adicionar cálculo de dias_vencer para cada item
+                    if ($item->data_vencimento) {
+                        $item->dias_vencer = DataHora::diferencaDias(
+                            (new DataHora())->dataInsert() . ' 00:00:00',
+                            (new DataHora($item->data_vencimento))->dataInsert() . ' 23:59:59'
+                        );
+                    } else {
+                        $item->dias_vencer = PHP_INT_MAX; // Valor alto para itens sem data de vencimento
+                    }
 
-//         $treinamento = Treinamento::whereCurriculoId($curriculo_id)->first();
+                    // Resto do código para arquivos
+                    if ($treinamentoVencimentos) {
+                        $pivotData = $treinamentoVencimentos->where('vencimento_id', $item->id)->first();
+                        if ($pivotData) {
+                            $item->arquivo = $pivotData->arquivo ? [$pivotData->arquivo] : [];
+                        }
+                    }
+                } else {
+                    $item->data_treinamento = null;
+                    $item->data_vencimento = null;
+                    $item->fez_treinamento = false;
+                    $item->numero_fat = null;
+                    $item->arquivo = [];
+                    $item->arquivoDel = [];
+                    $item->dias_vencer = PHP_INT_MAX; // Valor alto para itens sem treinamento
+                }
 
-//         return $treinamento->load('Vencimentos');
+                return $item;
+            })
+            ->sortBy('dias_vencer') // Ordenar pelo dias_vencer do menor para o maior
+            ->values(); // Reindexar a coleção para garantir índices sequenciais
+
+        /*  $treinamento->listaVencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get()->transform(function ($item) use ($treinamento, $treinamentoVencimentos) {
+              if ($treinamento->Treinamento) {
+                  $pivo = $treinamento->Treinamento->Vencimentos()->whereId($item->id);
+                  $item->data_treinamento = $pivo->count() > 0 ? $pivo->first()->pivot->data_treinamento : null;
+                  $item->data_vencimento = $pivo->count() > 0 ? $pivo->first()->pivot->data_vencimento : null;
+                  $item->numero_fat = $pivo->count() > 0 ? $pivo->first()->pivot->numero_fat : null;
+                  $item->fez_treinamento = $pivo->count() > 0 ? true : false;
+                  $item->arquivo = [];
+                  $item->arquivoDel = [];
+
+
+  //                $item->Treinamento->Vencimentos->transform(function ($i) use ($item) {
+  //                    $i->fez_treinamento = $item->Treinamento->Vencimentos()->where('vencimento_id', $i->id)->count() > 0 ? true : false;
+  //                    $i->pivot->status = $this->StatusTreinamento($i->pivot->data_vencimento);
+  //                    $i->dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert() . ' 00:00:00', (new DataHora($i->pivot->data_vencimento))->dataInsert() . ' 23:59:59');
+  //                    return $i;
+  //                });
+  //
+  //                $item->treinamento->vencimentos = $item->Treinamento->Vencimentos->sortBy('dias_vencer')->values()->all();
+                  // Adicionar informações do arquivo
+                  if ($treinamentoVencimentos) {
+                      $pivotData = $treinamentoVencimentos->where('vencimento_id', $item->id)->first();
+                      if ($pivotData) {
+                          $item->arquivo = $pivotData->arquivo ? [$pivotData->arquivo] : [];
+                      }
+                  }
+              } else {
+                  $item->data_treinamento = null;
+                  $item->data_vencimento = null;
+                  $item->fez_treinamento = false;
+                  $item->numero_fat = null;
+                  $item->arquivo = [];
+                  $item->arquivoDel = [];
+              }
+
+              return $item;
+          });*/
+
+//        <div class="row">
+//                        <div class="col-12">
+//                            <p>
+//    Nome: <strong>@{{ dados.nome }}</strong> - @{{ dados.idade }} anos <br>
+//                                Cargo: <strong>@{{ dados.cargo }}</strong> <br>
+//    Endereço: <strong>@{{ dados.endereco_completo }}</strong><br>
+//    Contato: <strong><i class="fab fa-whatsapp text-success"
+//                                                    v-show="dados.tel_principal.tipo === 'whatsapp'"></i> @{{
+//        dados.tel_principal.numero }}</strong> - E-mail: <strong>@{{dados.email}}</strong>
+//                                <br>
+//                            </p>
+//                        </div>
+//                    </div>
+
+        $treinamento->dadosFuncionario = [
+            'nome' => $treinamento->Feedback->Curriculo->nome,
+            'cargo' => $treinamento->Admissao ? $treinamento->Admissao->cargo : null,
+            'endereco_completo' => $treinamento->Feedback->Curriculo->endereco_completo,
+            'tel_principal' => $treinamento->Feedback->telefonePrincipal,
+            'email' => $treinamento->Feedback->Curriculo->email,
+            'idade' => $treinamento->Feedback->Curriculo->idade
+        ];
+
+        return response()->json($treinamento);
     }
 
     /**
@@ -308,6 +439,17 @@ class TreinamentoController extends Controller
                     $q->where('label', 'like', '%NR35%')->orWhere('label', 'like', '%NR-35%');
                 })->first()->pivot : null;
                 $item->ebtv = $item->Treinamento->Vencimentos()->where('label', 'like', '%EBTV%')->count() > 0 ? $item->Treinamento->Vencimentos()->where('label', 'like', '%EBTV%')->first()->pivot : null;
+
+                $item->Treinamento->Vencimentos->transform(function ($i) use ($item) {
+                    $i->fez_treinamento = $item->Treinamento->Vencimentos()->where('vencimento_id', $i->id)->count() > 0 ? true : false;
+                    $i->pivot->status = $this->StatusTreinamento($i->pivot->data_vencimento);
+                    $i->dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert() . ' 00:00:00', (new DataHora($i->pivot->data_vencimento))->dataInsert() . ' 23:59:59');
+                    return $i;
+                });
+
+                $item->treinamento->vencimentos = $item->Treinamento->Vencimentos->sortBy('dias_vencer')->values()->all();
+
+
             } else {
                 $item->nr_33 = null;
                 $item->nr_35 = null;
@@ -328,8 +470,10 @@ class TreinamentoController extends Controller
                     $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
                 }
             }
+
             return $item;
         });
+
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -341,6 +485,43 @@ class TreinamentoController extends Controller
                 'cc' => $cc
             ]
         ]);
+    }
+
+    private function StatusTreinamento($dataVencimento)
+    {
+        $dataVencimento = new DataHora($dataVencimento . ' 23:59:59');
+        $hoje = new DataHora();
+
+        $diffHojeVencimento = DataHora::diferencaDias($hoje->dataHoraInsert(), $dataVencimento->dataHoraInsert());
+
+        $status = [
+            'label' => 'Em dia',
+            'corBorder' => 'border-left-success',
+            'bg' => 'bg-success',
+            'text' => 'text-white',
+            'badge' => 'badge-success'
+        ];
+
+        if ($diffHojeVencimento < 0) {
+            $status = [
+                'label' => 'Vencido a ' . abs($diffHojeVencimento) . ' dia(s)',
+                'corBorder' => 'border-left-danger',
+                'bg' => 'bg-danger',
+                'text' => 'text-white',
+                'badge' => 'badge-danger'
+            ];
+        }
+        if ($diffHojeVencimento <= 30 && $diffHojeVencimento > 0) {
+            $status = [
+                'label' => 'Vence em ' . abs($diffHojeVencimento) . ' dia(s)',
+                'corBorder' => 'border-left-warning',
+                'bg' => 'bg-warning',
+                'text' => 'text-white',
+                'badge' => 'badge-warning text-dark'
+            ];
+        }
+
+        return $status;
     }
 
     public function filtro(Request $request)
@@ -700,5 +881,27 @@ class TreinamentoController extends Controller
                 return response()->json(['enviado' => false], 400);
             }
         }
+    }
+
+    // Anexos-------------------------------------------------
+    public function uploadAnexos(Request $request)
+    {
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASDOCIMGPDF, Arquivo::DISCO_CLOUD);
+    }
+
+    public function anexoShow(Request $request, $arquivo)
+    {
+        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $arquivo);
+    }
+
+    public function anexoDelete(Request $request, $arquivo)
+    {
+        return Arquivo::anexoDelete(Arquivo::DISCO_CLOUD, $arquivo);
+    }
+
+    //anexo ou foto
+    public function download(Request $request, $arquivo)
+    {
+        return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
     }
 }

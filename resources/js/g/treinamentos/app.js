@@ -1,13 +1,15 @@
 import datepicker from '../../components/DatePicker'
 import ExportacaoMixin from "../../mixins/Exportacoes";
 import {Estados} from "../../mixins/Utils";
+import Upload from "../../components/Upload.vue";
 
 const app = new Vue({
     mixins: [ExportacaoMixin],
 
     el: '#app',
     components: {
-        datepicker
+        datepicker,
+        Upload
     },
     data: {
         tituloJanela: 'Treinamentos',
@@ -37,8 +39,23 @@ const app = new Vue({
         selecionadosMassa: [],
         selecionaTudoMassa: false,
 
+        // Gerenciamento do estado do accordion
+        openPanels: [],
+        expandAll: false,
+
+        // Filtro e pesquisa de treinamentos
+        trainingSearchQuery: '',
+        trainingStatusFilter: 'all',
+
         form: {
             //_method: "post",
+            dadosFuncionario: {
+                nome: '',
+                idade: '',
+                cargo: '',
+                email: '',
+            },
+
             feedback_id: '',
             curriculo_id: '',
             tipo: '',
@@ -50,6 +67,7 @@ const app = new Vue({
             email_aberto: '',
             data_email_aberto: '',
             listaVencimentos: [],
+
             nr_trinta_tres: true,
             nr_trinta_cinco: true,
             exame: {
@@ -154,7 +172,10 @@ const app = new Vue({
                 campoCentroCusto: "",
 
             }
-        }
+        },
+
+        url_anexo: `${URL_ADMIN}/treinamento/uploadAnexos`,
+        anexoUploadAndamento: false,
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
@@ -250,6 +271,45 @@ const app = new Vue({
                 return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
             }
             return [];
+        },
+
+        // Novos computed properties para suportar o UI aprimorado
+        treinamentosFiltrados() {
+            if (!this.form.listaVencimentos) return [];
+
+            return this.form.listaVencimentos.filter(training => {
+                // Apply search filter
+                const matchesSearch = this.trainingSearchQuery === '' ||
+                    training.label.toLowerCase().includes(this.trainingSearchQuery.toLowerCase());
+
+                // Apply status filter
+                let matchesStatus = true;
+                if (this.trainingStatusFilter !== 'all') {
+                    const status = this.getTreinamentoStatus(training);
+                    matchesStatus = status === this.trainingStatusFilter;
+                }
+
+                return matchesSearch && matchesStatus;
+            });
+        },
+
+        treinamentosNaoRealizados() {
+            return this.form.listaVencimentos ?
+                this.form.listaVencimentos.length - this.form.listaVencimentos.filter(t => t.fez_treinamento && this.getTreinamentoStatus(t) === 'ativo').length : 0;
+        },
+
+        treinamentosRealizados() {
+            return this.form.listaVencimentos ?
+                this.form.listaVencimentos.filter(t => t.fez_treinamento && this.getTreinamentoStatus(t) === 'ativo').length : 0;
+        },
+
+        treinamentosVencendo() {
+            return this.form.listaVencimentos ?
+                this.form.listaVencimentos.filter(t => t.fez_treinamento && this.getTreinamentoStatus(t) === 'avencer').length : 0;
+        },
+        treinamentosVencidos() {
+            return this.form.listaVencimentos ?
+                this.form.listaVencimentos.filter(t => t.fez_treinamento && this.getTreinamentoStatus(t) === 'vencido').length : 0;
         }
     },
     methods: {
@@ -368,6 +428,7 @@ const app = new Vue({
             axios.get(`${URL_ADMIN}/treinamento/${this.form.curriculo_id}/editar`)
                 .then(response => {
                     let data = response.data
+                    this.form.dadosFuncionario = data.dadosFuncionario;
 
                     if (data.treinamento) {
                         this.editando = true
@@ -620,6 +681,116 @@ const app = new Vue({
         atualizar() {
             this.$refs.componente.atual = 1
             this.$refs.componente.buscar()
+        },
+
+        // Novos métodos para dar suporte ao UI aprimorado
+
+        // Acorde panel controls
+        togglePanel(index) {
+            const position = this.openPanels.indexOf(index);
+            if (position !== -1) {
+                this.openPanels.splice(position, 1);
+            } else {
+                this.openPanels.push(index);
+            }
+        },
+
+        toggleAllPanels() {
+            if (this.expandAll) {
+                // Close all panels
+                this.openPanels = [];
+            } else {
+                // Open all panels
+                this.openPanels = this.form.listaVencimentos.map((_, index) => index);
+            }
+            this.expandAll = !this.expandAll;
+        },
+
+        // Training status methods
+        getTreinamentoStatus(treinamento) {
+            if (!treinamento.fez_treinamento) return 'inativo';
+            if (!treinamento.data_vencimento) return 'ativo';
+
+            const today = new Date();
+
+            // Parse date in DD/MM/YYYY format
+            let expiryDate;
+            if (typeof treinamento.data_vencimento === 'string') {
+                const parts = treinamento.data_vencimento.split('/');
+                if (parts.length === 3) {
+                    expiryDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                } else {
+                    return 'ativo'; // Invalid date format
+                }
+            } else {
+                expiryDate = new Date(treinamento.data_vencimento);
+            }
+
+            // Check if already expired
+            if (expiryDate < today) {
+                return 'vencido';
+            }
+
+            // Check if expiring soon (within 30 days)
+            const thirtyDaysFromNow = new Date();
+            thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+            if (expiryDate <= thirtyDaysFromNow) {
+                return 'avencer';
+            }
+
+            return 'ativo';
+        },
+
+        getStatusText(treinamento) {
+            if (!treinamento.fez_treinamento) {
+                return 'Não Realizado';
+            }
+
+            const status = this.getTreinamentoStatus(treinamento);
+
+            switch (status) {
+                case 'ativo':
+                    return 'Em dia';
+                case 'avencer':
+                    return 'A Vencer';
+                case 'vencido':
+                    return 'Vencido';
+                default:
+                    return 'Desconhecido';
+            }
+        },
+
+        calculoDataExpiracao(treinamento) {
+            if (!treinamento.data_treinamento) return;
+
+            const dateParts = treinamento.data_treinamento.split('/');
+            if (dateParts.length !== 3) return;
+
+            const trainingDate = new Date(
+                parseInt(dateParts[2]),
+                parseInt(dateParts[1]) - 1,
+                parseInt(dateParts[0])
+            );
+
+            let expiryDate = new Date(trainingDate);
+
+            if (this.form.tipo === 'Parada' && treinamento.prazo_parada) {
+                expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_parada));
+            } else if (this.form.tipo === 'Fixo' && treinamento.prazo_fixo) {
+                expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_fixo));
+            } else {
+                return;
+            }
+
+            // Format date as DD/MM/YYYY
+            const dd = String(expiryDate.getDate()).padStart(2, '0');
+            const mm = String(expiryDate.getMonth() + 1).padStart(2, '0');
+            const yyyy = expiryDate.getFullYear();
+
+            treinamento.data_vencimento = `${dd}/${mm}/${yyyy}`;
         }
     }
 })
+
+

@@ -136,6 +136,22 @@ class Arquivo extends Model
         self::MIME_PPSX,
     ];
 
+    const MIMEAPENASDOCIMGPDF = [
+        self::MIME_PDF,
+        self::MIME_DOCX,
+        self::MIME_DOC,
+        self::MIME_XLS,
+        self::MIME_XLSX,
+        self::MIME_PPT,
+        self::MIME_PPTX,
+        self::MIME_PPS,
+        self::MIME_PPSX,
+        self::MIME_JPG,
+        self::MIME_JPEG,
+        self::MIME_GIF,
+        self::MIME_PNG,
+    ];
+
     const MIMESTODOS = [
         self::MIME_GIF,
         self::MIME_JPG,

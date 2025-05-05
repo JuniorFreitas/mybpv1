@@ -2,6 +2,7 @@
 
 namespace App\Models\Pivot;
 
+use App\Models\Arquivo;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use MasterTag\DataHora;
@@ -16,6 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $data_vencimento
  * @property string|null $data_treinamento
  * @property string|null $numero_fat
+ * @property int|null $arquivo_id
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento newModelQuery()
@@ -26,6 +28,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereNumeroFat($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereTreinamentoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereVencimentoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereArquivoId($value)
+ *
  * @mixin \Eloquent
  */
 class TreinamentoVencimento extends Pivot
@@ -47,24 +51,32 @@ class TreinamentoVencimento extends Pivot
         $activity->descricao = "";
     }
 
+//    protected $dates = [
+//        'data_vencimento',
+//        'data_treinamento',
+//    ];
+
     protected $fillable = [
         'vencimento_id',
         'treinamento_id',
         'data_vencimento',
         'data_treinamento',
-        'numero_fat'
+        'numero_fat',
+        'arquivo_id'
     ];
     protected $casts = [
         'vencimento_id' => 'int',
         'treinamento_id' => 'int',
         'data_vencimento' => 'string',
         'data_treinamento' => 'string',
-        'numero_fat' => 'string'
+        'numero_fat' => 'string',
+        'arquivo_id' => 'int',
     ];
 
     public $timestamps = false;
 
-    protected function serializeDate(DateTimeInterface $date) {
+    protected function serializeDate(DateTimeInterface $date)
+    {
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -83,7 +95,7 @@ class TreinamentoVencimento extends Pivot
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_vencimento'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['data_vencimento'] = null;
         }
     }
@@ -102,8 +114,13 @@ class TreinamentoVencimento extends Pivot
         if ($value) {
             $data = new DataHora($value);
             $this->attributes['data_treinamento'] = $data->dataInsert();
-        }else{
+        } else {
             $this->attributes['data_vencimento'] = null;
         }
+    }
+
+    public function arquivo()
+    {
+        return $this->belongsTo(Arquivo::class, 'arquivo_id', 'id');
     }
 }
