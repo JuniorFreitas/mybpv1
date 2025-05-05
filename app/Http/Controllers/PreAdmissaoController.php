@@ -6,14 +6,12 @@ use App\Classes\ZapNotificacao;
 use App\Jobs\ControleExames\JobExame;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Jobs\Entrevista\JobEnvioFeedbackDocumento;
-use App\Mail\Entrevista\EnvioDocumentosMail;
 use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\DocumentosCurriculosAdmissaoEmpresa;
-use App\Models\DocumentosPreAdmissao;
 use App\Models\EmpresaExame;
 use App\Models\ExameFuncionario;
 use App\Models\ExameTipo;
@@ -23,7 +21,6 @@ use App\Models\Formulario;
 use App\Models\Pcmso;
 use App\Models\RespostaAlternativas;
 use App\Models\Sistema;
-use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -108,64 +105,12 @@ class PreAdmissaoController extends Controller
     public function atualizar(Request $request)
     {
 
-        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id', 'telefone_id'])->with(['Curriculo' => function ($model) {
+        $resultado = FeedbackCurriculo::select(
+            ['id', 'curriculo_id', 'vaga_id', 'vaga_projeto_id', 'vagas_abertas_id', 'telefone_id']
+        )->with(['Curriculo' => function ($model) {
             $model->select(['id', 'nome', 'cpf', 'email', 'nascimento', 'rg', 'orgao_expeditor', 'logradouro', 'complemento', 'bairro', 'municipio', 'uf']);
-        }])->with('TelPrincipal');
+        }])->with(['TelPrincipal']);
 
-        if ($request->filled('status')) {
-            $status = $request->status;
-            $resultado->whereHas('ResultadoIntegrado', function ($q) {
-                $q->whereDocumentosEntregue(true);
-            });
-
-            if ($status == 'em_processo') {
-                $resultado->whereHas('Admissao', function ($q) {
-                    $q->whereNotIn('status', [
-                        Admissao::STATUS_ADMISSAO_ADMITIDO,
-                        Admissao::STATUS_DEMITIDO,
-                        Admissao::STATUS_ADMISSAO_CANCELADO,
-                        Admissao::STATUS_ADMISSAO_STANDBY,
-                        Admissao::STATUS_ADMISSAO_DESISTENCIA,
-                        Admissao::STATUS_DESMOBILIZADO
-                    ]);
-                })->whereDoesntHave('Demissao');
-
-            }
-
-            if ($status == 'admitidos') {
-                $resultado->whereHas('Admissao', function ($q) {
-                    $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
-                })->whereDoesntHave('Demissao');
-            }
-
-            if ($status == 'demitidos') {
-                $resultado->demitidos();
-            }
-        }
-
-        /* Antes
-                if ($request->filled('status')) {
-                    if ($request->status == 'em_processo') {
-                        $resultado->whereHas('ResultadoIntegrado', function ($q) {
-                            $q->whereDocumentosEntregue(true);
-                        })->whereDoesntHave('Admissao')->whereDoesntHave('Demissao')->orWhereHas('Admissao', function ($q) {
-                            $q->whereIn('status', [Admissao::STATUS_ADMISSAO_PENDENTEDOCUMENTO]);
-                        });
-                    }
-                    if ($request->status == 'admitidos') {
-                        $resultado->whereHas('ResultadoIntegrado', function ($q) {
-                            $q->whereDocumentosEntregue(true);
-                        })->whereHas('Admissao', function ($q) {
-                            $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
-                        })->whereDoesntHave('Demissao');
-                    }
-                    if ($request->status == 'demitidos') {
-                        $resultado->whereHas('ResultadoIntegrado', function ($q) {
-                            $q->whereDocumentosEntregue(true);
-                        })->demitidos();
-                    }
-                }
-                */
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
                 $query->where(function ($query) use ($request) {
@@ -175,6 +120,32 @@ class PreAdmissaoController extends Controller
                 });
             });
         }
+
+        if ($request->filled('status')) {
+            $status = $request->status;
+
+            // Common condition for all status types
+            $resultado->whereHas('ResultadoIntegrado', fn($q) => $q->whereDocumentosEntregue(true));
+
+            // Apply specific filters based on status
+            match ($status) {
+                'admitidos' => $resultado->whereHas('Admissao', fn($q) => $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO)
+                )->whereDoesntHave('Demissao'),
+
+                'demitidos' => $resultado->demitidos(),
+
+                'em_processo' => $resultado->where(function ($query) {
+                    // Either has no Admissao record at all
+                    $query->whereDoesntHave('Admissao')
+                        // Or has Admissao with pending document status
+                        ->orWhereHas('Admissao', fn($q) => $q->where('status', Admissao::STATUS_ADMISSAO_PENDENTEDOCUMENTO)
+                        );
+                })->whereDoesntHave('Demissao'),
+
+                default => $resultado // No additional filtering for unknown status
+            };
+        }
+
 
         if ($request->filled('campoCPF')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
