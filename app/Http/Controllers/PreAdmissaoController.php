@@ -124,10 +124,8 @@ class PreAdmissaoController extends Controller
         if ($request->filled('status')) {
             $status = $request->status;
 
-            // Common condition for all status types
             $resultado->whereHas('ResultadoIntegrado', fn($q) => $q->whereDocumentosEntregue(true));
 
-            // Apply specific filters based on status
             match ($status) {
                 'admitidos' => $resultado->whereHas('Admissao', fn($q) => $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO)
                 )->whereDoesntHave('Demissao'),
@@ -135,14 +133,12 @@ class PreAdmissaoController extends Controller
                 'demitidos' => $resultado->demitidos(),
 
                 'em_processo' => $resultado->where(function ($query) {
-                    // Either has no Admissao record at all
                     $query->whereDoesntHave('Admissao')
-                        // Or has Admissao with pending document status
-                        ->orWhereHas('Admissao', fn($q) => $q->where('status', Admissao::STATUS_ADMISSAO_PENDENTEDOCUMENTO)
+                        ->orWhereHas('Admissao', fn($q) => $q->whereIn('status', Admissao::STATUS_EM_PROCESSO_SELECAO)
                         );
                 })->whereDoesntHave('Demissao'),
 
-                default => $resultado // No additional filtering for unknown status
+                default => $resultado
             };
         }
 
