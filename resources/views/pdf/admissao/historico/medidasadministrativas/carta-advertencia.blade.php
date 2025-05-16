@@ -29,7 +29,7 @@
             com retorno no dia ({{$medida->data_retorno}})
         @endif().
         Em razão disso
-        @if($medida->Feedback->Empresa->apelido == 'montisol')
+        @if($medida->Feedback->Empresa->id == 63122)
             e na forma do artigo 482 alínea h
         @endif
         , o(a) Sr(a)., está sendo advertido(a), para que repense suas
