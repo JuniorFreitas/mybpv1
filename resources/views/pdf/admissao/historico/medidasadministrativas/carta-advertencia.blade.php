@@ -28,7 +28,11 @@
         @if(!in_array($medida->tipo,['Advertência Escrita', 'Advertência Verbal', 'Desligamento', 'Re-orientação',]))
             com retorno no dia ({{$medida->data_retorno}})
         @endif().
-        Em razão disso, o(a) Sr(a)., está sendo advertido(a), para que repense suas
+        Em razão disso
+        @if($medida->Feedback->Empresa->apelido == 'montisol')
+            e na forma do artigo 482 alínea h
+        @endif
+        , o(a) Sr(a)., está sendo advertido(a), para que repense suas
         atitudes e passe a se adequar nas regras internas da empresa, evitando a reincidência, que poderá provocar
         outras medidas disciplinares.
         <br>
