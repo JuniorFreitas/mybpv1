@@ -19,9 +19,9 @@
             designada simplesmente <strong>EMPREGADORA</strong> e de outro
             <strong>{{$dados['dados_colaborador']->nome}}</strong>
             portador(a) Carteira Profissional
-            n.º {{$dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_numero : 'NÃO INFORMADO'}}
+            n.º {{$dados['dados_colaborador']->Admissao->DadosAdmissoes ? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_numero : 'NÃO INFORMADO'}}
             ,
-            Série {{$dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_serie: 'NÃO INFORMADO'}}
+            Série {{$dados['dados_colaborador']->Admissao->DadosAdmissoes? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_serie: 'NÃO INFORMADO'}}
             a seguir chamado apenas <strong>EMPREGADO(A)</strong>, celebram o presente CONTRATO DE TRABALHO POR PRAZO
             DETERMINADO, com duração de ____ Dias, no período de ____/____/____ a ____/____/____ conforme disposto na
             consolidação da Leis de Trabalho, que regerá pelas cláusulas abaixo e demais disposições legais vigentes:
@@ -33,7 +33,7 @@
             de ____ Dias, no
             período de ____/____/_____ a ____/____/_____ na função de
             <span
-                style="text-transform: uppercase; font-weight: bold">{{ $dados['dados_colaborador']->FeedBack->VagaAberta->VagaSelecionada->nome }}</span>
+                style="text-transform: uppercase; font-weight: bold">{{ $dados['dados_colaborador']->VagaAberta->VagaSelecionada->nome }}</span>
             e mais as funções que vierem a ser objetos de ordens verbais, cartas
             ou avisos, segundo necessidades técnicas da <strong>EMPREGADORA</strong>, em qualquer dos estabelecimentos
             desta
@@ -45,8 +45,8 @@
             <strong>2</strong> – O <strong>EMPREGADO(A)</strong>, como remuneração pelo trabalho prestado,
             receberá o salário
             normativo da categoria fixado em ACORDO, CONVENÇÃO, DISSÍDIO COLETIVO DE TRABALHO ou tarefa de produção, no
-            valor de R$ {{ $dados['dados_colaborador']->FeedBack->Admissao->salario }}
-            ({{\App\Models\Sistema::valorPorExtenso($dados['dados_colaborador']->FeedBack->Admissao->salario)}}).
+            valor de R$ {{ $dados['dados_colaborador']->Admissao->salario }}
+            ({{\App\Models\Sistema::valorPorExtenso($dados['dados_colaborador']->Admissao->salario)}}).
         </p><br>
         <p class="f12 text-justify">
             <strong>3</strong> – JORNADA DE TRABALHO, ACORDO PARA PRORROGAÇÃO:<br>
@@ -102,7 +102,7 @@
         <br><br>
         <div class="f12" style="line-height: 26pt">
             São
-            Luís/MA, {{ (new \MasterTag\DataHora($dados['dados_colaborador']->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}
+            Luís/MA, {{ (new \MasterTag\DataHora($dados['dados_colaborador']->Admissao->data_admissao))->dataCompletaExt() }}
             .
             <br>
             <br>
