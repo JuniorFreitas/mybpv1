@@ -921,7 +921,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'anexoShow'])->name('treinamento.anexo-show');
         Route::get('treinamento/anexoDownload/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'download'])->name('treinamento.anexo-download');
         Route::delete('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'anexoDelete'])->name('treinamento.anexo-delete');
-        
+
         Route::post('treinamento/enviar-carteira', [\App\Http\Controllers\TreinamentoController::class, 'enviarCarteiraEmail']);
         Route::post('treinamento/carteiras', [\App\Http\Controllers\TreinamentoController::class, 'carteiraPdf'])->name('carteiraPdf');
         Route::post('treinamento/export', [\App\Http\Controllers\TreinamentoController::class, 'export'])->name('excel');
@@ -930,6 +930,7 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
         Route::get('treinamento/vencimentos', [\App\Http\Controllers\TreinamentoController::class, 'vencimentos'])->name('vencimentos');
 
         Route::post('treinamento/proximovencimento', [\App\Http\Controllers\TreinamentoController::class, 'treinamentoProximoVencimento'])->name('vencimentoTreinamento');
+        Route::get('treinamento/proximovencimento', [\App\Http\Controllers\TreinamentoController::class, 'treinamentoProximoVencimento'])->name('vencimentoTreinamento');
         Route::post('treinamento/salvar-massa', [\App\Http\Controllers\TreinamentoController::class, 'storeMassa'])->name('storeMassa');
 
         Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)->middleware('can:treinamento_carteira-etiquetas');

@@ -892,7 +892,7 @@ class Sistema
             ? Admissao::STATUS_ADMISSAO_ADMITIDO
             : Admissao::STATUS_DEMITIDO;
 
-        $feedbackCurriculo = FeedbackCurriculo::select(['id', 'curriculo_id'])
+        $feedbackCurriculo = FeedbackCurriculo::withoutGlobalScopes()->select(['id', 'curriculo_id'])
             ->whereCurriculoId($funcionarioId)
             ->whereEmpresaId($empresaId)
             ->with([

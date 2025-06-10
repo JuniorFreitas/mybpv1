@@ -904,4 +904,5 @@ class TreinamentoController extends Controller
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
     }
+    
 }
