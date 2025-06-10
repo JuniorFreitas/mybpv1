@@ -60,7 +60,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('mybp:treinamento-vencimento --id=78862')
             ->mondays()
-            ->at('23:00');
+            ->at('00:00');
     }
 
     /**
