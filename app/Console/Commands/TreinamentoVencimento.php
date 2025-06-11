@@ -39,18 +39,36 @@ class TreinamentoVencimento extends Command
     public function handle(): int
     {
         $this->info('Iniciando verificação de treinamentos...');
+        $this->info("Ambiente: Docker PHP 8.2 | Memória inicial: " . $this->formatBytes(memory_get_usage(true)));
 
         $empresas = $this->buscarEmpresas();
+        $this->info("Total de empresas encontradas: {$empresas->count()}");
+
+        $tempoInicio = microtime(true);
+        $empresasProcessadas = 0;
 
         foreach ($empresas as $empresa) {
             $this->processarEmpresa($empresa);
+            $empresasProcessadas++;
+            
+            // Limpeza de memória a cada empresa (importante no Docker)
+            if ($empresasProcessadas % 5 === 0) {
+                gc_collect_cycles();
+                $this->info("Memória atual: " . $this->formatBytes(memory_get_usage(true)));
+            }
         }
 
-        $this->info("\nVerificação de treinamentos concluída!");
+        $tempoTotal = microtime(true) - $tempoInicio;
+        $this->info("\n=== ESTATÍSTICAS FINAIS ===");
+        $this->info("Empresas processadas: {$empresasProcessadas}");
+        $this->info("Tempo total: " . number_format($tempoTotal, 2) . " segundos");
+        $this->info("Memória pico: " . $this->formatBytes(memory_get_peak_usage(true)));
+        $this->info("Verificação de treinamentos concluída!");
+        
         return 0;
     }
 
-    private function buscarEmpresas(): array|\Illuminate\Database\Eloquent\Collection|\Illuminate\Support\Collection|\LaravelIdea\Helper\App\Models\_IH_Cliente_C
+    private function buscarEmpresas(): \Illuminate\Database\Eloquent\Collection
     {
         return Cliente::withoutGlobalScopes()
             ->whereAtivo(true)
@@ -105,7 +123,7 @@ class TreinamentoVencimento extends Command
         $this->info("Processamento concluído para empresa: {$empresa->razao_social}");
     }
 
-    private function buscarUsuariosEmail($empresaId): array|\Illuminate\Database\Eloquent\Collection|\LaravelIdea\Helper\App\Models\_IH_User_C|\Illuminate\Support\Collection
+    private function buscarUsuariosEmail(int $empresaId): \Illuminate\Database\Eloquent\Collection
     {
         $idTipoRecebeEmail = TipoRecebeEmail::whereNome(TipoRecebeEmail::VENCIMENTO_TREINAMENTO)->first()->id;
 
@@ -119,7 +137,7 @@ class TreinamentoVencimento extends Command
             ->get();
     }
 
-    private function buscarVencimentos($empresaId): array|\Illuminate\Database\Eloquent\Collection|\LaravelIdea\Helper\App\Models\_IH_Vencimento_C|\Illuminate\Support\Collection
+    private function buscarVencimentos(int $empresaId): \Illuminate\Database\Eloquent\Collection
     {
         return Vencimento::withoutGlobalScopes()
             ->whereEmpresaId($empresaId)
@@ -129,7 +147,7 @@ class TreinamentoVencimento extends Command
             ->keyBy('id');
     }
 
-    private function buscarAdmitidos($empresaId): array|\Illuminate\Database\Eloquent\Collection|\Illuminate\Support\Collection|\LaravelIdea\Helper\App\Models\_IH_Admissao_C
+    private function buscarAdmitidos(int $empresaId): \Illuminate\Database\Eloquent\Collection
     {
         return Admissao::withoutGlobalScopes()
             ->join('feedback_curriculos as fc', 'fc.id', '=', 'admissoes.feedback_id')
@@ -172,7 +190,7 @@ class TreinamentoVencimento extends Command
         return $this->agruparTreinamentos($treinamentosAlerta, $admitidos);
     }
 
-    private function buscarTreinamentos($feedbackIds): \LaravelIdea\Helper\App\Models\_IH_Treinamento_C|array|\Illuminate\Database\Eloquent\Collection|\Illuminate\Support\Collection
+    private function buscarTreinamentos(\Illuminate\Support\Collection $feedbackIds): \Illuminate\Database\Eloquent\Collection
     {
         return Treinamento::withoutGlobalScopes()
             ->join('treinamento_vencimento as tv', 'tv.treinamento_id', '=', 'treinamentos.id')
@@ -203,7 +221,7 @@ class TreinamentoVencimento extends Command
         });
     }
 
-    private function calcularDiasParaVencer($dataVencimento, $dataAtual): float|false|int
+    private function calcularDiasParaVencer(?string $dataVencimento, string $dataAtual): int|float
     {
         if (!$dataVencimento) {
             return PHP_INT_MAX;
@@ -572,7 +590,7 @@ class TreinamentoVencimento extends Command
         $caminhoS3 = null;
 
         try {
-            $csvContent = $this->gerarConteudoCSV($treinamentosAgrupados);
+            $csvContent = $this->gerarConteudoCSVUTF8($treinamentosAgrupados);
             $nomeArquivo = "treinamentos_{$empresa->id}_" . date('YmdHis') . '.csv';
             $caminhoS3 = "relatorios/treinamentos/{$empresa->id}/" . date('Y/m/d') . '/' . Str::random(10) . '_' . $nomeArquivo;
 
@@ -580,7 +598,7 @@ class TreinamentoVencimento extends Command
 
             $uploadSuccess = Storage::disk('s3')->put($caminhoS3, $csvContent, [
                 'visibility' => 'private',
-                'ContentType' => 'text/csv',
+                'ContentType' => 'text/csv; charset=utf-8',
                 'ContentDisposition' => 'attachment; filename="' . $nomeArquivo . '"'
             ]);
 
@@ -610,33 +628,59 @@ class TreinamentoVencimento extends Command
         }
     }
 
-    private function gerarConteudoCSV($treinamentosAgrupados): false|string
+    private function gerarConteudoCSVUTF8(array $treinamentosAgrupados): string
     {
-        $output = fopen('php://temp', 'r+');
+        // Usar php://memory para melhor performance em Docker
+        $output = fopen('php://memory', 'r+');
+        
+        // Adicionar BOM UTF-8 para garantir que o Excel reconheça a codificação
+        fwrite($output, "\xEF\xBB\xBF");
+        
+        // Adicionar comando SEP para forçar o Excel a usar ponto e vírgula como separador
+        fwrite($output, "sep=;\n");
 
-//         Cabeçalho
-        fputcsv($output, [
-            'Funcionário', 'Cargo', 'Função', 'Data de Admissão', 'Centro de custo', 'Número do Crachá', 'Treinamento', 'Data Treinamento',
+        // Cabeçalho - escapar campos que podem ter vírgulas
+        $cabecalho = [
+            'Funcionário', 'Cargo', 'Função', 'Data de Admissão', 'Centro de custo', 
+            'Número do Crachá', 'Treinamento', 'Data Treinamento',
             'Data Vencimento', 'Dias para Vencer', 'Status'
-        ]);
+        ];
+        fputcsv($output, $cabecalho, ';', '"');
 
-        // Dados
+        $totalLinhas = 0;
+        
+        // Dados - processamento otimizado para Docker
         foreach ($treinamentosAgrupados as $funcionarios) {
             foreach ($funcionarios as $funcionario) {
+                $funcionarioData = $funcionario['funcionario'];
+                
                 foreach ($funcionario['treinamentos'] as $treinamento) {
-                    fputcsv($output, [
-                        $funcionario['funcionario']['nome'],
-                        $funcionario['funcionario']['cargo'],
-                        $funcionario['funcionario']['funcao'],
-                        $funcionario['funcionario']['data_admissao'],
-                        $funcionario['funcionario']['centro_custo_label'],
-                        $funcionario['funcionario']['numero_cracha'],
-                        $treinamento['vencimento_nome'],
-                        date('d/m/Y', strtotime($treinamento['data_treinamento'])),
-                        date('d/m/Y', strtotime($treinamento['data_vencimento'])),
+                    // Pré-processar dados uma única vez
+                    $dataAdmissao = $funcionarioData['data_admissao'] ?? '';
+                    $datatreinamento = $treinamento['data_treinamento'] ? date('d/m/Y', strtotime($treinamento['data_treinamento'])) : '';
+                    $dataVencimento = $treinamento['data_vencimento'] ? date('d/m/Y', strtotime($treinamento['data_vencimento'])) : '';
+                    
+                    $dados = [
+                        $this->limparTextoCSV($funcionarioData['nome']),
+                        $this->limparTextoCSV($funcionarioData['cargo']),
+                        $this->limparTextoCSV($funcionarioData['funcao']),
+                        $dataAdmissao,
+                        $this->limparTextoCSV($funcionarioData['centro_custo_label']),
+                        $funcionarioData['numero_cracha'] ?? '',
+                        $this->limparTextoCSV($treinamento['vencimento_nome']),
+                        $datatreinamento,
+                        $dataVencimento,
                         $treinamento['dias_vencer'],
-                        $treinamento['status_texto']
-                    ]);
+                        $this->limparTextoCSV($treinamento['status_texto'])
+                    ];
+                    
+                    fputcsv($output, $dados, ';', '"');
+                    $totalLinhas++;
+                    
+                    // Limpeza de memória a cada 1000 linhas (otimização Docker)
+                    if ($totalLinhas % 1000 === 0) {
+                        $this->info("Processadas {$totalLinhas} linhas do CSV...");
+                    }
                 }
             }
         }
@@ -645,7 +689,26 @@ class TreinamentoVencimento extends Command
         $csvContent = stream_get_contents($output);
         fclose($output);
 
+        $this->info("CSV gerado com {$totalLinhas} linhas de dados");
         return $csvContent;
+    }
+
+    /**
+     * Limpa texto para CSV evitando problemas de formatação
+     */
+    private function limparTextoCSV(?string $texto): string
+    {
+        if (is_null($texto)) {
+            return '';
+        }
+        
+        // Remove quebras de linha e caracteres especiais que podem quebrar o CSV
+        $texto = str_replace(["\r", "\n", "\t"], ' ', $texto);
+        
+        // Remove espaços extras
+        $texto = preg_replace('/\s+/', ' ', $texto);
+        
+        return trim($texto);
     }
 
     private function prepararDadosEmail($empresa, $treinamentosAgrupados, $arquivoS3): array
@@ -667,7 +730,7 @@ class TreinamentoVencimento extends Command
                     'nome_arquivo' => $arquivoS3['nome_arquivo'],
                     'texto_link' => 'Baixar Relatório Detalhado (CSV)',
                     'validade' => 'Link válido até ' . now()->addDays(7)->format('d/m/Y'),
-                    'instrucoes' => 'Relatório completo em formato CSV para análise detalhada'
+                    'instrucoes' => 'Relatório completo em formato CSV UTF-8 para análise detalhada'
                 ]
             ]
         ];
@@ -681,5 +744,19 @@ class TreinamentoVencimento extends Command
         } catch (\Exception $e) {
             $this->error("Erro ao remover arquivo S3: {$e->getMessage()}");
         }
+    }
+
+    /**
+     * Formatar bytes para exibição legível
+     */
+    private function formatBytes(int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+        
+        return round($bytes, $precision) . ' ' . $units[$i];
     }
 }
