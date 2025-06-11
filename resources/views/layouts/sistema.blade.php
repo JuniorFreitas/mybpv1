@@ -50,8 +50,6 @@
 <div id="app" v-cloak>
 
     <div class="layout-wrapper">
-
-
         <div class="vertical-menu">
             <div data-simplebar class="h-100">
                 <div id="sidebar-menu">

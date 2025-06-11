@@ -330,26 +330,78 @@
         </template>
     </modal>
 
-<!--    <modal id="celebration" titulo="Menção honrosa por inovação no Maranhão" size="g">
+    <modal id="celebration" titulo="Atualização de Segurança: Troca Obrigatória de Senha" size="g">
         <template slot="conteudo">
-            <div class="row">
-                <div class="col-12">
-                    <img src="https://mybp-prod.s3.amazonaws.com/public/cert_mensao_honrosa.png" class="img-fluid">
-                    <p class="text-justify">
-                        A BPSE recebeu uma Menção Honrosa por Inovação do Governo do Estado do Maranhão e a Secretaria
-                        da
-                        Ciência, Tecnologia e Inovação, pelo nosso sistema e pelo desenvolvimento da versão indústria!
-                        <br>
-                        Assim
-                        atualizamos a nossa Home de Login para BPIN, Soluções em Gestão, durante esse mês de celebração.
-                        Acreditamos que cada pessoa tem um potencial único e é nosso dever ajudá-las a alcançar suas
-                        metas
-                        profissionais. É um prazer celebrar com você essa conquista!
+            {{--            <div class="row">--}}
+            {{--                <div class="col-12">--}}
+            {{--                    <img src="https://mybp-prod.s3.amazonaws.com/public/cert_mensao_honrosa.png" class="img-fluid">--}}
+            {{--                    <p class="text-justify">--}}
+            {{--                        A BPSE recebeu uma Menção Honrosa por Inovação do Governo do Estado do Maranhão e a Secretaria--}}
+            {{--                        da--}}
+            {{--                        Ciência, Tecnologia e Inovação, pelo nosso sistema e pelo desenvolvimento da versão indústria!--}}
+            {{--                        <br>--}}
+            {{--                        Assim--}}
+            {{--                        atualizamos a nossa Home de Login para BPIN, Soluções em Gestão, durante esse mês de celebração.--}}
+            {{--                        Acreditamos que cada pessoa tem um potencial único e é nosso dever ajudá-las a alcançar suas--}}
+            {{--                        metas--}}
+            {{--                        profissionais. É um prazer celebrar com você essa conquista!--}}
+            {{--                    </p>--}}
+            {{--                </div>--}}
+            {{--            </div>--}}
+
+            <div
+                style="background: #f8f9fb; border: 1px solid #ccc; border-radius: 10px; padding: 20px; max-width: 850px; margin: 20px auto; font-family: 'Segoe UI', sans-serif;">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <img src="http://localhost:8000/images/bpin_mybp_color.svg" alt="Logo BPIN"
+                         style="height: 60px; margin-right: 15px;"/>
+                    <div>
+                        <h2 style="font-weight: bold;margin: 0px;color: rgb(26, 43, 76);text-align: center;">🔒
+                            Atualização de Segurança — Troca Obrigatória de
+                            Senha</h2>
+                    </div>
+                </div>
+
+                <p style="font-size: 16px; color: #333;">
+                    A partir do dia <strong>16 de junho de 2025</strong>, a plataforma <strong>MyBP</strong> será
+                    atualizada com uma nova política de segurança.
+                    Todos os usuários deverão <strong>trocar suas senhas obrigatoriamente</strong> no primeiro acesso
+                    após essa data.
+                </p>
+
+                <p style="font-size: 16px; color: #333;">
+                    Essa medida faz parte do nosso compromisso com a proteção de dados corporativos e pessoais,
+                    oferecendo uma camada extra de segurança para todos os acessos à plataforma.
+                </p>
+
+                <div style="background-color: #eef3fb; padding: 15px; border-left: 5px solid #2453d2; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 16px; color: #1a2b4c;">
+                        🔁 <strong>Ciclo de renovação:</strong> A troca de senha será obrigatória a cada <strong>120
+                            dias</strong>.
                     </p>
                 </div>
+
+                <div style="margin-top: 15px;">
+                    <h3 style="color: #2a873c;">✅ O que muda?</h3>
+                    <ul style="font-size: 16px; color: #333; padding-left: 20px;">
+                        <li>Ao acessar a plataforma após o dia <strong>16/06</strong>, será exibida uma solicitação
+                            imediata de alteração de senha.
+                        </li>
+                        <li>O sistema validará a nova senha com base nos critérios obrigatórios descritos na Política de
+                            Senhas.
+                        </li>
+                    </ul>
+                </div>
+
+                <div
+                    style="margin-top: 20px; background-color: #fffbe6; border: 1px dashed #e0c100; padding: 10px; border-radius: 6px;">
+                    📌 <strong>Dica:</strong> Crie uma senha forte, única e que você consiga lembrar com facilidade.
+                    Evite reutilizar senhas antigas.
+                </div>
             </div>
+
+
         </template>
-    </modal>-->
+    </modal>
 
     <div class="row">
         <div id="sandbox-container"></div>
@@ -458,7 +510,9 @@
                 $('#termosdeuso_popup').modal('show')
                 @endif
 
-                // $('#celebration').modal('show')
+                @if(date('Y-m-d') < '2025-06-16')
+                $('#celebration').modal('show')
+                @endif
             },
             methods: {
                 concordar() {
