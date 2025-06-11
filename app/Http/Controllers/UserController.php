@@ -410,6 +410,26 @@ class UserController extends Controller
 
     public function recuperaSenhaPost(Request $request)
     {
+        // Validar a nova senha antes de processar
+        $dadosValidados = \Validator::make($request->all(), [
+            'novaSenha' => [
+                'required',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
+            ],
+        ], [
+            'novaSenha.required' => 'A nova senha é obrigatória.',
+            'novaSenha.min' => 'A senha deve ter no mínimo 8 caracteres.',
+            'novaSenha.regex' => 'A senha deve conter pelo menos: 1 letra minúscula, 1 maiúscula, 1 número e 1 caractere especial (@$!%*?&).',
+        ]);
+
+        if ($dadosValidados->fails()) {
+            return response()->json([
+                'msg' => 'Erro na validação da senha',
+                'erros' => $dadosValidados->errors()
+            ], 400);
+        }
+
         $recuperacao = RecuperacaoSenha::whereToken($request->token)
             ->where('recuperado', false)
             ->where('expiracao', '>=', (new DataHora())->dataHoraInsert())
@@ -422,7 +442,10 @@ class UserController extends Controller
                 'recuperado' => true
             ]);
 
-            User::find($recuperacao->user_id)->update(['password' => bcrypt($request->novaSenha)]);
+            User::find($recuperacao->user_id)->update([
+                'password' => bcrypt($request->novaSenha),
+                'password_changed_at' => now()
+            ]);
 
             \Auth::login($recuperacao->user);
 

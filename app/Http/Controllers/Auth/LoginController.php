@@ -51,10 +51,9 @@ class LoginController extends Controller
     {
         $request->request->add([
             'ativo' => true,
-            'temp' => false,
         ]);
 
-        return $request->only($this->username(), 'password', 'ativo', 'temp');
+        return $request->only($this->username(), 'password', 'ativo');
     }
 
     protected function validateLogin(Request $request)
@@ -90,7 +89,42 @@ class LoginController extends Controller
             'created_at' => (new DataHora())->dataHoraInsert(),
             'updated_at' => (new DataHora())->dataHoraInsert(),
         ]);
-        \Auth::user()->update(['ultimo_acesso' => (new DataHora())->dataHoraInsert()]);
+        
+        $user = \Auth::user();
+        $user->update(['ultimo_acesso' => (new DataHora())->dataHoraInsert()]);
+        
+        // Verifica se é primeiro acesso ou tem senha temporária
+        $isFirstAccess = is_null($user->password_changed_at);
+        $hasTemporaryPassword = $user->temp == true;
+        
+        // Se é primeiro acesso ou tem senha temporária, obriga mudança de senha
+        if ($isFirstAccess || $hasTemporaryPassword) {
+            // Define que precisa alterar senha
+            $user->update([
+                'require_password_reset' => true,
+                'password_reset_days' => 0, // Força alteração imediata
+                'password_changed_at' => $user->password_changed_at ?? $user->created_at
+            ]);
+            
+            // Se for requisição JSON (API), retorna erro específico
+            if ($request->wantsJson()) {
+                return new JsonResponse([
+                    'msg' => $isFirstAccess ? 'Primeiro acesso detectado. É obrigatório alterar a senha.' : 'Senha temporária detectada. É obrigatório alterar a senha.',
+                    'require_password_reset' => true,
+                    'first_access' => $isFirstAccess,
+                    'temporary_password' => $hasTemporaryPassword
+                ], 403);
+            }
+            
+            // Redireciona para alteração de senha
+            $message = $isFirstAccess ? 'Primeiro acesso detectado. É obrigatório alterar sua senha.' : 'Senha temporária detectada. É obrigatório alterar sua senha.';
+            return redirect()->route('alterar-senha.index')->with('warning', $message);
+        }
+        
+        // Se nunca definiu a data de alteração de senha, define agora
+        if (is_null($user->password_changed_at)) {
+            $user->update(['password_changed_at' => now()]);
+        }
 
         return $request->wantsJson()
             ? new JsonResponse([], 204)

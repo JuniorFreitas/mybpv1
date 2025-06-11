@@ -67,6 +67,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'habilidades' => \App\Http\Middleware\CarregaHabilidades::class,
         //'ponto_eletronico' => \App\Http\Middleware\VerificarPontoEletronico::class,
+        'check.password.reset' => \App\Http\Middleware\CheckPasswordReset::class,
 
         'can.sanctum' => \App\Http\Middleware\TemHabilidade::class,
         'usuario.ativo' => \App\Http\Middleware\UsuarioAtivo::class,

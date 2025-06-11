@@ -26,6 +26,17 @@
                         />
                     </div>
                 </div>
+                <div class="alert alert-info">
+                    <h6><i class="fa fa-info-circle"></i> Requisitos para senha segura:</h6>
+                    <ul class="mb-0 small">
+                        <li>Mínimo de 8 caracteres</li>
+                        <li>Pelo menos 1 letra minúscula (a-z)</li>
+                        <li>Pelo menos 1 letra maiúscula (A-Z)</li>
+                        <li>Pelo menos 1 número (0-9)</li>
+                        <li>Pelo menos 1 caractere especial (@$!%*?&)</li>
+                    </ul>
+                </div>
+                
                 <div class="mb-3">
                     <label for="novaSenha" class="form-label">Nova Senha:</label>
                     <div class="input-group">
@@ -34,7 +45,7 @@
                             class="form-control"
                             v-model="novaSenha"
                             autocomplete="off"
-                            placeholder="Digite a nova senha"
+                            placeholder="Digite a nova senha (min. 8 caracteres)"
                             @input="checkPasswordStrength"
                             required
                         />
@@ -47,9 +58,11 @@
                         {{ passwordStrength }}
                         <div class="password-level-indicator" :class="'level-' + passwordLevel"
                         ></div>
-                        <!--                        <div class="password-hints" v-if="passwordHints.length > 0">-->
-                        <!--                            <div v-for="(hint, index) in passwordHints" :key="index">{{ hint }}</div>-->
-                        <!--                        </div>-->
+                        <div class="password-hints mt-2" v-if="passwordHints.length > 0">
+                            <div v-for="(hint, index) in passwordHints" :key="index" class="text-danger small">
+                                <i class="fa fa-times-circle"></i> {{ hint }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -81,7 +94,8 @@ export default {
     },
     computed: {
         isPasswordWeak() {
-            return this.passwordLevel <= 1;
+            // A senha é considerada fraca se não atende a todos os 5 critérios
+            return this.passwordHints.length > 0;
         },
         isTokenAllFilled() {
             return this.token.every((digit) => digit !== '');
@@ -126,64 +140,44 @@ export default {
         checkPasswordStrength() {
             const password = this.novaSenha;
             let strength = 0;
+            const hints = [];
 
-            if (password.length >= 6) {
-                strength++;
-            } else {
-                this.updatePasswordStrength('Muito Fraco', 0);
-                return;
+            // Verificar critérios específicos
+            const hasMinLength = password.length >= 8;
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChars = /[@$!%*?&]/.test(password);
+
+            if (hasMinLength) strength++;
+            if (hasLowerCase) strength++;
+            if (hasUpperCase) strength++;
+            if (hasNumbers) strength++;
+            if (hasSpecialChars) strength++;
+
+            // Adicionar dicas para critérios não atendidos
+            if (!hasMinLength) hints.push('Deve ter pelo menos 8 caracteres');
+            if (!hasLowerCase) hints.push('Deve conter pelo menos 1 letra minúscula');
+            if (!hasUpperCase) hints.push('Deve conter pelo menos 1 letra maiúscula');
+            if (!hasNumbers) hints.push('Deve conter pelo menos 1 número');
+            if (!hasSpecialChars) hints.push('Deve conter pelo menos 1 caractere especial (@$!%*?&)');
+
+            this.passwordHints = hints;
+
+            // Definir força da senha
+            if (strength <= 2) {
+                this.updatePasswordStrength('Muito Fraca', 1);
+            } else if (strength === 3) {
+                this.updatePasswordStrength('Fraca', 2);
+            } else if (strength === 4) {
+                this.updatePasswordStrength('Moderada', 3);
+            } else if (strength === 5) {
+                this.updatePasswordStrength('Forte', 4);
             }
-
-            if (/\d/.test(password)) {
-                strength++;
-            } else {
-                this.updatePasswordStrength('Fraco', 1);
-            }
-
-            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) {
-                strength++;
-            } else {
-                this.updatePasswordStrength('Moderado', 2);
-            }
-
-            if (/[^a-zA-Z0-9]/.test(password)) {
-                strength++;
-            } else {
-                this.updatePasswordStrength('Forte', 3);
-            }
-
-            if (password.length >= 10) {
-                strength++;
-            } else {
-                this.updatePasswordStrength('Muito Forte', 4);
-            }
-
-            this.displayPasswordHints(password);
         },
         updatePasswordStrength(message, level) {
             this.passwordStrength = 'Força da Senha: ' + message;
-            this.passwordLevel = level + 1;
-        },
-        displayPasswordHints(password) {
-            const hints = [];
-
-            if (password.length < 8) {
-                hints.push('A senha deve ter pelo menos 8 caracteres.');
-            }
-
-            if (!/\d/.test(password)) {
-                hints.push('Inclua pelo menos um número na senha.');
-            }
-
-            if (!/[a-z]/.test(password) || !/[A-Z]/.test(password)) {
-                hints.push('Inclua pelo menos uma letra maiúscula e uma letra minúscula na senha.');
-            }
-
-            if (!/[^a-zA-Z0-9]/.test(password)) {
-                hints.push('Inclua pelo menos um caractere especial na senha.');
-            }
-
-            this.passwordHints = hints;
+            this.passwordLevel = level;
         },
         togglePasswordVisibility() {
             this.revealPassword = !this.revealPassword;
