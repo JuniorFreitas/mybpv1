@@ -599,7 +599,12 @@ class TreinamentoVencimento extends Command
             $uploadSuccess = Storage::disk('s3')->put($caminhoS3, $csvContent, [
                 'visibility' => 'private',
                 'ContentType' => 'text/csv; charset=utf-8',
-                'ContentDisposition' => 'attachment; filename="' . $nomeArquivo . '"'
+                'ContentDisposition' => 'attachment; filename="' . $nomeArquivo . '"',
+                'ContentEncoding' => 'utf-8',
+                'Metadata' => [
+                    'charset' => 'utf-8',
+                    'separator' => 'semicolon'
+                ]
             ]);
 
             if (!$uploadSuccess) {
@@ -630,22 +635,25 @@ class TreinamentoVencimento extends Command
 
     private function gerarConteudoCSVUTF8(array $treinamentosAgrupados): string
     {
-        // Usar php://memory para melhor performance em Docker
-        $output = fopen('php://memory', 'r+');
+        // Configurar locale para garantir encoding correto
+        mb_internal_encoding('UTF-8');
+        
+        // Construir CSV como string para ter controle total da codificação
+        $csv = '';
         
         // Adicionar BOM UTF-8 para garantir que o Excel reconheça a codificação
-        fwrite($output, "\xEF\xBB\xBF");
+        $csv .= "\xEF\xBB\xBF";
         
         // Adicionar comando SEP para forçar o Excel a usar ponto e vírgula como separador
-        fwrite($output, "sep=;\n");
+        $csv .= "sep=;\n";
 
-        // Cabeçalho - escapar campos que podem ter vírgulas
+        // Cabeçalho
         $cabecalho = [
             'Funcionário', 'Cargo', 'Função', 'Data de Admissão', 'Centro de custo', 
             'Número do Crachá', 'Treinamento', 'Data Treinamento',
             'Data Vencimento', 'Dias para Vencer', 'Status'
         ];
-        fputcsv($output, $cabecalho, ';', '"');
+        $csv .= $this->arrayParaLinhaCSV($cabecalho);
 
         $totalLinhas = 0;
         
@@ -661,20 +669,20 @@ class TreinamentoVencimento extends Command
                     $dataVencimento = $treinamento['data_vencimento'] ? date('d/m/Y', strtotime($treinamento['data_vencimento'])) : '';
                     
                     $dados = [
-                        $this->limparTextoCSV($funcionarioData['nome']),
-                        $this->limparTextoCSV($funcionarioData['cargo']),
-                        $this->limparTextoCSV($funcionarioData['funcao']),
+                        $this->garantirUTF8($funcionarioData['nome']),
+                        $this->garantirUTF8($funcionarioData['cargo']),
+                        $this->garantirUTF8($funcionarioData['funcao']),
                         $dataAdmissao,
-                        $this->limparTextoCSV($funcionarioData['centro_custo_label']),
+                        $this->garantirUTF8($funcionarioData['centro_custo_label']),
                         $funcionarioData['numero_cracha'] ?? '',
-                        $this->limparTextoCSV($treinamento['vencimento_nome']),
+                        $this->garantirUTF8($treinamento['vencimento_nome']),
                         $datatreinamento,
                         $dataVencimento,
                         $treinamento['dias_vencer'],
-                        $this->limparTextoCSV($treinamento['status_texto'])
+                        $this->garantirUTF8($treinamento['status_texto'])
                     ];
                     
-                    fputcsv($output, $dados, ';', '"');
+                    $csv .= $this->arrayParaLinhaCSV($dados);
                     $totalLinhas++;
                     
                     // Limpeza de memória a cada 1000 linhas (otimização Docker)
@@ -685,21 +693,25 @@ class TreinamentoVencimento extends Command
             }
         }
 
-        rewind($output);
-        $csvContent = stream_get_contents($output);
-        fclose($output);
-
         $this->info("CSV gerado com {$totalLinhas} linhas de dados");
-        return $csvContent;
+        
+        // Garantir que todo o conteúdo está em UTF-8
+        return mb_convert_encoding($csv, 'UTF-8', 'UTF-8');
     }
 
     /**
-     * Limpa texto para CSV evitando problemas de formatação
+     * Garante que o texto está em UTF-8 e limpo para CSV
      */
-    private function limparTextoCSV(?string $texto): string
+    private function garantirUTF8(?string $texto): string
     {
-        if (is_null($texto)) {
+        if (is_null($texto) || $texto === '') {
             return '';
+        }
+        
+        // Detectar encoding atual e converter para UTF-8 se necessário
+        $encoding = mb_detect_encoding($texto, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
+        if ($encoding !== 'UTF-8') {
+            $texto = mb_convert_encoding($texto, 'UTF-8', $encoding);
         }
         
         // Remove quebras de linha e caracteres especiais que podem quebrar o CSV
@@ -708,7 +720,42 @@ class TreinamentoVencimento extends Command
         // Remove espaços extras
         $texto = preg_replace('/\s+/', ' ', $texto);
         
+        // Garantir que está em UTF-8 válido
+        $texto = mb_convert_encoding($texto, 'UTF-8', 'UTF-8');
+        
         return trim($texto);
+    }
+
+    /**
+     * Converte array para linha CSV com encoding UTF-8 garantido
+     */
+    private function arrayParaLinhaCSV(array $dados): string
+    {
+        $linha = '';
+        $primeiroItem = true;
+        
+        foreach ($dados as $campo) {
+            if (!$primeiroItem) {
+                $linha .= ';';
+            }
+            
+            // Converter para string e garantir UTF-8
+            $campo = (string) $campo;
+            $campo = $this->garantirUTF8($campo);
+            
+            // Escapar aspas duplas
+            $campo = str_replace('"', '""', $campo);
+            
+            // Adicionar aspas se contém separador ou quebra de linha
+            if (strpos($campo, ';') !== false || strpos($campo, '"') !== false || strpos($campo, "\n") !== false) {
+                $campo = '"' . $campo . '"';
+            }
+            
+            $linha .= $campo;
+            $primeiroItem = false;
+        }
+        
+        return $linha . "\n";
     }
 
     private function prepararDadosEmail($empresa, $treinamentosAgrupados, $arquivoS3): array
