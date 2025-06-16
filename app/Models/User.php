@@ -194,6 +194,9 @@ class User extends Authenticatable
         'gestor',
         'privilegio_gestor_area',
         'privilegio_gestor_centro_custo',
+        'require_password_reset',
+        'password_reset_days',
+        'password_changed_at',
 //        'privilegios'
     ];
 
@@ -240,6 +243,9 @@ class User extends Authenticatable
         'gestor' => 'boolean',
         'privilegio_gestor_area' => 'boolean',
         'privilegio_gestor_centro_custo' => 'boolean',
+        'require_password_reset' => 'boolean',
+        'password_reset_days' => 'int',
+        'password_changed_at' => 'datetime',
     ];
 
     private $listaDeHabilidade = [];
@@ -540,7 +546,82 @@ class User extends Authenticatable
 
     public function temPrivilegioGestaoRh(): bool
     {
-        return (bool)auth()->user()->can('privilegio_gestao_rh');
+        return (bool)$this->can('privilegio_gestao_rh');
+    }
+
+    /**
+     * Verifica se o usuário precisa alterar a senha
+     */
+    public function needsPasswordReset(): bool
+    {
+        // Verifica se é primeiro acesso ou tem senha temporária
+        if ($this->isFirstAccess() || $this->hasTemporaryPassword()) {
+            return true;
+        }
+        
+        // Se não está habilitado o reset forçado, não precisa alterar
+        if (!$this->require_password_reset || !$this->password_reset_days) {
+            return false;
+        }
+
+        // Se nunca alterou a senha, considera a data de criação
+        $lastPasswordChange = $this->password_changed_at ?? $this->created_at;
+        
+        if (!$lastPasswordChange) {
+            return true; // Se não tem data de referência, força a alteração
+        }
+
+        // Verifica se passou do prazo
+        $daysPassed = now()->diffInDays($lastPasswordChange);
+        return $daysPassed >= $this->password_reset_days;
+    }
+
+    /**
+     * Verifica se é o primeiro acesso do usuário
+     */
+    public function isFirstAccess(): bool
+    {
+        return is_null($this->password_changed_at);
+    }
+
+    /**
+     * Verifica se o usuário tem senha temporária
+     */
+    public function hasTemporaryPassword(): bool
+    {
+        return $this->temp == true;
+    }
+
+    /**
+     * Retorna o motivo pelo qual a senha precisa ser alterada
+     */
+    public function getPasswordResetReason(): string
+    {
+        if ($this->isFirstAccess()) {
+            return 'Primeiro acesso detectado. É obrigatório alterar sua senha.';
+        }
+        
+        if ($this->hasTemporaryPassword()) {
+            return 'Senha temporária detectada. É obrigatório alterar sua senha.';
+        }
+        
+        if ($this->require_password_reset && $this->password_reset_days) {
+            $lastPasswordChange = $this->password_changed_at ?? $this->created_at;
+            if ($lastPasswordChange) {
+                $daysPassed = now()->diffInDays($lastPasswordChange);
+                return "Sua senha expirou há {$daysPassed} dias. É necessário alterá-la para continuar.";
+            }
+        }
+        
+        return 'É necessário alterar sua senha para continuar.';
+    }
+
+    /**
+     * Atualiza a data da última alteração de senha
+     */
+    public function updatePasswordChangedAt(): void
+    {
+        $this->update(['password_changed_at' => now()]);
     }
 
     protected static function booted()

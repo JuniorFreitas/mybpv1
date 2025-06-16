@@ -24,10 +24,17 @@ class Authenticate extends Middleware
     public function handle($request, Closure $next, ...$guards)
     {
         if (\Auth::guard()->check()) {
-            if (\Auth::user()->temp == 1 || \Auth::user()->ativo == 0 || \Auth::user()->tipo == User::CANDIDATO) {
+            $user = \Auth::user();
+            
+            // Usuário desativado ou candidato
+            if ($user->ativo == 0 || $user->tipo == User::CANDIDATO) {
                 \Auth::logout();
                 return redirect()->route('login')->with('error', 'Sua conta não está ativa.');
             }
+            
+            // Não bloqueia aqui se tem senha temporária - deixa o CheckPasswordReset lidar com isso
+            // Remove a verificação de temp == 1 para permitir que o usuário entre e seja redirecionado
+            
             return $next($request);
         }
         return redirect()->route('login');
