@@ -86,6 +86,10 @@ Route::group(['prefix' => 'g'], function () {
 
     Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class, 'solicitaRecuperaSenha'])->name('solicitaRecuperaSenha');
 
+    // Password Change Routes (fora do middleware check.password.reset para evitar loop)
+    Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('auth');
+    Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('auth', 'habilidades', 'can:usuario_alterar-senha');
+
 });
 
 Route::get('carteira/{curriculo}', [\App\Http\Controllers\TreinamentoController::class, 'carteiraIndividual'])->name('treinamento.carteira');
@@ -108,7 +112,7 @@ Route::group(['prefix' => '3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9t
 });
 
 
-Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' => 'g'], function () {
+Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], 'as' => 'g.', 'prefix' => 'g'], function () {
 
     //ROTAS DE FORMULARIO
     Route::group(['as' => 'fomulario.', 'prefix' => 'formulario'], function () {
@@ -1129,10 +1133,6 @@ Route::group(['middleware' => ['auth', 'habilidades'], 'as' => 'g.', 'prefix' =>
 
         Route::post('usuarios/atualizar', [\App\Http\Controllers\UserController::class, 'atualizar'])->name('usuarios.atualizar')->middleware('can:usuario_usuarios');
         Route::put('usuarios/{usuario}/ativa-desativa', [\App\Http\Controllers\UserController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:usuario_usuarios');
-        //Alterar senha
-        Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('can:usuario_alterar-senha');
-        Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('can:usuario_alterar-senha');
-
 
         Route::resource('usuarios', \App\Http\Controllers\UserController::class)->middleware('can:usuario_usuarios');
 
