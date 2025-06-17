@@ -256,6 +256,7 @@ class User extends Authenticatable
     public const FUNCIONARIO = "Funcionario";
     public const EMPRESA = "Empresa";
     public const GESTOR = "Gestor";
+    public const FORNECEDOR = "Fornecedor";
     public const CANDIDATO = "Candidato";
     public const CLINICA_EXAME = "ClinicaExame";
     public const LISTA_SUPORTE = [1, 54831];
@@ -270,6 +271,7 @@ class User extends Authenticatable
     public const TIPOS_USUARIOS_COMUNS = [
         self::ADMINISTRADOR,
         self::FUNCIONARIO,
+        self::FORNECEDOR,
         self::GESTOR
     ];
 
@@ -277,9 +279,9 @@ class User extends Authenticatable
     public static function getUser($fields = null)
     {
         if ($fields) {
-            return User::find(auth()->id(), $fields);;
+            return User::find(auth()->id(), $fields);
         }
-        return User::find(auth()->id());;
+        return User::find(auth()->id());
     }
 
     // retorna um array de habilidades
@@ -292,6 +294,10 @@ class User extends Authenticatable
             //foreach ($this->papel as $papel) {
 
             //$habilidades = $papel->habilidades->pluck('nome');
+
+            if (!$this->papel) {
+                return [];
+            }
             $habilidades = $this->papel->habilidades->pluck('nome');
             foreach ($habilidades as $habilidade) {
 
@@ -305,6 +311,8 @@ class User extends Authenticatable
             //}
             $this->listaDeHabilidade = $lista->toArray();
         }
+
+
         return $this->listaDeHabilidade;
     }
 
@@ -624,11 +632,19 @@ class User extends Authenticatable
         $this->update(['password_changed_at' => now()]);
     }
 
+    public function Telefones()
+    {
+        return $this->hasMany(UsuarioTelefone::class, 'user_id', 'id');
+    }
+
     protected static function booted()
     {
         static::creating(function ($model) {
             if ($model->tipo == self::CLINICA_EXAME) {
                 $model->setAttribute('api_token', Str::uuid());
+            } else {
+                $model->setAttribute('require_password_reset', 1);
+                $model->setAttribute('password_reset_days', 120);
             }
         });
 //        static::created(function ($model) {

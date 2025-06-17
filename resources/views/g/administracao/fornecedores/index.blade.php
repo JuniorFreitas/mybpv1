@@ -34,10 +34,7 @@
                     <div class="row">
                         <div class="col-12 col-md-6">
                             <label>Selecione o Tipo</label>
-                            <select class="form-control" v-model="form.tipo"
-                                    :disabled="editando"
-                                    onblur="valida_campo_vazio(this,1)" onchange="valida_campo_vazio(this,1)">
-                                <option value="">Selecione ...</option>
+                            <select class="form-control" v-model="form.tipo">
                                 <option
                                     value="{{\App\Models\Fornecedor::TIPO_FORNECEDOR}}">Fornecedor
                                 </option>
@@ -61,7 +58,7 @@
                                href="#nav-dados-cadastrais"
                                role="tab" aria-controls="nav-dados-cadastrais" aria-selected="true">DADOS CADASTRAIS</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" v-if="false">
                             <a class="nav-item nav-link" id="nav-servicos-tab" data-toggle="tab" href="#nav-servicos"
                                role="tab" aria-controls="nav-servicos" aria-selected="false">SERVIÇOS</a>
                         </li>
@@ -204,7 +201,7 @@
 
                         </div>
 
-                        <div class="tab-pane fade" id="nav-servicos"
+                        <div class="tab-pane fade" id="nav-servicos" v-if="false"
                              role="tabpanel" aria-labelledby="nav-servicos-tab">
 
                             <fieldset>
@@ -521,12 +518,12 @@
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
 
-                        <a href="javascript://" class="btn btn-sm btn-danger" title="Excluir"
-                           @click.prevent="janelaConfirmar(fornecedor.id)"
-                           data-toggle="modal"
-                           data-target="#janelaConfirmar">
-                            <i class="fa fa-trash" aria-hidden="true"></i>
-                        </a>
+                        {{--                        <a href="javascript://" class="btn btn-sm btn-danger" title="Excluir"--}}
+                        {{--                           @click.prevent="janelaConfirmar(fornecedor.id)"--}}
+                        {{--                           data-toggle="modal"--}}
+                        {{--                           data-target="#janelaConfirmar">--}}
+                        {{--                            <i class="fa fa-trash" aria-hidden="true"></i>--}}
+                        {{--                        </a>--}}
                     </td>
                 </tr>
                 </tbody>

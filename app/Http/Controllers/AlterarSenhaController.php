@@ -19,9 +19,8 @@ class AlterarSenhaController extends Controller
 
     public function update(Request $request)
     {
-        $this->authorize('usuario_alterar-senha');
 
-        $dadosValidados = \Validator::make($request->only('password','password_confirmation'), [
+        $dadosValidados = \Validator::make($request->only('password', 'password_confirmation'), [
             'password' => [
                 'required',
                 'confirmed',
@@ -34,7 +33,7 @@ class AlterarSenhaController extends Controller
             'password.min' => 'A senha deve ter no mínimo 8 caracteres.',
             'password.regex' => 'A senha deve conter pelo menos: 1 letra minúscula, 1 maiúscula, 1 número e 1 caractere especial (@$!%*?&).',
         ]);
-        
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao atualizar a senha',
@@ -55,10 +54,10 @@ class AlterarSenhaController extends Controller
 
         $usuario->update([
             'password' => bcrypt($request->password),
-            'password_changed_at' => now(),  
+            'password_changed_at' => now(),
             'temp' => false // Remove a flag de senha temporária
         ]);
-        
+
         return response()->json([
             'msg' => 'Senha alterada com sucesso!'
         ], 201);
