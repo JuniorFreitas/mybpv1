@@ -3,6 +3,22 @@ import endereco from '../../../components/Endereco';
 import datepicker from '../../../components/DatePicker';
 import upload from '../../../components/Upload';
 
+// Constantes
+const API_ENDPOINTS = {
+    FORNECEDOR: `${URL_ADMIN}/administracao/fornecedor`,
+    FORNECEDOR_EDITAR: (id) => `${URL_ADMIN}/administracao/fornecedor/${id}/editar`,
+    FORNECEDOR_BUSCAR_CPF: `${URL_ADMIN}/administracao/fornecedor/buscar-cpf`,
+    CNPJ_BUSCA: `${URL_PUBLICO}/cnpjbusca`
+};
+
+const TELEFONE_PADRAO = {
+    tipo: 'whatsapp',
+    pais: 55,
+    numero: '',
+    ramal: '',
+    detalhe: ''
+};
+
 const app = new Vue({
     el: '#app',
     components: {
@@ -22,7 +38,7 @@ const app = new Vue({
         pages: 10,
 
         form: {
-            tipo: '',
+            tipo: 'Fornecedor',
             cnpj: '',
             cpf: '',
             nome: '',
@@ -31,7 +47,7 @@ const app = new Vue({
             nome_fantasia: '',
             cep: '',
             logradouro: '',
-            end_numero: '',
+            numero: '',
             complemento: '',
             bairro: '',
             municipio: '',
@@ -52,6 +68,7 @@ const app = new Vue({
                 numero: '',
                 ramal: '',
                 detalhe: '',
+                principal: true
             }],
             telefonesDelete: [],
         },
@@ -127,13 +144,30 @@ const app = new Vue({
             this.leitura = false;
 
         },
-        cadastrar() {
-            formReset();
+        async cadastrar() {
+            try {
+                if (!this.validarFormulario()) return;
 
+                this.preloadAjax = true;
+                this.marcaTelefonePrincial();
+                this.form.numero = this.form.end_numero;
+                const response = await axios.post(API_ENDPOINTS.FORNECEDOR, this.form);
+
+                if (response.status === 201) {
+                    this.cadastrado = true;
+                    this.atualizar();
+                }
+            } catch (error) {
+                this.tratarErro(error, 'Erro ao cadastrar fornecedor');
+            } finally {
+                this.preloadAjax = false;
+            }
+        },
+        validarFormulario() {
+            formReset();
             $('#janelaCadastrar :input:enabled').trigger('blur');
-            // Validações de abas
-            $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0 ? $('#nav-dados-cadastrais-tab').addClass('bg-danger text-white') : $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
-            $('#nav-servicos :input:enabled.is-invalid').length > 0 ? $('#nav-servicos-tab').addClass('bg-danger text-white') : $('#nav-servicos-tab').removeClass('bg-danger text-white');
+
+            this.validarAbas();
 
             if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
                 mostraErro('', 'Verificar os erros');
@@ -145,80 +179,128 @@ const app = new Vue({
                 return false;
             }
 
-            this.preloadAjax = true;
-            axios.post(`${URL_ADMIN}/administracao/fornecedor`, this.form)
-                .then(response => {
-                    if (response.status === 201) {
-                        this.preloadAjax = false;
-                        this.cadastrado = true;
-                        this.atualizar();
-                    }
-                }).catch(error => (this.preloadAjax = false));
+            return true;
         },
-        formAlterar(id) {
+        validarAbas() {
+            const dadosCadastrais = $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0;
+            const servicos = $('#nav-servicos :input:enabled.is-invalid').length > 0;
+
+            $('#nav-dados-cadastrais-tab').toggleClass('bg-danger text-white', dadosCadastrais);
+            $('#nav-servicos-tab').toggleClass('bg-danger text-white', servicos);
+        },
+        async formAlterar(id) {
+            try {
+                this.inicializarFormulario();
+                this.preloadAjax = true;
+
+                const response = await axios.get(API_ENDPOINTS.FORNECEDOR_EDITAR(id));
+                Object.assign(this.form, response.data);
+                this.form.end_numero = response.data.numero;
+
+                this.editando = true;
+                setupCampo();
+            } catch (error) {
+                this.tratarErro(error, 'Erro ao carregar dados do fornecedor');
+            } finally {
+                this.preloadAjax = false;
+            }
+        },
+        inicializarFormulario() {
             this.cadastrado = false;
             this.atualizado = false;
             this.editando = false;
             this.tituloJanela = "Alterando Fornecedor";
-            this.preloadAjax = true;
             formReset();
-
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault);
             this.leitura = true;
-
-            axios.get(`${URL_ADMIN}/administracao/fornecedor/${id}/editar`)
-                .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    this.preloadAjax = false;
-                    setupCampo();
-                }).catch(
-                error => (this.preloadAjax = false)
-            );
-
         },
 
-        alterar() {
-            formReset();
-            $('#janelaCadastrar :input:enabled').trigger('blur');
-            // Validações de abas
-            $('#nav-dados-cadastrais :input:enabled.is-invalid').length > 0 ? $('#nav-dados-cadastrais-tab').addClass('bg-danger text-white') : $('#nav-dados-cadastrais-tab').removeClass('bg-danger text-white');
-            $('#nav-servicos :input:enabled.is-invalid').length > 0 ? $('#nav-servicos-tab').addClass('bg-danger text-white') : $('#nav-servicos-tab').removeClass('bg-danger text-white');
-
-            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
+        marcaTelefonePrincial() {
+            if (this.form.telefones.length > 0 && !this.form.telefones.some(t => t.principal)) {
+                this.form.telefones[0].principal = true;
             }
+        },
 
-            if (this.form.telefones.length === 0) {
-                mostraErro('', 'Por favor insira um Telefone');
-                return false;
-            }
+        async alterar() {
+            try {
+                if (!this.validarFormulario()) return;
 
-            this.form._method = 'PUT';
-            this.preloadAjax = true;
+                this.form._method = 'PUT';
+                this.preloadAjax = true;
 
-            axios.put(`${URL_ADMIN}/administracao/fornecedor/${this.form.id}`, this.form).then(response => {
-                this.preloadAjax = false;
+                this.marcaTelefonePrincial();
+                this.form.numero = this.form.end_numero;
+
+                await axios.put(`${API_ENDPOINTS.FORNECEDOR}/${this.form.id}`, this.form);
+
                 this.atualizado = true;
                 this.atualizar();
-            }).catch(error => (this.preloadAjax = false));
-
+            } catch (error) {
+                this.tratarErro(error, 'Erro ao alterar fornecedor');
+            } finally {
+                this.preloadAjax = false;
+            }
         },
-        apagar() {
-            this.erros = [];
-            this.form._method = 'DELETE';
-            this.preloadAjax = true;
+        async apagar() {
+            try {
+                this.erros = [];
+                this.form._method = 'DELETE';
+                this.preloadAjax = true;
 
-            axios.delete(`${URL_ADMIN}/administracao/fornecedor/${this.form.id}`, this.form)
-                .then(response => {
-                    this.preloadAjax = false;
-                    this.apagado = true;
-                    this.atualizar();
-                }).catch(error => (this.preloadAjax = false));
+                await axios.delete(`${API_ENDPOINTS.FORNECEDOR}/${this.form.id}`, this.form);
 
+                this.apagado = true;
+                this.atualizar();
+            } catch (error) {
+                this.tratarErro(error, 'Erro ao apagar fornecedor');
+            } finally {
+                this.preloadAjax = false;
+            }
         },
+        tratarErro(error, mensagemPadrao) {
+            console.error(error);
+            mostraErro('', error.response?.data?.message || mensagemPadrao);
+        },
+        async verificaCnpj() {
+            if (this.editando || this.form.cnpj.length !== 18) return;
 
+            try {
+                const numsStr = this.form.cnpj.replace(/[^0-9]/g, '');
+                const cnpj = parseInt(numsStr);
+
+                this.preloadCnpj = true;
+                const response = await axios.post(API_ENDPOINTS.CNPJ_BUSCA, {cnpj});
+
+                if (response.data.status === 'OK') {
+                    this.preencherDadosCnpj(response.data);
+                } else {
+                    this.limparDadosCnpj();
+                }
+            } catch (error) {
+                this.tratarErro(error, 'Erro ao consultar CNPJ');
+            } finally {
+                this.preloadCnpj = false;
+            }
+        },
+        preencherDadosCnpj(data) {
+            this.form.razao_social = data.nome;
+            this.form.nome_fantasia = data.fantasia;
+            this.form.cep = replaceAll(data.cep, '.', '');
+            this.form.logradouro = data.logradouro;
+            this.form.end_numero = data.numero;
+            this.form.complemento = data.complemento;
+            this.form.bairro = data.bairro;
+            this.form.municipio = data.municipio;
+            this.form.uf = data.uf;
+        },
+        limparDadosCnpj() {
+            const campos = [
+                'razao_social', 'nome_fantasia', 'cep', 'logradouro',
+                'end_numero', 'complemento', 'bairro', 'municipio', 'uf'
+            ];
+
+            campos.forEach(campo => this.form[campo] = '');
+        },
         janelaConfirmar(id) {
             this.form.id = id;
             this.apagado = false;
@@ -246,41 +328,6 @@ const app = new Vue({
                 axios.get(`${URL_ADMIN}/administracao/fornecedor/buscar-cpf?cpf=${this.form.cpf}`)
                     .then(response => {
                     });
-            }
-        },
-        verificaCnpj() {
-            if (!this.editando && this.form.cnpj.length === 18) {
-                let numsStr = this.form.cnpj.replace(/[^0-9]/g, '');
-                let cnpj = parseInt(numsStr);
-
-                this.preloadCnpj = true;
-                axios.post(`${URL_PUBLICO}/cnpjbusca`, {cnpj: cnpj})
-                    .then(response => {
-                        let data = response.data;
-                        if (data.status === 'OK') {
-                            this.form.razao_social = data.nome;
-                            this.form.nome_fantasia = data.fantasia;
-                            this.form.cep = replaceAll(data.cep, '.', '');
-                            this.form.logradouro = data.logradouro;
-                            this.form.end_numero = data.numero;
-                            this.form.complemento = data.complemento;
-                            this.form.bairro = data.bairro;
-                            this.form.municipio = data.municipio;
-                            this.form.uf = data.uf;
-                        } else {
-                            this.form.razao_social = '';
-                            this.form.nome_fantasia = '';
-                            this.form.cep = '';
-                            this.form.logradouro = '';
-                            this.form.end_numero = '';
-                            this.form.complemento = '';
-                            this.form.bairro = '';
-                            this.form.municipio = '';
-                            this.form.uf = '';
-                        }
-                        this.preloadCnpj = false;
-                    });
-
             }
         }
     }

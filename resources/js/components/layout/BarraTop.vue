@@ -214,7 +214,9 @@
                     <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right">
                         <!-- item-->
                         <span class="dropdown-item d-xl-inline-block ml-1"><span
-                            class="d-block d-sm-none">{{ usuario.nome }} / </span>{{ usuario.papel.nome }}</span>
+                            class="d-block d-sm-none">{{
+                                usuario.nome
+                            }} / </span>{{ usuario.papel?.nome ?? 'Nenhum Grupo' }}</span>
                         <a class="dropdown-item" data-toggle="modal"
                            @click.prevent="alterarPerfil(usuario.id)"
                            data-target="#janelaPerfil" href="javascript://"><i

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobBoasVindas;
 use App\Models\Arquivo;
 use App\Models\Fornecedor;
 use App\Models\Sistema;
@@ -34,141 +35,230 @@ class FornecedorController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $this->authorize('administracao_fornecedores_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
 
-        if ($dados['tipo_pessoa'] == Fornecedor::PESSOA_JURIDICA) {
-            $validar = [
-                'cnpj' => 'required|min:18|unique:fornecedores,cnpj',
-                'razao_social' => 'required|min:2',
-            ];
-        } else {
-            $validar = [
-                'cpf' => 'required|min:14|unique:fornecedores,cpf',
-                'nome' => 'required|min:2',
-            ];
+        $dados = $request->input();
+        $dados['cadastrou'] = auth()->id();
+        $dados['empresa_id'] = auth()->user()->empresa_id;
+
+        if (!isset($dados['telefones'])) {
+            return response()->json(['msg' => 'É necessário informar pelo menos um número de telefone'], 400);
         }
 
-        $validaComum = [
+        $validator = $this->validarDados($dados);
+        if ($validator->fails()) {
+            return response()->json([
+                'msg' => 'Erro ao cadastrar Fornecedor',
+                'erros' => $validator->errors()
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $password = \Str::random(8);
+            $nomeFornecedor = $this->getNomeFornecedor($dados);
+
+            // Criar usuário
+            $user = User::create([
+                'nome' => $nomeFornecedor,
+                'password' => bcrypt($password),
+                'login' => $dados['email'],
+                'tipo' => User::FORNECEDOR,
+                'temp' => false,
+                'empresa_id' => $dados['empresa_id'],
+                'ativo' => $dados['ativo'],
+            ]);
+
+            // Criar fornecedor
+            $fornecedor = $user->fornecedor()->create($dados);
+
+            // Processar dados relacionados
+            $this->processarTelefones($user, $dados['telefones']);
+            $this->processarAnexos($fornecedor, $dados['anexos'] ?? []);
+            $this->processarServicos($fornecedor, $dados['servicos'] ?? []);
+
+            DB::commit();
+
+            // Enviar email de boas vindas
+            JobBoasVindas::dispatch([
+                'nome' => $nomeFornecedor,
+                'email' => $dados['email'],
+                'empresa_id' => $dados['empresa_id'],
+                'senha' => $password,
+            ]);
+
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['msg' => 'Erro ao criar usuário: ' . $e->getMessage()], 400);
+        }
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Fornecedor $fornecedor)
+    {
+        $fornecedor->load('anexos', 'servicos.anexos', 'telefones');
+
+        $fornecedor->servicos->transform(function ($item) {
+            $item->anexosDel = [];
+            return $item;
+        });
+
+        return $fornecedor;
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Fornecedor $fornecedor)
+    {
+        $this->authorize('administracao_fornecedores_update');
+
+        $dados = $request->input();
+        $dados['ativo'] = $dados['ativo'] == 'true';
+
+        $validator = $this->validarDados($dados, $fornecedor->id);
+        if ($validator->fails()) {
+            return response()->json([
+                'msg' => 'Erro ao atualizar o Fornecedor',
+                'erros' => $validator->errors()
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $fornecedor->update($dados);
+
+            // Processar exclusões
+            $this->excluirTelefones($fornecedor, $dados['telefonesDelete'] ?? []);
+            $this->excluirServicos($fornecedor, $dados['servicosDelete'] ?? []);
+            $this->excluirAnexos($dados['anexosDel'] ?? []);
+
+            // Processar atualizações/criações
+            $this->processarTelefones($fornecedor->usuario, $dados['telefones'] ?? []);
+            $this->processarAnexos($fornecedor, $dados['anexos'] ?? []);
+            $this->processarServicos($fornecedor, $dados['servicos'] ?? []);
+
+            DB::commit();
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['msg' => $e->getMessage()], 400);
+        }
+    }
+
+// Métodos auxiliares privados
+
+    private function validarDados(array $dados, $fornecedorId = null)
+    {
+        $regrasEspecificas = $dados['tipo_pessoa'] == Fornecedor::PESSOA_JURIDICA
+            ? [
+                'cnpj' => 'required|min:18|unique:fornecedores,cnpj' . ($fornecedorId ? ",$fornecedorId" : ''),
+                'razao_social' => 'required|min:2',
+            ]
+            : [
+                'cpf' => 'required|min:14|unique:fornecedores,cpf' . ($fornecedorId ? ",$fornecedorId" : ''),
+                'nome' => 'required|min:2',
+            ];
+
+        $regrasComuns = [
             'tipo_pessoa' => 'required',
             'contato' => 'required',
             'uf' => 'required|min:2',
             'logradouro' => 'required|min:3',
             'bairro' => 'required|min:3',
             'municipio' => 'required|min:3',
-            'email' => 'required|email',
+            'email' => 'required|email' . ($fornecedorId ? '' : '|unique:users,login'),
             'ativo' => 'required',
         ];
 
-        array_merge($validar, $validaComum);
+        return \Validator::make($dados, array_merge($regrasEspecificas, $regrasComuns));
+    }
 
+    private function getNomeFornecedor(array $dados)
+    {
+        return $dados['tipo_pessoa'] == Fornecedor::PESSOA_JURIDICA
+            ? $dados['razao_social']
+            : $dados['nome'];
+    }
 
-        if (!isset($dados['telefones'])) {
-            return response()->json([
-                'msg' => 'É Necessário Informar pelo menos Um número de telefone'
-            ], 400);
-        }
-
-        $dadosValidados = \Validator::make($dados, $validar);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Fornecedor',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
-            try {
-                DB::beginTransaction();
-
-                $user = User::create([
-                    'nome' => $dados['tipo_pessoa'] == Fornecedor::PESSOA_JURIDICA ? $dados['razao_social'] : $dados['nome'],
-                    'password' => bcrypt('mybp2021'),
-                    'login' => $dados['email'],
-                    'tipo' => 'Fornecedor',
-                    'temp' => false,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'ativo' => $dados['ativo'],
-                ]);
-
-                auth()->user()->FornecedoresEmpresa()->attach($user->id);
-                $fornecedor = $user->Fornecedor()->create($dados);
-
-                /**ToDo VER PORQUE TA ZERADO **/
-                $fornecedor->id = $user->id;
-                $fornecedor->save();
-
-
-                foreach ($dados['telefones'] as $linha) {
-                    $linha['fornecedor_id'] = $fornecedor->id;
-                    $fornecedor->Telefones()->create($linha);
-                }
-
-
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                        if ($anexo['chave'] == null) {
-                            Arquivo::whereId($anexo['id'])->update([
-                                'nome' => $anexo['nome'],
-                            ]);
-                        } else {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $fornecedor->Anexos()->attach($arquivo->id);
-                            }
-                        }
-
-                    }
-                }
-
-                if (isset($dados['servicos'])) {
-                    foreach ($dados['servicos'] as $linha) {
-                        $linha['ativo'] = $linha['ativo'] == 'true' ? true : false;
-                        $fornecedorServico = $fornecedor->Servicos()->create($linha);
-                        if (isset($linha['anexos'])) {
-                            foreach ($linha['anexos'] as $index => $anexo) {
-                                //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                if ($anexo['chave'] == null) {
-                                    Arquivo::whereId($anexo['id'])->update([
-                                        'nome' => $anexo['nome'],
-                                    ]);
-                                } else {
-                                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                    if ($arquivo) {
-                                        $arquivo->temporario = false;
-                                        $arquivo->chave = '';
-                                        $arquivo->save();
-                                        $fornecedorServico->Anexos()->attach($arquivo->id);
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                }
-
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
+    private function processarTelefones($user, array $telefones)
+    {
+        foreach ($telefones as $telefone) {
+            if (isset($telefone['id']) && $telefone['id'] > 0) {
+                $user->telefones()->find($telefone['id'])->update($telefone);
+            } else {
+                $user->telefones()->create($telefone);
             }
         }
+    }
 
+    private function processarAnexos($model, array $anexos)
+    {
+        foreach ($anexos as $anexo) {
+            if ($anexo['chave'] == null) {
+                Arquivo::whereId($anexo['id'])->update(['nome' => $anexo['nome']]);
+            } else {
+                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                if ($arquivo) {
+                    $arquivo->update(['temporario' => false, 'chave' => '']);
+                    $model->anexos()->attach($arquivo->id);
+                }
+            }
+        }
+    }
+
+    private function processarServicos(Fornecedor $fornecedor, array $servicos)
+    {
+        foreach ($servicos as $servico) {
+            $servico['ativo'] = $servico['ativo'] == 'true';
+
+            // Processar exclusões de anexos do serviço
+            if (isset($servico['anexosDel'])) {
+                $this->excluirAnexos($servico['anexosDel']);
+            }
+
+            if (isset($servico['id'])) {
+                // Atualizar serviço existente
+                $servicoModel = $fornecedor->servicos()->find($servico['id']);
+                $servicoModel->update($servico);
+                $this->processarAnexos($servicoModel, $servico['anexos'] ?? []);
+            } else {
+                // Criar novo serviço
+                $servicoModel = $fornecedor->servicos()->create($servico);
+                $this->processarAnexos($servicoModel, $servico['anexos'] ?? []);
+            }
+        }
+    }
+
+    private function excluirTelefones(Fornecedor $fornecedor, array $telefonesDelete)
+    {
+        foreach ($telefonesDelete as $telefoneId) {
+            $fornecedor->usuario->telefones()->find($telefoneId)->delete();
+        }
+    }
+
+    private function excluirServicos(Fornecedor $fornecedor, array $servicosDelete)
+    {
+        foreach ($servicosDelete as $servicoId) {
+            $fornecedor->servicos()->find($servicoId)->delete();
+        }
+    }
+
+    private function excluirAnexos(array $anexosDelete)
+    {
+        foreach ($anexosDelete as $anexoId) {
+            Arquivo::find($anexoId)?->excluir();
+        }
     }
 
     /**
@@ -182,202 +272,6 @@ class FornecedorController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\Fornecedor $fornecedor
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Fornecedor $fornecedor)
-    {
-        $fornecedor->load('Anexos', 'Servicos.Anexos', 'Telefones');
-
-        $fornecedor->Servicos->transform(function ($item) {
-            $item->anexosDel = [];
-            return $item;
-        });
-
-        return $fornecedor;
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Fornecedor $fornecedor
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Fornecedor $fornecedor)
-    {
-        $this->authorize('administracao_fornecedores_update');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-
-        if ($dados['tipo_pessoa'] == Fornecedor::PESSOA_JURIDICA) {
-            $validar = [
-                'cnpj' => 'required|min:18|unique:fornecedores,cnpj,' . $fornecedor->id,
-                'razao_social' => 'required|min:2',
-            ];
-        } else {
-            $validar = [
-                'cpf' => 'required|min:14|unique:fornecedores,cpf,' . $fornecedor->id,
-                'nome' => 'required|min:2',
-            ];
-        }
-
-        $validaComum = [
-            'tipo_pessoa' => 'required',
-            'contato' => 'required',
-            'uf' => 'required|min:2',
-            'logradouro' => 'required|min:3',
-            'bairro' => 'required|min:3',
-            'municipio' => 'required|min:3',
-            'email' => 'required|email',
-            'ativo' => 'required',
-        ];
-
-        array_merge($validar, $validaComum);
-
-
-        if (!isset($dados['telefones'])) {
-            return response()->json([
-                'msg' => 'É Necessário Informar pelo menos Um número de telefone'
-            ], 400);
-        }
-
-        $dadosValidados = \Validator::make($dados, $validar);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar o Fornecedor',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
-            try {
-                DB::beginTransaction();
-
-                $fornecedor->update($dados);
-
-                if (isset($dados['telefonesDelete'])) {
-                    foreach ($dados['telefonesDelete'] as $telefonesDelete) {
-                        $fornecedor->Telefones()->find($telefonesDelete)->delete();
-                    }
-                }
-
-                if (isset($dados['telefones'])) {
-                    foreach ($dados['telefones'] as $linha) {
-                        if (isset($linha['id'])) {
-                            $fornecedor->Telefones()->find($linha['id'])->update($linha);
-                        } else {
-                            $fornecedor->Telefones()->create($linha);
-                        }
-                    }
-                }
-
-                if (isset($dados['servicosDelete'])) {
-                    foreach ($dados['servicosDelete'] as $id) {
-                        $fornecedor->Servicos()->find($id)->delete();
-                    }
-                }
-
-                if (isset($dados['anexosDel'])) {
-                    foreach ($dados['anexosDel'] as $id_anexo) {
-                        $arquivo = Arquivo::find($id_anexo);
-                        $arquivo->excluir();
-                    }
-                }
-
-
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                        if ($anexo['chave'] == null) {
-                            Arquivo::whereId($anexo['id'])->update([
-                                'nome' => $anexo['nome'],
-                            ]);
-                        } else {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $fornecedor->Anexos()->attach($arquivo->id);
-                            }
-                        }
-
-                    }
-                }
-
-
-                if (isset($dados['servicos'])) {
-                    foreach ($dados['servicos'] as $linha) {
-
-                        if (isset($linha['anexosDel'])) {
-                            foreach ($linha['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-
-                        $linha['ativo'] = $linha['ativo'] == 'true' ? true : false;
-                        if (isset($linha['id'])) {
-                            $fornecedor->Servicos()->find($linha['id'])->update($linha);
-                            if (isset($linha['anexos'])) {
-                                foreach ($linha['anexos'] as $index => $anexo) {
-                                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                    if ($anexo['chave'] == null) {
-                                        Arquivo::whereId($anexo['id'])->update([
-                                            'nome' => $anexo['nome'],
-                                        ]);
-                                    } else {
-                                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                        if ($arquivo) {
-                                            $arquivo->temporario = false;
-                                            $arquivo->chave = '';
-                                            $arquivo->save();
-                                            $fornecedor->Servicos()->find($linha['id'])->Anexos()->attach($arquivo->id);
-                                        }
-                                    }
-
-                                }
-                            }
-                        } else {
-                            $fornecedorServico = $fornecedor->Servicos()->create($linha);
-                            if (isset($linha['anexos'])) {
-                                foreach ($linha['anexos'] as $index => $anexo) {
-                                    //Se nao tem chave, entao é uma anexo que já estava cadastrada no banco
-                                    if ($anexo['chave'] == null) {
-                                        Arquivo::whereId($anexo['id'])->update([
-                                            'nome' => $anexo['nome'],
-                                        ]);
-                                    } else {
-                                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                        if ($arquivo) {
-                                            $arquivo->temporario = false;
-                                            $arquivo->chave = '';
-                                            $arquivo->save();
-                                            $fornecedorServico->Servicos()->find($linha['id'])->Anexos()->attach($arquivo->id);
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
-                    }
-                }
-
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
-            }
-        }
-    }
 
     /**
      * Remove the specified resource from storage.
@@ -433,6 +327,10 @@ class FornecedorController extends Controller
         $fornecedor->ativo = !$fornecedor->ativo;
         $fornecedor->save();
         $fornecedor->refresh();
+
+        User::find($fornecedor->id)->update([
+            'ativo' => $fornecedor->ativo
+        ]);
         return response()->json(['ativo' => $fornecedor->ativo], 201);
     }
 
