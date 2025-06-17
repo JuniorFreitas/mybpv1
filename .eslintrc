@@ -1,11 +1,23 @@
 {
     "extends": [
-      "plugin:prettier/recommended"
+      "plugin:prettier/recommended",
+      "plugin:vue/recommended"
     ],
 
-    "plugins": ["prettier"],
+    "plugins": ["prettier", "vue"],
+
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "module"
+    },
 
     "rules": {
-      "prettier/prettier": "error"
+      "prettier/prettier": "error",
+      "vue/multi-word-component-names": "off"
+    },
+
+    "env": {
+      "browser": true,
+      "es6": true
     }
   }
