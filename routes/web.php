@@ -88,7 +88,7 @@ Route::group(['prefix' => 'g'], function () {
 
     // Password Change Routes (fora do middleware check.password.reset para evitar loop)
     Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('auth');
-    Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('auth', 'habilidades', 'can:usuario_alterar-senha');
+    Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('auth');
 
 });
 
