@@ -15,6 +15,11 @@ class AvaliadorTipoController extends Controller
         return view('g.cadastros.avaliacoes.avaliadortipo.index');
     }
 
+    public function indexPj(Request $request)
+    {
+        return view('g.cadastros.avaliacoes-pj.avaliadortipo.index');
+    }
+
     public function store(Request $request)
     {
         $this->authorize('cadastro_avaliador_tipo_insert');
@@ -106,6 +111,10 @@ class AvaliadorTipoController extends Controller
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%')
                 ->orWhere('descricao', 'like', '%' . $request->campoBusca . '%');
+        }
+
+        if ($request->filled('tipo_pj')) {
+            $resultado->where('tipo_pj', $request->tipo_pj);
         }
 
         $resultado = $resultado->paginate($porPagina);

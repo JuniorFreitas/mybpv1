@@ -143,6 +143,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static Builder|User whereUpdatedAt($value)
  * @method static Builder|User withTrashed()
  * @method static Builder|User withoutTrashed()
+ * @property bool $require_password_reset Habilita/desabilita reset forçado de senha
+ * @property int|null $password_reset_days Quantidade de dias para forçar reset de senha
+ * @property \Illuminate\Support\Carbon|null $password_changed_at Data da última alteração de senha
+ * @property-read Collection<int, \App\Models\UsuarioTelefone> $Telefones
+ * @property-read int|null $telefones_count
+ * @method static Builder|User wherePasswordChangedAt($value)
+ * @method static Builder|User wherePasswordResetDays($value)
+ * @method static Builder|User whereRequirePasswordReset($value)
  * @mixin \Eloquent
  */
 class User extends Authenticatable
@@ -265,7 +273,8 @@ class User extends Authenticatable
         self::SUPORTE,
         self::ADMINISTRADOR,
         self::FUNCIONARIO,
-        self::GESTOR
+        self::GESTOR,
+        self::FORNECEDOR
     ];
 
     public const TIPOS_USUARIOS_COMUNS = [
@@ -544,7 +553,8 @@ class User extends Authenticatable
 
     public function scopeTiposGerenciais($query)
     {
-        return $query->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS);
+        return $query->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)->where('ativo', true)
+            ->whereNull('deleted_at');
     }
 
     public function enviaWhatsApp()
@@ -566,7 +576,7 @@ class User extends Authenticatable
         if ($this->isFirstAccess() || $this->hasTemporaryPassword()) {
             return true;
         }
-        
+
         // Se não está habilitado o reset forçado, não precisa alterar
         if (!$this->require_password_reset || !$this->password_reset_days) {
             return false;
@@ -574,7 +584,7 @@ class User extends Authenticatable
 
         // Se nunca alterou a senha, considera a data de criação
         $lastPasswordChange = $this->password_changed_at ?? $this->created_at;
-        
+
         if (!$lastPasswordChange) {
             return true; // Se não tem data de referência, força a alteração
         }
@@ -608,11 +618,11 @@ class User extends Authenticatable
         if ($this->isFirstAccess()) {
             return 'Primeiro acesso detectado. É obrigatório alterar sua senha.';
         }
-        
+
         if ($this->hasTemporaryPassword()) {
             return 'Senha temporária detectada. É obrigatório alterar sua senha.';
         }
-        
+
         if ($this->require_password_reset && $this->password_reset_days) {
             $lastPasswordChange = $this->password_changed_at ?? $this->created_at;
             if ($lastPasswordChange) {
@@ -620,7 +630,7 @@ class User extends Authenticatable
                 return "Sua senha expirou há {$daysPassed} dias. É necessário alterá-la para continuar.";
             }
         }
-        
+
         return 'É necessário alterar sua senha para continuar.';
     }
 

@@ -288,6 +288,47 @@
                         </ul>
                     </li>
                 @endcan
+
+                @can('cadastro_avaliacoes')
+                    <li id="avaliacoes">
+                        <a href="javascript://" class="has-arrow waves-effect" parent="cadastro">
+                            Peformance</a>
+                        <ul aria-expanded="false">
+                            @can('cadastro_avaliador_tipo')
+                                <li>
+                                    <a href="{{route('g.pj.avaliadortipo.avaliadortipo.index')}}" subparent="avaliacoes"
+                                       parent="cadastro" key="avaliadortipo">
+                                        Tipos de Avaliadores
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('cadastro_avaliacao_tipo')
+                                <li>
+                                    <a href="{{route('g.pj.avaliacaotipo.avaliacaotipo.index')}}" subparent="avaliacoes"
+                                       parent="cadastro" key="avaliacaotipo">
+                                        Tipos de Avaliações
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('cadastro_avaliacao_topico')
+                                <li>
+                                    <a href="{{route('g.pj.avaliacaotopico.avaliacaotopico.index')}}"
+                                       subparent="avaliacoes" parent="cadastro" key="avaliacaotopico">
+                                        Competências
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('cadastro_avaliacao')
+                                <li>
+                                    <a href="{{route('g.pj.avaliacao.avaliacao.index')}}" subparent="avaliacoes"
+                                       parent="cadastro" key="avaliacao">
+                                        Avaliações
+                                    </a>
+                                </li>
+                            @endcan
+                        </ul>
+                    </li>
+                @endcan
             </ul>
         </li>
     @endif

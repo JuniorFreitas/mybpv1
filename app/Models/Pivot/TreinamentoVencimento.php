@@ -29,7 +29,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereTreinamentoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereVencimentoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereArquivoId($value)
- *
+ * @property-read Arquivo|null $arquivo
  * @mixin \Eloquent
  */
 class TreinamentoVencimento extends Pivot

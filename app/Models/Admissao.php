@@ -171,6 +171,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property-read \App\Models\Afastamento|null $Afastamento
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao centroCustoPorCnpj($request, $centros_custos)
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao naoAfastados()
+ * @property bool $usa_lentes_corretivas
+ * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsaLentesCorretivas($value)
  * @mixin \Eloquent
  */
 class Admissao extends Model

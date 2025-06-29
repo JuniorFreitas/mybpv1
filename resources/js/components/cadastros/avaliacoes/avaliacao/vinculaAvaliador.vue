@@ -2,7 +2,7 @@
     <div>
         <modal id="janelaAssociarAvaliador" titulo="Associar avaliadores" :fechar="!preload"
                size="g">
-            <template slot="conteudo">
+            <template v-slot:conteudo>
                 <preload v-if="preload" :label="update ? 'Associando aguarde' : 'Carregando'"></preload>
                 <div v-if="!preload">
                     <fieldset style="margin-top: -7px">
@@ -83,7 +83,7 @@
                     </fieldset>
                 </div>
             </template>
-            <template slot="rodape">
+            <template v-slot:rodape>
                 <button :disabled="preload" v-if="!preload && !update"
                         class="btn btn-sm btn-primary"
                         type="button" @click="associarAvaliadores">
@@ -211,8 +211,13 @@
 <script>
 
 export default {
-    name: "vinculaAvaliador",
+    name: 'vinculaAvaliador',
     props: {
+        tipo_pj: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         obj: {
             type: Object,
             required: true,
@@ -238,7 +243,7 @@ export default {
                 avaliadores: [],
                 avaliadoresDelete: [],
                 funcionarios: [],
-                avaliacao_id: '',
+                avaliacao_id: ''
             },
             formDefault: null,
 
@@ -251,51 +256,52 @@ export default {
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: "",
-                    avaliacao_id: "",
-                    campoVinculados: "",
+                    campoBusca: '',
+                    avaliacao_id: '',
+                    campoVinculados: '',
+                    tipo_pj: false
                 }
             }
         }
     },
     mounted() {
-        this.controle.dados.avaliacao_id = this.obj.id;
-        this.form.avaliacao_id = this.obj.id;
-        this.formDefault = _.cloneDeep(this.form);
-        this.atualizar();
+        this.controle.dados.avaliacao_id = this.obj.id
+        this.form.avaliacao_id = this.obj.id
+        this.formDefault = _.cloneDeep(this.form)
+        this.atualizar()
     },
     computed: {
         podeAssociar() {
-            return this.obj.status === 'Aguardando Inicio';
+            return this.obj.status === 'Aguardando Inicio'
         },
         fluxoSemAutoAvaliacao() {
-            return this.fluxo.filter(val => val.label !== 'Auto Avaliação');
+            return this.fluxo.filter(val => val.label !== 'Auto Avaliação')
         },
         avaliadorFluxo() {
-            return this.checkSeTipoAvaliadorIdEstaNoFluxoSemAutoAvaliacao();
+            return this.checkSeTipoAvaliadorIdEstaNoFluxoSemAutoAvaliacao()
         }
     },
     methods: {
         changeAvaliaComo(index) {
-            let avaliador_id_selecionado = this.form.avaliadores[index].avaliador.tipo_avaliador_id;
-            this.form.avaliadores[index].avaliador.tipo_avaliador_id = '';
-            this.form.avaliadores[index].avaliador.tipo_avaliador_label = '';
-            this.form.avaliadores[index].avaliador.tipo_avaliador_principal = false;
+            let avaliador_id_selecionado = this.form.avaliadores[index].avaliador.tipo_avaliador_id
+            this.form.avaliadores[index].avaliador.tipo_avaliador_id = ''
+            this.form.avaliadores[index].avaliador.tipo_avaliador_label = ''
+            this.form.avaliadores[index].avaliador.tipo_avaliador_principal = false
 
             if (avaliador_id_selecionado !== '') {
-                let fluxoSelecionado = this.obj.fluxo.find(val => val.id === avaliador_id_selecionado);
+                let fluxoSelecionado = this.obj.fluxo.find(val => val.id === avaliador_id_selecionado)
 
-                this.form.avaliadores[index].avaliador.tipo_avaliador_id = fluxoSelecionado.id;
-                this.form.avaliadores[index].avaliador.tipo_avaliador_label = fluxoSelecionado.label;
-                this.form.avaliadores[index].avaliador.tipo_avaliador_principal = fluxoSelecionado.principal;
+                this.form.avaliadores[index].avaliador.tipo_avaliador_id = fluxoSelecionado.id
+                this.form.avaliadores[index].avaliador.tipo_avaliador_label = fluxoSelecionado.label
+                this.form.avaliadores[index].avaliador.tipo_avaliador_principal = fluxoSelecionado.principal
             }
 
         },
         removerLIAvaliador(index) {
             if (this.editando && !this.form.avaliadores[index].novo) {
-                this.form.avaliadoresDelete.push(this.form.avaliadores[index].id);
+                this.form.avaliadoresDelete.push(this.form.avaliadores[index].id)
             }
-            this.form.avaliadores.splice(index, 1);
+            this.form.avaliadores.splice(index, 1)
         },
         selecionaAvaliador(obj) {
             const user = {
@@ -304,29 +310,29 @@ export default {
                 avaliador: {
                     id: obj.id,
                     nome: obj.nome,
-                    tipo_avaliador_id: "",
-                    tipo_avaliador_label: "",
+                    tipo_avaliador_id: '',
+                    tipo_avaliador_label: '',
                     tipo_avaliador_principal: false
                 }
             }
 
-            let atual = this.form.avaliadores.findIndex(val => val.avaliador.id === user.avaliador.id);
+            let atual = this.form.avaliadores.findIndex(val => val.avaliador.id === user.avaliador.id)
 
             if (atual < 0) {//Se não existir ainda no array
-                this.form.avaliadores.push(user);
+                this.form.avaliadores.push(user)
             } else {
-                mostraErro("", `Avaliador(a) ${user.avaliador.nome} já está na lista.`);
-                this.form.autocomplete_label_avaliador = "";
-                return false;
+                mostraErro('', `Avaliador(a) ${user.avaliador.nome} já está na lista.`)
+                this.form.autocomplete_label_avaliador = ''
+                return false
             }
-            this.form.autocomplete_label_avaliador = "";
+            this.form.autocomplete_label_avaliador = ''
         },
 
         resetaCampo() {
             if (this.form.autocomplete_label_avaliador_anterior !== this.form.autocomplete_label_avaliador) {
-                this.form.autocomplete_label_avaliador_anterior = "";
-                this.form.autocomplete_label_avaliador = "";
-                this.form.avaliador_id = "";
+                this.form.autocomplete_label_avaliador_anterior = ''
+                this.form.autocomplete_label_avaliador = ''
+                this.form.avaliador_id = ''
             }
         },
 
@@ -334,155 +340,155 @@ export default {
             if (this.todosFuncionariosSelecionados) {
                 this.listaFuncionarios.forEach((user) => {
                     if (!this.funcionariosSelecionados.includes(user.id)) {
-                        this.funcionariosSelecionados.push(user.id);
+                        this.funcionariosSelecionados.push(user.id)
                     }
-                });
+                })
             } else {
                 this.listaFuncionarios.forEach((user) => {
-                    let index = this.funcionariosSelecionados.indexOf(user.id);
+                    let index = this.funcionariosSelecionados.indexOf(user.id)
                     if (index !== -1) {
-                        this.funcionariosSelecionados.splice(index, 1);
+                        this.funcionariosSelecionados.splice(index, 1)
                     }
-                });
+                })
             }
         },
 
         selecionarFuncionario(user) {
             if (this.podeAssociar) {
                 if (!this.funcionariosSelecionados.includes(user.id)) {
-                    this.funcionariosSelecionados.push(user.id);
+                    this.funcionariosSelecionados.push(user.id)
                 } else {
-                    let index = this.funcionariosSelecionados.indexOf(user.id);
+                    let index = this.funcionariosSelecionados.indexOf(user.id)
                     if (index !== -1) {
-                        this.funcionariosSelecionados.splice(index, 1);
+                        this.funcionariosSelecionados.splice(index, 1)
                     }
                 }
-                this.checarMarcarTodosFuncionarios();
+                this.checarMarcarTodosFuncionarios()
             }
         },
 
         checarMarcarTodosFuncionarios() {
-            let quantidade = this.listaFuncionarios.length;
+            let quantidade = this.listaFuncionarios.length
             let marcados = this.listaFuncionarios.filter((funcionario => this.funcionariosSelecionados.includes(funcionario.id))).length
-            this.todosFuncionariosSelecionados = quantidade === marcados;
+            this.todosFuncionariosSelecionados = quantidade === marcados
         },
 
         formAssociarAvaliador() {
-            this.editando = true;
-            this.preload = false;
-            this.form.autocomplete_label_avaliador = '';
-            this.form.avaliadores = [];
-            this.form.avaliadoresDelete = [];
-            this.form.funcionarios = this.funcionariosSelecionados;
+            this.editando = true
+            this.preload = false
+            this.form.autocomplete_label_avaliador = ''
+            this.form.avaliadores = []
+            this.form.avaliadoresDelete = []
+            this.form.funcionarios = this.funcionariosSelecionados
             if (this.form.funcionarios.length === 1) {
                 axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/avaliador-associado/`, {
                     funcionario_id: this.form.funcionarios[0],
-                    avaliacao_id: this.form.avaliacao_id,
-                }).then(({data}) => {
-                    this.form.avaliadores = data.avaliadores;
-                    this.fluxo = data.fluxo;
+                    avaliacao_id: this.form.avaliacao_id
+                }).then(({ data }) => {
+                    this.form.avaliadores = data.avaliadores
+                    this.fluxo = data.fluxo
                 }).catch((error) => {
-                });
+                })
             }
 
             if (this.form.funcionarios.length > 1) {
-                this.form.avaliadores = [];
+                this.form.avaliadores = []
             }
 
         },
 
         checkSePossuiSomenteUmAvaliadorPrincipal() {
-            let avaliadoresPrincipais = this.form.avaliadores.filter(val => val.avaliador.tipo_avaliador_principal);
-            return avaliadoresPrincipais.length > 1;
+            let avaliadoresPrincipais = this.form.avaliadores.filter(val => val.avaliador.tipo_avaliador_principal)
+            return avaliadoresPrincipais.length > 1
         },
 
         checkSeNaoPossuiAvaliadorPrincipal() {
-            let avaliadoresPrincipais = this.form.avaliadores.filter(val => val.avaliador.tipo_avaliador_principal);
-            return avaliadoresPrincipais.length === 0;
+            let avaliadoresPrincipais = this.form.avaliadores.filter(val => val.avaliador.tipo_avaliador_principal)
+            return avaliadoresPrincipais.length === 0
         },
 
         checkSeTipoAvaliadorIdEstaNoFluxoSemAutoAvaliacao() {
             // return this.fluxoSemAutoAvaliacao.map(val => val.id).includes(this.form.avaliadores[0].avaliador.tipo_avaliador_id);
             _.forEach(this.form.avaliadores, (avaliador) => {
                 if (!this.fluxoSemAutoAvaliacao.map(val => val.id).includes(avaliador.avaliador.tipo_avaliador_id)) {
-                    mostraErro("", "Verifique o fluxo de avaliação.");
-                    return false;
+                    mostraErro('', 'Verifique o fluxo de avaliação.')
+                    return false
                 }
-            });
+            })
         },
 
         verificarFluxoSemAutoAvaliacao() {
             for (const item of this.fluxoSemAutoAvaliacao) {
                 for (const avaliador of this.form.avaliadores) {
                     if (avaliador.avaliador.tipo_avaliador_id === item.id) {
-                        return true; // Se encontrar, retorna true
+                        return true // Se encontrar, retorna true
                     }
                 }
             }
-            mostraErro("", "Verifique o fluxo de avaliação.")
-            return false; // Se não encontrar, retorna false
+            mostraErro('', 'Verifique o fluxo de avaliação.')
+            return false // Se não encontrar, retorna false
         },
 
         associarAvaliadores() {
-            this.form.funcionarios = this.funcionariosSelecionados;
+            this.form.funcionarios = this.funcionariosSelecionados
 
-            $("#janelaAssociarAvaliador :input:visible").trigger("blur");
-            if ($("#janelaAssociarAvaliador :input:visible.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
-                return false;
+            $('#janelaAssociarAvaliador :input:visible').trigger('blur')
+            if ($('#janelaAssociarAvaliador :input:visible.is-invalid').length) {
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
             if (this.form.avaliadores.length >= 1) {
                 if (this.checkSePossuiSomenteUmAvaliadorPrincipal()) {
-                    mostraErro("", "Deve haver somente um avaliador principal.");
-                    this.preload = false;
-                    return false;
+                    mostraErro('', 'Deve haver somente um avaliador principal.')
+                    this.preload = false
+                    return false
                 }
 
                 if (this.checkSeNaoPossuiAvaliadorPrincipal()) {
-                    mostraErro("", "Deve haver um avaliador principal.");
-                    this.preload = false;
-                    return false;
+                    mostraErro('', 'Deve haver um avaliador principal.')
+                    this.preload = false
+                    return false
                 }
             }
 
-            this.preload = true;
+            this.preload = true
             axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/associar/`, this.form)
-                .then(({data}) => {
-                    $(`#janelaAssociarAvaliador`).modal('hide');
-                    this.form = _.cloneDeep(this.formDefault);
-                    this.funcionariosSelecionados = [];
-                    mostraSucesso("", "Avaliadores associados com sucesso.");
-                    this.update = false;
-                    this.atualizar();
-                    this.preload = false;
+                .then(({ data }) => {
+                    $(`#janelaAssociarAvaliador`).modal('hide')
+                    this.form = _.cloneDeep(this.formDefault)
+                    this.funcionariosSelecionados = []
+                    mostraSucesso('', 'Avaliadores associados com sucesso.')
+                    this.update = false
+                    this.atualizar()
+                    this.preload = false
                 }).catch((error) => {
-                this.preload = false;
-                this.update = false;
-            });
+                this.preload = false
+                this.update = false
+            })
         },
 
         resetFuncionariosSelecionados() {
             if (this.update) {
-                this.form.funcionariosSelecionados = [];
-                this.todosFuncionariosSelecionados = false;
+                this.form.funcionariosSelecionados = []
+                this.todosFuncionariosSelecionados = false
             }
         },
 
         carregou(dados) {
-            this.listaFuncionarios = dados.funcionarios;
-            this.fluxo = dados.fluxo;
-            this.controle.carregando = false;
+            this.listaFuncionarios = dados.funcionarios
+            this.fluxo = dados.fluxo
+            this.controle.carregando = false
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
 
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
-        },
+            this.$refs.componente.atual = 1
+            this.$refs.componente.buscar()
+        }
     }
 }
 </script>

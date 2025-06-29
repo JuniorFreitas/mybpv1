@@ -1,8 +1,8 @@
 <template>
     <div id="componente">
         <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
-            <template slot="conteudo">
-                <p class=" mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
+            <template v-slot:conteudo>
+                <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preload">
                     <legend>Cadastro Tipo de Avaliações</legend>
                     <div class="row">
@@ -21,13 +21,13 @@
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
                                 <label class="custom-control-label"
-                                       for="ativo">{{form.ativo ? 'Ativo' : 'Inativo'}}</label>
+                                       for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
                             </div>
                         </div>
                     </div>
                 </fieldset>
             </template>
-            <template slot="rodape">
+            <template v-slot:rodape>
                 <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preload"
                         @click="cadastra">
                     <i class="fa fa-save"></i> Cadastrar
@@ -90,8 +90,8 @@
                     </thead>
                     <tbody>
                     <tr v-for="avaliacaotipo in lista">
-                        <td class="text-center">{{avaliacaotipo.nome}}</td>
-                        <td class="text-center">{{avaliacaotipo.descricao}}</td>
+                        <td class="text-center">{{ avaliacaotipo.nome }}</td>
+                        <td class="text-center">{{ avaliacaotipo.descricao }}</td>
                         <td class="text-center">
                             <bt-ativo :rota="`cadastro/avaliacoes/avaliacaotipo/${avaliacaotipo.id}/ativa-desativa`"
                                       :model="avaliacaotipo"></bt-ativo>
@@ -113,13 +113,12 @@
                                 :dados="controle.dados"
                                 v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
         </div>
-
     </div>
 </template>
 
 <script>
-import controlePaginacao from '../../../ControlePaginacao';
-import modal from '../../../Modal';
+import controlePaginacao from '../../../ControlePaginacao'
+import modal from '../../../Modal'
 
 export default {
     components: {
@@ -127,6 +126,11 @@ export default {
         controlePaginacao
     },
     props: {
+        tipoPj: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         qntPag: {
             type: Number,
             required: false,
@@ -148,12 +152,12 @@ export default {
             type: String,
             required: false,
             default: ''
-        },
+        }
     },
 
     mounted() {
-        this.atualizar();
-        this.formDefault = _.cloneDeep(this.form);
+        this.atualizar()
+        this.formDefault = _.cloneDeep(this.form)
     },
     data() {
         return {
@@ -169,6 +173,7 @@ export default {
                 nome: '',
                 descricao: '',
                 ativo: true,
+                tipo_pj: this.tipoPj
             },
             formDefault: null,
 
@@ -180,83 +185,84 @@ export default {
                 carregando: false,
                 dados: {
                     campoBusca: '',
-                },
-            },
+                    tipo_pj: this.tipoPj
+                }
+            }
         }
     },
     methods: {
         formNovo() {
-            this.titulo_janela_form = 'Cadastro tipo de avaliações';
-            this.preload = false;
-            this.editando = false;
-            this.atualizado = false;
+            this.titulo_janela_form = 'Cadastro tipo de avaliações'
+            this.preload = false
+            this.editando = false
+            this.atualizado = false
             this.form = _.cloneDeep(this.formDefault) //copia
-            formReset();
+            formReset()
         },
         cadastra() {
-            $('#janelaForm :input:visible').trigger('blur');
+            $('#janelaForm :input:visible').trigger('blur')
             if ($('#janelaForm :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
+                mostraErro('', 'Verificar os erros')
+                return false
             }
-            this.preload = true;
+            this.preload = true
             axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotipo`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide');
-                    mostraSucesso('', 'Tipo de avaliação cadastrado com sucesso');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+                    $('#janelaForm').modal('hide')
+                    mostraSucesso('', 'Tipo de avaliação cadastrado com sucesso')
+                    this.$refs.componente.buscar()
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
-                });
+                    this.preload = false
+                })
         },
         alterar(avaliacaotipo) {
-            this.editando = true;
-            this.titulo_janela_form = "Alterando tipo de avaliação";
-            formReset();
+            this.editando = true
+            this.titulo_janela_form = 'Alterando tipo de avaliação'
+            formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
 
             axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotipo/${avaliacaotipo}`)
                 .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    setupCampo();
+                    Object.assign(this.form, response.data)
+                    this.editando = true
+                    setupCampo()
                 }).catch(
                 error => (this.preloadAjax = false)
-            );
+            )
 
         },
         alterarForm() {
-            $('#janelaForm :input:visible').trigger('blur');
+            $('#janelaForm :input:visible').trigger('blur')
             if ($('#janelaForm :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
+                mostraErro('', 'Verificar os erros')
+                return false
             }
-            this.preload = true;
+            this.preload = true
             axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotipo/${this.form.id}`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide');
-                    mostraSucesso('', 'Tipo de avaliação alterado com sucesso');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+                    $('#janelaForm').modal('hide')
+                    mostraSucesso('', 'Tipo de avaliação alterado com sucesso')
+                    this.$refs.componente.buscar()
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
-                });
+                    this.preload = false
+                })
         },
         carregou(dados) {
-            this.lista = dados.items;
-            this.controle.carregando = false;
+            this.lista = dados.items
+            this.controle.carregando = false
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
-        },
+            this.$refs.componente.atual = 1
+            this.$refs.componente.buscar()
+        }
     }
 
 }

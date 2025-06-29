@@ -187,13 +187,16 @@ class AutoCompletesController extends Controller
             ->where(function ($query) use ($request) {
                 $query->whereHas('Curriculo.FeedBack.Admissao', function ($q) use ($request) {
                     $q->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
-                })->orWhereDoesntHave('Curriculo.FeedBack.Admissao');
+                })->orWhereDoesntHave('Curriculo.FeedBack.Admissao')
+                    ->orWhereHas('Fornecedor', function ($q) use ($request) {
+                        $q->where('ativo', true);
+                    });
             })
             ->where('nome', 'like', '%' . $busca . '%')
             ->take($quantidade)
             ->get()
             ->map(function ($item) {
-                $item->label = $item->nome;
+                $item->label = $item->nome . ' <----> ' . $item->tipo;
                 return $item;
             });
     }

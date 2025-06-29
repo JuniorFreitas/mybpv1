@@ -31,6 +31,11 @@ class AvaliacaoController extends Controller
         return view('g.cadastros.avaliacoes.avaliacao.index');
     }
 
+    public function indexPj(Request $request)
+    {
+        return view('g.cadastros.avaliacoes-pj.avaliacao.index');
+    }
+
     public function store(Request $request)
     {
         $this->authorize('cadastro_avaliacao_insert');
@@ -189,6 +194,10 @@ class AvaliacaoController extends Controller
             $resultado->where("status", $request->status);
         }
 
+        if ($request->filled('tipo_pj')) {
+            $resultado->where('tipo_pj', $request->tipo_pj);
+        }
+
 
         return $resultado;
     }
@@ -201,9 +210,22 @@ class AvaliacaoController extends Controller
     {
         $this->authorize('cadastro_avaliacao');
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
-        $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
-        $lista_tipos_avaliadores = AvaliacaoAvaliadoresTipos::whereAtivo(true)->get();
+        $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->where('tipo_pj', $request->tipo_pj)->get();
+        $lista_tipos_avaliadores = AvaliacaoAvaliadoresTipos::whereAtivo(true)->where('tipo_pj', $request->tipo_pj)->get();
 
+        $listaAvaliacaoPorAno = (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresa_id);
+
+        //o filtro da listaAvaliacaoPorAno deve pecorrer a collect $listaAvaliacaoPorAno e filtrar os anos que contem o tipo de pj
+        $filtroListaAvaliacaoPorAnoComTipoPj = collect($listaAvaliacaoPorAno)->map(function ($avaliacoes, $ano) use ($request) {
+            return collect($avaliacoes)->filter(function ($avaliacao) use ($request) {
+                return $avaliacao->tipo_pj === $request->tipo_pj;
+            })->values();
+        })->filter(function ($avaliacoes) {
+            return $avaliacoes->isNotEmpty();
+        });
+
+
+//        dd($filtroListaAvaliacaoPorAnoComTipoPj);
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -214,7 +236,7 @@ class AvaliacaoController extends Controller
                 'avaliacoes_tipos' => $avaliacoes_tipos,
                 'lista_tipos_avaliadores' => $lista_tipos_avaliadores,
                 'lista_status' => Avaliacao::LISTA_STATUS,
-                'lista_avaliacoes_por_ano' => (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresa_id)
+                'lista_avaliacoes_por_ano' => $filtroListaAvaliacaoPorAnoComTipoPj
             ]
         ]);
     }
@@ -543,22 +565,12 @@ class AvaliacaoController extends Controller
             ], 401);
         }
 
-//        $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
-//            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
-//            ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
-//            ->withSum('Respostas', 'nota')
-//            ->with('Respostas')
-//            ->orderBy('principal', 'desc')
-//            ->get();
-
         $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
-//            ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_AVALIADOR)
             ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
             ->withSum('Respostas', 'nota')
             ->with('Respostas')
             ->orderBy('principal', 'desc')
             ->get();
-
 
         $avaliacaoFeedbackFuncionario = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
             ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_FUNCIONARIO)
@@ -622,7 +634,6 @@ class AvaliacaoController extends Controller
             return $carregar;
         }, []);
 
-
         $resultChart = $resultTopico->groupBy('topico_pai_id')->reduce(function ($carregar, $item) {
             $carregar[] = [
                 'name' => $item[0]['topico_pai'],
@@ -645,7 +656,6 @@ class AvaliacaoController extends Controller
             return $carregar;
         }, []);
 
-
         $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
             ->whereEmpresaId(auth()->user()->empresa_id)
             ->first();
@@ -660,20 +670,24 @@ class AvaliacaoController extends Controller
             'pertence_filial' => false,
         ];
 
+        // Variável para dados da empresa com valor padrão
+        $dadosEmpresa = null;
 
         if ($feedbackCurriculo) {
             $dadosDoFuncionario = Sistema::getColaboradorDados($feedbackCurriculo->curriculo_id, $feedbackCurriculo->empresa_id);
 
+            // Verificar se existe a relação Admissao antes de acessar
+            if ($feedbackCurriculo->Admissao) {
+                $dadosEmpresa = Sistema::getEmpresaFilialMatriz($feedbackCurriculo->Admissao->centro_custo_filial_id, $feedbackCurriculo->empresa_id);
+            }
         }
 
         $total_questoes = collect($result_topico_agrupado)->collapse()->count();
         $nota_final = (float)number_format((($totalAval / count($avaliacoesFeedbacks)) / $total_questoes) / count($result_topico_agrupado), 2, '.', '.');
-        // total de avaliações / total de avaliadores / total de questoes / total de topicos
-
 
         return [
             'dados_do_funcionario' => $dadosDoFuncionario,
-            'dados_empresa' => Sistema::getEmpresaFilialMatriz($feedbackCurriculo->Admissao->centro_custo_filial_id, $feedbackCurriculo->empresa_id),
+            'dados_empresa' => $dadosEmpresa, // Agora pode ser null se não houver dados
             'solicitante' => User::select('nome')->find(auth()->id())->nome,
             'avaliador_principal' => $avaliacaoFeedback->wherePrincipal(true)->first()->Avaliador->nome,
             'status_avaliacao' => $avaliacaoFeedback->status,
