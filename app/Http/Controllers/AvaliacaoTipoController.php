@@ -15,6 +15,11 @@ class AvaliacaoTipoController extends Controller
         return view('g.cadastros.avaliacoes.avaliacaotipo.index');
     }
 
+    public function indexPj(Request $request)
+    {
+        return view('g.cadastros.avaliacoes-pj.avaliacaotipo.index');
+    }
+
     public function store(Request $request)
     {
         $this->authorize('cadastro_avaliacao_tipo_insert');
@@ -26,9 +31,9 @@ class AvaliacaoTipoController extends Controller
             'nome' => [
                 'required',
                 'min:3',
-                Rule::unique('avaliacoes_tipos')->where(function ($query) use($nome,$descricao) {
-                    return $query->where('nome',$nome)
-                                 ->where('descricao',$descricao);
+                Rule::unique('avaliacoes_tipos')->where(function ($query) use ($nome, $descricao) {
+                    return $query->where('nome', $nome)
+                        ->where('descricao', $descricao);
                 })
             ]
         ];
@@ -80,10 +85,10 @@ class AvaliacaoTipoController extends Controller
             'nome' => [
                 'required',
                 'min:3',
-                Rule::unique('avaliacoes_tipos')->where(function ($query) use($nome,$descricao,$id_tipo_avaliacao) {
+                Rule::unique('avaliacoes_tipos')->where(function ($query) use ($nome, $descricao, $id_tipo_avaliacao) {
                     return $query->where('nome', $nome)
-                                 ->where('descricao', $descricao)
-                                 ->where('id','<>', $id_tipo_avaliacao);
+                        ->where('descricao', $descricao)
+                        ->where('id', '<>', $id_tipo_avaliacao);
                 })
             ]
         ];
@@ -120,6 +125,10 @@ class AvaliacaoTipoController extends Controller
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
                 ->orWhere('descricao', 'like', '%' . $request->campoBusca . '%');
+        }
+
+        if ($request->filled('tipo_pj')) {
+            $resultado->where('tipo_pj', $request->tipo_pj);
         }
 
         $resultado = $resultado->paginate($porPagina);

@@ -6,6 +6,68 @@ use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * App\Models\Fornecedor
+ *
+ * @property int $id
+ * @property int|null $empresa_id
+ * @property string $tipo Fornecedor, Terceiro, Parceiro
+ * @property string|null $cnpj
+ * @property string|null $cpf
+ * @property string|null $nome
+ * @property string $tipo_pessoa
+ * @property string|null $razao_social
+ * @property string|null $nome_fantasia
+ * @property string|null $cep
+ * @property string|null $logradouro
+ * @property string|null $numero
+ * @property string|null $complemento
+ * @property string|null $bairro
+ * @property string|null $municipio
+ * @property string|null $uf
+ * @property string|null $contato
+ * @property string|null $email
+ * @property string|null $aniversario
+ * @property bool $ativo
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
+ * @property-read int|null $anexos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FornecedorServico> $Servicos
+ * @property-read int|null $servicos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UsuarioTelefone> $Telefones
+ * @property-read int|null $telefones_count
+ * @property-read \App\Models\User|null $Usuario
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $endereco_completo
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereAniversario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereBairro($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereCep($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereCnpj($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereComplemento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereContato($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereCpf($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereLogradouro($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereMunicipio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereNomeFantasia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereNumero($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereRazaoSocial($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereTipoPessoa($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereUf($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Fornecedor whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Fornecedor extends Model
 {
     use  LogsActivity, TenantTrait;

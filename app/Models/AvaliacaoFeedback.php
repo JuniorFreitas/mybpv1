@@ -55,6 +55,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $avaliacao_tipo_id
  * @property-read \App\Models\AvaliacaoAvaliadoresTipos|null $TipoAvaliador
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereAvaliacaoTipoId($value)
+ * @property bool $tipo_pj
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoFeedback whereTipoPj($value)
  * @mixin \Eloquent
  */
 class AvaliacaoFeedback extends Model
@@ -94,7 +96,8 @@ class AvaliacaoFeedback extends Model
         'comentario',
         'status',
         'estado_atual',
-        'estado_desejado'
+        'estado_desejado',
+        'tipo_pj'
     ];
 
     protected $casts = [
@@ -113,7 +116,8 @@ class AvaliacaoFeedback extends Model
         'comentario' => 'string',
         'status' => 'string',
         'estado_atual' => 'string',
-        'estado_desejado' => 'string'
+        'estado_desejado' => 'string',
+        'tipo_pj' => 'boolean'
     ];
 
     public $timestamps = false;

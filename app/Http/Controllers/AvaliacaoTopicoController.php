@@ -5,10 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\AvaliacaoTipo;
 use App\Models\AvaliacaoTopico;
 use App\Models\Simulado;
-use App\Models\SimuladoPergunta;
-use App\Models\SimuladoResposta;
-use App\Models\Sistema;
-use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
 
@@ -22,6 +18,11 @@ class AvaliacaoTopicoController extends Controller
     public function index()
     {
         return view('g.cadastros.avaliacoes.avaliacaotopico.index');
+    }
+
+    public function indexPj()
+    {
+        return view('g.cadastros.avaliacoes-pj.avaliacaotopico.index');
     }
 
     /**
@@ -49,6 +50,7 @@ class AvaliacaoTopicoController extends Controller
             'avaliacao_tipo_id' => $dados['avaliacao_tipo_id'],
             'topico_explicacao' => $dados['topico_explicacao'],
             'ativo' => $dados['ativo'],
+            'tipo_pj' => $dados['tipo_pj'],
         ];
 
         if (!isset($dados['subtopicos'])) {
@@ -70,54 +72,53 @@ class AvaliacaoTopicoController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
 
-        } else {
-            try {
-                DB::beginTransaction();
-                $subtopicos = collect($dados['subtopicos']);
+        }
+        try {
+            DB::beginTransaction();
+            $subtopicos = collect($dados['subtopicos']);
 
-                if ($subtopicos->duplicates('topico')->count() > 0) {
-                    return response()->json([
-                        'msg' => "Verifique os subtópicos com nomes duplicados!",
-                    ], 400);
-                }
-
-                if ($subtopicos->duplicates('topico_explicacao')->count() > 0) {
-                    return response()->json([
-                        'msg' => "Verifique os subtópicos com descrições duplicados!",
-                    ], 400);
-                }
-
-                if ($subtopicos->count() == 0) {
-                    return response()->json([
-                        'msg' => 'ERRO: O Tópico ' . $topico['topico'] . ' deve ter pelo menos 1(um) subtópico',
-                    ], 400);
-                }
-
-                //Cria um registro Topico e salva o id
-                $cadTopico = AvaliacaoTopico::create($topico);
-
-                if (isset($dados['subtopicosDelete'])) {
-                    foreach ($dados['subtopicosDelete'] as $lin) {
-                        AvaliacaoTopico::find($lin)->delete();
-                    }
-                }
-
-                foreach ($subtopicos as $subtopico) {
-                    $subtopico['avaliacao_tipo_id'] = $dados['avaliacao_tipo_id'];
-                    $subtopico['topico_pai_id'] = $cadTopico->id;
-
-                    $cadSubtopico = AvaliacaoTopico::create($subtopico);
-                }
-
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
+            if ($subtopicos->duplicates('topico')->count() > 0) {
                 return response()->json([
-                    'msg' => $e->getMessage(),
+                    'msg' => "Verifique os subtópicos com nomes duplicados!",
                 ], 400);
             }
+
+            if ($subtopicos->duplicates('topico_explicacao')->count() > 0) {
+                return response()->json([
+                    'msg' => "Verifique os subtópicos com descrições duplicados!",
+                ], 400);
+            }
+
+            if ($subtopicos->count() == 0) {
+                return response()->json([
+                    'msg' => 'ERRO: O Tópico ' . $topico['topico'] . ' deve ter pelo menos 1(um) subtópico',
+                ], 400);
+            }
+
+            //Cria um registro Topico e salva o id
+            $cadTopico = AvaliacaoTopico::create($topico);
+
+            if (isset($dados['subtopicosDelete'])) {
+                foreach ($dados['subtopicosDelete'] as $lin) {
+                    AvaliacaoTopico::find($lin)->delete();
+                }
+            }
+
+            foreach ($subtopicos as $subtopico) {
+                $subtopico['avaliacao_tipo_id'] = $dados['avaliacao_tipo_id'];
+                $subtopico['topico_pai_id'] = $cadTopico->id;
+
+                AvaliacaoTopico::create($subtopico);
+            }
+
+            DB::commit();
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'msg' => $e->getMessage(),
+            ], 400);
         }
     }
 
@@ -162,6 +163,7 @@ class AvaliacaoTopicoController extends Controller
             'avaliacao_tipo_id' => $dados['avaliacao_tipo_id'],
             'topico_explicacao' => $dados['topico_explicacao'],
             'ativo' => $dados['ativo'],
+            'tipo_pj' => $dados['tipo_pj'],
         ];
 
         if (!isset($dados['subtopicos'])) {
@@ -183,51 +185,50 @@ class AvaliacaoTopicoController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
 
-        } else {
-            try {
-                DB::beginTransaction();
-                $subtopicos = collect($dados['subtopicos']);
+        }
+        try {
+            DB::beginTransaction();
+            $subtopicos = collect($dados['subtopicos']);
 
-                if ($subtopicos->duplicates('topico')->count() > 0) {
-                    return response()->json([
-                        'msg' => "Verifique os subtópicos com nomes duplicados!",
-                    ], 400);
-                }
-
-                if ($subtopicos->count() == 0) {
-                    return response()->json([
-                        'msg' => 'ERRO: O Tópico ' . $topico['topico'] . ' deve ter pelo menos 1(um) subtópico',
-                    ], 400);
-                }
-
-                $updateTopico = AvaliacaoTopico::find($dados['id'])->update($topico);
-
-                if (isset($dados['subtopicosDelete'])) {
-                    foreach ($dados['subtopicosDelete'] as $lin) {
-                        AvaliacaoTopico::find($lin)->delete();
-                    }
-                }
-
-                foreach ($subtopicos as $subtopico) {
-                    $subtopico['avaliacao_tipo_id'] = $dados['avaliacao_tipo_id'];
-                    $subtopico['topico_pai_id'] = $dados['id'];
-
-                    if (isset($subtopico['id'])) {
-                        AvaliacaoTopico::find($subtopico['id'])->update($subtopico);
-                    } else {
-                        AvaliacaoTopico::create($subtopico);
-                    }
-                }
-
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
+            if ($subtopicos->duplicates('topico')->count() > 0) {
                 return response()->json([
-                    'msg' => $e->getMessage(),
+                    'msg' => "Verifique os subtópicos com nomes duplicados!",
                 ], 400);
             }
+
+            if ($subtopicos->count() == 0) {
+                return response()->json([
+                    'msg' => 'ERRO: O Tópico ' . $topico['topico'] . ' deve ter pelo menos 1(um) subtópico',
+                ], 400);
+            }
+
+            $updateTopico = AvaliacaoTopico::find($dados['id'])->update($topico);
+
+            if (isset($dados['subtopicosDelete'])) {
+                foreach ($dados['subtopicosDelete'] as $lin) {
+                    AvaliacaoTopico::find($lin)->delete();
+                }
+            }
+
+            foreach ($subtopicos as $subtopico) {
+                $subtopico['avaliacao_tipo_id'] = $dados['avaliacao_tipo_id'];
+                $subtopico['topico_pai_id'] = $dados['id'];
+
+                if (isset($subtopico['id'])) {
+                    AvaliacaoTopico::find($subtopico['id'])->update($subtopico);
+                } else {
+                    AvaliacaoTopico::create($subtopico);
+                }
+            }
+
+            DB::commit();
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'msg' => $e->getMessage(),
+            ], 400);
         }
     }
 
@@ -254,6 +255,9 @@ class AvaliacaoTopicoController extends Controller
             $resultado->where("topico", "like", "%$request->campoBusca%")
                 ->orWhere('id', $request->campoBusca);
         }
+        if ($request->filled('tipo_pj')) {
+            $resultado->where('tipo_pj', $request->tipo_pj);
+        }
         return $resultado;
     }
 
@@ -267,7 +271,7 @@ class AvaliacaoTopicoController extends Controller
     {
         $this->authorize('cadastro_avaliacao_topico');
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
-        $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
+        $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->where('tipo_pj', $request->tipo_pj)->get();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -294,7 +298,6 @@ class AvaliacaoTopicoController extends Controller
         $avaliacaoTopico->refresh();
 
         AvaliacaoTopico::whereTopicoPaiId($request->id)->update(['ativo' => $avaliacaoTopico->ativo]);
-
 
 
         return response()->json(['ativo' => $avaliacaoTopico->ativo], 201);
