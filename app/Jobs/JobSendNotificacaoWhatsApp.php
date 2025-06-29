@@ -26,7 +26,7 @@ class JobSendNotificacaoWhatsApp implements ShouldQueue
     public function __construct($dados)
     {
         $this->dados = $dados;
-        $this->delay = now()->addSeconds(rand(5, 7));
+        $this->delay = now()->addSeconds(rand(2, 5));
     }
 
     /**
@@ -37,7 +37,6 @@ class JobSendNotificacaoWhatsApp implements ShouldQueue
     public function handle()
     {
         $send = (new ZapNotificacao())->send($this->dados);
-
         if (!isset($this->dados['sistema'])) {
             if ($send['status']) {
                 $notificacao = new NotificacaoWhatsapp();
@@ -50,7 +49,7 @@ class JobSendNotificacaoWhatsApp implements ShouldQueue
             }
         }
 
-//        \Log::info(print_r($send, true));
+        \Log::info(print_r($send, true));
 //        var_dump($send);
 //        return $send;
     }
