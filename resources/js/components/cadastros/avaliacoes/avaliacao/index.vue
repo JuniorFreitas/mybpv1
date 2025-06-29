@@ -1,13 +1,13 @@
 <template>
     <div :id="hash">
         <modal id="janelaAssociar" :titulo="janelaAssociar" :fechar="!preload" :size="90">
-            <template slot="conteudo">
+            <template v-slot:conteudo>
                 <vincula-avaliador :obj="avaliacaoSelecionada" v-if="abrirAssociar"></vincula-avaliador>
             </template>
         </modal>
 
         <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" size="g">
-            <template slot="conteudo">
+            <template v-slot:conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
                     <fieldset>
@@ -145,7 +145,7 @@
                     </fieldset>
                 </div>
             </template>
-            <template slot="rodape">
+            <template v-slot:rodape>
                 <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload"
                         @click="alterar()">
                     Alterar
@@ -314,11 +314,11 @@
 </template>
 
 <script>
-import controlePaginacao from "../../../ControlePaginacao";
-import modal from "../../../Modal";
-import DatePicker from "../../../DatePicker";
-import vinculaAvaliador from "./vinculaAvaliador";
-import validacoes from "../../../../mixins/Validacoes";
+import controlePaginacao from '../../../ControlePaginacao'
+import modal from '../../../Modal'
+import DatePicker from '../../../DatePicker'
+import vinculaAvaliador from './vinculaAvaliador'
+import validacoes from '../../../../mixins/Validacoes'
 import vuedraggable from 'vuedraggable'
 
 
@@ -332,6 +332,11 @@ export default {
     },
     mixins: [validacoes],
     props: {
+        tipoPj: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         qntPag: {
             type: Number,
             required: false,
@@ -342,37 +347,38 @@ export default {
             required: false,
             default: true
         },
-        modal: { // modal Pai
+        modal: {
             type: String,
             required: false,
-            default: ""
+            default: ''
         }
     },
     mounted() {
-        this.atualizar();
-        this.formDefault = _.cloneDeep(this.form);
-        this.form.ano_avaliacao = new Date().getFullYear();
+        this.atualizar()
+        this.formDefault = _.cloneDeep(this.form)
+        this.form.ano_avaliacao = new Date().getFullYear()
     },
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: "",
-            janelaAssociar: "",
+            titulo_janela: '',
+            janelaAssociar: '',
             preload: false,
             editando: false,
             cadastrado: false,
             abrirAssociar: false,
 
             form: {
-                titulo: "",
+                titulo: '',
                 ano_avaliacao: '',
-                data_inicio_prazo: "",
-                data_fim_prazo: "",
-                status: "",
+                data_inicio_prazo: '',
+                data_fim_prazo: '',
+                status: '',
                 ativo: true,
                 auto_avaliacao: true,
                 avaliacao_tipo_id: '',
-                fluxo: []
+                fluxo: [],
+                tipo_pj: this.tipoPj
             },
 
             formDefault: null,
@@ -393,202 +399,203 @@ export default {
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: "",
-                    ano_avaliacao: "",
-                    tipo_avaliacao: "",
-                    status: "",
+                    campoBusca: '',
+                    ano_avaliacao: '',
+                    tipo_avaliacao: '',
+                    status: '',
+                    tipo_pj: this.tipoPj
                 }
             }
-        };
+        }
     },
     computed: {
         listaKeysAvaliacaoPorAnoOrdenado() {
-            return Object.keys(this.lista_avaliacoes_por_ano).sort((a, b) => b - a);
+            return Object.keys(this.lista_avaliacoes_por_ano).sort((a, b) => b - a)
         },
         groupAvaliacaoAno() {
-            let group = _.groupBy(this.lista_avaliacoes_por_ano[this.controle.dados.ano_avaliacao], 'avaliacao_tipo_id');
+            let group = _.groupBy(this.lista_avaliacoes_por_ano[this.controle.dados.ano_avaliacao], 'avaliacao_tipo_id')
 
-            let array = [];
+            let array = []
             for (let key in group) {
                 array.push({
                     avaliacao_tipo_id: key,
-                    avaliacao_tipo: group[key][0].avaliacao_tipo.nome,
-                });
+                    avaliacao_tipo: group[key][0].avaliacao_tipo.nome
+                })
             }
-            return array;
+            return array
         },
         getOptions() {
             return {
                 animation: 150, // Duração da animação de reordenação em milissegundos
-                group: 'items',   // Define um grupo para permitir arrastar e soltar entre várias listas
+                group: 'items', // Define um grupo para permitir arrastar e soltar entre várias listas
                 onStart: (event) => {
-                    this.itemIsDragging = event.item.id; // Define o item atual como arrastando
+                    this.itemIsDragging = event.item.id // Define o item atual como arrastando
                 },
                 onEnd: () => {
-                    this.itemIsDragging = null; // Define o item arrastando como null quando o arrastar termina
+                    this.itemIsDragging = null // Define o item arrastando como null quando o arrastar termina
                 }
-            };
-        },
+            }
+        }
     },
     watch: {
         fluxo: {
             handler() {
-                this.atualizarPrincipal();
+                this.atualizarPrincipal()
             },
             deep: true // Isso garante que o watcher reaja a mudanças dentro dos objetos do array
         }
     },
     methods: {
         associar(obj) {
-            this.abrirAssociar = false;
-            this.janelaAssociar = `Associar avaliadores para avaliação - ${obj.titulo}`;
-            this.avaliacaoSelecionada = obj;
+            this.abrirAssociar = false
+            this.janelaAssociar = `Associar avaliadores para avaliação - ${obj.titulo}`
+            this.avaliacaoSelecionada = obj
             setTimeout(() => {
-                this.abrirAssociar = true;
-            }, 300);
+                this.abrirAssociar = true
+            }, 300)
 
         },
         formNovo() {
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.titulo_janela = "Montagem da Avaliação";
-            this.editando = false;
-            this.cadastrado = false;
-            this.preload = false;
-            this.form.ano_avaliacao = new Date().getFullYear();
-            formReset();
-            setupCampo();
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.titulo_janela = 'Montagem da Avaliação'
+            this.editando = false
+            this.cadastrado = false
+            this.preload = false
+            this.form.ano_avaliacao = new Date().getFullYear()
+            formReset()
+            setupCampo()
         },
 
         cadastrar() {
-            this.validaBlur();
-            let countErro = document.querySelectorAll(".is-invalid").length
+            this.validaBlur()
+            let countErro = document.querySelectorAll('.is-invalid').length
             if (countErro > 0) {
-                toastr.error("Verifique os campos", "Atenção!")
-                return false;
+                toastr.error('Verifique os campos', 'Atenção!')
+                return false
             }
-            this.preload = true;
+            this.preload = true
             axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao`, this.form)
                 .then(res => {
                     if (res.status === 201) {
-                        $("#janelaCadastrar").modal("hide");
-                        mostraSucesso("", "Avaliação cadastrada com sucesso");
-                        this.cadastrado = true;
-                        this.preload = false;
-                        this.atualizar();
+                        $('#janelaCadastrar').modal('hide')
+                        mostraSucesso('', 'Avaliação cadastrada com sucesso')
+                        this.cadastrado = true
+                        this.preload = false
+                        this.atualizar()
                     }
                 })
                 .catch(error => {
-                    this.cadastrado = false;
-                    this.preload = false;
-                });
+                    this.cadastrado = false
+                    this.preload = false
+                })
         },
 
         alterarForm(avaliacao) {
-            this.cadastrado = false;
-            this.editando = true;
-            this.titulo_janela = `Alterando Avaliação ${avaliacao.id}`;
-            this.preload = true;
+            this.cadastrado = false
+            this.editando = true
+            this.titulo_janela = `Alterando Avaliação ${avaliacao.id}`
+            this.preload = true
 
-            this.form = _.cloneDeep(this.formDefault); //copia
-            formReset();
+            this.form = _.cloneDeep(this.formDefault) //copia
+            formReset()
 
             axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${avaliacao.id}/editar`)
                 .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    setupCampo();
-                    this.preload = false;
+                    Object.assign(this.form, response.data)
+                    this.editando = true
+                    setupCampo()
+                    this.preload = false
                 }).catch(
                 error => (this.preloadAjax = false)
-            );
+            )
 
         },
 
         alterar() {
-            formReset();
-            this.validaBlur();
+            formReset()
+            this.validaBlur()
             if (this.form.fluxo.length === 0) {
-                mostraErro("", "Informe o fluxo da avaliação");
-                return false;
+                mostraErro('', 'Informe o fluxo da avaliação')
+                return false
             }
-            let countErro = document.querySelectorAll(".is-invalid").length
+            let countErro = document.querySelectorAll('.is-invalid').length
             if (countErro > 0) {
-                mostraErro("", "Verifique os campos")
-                return false;
+                mostraErro('', 'Verifique os campos')
+                return false
             }
-            this.preload = true;
+            this.preload = true
 
             axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${this.form.id}`, this.form).then(response => {
-                $("#janelaCadastrar").modal("hide");
-                mostraSucesso("", "Avaliação alterada com sucesso");
-                this.preload = false;
-                this.atualizado = true;
-                this.atualizar();
-            }).catch(error => (this.preload = false));
+                $('#janelaCadastrar').modal('hide')
+                mostraSucesso('', 'Avaliação alterada com sucesso')
+                this.preload = false
+                this.atualizado = true
+                this.atualizar()
+            }).catch(error => (this.preload = false))
 
         },
 
         addTipoAvaliadorFluxo(obj) {
-            const [id, label] = obj.split('|');
+            const [id, label] = obj.split('|')
 
             if (id !== '') {
                 const objFluxo = {
                     id: +id,
                     label,
                     principal: false
-                };
+                }
 
-                const existingIndex = this.form.fluxo.findIndex(item => item.id === objFluxo.id);
+                const existingIndex = this.form.fluxo.findIndex(item => item.id === objFluxo.id)
 
                 if (existingIndex === -1) {
-                    this.form.fluxo.push(objFluxo);
+                    this.form.fluxo.push(objFluxo)
                 } else {
-                    mostraErro('', `Tipo avaliador ${label} já existe na lista`);
+                    mostraErro('', `Tipo avaliador ${label} já existe na lista`)
                 }
             }
-            this.atualizarPrincipal();
-            this.selecionatipoavaliador = '';
+            this.atualizarPrincipal()
+            this.selecionatipoavaliador = ''
         },
 
         rmTipoAvaliadorFluxo(item) {
-            const index = this.form.fluxo.indexOf(item);
+            const index = this.form.fluxo.indexOf(item)
             if (index !== -1) {
-                this.form.fluxo.splice(index, 1);
+                this.form.fluxo.splice(index, 1)
             }
-            this.atualizarPrincipal();
+            this.atualizarPrincipal()
         },
 
         atualizarPrincipal() {
             // Primeiro, definir todos os itens como 'principal: false'
             this.form.fluxo.forEach(item => {
-                item.principal = false;
-            });
+                item.principal = false
+            })
 
             // Então, definir o último item como 'principal: true'
             if (this.form.fluxo.length > 0) {
-                this.form.fluxo[this.form.fluxo.length - 1].principal = true;
+                this.form.fluxo[this.form.fluxo.length - 1].principal = true
             }
         },
 
         carregou(dados) {
-            this.lista = dados.itens;
-            this.lista_avaliacoes_tipos = dados.avaliacoes_tipos;
-            this.lista_tipos_avaliadores = dados.lista_tipos_avaliadores;
+            this.lista = dados.itens
+            this.lista_avaliacoes_tipos = dados.avaliacoes_tipos
+            this.lista_tipos_avaliadores = dados.lista_tipos_avaliadores
 
-            this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano;
-            this.lista_status = dados.lista_status;
-            this.controle.carregando = false;
+            this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano
+            this.lista_status = dados.lista_status
+            this.controle.carregando = false
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs.componente.atual = 1
+            this.$refs.componente.buscar()
         }
     }
 
-};
+}
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <template>
     <div :id="hash">
         <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
-            <template slot="conteudo">
+            <template v-slot:conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
                     <fieldset>
@@ -47,7 +47,6 @@
                                     </select>
                                 </div>
                             </div>
-
                         </div>
                     </fieldset>
 
@@ -99,7 +98,7 @@
 
                 </div>
             </template>
-            <template slot="rodape">
+            <template v-slot:rodape>
                 <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload"
                         @click="alterar()">
                     Alterar
@@ -194,8 +193,8 @@
 </template>
 
 <script>
-import controlePaginacao from "../../../ControlePaginacao";
-import modal from "../../../Modal";
+import controlePaginacao from '../../../ControlePaginacao'
+import modal from '../../../Modal'
 
 export default {
     components: {
@@ -203,6 +202,11 @@ export default {
         controlePaginacao
     },
     props: {
+        tipoPj: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         qntPag: {
             type: Number,
             required: false,
@@ -213,31 +217,32 @@ export default {
             required: false,
             default: true
         },
-        modal: { // modal Pai
+        modal: {
             type: String,
             required: false,
-            default: ""
+            default: ''
         }
     },
     mounted() {
-        this.atualizar();
-        this.formDefault = _.cloneDeep(this.form);
+        this.atualizar()
+        this.formDefault = _.cloneDeep(this.form)
     },
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: "",
+            titulo_janela: '',
             preload: false,
             editando: false,
             cadastrado: false,
 
             form: {
-                topico: "",
-                topico_explicacao: "",
+                topico: '',
+                topico_explicacao: '',
                 ativo: true,
                 avaliacao_tipo_id: '',
                 subtopicos: [],
-                subtopicosDelete: []
+                subtopicosDelete: [],
+                tipo_pj: this.tipoPj
             },
 
             formDefault: null,
@@ -249,117 +254,118 @@ export default {
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: ""
+                    campoBusca: '',
+                    tipo_pj: this.tipoPj
                 }
             }
-        };
+        }
     },
     methods: {
         addLiSubtopico() {
-            let objsubtopico = {};
-            objsubtopico.nova = true;
-            objsubtopico.topico = "";
-            objsubtopico.topico_pai_id = "";
-            objsubtopico.qnt_linhas = "";
-            objsubtopico.topico_explicacao = "";
-            this.form.subtopicos.push(objsubtopico);
+            let objsubtopico = {}
+            objsubtopico.nova = true
+            objsubtopico.topico = ''
+            objsubtopico.topico_pai_id = ''
+            objsubtopico.qnt_linhas = ''
+            objsubtopico.topico_explicacao = ''
+            this.form.subtopicos.push(objsubtopico)
         },
         removerLISubtopico(index) {
             if (this.editando) {
-                this.form.subtopicosDelete.push(this.form.subtopicos[index].id);
+                this.form.subtopicosDelete.push(this.form.subtopicos[index].id)
             }
-            this.form.subtopicos.splice(index, 1);
+            this.form.subtopicos.splice(index, 1)
         },
 
         formNovo() {
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.titulo_janela = "Montagem de competência";
-            this.editando = false;
-            this.cadastrado = false;
-            this.preload = false;
-            formReset();
-            setupCampo();
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.titulo_janela = 'Montagem de competência'
+            this.editando = false
+            this.cadastrado = false
+            this.preload = false
+            formReset()
+            setupCampo()
         },
 
         cadastrar() {
-            $("#janelaCadastrar :input:visible").trigger("blur");
-            if ($("#janelaCadastrar :input:visible.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
-                return false;
+            $('#janelaCadastrar :input:visible').trigger('blur')
+            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+                mostraErro('', 'Verificar os erros')
+                return false
             }
-            this.preload = true;
+            this.preload = true
             axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico`, this.form)
                 .then(res => {
                     if (res.status === 201) {
-                        $("#janelaCadastrar").modal("hide");
-                        mostraSucesso("", "Competência de Avaliação cadastrado com sucesso");
-                        this.cadastrado = true;
-                        this.preload = false;
-                        this.atualizar();
+                        $('#janelaCadastrar').modal('hide')
+                        mostraSucesso('', 'Competência de Avaliação cadastrado com sucesso')
+                        this.cadastrado = true
+                        this.preload = false
+                        this.atualizar()
                     }
                 })
                 .catch(error => {
-                    this.cadastrado = false;
-                    this.preload = false;
-                });
+                    this.cadastrado = false
+                    this.preload = false
+                })
         },
 
         alterarForm(avaliacaotopico) {
-            this.cadastrado = false;
-            this.editando = true;
-            this.titulo_janela = `Alterande competência ${avaliacaotopico.id}`;
-            this.preload = true;
+            this.cadastrado = false
+            this.editando = true
+            this.titulo_janela = `Alterande competência ${avaliacaotopico.id}`
+            this.preload = true
 
-            this.form = _.cloneDeep(this.formDefault); //copia
-            formReset();
+            this.form = _.cloneDeep(this.formDefault) //copia
+            formReset()
 
             axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico/${avaliacaotopico.id}/editar`)
                 .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    setupCampo();
-                    this.preload = false;
+                    Object.assign(this.form, response.data)
+                    this.editando = true
+                    setupCampo()
+                    this.preload = false
                 }).catch(
                 error => (this.preloadAjax = false)
-            );
+            )
 
         },
 
         alterar() {
-            formReset();
-            $("#janelaCadastrar :input:enabled").trigger("blur");
+            formReset()
+            $('#janelaCadastrar :input:enabled').trigger('blur')
 
-            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
-                return false;
+            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
             axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico/${this.form.id}`, this.form).then(response => {
-                $("#janelaCadastrar").modal("hide");
-                mostraSucesso("", "Competência de avaliação alterado com sucesso");
-                this.preload = false;
-                this.atualizado = true;
-                this.atualizar();
-            }).catch(error => (this.preload = false));
+                $('#janelaCadastrar').modal('hide')
+                mostraSucesso('', 'Competência de avaliação alterado com sucesso')
+                this.preload = false
+                this.atualizado = true
+                this.atualizar()
+            }).catch(error => (this.preload = false))
 
         },
         carregou(dados) {
-            this.lista = dados.itens;
-            this.lista_avaliacoes_tipos = dados.avaliacoes_tipos;
-            this.controle.carregando = false;
+            this.lista = dados.itens
+            this.lista_avaliacoes_tipos = dados.avaliacoes_tipos
+            this.controle.carregando = false
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs.componente.atual = 1
+            this.$refs.componente.buscar()
         }
     }
 
-};
+}
 </script>
 
 <style scoped>

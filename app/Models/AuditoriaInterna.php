@@ -5,6 +5,35 @@ namespace App\Models;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\AuditoriaInterna
+ *
+ * @property int $id
+ * @property int $empresa_id
+ * @property int $usuario_id
+ * @property int|null $feedback_id
+ * @property int $colaborador_id
+ * @property string $tipo
+ * @property string $descricao
+ * @property array $dados
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Cliente $empresa
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereColaboradorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereDados($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereDescricao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereFeedbackId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereUsuarioId($value)
+ * @mixin \Eloquent
+ */
 class AuditoriaInterna extends Model
 {
     use TenantTrait;

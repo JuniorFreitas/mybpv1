@@ -32,6 +32,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioTelefone wherePrincipal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioTelefone whereRamal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioTelefone whereTipo($value)
+ * @property-read \App\Models\User $user
  * @mixin \Eloquent
  */
 class UsuarioTelefone extends Model

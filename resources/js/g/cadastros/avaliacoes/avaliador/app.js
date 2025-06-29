@@ -1,4 +1,4 @@
-import preload from '../../../../components/preload';
+import preload from '../../../../components/preload'
 
 const app = new Vue({
     el: '#app',
@@ -11,13 +11,13 @@ const app = new Vue({
         editando: false,
         update: false,
         janelaTitulo: 'Avaliador',
-        hash: `mybp_${parseInt((Math.random() * 999999))}`,
+        hash: `mybp_${parseInt(Math.random() * 999999)}`,
 
-        form:{
+        form: {
             autocomplete_label_avaliador: '',
             autocomplete_label_avaliador_anterior: '',
             avaliador_id: '',
-            avaliadores: [],
+            avaliadores: []
         },
 
         funcionariosSelecionados: [],
@@ -28,187 +28,186 @@ const app = new Vue({
         controle: {
             carregando: false,
             dados: {
-                campoBusca: ""
+                campoBusca: ''
             }
         }
-
     },
+    computed: {},
     mounted() {
-        this.formPerimetroDefault = _.cloneDeep(this.formPerimetro);
-        this.atualizar();
+        this.formPerimetroDefault = _.cloneDeep(this.formPerimetro)
+        this.atualizar()
         // this.atualizarListaFuncionarios();
         // this.atualizarListaPeriemetros();
-
-    },
-    computed: {
-
     },
     methods: {
         removerLIColaborador(index) {
             if (this.editando && !this.form.usuarios[index].novo) {
-                this.form.usuariosDelete.push(this.form.usuarios[index].id);
+                this.form.usuariosDelete.push(this.form.usuarios[index].id)
             }
-            this.form.usuarios.splice(index, 1);
+            this.form.usuarios.splice(index, 1)
         },
         selecionaAvaliador(obj) {
             const avaliador = {
                 novo: true,
                 id: obj.id,
-                nome: obj.nome,
+                nome: obj.nome
             }
 
-            let atual = this.form.avaliadores.findIndex(val => val.id === avaliador.id);
+            let atual = this.form.avaliadores.findIndex((val) => val.id === avaliador.id)
 
-            if (atual < 0) {//Se não existir ainda no array
-                this.form.avaliadores.push(avaliador);
+            if (atual < 0) {
+                //Se não existir ainda no array
+                this.form.avaliadores.push(avaliador)
             } else {
-                mostraErro("", `Avaliador(a) ${avaliador.nome} já está na lista.`);
-                this.form.autocomplete_label_avaliador = "";
-                return false;
+                mostraErro('', `Avaliador(a) ${avaliador.nome} já está na lista.`)
+                this.form.autocomplete_label_avaliador = ''
+                return false
             }
-            this.form.autocomplete_label_avaliador = "";
+            this.form.autocomplete_label_avaliador = ''
         },
 
         resetaCampo() {
             if (this.form.autocomplete_label_avaliador_anterior !== this.form.autocomplete_label_avaliador) {
-                this.form.autocomplete_label_avaliador_anterior = "";
-                this.form.autocomplete_label_avaliador = "";
-                this.form.avaliador_id = "";
-
+                this.form.autocomplete_label_avaliador_anterior = ''
+                this.form.autocomplete_label_avaliador = ''
+                this.form.avaliador_id = ''
             }
         },
 
         //Configurações ------------------------------------
-        getPermissoes(){
-            this.preload = true;
-            axios.get(`${URL_ADMIN}/controle-ponto/configuracoes/getPermissoes/`,)
-                .then(response => {
-                    this.preload = false;
-                    this.perimetros_insert = response.data.perimetros_insert;
-                    this.perimetros_update = response.data.perimetros_update;
-                    this.perimetros_delete = response.data.perimetros_delete;
-                    this.perimetros_funcionarios = response.data.perimetros_funcionarios;
-                    this.config_empresa = response.data.config_empresa;
-
-                }).catch(error => {
-                this.preload = false;
-            });
+        getPermissoes() {
+            this.preload = true
+            axios
+                .get(`${URL_ADMIN}/controle-ponto/configuracoes/getPermissoes/`)
+                .then((response) => {
+                    this.preload = false
+                    this.perimetros_insert = response.data.perimetros_insert
+                    this.perimetros_update = response.data.perimetros_update
+                    this.perimetros_delete = response.data.perimetros_delete
+                    this.perimetros_funcionarios = response.data.perimetros_funcionarios
+                    this.config_empresa = response.data.config_empresa
+                })
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         salvarConfiguracoes() {
-
-            $('#config_frequencia :input:visible:enabled').trigger('blur');
+            $('#config_frequencia :input:visible:enabled').trigger('blur')
             if ($('#config_frequencia :input:visible:enabled.is-invalid').length) {
-                alert('Verificar os erros');
-                return false;
+                alert('Verificar os erros')
+                return false
             }
 
-            this.preloadConfig = true;
-            axios.put(`${URL_ADMIN}/controle-ponto/configuracoes/${this.EMPRESA_ID}`, this.formConfig)
-                .then(response => {
-                    this.preloadConfig = false;
-                    mostraSucesso('', 'Configuração salva');
-                }).catch(error => {
-                this.preloadConfig = false;
-            });
+            this.preloadConfig = true
+            axios
+                .put(`${URL_ADMIN}/controle-ponto/configuracoes/${this.EMPRESA_ID}`, this.formConfig)
+                .then((response) => {
+                    this.preloadConfig = false
+                    mostraSucesso('', 'Configuração salva')
+                })
+                .catch((error) => {
+                    this.preloadConfig = false
+                })
         },
 
         formNovoPerimetro() {
-            this.formPerimetro = _.cloneDeep(this.formPerimetroDefault);
+            this.formPerimetro = _.cloneDeep(this.formPerimetroDefault)
             if (!this.preloadGoogleMaps) {
-                this.initMap();
+                this.initMap()
             }
         },
         formEditarPerimetro(perimetro) {
-            this.formPerimetro = _.cloneDeep(this.formPerimetroDefault);
-            this.formPerimetro.editando=true;
-            this.formPerimetro.titulo='Editar perimetro';
-            this.formPerimetro.preload=true;
+            this.formPerimetro = _.cloneDeep(this.formPerimetroDefault)
+            this.formPerimetro.editando = true
+            this.formPerimetro.titulo = 'Editar perimetro'
+            this.formPerimetro.preload = true
 
-            axios.get(`${URL_ADMIN}/controle-ponto/perimetros/${perimetro.id}/editar`)
-                .then(response => {
-                    this.formPerimetro.preload = false;
-                    Object.assign(this.formPerimetro,response.data);
+            axios
+                .get(`${URL_ADMIN}/controle-ponto/perimetros/${perimetro.id}/editar`)
+                .then((response) => {
+                    this.formPerimetro.preload = false
+                    Object.assign(this.formPerimetro, response.data)
                     if (!this.preloadGoogleMaps) {
-                        this.initMap();
+                        this.initMap()
                     }
-                }).catch(error => {
-                this.formPerimetro.preload = false;
-            });
-
-
+                })
+                .catch((error) => {
+                    this.formPerimetro.preload = false
+                })
         },
-        salvarPerimetro(){
-            $('#janelaFormPerimetro :input:visible:enabled').trigger('blur');
+        salvarPerimetro() {
+            $('#janelaFormPerimetro :input:visible:enabled').trigger('blur')
             if ($('#janelaFormPerimetro :input:visible:enabled.is-invalid').length) {
-                alert('Verificar os erros');
-                return false;
+                alert('Verificar os erros')
+                return false
             }
 
-            this.formPerimetro.preload = true;
-            if(this.formPerimetro.editando){
-                axios.put(`${URL_ADMIN}/controle-ponto/perimetros/${this.formPerimetro.id}`, this.formPerimetro)
-                    .then(response => {
-                        this.formPerimetro.preload = false;
-                        this.formPerimetro.save = true;
-                        this.atualizarListaPeriemetros();
-                        this.atualizarListaFuncionarios();
-
-                    }).catch(error => {
-                    this.formPerimetro.preload = false;
-                    this.atualizarListaPeriemetros();
-                    this.atualizarListaFuncionarios();
-                });
-            }else{
-                axios.post(`${URL_ADMIN}/controle-ponto/perimetros`, this.formPerimetro)
-                    .then(response => {
-                        this.formPerimetro.preload = false;
-                        this.formPerimetro.save = true;
-                        this.atualizarListaPeriemetros();
-                        this.atualizarListaFuncionarios();
-
-                    }).catch(error => {
-                    this.formPerimetro.preload = false;
-                    this.atualizarListaPeriemetros();
-                    this.atualizarListaFuncionarios();
-                });
+            this.formPerimetro.preload = true
+            if (this.formPerimetro.editando) {
+                axios
+                    .put(`${URL_ADMIN}/controle-ponto/perimetros/${this.formPerimetro.id}`, this.formPerimetro)
+                    .then((response) => {
+                        this.formPerimetro.preload = false
+                        this.formPerimetro.save = true
+                        this.atualizarListaPeriemetros()
+                        this.atualizarListaFuncionarios()
+                    })
+                    .catch((error) => {
+                        this.formPerimetro.preload = false
+                        this.atualizarListaPeriemetros()
+                        this.atualizarListaFuncionarios()
+                    })
+            } else {
+                axios
+                    .post(`${URL_ADMIN}/controle-ponto/perimetros`, this.formPerimetro)
+                    .then((response) => {
+                        this.formPerimetro.preload = false
+                        this.formPerimetro.save = true
+                        this.atualizarListaPeriemetros()
+                        this.atualizarListaFuncionarios()
+                    })
+                    .catch((error) => {
+                        this.formPerimetro.preload = false
+                        this.atualizarListaPeriemetros()
+                        this.atualizarListaFuncionarios()
+                    })
             }
-
         },
-        formApagarPerimetro(id){
-            this.formPerimetro.id = id;
-            this.formPerimetro.save=false;
+        formApagarPerimetro(id) {
+            this.formPerimetro.id = id
+            this.formPerimetro.save = false
         },
         apagarPerimetro: function () {
+            this.formPerimetro.preload = true
 
-            this.formPerimetro.preload = true;
-
-            axios.delete(`${URL_ADMIN}/controle-ponto/perimetros/${this.formPerimetro.id}`, null)
+            axios
+                .delete(`${URL_ADMIN}/controle-ponto/perimetros/${this.formPerimetro.id}`, null)
                 .then((data) => {
-                    this.formPerimetro.preload = false;
-                    this.formPerimetro.save = true;
-                    this.atualizarListaPeriemetros();
-                    this.atualizarListaFuncionarios();
+                    this.formPerimetro.preload = false
+                    this.formPerimetro.save = true
+                    this.atualizarListaPeriemetros()
+                    this.atualizarListaFuncionarios()
                 })
                 .catch((data) => {
-                    this.formPerimetro.preload = false;
-                    this.atualizarListaPeriemetros();
-                    this.atualizarListaFuncionarios();
-                });
+                    this.formPerimetro.preload = false
+                    this.atualizarListaPeriemetros()
+                    this.atualizarListaFuncionarios()
+                })
         },
         //-----Perimetros a funcionarios------------
 
         carregou(dados) {
-            this.listaFuncionarios = dados;
-            this.controle.carregando = false;
+            this.listaFuncionarios = dados
+            this.controle.carregando = false
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
 
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs.componente.atual = 1
+            this.$refs.componente.buscar()
         },
 
         // atualizarListaFuncionarios() {
@@ -216,58 +215,60 @@ const app = new Vue({
         //     this.$refs.paginacaoFuncionarios.buscar();
         // },
 
-        selecionarTodosFuncionarios(){
-            if(this.todosFuncionariosSelecionados){
-                this.listaFuncionarios.forEach((user)=>{
-                    if(!this.funcionariosSelecionados.includes(user.id)){
-                        this.funcionariosSelecionados.push(user.id);
+        selecionarTodosFuncionarios() {
+            if (this.todosFuncionariosSelecionados) {
+                this.listaFuncionarios.forEach((user) => {
+                    if (!this.funcionariosSelecionados.includes(user.id)) {
+                        this.funcionariosSelecionados.push(user.id)
                     }
-                });
-            }else{
-                this.listaFuncionarios.forEach((user)=>{
-                    let index = this.funcionariosSelecionados.indexOf(user.id);
-                    if(index !== -1){
-                        this.funcionariosSelecionados.splice(index,1);
+                })
+            } else {
+                this.listaFuncionarios.forEach((user) => {
+                    let index = this.funcionariosSelecionados.indexOf(user.id)
+                    if (index !== -1) {
+                        this.funcionariosSelecionados.splice(index, 1)
                     }
-                });
+                })
             }
         },
-        selecionarFuncionario(user){
-            if(!this.funcionariosSelecionados.includes(user.id)){
-                this.funcionariosSelecionados.push(user.id);
-            }else{
-                let index = this.funcionariosSelecionados.indexOf(user.id);
-                if(index !== -1){
-                    this.funcionariosSelecionados.splice(index,1);
+        selecionarFuncionario(user) {
+            if (!this.funcionariosSelecionados.includes(user.id)) {
+                this.funcionariosSelecionados.push(user.id)
+            } else {
+                let index = this.funcionariosSelecionados.indexOf(user.id)
+                if (index !== -1) {
+                    this.funcionariosSelecionados.splice(index, 1)
                 }
             }
-            this.checarMarcarTodosFuncionarios();
+            this.checarMarcarTodosFuncionarios()
         },
 
-        selecionarPerimetro(perimetro){
-            if(!this.formPerimetroFuncionarios.perimetrosSelecionados.includes(perimetro.id)){
-                this.formPerimetroFuncionarios.perimetrosSelecionados.push(perimetro.id);
-            }else{
-                let index = this.formPerimetroFuncionarios.perimetrosSelecionados.indexOf(perimetro.id);
-                if(index !== -1){
-                    this.formPerimetroFuncionarios.perimetrosSelecionados.splice(index,1);
+        selecionarPerimetro(perimetro) {
+            if (!this.formPerimetroFuncionarios.perimetrosSelecionados.includes(perimetro.id)) {
+                this.formPerimetroFuncionarios.perimetrosSelecionados.push(perimetro.id)
+            } else {
+                let index = this.formPerimetroFuncionarios.perimetrosSelecionados.indexOf(perimetro.id)
+                if (index !== -1) {
+                    this.formPerimetroFuncionarios.perimetrosSelecionados.splice(index, 1)
                 }
             }
-            this.checarMarcarTodosFuncionarios();
-            this.formPerimetroFuncionarios.perimetrosSelecionados.length === 0 ? this.formPerimetroFuncionarios.perimetro_id = 0 : this.formPerimetroFuncionarios.perimetro_id = null;
+            this.checarMarcarTodosFuncionarios()
+            this.formPerimetroFuncionarios.perimetrosSelecionados.length === 0
+                ? (this.formPerimetroFuncionarios.perimetro_id = 0)
+                : (this.formPerimetroFuncionarios.perimetro_id = null)
         },
 
-        checarMarcarTodosFuncionarios(){
-            let quantidade = this.listaFuncionarios.length;
-            let marcados = this.listaFuncionarios.filter((funcionario=>this.funcionariosSelecionados.includes(funcionario.id))).length
-            this.todosFuncionariosSelecionados = quantidade===marcados;
+        checarMarcarTodosFuncionarios() {
+            let quantidade = this.listaFuncionarios.length
+            let marcados = this.listaFuncionarios.filter((funcionario) => this.funcionariosSelecionados.includes(funcionario.id)).length
+            this.todosFuncionariosSelecionados = quantidade === marcados
         },
 
-        formAssociarAvaliador(){
-            this.editando = true;
-            this.preload = false;
-            this.form.autocomplete_label_avaliador = '';
-            this.form.avaliadores = [];
+        formAssociarAvaliador() {
+            this.editando = true
+            this.preload = false
+            this.form.autocomplete_label_avaliador = ''
+            this.form.avaliadores = []
             //Get para pegar os Avaliadores qnd for 1
             if (this.funcionariosSelecionados.length === 1) {
                 // axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/`).then(({data}) =>{
@@ -277,10 +278,9 @@ const app = new Vue({
                 // });
             }
 
-            if (this.funcionariosSelecionados.length > 1 ){
-                this.form.avaliadores = [];
+            if (this.funcionariosSelecionados.length > 1) {
+                this.form.avaliadores = []
             }
-
 
             // this.listaPerimetros = _.cloneDeep(this.listaPerimetrosDefault);
             // this.formPerimetroFuncionarios.perimetro_id=0;
@@ -305,27 +305,27 @@ const app = new Vue({
             //
             // this.formPerimetroFuncionarios.update=false;
         },
-        assosicarAvaliadores(){
-            this.formPerimetroFuncionarios.preload = true;
-            axios.put(`${URL_ADMIN}/controle-ponto/perimetros/assosicarPerimetro`,this.formPerimetroFuncionarios)
-                .then(response => {
-                    this.formPerimetroFuncionarios.preload = false;
-                    this.formPerimetroFuncionarios.update = true;
-                    this.atualizarListaFuncionarios();
-                    this.checarMarcarTodosFuncionarios();
-                }).catch(error => {
-                this.formPerimetroFuncionarios.preload = false;
-                this.atualizarListaFuncionarios();
-            });
+        assosicarAvaliadores() {
+            this.formPerimetroFuncionarios.preload = true
+            axios
+                .put(`${URL_ADMIN}/controle-ponto/perimetros/assosicarPerimetro`, this.formPerimetroFuncionarios)
+                .then((response) => {
+                    this.formPerimetroFuncionarios.preload = false
+                    this.formPerimetroFuncionarios.update = true
+                    this.atualizarListaFuncionarios()
+                    this.checarMarcarTodosFuncionarios()
+                })
+                .catch((error) => {
+                    this.formPerimetroFuncionarios.preload = false
+                    this.atualizarListaFuncionarios()
+                })
         },
 
-        resetFuncionariosSelecionados(){
-            if(this.formPerimetroFuncionarios.update){
-                this.formPerimetroFuncionarios.funcionariosSelecionados=[];
-                this.todosFuncionariosSelecionados=false;
+        resetFuncionariosSelecionados() {
+            if (this.formPerimetroFuncionarios.update) {
+                this.formPerimetroFuncionarios.funcionariosSelecionados = []
+                this.todosFuncionariosSelecionados = false
             }
-        },
-
-
+        }
     }
-});
+})

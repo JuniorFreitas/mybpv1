@@ -40,6 +40,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResultado whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResultado whereTermino($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResultado whereTopicoId($value)
+ * @property bool $tipo_pj
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoResultado whereTipoPj($value)
  * @mixin \Eloquent
  */
 class AvaliacaoResultado extends Model
@@ -75,6 +77,7 @@ class AvaliacaoResultado extends Model
         'termino',
         'status',
         'dados_extras',
+        'tipo_pj'
     ];
 
     protected $casts = [
@@ -89,6 +92,7 @@ class AvaliacaoResultado extends Model
         'termino' => 'string',
         'status' => 'string',
         'dados_extras' => 'json',
+        'tipo_pj' => 'boolean'
     ];
 
     public $timestamps = false;

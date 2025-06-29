@@ -25,6 +25,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAvaliadoresTipos whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAvaliadoresTipos whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAvaliadoresTipos whereLabel($value)
+ * @property bool $tipo_pj
+ * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoAvaliadoresTipos whereTipoPj($value)
  * @mixin \Eloquent
  */
 class AvaliacaoAvaliadoresTipos extends Model
@@ -54,6 +56,7 @@ class AvaliacaoAvaliadoresTipos extends Model
         'label',
         'descricao',
         'ativo',
+        'tipo_pj'
     ];
 
     protected $casts = [
@@ -62,5 +65,6 @@ class AvaliacaoAvaliadoresTipos extends Model
         'label' => 'string',
         'descricao' => 'string',
         'ativo' => 'boolean',
+        'tipo_pj' => 'boolean'
     ];
 }

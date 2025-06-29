@@ -322,9 +322,21 @@ class AvaliadorController extends Controller
 
         $porPagina = $request->get('porPagina');
 
+        // AJUSTE AQUI - Busca em múltiplos campos
         if ($request->filled('campoBusca')) {
             $busca = $request->get('campoBusca');
-            $resultado->where('nome', 'like', '%' . $busca . '%');
+            $resultado->where(function ($query) use ($busca) {
+                $query->where('nome', 'like', '%' . $busca . '%')
+                    ->orWhereHas('Curriculo', function ($q) use ($busca) {
+                        // Buscar em campos do Curriculo - ajuste os nomes dos campos conforme necessário
+                        $q->where('nome', 'like', '%' . $busca . '%');
+                    })
+                    ->orWhereHas('Fornecedor', function ($q) use ($busca) {
+                        // Buscar em campos do Fornecedor - ajuste os nomes dos campos conforme necessário
+                        $q->where('nome', 'like', '%' . $busca . '%')
+                            ->orWhere('razao_social', 'like', '%' . $busca . '%');
+                    });
+            });
         }
 
         if ($request->filled('campoVinculados')) {
@@ -354,7 +366,6 @@ class AvaliadorController extends Controller
             $item->avaliadores = $avaliadores;
             return $item;
         });
-
 
         return response()->json([
             'atual' => $resultado->currentPage(),

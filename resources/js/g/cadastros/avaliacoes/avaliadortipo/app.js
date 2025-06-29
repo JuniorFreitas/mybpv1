@@ -1,9 +1,9 @@
-import avaliadortipo from "../../../../components/cadastros/avaliacoes/avaliadortipo";
+import avaliadortipo from '../../../../components/cadastros/avaliacoes/avaliadortipo'
 
 const app = new Vue({
     el: '#app',
-    data: {},
     components: {
-        avaliadortipo,
+        avaliadortipo
     },
+    data: {}
 })

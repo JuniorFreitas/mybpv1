@@ -64,10 +64,11 @@ class AvaliacaoTopico extends Model
         'topico_pai_id',
         'topico',
         'topico_explicacao',
-        'ativo'
+        'ativo',
+        'tipo_pj'
     ];
 
-    protected $casts = ['id' => 'int', 'avaliacao_tipo_id' => 'int', 'topico_pai_id' => 'string', 'topico' => 'string', 'topico_explicacao' => 'string', 'empresa_id' => 'int', 'ativo' => 'boolean'];
+    protected $casts = ['id' => 'int', 'avaliacao_tipo_id' => 'int', 'topico_pai_id' => 'string', 'topico' => 'string', 'topico_explicacao' => 'string', 'empresa_id' => 'int', 'ativo' => 'boolean', 'tipo_pj' => 'boolean'];
 
     public $timestamps = false;
 

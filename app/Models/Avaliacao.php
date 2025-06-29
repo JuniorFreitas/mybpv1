@@ -44,6 +44,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereFluxo($value)
  * @property int $ano_avaliacao Ano da avaliação
  * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereAnoAvaliacao($value)
+ * @property bool $tipo_pj
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AvaliacaoFeedback> $AvaliacaoFeedbacks
+ * @property-read int|null $avaliacao_feedbacks_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Avaliacao whereTipoPj($value)
  * @mixin \Eloquent
  */
 class Avaliacao extends Model
@@ -78,7 +82,8 @@ class Avaliacao extends Model
         'status',
         'ativo',
         'auto_avaliacao',
-        'fluxo'
+        'fluxo',
+        'tipo_pj'
     ];
 
     protected $casts = [
@@ -92,7 +97,8 @@ class Avaliacao extends Model
         'status' => 'string',
         'ativo' => 'boolean',
         'auto_avaliacao' => 'boolean',
-        'fluxo' => 'json'
+        'fluxo' => 'json',
+        'tipo_pj' => 'boolean'
     ];
 
     public $timestamps = false;
@@ -161,7 +167,7 @@ class Avaliacao extends Model
         $empresaId = $this->getEmpresaId($empresaId);
         $cache_key = "lista_av_grp_ano_{$empresaId}";
 
-        cache()->forget($cache_key);
+//        cache()->forget($cache_key);
 
         if (!$empresaId) {
             return response()->json(['msg' => 'Empresa não informada'], 400);
@@ -179,6 +185,7 @@ class Avaliacao extends Model
                 'status',
                 'ativo',
                 'auto_avaliacao',
+                'tipo_pj'
             ])->with('AvaliacaoTipo')
                 ->get()
                 ->groupBy('ano_avaliacao');
