@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
@@ -77,7 +78,15 @@ class Fornecedor extends Model
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
 
-    protected $table = 'fornecedores';
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = "";
+    }
 
     protected $fillable = [
         'empresa_id',
@@ -179,9 +188,5 @@ class Fornecedor extends Model
         });
     }
 
-    // Activity Log
-    public function getDescriptionForEvent(string $eventName): string
-    {
-        return $eventName;
-    }
+
 }
