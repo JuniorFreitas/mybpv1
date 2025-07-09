@@ -88,6 +88,8 @@ class Fornecedor extends Model
         $activity->descricao = "";
     }
 
+    protected $table = 'fornecedores';
+
     protected $fillable = [
         'empresa_id',
         'tipo',
