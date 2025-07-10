@@ -86,9 +86,9 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
-                                        <div class="form-group"
-                                             v-if="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_JURIDICA}}'">
+                                    <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
+                                         v-show="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_JURIDICA}}'">
+                                        <div class="form-group">
                                             <label>CNPJ</label>
                                             <input type="text" id="cnpj" class="form-control" placeholder="CNPJ"
                                                    v-model="form.cnpj" :disabled="editando" autocomplete="mastertag"
@@ -96,9 +96,11 @@
                                                    @blur="verificaCnpj"
                                                    v-mascara:cnpj>
                                         </div>
+                                    </div>
 
-                                        <div class="form-group"
-                                             v-if="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_FISICA}}'">
+                                    <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
+                                         v-show="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_FISICA}}'">
+                                        <div class="form-group">
                                             <label>CPF</label>
                                             <input type="text" class="form-control" placeholder="CPF"
                                                    v-model="form.cpf" :disabled="editando" autocomplete="mastertag"
