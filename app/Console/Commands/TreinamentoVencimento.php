@@ -50,7 +50,7 @@ class TreinamentoVencimento extends Command
         foreach ($empresas as $empresa) {
             $this->processarEmpresa($empresa);
             $empresasProcessadas++;
-            
+
             // Limpeza de memória a cada empresa (importante no Docker)
             if ($empresasProcessadas % 5 === 0) {
                 gc_collect_cycles();
@@ -64,7 +64,7 @@ class TreinamentoVencimento extends Command
         $this->info("Tempo total: " . number_format($tempoTotal, 2) . " segundos");
         $this->info("Memória pico: " . $this->formatBytes(memory_get_peak_usage(true)));
         $this->info("Verificação de treinamentos concluída!");
-        
+
         return 0;
     }
 
@@ -637,37 +637,37 @@ class TreinamentoVencimento extends Command
     {
         // Configurar locale para garantir encoding correto
         mb_internal_encoding('UTF-8');
-        
+
         // Construir CSV como string para ter controle total da codificação
         $csv = '';
-        
+
         // Adicionar BOM UTF-8 para garantir que o Excel reconheça a codificação
         $csv .= "\xEF\xBB\xBF";
-        
+
         // Adicionar comando SEP para forçar o Excel a usar ponto e vírgula como separador
         $csv .= "sep=;\n";
 
         // Cabeçalho
         $cabecalho = [
-            'Funcionário', 'Cargo', 'Função', 'Data de Admissão', 'Centro de custo', 
+            'Funcionário', 'Cargo', 'Função', 'Data de Admissão', 'Centro de custo',
             'Número do Crachá', 'Treinamento', 'Data Treinamento',
             'Data Vencimento', 'Dias para Vencer', 'Status'
         ];
         $csv .= $this->arrayParaLinhaCSV($cabecalho);
 
         $totalLinhas = 0;
-        
+
         // Dados - processamento otimizado para Docker
         foreach ($treinamentosAgrupados as $funcionarios) {
             foreach ($funcionarios as $funcionario) {
                 $funcionarioData = $funcionario['funcionario'];
-                
+
                 foreach ($funcionario['treinamentos'] as $treinamento) {
                     // Pré-processar dados uma única vez
                     $dataAdmissao = $funcionarioData['data_admissao'] ?? '';
                     $datatreinamento = $treinamento['data_treinamento'] ? date('d/m/Y', strtotime($treinamento['data_treinamento'])) : '';
                     $dataVencimento = $treinamento['data_vencimento'] ? date('d/m/Y', strtotime($treinamento['data_vencimento'])) : '';
-                    
+
                     $dados = [
                         $this->garantirUTF8($funcionarioData['nome']),
                         $this->garantirUTF8($funcionarioData['cargo']),
@@ -681,10 +681,10 @@ class TreinamentoVencimento extends Command
                         $treinamento['dias_vencer'],
                         $this->garantirUTF8($treinamento['status_texto'])
                     ];
-                    
+
                     $csv .= $this->arrayParaLinhaCSV($dados);
                     $totalLinhas++;
-                    
+
                     // Limpeza de memória a cada 1000 linhas (otimização Docker)
                     if ($totalLinhas % 1000 === 0) {
                         $this->info("Processadas {$totalLinhas} linhas do CSV...");
@@ -694,7 +694,7 @@ class TreinamentoVencimento extends Command
         }
 
         $this->info("CSV gerado com {$totalLinhas} linhas de dados");
-        
+
         // Garantir que todo o conteúdo está em UTF-8
         return mb_convert_encoding($csv, 'UTF-8', 'UTF-8');
     }
@@ -707,22 +707,22 @@ class TreinamentoVencimento extends Command
         if (is_null($texto) || $texto === '') {
             return '';
         }
-        
+
         // Detectar encoding atual e converter para UTF-8 se necessário
         $encoding = mb_detect_encoding($texto, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
         if ($encoding !== 'UTF-8') {
             $texto = mb_convert_encoding($texto, 'UTF-8', $encoding);
         }
-        
+
         // Remove quebras de linha e caracteres especiais que podem quebrar o CSV
         $texto = str_replace(["\r", "\n", "\t"], ' ', $texto);
-        
+
         // Remove espaços extras
         $texto = preg_replace('/\s+/', ' ', $texto);
-        
+
         // Garantir que está em UTF-8 válido
         $texto = mb_convert_encoding($texto, 'UTF-8', 'UTF-8');
-        
+
         return trim($texto);
     }
 
@@ -733,28 +733,28 @@ class TreinamentoVencimento extends Command
     {
         $linha = '';
         $primeiroItem = true;
-        
+
         foreach ($dados as $campo) {
             if (!$primeiroItem) {
                 $linha .= ';';
             }
-            
+
             // Converter para string e garantir UTF-8
-            $campo = (string) $campo;
+            $campo = (string)$campo;
             $campo = $this->garantirUTF8($campo);
-            
+
             // Escapar aspas duplas
             $campo = str_replace('"', '""', $campo);
-            
+
             // Adicionar aspas se contém separador ou quebra de linha
             if (strpos($campo, ';') !== false || strpos($campo, '"') !== false || strpos($campo, "\n") !== false) {
                 $campo = '"' . $campo . '"';
             }
-            
+
             $linha .= $campo;
             $primeiroItem = false;
         }
-        
+
         return $linha . "\n";
     }
 
@@ -799,11 +799,11 @@ class TreinamentoVencimento extends Command
     private function formatBytes(int $bytes, int $precision = 2): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
-        
+
         return round($bytes, $precision) . ' ' . $units[$i];
     }
 }

@@ -10,6 +10,7 @@ use App\Models\ClienteConfig;
 use App\Models\FeedbackCurriculo;
 use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
+use App\Models\Sistema;
 use App\Models\Treinamento;
 use App\Models\Vencimento;
 use Illuminate\Http\Request;
@@ -799,9 +800,27 @@ class TreinamentoController extends Controller
     public function carteiraPdf(Request $request)
     {
         //ToDo: Melhoria ajustar query para trazer apenas os dados necessários
-        $telefone_supervisor = ClienteConfig::where('cliente_id', auth()->user()->empresa_id)->first()->supervisor_etiqueta_bloqueio;
-        $treinamentos = Treinamento::whereIn('feedback_id', $request->selecionados)
-            ->get()->transform(function ($item) use ($telefone_supervisor) {
+        $tipo = $request->tipo;
+        $telefone_supervisor = ClienteConfig::select(['id', 'supervisor_etiqueta_bloqueio', 'cliente_id'])
+            ->where('cliente_id', auth()->user()->empresa_id)
+            ->first()
+            ->supervisor_etiqueta_bloqueio;
+
+        $treinamentos = Treinamento::select([
+            'id',
+            'feedback_id',
+            'tipo',
+        ])->whereIn('feedback_id', $request->selecionados)
+            ->with(['FeedbackCurriculo:id,curriculo_id,cliente_id,empresa_id',
+                'FeedbackCurriculo.Empresa:id,razao_social,nome_fantasia,cnpj',
+                'FeedbackCurriculo.Empresa.Logo:id,nome,file,disco',
+                'FeedbackCurriculo.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
+                'FeedbackCurriculo.Curriculo.FotoTres:id,nome,file,disco',
+                'FeedbackCurriculo.Admissao:id,feedback_id,numero_cracha,cargo,usa_lentes_corretivas',
+                'Vencimentos'
+            ])
+            ->get()
+            ->transform(function ($item) use ($telefone_supervisor) {
                 $telefone = "";
                 if ($item->FeedbackCurriculo->Admissao) {
                     $telefone = $telefone_supervisor ? Admissao::getNumeroSupervisor($item->FeedbackCurriculo->empresa_id, $item->FeedbackCurriculo->Admissao->area_etiqueta_id) : \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id, false);
@@ -809,9 +828,12 @@ class TreinamentoController extends Controller
 
                 $item->telefone = $telefone;
                 return $item;
-            });
+            })->toArray();
 
-        return view('pdf.treinamento.carteira.pdf', compact('treinamentos'));
+        $empresa = Sistema::getEmpresa(auth()->user()->empresa_id);
+
+//        return $treinamentos->toArray();
+        return view('pdf.treinamento.carteira.pdf', compact('treinamentos', 'tipo', 'empresa'));
     }
 
     public function enviarCarteiraEmail(Request $request)
@@ -904,5 +926,5 @@ class TreinamentoController extends Controller
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
     }
-    
+
 }
