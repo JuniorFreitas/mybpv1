@@ -73,6 +73,8 @@ class TreinamentoVencimento extends Pivot
         'arquivo_id' => 'int',
     ];
 
+    protected $appends = ['data_vencimento_default', 'data_treinamento_default'];
+
     public $timestamps = false;
 
     protected function serializeDate(DateTimeInterface $date)
@@ -99,6 +101,17 @@ class TreinamentoVencimento extends Pivot
             $this->attributes['data_vencimento'] = null;
         }
     }
+
+    public function getDataVencimentoDefaultAttribute()
+    {
+        return $this->attributes['data_vencimento'];
+    }
+
+    public function getDataTreinamentoDefaultAttribute()
+    {
+        return $this->attributes['data_treinamento'];
+    }
+
 
     public function getDataTreinamentoAttribute($value)
     {

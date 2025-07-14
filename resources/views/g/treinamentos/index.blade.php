@@ -1081,15 +1081,66 @@
                     Atualizar
                 </button>
 
-                <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post">
-                    @csrf
-                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
-                    <button type="submit" class="btn btn-sm btn-primary mr-1"
+                {{--                <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post">--}}
+                {{--                    @csrf--}}
+                {{--                    <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
+                {{--                    <button type="submit" class="btn btn-sm btn-primary mr-1"--}}
+                {{--                            :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"--}}
+                {{--                            :disabled="!selecionados.length">--}}
+                {{--                        Gerar Carteira <span class="badge badge-light">@{{ selecionados.length }}</span>--}}
+                {{--                    </button>--}}
+                {{--                </form>--}}
+
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-primary dropdown-toggle mr-1"
+                            type="button"
+                            id="dropdownCarteira"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
                             :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="!selecionados.length">
                         Gerar Carteira <span class="badge badge-light">@{{ selecionados.length }}</span>
                     </button>
-                </form>
+
+                    <div class="dropdown-menu" aria-labelledby="dropdownCarteira">
+                        <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post"
+                              style="display: inline;">
+                            @csrf
+                            <input type="hidden" name="tipo" value="treinamento">
+                            <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
+                            <button type="submit"
+                                    class="dropdown-item"
+                                    :disabled="!selecionados.length">
+                                <i class="fas fa-graduation-cap mr-2"></i>Treinamento
+                            </button>
+                        </form>
+
+                        <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post"
+                              style="display: inline;">
+                            @csrf
+                            <input type="hidden" name="tipo" value="bloqueio">
+                            <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
+                            <button type="submit"
+                                    class="dropdown-item"
+                                    :disabled="!selecionados.length">
+                                <i class="fas fa-ban mr-2"></i>Bloqueio
+                            </button>
+                        </form>
+
+                        <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post"
+                              style="display: inline;">
+                            @csrf
+                            <input type="hidden" name="tipo" value="treinamento_bloqueio">
+                            <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
+                            <button type="submit"
+                                    class="dropdown-item"
+                                    :disabled="!selecionados.length">
+                                <i class="fas fa-list mr-2"></i>Treinamento/Bloqueio
+                            </button>
+                        </form>
+                    </div>
+                </div>
 
                 <button class="btn btn-sm btn-danger mb-1 mr-1"
                         :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
@@ -1278,6 +1329,7 @@
                                     <th>Treinamento</th>
                                     <th>Data Treinamento</th>
                                     <th>Data Vencimento</th>
+                                    <th>Anexo FAT</th>
                                     <th>Status</th>
                                     <th>Exibi na Carteira</th>
                                 </tr>
@@ -1289,6 +1341,10 @@
                                     <td>@{{ v.label }}</td>
                                     <td>@{{ v.pivot.data_treinamento }}</td>
                                     <td>@{{ v.pivot.data_vencimento }}</td>
+                                    <td>
+                                        <i class="fa fa-paperclip" v-show="v.pivot.arquivo_id"></i>
+                                        <i class="fa fa-minus" v-show="!v.pivot.arquivo_id"></i>
+                                    </td>
                                     <td>
                                     <span class="badge" :class="v.pivot.status.badge">
                                         @{{ v.pivot.status.label }}

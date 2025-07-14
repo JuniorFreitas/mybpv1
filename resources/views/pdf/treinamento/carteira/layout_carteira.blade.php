@@ -18,75 +18,44 @@
         }
 
         @page {
-            margin: 0cm 0cm;
-            margin-top: 10px;
-            margin-left: 30px;
+            margin: 0;
         }
 
+        * {
+            box-sizing: border-box;
+        }
 
-        /** Define now the real margins of every page in the PDF **/
-        /*body {*/
-        /*    width: 21cm;*/
-        /*    height: 29.70cm;*/
-        /*    margin-top: .5cm;*/
-        /*    margin-left: .5cm;*/
-        /*    margin-right: .5cm;*/
-        /*    margin-bottom: .5cm;*/
-        /*    font-family: 'Arial', sans-serif;*/
-        /*    -webkit-print-color-adjust: exact;*/
-        /*}*/
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
 
-        /*.a4 {*/
-        /*    !*width: 21cm;*!*/
-        /*    !*height: 29.70cm;*!*/
-        /*    !*margin-top: .5cm;*!*/
-        /*    !*margin-left: .5cm;*!*/
-        /*    !*margin-right: .5cm;*!*/
-        /*    !*margin-bottom: .5cm;*!*/
-        /*}*/
+        @media print {
+            #printPageButton, .observacao {
+                display: none;
+            }
 
-        /*tr {*/
-        /*    font-size: 4.7pt;*/
-        /*}*/
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
 
-        /*td {*/
-        /*    border: 0.01mm solid black;*/
-        /*    padding: 0.2mm;*/
-        /*}*/
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
 
-        /*.container {*/
-        /*    display: flex;*/
-        /*    background-color: #cdf6eb;*/
-        /*    margin: 10px auto 30px;*/
-        /*    max-width: 500px;*/
-        /*    font-family: sans-serif;*/
-        /*}*/
+            /* Força margem específica no container principal das carteiras */
+            div[style*="padding: 20px"] {
+                margin: 10px 0 0 30px !important;
+                padding: 20px 0 0 0 !important;
+            }
 
-        /*.nowrap {*/
-        /*    flex-wrap: nowrap;*/
-        /*}*/
-
-        /*.wrap {*/
-        /*    flex-wrap: wrap;*/
-        /*}*/
-
-        /*.wrap-reverse {*/
-        /*    flex-wrap: wrap-reverse;*/
-        /*}*/
-
-        /*.container div {*/
-        /*    background: #028082;*/
-        /*    margin: 8px 4px;*/
-        /*    width: 80px;*/
-        /*    height: 80px;*/
-        /*    font-size: 1em;*/
-        /*    color: #fff;*/
-        /*    !* as proriedades a partir daqui alinham o texto no centro *!*/
-        /*    display: flex;*/
-        /*    text-align: center;*/
-        /*    justify-content: center;*/
-        /*    align-items: center;*/
-        /*}*/
+            /* Força margem nas tabelas individuais */
+            table {
+                margin-left: 0 !important;
+            }
+        }
 
         h4 {
             margin: 20px 0 0 20px;
@@ -122,8 +91,6 @@
             #printPageButton, .observacao {
                 display: none;
             }
-
-
         }
 
         .etiqueta {
