@@ -816,7 +816,7 @@ class TreinamentoController extends Controller
                 'FeedbackCurriculo.Empresa.Logo:id,nome,file,disco',
                 'FeedbackCurriculo.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
                 'FeedbackCurriculo.Curriculo.FotoTres:id,nome,file,disco',
-                'FeedbackCurriculo.Admissao:id,feedback_id,numero_cracha,cargo,usa_lentes_corretivas',
+                'FeedbackCurriculo.Admissao:id,feedback_id,numero_cracha,cargo,usa_lentes_corretivas,area_etiqueta_id',
                 'Vencimentos'
             ])
             ->get()
