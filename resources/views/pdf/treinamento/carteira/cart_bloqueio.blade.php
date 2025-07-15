@@ -61,28 +61,28 @@
                 <h5 style="font-size: 13pt; font-weight: bold; color: red; margin-top: 0.2cm; margin-bottom: 0.2cm;">
                     RAMAL DE EMERGÊNCIA: 1199
                 </h5>
-                <h6 style="margin-top: 5px; font-size: 10.5pt;">
+                <h6 style="margin-top: 5px; font-size: 10pt;">
                     NOME: <strong>
                         {{ mb_strtoupper($treinamento['feedback_curriculo']['curriculo']['nome']) }}
                     </strong>
                 </h6>
-                <h6 style="margin-top: 5px; font-size: 10.5pt;">
+                <h6 style="margin-top: 5px; font-size: 10pt;">
                     CHAPA/ID: <strong>
                         {{ mb_strtoupper($treinamento['feedback_curriculo']['admissao'] ? $treinamento['feedback_curriculo']['admissao']['numero_cracha'] : null) }}
                     </strong>
                 </h6>
-                <h6 style="margin-top: 5px; font-size: 10.5pt;">AREA/EMPRESA:
+                <h6 style="margin-top: 5px; font-size: 10pt;">AREA/EMPRESA:
                     <strong>
                             <span style="color: #0e6fb6 !important">
                             {{ $treinamento['feedback_curriculo']['empresa']['nome_fantasia'] }}
                             </span>
                     </strong>
                 </h6>
-                <h6 style="margin-top: 5px; font-size: 10.5pt;">
+                <h6 style="margin-top: 5px; font-size: 10pt;">
                     FONE/RAMAL:
                     <strong>{{ $treinamento['telefone'] ?? "Não Informado" }}</strong>
                 </h6>
-                <h6 style="margin-top: 5px;font-size: 10.5pt;">DATA:
+                <h6 style="margin-top: 5px;font-size: 10pt;">DATA:
                     <strong>
                                 <span style=" color: #0e6fb6 !important">
                                     PERMANENTE
