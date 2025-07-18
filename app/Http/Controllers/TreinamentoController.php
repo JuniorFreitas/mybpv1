@@ -12,7 +12,9 @@ use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
 use App\Models\Treinamento;
+use App\Models\TreinamentoVencimentoHistorico;
 use App\Models\Vencimento;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Mail;
@@ -41,104 +43,168 @@ class TreinamentoController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return JsonResponse
+     * @throws \Throwable
      */
     public function store(Request $request)
     {
         $dados = $request->input();
         $dados['cadastrou'] = auth()->id();
-        $exame = $dados['exame'];
 
         try {
             DB::beginTransaction();
-//            if ($exame['exame_realizado']){
-////                return
-//                $exame['user_id'] = auth()->id();
-//                $exameTreinamento = ExameTreinamento::whereFeedbackId($exame['feedback_id']);
-//
-//                if ($exameTreinamento->count() == 0){
-//                    ExameTreinamento::create($exame);
-//                }else{
-//                    $exameTreinamento->update($exame);
-//                }
-//            }
 
+            // Usar referência para Collection grande
             $listaVencimentos = collect($dados['listaVencimentos'])->filter(function ($item) {
                 return $item['fez_treinamento'];
             });
 
-            if (isset($dados['id'])) {
+            $isUpdate = isset($dados['id']);
+
+            if ($isUpdate) {
                 $this->authorize('treinamento_carteira-etiquetas_update');
                 $treinamento = Treinamento::find($dados['id']);
 
-                // retirando envio de e-mail ao atualizar
-                unset($dados['enviado_email']);
-                unset($dados['email_aberto']);
-                unset($dados['data_email_aberto']);
-                unset($dados['data_envio']);
-
+                unset($dados['enviado_email'], $dados['email_aberto'], $dados['data_email_aberto'], $dados['data_envio']);
                 $treinamento->update($dados);
-                $treinamento->Vencimentos()->detach();
 
+                // Usar sync([]) é mais eficiente que detach() + attach()
+                $treinamento->Vencimentos()->sync([]);
             } else {
                 $this->authorize('treinamento_carteira-etiquetas_insert');
                 $treinamento = Treinamento::create($dados);
             }
 
-
-            foreach ($listaVencimentos as $lista) {
-                $dataHora = new DataHora($lista['data_treinamento']);
-                $dataTreinamento = $dataHora->dataInsert();
-
-                if ($dados['tipo'] == 'Parada') {
-                    $dataVencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
-                } else {
-                    $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
-                }
-
-                if (isset($lista['arquivoDel'])) {
-                    foreach ($lista['arquivoDel'] as $id_anexo) {
-                        $arquivo = Arquivo::find($id_anexo);
-                        $arquivo->update([
-                            'temporario' => true,
-                            'chave' => \Str::uuid(),
-                        ]);
-                    }
-                }
-
-                if (isset($lista['arquivo'][0]) && $lista['arquivo'][0]['temporario'] && strlen($lista['arquivo'][0]['chave']) > 0 && !$lista['arquivo'][0]['falhou']) {
-                    $arquivo = Arquivo::find($lista['arquivo'][0]['id']);
-                    if ($arquivo) {
-                        $arquivo->update([
-                            'chave' => '',
-                            'nome' => $lista['arquivo'][0]['nome'],
-                            'temporario' => false,
-                        ]);
-                    }
-                }
-
-                $treinamento->Vencimentos()->attach($lista['id'], [
-                    'data_treinamento' => $dataTreinamento,
-                    'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
-                    'numero_fat' => $lista['numero_fat'],
-                    'arquivo_id' => isset($lista['arquivo'][0]) ? $lista['arquivo'][0]['id'] : null
-                ]);
-            }
+            // Passa Collection por referência para evitar cópia
+            $this->processarVencimentos($treinamento, $listaVencimentos, $dados['tipo']);
+            $this->salvarHistorico($dados['feedback_id'], $treinamento->id);
 
             DB::commit();
-
             return response()->json([], 201);
+
         } catch (\Exception $e) {
             DB::rollback();
 
-            $msg = "error Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
+            $msg = "error Treinamento: {$e->getMessage()}, {$e->getCode()}, {$e->getLine()}, USUARIO: " . auth()->user()->nome;
 
             \Log::debug($msg);
-            return response()->json(['msg' => 'Não foi possivel realizar o cadastro'], 400);
+            return response()->json(['msg' => 'Não foi possivel realizar o cadastro dos treinamentos'], 400);
         }
+    }
+
+    /**
+     * Usar referência para Collection evita cópia desnecessária
+     * @param Treinamento $treinamento
+     * @param Collection &$listaVencimentos - REFERÊNCIA
+     * @param string $tipo
+     * @return void
+     */
+    private function processarVencimentos(Treinamento $treinamento, \Illuminate\Support\Collection &$listaVencimentos, string $tipo): void
+    {
+        // Preparar dados em lote para insert mais eficiente
+        $dadosParaAnexar = [];
+
+        foreach ($listaVencimentos as &$lista) { // Referência no foreach
+            $dataHora = new DataHora($lista['data_treinamento']);
+            $dataTreinamento = $dataHora->dataInsert();
+
+            $dataVencimento = $lista['prazo_fixo']
+                ? $dataHora->addDia($lista['prazo_fixo'])
+                : $lista['data_vencimento'];
+
+            if ($tipo === 'Parada') {
+                $dataVencimento = $lista['prazo_parada']
+                    ? $dataHora->addDia($lista['prazo_parada'])
+                    : $lista['data_vencimento'];
+            }
+
+            $this->processarArquivosDeletar($lista);
+            $arquivoId = $this->processarArquivoPrincipal($lista);
+
+            // Acumula dados para insert em lote
+            $dadosParaAnexar[$lista['id']] = [
+                'data_treinamento' => $dataTreinamento,
+                'data_vencimento' => (new DataHora($dataVencimento))->dataInsert(),
+                'numero_fat' => $lista['numero_fat'],
+                'arquivo_id' => $arquivoId
+            ];
+        }
+
+        // Insert em lote - MUITO mais eficiente
+        if (!empty($dadosParaAnexar)) {
+            $treinamento->Vencimentos()->attach($dadosParaAnexar);
+        }
+    }
+
+    /**
+     * Usar referência para array evita cópia
+     * @param array &$lista - REFERÊNCIA
+     * @return void
+     */
+    private function processarArquivosDeletar(array &$lista): void
+    {
+        if (!isset($lista['arquivoDel'])) {
+            return;
+        }
+
+        // Usar whereIn para update em lote
+        $idsParaDeletar = $lista['arquivoDel'];
+
+        if (!empty($idsParaDeletar)) {
+            Arquivo::whereIn('id', $idsParaDeletar)
+                ->update([
+                    'temporario' => true,
+                    'chave' => \Str::uuid(),
+                ]);
+        }
+    }
+
+    /**
+     * Usar referência para array
+     * @param array &$lista - REFERÊNCIA
+     * @return int|null
+     */
+    private function processarArquivoPrincipal(array &$lista): ?int
+    {
+        if (!isset($lista['arquivo'][0]) ||
+            !$lista['arquivo'][0]['temporario'] ||
+            strlen($lista['arquivo'][0]['chave']) === 0 ||
+            $lista['arquivo'][0]['falhou']) {
+
+            return $lista['arquivo'][0]['id'] ?? null;
+        }
+
+        $arquivo = Arquivo::find($lista['arquivo'][0]['id']);
+        if ($arquivo) {
+            $arquivo->update([
+                'chave' => '',
+                'nome' => $lista['arquivo'][0]['nome'],
+                'temporario' => false,
+            ]);
+        }
+
+        return $lista['arquivo'][0]['id'];
+    }
+
+    /**
+     * Usar eager loading para evitar N+1
+     * @param int $feedbackId
+     * @param int $treinamentoId
+     * @return void
+     */
+    private function salvarHistorico(int $feedbackId, int $treinamentoId): void
+    {
+        // Usar with() para eager loading - evita query N+1
+        $treinamento = Treinamento::with('Vencimentos')->find($treinamentoId);
+
+        TreinamentoVencimentoHistorico::create([
+            'feedback_id' => $feedbackId,
+            'empresa_id' => auth()->user()->empresa_id,
+            'treinamento_id' => $treinamentoId,
+            'user_id' => auth()->id(),
+            'treinamentos_vencimentos' => $treinamento->Vencimentos
+        ]);
     }
 
     public function storeMassa(Request $request)
