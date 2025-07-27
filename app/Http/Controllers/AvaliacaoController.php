@@ -161,7 +161,6 @@ class AvaliacaoController extends Controller
             $msg = "error UPDATE AVALIAÇÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
             Sistema::LogFormatado($dados);
-            return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
@@ -680,6 +679,10 @@ class AvaliacaoController extends Controller
             if ($feedbackCurriculo->Admissao) {
                 $dadosEmpresa = Sistema::getEmpresaFilialMatriz($feedbackCurriculo->Admissao->centro_custo_filial_id, $feedbackCurriculo->empresa_id);
             }
+        }
+
+        if (!$dadosEmpresa) {
+            $dadosEmpresa = Sistema::getEmpresa(auth()->user()->empresa_id);
         }
 
         $total_questoes = collect($result_topico_agrupado)->collapse()->count();

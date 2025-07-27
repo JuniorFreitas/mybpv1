@@ -7,7 +7,8 @@
                     src="{{ $dados['dados_empresa']['logo'] }}"
                     alt="{{$dados['dados_empresa']['razao_social']}}"
                     title="{{$dados['dados_empresa']['razao_social']}}"
-                    style="height: 55px; margin-top: 10px;">
+                    style="height: {{$dados['dados_empresa']['empresa_id'] == 63122 ? '35px' : '55px'}}; margin-top: 10px;"
+                >
                 <br>
             </th>
             <th style="color: black">
