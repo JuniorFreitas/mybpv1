@@ -259,6 +259,7 @@ class AvaliacaoController extends Controller
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
         $lista_avaliacoes = Avaliacao::whereAtivo(true)->orderBy('titulo')->get();
 
+
         $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
 
             $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
@@ -343,7 +344,7 @@ class AvaliacaoController extends Controller
 //                $query->ativoNaoExcluido();
 //            })->whereAvaliadorId(auth()->user()->id);
 
-        $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'Funcionario:id,nome,login,temp,ativo,deleted_at', 'Avaliador:id,nome,login')
+        $resultado = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'TipoAvaliador', 'Funcionario:id,nome,login,temp,ativo,deleted_at', 'Avaliador:id,nome,login')
             ->whereHas('Funcionario', function ($query) {
                 $query->ativoNaoExcluido();
             })->whereHas('Avaliador', function ($query) {
