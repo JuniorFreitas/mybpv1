@@ -1,8 +1,8 @@
-import endereco from "../../../components/Endereco"
-import datepicker from "../../../components/DatePicker"
-import DadosPessoais from "../../../components/entrevistas/DadosPessoaisTexto";
-import ExportacaoMixin from "../../../mixins/Exportacoes";
-import Utils from "../../../mixins/Utils";
+import endereco from '../../../components/Endereco'
+import datepicker from '../../../components/DatePicker'
+import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
+import ExportacaoMixin from '../../../mixins/Exportacoes'
+import Utils from '../../../mixins/Utils'
 
 const app = new Vue({
     mixins: [ExportacaoMixin, Utils],
@@ -60,7 +60,7 @@ const app = new Vue({
                 nascimento: '',
                 municipio_id: '',
                 autocomplete_label_municipio_modal: '',
-                autocomplete_label_municipio_modal_anterior: '',
+                autocomplete_label_municipio_modal_anterior: ''
             },
 
             parecer_rota: {
@@ -78,13 +78,13 @@ const app = new Vue({
                 rota_disponivel_outros: '',
                 rota_atende: '',
                 rota_tipo: '',
-                quem_entrevistou: "",
-                bairro_rota: "",
-                ponto_referencia_rota: "",
-                bairro_residencia: "",
-                ponto_referencia_residencia: "",
-                observacao: "",
-            },
+                quem_entrevistou: '',
+                bairro_rota: '',
+                ponto_referencia_rota: '',
+                bairro_residencia: '',
+                ponto_referencia_residencia: '',
+                observacao: ''
+            }
 
         },
 
@@ -114,212 +114,218 @@ const app = new Vue({
                 campoUf: '',
 
                 filtroPeriodo: false,
-                periodo: '',
-            },
-        },
+                periodo: ''
+            }
+        }
     },
     computed: {
         comRota() {
             return this.lista.filter(item => {
-                return item.parecer_rota;
-            });
+                return item.parecer_rota
+            })
         },
         tudoMarcado() {
-            let totalItens = this.comRota.length;
-            let totalEncontrado = 0;
+            let totalItens = this.comRota.length
+            let totalEncontrado = 0
 
             if (totalItens === 0) {
-                return false;
+                return false
             }
 
             this.comRota.forEach(item => {
-                let id = item.curriculo_id;
+                let id = item.curriculo_id
                 if (this.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++;
+                    totalEncontrado++
                     //faz nada
                 } else {
-                    return false;
+                    return false
                 }
-            });
-            let resultado = totalItens === totalEncontrado ? true : false;
-            this.selecionaTudo = resultado;
-            return resultado;
+            })
+            let resultado = totalItens === totalEncontrado ? true : false
+            this.selecionaTudo = resultado
+            return resultado
         }
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
-        this.usuarioAutenticado();
+        this.usuarioAutenticado()
         setTimeout(() => {
-            this.atualizar();
-        },200)
+            this.atualizar()
+        }, 200)
     },
     methods: {
+        paramsExport() {
+            let params = {
+                selecionados: this.selecionados
+            }
+            return _.merge(params, this.controle.dados)
+        },
         /***Campos de Filtros ****/
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = '';
-                this.controle.dados.autocomplete_label = '';
-                this.controle.dados.campoVaga = '';
-                this.$refs.componente.buscar();
+                this.controle.dados.autocomplete_label_anterior = ''
+                this.controle.dados.autocomplete_label = ''
+                this.controle.dados.campoVaga = ''
+                this.$refs.componente.buscar()
             }
         },
         selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id;
-            this.controle.dados.autocomplete_label = obj.label;
-            this.controle.dados.autocomplete_label_anterior = obj.label;
-            this.controle.carregando = true;
+            this.controle.dados.campoVaga = obj.id
+            this.controle.dados.autocomplete_label = obj.label
+            this.controle.dados.autocomplete_label_anterior = obj.label
+            this.controle.carregando = true
             setTimeout(() => {
-                this.$refs.componente.buscar();
-            }, 600);
+                this.$refs.componente.buscar()
+            }, 600)
         },
         resetaCampoCliente() {
             if (this.controle.dados.autocomplete_label_cliente_anterior !== this.controle.dados.autocomplete_label_cliente) {
-                this.controle.dados.autocomplete_label_cliente_anterior = '';
-                this.controle.dados.autocomplete_label_cliente = '';
-                this.controle.dados.campoCliente = '';
-                this.$refs.componente.buscar();
+                this.controle.dados.autocomplete_label_cliente_anterior = ''
+                this.controle.dados.autocomplete_label_cliente = ''
+                this.controle.dados.campoCliente = ''
+                this.$refs.componente.buscar()
             }
         },
         selecionaCliente(obj) {
-            this.controle.dados.campoCliente = obj.id;
-            this.controle.dados.autocomplete_label_cliente = obj.label;
-            this.controle.dados.autocomplete_label_cliente_anterior = obj.label;
-            this.controle.carregando = true;
-            this.controle.carregando = true;
+            this.controle.dados.campoCliente = obj.id
+            this.controle.dados.autocomplete_label_cliente = obj.label
+            this.controle.dados.autocomplete_label_cliente_anterior = obj.label
+            this.controle.carregando = true
+            this.controle.carregando = true
             setTimeout(() => {
-                this.$refs.componente.buscar();
-            }, 600);
+                this.$refs.componente.buscar()
+            }, 600)
         },
         selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo;
+            this.selecionaTudo = !this.selecionaTudo
             if (this.selecionaTudo) {
                 this.comRota.map(item => {
-                    let id = item.id;
+                    let id = item.id
                     if (this.selecionados.indexOf(id) === -1) {
                         this.selecionados.push(id)
                     }
-                });
+                })
             } else {
                 this.comRota.map(item => {
-                    let id = item.id;
-                    let index = this.selecionados.indexOf(id);
+                    let id = item.id
+                    let index = this.selecionados.indexOf(id)
                     if (index >= 0) {
                         this.selecionados.splice(index, 1)
                     }
-                });
+                })
             }
         },
 
         formEntrevistar(id) {
 
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.cadastrando = false;
-            this.visualizar = false;
-            this.editando = false;
+            this.cadastrado = false
+            this.atualizado = false
+            this.cadastrando = false
+            this.visualizar = false
+            this.editando = false
 
-            this.preload = true;
-            this.form = _.cloneDeep(this.formDefault);
-            this.form.id = id;
+            this.preload = true
+            this.form = _.cloneDeep(this.formDefault)
+            this.form.id = id
 
-            formReset();
+            formReset()
             axios.get(`${URL_ADMIN}/entrevistas/parecer-rota/${id}/editar`)
                 .then(response => {
-                    let data = response.data;
-                    Object.assign(this.form, data);
+                    let data = response.data
+                    Object.assign(this.form, data)
 
                     //Se não tiver parecer_rota
-                    this.form.parecer_rota = data.parecer_rota ? data.parecer_rota : _.cloneDeep(this.formDefault.parecer_rota);
-                    this.form.parecer_rota.rota_tipo = lower(data.parecer_rh.tipo_entrevista);
+                    this.form.parecer_rota = data.parecer_rota ? data.parecer_rota : _.cloneDeep(this.formDefault.parecer_rota)
+                    this.form.parecer_rota.rota_tipo = lower(data.parecer_rh.tipo_entrevista)
 
-                    this.tituloJanela = `#${data.feedback.id} Entrevista - ${data.feedback.curriculo.nome}`;
-                    this.cadastrando = true;
-                    this.preload = false;
+                    this.tituloJanela = `#${data.feedback.id} Entrevista - ${data.feedback.curriculo.nome}`
+                    this.cadastrando = true
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
+                    this.preload = false
                 })
         },
 
         cadastrar() {
 
-            $('#janelaParecerEntrevista :input:visible').trigger('blur');
+            $('#janelaParecerEntrevista :input:visible').trigger('blur')
             if ($('#janelaParecerEntrevista :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
-                return false;
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
-            this.form.parecer_rota.feedback_id = this.form.id;
-            this.form.parecer_rota.curriculo_id = this.form.curriculo_id;
+            this.form.parecer_rota.feedback_id = this.form.id
+            this.form.parecer_rota.curriculo_id = this.form.curriculo_id
 
             axios.post(`${URL_ADMIN}/entrevistas/parecer-rota/`, this.form.parecer_rota)
                 .then(response => {
-                    let data = response.data;
-                    mostraSucesso('', 'Entrevista salva com sucesso!');
-                    $('#janelaParecerEntrevista').modal('hide');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+                    let data = response.data
+                    mostraSucesso('', 'Entrevista salva com sucesso!')
+                    $('#janelaParecerEntrevista').modal('hide')
+                    this.$refs.componente.buscar()
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
+                    this.preload = false
                 })
         },
 
         alterar() {
-            $('#janelaParecerEntrevista :input:visible').trigger('blur');
+            $('#janelaParecerEntrevista :input:visible').trigger('blur')
             if ($('#janelaParecerEntrevista :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
-                return false;
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
             axios.put(`${URL_ADMIN}/entrevistas/parecer-rota/${this.form.parecer_rota.id}`, this.form.parecer_rota)
                 .then(response => {
-                    let data = response.data;
-                    mostraSucesso('', 'Entrevista salva com sucesso!');
-                    $('#janelaParecerEntrevista').modal('hide');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+                    let data = response.data
+                    mostraSucesso('', 'Entrevista salva com sucesso!')
+                    $('#janelaParecerEntrevista').modal('hide')
+                    this.$refs.componente.buscar()
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
+                    this.preload = false
                 })
         },
 
         janelaConfirmar(id) {
-            this.form.id = id;
-            this.apagado = false;
-            this.preload = false;
+            this.form.id = id
+            this.apagado = false
+            this.preload = false
         },
 
-        usuarioAutenticado(){
-            this.controle.carregando = true;
+        usuarioAutenticado() {
+            this.controle.carregando = true
             axios.get(`${URL_ADMIN}/usuario/autenticado/`)
                 .then(response => {
-                    let data = response.data;
-                    this.cliente_id = data.cliente_id;
-                    this.colunasTabela.cliente = this.cliente_id === 0;
-                    this.controle.dados.campoCliente = this.cliente_id !== 0 ? this.cliente_id : this.controle.dados.campoCliente;
+                    let data = response.data
+                    this.cliente_id = data.cliente_id
+                    this.colunasTabela.cliente = this.cliente_id === 0
+                    this.controle.dados.campoCliente = this.cliente_id !== 0 ? this.cliente_id : this.controle.dados.campoCliente
                 })
                 .catch(error => {
-                    this.preload = false;
+                    this.preload = false
                 })
         },
         carregou(dados) {
-            this.lista = dados.itens;
-            this.selecionaTudo = this.tudoMarcado;
-            this.controle.carregando = false;
+            this.lista = dados.itens
+            this.selecionaTudo = this.tudoMarcado
+            this.controle.carregando = false
 
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
-        },
+            this.$refs.componente.atual = 1
+            this.$refs.componente.buscar()
+        }
     }
 })

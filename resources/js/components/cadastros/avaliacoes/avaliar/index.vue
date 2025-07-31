@@ -43,14 +43,16 @@
                     <table class="table"
                            v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado"
                            v-if="formAvaliarFinal.result_topico_pai_agrupado && formAvaliarFinal.result_topico_pai_agrupado.length > 0"
-                           :key="index">
+                           :key="index"
+                    >
                         <thead>
                         <tr>
                             <!-- CORREÇÃO APLICADA: Mudança de item[index] para item[0] com guard -->
                             <th>{{ (item[0] || {}).topico_pai || '' }}</th>
                             <!-- CORREÇÃO APLICADA: Adicionado guard para avaliadores -->
                             <th class="text-center" v-for="(avaliador, id) in ((item[0] || {}).avaliadores || [])"
-                                :key="avaliador.id">
+                                :key="avaliador.id"
+                            >
                                 <span>
                                     {{ avaliador.origem === 'Funcionario' ? 'Autoavaliação' : 'Avaliador ' + (id + 1) }}
                                 </span>
@@ -64,15 +66,18 @@
                             <td style="width: 33%">{{ sub.subtopico }}</td>
                             <!-- CORREÇÃO APLICADA: Adicionado guard para avaliadores e filtro casasDecimais -->
                             <td style="width: 15%" v-for="(avaliador, avalIndex) in (sub.avaliadores || [])"
-                                :key="avaliador.id || avalIndex">
+                                :key="avaliador.id || avalIndex"
+                            >
                                 <input type="number" class="form-control form-control-sm text-center"
                                        readonly="readonly" min="0" max="5"
-                                       step="0.1" :value="formatarDecimal(avaliador.nota)">
+                                       step="0.1" :value="formatarDecimal(avaliador.nota)"
+                                >
                             </td>
                             <td style="width: 7%" class="text-center">
                                 <input type="number" class="form-control form-control-sm text-center"
                                        readonly="readonly" min="0" max="5"
-                                       step="0.1" :value="formatarDecimal(sub.media)">
+                                       step="0.1" :value="formatarDecimal(sub.media)"
+                                >
                             </td>
                         </tr>
                         </tbody>
@@ -80,12 +85,14 @@
 
                     <!-- CORREÇÃO APLICADA: Melhorada a verificação de segurança -->
                     <table class="table"
-                           v-if="formAvaliarFinal.result_topico_pai_agrupado && formAvaliarFinal.result_topico_pai_agrupado.length > 0 && formAvaliarFinal.result_topico_pai_agrupado[0] && formAvaliarFinal.result_topico_pai_agrupado[0][0] && formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores">
+                           v-if="formAvaliarFinal.result_topico_pai_agrupado && formAvaliarFinal.result_topico_pai_agrupado.length > 0 && formAvaliarFinal.result_topico_pai_agrupado[0] && formAvaliarFinal.result_topico_pai_agrupado[0][0] && formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                    >
                         <thead>
                         <tr>
                             <th class="text-center"
                                 v-for="(avaliador,id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                :key="avaliador.id">
+                                :key="avaliador.id"
+                            >
                                 <span>
                                     {{ avaliador.origem === 'Funcionario' ? 'Autoavaliação' : 'Avaliador ' + (id + 1) }}
                                 </span>
@@ -95,7 +102,8 @@
                         <tbody>
                         <tr>
                             <td v-for="(avaliador, avalIndex) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                :key="avaliador.id || avalIndex">
+                                :key="avaliador.id || avalIndex"
+                            >
                                 <label>Considerações</label>
                                 <textarea rows="5" class="form-control form-control-sm" readonly="readonly">{{ avaliador.comentario }}</textarea>
                             </td>
@@ -105,7 +113,8 @@
 
                     <!-- CORREÇÃO APLICADA: Adicionada verificação de segurança para charts -->
                     <div class="row justify-content-center mt-5"
-                         v-if="formAvaliarFinal.resultChart && formAvaliarFinal.resultChart.length > 0">
+                         v-if="formAvaliarFinal.resultChart && formAvaliarFinal.resultChart.length > 0"
+                    >
                         <div v-for="(chart, index) in formAvaliarFinal.resultChart" :key="index" class="col-md-4">
                             <h4 class="text-center">{{ chart.name }}</h4>
                             <RadarChart :id="chart.name" :chart-data="chart.data" />
@@ -123,7 +132,8 @@
                         <legend>Oportunidades de Melhoria / Plano de Ação</legend>
 
                         <button class="btn btn-sm btn-primary mb-2" @click="addPlanoAcao($event.target)"
-                                v-show="!visualizando">
+                                v-show="!visualizando"
+                        >
                             <i class="fa fa-plus"></i> Adicionar Plano
                         </button>
 
@@ -138,18 +148,21 @@
                                                 v-model="item.topico_id"
                                                 :disabled="visualizando"
                                                 @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                                @change.prevent="valida_campo_vazio($event.target, 1)">
+                                                @change.prevent="valida_campo_vazio($event.target, 1)"
+                                        >
                                             <option value="">Selecione</option>
                                             <!-- CORREÇÃO APLICADA: Adicionado guard para result_topico -->
                                             <option
                                                 v-for="(topico, topico_id) in (formAvaliarFinal.result_topico || {})"
-                                                :key="topico_id" :value="topico_id">{{ topico.topico_pai }} -
+                                                :key="topico_id" :value="topico_id"
+                                            >{{ topico.topico_pai }} -
                                                 {{ topico.subtopico }}
                                             </option>
                                         </select>
                                         <!-- CORREÇÃO APLICADA: Método em vez de filtro -->
                                         <h5 class="my-3 text-danger"
-                                            v-if="item.topico_id && formAvaliarFinal.result_topico && formAvaliarFinal.result_topico[item.topico_id]">
+                                            v-if="item.topico_id && formAvaliarFinal.result_topico && formAvaliarFinal.result_topico[item.topico_id]"
+                                        >
                                             Média:
                                             {{ getMediaTopico(item.topico_id) }}
                                         </h5>
@@ -162,27 +175,31 @@
                                         <textarea rows="5" class="form-control form-control-sm validacampo"
                                                   v-model="item.plano_de_acao"
                                                   @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                                  :disabled="visualizando"></textarea>
+                                                  :disabled="visualizando"
+                                        ></textarea>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-4">
                                     <div class="form-group">
                                         <date-picker formsm label="Início" v-model="item.inicio"
-                                                     :disabled="visualizando"></date-picker>
+                                                     :disabled="visualizando"
+                                        ></date-picker>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-4">
                                     <div class="form-group">
                                         <date-picker formsm label="Término" v-model="item.termino"
-                                                     :disabled="visualizando"></date-picker>
+                                                     :disabled="visualizando"
+                                        ></date-picker>
                                     </div>
                                 </div>
 
                                 <div class="col-lg-12" v-show="!visualizando">
                                     <button class="btn btn-sm btn-danger"
-                                            @click="removerPlanoAcao(index)">
+                                            @click="removerPlanoAcao(index)"
+                                    >
                                         <i class="fa fa-trash"></i> Apagar
                                     </button>
                                 </div>
@@ -194,7 +211,8 @@
             <template slot="rodape">
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="editando && !visualizando && !preload && formAvaliarFinal.planos_acoes && formAvaliarFinal.planos_acoes.length > 0"
-                        @click="salvarAvaliacaoFinal()">
+                        @click="salvarAvaliacaoFinal()"
+                >
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
@@ -261,7 +279,8 @@
                                 <select :disabled="visualizando" class="form-control validacampo"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @change.prevent="valida_campo_vazio($event.target, 1)"
-                                        v-model="formAvaliar.respostas[item.id][index].nota">
+                                        v-model="formAvaliar.respostas[item.id][index].nota"
+                                >
                                     <option value="">Selecione</option>
                                     <option v-for="resp in 5" :value="resp" :key="resp">{{ resp }}</option>
                                 </select>
@@ -275,7 +294,8 @@
                         <textarea :disabled="visualizando" v-model="formAvaliar.comentario" class="form-control"
                                   @blur.prevent="valida_campo_vazio($event.target, 1)"
                                   @change.prevent="valida_campo_vazio($event.target, 1)"
-                                  placeholder="Se desejar, faça considerações" rows="4"></textarea>
+                                  placeholder="Se desejar, faça considerações" rows="4"
+                        ></textarea>
 
                         <h5 class="mt-3" v-if="formAvaliar.principal">Considerações do
                             colaborador: {{ formAvaliar.comentario_funcionario }}</h5>
@@ -284,7 +304,8 @@
             </template>
             <template slot="rodape">
                 <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload && !visualizando"
-                        @click="salvar()">
+                        @click="salvar()"
+                >
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
@@ -301,7 +322,8 @@
                             <label>Avaliações</label>
                             <select class="form-control form-control-sm" v-model="controle.dados.campoAvaliacao"
                                     :disabled="controle.carregando"
-                                    @change="$refs.componente.buscar()">
+                                    @change="$refs.componente.buscar()"
+                            >
                                 <option :value="item.id" v-for="item in lista_avaliacoes" :key="item.id">
                                     {{ item.titulo }} - ({{ item.status }})
                                 </option>
@@ -314,10 +336,12 @@
                             <label>Status</label>
                             <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
                                     :disabled="controle.carregando"
-                                    @change="$refs.componente.buscar()">
+                                    @change="$refs.componente.buscar()"
+                            >
                                 <option value="">Todos os Status</option>
                                 <option v-for="item in statusAvaliacaoSelecionada" :value="item.value"
-                                        :key="item.value">
+                                        :key="item.value"
+                                >
                                     {{ item.label }}
                                 </option>
                             </select>
@@ -326,9 +350,11 @@
 
                     <div class="col-12 col-md-9">
                         <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
-                                @click="atualizar">
+                                @click="atualizar"
+                        >
                             <i
-                                :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                                :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"
+                            ></i>
                             Atualizar
                         </button>
                     </div>
@@ -336,7 +362,8 @@
             </fieldset>
 
             <div class="row mt-2 pt-1 pb-1 border-bottom"
-                 v-if="!controle.carregando && selecionadaAvaliacao && selecionadaAvaliacao.auto_avaliacao">
+                 v-if="!controle.carregando && selecionadaAvaliacao && selecionadaAvaliacao.auto_avaliacao"
+            >
                 <div class="col-12">
                     <p class="bg-white p-3 rounded">
                         <i class="fas fa-circle text-danger"></i>
@@ -354,7 +381,8 @@
             </div>
 
             <div class="row mt-2 pt-1 pb-1 border-bottom"
-                 v-if="!controle.carregando && selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao">
+                 v-if="!controle.carregando && selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao"
+            >
                 <div class="col-12">
                     <p class="bg-white p-3 rounded">
                         <i class="fas fa-circle ml-2" style="color: #f1f1f1"></i>
@@ -415,10 +443,13 @@
                         </td>
                         <td class="text-center">
                                 <span
-                                    v-show="item.origem_feedback === 'Funcionario' && !item.principal">Autoavaliação</span>
-                            <span
-                                v-show="item.origem_feedback === 'Avaliador' && !item.principal">Avaliador Par</span>
-                            <span v-show="item.origem_feedback === 'Avaliador' && item.principal">Avaliador Gestor (Principal)</span>
+                                    v-show="item.origem_feedback === 'Funcionario' && !item.principal"
+                                >Autoavaliação</span>
+                            <span v-if="item.origem_feedback === 'Avaliador'">
+                                 {{ item.tipo_avaliador ? item.tipo_avaliador.label : '---' }}
+                            </span>
+
+
                         </td>
                         <td class="text-center">
 
@@ -429,15 +460,18 @@
                                   || (item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id) // autoavailiacao
                                   || item.status === 'Avaliada' || (item.status === 'Avaliada' && item.fazer_avaliacao_final) // Avaliacao final
                                   || (item.status === 'Finalizada' && !item.fazer_avaliacao_final)) // successo
-                                ">
+                                "
+                            >
                                 <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
                                    id="dropdownMenuLink"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                     aria-labelledby="dropdownMenuLink">
+                                     aria-labelledby="dropdownMenuLink"
+                                >
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
                                        v-if="(item.status === 'Pendente' && item.fez_auto_avaliacao  && !item.principal) || (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par)"
@@ -447,40 +481,46 @@
 
                                     <a class="dropdown-item" href="javascript://" title="Avaliar"
                                        data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
-                                       v-if="item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id)">
+                                       v-if="item.status === 'Pendente' && (!item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id)"
+                                    >
                                         Avaliar
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
                                        data-toggle="modal" data-target="#janelaCadastrar"
-                                       @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'">
+                                       @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'"
+                                    >
                                         Visualizar Avaliação
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
                                        data-toggle="modal" data-target="#janelaCadastrar"
                                        @click="avaliarForm(item, true)"
-                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final">
+                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final"
+                                    >
                                         Visualizar Avaliação
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
                                        data-toggle="modal" data-target="#janelaAvaliacaoFinal"
                                        @click="avaliarFinalForm(item)"
-                                       v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final">
+                                       v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
+                                    >
                                         Fazer Avaliação Final
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação Final"
                                        data-toggle="modal" data-target="#janelaAvaliacaoFinal"
                                        @click="avaliarFinalForm(item, true)"
-                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">
+                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
+                                    >
                                         Visualizar Avaliação Final
                                     </a>
 
                                     <a class="dropdown-item" :href="`${urlImpressao}/${item.token}`" target="_blank"
                                        title="Imprimir Avaliação Final"
-                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">
+                                       v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
+                                    >
                                         Imprimir Avaliação Final
                                     </a>
                                 </div>
@@ -494,7 +534,8 @@
 
                 <template>
                     <table class="table table-bordered"
-                           v-if="selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao">
+                           v-if="selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao"
+                    >
                         <thead class="bg-white">
                         <tr class="bg-white">
                             <td class="text-center">Ano Avaliação</td>
@@ -509,7 +550,8 @@
                         </thead>
                         <tbody>
                         <tr v-if="!item.avaliacao.auto_avaliacao && item.principal" v-for="item in lista" :key="item.id"
-                            class="bg-white">
+                            class="bg-white"
+                        >
                             <td class="text-center">
                                 {{ item.avaliacao.ano_avaliacao }}
                             </td>
@@ -530,7 +572,8 @@
                                 'bg-cinza': item.status === 'Pendente',
                                 'bg-info text-white': item.status === 'Avaliada',
                                 'bg-success text-white': item.status === 'Finalizada'
-                            }">
+                            }"
+                            >
                                 <span v-if="item.status === 'Pendente'">Pendente Avaliação do Gestor</span>
                                 <span v-if="item.status === 'Avaliada'">Avaliada pelo Gestor</span>
                                 <span v-if="item.status === 'Finalizada'">Completa</span>
@@ -542,44 +585,52 @@
                                      v-show="
                                      (item.status === 'Pendente' && item.principal && !item.pendente_avaliacao_par)  || item.status === 'Avaliada' || (item.status === 'Avaliada' && item.fazer_avaliacao_final) // Avaliacao final
                                   || (item.status === 'Finalizada' && !item.fazer_avaliacao_final) // successo
-                                ">
+                                "
+                                >
                                     <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
                                        id="dropdownMenuLink"
-                                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                    >
                                         <i class="fas fa-ellipsis-v"></i>
                                     </a>
 
                                     <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                         aria-labelledby="dropdownMenuLink">
+                                         aria-labelledby="dropdownMenuLink"
+                                    >
                                         <a class="dropdown-item" href="javascript://" title="Avaliar"
                                            data-toggle="modal" data-target="#janelaCadastrar" @click="avaliarForm(item)"
-                                           v-if="(item.status === 'Pendente' && item.principal)">
+                                           v-if="(item.status === 'Pendente' && item.principal)"
+                                        >
                                             Avaliar
                                         </a>
 
                                         <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação"
                                            data-toggle="modal" data-target="#janelaCadastrar"
-                                           @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'">
+                                           @click="avaliarForm(item, true)" v-if="item.status === 'Avaliada'"
+                                        >
                                             Visualizar Avaliação
                                         </a>
 
                                         <a class="dropdown-item" href="javascript://" title="Fazer Avaliação Final"
                                            data-toggle="modal" data-target="#janelaAvaliacaoFinal"
                                            @click="avaliarFinalForm(item)"
-                                           v-if="item.status === 'Avaliada'  && item.fazer_avaliacao_final">
+                                           v-if="item.status === 'Avaliada'  && item.fazer_avaliacao_final"
+                                        >
                                             Fazer Avaliação Final
                                         </a>
 
                                         <a class="dropdown-item" href="javascript://" title="Visualizar Avaliação Final"
                                            data-toggle="modal" data-target="#janelaAvaliacaoFinal"
                                            @click="avaliarFinalForm(item, true)"
-                                           v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal">
+                                           v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
+                                        >
                                             Visualizar Avaliação Final
                                         </a>
 
                                         <a class="dropdown-item" :href="`${urlImpressao}/${item.token}`" target="_blank"
                                            title="Imprimir Avaliação Final"
-                                           v-if="item.status === 'Finalizada' || ( item.total_avaliacoes_concluidas > 0 && ( item.principal || tem_privilegio_gestao_rh) )">
+                                           v-if="item.status === 'Finalizada' || ( item.total_avaliacoes_concluidas > 0 && ( item.principal || tem_privilegio_gestao_rh) )"
+                                        >
                                             Imprimir Avaliação Final
                                         </a>
                                     </div>
@@ -595,7 +646,8 @@
             <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                                 :url="urlPaginacao" :por-pagina="qntPag"
                                 :dados="controle.dados"
-                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+                                v-on:carregou="carregou" v-on:carregando="carregando"
+            ></controle-paginacao>
         </div>
     </div>
 </template>
@@ -698,6 +750,8 @@ export default {
             urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/atualizar`,
             urlImpressao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/impressao`,
 
+            fluxoAvaliacao: null,
+
             controle: {
                 carregando: false,
                 dados: {
@@ -746,6 +800,7 @@ export default {
             let status = this.selecionadaAvaliacao?.auto_avaliacao ? statusComAutoAvaliacao : statusSemAutoAvaliacao
             return status ?? []
         }
+
     },
     methods: {
         // CORREÇÃO PRINCIPAL: Substituição do filtro por métodos
@@ -938,6 +993,7 @@ export default {
         },
         carregou(dados) {
             this.lista = dados.itens
+            this.fluxoAvaliacao = dados.itens.length ? dados.itens[0].fluxo : null
             this.lista_avaliacoes_tipos = dados.avaliacoes_tipos
             this.lista_status = dados.lista_status
             this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano
