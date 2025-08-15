@@ -13,9 +13,11 @@
                     <div class="custom-control custom-switch mb-2">
                         <input type="checkbox" @click="item.checked = !item.checked"
                                v-model="item.checked"
-                               class="custom-control-input" :id="item.id">
+                               class="custom-control-input" :id="item.id"
+                        >
                         <label class="custom-control-label"
-                               :for="item.id">@{{item.label}}</label>
+                               :for="item.id"
+                        >@{{item.label}}</label>
                     </div>
                 </div>
             </div>
@@ -140,7 +142,8 @@
                             <label>Tipo</label>
                             <select class="form-control" v-model="form.tipo"
                                     onchange="valida_campo_vazio(this,1)"
-                                    onblur="valida_campo_vazio(this,1)">
+                                    onblur="valida_campo_vazio(this,1)"
+                            >
                                 <option value="">Selecione ...</option>
                                 <option value="Fixo">Fixo</option>
                                 <option value="Parada">Parada</option>
@@ -148,7 +151,8 @@
                         </div>
 
                         <div class="col-12 mb-2"
-                             v-if="form.tipo && form.listaVencimentos && form.listaVencimentos.length > 0">
+                             v-if="form.tipo && form.listaVencimentos && form.listaVencimentos.length > 0"
+                        >
                             <div class="row">
 
                                 <div class="col-md-2">
@@ -320,7 +324,8 @@
                     <div class="mb-4" v-if="form.tipo && form.listaVencimentos && form.listaVencimentos.length > 0">
                         <div class="input-group input-group">
                             <input type="text" class="form-control" placeholder="Buscar treinamento..."
-                                   v-model="trainingSearchQuery">
+                                   v-model="trainingSearchQuery"
+                            >
                             <div class="input-group-append">
                                 <span class="input-group-text"><i class="fa fa-search"></i></span>
                             </div>
@@ -329,7 +334,8 @@
 
                     <!-- Accordion de treinamentos -->
                     <div class="accordion" id="accordionTreinamentos"
-                         v-if="form.tipo && treinamentosFiltrados.length > 0">
+                         v-if="form.tipo && treinamentosFiltrados.length > 0"
+                    >
                         <div v-for="(treinamento, index) in treinamentosFiltrados"
                              :key="index"
                              class="card mb-3"
@@ -338,21 +344,25 @@
                              'border-left-warning': getTreinamentoStatus(treinamento) === 'avencer' && treinamento.fez_treinamento,
                              'border-left-danger': getTreinamentoStatus(treinamento) === 'vencido' && treinamento.fez_treinamento,
                              'border-left-secondary': !treinamento.fez_treinamento
-                         }">
+                         }"
+                        >
                             <div class="card-header d-flex justify-content-between align-items-center"
                                  :class="{
                                  'bg-success-light': getTreinamentoStatus(treinamento) === 'ativo' && treinamento.fez_treinamento,
                                  'bg-warning-light': getTreinamentoStatus(treinamento) === 'avencer' && treinamento.fez_treinamento,
                                  'bg-danger-light': getTreinamentoStatus(treinamento) === 'vencido' && treinamento.fez_treinamento,
                                  'bg-light': !treinamento.fez_treinamento
-                             }">
+                             }"
+                            >
                                 <h5 class="mb-0">
                                     <button class="btn btn-link text-dark"
                                             type="button"
                                             @click="togglePanel(index)"
-                                            style="text-decoration: none; text-align: left;">
+                                            style="text-decoration: none; text-align: left;"
+                                    >
                                         <i class="fa"
-                                           :class="openPanels.includes(index) ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                                           :class="openPanels.includes(index) ? 'fa-chevron-down' : 'fa-chevron-right'"
+                                        ></i>
                                         @{{ treinamento.label }}
                                     </button>
                                 </h5>
@@ -362,7 +372,8 @@
                                       'badge-warning': getTreinamentoStatus(treinamento) === 'avencer' && treinamento.fez_treinamento,
                                       'badge-danger': getTreinamentoStatus(treinamento) === 'vencido' && treinamento.fez_treinamento,
                                       'badge-secondary': !treinamento.fez_treinamento
-                                  }">
+                                  }"
+                                >
                                 @{{ getStatusText(treinamento) }}
                             </span>
                             </div>
@@ -370,7 +381,8 @@
                             <div class="collapse" :class="{ show: openPanels.includes(index) }">
                                 <div class="card-body">
                                     <div class="alert alert-warning p-2" style="font-size: 0.85rem;"
-                                         v-show="treinamento.descricao">
+                                         v-show="treinamento.descricao"
+                                    >
                                         <strong>A quem se destina:</strong> @{{ treinamento.descricao }}
                                     </div>
 
@@ -389,19 +401,22 @@
                                     <div class="row" v-if="treinamento.fez_treinamento">
                                         <!-- Datas de treinamento e vencimento -->
                                         <template
-                                            v-if="treinamento.prazo_fixo && treinamento.prazo_parada">
+                                            v-if="treinamento.prazo_fixo && treinamento.prazo_parada"
+                                        >
                                             <div class="col-md-6 mt-2">
                                                 <datepicker v-model="treinamento.data_treinamento"
                                                             label="Data do treinamento"
                                                             @input="calculoDataExpiracao(treinamento)"
                                                             max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                                            onblur="valida_data_vazio(this)"></datepicker>
+                                                            onblur="valida_data_vazio(this)"
+                                                ></datepicker>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group mt-2">
                                                     <label>Vencimento</label>
                                                     <input class="form-control" readonly disabled
-                                                           :value="treinamento.data_vencimento">
+                                                           :value="treinamento.data_vencimento"
+                                                    >
                                                 </div>
                                             </div>
                                         </template>
@@ -410,13 +425,15 @@
                                                 <datepicker v-model="treinamento.data_treinamento"
                                                             label="Data do treinamento"
                                                             max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                                            onblur="valida_data_vazio(this)"></datepicker>
+                                                            onblur="valida_data_vazio(this)"
+                                                ></datepicker>
                                             </div>
                                             <div class="col-md-6 mt-2">
                                                 <datepicker v-model="treinamento.data_vencimento"
                                                             label="Data Vencimento"
                                                             min="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                                            onblur="valida_data_vazio(this)"></datepicker>
+                                                            onblur="valida_data_vazio(this)"
+                                                ></datepicker>
                                             </div>
                                         </template>
                                     </div>
@@ -429,7 +446,8 @@
                                                 <div class="form-group">
                                                     <label>Número da FAT</label>
                                                     <input type="text" class="form-control"
-                                                           v-model="treinamento.numero_fat">
+                                                           v-model="treinamento.numero_fat"
+                                                    >
                                                 </div>
                                             </div>
                                             <div class="col-md-12">
@@ -440,7 +458,8 @@
                                                         :multi="false"
                                                         label="ANEXAR FAT"
                                                         @onProgresso="anexoUploadAndamento=true"
-                                                        @onFinalizado="anexoUploadAndamento=false"></upload>
+                                                        @onFinalizado="anexoUploadAndamento=false"
+                                                ></upload>
                                             </div>
                                         </div>
                                     </fieldset>
@@ -452,7 +471,8 @@
 
                 <!-- Mensagem de nenhum treinamento encontrado -->
                 <div class="alert alert-info"
-                     v-if="form.tipo && (!treinamentosFiltrados || treinamentosFiltrados.length === 0)">
+                     v-if="form.tipo && (!treinamentosFiltrados || treinamentosFiltrados.length === 0)"
+                >
                     <i class="fa fa-info-circle"></i> Nenhum treinamento encontrado com os filtros atuais.
                 </div>
 
@@ -465,7 +485,8 @@
         </template>
         <template slot="rodape">
             <button type="button" class="btn btn-sm btn-primary" @click="salvar"
-                    v-if="!preload && (!cadastrado && !atualizado)">
+                    v-if="!preload && (!cadastrado && !atualizado)"
+            >
                 <i class="fa fa-save"></i> Salvar
             </button>
         </template>
@@ -490,7 +511,8 @@
                                 <label>Tipo</label>
                                 <select class="form-control" v-model="formMassa.tipo"
                                         onchange="valida_campo_vazio(this,1)"
-                                        onblur="valida_campo_vazio(this,1)">
+                                        onblur="valida_campo_vazio(this,1)"
+                                >
                                     <option value="">Selecione ...</option>
                                     <option value="Fixo">Fixo</option>
                                     <option value="Parada">Parada</option>
@@ -499,12 +521,14 @@
                         </div>
 
                         <div class="col-12 col-md-6" v-for="(treinamento, index) in formMassa.listaVencimentos"
-                             v-if="formMassa.tipo !== ''">
+                             v-if="formMassa.tipo !== ''"
+                        >
                             <fieldset>
                                 <legend>@{{ treinamento.label }}</legend>
 
                                 <div class="alert alert-warning p-2" style="font-size: 0.85rem;"
-                                     v-show="treinamento.descricao">
+                                     v-show="treinamento.descricao"
+                                >
                                     A quem se destina: @{{ treinamento.descricao }}
                                 </div>
                                 <div class="row">
@@ -522,13 +546,15 @@
                                             <template v-if="treinamento.prazo_fixo && treinamento.prazo_parada">
                                                 <label for="">Data do treinamento:
                                                     <span class="text-danger" style="font-size: 0.85rem;"
-                                                          v-show="treinamento.prazo_fixo || treinamento.prazo_parada">
+                                                          v-show="treinamento.prazo_fixo || treinamento.prazo_parada"
+                                                    >
                                                      Vencimento: @{{ treinamento.data_vencimento }}
                                                 </span>
                                                 </label>
                                                 <datepicker v-model="treinamento.data_treinamento"
                                                             max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                                            onblur="valida_data_vazio(this)"></datepicker>
+                                                            onblur="valida_data_vazio(this)"
+                                                ></datepicker>
 
                                             </template>
                                         </div>
@@ -547,7 +573,8 @@
         </template>
         <template slot="rodape">
             <button type="button" class="btn btn-sm btn-primary" @click="salvarMassa"
-                    v-if="!preload && formMassa.tipo && (!cadastrado && !atualizado)">
+                    v-if="!preload && formMassa.tipo && (!cadastrado && !atualizado)"
+            >
                 <i class="fa fa-save"></i> Salvar
             </button>
         </template>
@@ -575,7 +602,8 @@
                         <div class="form-group">
                             <label>E-mail</label>
                             <input type="text" onblur="validaEmailVazio(this)" class="form-control"
-                                   v-model="formEnviar.email">
+                                   v-model="formEnviar.email"
+                            >
                         </div>
                     </div>
 
@@ -586,7 +614,8 @@
             <div v-show="!formEnviar.preload">
                 <button type="button" class="btn btn-sm btn-primary"
                         @click="enviar"
-                        v-show="!formEnviar.enviado">
+                        v-show="!formEnviar.enviado"
+                >
                     <i class="fa fa-envelope"></i> Enviar
                 </button>
             </div>
@@ -594,7 +623,8 @@
     </modal>
 
     <modal id="janelaEnviarAviso" :fechar="!formEnviarAviso.preload"
-           titulo="Notificação de treinamento próximo ao vencimento">
+           titulo="Notificação de treinamento próximo ao vencimento"
+    >
         <template slot="conteudo">
             <span v-show="formEnviarAviso.preload">
                 <i class="fa fa-spinner fa-pulse"></i> Enviando...
@@ -615,7 +645,8 @@
                         <div class="form-group">
                             <label>E-mail</label>
                             <input type="text" onblur="validaEmailVazio(this)" class="form-control"
-                                   v-model="formEnviarAviso.email">
+                                   v-model="formEnviarAviso.email"
+                            >
                         </div>
                     </div>
 
@@ -626,7 +657,8 @@
             <div v-show="!formEnviarAviso.preload">
                 <button type="button" class="btn btn-sm btn-primary"
                         @click="enviarAviso"
-                        v-show="!formEnviarAviso.enviado">
+                        v-show="!formEnviarAviso.enviado"
+                >
                     <i class="fa fa-envelope"></i> Enviar
                 </button>
             </div>
@@ -641,14 +673,16 @@
                     <input type="checkbox" class="form-check-input" @change="atualizar()"
                            :disabled="controle.carregando"
                            id="filtroVencimento"
-                           v-model="controle.dados.campoVencimento">
+                           v-model="controle.dados.campoVencimento"
+                    >
                     <label class="form-check-label cursor-pointer" for="filtroVencimento">Por período de
                         vencimento</label>
                 </div>
                 <div class="form-group">
                     <datepicker range formsm label="" @onselect="atualizar()"
                                 :disabled="controle.carregando"
-                                v-model="controle.dados.vencimento"></datepicker>
+                                v-model="controle.dados.vencimento"
+                    ></datepicker>
                 </div>
             </div>
 
@@ -657,21 +691,24 @@
                     <input type="checkbox" class="form-check-input" @change="atualizar()"
                            :disabled="controle.carregando"
                            id="filtroPeriodoTreinado"
-                           v-model="controle.dados.campoPeriodoTreinado">
+                           v-model="controle.dados.campoPeriodoTreinado"
+                    >
                     <label class="form-check-label cursor-pointer" for="filtroPeriodoTreinado">Por período
                         treinado</label>
                 </div>
                 <div class="form-group">
                     <datepicker range formsm label="" @onselect="atualizar()"
                                 :disabled="controle.carregando"
-                                v-model="controle.dados.periodoTreinado"></datepicker>
+                                v-model="controle.dados.periodoTreinado"
+                    ></datepicker>
                 </div>
             </div>
 
             <div class="col-12 col-lg-3">
                 <label>Admitidos</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoAdmitido">
+                        v-model="controle.dados.campoAdmitido"
+                >
                     <option value="">Geral</option>
                     <option value="S">Sim</option>
                     <option value="N">Não</option>
@@ -684,7 +721,8 @@
                     <select class="form-control form-control-sm"
                             @change="atualizar"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.campoDemitido">
+                            v-model="controle.dados.campoDemitido"
+                    >
                         <option :value="true">Sim</option>
                         <option :value="false">Não</option>
                     </select>
@@ -695,7 +733,8 @@
                 <label>Treinados</label>
                 <select class="custom-select custom-select-sm" @change="selecionaTreinados($event.target.value)"
                         :disabled="controle.carregando"
-                        v-model="controle.dados.campo_treinados">
+                        v-model="controle.dados.campo_treinados"
+                >
                     <option value="">Sem filtro</option>
                     <option value="S">Sim</option>
                     <option value="N">Não</option>
@@ -709,7 +748,8 @@
                        placeholder="Buscar por nome"
                        autocomplete="off"
                        class="form-control form-control-sm" :disabled="controle.carregando"
-                       v-model="controle.dados.campoBusca">
+                       v-model="controle.dados.campoBusca"
+                >
             </div>
 
             <div class="col-12 col-lg-3 mb-3">
@@ -719,13 +759,15 @@
                        autocomplete="mastertag"
                        v-mascara:cpf
                        class="form-control form-control-sm" :disabled="controle.carregando"
-                       v-model="controle.dados.campoCPF">
+                       v-model="controle.dados.campoCPF"
+                >
             </div>
 
             <div class="col-12 col-lg-3 mb-3">
                 <label>Foto 3x4</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoFoto">
+                        v-model="controle.dados.campoFoto"
+                >
                     <option value="">Geral</option>
                     <option :value="true">Sim</option>
                     <option :value="false">Não</option>
@@ -735,7 +777,8 @@
             <div class="col-12 col-lg-2 mb-3">
                 <label>Nº Crachá</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoCracha">
+                        v-model="controle.dados.campoCracha"
+                >
                     <option value="">Geral</option>
                     <option value="S">Sim</option>
                     <option value="N">Não</option>
@@ -743,11 +786,13 @@
             </div>
 
             <div class="col-12 col-lg-4 mb-3"
-                 v-if="lista_ccs && AUTENTICADO.temFilial">
+                 v-if="lista_ccs && AUTENTICADO.temFilial"
+            >
                 <label for="">Por Cnpj</label>
                 <select class="form-control form-control-sm" @change="changeCnpj"
                         :disabled="controle.carregando"
-                        v-model="controle.dados.campoCnpj">
+                        v-model="controle.dados.campoCnpj"
+                >
                     <option value="">Todos</option>
                     <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
                         @{{item.nome_fantasia}} - @{{item.cnpj}}
@@ -759,11 +804,13 @@
                 <label for="">Centro de Custo</label>
                 <select class="form-control form-control-sm" @change="atualizar"
                         :disabled="controle.carregando"
-                        v-model="controle.dados.campoCentroCusto">
+                        v-model="controle.dados.campoCentroCusto"
+                >
                     <option value="">Todos</option>
                     <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
                             :value="item.matriz ? item.id : item.filial_id"
-                            :keys="key">
+                            :keys="key"
+                    >
                         @{{item.label}}
                     </option>
                     <option value="--naoinformado--">--- Não Informado ---</option>
@@ -779,7 +826,8 @@
                                   v-model="controle.dados.autocomplete_label"
                                   placeholder="Por vaga"
                                   @onblur="resetaCampo"
-                                  @onselect="selecionaVaga"></autocomplete>
+                                  @onselect="selecionaVaga"
+                    ></autocomplete>
                 </div>
             </div>
 
@@ -789,13 +837,15 @@
                        placeholder="Buscar por cargo"
                        autocomplete="off"
                        class="form-control form-control-sm" :disabled="controle.carregando"
-                       v-model="controle.dados.campoCargo">
+                       v-model="controle.dados.campoCargo"
+                >
             </div>
 
             <div class="col-12 col-lg-2 mb-3">
                 <label>Estados</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoUf">
+                        v-model="controle.dados.campoUf"
+                >
                     <option value="">Todos</option>
                     <option value="AC">AC</option>
                     <option value="AL">AL</option>
@@ -831,7 +881,8 @@
                 <label>Treinamentos</label>
                 <select class="custom-select custom-select-sm" @change="addTreinamento($event.target.value)"
                         :disabled="controle.carregando"
-                        v-model="controle.dados.treinamentos">
+                        v-model="controle.dados.treinamentos"
+                >
                     <option value="">Selecionar ...</option>
                     <option value="todos">---- ADICIONAR TODOS ----</option>
                     <option v-for="treinamento in listaTodosTreinamentos" :value="treinamento.label">
@@ -847,9 +898,11 @@
                     <h6>TREINAMENTOS SELECIONADOS:</h6>
                     <div class="row">
                         <small class="p-2 ml-2 mb-2 table-secondary text-dark rounded"
-                               v-for="(item, ind) in controle.dados.treinamentos_selecionados">
+                               v-for="(item, ind) in controle.dados.treinamentos_selecionados"
+                        >
                             @{{ item }} <a href="javascript://" @click.prevent="removeTreinamento(ind)"><i
-                                    class="fa fa-times ml-1"></i></a>
+                                    class="fa fa-times ml-1"
+                                ></i></a>
                         </small>
                     </div>
                 </div>
@@ -864,7 +917,8 @@
                        placeholder="Buscar por nome"
                        autocomplete="off"
                        class="form-control form-control-sm" :disabled="controle.carregando"
-                       v-model="controle.dados.campoBusca">
+                       v-model="controle.dados.campoBusca"
+                >
             </div>
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
@@ -874,7 +928,8 @@
                        autocomplete="mastertag"
                        v-mascara:cpf
                        class="form-control form-control-sm" :disabled="controle.carregando"
-                       v-model="controle.dados.campoCPF">
+                       v-model="controle.dados.campoCPF"
+                >
             </div>
 
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
@@ -885,7 +940,8 @@
                                   v-model="controle.dados.autocomplete_label"
                                   placeholder="Por vaga"
                                   @onblur="resetaCampo"
-                                  @onselect="selecionaVaga"></autocomplete>
+                                  @onselect="selecionaVaga"
+                    ></autocomplete>
                 </div>
             </div>
 
@@ -900,7 +956,8 @@
                                       v-model="controle.dados.autocomplete_label_cliente"
                                       placeholder="Por cliente"
                                       @onblur="resetaCampoCliente"
-                                      @onselect="selecionaCliente"></autocomplete>
+                                      @onselect="selecionaCliente"
+                        ></autocomplete>
                     </div>
                 </div>
             @endif
@@ -908,7 +965,8 @@
             <div class="col-12 col-sm-6 col-md-6 col-lg-3">
                 <label>Áreas</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoArea">
+                        v-model="controle.dados.campoArea"
+                >
                     <option value="">Todas</option>
                     <option :value="item.id" v-for="item in listaAreas">@{{ item.label }}</option>
                 </select>
@@ -920,13 +978,15 @@
                        placeholder="Buscar por cargo"
                        autocomplete="off"
                        class="form-control form-control-sm" :disabled="controle.carregando"
-                       v-model="controle.dados.campoCargo">
+                       v-model="controle.dados.campoCargo"
+                >
             </div>
 
             <div class="col-12 col-sm-4 col-md-3 col-lg-3">
                 <label>Estado</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoUf">
+                        v-model="controle.dados.campoUf"
+                >
                     <option value="">Todos</option>
                     <option value="AC">AC</option>
                     <option value="AL">AL</option>
@@ -961,7 +1021,8 @@
             <div class="col-12 col-sm-4 col-md-3">
                 <label>Treinados</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campo_treinados">
+                        v-model="controle.dados.campo_treinados"
+                >
                     <option value="">Sem filtro</option>
                     <option :value="true">Sim</option>
                     <option :value="false">Não</option>
@@ -974,7 +1035,8 @@
                     <input type="checkbox" class="form-check-input" @change="atualizar()"
                            :disabled="controle.carregando"
                            id="filtroVencimento"
-                           v-model="controle.dados.campoVencimento">
+                           v-model="controle.dados.campoVencimento"
+                    >
                     <label class="form-check-label cursor-pointer" for="filtroVencimento">
                         Por período de vencimento
                     </label>
@@ -982,7 +1044,8 @@
                 <div class="form-group">
                     <datepicker range formsm label="" @onselect="atualizar()"
                                 :disabled="controle.carregando"
-                                v-model="controle.dados.vencimento"></datepicker>
+                                v-model="controle.dados.vencimento"
+                    ></datepicker>
                 </div>
             </div>
 
@@ -990,7 +1053,8 @@
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>NR33</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoNr_trinta_tres">
+                        v-model="controle.dados.campoNr_trinta_tres"
+                >
                     <option value="">Sem filtro</option>
                     <option value="Realizado">Realizado</option>
                     <option value="Não Realizado">Não Realizado</option>
@@ -1002,7 +1066,8 @@
 
                 <label>NR35</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoNr_trinta_cinco">
+                        v-model="controle.dados.campoNr_trinta_cinco"
+                >
                     <option value="">Sem filtro</option>
                     <option value="Realizado">Realizado</option>
                     <option value="Não Realizado">Não Realizado</option>
@@ -1013,7 +1078,8 @@
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>EBTV</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoNr_ebtv">
+                        v-model="controle.dados.campoNr_ebtv"
+                >
                     <option value="">Sem filtro</option>
                     <option :value="true">Realizado</option>
                     <option :value="false">Não Realizado</option>
@@ -1023,7 +1089,8 @@
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>Admitidos</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoAdmitido">
+                        v-model="controle.dados.campoAdmitido"
+                >
                     <option value="">Geral</option>
                     <option :value="true">Sim</option>
                     <option :value="false">Não</option>
@@ -1034,7 +1101,8 @@
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>Nº Crachá</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoCracha">
+                        v-model="controle.dados.campoCracha"
+                >
                     <option value="">Geral</option>
                     <option :value="true">Sim</option>
                     <option :value="false">Não</option>
@@ -1044,7 +1112,8 @@
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>Foto 3x4</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoFoto">
+                        v-model="controle.dados.campoFoto"
+                >
                     <option value="">Geral</option>
                     <option :value="true">Sim</option>
                     <option :value="false">Não</option>
@@ -1054,7 +1123,8 @@
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <label>PCD</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.campoPcd">
+                        v-model="controle.dados.campoPcd"
+                >
                     <option value="">Geral</option>
                     <option :value="true">Sim</option>
                     <option :value="false">Não</option>
@@ -1064,7 +1134,8 @@
             <div class="col-12 col-md-2">
                 <label>Exibir</label>
                 <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                        v-model="controle.dados.pages">
+                        v-model="controle.dados.pages"
+                >
                     <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
@@ -1076,7 +1147,8 @@
         <div class="col-12">
             <div class="row mt-2">
                 <button type="button" class="btn btn-sm btn-success mb-1 mr-1" :disabled="controle.carregando"
-                        :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar">
+                        :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar"
+                >
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
@@ -1099,43 +1171,50 @@
                             aria-haspopup="true"
                             aria-expanded="false"
                             :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                            :disabled="!selecionados.length">
+                            :disabled="!selecionados.length"
+                    >
                         Gerar Carteira <span class="badge badge-light">@{{ selecionados.length }}</span>
                     </button>
 
                     <div class="dropdown-menu" aria-labelledby="dropdownCarteira">
                         <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post"
-                              style="display: inline;">
+                              style="display: inline;"
+                        >
                             @csrf
                             <input type="hidden" name="tipo" value="treinamento">
                             <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
                             <button type="submit"
                                     class="dropdown-item"
-                                    :disabled="!selecionados.length">
+                                    :disabled="!selecionados.length"
+                            >
                                 <i class="fas fa-graduation-cap mr-2"></i>Treinamento
                             </button>
                         </form>
 
                         <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post"
-                              style="display: inline;">
+                              style="display: inline;"
+                        >
                             @csrf
                             <input type="hidden" name="tipo" value="bloqueio">
                             <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
                             <button type="submit"
                                     class="dropdown-item"
-                                    :disabled="!selecionados.length">
+                                    :disabled="!selecionados.length"
+                            >
                                 <i class="fas fa-ban mr-2"></i>Bloqueio
                             </button>
                         </form>
 
                         <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post"
-                              style="display: inline;">
+                              style="display: inline;"
+                        >
                             @csrf
                             <input type="hidden" name="tipo" value="treinamento_bloqueio">
                             <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
                             <button type="submit"
                                     class="dropdown-item"
-                                    :disabled="!selecionados.length">
+                                    :disabled="!selecionados.length"
+                            >
                                 <i class="fas fa-list mr-2"></i>Treinamento/Bloqueio
                             </button>
                         </form>
@@ -1144,7 +1223,8 @@
 
                 <button class="btn btn-sm btn-danger mb-1 mr-1"
                         :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="!selecionados.length" @click="selecionados = []">
+                        :disabled="!selecionados.length" @click="selecionados = []"
+                >
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
 
@@ -1153,21 +1233,25 @@
                         @click.pre.prevent="abrirFormMassa()"
                         data-toggle="modal"
                         data-target="#janelaTreinamentoMassa"
-                        :disabled="!selecionadosMassa.length">
+                        :disabled="!selecionadosMassa.length"
+                >
                     <i class="fa fa-plus"></i> Atualizar em massa <span class="badge badge-light">@{{ selecionadosMassa.length }}</span>
                 </button>
 
                 <button class="btn btn-sm btn-danger mb-1 mr-1" v-if="false"
                         :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="!selecionadosMassa.length" @click="selecionadosMassa = []">
+                        :disabled="!selecionadosMassa.length" @click="selecionadosMassa = []"
+                >
                     <i class="fa fa-times"></i> Limpar seleção em massa
                 </button>
 
                 <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
                         @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando || preloadExportacao || lista.length===0 || selecionados.length === 0">
+                        :disabled="controle.carregando || preloadExportacao || lista.length===0"
+                >
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                                                                           v-show="selecionados.length > 0"
+                    >@{{ selecionados.length }}</span>
                 </button>
 
                 {{--                @if (auth()->user()->cliente_id != \App\Models\User::BPSE)--}}
@@ -1201,7 +1285,8 @@
                                 <input type="checkbox" class="custom-control-input" id="checkAllMain"
                                        :style="!emTreinamentos.length ? 'cursor: not-allowed' : 'cursor: pointer'"
                                        :disabled="!emTreinamentos.length" :checked="tudoMarcado"
-                                       @click="selecionaTodos">
+                                       @click="selecionaTodos"
+                                >
                                 <label class="custom-control-label" for="checkAllMain">Selecionar todos</label>
                             </div>
                         </div>
@@ -1224,7 +1309,8 @@
 
                         <div class="col text-right">
                             <button class="btn btn-sm btn-primary" content="Mostrar e Ocultar Treinamentos" v-tippy
-                                    data-toggle="modal" data-target="#filtroColunas">
+                                    data-toggle="modal" data-target="#filtroColunas"
+                            >
                                 <i class="bx bxs-filter-alt" aria-hidden="true"></i> Filtrar treinamentos
                             </button>
                         </div>
@@ -1271,15 +1357,18 @@
                                     <div class="dropdown dropleft">
                                         <button class="btn btn-sm btn-secondary dropdown-toggle"
                                                 id="dropdownMenuLink"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                        >
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-custom"
-                                             aria-labelledby="dropdownMenuLink">
+                                             aria-labelledby="dropdownMenuLink"
+                                        >
                                             <a class="dropdown-item" href="javascript://" title="Atualizar treinamento"
                                                @click.prevent="formAlterar(item.id)"
                                                data-toggle="modal"
-                                               data-target="#janelaTreinamento">
+                                               data-target="#janelaTreinamento"
+                                            >
                                                 <i class="fas fa-edit fa-fw mr-1"></i> Atualizar treinamento
                                             </a>
                                             {{--                                            <a class="dropdown-item" href="javascript://" title="Enviar via e-mail"--}}
@@ -1337,7 +1426,8 @@
                                 <tbody>
                                 <tr v-for="v in item.treinamento.vencimentos" :key="v.id"
                                     :class="v.pivot.status.corBorder"
-                                    v-if="isColunaTreinamentoSelecionada(v)">
+                                    v-if="isColunaTreinamentoSelecionada(v)"
+                                >
                                     <td>@{{ v.label }}</td>
                                     <td>@{{ v.pivot.data_treinamento }}</td>
                                     <td>@{{ v.pivot.data_vencimento }}</td>
@@ -1533,7 +1623,8 @@
                             url="{{route('g.treinamentos.atualizar')}}"
                             :por-pagina="controle.dados.porPagina"
                             :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+                            v-on:carregou="carregou" v-on:carregando="carregando"
+        ></controle-paginacao>
     </div>
 
 @stop
