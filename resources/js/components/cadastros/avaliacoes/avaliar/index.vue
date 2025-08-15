@@ -10,7 +10,7 @@
                         <div class="row mb-3" v-if="formAvaliarFinal.dados_do_funcionario.cnpj_lotacao">
                             <div class="col-12"><strong>CNPJ:</strong>
                                 {{ formAvaliarFinal.dados_do_funcionario.cnpj_lotacao.razao_social }}
-                                ({{ formAvaliarFinal.dados_do_funcionario.pertence_filial ? 'Filial' : 'Matriz' }})
+                                ({{ formAvaliarFinal.dados_do_funcionario.pertence_filial ? "Filial" : "Matriz" }})
                             </div>
                         </div>
                         <div class="row">
@@ -48,13 +48,13 @@
                         <thead>
                         <tr>
                             <!-- CORREÇÃO APLICADA: Mudança de item[index] para item[0] com guard -->
-                            <th>{{ (item[0] || {}).topico_pai || '' }}</th>
+                            <th>{{ (item[0] || {}).topico_pai || "" }}</th>
                             <!-- CORREÇÃO APLICADA: Adicionado guard para avaliadores -->
                             <th class="text-center" v-for="(avaliador, id) in ((item[0] || {}).avaliadores || [])"
                                 :key="avaliador.id"
                             >
                                 <span>
-                                    {{ avaliador.origem === 'Funcionario' ? 'Autoavaliação' : 'Avaliador ' + (id + 1) }}
+                                    {{ avaliador.origem === "Funcionario" ? "Autoavaliação" : "Avaliador " + (id + 1) }}
                                 </span>
                             </th>
                             <th class="text-center">MÉDIA</th>
@@ -94,7 +94,7 @@
                                 :key="avaliador.id"
                             >
                                 <span>
-                                    {{ avaliador.origem === 'Funcionario' ? 'Autoavaliação' : 'Avaliador ' + (id + 1) }}
+                                    {{ avaliador.origem === "Funcionario" ? "Autoavaliação" : "Avaliador " + (id + 1) }}
                                 </span>
                             </th>
                         </tr>
@@ -227,7 +227,7 @@
                         <div class="row mb-3" v-if="formAvaliar.dados_do_funcionario.cnpj_lotacao">
                             <div class="col-12"><strong>CNPJ:</strong>
                                 {{ formAvaliar.dados_do_funcionario.cnpj_lotacao.razao_social }}
-                                ({{ formAvaliar.dados_do_funcionario.pertence_filial ? 'Filial' : 'Matriz' }})
+                                ({{ formAvaliar.dados_do_funcionario.pertence_filial ? "Filial" : "Matriz" }})
                             </div>
                         </div>
                         <div class="row">
@@ -275,7 +275,7 @@
                             <legend>{{ subtopico.topico }}</legend>
                             <p class="quebra_linha_textarea">{{ subtopico.topico_explicacao }}</p>
                             <div class="form-group">
-                                <label>{{ visualizando ? 'Nota' : 'Informe sua nota' }}</label>
+                                <label>{{ visualizando ? "Nota" : "Informe sua nota" }}</label>
                                 <select :disabled="visualizando" class="form-control validacampo"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @change.prevent="valida_campo_vazio($event.target, 1)"
@@ -411,7 +411,7 @@
                         <td class="text-center">Título</td>
                         <td class="text-center">Tipo</td>
                         <td class="text-center">Avaliar até</td>
-                        <td class="text-center">Funcionário</td>
+                        <td class="text-center">{{ selecionadaAvaliacao.tipo_pj ? "Fornecedor" : "Funcionário" }}</td>
                         <td class="text-center">Avaliador</td>
                         <td class="text-center">Avaliar Como</td>
                         <td class="text-center">Ação</td>
@@ -446,7 +446,7 @@
                                     v-show="item.origem_feedback === 'Funcionario' && !item.principal"
                                 >Autoavaliação</span>
                             <span v-if="item.origem_feedback === 'Avaliador'">
-                                 {{ item.tipo_avaliador ? item.tipo_avaliador.label : '---' }}
+                                 {{ item.tipo_avaliador ? item.tipo_avaliador.label : "---" }}
                             </span>
 
 
@@ -653,11 +653,11 @@
 </template>
 
 <script>
-import controlePaginacao from '../../../ControlePaginacao'
-import modal from '../../../Modal'
-import DatePicker from '../../../DatePicker'
-import RadarChart from '../../../Charts/Radar'
-import validacoes from '../../../../mixins/Validacoes'
+import controlePaginacao from "../../../ControlePaginacao";
+import modal from "../../../Modal";
+import DatePicker from "../../../DatePicker";
+import RadarChart from "../../../Charts/Radar";
+import validacoes from "../../../../mixins/Validacoes";
 
 export default {
     components: {
@@ -681,25 +681,25 @@ export default {
         modal: { // modal Pai
             type: String,
             required: false,
-            default: ''
+            default: ""
         }
     },
     async mounted() {
-        await this.listaAvaliacao()
-        this.formAvaliarDefault = _.cloneDeep(this.formAvaliar)
-        this.formAvaliarFinalDefault = _.cloneDeep(this.formAvaliarFinal)
+        await this.listaAvaliacao();
+        this.formAvaliarDefault = _.cloneDeep(this.formAvaliar);
+        this.formAvaliarFinalDefault = _.cloneDeep(this.formAvaliarFinal);
 
         // CORREÇÃO APLICADA: Verificação de segurança antes de acessar array
         if (this.lista_avaliacoes && this.lista_avaliacoes.length > 0) {
-            this.controle.dados.campoAvaliacao = this.lista_avaliacoes[0].id
+            this.controle.dados.campoAvaliacao = this.lista_avaliacoes[0].id;
         }
-        await this.atualizar()
+        await this.atualizar();
     },
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
-            titulo_janela_final: 'Open Feedback - Avaliação Final',
+            titulo_janela: "",
+            titulo_janela_final: "Open Feedback - Avaliação Final",
             preload: false,
             preloadAvalFinal: false,
             editando: false,
@@ -712,17 +712,17 @@ export default {
                 respostas: [],
                 respostasFunc: [],
                 dados_do_funcionario: [],
-                comentario: '',
-                comentario_funcionario: ''
+                comentario: "",
+                comentario_funcionario: ""
             },
 
             // CORREÇÃO APLICADA: Inicialização melhorada do formAvaliarFinal
             formAvaliarFinal: {
                 dados_do_funcionario: {},
-                avaliador_principal: '',
-                status_avaliacao: '',
-                total_aval: '',
-                media_aval: '',
+                avaliador_principal: "",
+                status_avaliacao: "",
+                total_aval: "",
+                media_aval: "",
                 nota_final: 0,
                 resultado_topico_pai: {},
                 result_topico_pai_agrupado: [],
@@ -755,50 +755,50 @@ export default {
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: '',
-                    campoAvaliacao: '',
-                    campoStatus: '',
+                    campoBusca: "",
+                    campoAvaliacao: "",
+                    campoStatus: "",
                     ano_avaliacao: new Date().getFullYear(),
-                    tipo_avaliacao: ''
+                    tipo_avaliacao: ""
                 }
             }
-        }
+        };
     },
     computed: {
         listaKeysAvaliacaoPorAnoOrdenado() {
-            return Object.keys(this.lista_avaliacoes_por_ano).sort((a, b) => b - a)
+            return Object.keys(this.lista_avaliacoes_por_ano).sort((a, b) => b - a);
         },
         groupAvaliacaoAno() {
-            let group = _.groupBy(this.lista_avaliacoes_por_ano[this.controle.dados.ano_avaliacao], 'avaliacao_tipo_id')
+            let group = _.groupBy(this.lista_avaliacoes_por_ano[this.controle.dados.ano_avaliacao], "avaliacao_tipo_id");
 
-            let array = []
+            let array = [];
             for (let key in group) {
                 if (group[key][0].ativo) {
                     array.push({
                         avaliacao_tipo_id: key,
                         avaliacao_tipo: group[key][0].avaliacao_tipo.nome
-                    })
+                    });
                 }
             }
-            return array
+            return array;
         },
         selecionadaAvaliacao() {
-            return (this.lista_avaliacoes).find(item => item.id === this.controle.dados.campoAvaliacao) ?? null
+            return (this.lista_avaliacoes).find(item => item.id === this.controle.dados.campoAvaliacao) ?? null;
         },
         statusAvaliacaoSelecionada() {
             let statusSemAutoAvaliacao = [
-                { label: 'Pendente avaliação gestor', value: 'Pendente' },
-                { label: 'Avaliada pelo Gestor', value: 'Avaliada' },
-                { label: 'Completa', value: 'Finalizada' }
-            ]
+                { label: "Pendente avaliação gestor", value: "Pendente" },
+                { label: "Avaliada pelo Gestor", value: "Avaliada" },
+                { label: "Completa", value: "Finalizada" }
+            ];
             let statusComAutoAvaliacao = [
-                { label: 'Pendente', value: 'Pendente' },
-                { label: 'Avaliada', value: 'Avaliada' },
-                { label: 'Finalizada', value: 'Finalizada' }
-            ]
+                { label: "Pendente", value: "Pendente" },
+                { label: "Avaliada", value: "Avaliada" },
+                { label: "Finalizada", value: "Finalizada" }
+            ];
 
-            let status = this.selecionadaAvaliacao?.auto_avaliacao ? statusComAutoAvaliacao : statusSemAutoAvaliacao
-            return status ?? []
+            let status = this.selecionadaAvaliacao?.auto_avaliacao ? statusComAutoAvaliacao : statusSemAutoAvaliacao;
+            return status ?? [];
         }
 
     },
@@ -806,131 +806,131 @@ export default {
         // CORREÇÃO PRINCIPAL: Substituição do filtro por métodos
         formatarDecimal(valor) {
             if (valor === null || valor === undefined || isNaN(valor)) {
-                return '0.0'
+                return "0.0";
             }
-            return Number(valor).toFixed(1)
+            return Number(valor).toFixed(1);
         },
 
         getMediaFormatada(chartName) {
             if (this.formAvaliarFinal.resultado_topico_pai &&
                 this.formAvaliarFinal.resultado_topico_pai[chartName] &&
                 this.formAvaliarFinal.resultado_topico_pai[chartName].media !== undefined) {
-                return this.formatarDecimal(this.formAvaliarFinal.resultado_topico_pai[chartName].media)
+                return this.formatarDecimal(this.formAvaliarFinal.resultado_topico_pai[chartName].media);
             }
-            return '0.0'
+            return "0.0";
         },
 
         getMediaTopico(topicoId) {
             if (this.formAvaliarFinal.result_topico &&
                 this.formAvaliarFinal.result_topico[topicoId] &&
                 this.formAvaliarFinal.result_topico[topicoId].media !== undefined) {
-                return this.formatarDecimal(this.formAvaliarFinal.result_topico[topicoId].media)
+                return this.formatarDecimal(this.formAvaliarFinal.result_topico[topicoId].media);
             }
-            return '0.0'
+            return "0.0";
         },
 
         async listaAvaliacao() {
             await axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/lista/listavaliacoes`)
                 .then(response => {
-                    this.lista_avaliacoes = response.data.lista_avaliacoes
-                    this.lista_anos = response.data.lista_anos
+                    this.lista_avaliacoes = response.data.lista_avaliacoes;
+                    this.lista_anos = response.data.lista_anos;
 
                 }).catch(
                     error => (this.preloadAjax = false)
-                )
+                );
         },
 
         // CORREÇÃO APLICADA: Melhorada a função addPlanoAcao
         addPlanoAcao() {
             // Garante que o array planos_acoes existe
             if (!this.formAvaliarFinal.planos_acoes) {
-                this.formAvaliarFinal.planos_acoes = []
+                this.formAvaliarFinal.planos_acoes = [];
             }
 
             let obj = {
                 nova: true,
-                avaliacao_feedback_id: this.formAvaliarFinal.avaliacao_feedback_id || '',
-                avaliacao_feedback_id_avaliador: this.formAvaliarFinal.avaliacao_feedback_id_avaliador || '',
-                gestor_id: this.formAvaliarFinal.gestor_id || '',
-                topico_id: '',
-                responsavel: (this.formAvaliarFinal.dados_do_funcionario && this.formAvaliarFinal.dados_do_funcionario.nome) || '',
-                plano_de_acao: '',
-                inicio: '',
-                termino: '',
-                status: '',
+                avaliacao_feedback_id: this.formAvaliarFinal.avaliacao_feedback_id || "",
+                avaliacao_feedback_id_avaliador: this.formAvaliarFinal.avaliacao_feedback_id_avaliador || "",
+                gestor_id: this.formAvaliarFinal.gestor_id || "",
+                topico_id: "",
+                responsavel: (this.formAvaliarFinal.dados_do_funcionario && this.formAvaliarFinal.dados_do_funcionario.nome) || "",
+                plano_de_acao: "",
+                inicio: "",
+                termino: "",
+                status: "",
                 dados_extras: {}
-            }
-            this.formAvaliarFinal.planos_acoes.push(obj)
+            };
+            this.formAvaliarFinal.planos_acoes.push(obj);
         },
 
         // CORREÇÃO APLICADA: Melhorada a função removerPlanoAcao
         removerPlanoAcao(index) {
             if (!this.formAvaliarFinal.planos_acoes || index < 0 || index >= this.formAvaliarFinal.planos_acoes.length) {
-                return
+                return;
             }
 
             if (this.formAvaliarFinal.planos_acoes[index].id) {
                 if (!this.formAvaliarFinal.planos_acoes_delete) {
-                    this.formAvaliarFinal.planos_acoes_delete = []
+                    this.formAvaliarFinal.planos_acoes_delete = [];
                 }
-                this.formAvaliarFinal.planos_acoes_delete.push(this.formAvaliarFinal.planos_acoes[index].id)
+                this.formAvaliarFinal.planos_acoes_delete.push(this.formAvaliarFinal.planos_acoes[index].id);
             }
-            this.formAvaliarFinal.planos_acoes.splice(index, 1)
+            this.formAvaliarFinal.planos_acoes.splice(index, 1);
         },
 
         avaliarForm(avaliacaoFeedback, visualizando = false) {
-            this.visualizando = visualizando
-            this.editando = true
-            this.titulo_janela = `Avaliação: ${avaliacaoFeedback.avaliacao.titulo}`
-            this.preload = true
+            this.visualizando = visualizando;
+            this.editando = true;
+            this.titulo_janela = `Avaliação: ${avaliacaoFeedback.avaliacao.titulo}`;
+            this.preload = true;
 
-            this.formAvaliar = _.cloneDeep(this.formAvaliarDefault) //copia
-            formReset()
+            this.formAvaliar = _.cloneDeep(this.formAvaliarDefault); //copia
+            formReset();
 
             axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/edit`)
                 .then(response => {
-                    this.lista_topicos = response.data.topicos
-                    this.formAvaliar.respostas = response.data.respostas
-                    this.formAvaliar.respostasFunc = response.data.respostas_funcionario
-                    this.formAvaliar.comentario = response.data.comentario
-                    this.formAvaliar.comentario_funcionario = response.data.comentario_funcionario
-                    this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario
-                    this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id
-                    this.formAvaliar.origem_feedback = response.data.origem_feedback
-                    this.formAvaliar.principal = response.data.principal
-                    this.editando = true
-                    setupCampo()
-                    this.preload = false
+                    this.lista_topicos = response.data.topicos;
+                    this.formAvaliar.respostas = response.data.respostas;
+                    this.formAvaliar.respostasFunc = response.data.respostas_funcionario;
+                    this.formAvaliar.comentario = response.data.comentario;
+                    this.formAvaliar.comentario_funcionario = response.data.comentario_funcionario;
+                    this.formAvaliar.dados_do_funcionario = response.data.dados_do_funcionario;
+                    this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
+                    this.formAvaliar.origem_feedback = response.data.origem_feedback;
+                    this.formAvaliar.principal = response.data.principal;
+                    this.editando = true;
+                    setupCampo();
+                    this.preload = false;
                 }).catch(
                 error => (this.preloadAjax = false)
-            )
+            );
         },
 
         // CORREÇÃO APLICADA: Melhorada a função avaliarFinalForm
         avaliarFinalForm(avaliacaoFeedback, visualizando = false) {
-            this.visualizando = visualizando
-            this.editando = true
-            this.titulo_janela = `Avaliação Final: ${avaliacaoFeedback.avaliacao.titulo}`
-            this.preloadAvalFinal = true
+            this.visualizando = visualizando;
+            this.editando = true;
+            this.titulo_janela = `Avaliação Final: ${avaliacaoFeedback.avaliacao.titulo}`;
+            this.preloadAvalFinal = true;
 
             // Reset para um estado seguro
-            this.formAvaliarFinal = _.cloneDeep(this.formAvaliarFinalDefault)
+            this.formAvaliarFinal = _.cloneDeep(this.formAvaliarFinalDefault);
 
             // Garante que arrays críticos estão inicializados
             if (!this.formAvaliarFinal.result_topico_pai_agrupado) {
-                this.formAvaliarFinal.result_topico_pai_agrupado = []
+                this.formAvaliarFinal.result_topico_pai_agrupado = [];
             }
             if (!this.formAvaliarFinal.resultChart) {
-                this.formAvaliarFinal.resultChart = []
+                this.formAvaliarFinal.resultChart = [];
             }
             if (!this.formAvaliarFinal.resultado_topico_pai) {
-                this.formAvaliarFinal.resultado_topico_pai = {}
+                this.formAvaliarFinal.resultado_topico_pai = {};
             }
             if (!this.formAvaliarFinal.planos_acoes) {
-                this.formAvaliarFinal.planos_acoes = []
+                this.formAvaliarFinal.planos_acoes = [];
             }
 
-            formReset()
+            formReset();
 
             axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/final`)
                 .then(({ data }) => {
@@ -942,74 +942,74 @@ export default {
                         resultado_topico_pai: data.resultado_topico_pai || {},
                         planos_acoes: data.planos_acoes || [],
                         result_topico: data.result_topico || {}
-                    })
+                    });
 
-                    this.editando = true
-                    setupCampo()
-                    this.preloadAvalFinal = false
+                    this.editando = true;
+                    setupCampo();
+                    this.preloadAvalFinal = false;
                 }).catch(error => {
-                console.error('Erro ao carregar avaliação final:', error)
-                this.preloadAvalFinal = false
-                toastr.error('Erro ao carregar avaliação final', 'Erro!')
-            })
+                console.error("Erro ao carregar avaliação final:", error);
+                this.preloadAvalFinal = false;
+                toastr.error("Erro ao carregar avaliação final", "Erro!");
+            });
         },
 
         salvarAvaliacaoFinal() {
 
-            this.validaBlur()
-            let countErro = document.querySelectorAll('.is-invalid').length
+            this.validaBlur();
+            let countErro = document.querySelectorAll(".is-invalid").length;
             if (countErro > 0) {
-                toastr.error('Verifique os campos', 'Atenção!')
-                return false
+                toastr.error("Verifique os campos", "Atenção!");
+                return false;
             }
 
-            this.preloadAvalFinal = true
+            this.preloadAvalFinal = true;
 
             axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliarFinal.avaliacao_feedback_id}/final`, this.formAvaliarFinal).then(response => {
-                $('#janelaAvaliacaoFinal').modal('hide')
-                mostraSucesso('', 'Avaliação Final salva com sucesso')
-                this.preloadAvalFinal = false
-                this.atualizado = true
-                this.atualizar()
-            }).catch(error => (this.preload = false))
+                $("#janelaAvaliacaoFinal").modal("hide");
+                mostraSucesso("", "Avaliação Final salva com sucesso");
+                this.preloadAvalFinal = false;
+                this.atualizado = true;
+                this.atualizar();
+            }).catch(error => (this.preload = false));
         },
 
         salvar() {
-            this.validaBlur()
-            let countErro = document.querySelectorAll('.is-invalid').length
+            this.validaBlur();
+            let countErro = document.querySelectorAll(".is-invalid").length;
             if (countErro > 0) {
-                toastr.error('Verifique os campos', 'Atenção!')
-                return false
+                toastr.error("Verifique os campos", "Atenção!");
+                return false;
             }
-            this.preload = true
+            this.preload = true;
 
             axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliar.avaliacao_feedback_id}`, this.formAvaliar).then(response => {
-                $('#janelaCadastrar').modal('hide')
-                mostraSucesso('', 'Avaliação enviada com sucesso')
-                this.preload = false
-                this.atualizado = true
-                this.atualizar()
-            }).catch(error => (this.preload = false))
+                $("#janelaCadastrar").modal("hide");
+                mostraSucesso("", "Avaliação enviada com sucesso");
+                this.preload = false;
+                this.atualizado = true;
+                this.atualizar();
+            }).catch(error => (this.preload = false));
         },
         carregou(dados) {
-            this.lista = dados.itens
-            this.fluxoAvaliacao = dados.itens.length ? dados.itens[0].fluxo : null
-            this.lista_avaliacoes_tipos = dados.avaliacoes_tipos
-            this.lista_status = dados.lista_status
-            this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano
-            this.tem_privilegio_gestao_rh = dados.tem_privilegio_gestao_rh
-            this.controle.carregando = false
+            this.lista = dados.itens;
+            this.fluxoAvaliacao = dados.itens.length ? dados.itens[0].fluxo : null;
+            this.lista_avaliacoes_tipos = dados.avaliacoes_tipos;
+            this.lista_status = dados.lista_status;
+            this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano;
+            this.tem_privilegio_gestao_rh = dados.tem_privilegio_gestao_rh;
+            this.controle.carregando = false;
         },
         carregando() {
-            this.controle.carregando = true
+            this.controle.carregando = true;
         },
         async atualizar() {
-            this.$refs.componente.atual = 1
-            await this.$refs.componente.buscar()
+            this.$refs.componente.atual = 1;
+            await this.$refs.componente.buscar();
         }
     }
 
-}
+};
 </script>
 
 <style scoped>

@@ -711,6 +711,7 @@ class AvaliacaoController extends Controller
             'token' => \Crypt::encrypt($avaliacaoFeedback->id),
             'titulo_avaliacao' => $avaliacaoFeedback->Avaliacao->titulo,
             'tipo_avaliacao' => $avaliacaoFeedback->Avaliacao->AvaliacaoTipo->nome,
+            'tipo_pj' => $avaliacaoFeedback->tipo_pj,
         ];
     }
 
@@ -718,8 +719,9 @@ class AvaliacaoController extends Controller
     {
         $token = \Crypt::decrypt($token);
         $dados = $this->avaliarFinal($token);
+        $tipo_pj = $dados['tipo_pj'];
 
-        return view('pdf.avaliacoes.desempenho', compact('dados'));
+        return view('pdf.avaliacoes.desempenho', compact('dados', 'tipo_pj'));
     }
 
     public function salvaAvaliacao(Request $request, AvaliacaoFeedback $avaliacaoFeedback)

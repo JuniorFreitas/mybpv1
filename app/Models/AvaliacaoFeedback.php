@@ -185,4 +185,18 @@ class AvaliacaoFeedback extends Model
     {
         return $query->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR);
     }
+
+    //criar um observer para atualizar definir se é tipo_pj ou não vindo da avaliacao_id
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $avaliacao = Avaliacao::find($model->avaliacao_id);
+            $model->setAttribute('tipo_pj', $avaliacao->tipo_pj);
+        });
+
+        static::updating(function ($model) {
+            $avaliacao = Avaliacao::find($model->avaliacao_id);
+            $model->setAttribute('tipo_pj', $avaliacao->tipo_pj);
+        });
+    }
 }

@@ -489,7 +489,7 @@ class TreinamentoController extends Controller
 
         $resultado = FeedbackCurriculoFilter::make()
             ->apply($request)
-            ->paginate(100);
+            ->paginate(50);
 
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
 

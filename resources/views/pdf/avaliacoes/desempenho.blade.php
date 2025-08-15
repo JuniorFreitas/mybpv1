@@ -13,7 +13,10 @@
             <!-- DADOS DO COLABORADOR MELHORADOS -->
             <div class="dados-funcionario">
                 <fieldset>
-                    <legend>DADOS DO COLABORADOR</legend>
+                    <legend>
+                        {{ $tipo_pj ? 'DADOS DO FORNECEDOR' : 'DADOS DO COLABORADOR' }}
+                    </legend>
+
 
                     <!-- Empresa/CNPJ -->
                     <div class="dados-row" v-if="formAvaliarFinal.dados_do_funcionario.cnpj_lotacao">
