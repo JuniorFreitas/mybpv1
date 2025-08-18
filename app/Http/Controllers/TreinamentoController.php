@@ -846,9 +846,8 @@ class TreinamentoController extends Controller
                     'attempts' => $attempts,
                     'max_tries' => $maxTries,
                     'last_error' => $cacheData['last_error'] ?? null
-                ], 400); // 409 Conflict apenas se ainda processando
+                ], 200); // 409 Conflict apenas se ainda processando
             }
-
             $nameArquivo = "treinamentos-exportado" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
             $expiresAt = now()->addMinutes(15);
 
