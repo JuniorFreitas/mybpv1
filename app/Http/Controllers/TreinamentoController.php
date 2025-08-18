@@ -19,6 +19,7 @@ use App\Models\Vencimento;
 use App\Services\FeedbackCurriculoFilter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Mail;
 use MasterTag\DataHora;
@@ -448,7 +449,7 @@ class TreinamentoController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Treinamento $treinamento
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
     public function update(Request $request, $treinamento)
     {
@@ -461,7 +462,6 @@ class TreinamentoController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             \Log::debug("error TREINAMENTO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}");
-            return "error ADMISSAO AVULSA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
@@ -812,101 +812,80 @@ class TreinamentoController extends Controller
             ->getQuery();
     }
 
-    public function export(Request $request)
+
+    public function export(Request $request): JsonResponse
     {
-//        $resultado = $this->filtro($request);
-//
-//        if ($request->selecionados) {
-//            $resultado = $this->filtro($request)->whereIn('id', $request->selecionados);
-//        }
-//
-//        $resultado = $resultado->get()->toArray();
-//
-//        $treinamentos_selecionados = $request->treinamentos_selecionados;
-//
-//        $resultado = collect($resultado)->map(function ($item) {
-//            $item['treinamento']['vencimentos'] = collect($item['treinamento']['vencimentos'])->toArray();
-//            return $item;
-//        })->toArray();
-//
-//        if (count($treinamentos_selecionados) > 0) {
-//            $resultado = collect($resultado)->map(function ($item) use ($treinamentos_selecionados) {
-//                $item['treinamento']['vencimentos'] = collect($item['treinamento']['vencimentos'])->filter(function ($vencimento) use ($treinamentos_selecionados) {
-//                    return in_array($vencimento['label'], $treinamentos_selecionados);
-//                })->toArray();
-//                return $item;
-//            })->toArray();
-//        }
-//
-//        $head = [
-//            "Nome",
-////            "Vaga",
-//            "Cargo",
-//            "Status",
-//            "Data Admissão",
-//            "PCD",
-//            "Área",
-//            "Foto 3x4",
-//            "Treinamento",
-//            "Data do treinamento",
-//            "Data do vencimento",
-//            "Ultima Atualização",
-//        ];
-//
-//        $rows = [];
-//
-//        foreach ($resultado as $row) {
-//            foreach ($row['treinamento']['vencimentos'] as $vencimento) {
-//                $rows[] = [
-//                    $row['curriculo']['nome'],
-////                    $row['vaga_aberta']['titulo'],
-//                    $row['admissao'] ? $row['admissao']['cargo'] : "",
-//                    $row['admissao'] ? $row['admissao']['status'] : "",
-//                    $row['admissao'] ? $row['admissao']['data_admissao'] : "",
-//
-//                    $row['curriculo']['pcd'] ? 'Sim' : 'Não',
-//                    $row['admissao']['area_etiqueta'] ? $row['admissao']['area_etiqueta']['label'] : 'Não informado',
-//                    $row['curriculo']['foto_tres'] ? 'Sim' : 'Não',
-//                    $vencimento['label'],
-//                    $vencimento['pivot']['data_treinamento'],
-//                    $vencimento['pivot']['data_vencimento'],
-//                    $row['treinamento']['updated_at'],
-//                ];
-//            }
-//        }
-//
-//        $nameArquivo = "treinamentos" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-//        JobExportaExcel::dispatch(auth()->id(), "Carteira - Etiqueta", $head, $rows, $nameArquivo);
-//        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-
-//        $nameArquivo = "treinamentos-exportado" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-//
-//        // Passa apenas os parâmetros do request para o job
-//        JobExportaTreinamentos::dispatch(
-//            auth()->id(),
-//            $request->all(),
-//            $nameArquivo
-//        );
-//
-//        return response()->json([
-//            'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.'
-//        ]);
-
         try {
-            $nameArquivo = "treinamentos-exportado" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+            $userId = auth()->id();
+            $requestData = $request->all();
 
+            // Criar uma chave única baseada no usuário e parâmetros da request
+            $cacheKey = 'export_treinamentos_' . $userId . '_' . md5(json_encode($requestData));
+
+            // Verificar se já existe um export em andamento
+            if (Cache::get($cacheKey)) {
+                $cacheData = Cache::get($cacheKey);
+
+                // Verifica diferentes status
+                $status = $cacheData['status'] ?? 'processing';
+                $attempts = $cacheData['attempt'] ?? 1;
+                $maxTries = $cacheData['max_tries'] ?? 3;
+
+                $message = match ($status) {
+                    'processing' => "Exportação em andamento (tentativa {$attempts}/{$maxTries}). Aguarde a conclusão.",
+                    'retrying' => "Exportação tentando novamente (tentativa {$attempts}/{$maxTries}). Aguarde.",
+                    'completed' => "Exportação já foi concluído. Verifique suas notificações.",
+                    'failed' => "Última Exportação falhou após {$maxTries} tentativas. Você pode tentar novamente.",
+                    default => "Já existe uma Exportação em andamento. Aguarde a conclusão."
+                };
+
+                return response()->json([
+                    'msg' => $message,
+                    'status' => $status,
+                    'initiated_at' => $cacheData['initiated_at'] ?? null,
+                    'attempts' => $attempts,
+                    'max_tries' => $maxTries,
+                    'last_error' => $cacheData['last_error'] ?? null
+                ], 400); // 409 Conflict apenas se ainda processando
+            }
+
+            $nameArquivo = "treinamentos-exportado" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+            $expiresAt = now()->addMinutes(15);
+
+            // Armazenar no cache com tempo de expiração definido
+            Cache::put($cacheKey, [
+                'filename' => $nameArquivo, // Corrigido: era fileName
+                'initiated_at' => now(),
+                'expires_at' => $expiresAt, // Para controle de TTL
+                'user_id' => $userId,
+                'status' => 'queued', // Status inicial
+                'attempt' => 0,
+                'max_tries' => 3,
+                'progress' => 0
+            ], $expiresAt);
+
+            // Dispatch do job
             JobExportaTreinamentos::dispatch(
-                auth()->id(),
-                $request->all(),
-                $nameArquivo
+                $userId,
+                $requestData,
+                $nameArquivo,
+                $cacheKey
             );
 
             return response()->json([
-                'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.'
+                'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.',
+                'export_id' => $cacheKey,
+                'estimated_time' => '5-15 minutos'
             ]);
 
         } catch (\Exception $e) {
-            \Log::error("Erro no controller de export: " . $e->getMessage());
+            \Log::error("Erro no controller de export treinamentos: " . $e->getMessage() . " " . $e->getFile() . " on line " . $e->getLine());
+
+            // Limpar cache em caso de erro
+            if (isset($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
+
             return response()->json(['error' => 'Erro interno'], 500);
         }
     }

@@ -5,18 +5,20 @@ namespace App\Jobs;
 use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\Arquivo;
 use App\Models\Exportacao;
-use App\Services\FeedbackCurriculoFilter;
 use App\Models\User;
+use App\Services\FeedbackCurriculoFilter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class JobExportaTreinamentos implements ShouldQueue
 {
@@ -25,22 +27,57 @@ class JobExportaTreinamentos implements ShouldQueue
     protected $userId;
     protected $requestData;
     protected $fileName;
+    protected mixed $cacheKey;
 
+    public int $timeout = 900; // Tempo máximo de execução do job (15 minutos)
+
+    /**
+     * Número de tentativas e tempo de espera entre elas
+     * Ajuste conforme necessário para o seu ambiente
+     */
+    public int $tries = 3; // Número de tentativas antes de falhar
+    public int $backoff = 10; // Tempo de espera entre as tentativas (em segundos)
+
+    /**
+     * Quantidade de registros por chunk
+     * Ajuste conforme necessário para o seu ambiente
+     */
     const CHUNK_QNT = 100; // Quantidade de registros por chunk
 
-    public function __construct($userId, $requestData, $fileName)
+    /**
+     * Create a new job instance.
+     *
+     * @param int $userId
+     * @param array $requestData
+     * @param string $fileName
+     * @param string|null $cacheKey
+     */
+    public function __construct(int $userId, array $requestData, string $fileName, string $cacheKey = null)
     {
         $this->userId = $userId;
         $this->requestData = $requestData;
         $this->fileName = $fileName;
+        $this->cacheKey = $cacheKey;
     }
 
-    public function handle()
+
+    /**
+     * Execute the job.
+     * @return void
+     * @throws \Exception
+     */
+    public function handle(): void
     {
         try {
+            // Atualizar cache com tentativa atual
+            $this->updateCacheStatus('processing', [
+                'attempt' => $this->attempts(),
+                'max_tries' => $this->tries
+            ]);
+
+
             \Auth::loginUsingId($this->userId);
 
-            // Configura ambiente para processamento pesado
             ini_set('memory_limit', '1024M');
             ini_set('max_execution_time', 0);
 
@@ -54,7 +91,7 @@ class JobExportaTreinamentos implements ShouldQueue
                 throw new \Exception("Usuário {$this->userId} não encontrado");
             }
 
-            \Log::info("Iniciando exportação para usuário: {$this->userId}");
+            \Log::info("Iniciando exportação para usuário: {$this->userId} (Tentativa {$this->attempts()}/{$this->tries})");
 
             // Usa o filtro sem login automático para evitar problemas de contexto
             $query = FeedbackCurriculoFilter::forUser($this->userId)
@@ -75,18 +112,127 @@ class JobExportaTreinamentos implements ShouldQueue
 
             \Log::info("Exportação concluída com sucesso para usuário: {$this->userId}");
 
+            // ✅ SUCESSO: Remove cache apenas aqui
+            $this->completeExport();
+
         } catch (\Exception $e) {
             \Log::error('Erro ao exportar treinamentos: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             \Log::error('User ID: ' . $this->userId);
             \Log::error('Request data: ' . json_encode($this->requestData));
+            \Log::error("Tentativa {$this->attempts()}/{$this->tries} falhou");
+
+            // ✅ CORREÇÃO: NÃO remove o cache aqui - deixa o Laravel tentar novamente
+            // Apenas atualiza o status da tentativa
+            $this->updateCacheStatus('retrying', [
+                'attempt' => $this->attempts(),
+                'max_tries' => $this->tries,
+                'last_error' => $e->getMessage()
+            ]);
 
             // Re-lança a exceção para que o Laravel possa gerenciar o retry/failure
             throw $e;
         }
     }
 
-    private function processDataInChunks($query)
+    /**
+     * Atualiza o status no cache sem remover
+     */
+    private function updateCacheStatus($status, $additionalData = []): void
+    {
+        if (!$this->cacheKey || !Cache::has($this->cacheKey)) {
+            return;
+        }
+
+        $cacheData = Cache::get($this->cacheKey);
+        $cacheData['status'] = $status;
+        $cacheData['updated_at'] = now();
+
+        // Merge dados adicionais
+        foreach ($additionalData as $key => $value) {
+            $cacheData[$key] = $value;
+        }
+
+        // ✅ BACKGROUND: TTL menor (só para duração do job)
+        $expiresAt = $cacheData['expires_at'] ?? now()->addMinutes(15);
+        Cache::put($this->cacheKey, $cacheData, $expiresAt);
+
+        // ✅ Log para monitoramento
+        if ($status === 'retrying') {
+            \Log::warning("EXPORT_RETRY", [
+                'user_id' => $this->userId,
+                'attempt' => $additionalData['attempt'] ?? 0,
+                'max_tries' => $additionalData['max_tries'] ?? 3,
+                'last_error' => $additionalData['last_error'] ?? 'Unknown'
+            ]);
+        }
+    }
+
+    /**
+     * Completa a exportação com sucesso
+     */
+    private function completeExport(): void
+    {
+        // ✅ BACKGROUND: Remove cache imediatamente (não precisa manter)
+        Cache::forget($this->cacheKey);
+
+        // ✅ IMPORTANTE: Log estruturado para monitoramento
+        \Log::info("EXPORT_SUCCESS", [
+            'user_id' => $this->userId,
+            'filename' => $this->fileName,
+            'attempts' => $this->attempts(),
+            'duration' => now()->diffInSeconds(Cache::get($this->cacheKey)['initiated_at'] ?? now()),
+            'cache_key' => $this->cacheKey
+        ]);
+    }
+
+    /**
+     * Handle a job failure - APENAS AQUI o cache é removido definitivamente
+     */
+    public function failed(\Throwable $exception): void
+    {
+        // ✅ BACKGROUND: Remove cache imediatamente
+        Cache::forget($this->cacheKey);
+
+        // ✅ IMPORTANTE: Log estruturado para alertas/monitoramento
+        \Log::error("EXPORT_FAILED_FINAL", [
+            'user_id' => $this->userId,
+            'filename' => $this->fileName,
+            'total_attempts' => $this->tries,
+            'error_message' => $exception->getMessage(),
+            'error_file' => $exception->getFile(),
+            'error_line' => $exception->getLine(),
+            'cache_key' => $this->cacheKey,
+            'stack_trace' => $exception->getTraceAsString()
+        ]);
+
+        try {
+            // ✅ CRÍTICO: Notificação de falha para background job
+//            Event::dispatch(new NotificacaoEvent([
+//                'user_id' => $this->userId,
+//                'local' => 'Carteira Treinamentos',
+//                'error_message' => "Exportação falhou após {$this->tries} tentativas: " . $exception->getMessage(),
+//                'filename' => $this->fileName
+//            ], NotificacaoEvent::EXPORTACAO_EXCEL_FALHA ?? 'exportacao_falha', NotificacaoEvent::TIPO_ERRO ?? 'erro'));
+
+            \Log::info("EXPORT_NOTIFICATION_SENT", [
+                'user_id' => $this->userId,
+                'type' => 'failure'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("EXPORT_NOTIFICATION_FAILED", [
+                'user_id' => $this->userId,
+                'notification_error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * @throws Exception
+     * @throws \Exception
+     */
+    private function processDataInChunks($query): void
     {
         $head = [
             "Nome", "Cargo", "Status", "Data Admissão", "PCD", "Área",
@@ -108,6 +254,7 @@ class JobExportaTreinamentos implements ShouldQueue
                 'startColor' => ['rgb' => '366092']
             ]
         ];
+
         $sheet->getStyle('A1:M1')->applyFromArray($headerStyle);
 
         $currentRow = 2;
@@ -165,6 +312,15 @@ class JobExportaTreinamentos implements ShouldQueue
             unset($rows);
             $chunkCount++;
 
+            // Atualiza progresso no cache
+            if ($chunkCount % 5 === 0) {
+                $this->updateCacheStatus('processing', [
+                    'progress' => min(90, ($chunkCount * 10)), // Aproximação do progresso
+                    'chunks_processed' => $chunkCount,
+                    'records_processed' => $totalProcessed
+                ]);
+            }
+
             // Coleta de lixo a cada 10 chunks
             if ($chunkCount % 10 === 0) {
                 if (function_exists('gc_collect_cycles')) {
@@ -188,7 +344,13 @@ class JobExportaTreinamentos implements ShouldQueue
         $this->saveFile($spreadsheet);
     }
 
-    private function buildRowData($itemArray, $vencimento = null)
+    /**
+     * Constrói os dados de uma linha para o Excel
+     * @param $itemArray
+     * @param $vencimento
+     * @return array
+     */
+    private function buildRowData($itemArray, $vencimento = null): array
     {
         // Calcula status de vencimento e dias
         $statusVencimento = '';
@@ -266,7 +428,7 @@ class JobExportaTreinamentos implements ShouldQueue
     /**
      * Faz parse da data de vencimento com múltiplos formatos
      */
-    private function parseDataVencimento($dataString)
+    private function parseDataVencimento($dataString): ?\Carbon\Carbon
     {
         if (empty($dataString)) {
             return null;
@@ -345,7 +507,13 @@ class JobExportaTreinamentos implements ShouldQueue
         }
     }
 
-    private function applyConditionalFormatting($sheet, $rowsWithStatus)
+    /**
+     * Aplica formatação condicional nas células de status e dias
+     * @param $sheet
+     * @param $rowsWithStatus
+     * @return void
+     */
+    private function applyConditionalFormatting($sheet, $rowsWithStatus): void
     {
         foreach ($rowsWithStatus as $row => $status) {
             $cellRange = "K{$row}:L{$row}"; // Colunas K e L (Status e Dias)
@@ -416,7 +584,13 @@ class JobExportaTreinamentos implements ShouldQueue
         }
     }
 
-    private function saveFile($spreadsheet)
+    /**
+     * Salva o arquivo Excel no S3
+     * @param $spreadsheet
+     * @return void
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     */
+    private function saveFile($spreadsheet): void
     {
         try {
             $writer = new Xlsx($spreadsheet);
@@ -477,16 +651,5 @@ class JobExportaTreinamentos implements ShouldQueue
             \Log::error("Erro ao salvar arquivo: " . $e->getMessage());
             throw $e;
         }
-    }
-
-    /**
-     * Handle a job failure.
-     */
-    public function failed(\Throwable $exception)
-    {
-        \Log::error("Job de exportação falhou para usuário {$this->userId}: " . $exception->getMessage());
-
-        // Aqui você pode implementar notificação para o usuário
-        // Por exemplo, enviar um email ou notificação informando que a exportação falhou
     }
 }
