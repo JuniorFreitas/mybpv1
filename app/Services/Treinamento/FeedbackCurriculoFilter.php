@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Treinamento;
 
 use App\Models\FeedbackCurriculo;
 use App\Models\User;
@@ -16,6 +16,9 @@ class FeedbackCurriculoFilter
     private $user;
     private $authMethod;
 
+    /**
+     * @throws \Exception
+     */
     public function __construct($idUser = null, $autoLogin = false)
     {
         $this->authenticateUser($idUser, $autoLogin);

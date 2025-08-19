@@ -14,10 +14,16 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Settings;
 
 class TreinamentoVencimento extends Command
 {
-    protected $signature = 'mybp:treinamento-vencimento {--id=} {--all} {--force} {--lote-size=100} {--delay=1}';
+    protected $signature = 'mybp:treinamento-vencimento {--id=} {--all} {--force} {--lote-size=100} {--delay=1} {--chunk-size=1000}';
     protected $description = 'Verifica treinamentos vencidos e próximos a vencer e envia e-mail para usuários configurados';
 
     // Constantes para melhor manutenibilidade
@@ -32,14 +38,20 @@ class TreinamentoVencimento extends Command
         'REGULAR' => 'REGULAR'
     ];
 
-    // Configurações de lote
+    // Configurações de chunk e lote
+    private const CHUNK_SIZE_DEFAULT = 1000;
     private const LOTE_SIZE_DEFAULT = 100;
     private const DELAY_DEFAULT = 1; // segundos entre lotes
+    private const MEMORY_LIMIT_MB = 256; // Limite de memória em MB para limpeza
 
     public function handle(): int
     {
         $this->info('Iniciando verificação de treinamentos...');
         $this->info("Ambiente: Docker PHP 8.2 | Memória inicial: " . $this->formatBytes(memory_get_usage(true)));
+
+        // Configurar limites de memória
+        ini_set('memory_limit', '1024M');
+        gc_enable();
 
         $empresas = $this->buscarEmpresas();
         $this->info("Total de empresas encontradas: {$empresas->count()}");
@@ -51,21 +63,52 @@ class TreinamentoVencimento extends Command
             $this->processarEmpresa($empresa);
             $empresasProcessadas++;
 
-            // Limpeza de memória a cada empresa (importante no Docker)
-            if ($empresasProcessadas % 5 === 0) {
-                gc_collect_cycles();
-                $this->info("Memória atual: " . $this->formatBytes(memory_get_usage(true)));
-            }
+            // Limpeza de memória estratégica
+            $this->limparMemoriaEstrategica($empresasProcessadas);
         }
 
         $tempoTotal = microtime(true) - $tempoInicio;
-        $this->info("\n=== ESTATÍSTICAS FINAIS ===");
-        $this->info("Empresas processadas: {$empresasProcessadas}");
-        $this->info("Tempo total: " . number_format($tempoTotal, 2) . " segundos");
-        $this->info("Memória pico: " . $this->formatBytes(memory_get_peak_usage(true)));
-        $this->info("Verificação de treinamentos concluída!");
+        $this->exibirEstatisticasFinaisComando($empresasProcessadas, $tempoTotal);
 
         return 0;
+    }
+
+    private function limparMemoriaEstrategica(int $contador): void
+    {
+        // Limpeza a cada empresa
+        if ($contador % 1 === 0) {
+            $memoryBefore = memory_get_usage(true);
+
+            // Força coleta de lixo
+            gc_collect_cycles();
+
+            $memoryAfter = memory_get_usage(true);
+            $memoriaLiberada = $memoryBefore - $memoryAfter;
+
+            $this->info("Memória atual: " . $this->formatBytes($memoryAfter) .
+                " | Liberada: " . $this->formatBytes($memoriaLiberada));
+        }
+
+        // Limpeza mais agressiva a cada 5 empresas
+        if ($contador % 5 === 0) {
+            $this->info("Executando limpeza profunda de memória...");
+
+            // Múltiplas passadas de coleta de lixo
+            for ($i = 0; $i < 3; $i++) {
+                gc_collect_cycles();
+            }
+
+            // Verifica se precisa de limpeza adicional
+            $memoryUsageMB = memory_get_usage(true) / 1024 / 1024;
+            if ($memoryUsageMB > self::MEMORY_LIMIT_MB) {
+                $this->warn("Uso de memória alto: {$memoryUsageMB}MB - Executando limpeza adicional");
+
+                // Força limpeza adicional
+                if (function_exists('gc_mem_caches')) {
+                    gc_mem_caches();
+                }
+            }
+        }
     }
 
     private function buscarEmpresas(): \Illuminate\Database\Eloquent\Collection
@@ -73,13 +116,7 @@ class TreinamentoVencimento extends Command
         return Cliente::withoutGlobalScopes()
             ->whereAtivo(true)
             ->select(['id', 'razao_social', 'cnpj', 'apelido',
-                'logradouro',
-                'bairro',
-                'cep',
-                'numero',
-                'complemento',
-                'municipio',
-                'uf'
+                'logradouro', 'bairro', 'cep', 'numero', 'complemento', 'municipio', 'uf'
             ])
             ->with(['Filiais', 'ClienteConfig'])
             ->when($this->option('id'), function ($query) {
@@ -91,6 +128,7 @@ class TreinamentoVencimento extends Command
     private function processarEmpresa($empresa): void
     {
         $this->info("Processando empresa: {$empresa->razao_social}");
+        $memoryInicial = memory_get_usage(true);
 
         $usuariosEmail = $this->buscarUsuariosEmail($empresa->id);
         $this->info("Usuários para receber e-mail: {$usuariosEmail->count()}");
@@ -101,16 +139,9 @@ class TreinamentoVencimento extends Command
         }
 
         $vencimentos = $this->buscarVencimentos($empresa->id);
-        $admitidos = $this->buscarAdmitidos($empresa->id);
 
-        if ($admitidos->isEmpty()) {
-            $this->info('Nenhum admitido encontrado para esta empresa. Pulando...');
-            return;
-        }
-
-        $this->info("Total de admitidos: {$admitidos->count()}");
-
-        $treinamentosAgrupados = $this->processarTreinamentos($empresa->id, $admitidos, $vencimentos);
+        // Processamento em chunks para otimizar memória
+        $treinamentosAgrupados = $this->processarTreinamentosEmChunks($empresa->id, $vencimentos);
 
         if ($this->naoHaTreinamentosAlerta($treinamentosAgrupados)) {
             $this->info('Nenhum treinamento vencido ou próximo a vencer encontrado. Pulando...');
@@ -120,7 +151,120 @@ class TreinamentoVencimento extends Command
         $this->exibirResumo($treinamentosAgrupados);
         $this->enviarNotificacoesPorLotes($empresa, $usuariosEmail, $treinamentosAgrupados);
 
+        // Limpeza final da empresa
+        $memoryFinal = memory_get_usage(true);
+        $memoryUsed = $memoryFinal - $memoryInicial;
+
         $this->info("Processamento concluído para empresa: {$empresa->razao_social}");
+        $this->info("Memória utilizada nesta empresa: " . $this->formatBytes($memoryUsed));
+
+        // Força limpeza após cada empresa
+        gc_collect_cycles();
+    }
+
+    private function processarTreinamentosEmChunks($empresaId, $vencimentos): array
+    {
+        $this->info("Iniciando processamento em chunks...");
+
+        $chunkSize = (int)$this->option('chunk-size') ?: self::CHUNK_SIZE_DEFAULT;
+        $this->info("Tamanho do chunk: {$chunkSize}");
+
+        $treinamentosAgrupados = [
+            self::CATEGORIAS['VENCIDO'] => [],
+            self::CATEGORIAS['PROXIMO'] => [],
+            self::CATEGORIAS['ATENCAO'] => []
+        ];
+
+        $totalProcessados = 0;
+        $chunkAtual = 0;
+
+        // Buscar admitidos em chunks
+        Admissao::withoutGlobalScopes()
+            ->join('feedback_curriculos as fc', 'fc.id', '=', 'admissoes.feedback_id')
+            ->join('curriculos as c', 'c.id', '=', 'fc.curriculo_id')
+            ->join('centro_custos as cc', 'cc.id', '=', 'admissoes.centro_custo_id')
+            ->where('admissoes.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
+            ->where('fc.empresa_id', $empresaId)
+            ->select([
+                'admissoes.id as admissao_id',
+                'admissoes.funcao',
+                'admissoes.cargo',
+                'admissoes.data_admissao',
+                'admissoes.centro_custo_id',
+                'admissoes.centro_custo_filial_id',
+                'admissoes.filial',
+                'admissoes.numero_cracha',
+                'admissoes.matricula',
+                'cc.label as centro_custo_label',
+                'c.id as curriculo_id',
+                'c.nome',
+                'c.cpf',
+                'fc.empresa_id',
+                'fc.id as feedback_id',
+            ])
+            ->chunk($chunkSize, function ($admitidos) use (&$treinamentosAgrupados, &$totalProcessados, &$chunkAtual, $vencimentos) {
+                $chunkAtual++;
+                $this->info("Processando chunk {$chunkAtual} com {$admitidos->count()} admitidos...");
+
+                $memoryChunkInicio = memory_get_usage(true);
+
+                // Indexar admitidos por feedback_id para performance
+                $admitidosIndexados = $admitidos->keyBy('feedback_id');
+
+                // Buscar treinamentos para este chunk
+                $feedbackIds = $admitidos->pluck('feedback_id');
+                $treinamentos = $this->buscarTreinamentosChunk($feedbackIds);
+
+                $this->info("Treinamentos encontrados neste chunk: {$treinamentos->count()}");
+
+                // Processar treinamentos do chunk
+                $treinamentosProcessados = $this->classificarTreinamentos($treinamentos, $vencimentos);
+                $treinamentosAlerta = $this->filtrarTreinamentosAlerta($treinamentosProcessados);
+
+                // Agrupar treinamentos do chunk
+                $grupoChunk = $this->agruparTreinamentos($treinamentosAlerta, $admitidosIndexados);
+
+                // Mesclar com resultado geral
+                foreach ($grupoChunk as $categoria => $funcionarios) {
+                    $treinamentosAgrupados[$categoria] = array_merge(
+                        $treinamentosAgrupados[$categoria],
+                        $funcionarios
+                    );
+                }
+
+                $totalProcessados += $admitidos->count();
+
+                // Limpeza de memória do chunk
+                unset($admitidos, $admitidosIndexados, $treinamentos, $treinamentosProcessados, $treinamentosAlerta, $grupoChunk);
+                gc_collect_cycles();
+
+                $memoryChunkFim = memory_get_usage(true);
+                $memoryChunkUsada = $memoryChunkFim - $memoryChunkInicio;
+
+                $this->info("Chunk {$chunkAtual} processado. Memória utilizada: " . $this->formatBytes($memoryChunkUsada));
+                $this->info("Total processados: {$totalProcessados}");
+            });
+
+        $this->info("Processamento em chunks concluído. Total de admitidos processados: {$totalProcessados}");
+
+        return $treinamentosAgrupados;
+    }
+
+    private function buscarTreinamentosChunk(\Illuminate\Support\Collection $feedbackIds): \Illuminate\Database\Eloquent\Collection
+    {
+        return Treinamento::withoutGlobalScopes()
+            ->join('treinamento_vencimento as tv', 'tv.treinamento_id', '=', 'treinamentos.id')
+            ->whereIn('treinamentos.feedback_id', $feedbackIds)
+            ->select([
+                'treinamentos.id',
+                'treinamentos.feedback_id',
+                'tv.treinamento_id',
+                'tv.vencimento_id',
+                'tv.data_treinamento',
+                'tv.data_vencimento',
+                'tv.numero_fat',
+            ])
+            ->get();
     }
 
     private function buscarUsuariosEmail(int $empresaId): \Illuminate\Database\Eloquent\Collection
@@ -145,66 +289,6 @@ class TreinamentoVencimento extends Command
             ->select(['id', 'label', 'descricao', 'ativo', 'label_reduzida', 'exibir_na_carteira'])
             ->get()
             ->keyBy('id');
-    }
-
-    private function buscarAdmitidos(int $empresaId): \Illuminate\Database\Eloquent\Collection
-    {
-        return Admissao::withoutGlobalScopes()
-            ->join('feedback_curriculos as fc', 'fc.id', '=', 'admissoes.feedback_id')
-            ->join('curriculos as c', 'c.id', '=', 'fc.curriculo_id')
-            ->join('centro_custos as cc', 'cc.id', '=', 'admissoes.centro_custo_id')
-            ->where('admissoes.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
-            ->where('fc.empresa_id', $empresaId)
-            ->select([
-                'admissoes.id as admissao_id',
-                'admissoes.funcao',
-                'admissoes.cargo',
-                'admissoes.data_admissao',
-                'admissoes.centro_custo_id',
-                'admissoes.centro_custo_filial_id',
-                'admissoes.filial',
-                'admissoes.numero_cracha',
-                'admissoes.data_admissao',
-                'admissoes.matricula',
-                'cc.label as centro_custo_label',
-                'c.id as curriculo_id',
-                'c.nome',
-                'c.cpf',
-                'fc.empresa_id',
-                'fc.id as feedback_id',
-            ])
-            ->get()
-            ->keyBy('feedback_id');
-    }
-
-    private function processarTreinamentos($empresaId, $admitidos, $vencimentos)
-    {
-        $treinamentos = $this->buscarTreinamentos($admitidos->keys());
-        $this->info("Total de treinamentos encontrados: {$treinamentos->count()}");
-
-        $treinamentosProcessados = $this->classificarTreinamentos($treinamentos, $vencimentos);
-        $treinamentosAlerta = $this->filtrarTreinamentosAlerta($treinamentosProcessados);
-
-        $this->info("Treinamentos vencidos ou próximos a vencer: {$treinamentosAlerta->count()}");
-
-        return $this->agruparTreinamentos($treinamentosAlerta, $admitidos);
-    }
-
-    private function buscarTreinamentos(\Illuminate\Support\Collection $feedbackIds): \Illuminate\Database\Eloquent\Collection
-    {
-        return Treinamento::withoutGlobalScopes()
-            ->join('treinamento_vencimento as tv', 'tv.treinamento_id', '=', 'treinamentos.id')
-            ->whereIn('treinamentos.feedback_id', $feedbackIds)
-            ->select([
-                'treinamentos.id',
-                'treinamentos.feedback_id',
-                'tv.treinamento_id',
-                'tv.vencimento_id',
-                'tv.data_treinamento',
-                'tv.data_vencimento',
-                'tv.numero_fat',
-            ])
-            ->get();
     }
 
     private function classificarTreinamentos($treinamentos, $vencimentos)
@@ -330,6 +414,7 @@ class TreinamentoVencimento extends Command
             'data_vencimento' => $treinamento->data_vencimento,
             'dias_vencer' => $treinamento->dias_vencer,
             'status_texto' => $treinamento->status_texto,
+            'status_label' => $treinamento->status_csv,
             'prioridade' => $treinamento->prioridade
         ];
     }
@@ -385,15 +470,18 @@ class TreinamentoVencimento extends Command
         $this->info("\n=== INICIANDO ENVIO POR LOTES ===");
         $this->info("Total de usuários: {$usuariosEmail->count()}");
 
-        // Upload único do arquivo para S3
-        $arquivoS3 = $this->criarEUploadArquivoS3($empresa, $treinamentosAgrupados);
+        // Upload único do arquivo Excel para S3
+        $arquivoS3 = $this->criarEUploadExcelS3($empresa, $treinamentosAgrupados);
 
         if (!$arquivoS3) {
-            $this->error('Falha ao criar arquivo S3. Abortando envio de e-mails.');
+            $this->error('Falha ao criar arquivo Excel S3. Abortando envio de e-mails.');
             return;
         }
 
         $dadosEmail = $this->prepararDadosEmail($empresa, $treinamentosAgrupados, $arquivoS3);
+
+        // Verificar template de email
+        $this->verificarTemplateEmail();
 
         // Configurações de lote
         $tamanhoLote = (int)$this->option('lote-size') ?: self::LOTE_SIZE_DEFAULT;
@@ -439,6 +527,9 @@ class TreinamentoVencimento extends Command
 
                 $estatisticas['lotes_processados']++;
 
+                // Limpeza de memória entre lotes
+                gc_collect_cycles();
+
                 // Delay entre lotes (exceto no último)
                 if ($numeroLote < $totalLotes && $delaySegundos > 0) {
                     $this->info("Aguardando {$delaySegundos} segundo(s) antes do próximo lote...");
@@ -466,6 +557,21 @@ class TreinamentoVencimento extends Command
     }
 
     /**
+     * Verifica se template de email existe e informa sobre compatibilidade
+     */
+    private function verificarTemplateEmail(): void
+    {
+        $templateUsado = $this->obterTemplateEmail();
+
+        if (str_contains($templateUsado, 'excel')) {
+            $this->info("✓ Template específico para Excel encontrado");
+        } else {
+            $this->info("ℹ Usando template padrão - dados do Excel serão adaptados automaticamente");
+            $this->info("📄 Para melhor experiência, considere criar o template: email.treinamento.vencendo_excel_s3");
+        }
+    }
+
+    /**
      * Envia email para um lote específico de usuários
      */
     private function enviarEmailParaLote($loteUsuarios, $empresa, $dadosEmail, $numeroLote): array
@@ -483,15 +589,18 @@ class TreinamentoVencimento extends Command
                     (count($emailsCopia) > 3 ? ' e mais ' . (count($emailsCopia) - 3) : ''));
             }
 
+            // Verificar se view personalizada existe, senão usar a padrão
+            $viewTemplate = $this->obterTemplateEmail();
+
             // Enviar email
             Mail::send(
-                ['html' => 'email.treinamento.vencendo_s3'],
+                ['html' => $viewTemplate],
                 $dadosEmail,
                 function ($m) use ($usuarioPrincipal, $usuariosCopia, $empresa, $numeroLote) {
                     $m->from('naoresponda@mybp.com.br', 'Sistema MyBP');
 
-                    // Assunto com identificação do lote para debugging
-                    $assunto = "[MyBP] Relatório de Vencimentos de Treinamentos - {$empresa->razao_social}";
+                    // Assunto com indicação de Excel
+                    $assunto = "[MyBP] Relatório de Vencimentos de Treinamentos (Excel) - {$empresa->razao_social}";
                     $m->subject($assunto);
 
                     $m->to($usuarioPrincipal['email'], $usuarioPrincipal['nome']);
@@ -504,6 +613,7 @@ class TreinamentoVencimento extends Command
                                 $headers->addTextHeader('X-Mailer', 'MyBP Sistema v1.0');
                                 $headers->addTextHeader('X-Batch-Number', (string)$numeroLote);
                                 $headers->addTextHeader('X-Priority', '3'); // Normal priority
+                                $headers->addTextHeader('X-Report-Type', 'Excel');
                             }
                         }
                     } catch (\Exception $e) {
@@ -532,6 +642,35 @@ class TreinamentoVencimento extends Command
     }
 
     /**
+     * Obtém o template de email apropriado
+     */
+    private function obterTemplateEmail(): string
+    {
+        // Lista de templates em ordem de preferência
+        $templatesPreferencia = [
+            'email.treinamento.vencendo_excel_s3',  // Template específico para Excel
+            'email.treinamento.vencendo_s3',        // Template existente para S3
+            'email.treinamento.vencendo',           // Template básico
+        ];
+
+        foreach ($templatesPreferencia as $template) {
+            try {
+                // Verificar se view existe
+                if (view()->exists($template)) {
+                    $this->info("Usando template de email: {$template}");
+                    return $template;
+                }
+            } catch (\Exception $e) {
+                // Continuar para próximo template
+                continue;
+            }
+        }
+
+        $this->info("Usando template padrão: email.treinamento.vencendo_s3");
+        return 'email.treinamento.vencendo_s3';
+    }
+
+    /**
      * Decide se deve interromper o processamento por causa de um erro
      */
     private function deveInterromperPorErro(\Exception $e): bool
@@ -557,9 +696,418 @@ class TreinamentoVencimento extends Command
     }
 
     /**
+     * Cria e faz upload do arquivo Excel para S3 com otimizações de memória
+     */
+    private function criarEUploadExcelS3($empresa, $treinamentosAgrupados): ?array
+    {
+        $caminhoS3 = null;
+        $caminhoTempLocal = null;
+
+        try {
+            $this->info("Iniciando criação do arquivo Excel...");
+            $memoryInicial = memory_get_usage(true);
+
+            // Criar arquivo temporário
+            $nomeArquivo = "treinamentos_{$empresa->id}_" . date('YmdHis') . '.xlsx';
+            $caminhoTempLocal = sys_get_temp_dir() . '/' . $nomeArquivo;
+
+            // Criar spreadsheet em modo de baixo uso de memória
+            $spreadsheet = $this->criarSpreadsheetOtimizado($empresa, $treinamentosAgrupados);
+
+            $this->info("Salvando arquivo Excel localmente...");
+
+            // Configurar writer para otimização de memória
+            $writer = new Xlsx($spreadsheet);
+
+            // Configurações disponíveis na versão atual
+            if (method_exists($writer, 'setPreCalculateFormulas')) {
+                $writer->setPreCalculateFormulas(false);
+            }
+
+            // Verificar se método de cache em disco existe
+            if (method_exists($writer, 'setUseDiskCaching')) {
+                $writer->setUseDiskCaching(true, sys_get_temp_dir());
+            }
+
+            // Configurações adicionais de otimização
+            if (method_exists($writer, 'setOffice2003Compatibility')) {
+                $writer->setOffice2003Compatibility(false);
+            }
+
+            // Salvar arquivo temporariamente
+            $writer->save($caminhoTempLocal);
+
+            // Liberar memória do spreadsheet
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet, $writer);
+            gc_collect_cycles();
+
+            $memoryAposExcel = memory_get_usage(true);
+            $memoryUsadaExcel = $memoryAposExcel - $memoryInicial;
+            $this->info("Memória utilizada para criar Excel: " . $this->formatBytes($memoryUsadaExcel));
+
+            // Verificar se arquivo foi criado com sucesso
+            if (!file_exists($caminhoTempLocal)) {
+                throw new \Exception("Arquivo Excel não foi criado com sucesso");
+            }
+
+            $tamanhoArquivo = filesize($caminhoTempLocal);
+            $this->info("Arquivo Excel criado: " . $this->formatBytes($tamanhoArquivo));
+
+            // Upload para S3
+            $caminhoS3 = "relatorios/treinamentos/{$empresa->id}/" . date('Y/m/d') . '/' . Str::random(10) . '_' . $nomeArquivo;
+
+            $this->info("Fazendo upload do arquivo para S3...");
+
+            // Ler arquivo em chunks para otimizar memória
+            $conteudoArquivo = $this->lerArquivoEmChunks($caminhoTempLocal);
+
+            $uploadSuccess = Storage::disk('s3')->put($caminhoS3, $conteudoArquivo, [
+                'visibility' => 'private',
+                'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'ContentDisposition' => 'attachment; filename="' . $nomeArquivo . '"',
+                'Metadata' => [
+                    'empresa_id' => (string)$empresa->id,
+                    'data_geracao' => date('Y-m-d H:i:s'),
+                    'tipo' => 'relatorio_treinamentos'
+                ]
+            ]);
+
+            if (!$uploadSuccess) {
+                throw new \Exception("Falha ao fazer upload do arquivo para S3");
+            }
+
+            $urlTemporaria = Storage::disk('s3')->temporaryUrl($caminhoS3, now()->addDays(7));
+
+            $this->info("✓ Arquivo enviado para S3: {$caminhoS3}");
+            $this->info("✓ URL temporária gerada (válida por 7 dias)");
+
+            // Limpeza do arquivo temporário
+            if (file_exists($caminhoTempLocal)) {
+                unlink($caminhoTempLocal);
+            }
+
+            return [
+                'url' => $urlTemporaria,
+                'nome_arquivo' => $nomeArquivo,
+                'caminho_s3' => $caminhoS3,
+                'tamanho' => $tamanhoArquivo
+            ];
+
+        } catch (\Exception $e) {
+            $this->error("Erro ao criar arquivo Excel S3: {$e->getMessage()}");
+
+            // Limpeza em caso de erro
+            if ($caminhoTempLocal && file_exists($caminhoTempLocal)) {
+                unlink($caminhoTempLocal);
+            }
+
+            if ($caminhoS3) {
+                $this->limparArquivoS3($caminhoS3);
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Cria spreadsheet otimizado para uso eficiente de memória
+     */
+    private function criarSpreadsheetOtimizado($empresa, array $treinamentosAgrupados): Spreadsheet
+    {
+        // Configurações de otimização de memória para PhpSpreadsheet
+        try {
+            if (class_exists('\PhpOffice\PhpSpreadsheet\Settings')) {
+                \PhpOffice\PhpSpreadsheet\Settings::setLibXmlLoaderOptions(LIBXML_COMPACT);
+            }
+        } catch (\Exception $e) {
+            $this->info("Aviso: Não foi possível configurar LibXML: {$e->getMessage()}");
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Relatório de Treinamentos');
+
+        // Configurar propriedades do documento
+        $spreadsheet->getProperties()
+            ->setCreator('Sistema MyBP')
+            ->setLastModifiedBy('Sistema MyBP')
+            ->setTitle('Relatório de Vencimentos de Treinamentos')
+            ->setSubject('Treinamentos')
+            ->setDescription("Relatório de treinamentos vencidos e próximos a vencer - {$empresa->razao_social}")
+            ->setKeywords('treinamentos vencimentos mybp')
+            ->setCategory('Relatórios');
+
+        // Cabeçalho da empresa
+        $this->adicionarCabecalhoEmpresa($sheet, $empresa);
+
+        // Cabeçalho das colunas
+        $linhaCabecalho = 6;
+        $cabecalhos = [
+            'A' => 'Funcionário',
+            'B' => 'Cargo',
+            'C' => 'Função',
+            'D' => 'Data de Admissão',
+            'E' => 'Centro de Custo',
+            'F' => 'Número do Crachá',
+            'G' => 'Matrícula',
+            'H' => 'Treinamento',
+            'I' => 'Data do Treinamento',
+            'J' => 'Data de Vencimento',
+            'K' => 'Dias para Vencer',
+            'L' => 'Status',
+            'M' => 'Status com dias'
+        ];
+
+        foreach ($cabecalhos as $coluna => $titulo) {
+            $sheet->setCellValue($coluna . $linhaCabecalho, $titulo);
+        }
+
+        // Estilizar cabeçalho
+        $this->aplicarEstiloCabecalho($sheet, $linhaCabecalho);
+
+        // Adicionar dados em lotes para otimizar memória
+        $linha = $linhaCabecalho + 1;
+        $totalLinhas = 0;
+
+        foreach ($treinamentosAgrupados as $categoria => $funcionarios) {
+            foreach ($funcionarios as $funcionario) {
+                $funcionarioData = $funcionario['funcionario'];
+
+                foreach ($funcionario['treinamentos'] as $treinamento) {
+                    $this->adicionarLinhaFuncionario($sheet, $linha, $funcionarioData, $treinamento, $categoria);
+                    $linha++;
+                    $totalLinhas++;
+
+                    // Limpeza de memória a cada 500 linhas
+                    if ($totalLinhas % 500 === 0) {
+                        gc_collect_cycles();
+                        $this->info("Processadas {$totalLinhas} linhas do Excel...");
+                    }
+                }
+            }
+        }
+
+        // Aplicar estilos finais
+        $this->aplicarEstilosFinais($sheet, $linha - 1);
+
+        // Auto-ajustar largura das colunas (somente para colunas principais)
+        foreach (range('A', 'M') as $coluna) {
+            try {
+                $sheet->getColumnDimension($coluna)->setAutoSize(true);
+            } catch (\Exception $e) {
+                // Se falhar, definir largura fixa
+                $sheet->getColumnDimension($coluna)->setWidth(15);
+            }
+        }
+
+        $this->info("Excel criado com {$totalLinhas} linhas de dados");
+
+        return $spreadsheet;
+    }
+
+    private function adicionarCabecalhoEmpresa($sheet, $empresa): void
+    {
+        // Título principal
+        $sheet->setCellValue('A1', 'RELATÓRIO DE VENCIMENTOS DE TREINAMENTOS');
+        $sheet->mergeCells('A1:L1');
+
+        // Informações da empresa
+        $sheet->setCellValue('A2', "Empresa: {$empresa->razao_social}");
+        $sheet->mergeCells('A2:L2');
+
+        $sheet->setCellValue('A3', "CNPJ: {$empresa->cnpj}");
+        $sheet->mergeCells('A3:L3');
+
+        $sheet->setCellValue('A4', "Data de Geração: " . date('d/m/Y H:i:s'));
+        $sheet->mergeCells('A4:L4');
+
+        // Linha em branco
+        $sheet->setCellValue('A5', '');
+
+        // Estilizar cabeçalho da empresa
+        try {
+            $sheet->getStyle('A1:L1')->applyFromArray([
+                'font' => ['bold' => true, 'size' => 16],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            ]);
+
+            $sheet->getStyle('A2:L4')->applyFromArray([
+                'font' => ['bold' => true, 'size' => 12]
+            ]);
+        } catch (\Exception $e) {
+            $this->info("Aviso: Não foi possível aplicar estilo ao cabeçalho da empresa: {$e->getMessage()}");
+            // Aplicar estilo básico como fallback
+            $sheet->getStyle('A1:L1')->getFont()->setBold(true)->setSize(16);
+            $sheet->getStyle('A2:L4')->getFont()->setBold(true)->setSize(12);
+        }
+    }
+
+    private function adicionarLinhaFuncionario($sheet, $linha, $funcionarioData, $treinamento, $categoria): void
+    {
+        $dataAdmissao = $funcionarioData['data_admissao'] ? (new DataHora($funcionarioData['data_admissao']))->dataCompleta() : '';
+        $datatreinamento = $treinamento['data_treinamento'] ? (new DataHora($treinamento['data_treinamento']))->dataCompleta() : '';
+        $dataVencimento = $treinamento['data_vencimento'] ? (new DataHora($treinamento['data_vencimento']))->dataCompleta() : '';
+
+        $dados = [
+            'A' => $funcionarioData['nome'],
+            'B' => $funcionarioData['cargo'],
+            'C' => $funcionarioData['funcao'],
+            'D' => $dataAdmissao,
+            'E' => $funcionarioData['centro_custo_label'],
+            'F' => $funcionarioData['numero_cracha'] ?? '',
+            'G' => $funcionarioData['matricula'] ?? '',
+            'H' => $treinamento['vencimento_nome'],
+            'I' => $datatreinamento,
+            'J' => $dataVencimento,
+            'K' => $treinamento['dias_vencer'],
+            'L' => $treinamento['status_label'],
+            'M' => $treinamento['status_texto']
+        ];
+
+        foreach ($dados as $coluna => $valor) {
+            $sheet->setCellValue($coluna . $linha, $valor);
+        }
+
+        // Aplicar cor baseada na categoria
+        $this->aplicarCorPorCategoria($sheet, $linha, $categoria);
+    }
+
+    private function aplicarEstiloCabecalho($sheet, $linha): void
+    {
+        try {
+            $sheet->getStyle("A{$linha}:M{$linha}")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '366092']
+                ],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
+                'borders' => [
+                    'allBorders' => ['borderStyle' => Border::BORDER_THIN]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            $this->info("Aviso: Não foi possível aplicar estilo ao cabeçalho: {$e->getMessage()}");
+            // Aplicar estilo básico como fallback
+            $sheet->getStyle("A{$linha}:L{$linha}")->getFont()->setBold(true);
+        }
+    }
+
+    private function aplicarCorPorCategoria($sheet, $linha, $categoria): void
+    {
+        $cor = '';
+        switch ($categoria) {
+            case self::CATEGORIAS['VENCIDO']:
+                $cor = 'FFE6E6'; // Vermelho claro
+                break;
+            case self::CATEGORIAS['PROXIMO']:
+                $cor = 'FFF2E6'; // Laranja claro
+                break;
+            case self::CATEGORIAS['ATENCAO']:
+                $cor = 'FFFFCC'; // Amarelo claro
+                break;
+        }
+
+        if ($cor) {
+            try {
+                $sheet->getStyle("A{$linha}:M{$linha}")->applyFromArray([
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => $cor]
+                    ]
+                ]);
+            } catch (\Exception $e) {
+                $this->info("Aviso: Não foi possível aplicar cor à linha {$linha}: {$e->getMessage()}");
+            }
+        }
+    }
+
+    private function aplicarEstilosFinais($sheet, $ultimaLinha): void
+    {
+        try {
+            // Bordas para toda a tabela
+            $sheet->getStyle("A6:M{$ultimaLinha}")->applyFromArray([
+                'borders' => [
+                    'allBorders' => ['borderStyle' => Border::BORDER_THIN]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            $this->info("Aviso: Não foi possível aplicar bordas: {$e->getMessage()}");
+        }
+
+        try {
+            // Congelar painéis
+            $sheet->freezePane('A7');
+        } catch (\Exception $e) {
+            $this->info("Aviso: Não foi possível congelar painéis: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Lê arquivo em chunks para otimizar uso de memória
+     */
+    private function lerArquivoEmChunks(string $caminhoArquivo): string
+    {
+        $conteudo = '';
+        $handle = fopen($caminhoArquivo, 'rb');
+
+        if ($handle === false) {
+            throw new \Exception("Não foi possível abrir o arquivo: {$caminhoArquivo}");
+        }
+
+        try {
+            while (!feof($handle)) {
+                $chunk = fread($handle, 8192); // 8KB chunks
+                if ($chunk === false) {
+                    throw new \Exception("Erro ao ler arquivo");
+                }
+                $conteudo .= $chunk;
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        return $conteudo;
+    }
+
+    private function prepararDadosEmail($empresa, $treinamentosAgrupados, $arquivoS3): array
+    {
+        return [
+            'dados' => [
+                'empresa' => $empresa->razao_social,
+                'empresa_id' => $empresa->id,
+                'empresa_cnpj' => $empresa->cnpj,
+                'empresa_apelido' => $empresa->apelido,
+                'empresa_endereco_completo' => $empresa->endereco_completo,
+                'data_geracao' => (new DataHora())->dataHoraInsert(),
+                'categorias' => $treinamentosAgrupados,
+                'total_vencidos' => count($treinamentosAgrupados[self::CATEGORIAS['VENCIDO']]),
+                'total_proximos' => count($treinamentosAgrupados[self::CATEGORIAS['PROXIMO']]),
+                'total_atencao' => count($treinamentosAgrupados[self::CATEGORIAS['ATENCAO']]),
+                'arquivo_s3' => [
+                    'url' => $arquivoS3['url'],
+                    'nome_arquivo' => $arquivoS3['nome_arquivo'],
+                    'texto_link' => 'Baixar Relatório Detalhado (Excel)',
+                    'validade' => 'Link válido até ' . now()->addDays(7)->format('d/m/Y'),
+                    'instrucoes' => 'Relatório completo em formato Excel (.xlsx) para análise detalhada. O arquivo contém formatação por cores: vermelho para vencidos, laranja para próximos a vencer e amarelo para atenção.',
+                    'tamanho' => $this->formatBytes($arquivoS3['tamanho']),
+                    'tipo_arquivo' => 'Excel (.xlsx)',
+                    'beneficios' => [
+                        'Formatação colorida por categoria',
+                        'Cabeçalhos organizados e estilos',
+                        'Filtros e ordenação automática',
+                        'Compatível com Excel e LibreOffice'
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    /**
      * Exibe estatísticas finais do processamento
      */
-    private function exibirEstatisticasFinais($estatisticas, $empresa)
+    private function exibirEstatisticasFinais($estatisticas, $empresa): void
     {
         $tempoTotal = microtime(true) - $estatisticas['tempo_inicio'];
 
@@ -585,202 +1133,13 @@ class TreinamentoVencimento extends Command
         }
     }
 
-    private function criarEUploadArquivoS3($empresa, $treinamentosAgrupados): ?array
+    private function exibirEstatisticasFinaisComando($empresasProcessadas, $tempoTotal): void
     {
-        $caminhoS3 = null;
-
-        try {
-            $csvContent = $this->gerarConteudoCSVUTF8($treinamentosAgrupados);
-            $nomeArquivo = "treinamentos_{$empresa->id}_" . date('YmdHis') . '.csv';
-            $caminhoS3 = "relatorios/treinamentos/{$empresa->id}/" . date('Y/m/d') . '/' . Str::random(10) . '_' . $nomeArquivo;
-
-            $this->info("Fazendo upload do arquivo para S3...");
-
-            $uploadSuccess = Storage::disk('s3')->put($caminhoS3, $csvContent, [
-                'visibility' => 'private',
-                'ContentType' => 'text/csv; charset=utf-8',
-                'ContentDisposition' => 'attachment; filename="' . $nomeArquivo . '"',
-                'ContentEncoding' => 'utf-8',
-                'Metadata' => [
-                    'charset' => 'utf-8',
-                    'separator' => 'semicolon'
-                ]
-            ]);
-
-            if (!$uploadSuccess) {
-                throw new \Exception("Falha ao fazer upload do arquivo para S3");
-            }
-
-            $urlTemporaria = Storage::disk('s3')->temporaryUrl($caminhoS3, now()->addDays(7));
-
-            $this->info("✓ Arquivo enviado para S3: {$caminhoS3}");
-            $this->info("✓ URL temporária gerada (válida por 7 dias)");
-
-            return [
-                'url' => $urlTemporaria,
-                'nome_arquivo' => $nomeArquivo,
-                'caminho_s3' => $caminhoS3
-            ];
-
-        } catch (\Exception $e) {
-            $this->error("Erro ao criar arquivo S3: {$e->getMessage()}");
-
-            if ($caminhoS3) {
-                $this->limparArquivoS3($caminhoS3);
-            }
-
-            return null;
-        }
-    }
-
-    private function gerarConteudoCSVUTF8(array $treinamentosAgrupados): string
-    {
-        // Configurar locale para garantir encoding correto
-        mb_internal_encoding('UTF-8');
-
-        // Construir CSV como string para ter controle total da codificação
-        $csv = '';
-
-        // Adicionar BOM UTF-8 para garantir que o Excel reconheça a codificação
-        $csv .= "\xEF\xBB\xBF";
-
-        // Adicionar comando SEP para forçar o Excel a usar ponto e vírgula como separador
-        $csv .= "sep=;\n";
-
-        // Cabeçalho
-        $cabecalho = [
-            'Funcionário', 'Cargo', 'Função', 'Data de Admissão', 'Centro de custo',
-            'Número do Crachá', 'Treinamento', 'Data Treinamento',
-            'Data Vencimento', 'Dias para Vencer', 'Status'
-        ];
-        $csv .= $this->arrayParaLinhaCSV($cabecalho);
-
-        $totalLinhas = 0;
-
-        // Dados - processamento otimizado para Docker
-        foreach ($treinamentosAgrupados as $funcionarios) {
-            foreach ($funcionarios as $funcionario) {
-                $funcionarioData = $funcionario['funcionario'];
-
-                foreach ($funcionario['treinamentos'] as $treinamento) {
-                    // Pré-processar dados uma única vez
-                    $dataAdmissao = $funcionarioData['data_admissao'] ?? '';
-                    $datatreinamento = $treinamento['data_treinamento'] ? date('d/m/Y', strtotime($treinamento['data_treinamento'])) : '';
-                    $dataVencimento = $treinamento['data_vencimento'] ? date('d/m/Y', strtotime($treinamento['data_vencimento'])) : '';
-
-                    $dados = [
-                        $this->garantirUTF8($funcionarioData['nome']),
-                        $this->garantirUTF8($funcionarioData['cargo']),
-                        $this->garantirUTF8($funcionarioData['funcao']),
-                        $dataAdmissao,
-                        $this->garantirUTF8($funcionarioData['centro_custo_label']),
-                        $funcionarioData['numero_cracha'] ?? '',
-                        $this->garantirUTF8($treinamento['vencimento_nome']),
-                        $datatreinamento,
-                        $dataVencimento,
-                        $treinamento['dias_vencer'],
-                        $this->garantirUTF8($treinamento['status_texto'])
-                    ];
-
-                    $csv .= $this->arrayParaLinhaCSV($dados);
-                    $totalLinhas++;
-
-                    // Limpeza de memória a cada 1000 linhas (otimização Docker)
-                    if ($totalLinhas % 1000 === 0) {
-                        $this->info("Processadas {$totalLinhas} linhas do CSV...");
-                    }
-                }
-            }
-        }
-
-        $this->info("CSV gerado com {$totalLinhas} linhas de dados");
-
-        // Garantir que todo o conteúdo está em UTF-8
-        return mb_convert_encoding($csv, 'UTF-8', 'UTF-8');
-    }
-
-    /**
-     * Garante que o texto está em UTF-8 e limpo para CSV
-     */
-    private function garantirUTF8(?string $texto): string
-    {
-        if (is_null($texto) || $texto === '') {
-            return '';
-        }
-
-        // Detectar encoding atual e converter para UTF-8 se necessário
-        $encoding = mb_detect_encoding($texto, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
-        if ($encoding !== 'UTF-8') {
-            $texto = mb_convert_encoding($texto, 'UTF-8', $encoding);
-        }
-
-        // Remove quebras de linha e caracteres especiais que podem quebrar o CSV
-        $texto = str_replace(["\r", "\n", "\t"], ' ', $texto);
-
-        // Remove espaços extras
-        $texto = preg_replace('/\s+/', ' ', $texto);
-
-        // Garantir que está em UTF-8 válido
-        $texto = mb_convert_encoding($texto, 'UTF-8', 'UTF-8');
-
-        return trim($texto);
-    }
-
-    /**
-     * Converte array para linha CSV com encoding UTF-8 garantido
-     */
-    private function arrayParaLinhaCSV(array $dados): string
-    {
-        $linha = '';
-        $primeiroItem = true;
-
-        foreach ($dados as $campo) {
-            if (!$primeiroItem) {
-                $linha .= ';';
-            }
-
-            // Converter para string e garantir UTF-8
-            $campo = (string)$campo;
-            $campo = $this->garantirUTF8($campo);
-
-            // Escapar aspas duplas
-            $campo = str_replace('"', '""', $campo);
-
-            // Adicionar aspas se contém separador ou quebra de linha
-            if (strpos($campo, ';') !== false || strpos($campo, '"') !== false || strpos($campo, "\n") !== false) {
-                $campo = '"' . $campo . '"';
-            }
-
-            $linha .= $campo;
-            $primeiroItem = false;
-        }
-
-        return $linha . "\n";
-    }
-
-    private function prepararDadosEmail($empresa, $treinamentosAgrupados, $arquivoS3): array
-    {
-        return [
-            'dados' => [
-                'empresa' => $empresa->razao_social,
-                'empresa_id' => $empresa->id,
-                'empresa_cnpj' => $empresa->cnpj,
-                'empresa_apelido' => $empresa->apelido,
-                'empresa_endereco_completo' => $empresa->endereco_completo,
-                'data_geracao' => (new DataHora())->dataHoraInsert(),
-                'categorias' => $treinamentosAgrupados,
-                'total_vencidos' => count($treinamentosAgrupados[self::CATEGORIAS['VENCIDO']]),
-                'total_proximos' => count($treinamentosAgrupados[self::CATEGORIAS['PROXIMO']]),
-                'total_atencao' => count($treinamentosAgrupados[self::CATEGORIAS['ATENCAO']]),
-                'arquivo_s3' => [
-                    'url' => $arquivoS3['url'],
-                    'nome_arquivo' => $arquivoS3['nome_arquivo'],
-                    'texto_link' => 'Baixar Relatório Detalhado (CSV)',
-                    'validade' => 'Link válido até ' . now()->addDays(7)->format('d/m/Y'),
-                    'instrucoes' => 'Relatório completo em formato CSV UTF-8 para análise detalhada'
-                ]
-            ]
-        ];
+        $this->info("\n=== ESTATÍSTICAS FINAIS ===");
+        $this->info("Empresas processadas: {$empresasProcessadas}");
+        $this->info("Tempo total: " . number_format($tempoTotal, 2) . " segundos");
+        $this->info("Memória pico: " . $this->formatBytes(memory_get_peak_usage(true)));
+        $this->info("Verificação de treinamentos concluída!");
     }
 
     private function limparArquivoS3($caminhoS3): void

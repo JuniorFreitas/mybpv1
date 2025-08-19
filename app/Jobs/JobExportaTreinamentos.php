@@ -6,7 +6,7 @@ use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\Arquivo;
 use App\Models\Exportacao;
 use App\Models\User;
-use App\Services\FeedbackCurriculoFilter;
+use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

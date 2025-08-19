@@ -2,21 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\JobExportaExcel;
 use App\Jobs\JobExportaTreinamentos;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\CentroCusto;
 use App\Models\ClienteConfig;
-use App\Models\FeedbackCurriculo;
 use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
 use App\Models\Treinamento;
 use App\Models\TreinamentoVencimentoHistorico;
-use App\Models\User;
 use App\Models\Vencimento;
-use App\Services\FeedbackCurriculoFilter;
+use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -574,7 +571,8 @@ class TreinamentoController extends Controller
             'corBorder' => 'border-left-success',
             'bg' => 'bg-success',
             'text' => 'text-white',
-            'badge' => 'badge-success'
+            'badge' => 'badge-success',
+            'status' => 'Em dia'
         ];
 
         if ($diffHojeVencimento < 0) {
@@ -583,7 +581,8 @@ class TreinamentoController extends Controller
                 'corBorder' => 'border-left-danger',
                 'bg' => 'bg-danger',
                 'text' => 'text-white',
-                'badge' => 'badge-danger'
+                'badge' => 'badge-danger',
+                'status' => 'Vencido'
             ];
         }
         if ($diffHojeVencimento <= 30 && $diffHojeVencimento > 0) {
@@ -592,216 +591,13 @@ class TreinamentoController extends Controller
                 'corBorder' => 'border-left-warning',
                 'bg' => 'bg-warning',
                 'text' => 'text-white',
-                'badge' => 'badge-warning text-dark'
+                'badge' => 'badge-warning text-dark',
+                'status' => 'Proximo do vencimento'
             ];
         }
 
         return $status;
     }
-
-    /*    public function filtro(Request $request)
-        {
-            $this->authorize('treinamento_carteira-etiquetas');
-
-            $resultado = FeedbackCurriculo::select([
-                'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id'
-            ])->with(
-                'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
-                'Curriculo.FotoTres:id',
-    //            'Admissao:id,feedback_id,area_etiqueta_id,data_admissao,matricula,funcao,nr_trinta_cinco,nr_trinta_tres,numero_cracha,status,cargo',
-                'Admissao.AreaEtiqueta',
-                'VagaSelecionada:id,nome',
-                'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
-                'Treinamento.Vencimentos',
-                'Treinamento.QuemCadastrou:id,nome'
-            )->filtrarPorCnpjECentroCusto($request);
-
-            $campoVencimento = $request->campoVencimento == 'true';
-            if ($campoVencimento) {
-                $periodo = explode(' até ', $request->vencimento);
-                $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-                $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-                $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
-                    $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
-                        $q->where('data_vencimento', '>=', $dataInicio->dataHoraInsert())->where('data_vencimento', '<=', $dataFim->dataHoraInsert());
-                    });
-                });
-            }
-
-            $campoPeriodoTreinado = $request->campoPeriodoTreinado == 'true';
-            if ($campoPeriodoTreinado) {
-                $periodo_treinado = explode(' até ', $request->periodoTreinado);
-                $dataInicio = new DataHora($periodo_treinado[0] . ' 00:00:00');
-                $dataFim = new DataHora($periodo_treinado[1] . ' 23:59:59');
-    //            $resultado->whereHas('Treinamento', function ($query) use ($dataInicio_treinado, $dataFim_treinado) {
-    //                $query->where('created_at', '>=', $dataInicio_treinado->dataInsert())->where('created_at', '<=', $dataFim_treinado->dataInsert());
-    //            });
-                $resultado->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
-                    $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
-                        $q->where('data_treinamento', '>=', $dataInicio->dataHoraInsert())->where('data_treinamento', '<=', $dataFim->dataHoraInsert());
-                    });
-                });
-            }
-
-            if ($request->campoDemitido) {
-                $resultado->Demitidos();
-            } else {
-                $resultado->Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
-                    $q->whereEncaminhadoTreinamento(true);
-                });
-            }
-
-
-            if ($request->filled('campoBusca')) {
-                $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                    $query->where(function ($q) use ($request) {
-                        $q->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
-                    });
-    //                $query->where('nome', 'like', '%' . $request->campoBusca . '%')->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')->orWhere('id', $request->campoBusca);
-                });
-            }
-
-            if ($request->filled('campoCPF')) {
-                $resultado->whereHas('Curriculo', function ($q) use ($request) {
-                    $q->whereCpf($request->campoCPF);
-                });
-            }
-
-            if ($request->filled('campoVaga')) {
-                $resultado->whereHas('VagaSelecionada', function ($query) use ($request) {
-                    $query->whereId($request->campoVaga);
-                });
-            }
-
-            if ($request->filled('campoUf')) {
-                $resultado->whereHas('Curriculo', function ($q) use ($request) {
-                    $q->whereUfVaga($request->campoUf);
-                });
-            }
-
-            if ($request->filled('campoArea')) {
-                $resultado->whereHas('Admissao', function ($q) use ($request) {
-                    $q->whereAreaEtiquetaId($request->campoArea);
-                });
-            }
-
-            if ($request->filled('campoCargo')) {
-                $resultado->whereHas('Admissao', function ($query) use ($request) {
-                    $query->where('cargo', 'like', '%' . $request->campoCargo . '%');
-                });
-            }
-
-            if ($request->filled('campo_treinados')) {
-
-                if ($request->campo_treinados == 'S') {
-                    $resultado->has('Treinamento');
-                }
-                if ($request->campo_treinados == 'N') {
-                    $resultado->whereDoesntHave('Treinamento');
-                }
-
-            }
-
-            if (count($request->treinamentos_selecionados) > 0) {
-                $resultado->whereHas('Treinamento.Vencimentos', function ($query) use ($request) {
-                    $query->whereIn('label', $request->treinamentos_selecionados);
-                });
-            }
-
-            if ($request->filled('campoNr_trinta_tres')) {
-                if ($request->campoNr_trinta_tres == 'Realizado') {
-                    $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
-                        $query->where('label', 'like', '%NR33');
-
-                    });
-                }
-                if ($request->campoNr_trinta_tres == 'Não Realizado') {
-                    $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
-                        $query->where('label', 'like', '%NR33');
-                    });
-                }
-                if ($request->campoNr_trinta_tres == 'NÃO SE APLICA') {
-                    $resultado->whereHas('Admissao', function ($query) use ($request) {
-                        $query->where('nr_trinta_tres', $request->campoNr_trinta_tres);
-                    });
-                }
-            }
-
-            if ($request->filled('campoNr_trinta_cinco')) {
-                if ($request->campoNr_trinta_cinco == 'Realizado') {
-                    $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
-                        $query->where('label', 'like', '%NR35');
-                    });
-                }
-                if (!$request->campoNr_trinta_cinco == 'Não Realizado') {
-                    $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
-                        $query->where('label', 'like', '%NR35');
-                    });
-                }
-                if ($request->campoNr_trinta_cinco == 'NÃO SE APLICA') {
-                    $resultado->whereHas('Admissao', function ($query) use ($request) {
-                        $query->where('nr_trinta_tres', $request->campoNr_trinta_tres);
-                    });
-                }
-            }
-
-            if ($request->filled('campoNr_ebtv')) {
-
-                if ($request->campoNr_ebtv) {
-                    $resultado->whereHas('Treinamento.Vencimentos', function ($query) {
-                        $query->where('label', 'EBTV');
-                    });
-                }
-                if (!$request->campoNr_ebtv) {
-                    $resultado->whereDoesntHave('Treinamento.Vencimentos', function ($query) {
-                        $query->where('label', 'EBTV');
-                    });
-                }
-
-            }
-
-            if ($request->filled('campoAdmitido')) {
-                if ($request->campoAdmitido == 'S') {
-                    $resultado->whereHas('Admissao', function ($q) {
-                        $q->whereStatus('ADMITIDO');
-                    });
-                }
-                if ($request->campoAdmitido == 'N') {
-                    $resultado->whereDoesntHave('Admissao');
-                }
-            }
-
-            if ($request->filled('campoCracha')) {
-                if ($request->campoCracha == 'S') {
-                    $resultado->whereHas('Admissao', function ($q) {
-                        $q->whereNotNull('numero_cracha');
-                    });
-                }
-                if ($request->campoCracha == 'N') {
-                    $resultado->whereDoesntHave('Admissao', function ($query) use ($request) {
-                        $query->whereNull('numero_cracha');
-                    });
-                }
-            }
-
-            if ($request->filled('campoFoto')) {
-                if ($request->campoFoto == 'true') {
-                    $resultado->has('Admissao.FotoTres');
-                }
-                if ($request->campoFoto == 'false') {
-                    $resultado->whereDoesntHave('Admissao.FotoTres');
-                }
-            }
-
-            if ($request->filled('campoPcd')) {
-                $campoPcd = $request->campoPcd == 'true' ? true : false;
-                $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
-                    $query->wherePcd($campoPcd);
-                });
-            }
-
-            return $resultado->orderByDesc('created_at');
-        }*/
 
     public function filtro(Request $request)
     {
