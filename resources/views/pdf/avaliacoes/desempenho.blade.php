@@ -169,32 +169,33 @@
             </div>
 
             <!-- TERMO DE COMPROMISSO -->
-            <div class="termo-compromisso">
-                <div class="termo-content">
-                    <p class="termo-texto">
-                        Eu, <span class="linha-assinatura"></span>,
-                        comprometo-me a realizar as ações acima listadas até <span class="data-compromisso">_____/_____/__________</span>
-                        a fim de melhorar meu desempenho e contribuir com a empresa da melhor forma.
-                    </p>
+            @if(!$tipo_pj)
+                <div class="termo-compromisso">
+                    <div class="termo-content">
+                        <p class="termo-texto">
+                            Eu, <span class="linha-assinatura"></span>,
+                            comprometo-me a realizar as ações acima listadas até <span class="data-compromisso">_____/_____/__________</span>
+                            a fim de melhorar meu desempenho e contribuir com a empresa da melhor forma.
+                        </p>
 
-                    <div class="assinaturas">
-                        <div class="data-local">
-                            São Luís-MA, _______ de _________________ de _________.
-                        </div>
+                        <div class="assinaturas">
+                            <div class="data-local">
+                                São Luís-MA, _______ de _________________ de _________.
+                            </div>
 
-                        <div class="assinatura-box">
-                            <div class="linha-assinatura-final"></div>
-                            <div class="label-assinatura">Assinatura do Colaborador</div>
-                        </div>
+                            <div class="assinatura-box">
+                                <div class="linha-assinatura-final"></div>
+                                <div class="label-assinatura">Assinatura do Colaborador</div>
+                            </div>
 
-                        <div class="assinatura-box">
-                            <div class="linha-assinatura-final"></div>
-                            <div class="label-assinatura">Assinatura do Gestor</div>
+                            <div class="assinatura-box">
+                                <div class="linha-assinatura-final"></div>
+                                <div class="label-assinatura">Assinatura do Gestor</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
+            @endif
         </div>
 
         <div style="position:relative; bottom: 5px">

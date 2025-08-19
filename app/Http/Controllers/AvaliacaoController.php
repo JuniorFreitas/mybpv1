@@ -474,6 +474,7 @@ class AvaliacaoController extends Controller
             'dados_do_funcionario' => $dadosDoFuncionario,
             'origem_feedback' => $avaliacaoFeedback->origem_feedback,
             'principal' => $avaliacaoFeedback->principal,
+            'tipo_pj' => $avaliacaoFeedback->tipo_pj,
         ]);
     }
 
