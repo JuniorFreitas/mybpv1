@@ -1,4 +1,4 @@
-import radarchart from "../../../components/Charts/Radar.vue";
+import radarchart from '../../../components/Charts/Radar.vue'
 
 const app = new Vue({
     el: '#app',
@@ -17,51 +17,51 @@ const app = new Vue({
             result_subtopico: [],
             resultChart: [],
             planos_acoes: [],
-            planos_acoes_delete: [],
-        },
+            planos_acoes_delete: []
+        }
     },
     components: {
         radarchart
     },
     filters: {
         casasDecimais(valor) {
-            return valor.toFixed(1);
+            return valor.toFixed(1)
         }
     },
     mounted() {
-        this.lista_topicos = dados.topicos;
-        this.formAvaliarFinal.dados_do_funcionario = dados.dados_do_funcionario;
-        this.formAvaliarFinal.avaliador_principal = dados.avaliador_principal;
-        this.formAvaliarFinal.status_avaliacao = dados.status_avaliacao;
-        this.formAvaliarFinal.total_aval = dados.total_aval;
-        this.formAvaliarFinal.media_aval = dados.media_aval;
-        this.formAvaliarFinal.nota_final = dados.nota_final;
-        this.formAvaliarFinal.resultado_topico_pai = dados.resultado_topico_pai;
-        this.formAvaliarFinal.result_topico_pai_agrupado = dados.result_topico_pai_agrupado;
-        this.formAvaliarFinal.result_topico = dados.result_topico;
-        this.formAvaliarFinal.result_subtopico = dados.result_subtopico;
-        this.formAvaliarFinal.resultChart = dados.resultChart;
-        this.formAvaliarFinal.planos_acoes = dados.planos_acoes;
+        this.lista_topicos = dados.topicos
+        this.formAvaliarFinal.dados_do_funcionario = dados.dados_do_funcionario
+        this.formAvaliarFinal.avaliador_principal = dados.avaliador_principal
+        this.formAvaliarFinal.status_avaliacao = dados.status_avaliacao
+        this.formAvaliarFinal.total_aval = dados.total_aval
+        this.formAvaliarFinal.media_aval = dados.media_aval
+        this.formAvaliarFinal.nota_final = dados.nota_final
+        this.formAvaliarFinal.resultado_topico_pai = dados.resultado_topico_pai
+        this.formAvaliarFinal.result_topico_pai_agrupado = dados.result_topico_pai_agrupado
+        this.formAvaliarFinal.result_topico = dados.result_topico
+        this.formAvaliarFinal.result_subtopico = dados.result_subtopico
+        this.formAvaliarFinal.resultChart = dados.resultChart
+        this.formAvaliarFinal.planos_acoes = dados.planos_acoes
 
-        this.print();
+        // Imprimir automaticamente ao carregar a página
+        this.print()
 
-
-        // Chamar a função quando a página estiver completamente carregada
-        window.onload = () => {
-            this.fecharJanela();
-        };
-        // window.print();
-
-        // window.addEventListener("afterprint", function() {
-        //     window.close();
-        // });
+        // REMOVIDO: window.onload que fechava a janela automaticamente
+        // window.onload = () => {
+        //     this.fecharJanela();
+        // };
     },
     methods: {
-        print: function () {
-            window.print();
+        print: function() {
+            window.print()
+
+            // Opção: Fechar automaticamente após imprimir ou cancelar impressão
+            window.addEventListener('afterprint', () => {
+                this.fecharJanela()
+            }, { once: true })
         },
-        fecharJanela: function () {
-            window.close();
-        },
+        fecharJanela: function() {
+            window.close()
+        }
     }
-});
+})

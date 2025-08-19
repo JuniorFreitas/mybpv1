@@ -17,16 +17,16 @@
                             <div class="col-12 col-lg-4"><strong>Nome:</strong>
                                 {{ formAvaliarFinal.dados_do_funcionario.nome }}
                             </div>
-                            <div class="col-12 col-lg-4"><strong>Matrícula:</strong>
+                            <div class="col-12 col-lg-4" v-if="!formAvaliarFinal.tipo_pj"><strong>Matrícula:</strong>
                                 {{ formAvaliarFinal.dados_do_funcionario.matricula }}
                             </div>
-                            <div class="col-12 col-lg-4"><strong>Admissão:</strong>
+                            <div class="col-12 col-lg-4" v-if="!formAvaliarFinal.tipo_pj"><strong>Admissão:</strong>
                                 {{ formAvaliarFinal.dados_do_funcionario.data_admissao }}
                             </div>
                         </div>
 
                         <div class="row mt-3">
-                            <div class="col-12 col-lg-4"><strong>Cargo:</strong>
+                            <div class="col-12 col-lg-4" v-if="!formAvaliarFinal.tipo_pj"><strong>Cargo:</strong>
                                 {{ formAvaliarFinal.dados_do_funcionario.cargo }}
                             </div>
                             <div class="col-12 col-lg-4"><strong>Centro de Custo:</strong>
@@ -234,16 +234,16 @@
                             <div class="col-12 col-lg-4"><strong>Nome:</strong>
                                 {{ formAvaliar.dados_do_funcionario.nome }}
                             </div>
-                            <div class="col-12 col-lg-4"><strong>Matrícula:</strong>
+                            <div class="col-12 col-lg-4" v-if="!formAvaliar.tipo_pj"><strong>Matrícula:</strong>
                                 {{ formAvaliar.dados_do_funcionario.matricula }}
                             </div>
-                            <div class="col-12 col-lg-4"><strong>Admissão:</strong>
+                            <div class="col-12 col-lg-4" v-if="!formAvaliar.tipo_pj"><strong>Admissão:</strong>
                                 {{ formAvaliar.dados_do_funcionario.data_admissao }}
                             </div>
                         </div>
 
                         <div class="row mt-3">
-                            <div class="col-12 col-lg-4"><strong>Cargo:</strong>
+                            <div class="col-12 col-lg-4" v-if="!formAvaliar.tipo_pj"><strong>Cargo:</strong>
                                 {{ formAvaliar.dados_do_funcionario.cargo }}
                             </div>
                             <div class="col-12 col-lg-4"><strong>Centro de Custo:</strong>
@@ -898,6 +898,7 @@ export default {
                     this.formAvaliar.avaliacao_feedback_id = response.data.avaliacao_feedback_id;
                     this.formAvaliar.origem_feedback = response.data.origem_feedback;
                     this.formAvaliar.principal = response.data.principal;
+                    this.formAvaliar.tipo_pj = response.data.tipo_pj;
                     this.editando = true;
                     setupCampo();
                     this.preload = false;
