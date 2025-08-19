@@ -58,8 +58,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('mybp:ferias')->daily();
 //        $schedule->call(new Im)->daily();
 
-        $schedule->command('mybp:treinamento-vencimento --id=78862')
-            ->mondays()
+        $schedule->command('mybp:treinamento-vencimento --chunk-size=2000 --lote-size=100 --id=78862')
+            ->fridays()
             ->at('00:00');
     }
 
