@@ -37,23 +37,27 @@
                     </div>
 
                     <!-- Matrícula e Admissão -->
-                    <div class="dados-row">
-                        <div class="dados-item">
-                            <span class="label">MATRÍCULA:</span>
-                            <span class="value">@{{ formAvaliarFinal.dados_do_funcionario.matricula }}</span>
+                    @if(!$tipo_pj)
+                        <div class="dados-row">
+                            <div class="dados-item">
+                                <span class="label">MATRÍCULA:</span>
+                                <span class="value">@{{ formAvaliarFinal.dados_do_funcionario.matricula }}</span>
+                            </div>
+                            <div class="dados-item">
+                                <span class="label">DATA DE ADMISSÃO:</span>
+                                <span class="value">@{{ formAvaliarFinal.dados_do_funcionario.data_admissao }}</span>
+                            </div>
                         </div>
-                        <div class="dados-item">
-                            <span class="label">DATA DE ADMISSÃO:</span>
-                            <span class="value">@{{ formAvaliarFinal.dados_do_funcionario.data_admissao }}</span>
-                        </div>
-                    </div>
+                    @endif
 
                     <!-- Cargo, Centro de Custo e Área -->
                     <div class="dados-row">
-                        <div class="dados-item">
-                            <span class="label">CARGO:</span>
-                            <span class="value">@{{ formAvaliarFinal.dados_do_funcionario.cargo }}</span>
-                        </div>
+                        @if(!$tipo_pj)
+                            <div class="dados-item">
+                                <span class="label">CARGO:</span>
+                                <span class="value">@{{ formAvaliarFinal.dados_do_funcionario.cargo }}</span>
+                            </div>
+                        @endif
                         <div class="dados-item">
                             <span class="label">CENTRO DE CUSTO:</span>
                             <span class="value">@{{ formAvaliarFinal.dados_do_funcionario.centro_custo }}</span>
