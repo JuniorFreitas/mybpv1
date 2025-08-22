@@ -6,8 +6,6 @@ use App\Models\Arquivo;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use MasterTag\DataHora;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * App\Models\Pivot\TreinamentoVencimento
@@ -18,8 +16,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $data_treinamento
  * @property string|null $numero_fat
  * @property int|null $arquivo_id
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
- * @property-read int|null $activities_count
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento query()
@@ -34,22 +30,6 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class TreinamentoVencimento extends Pivot
 {
-    use LogsActivity;
-
-    protected static $logFillable = true;
-    protected static $logName = 'treinamento_vencimento';
-    protected static $logOnlyDirty = true;
-    protected static $submitEmptyLogs = false;
-
-    public function getDescriptionForEvent(string $eventName): string
-    {
-        return $eventName;
-    }
-
-    public function tapActivity(Activity $activity, string $eventName)
-    {
-        $activity->descricao = "";
-    }
 
 //    protected $dates = [
 //        'data_vencimento',
