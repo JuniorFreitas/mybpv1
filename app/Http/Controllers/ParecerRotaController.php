@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\Entrevistas\parecerTransporteExport;
-use App\Jobs\JobExportaExcel;
+use App\Jobs\JobExportaParecerRota;
 use App\Models\FeedbackCurriculo;
 use App\Models\ParecerRota;
+use App\Services\Entrevistas\ParecerRotaFilter;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel;
-use MasterTag\DataHora;
 use PDF;
 
 class ParecerRotaController extends Controller
@@ -39,36 +39,68 @@ class ParecerRotaController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
     public function store(Request $request)
     {
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados, [
-            'tem_rota' => 'required',
-//            'pega_onibus' => 'required',
-            'vale_transporte' => 'required',
-            'rota_atende' => 'required',
-            'rota_tipo' => 'required',
-            'quem_entrevistou' => 'required|min:3'
+            'feedback_id' => 'required|exists:feedback_curriculos,id',
+            'tem_rota' => 'required|boolean',
+            'pega_onibus' => 'nullable|boolean',
+            'vale_transporte' => 'required|boolean',
+            'rota_atende' => 'required|boolean',
+            'rota_tipo' => 'required|string|max:100',
+            'quem_entrevistou' => 'required|string|min:3|max:255'
+        ], [
+            'feedback_id.required' => 'ID do feedback é obrigatório',
+            'feedback_id.exists' => 'Feedback não encontrado',
+            'tem_rota.required' => 'Informe se tem rota',
+            'tem_rota.boolean' => 'Campo tem rota deve ser verdadeiro ou falso',
+            'vale_transporte.required' => 'Informe sobre vale transporte',
+            'vale_transporte.boolean' => 'Campo vale transporte deve ser verdadeiro ou falso',
+            'rota_atende.required' => 'Informe se a rota atende',
+            'rota_atende.boolean' => 'Campo rota atende deve ser verdadeiro ou falso',
+            'rota_tipo.required' => 'Tipo de rota é obrigatório',
+            'rota_tipo.max' => 'Tipo de rota deve ter no máximo 100 caracteres',
+            'quem_entrevistou.required' => 'Nome do entrevistador é obrigatório',
+            'quem_entrevistou.min' => 'Nome do entrevistador deve ter pelo menos 3 caracteres',
+            'quem_entrevistou.max' => 'Nome do entrevistador deve ter no máximo 255 caracteres'
         ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao salvar a entrevista',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                ParecerRota::create($dados);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error PARECER RH ROTA STORE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $parecerRota = ParecerRota::create($dados);
+
+            DB::commit();
+
+            return response()->json([
+                'msg' => 'Parecer de rota salvo com sucesso',
+                'data' => $parecerRota
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            \Log::error('Erro ao salvar parecer rota', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'user_id' => auth()->id(),
+                'data' => $dados
+            ]);
+
+            return response()->json([
+                'msg' => 'Erro ao salvar o parecer de rota. Tente novamente.'
+            ], 400);
         }
     }
 
@@ -87,19 +119,33 @@ class ParecerRotaController extends Controller
      * Show the form for editing the specified resource.
      *
      * @param \App\Models\ParecerRota $parecerRota
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
     public function edit(FeedbackCurriculo $parecerRota)
     {
-        $feedback = $parecerRota->load('parecerRota',
-            'parecerRh:feedback_id,tipo_entrevista',
-            'Curriculo',
-            'Curriculo.Formacao',
-            'TelPrincipal',
-            'vagaSelecionada'
-        );
+        try {
+            $feedback = $parecerRota->load([
+                'parecerRota',
+                'parecerRh:feedback_id,tipo_entrevista',
+                'Curriculo',
+                'Curriculo.Formacao',
+                'TelPrincipal',
+                'vagaSelecionada'
+            ]);
 
-        return response()->json($feedback, 200);
+            return response()->json($feedback, 200);
+
+        } catch (\Exception $e) {
+            \Log::error('Erro ao carregar dados do parecer rota', [
+                'error' => $e->getMessage(),
+                'feedback_id' => $parecerRota->id,
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'msg' => 'Erro ao carregar dados'
+            ], 500);
+        }
     }
 
     /**
@@ -107,36 +153,59 @@ class ParecerRotaController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\ParecerRota $parecerRota
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
     public function update(Request $request, ParecerRota $parecerRota)
     {
         $dados = $request->input();
         $dadosValidados = \Validator::make($dados, [
-            'tem_rota' => 'required',
-            'pega_onibus' => 'required',
-            'vale_transporte' => 'required',
-            'rota_atende' => 'required',
-            'rota_tipo' => 'required',
-            'quem_entrevistou' => 'required|min:3'
+            'tem_rota' => 'sometimes|boolean',
+            'pega_onibus' => 'nullable|boolean',
+            'vale_transporte' => 'sometimes|boolean',
+            'rota_atende' => 'sometimes|boolean',
+            'rota_tipo' => 'sometimes|string|max:100',
+            'quem_entrevistou' => 'sometimes|string|min:3|max:255'
+        ], [
+            'tem_rota.boolean' => 'Campo tem rota deve ser verdadeiro ou falso',
+            'vale_transporte.boolean' => 'Campo vale transporte deve ser verdadeiro ou falso',
+            'rota_atende.boolean' => 'Campo rota atende deve ser verdadeiro ou falso',
+            'rota_tipo.max' => 'Tipo de rota deve ter no máximo 100 caracteres',
+            'quem_entrevistou.min' => 'Nome do entrevistador deve ter pelo menos 3 caracteres',
+            'quem_entrevistou.max' => 'Nome do entrevistador deve ter no máximo 255 caracteres'
         ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao alterar a entrevista',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        }else{
-            try {
-                DB::beginTransaction();
-                $parecerRota->update($dados);
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error PARECER RH ROTA UPDATE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}| Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $parecerRota->update($dados);
+
+            DB::commit();
+
+            return response()->json([
+                'msg' => 'Parecer de rota atualizado com sucesso',
+                'data' => $parecerRota->fresh()
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            \Log::error('Erro ao atualizar parecer rota', [
+                'error' => $e->getMessage(),
+                'parecer_id' => $parecerRota->id,
+                'user_id' => auth()->id(),
+                'data' => $dados
+            ]);
+
+            return response()->json([
+                'msg' => 'Erro ao atualizar o parecer de rota. Tente novamente.'
+            ], 400);
         }
     }
 
@@ -144,134 +213,188 @@ class ParecerRotaController extends Controller
      * Remove the specified resource from storage.
      *
      * @param \App\Models\ParecerRota $parecerRota
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
     public function destroy(ParecerRota $parecerRota)
     {
-        //
+        try {
+            DB::beginTransaction();
+
+            $parecerRota->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'msg' => 'Parecer de rota removido com sucesso'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            \Log::error('Erro ao deletar parecer rota', [
+                'error' => $e->getMessage(),
+                'parecer_id' => $parecerRota->id,
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'msg' => 'Erro ao remover parecer de rota'
+            ], 400);
+        }
     }
 
+    /**
+     * Atualizar com filtros usando ParecerRotaFilter
+     */
     public function atualizar(Request $request)
     {
-        $resultado = $this->filtro($request)->paginate($request->pages);
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $resultado->items(),
-            ]
-        ]);
+        try {
+            $perPage = $request->input('pages', 15);
 
+            // Usar ParecerRotaFilter ao invés da lógica manual
+            $resultado = ParecerRotaFilter::make()
+                ->apply($request)
+                ->paginate($perPage);
+
+            return response()->json([
+                'atual' => $resultado->currentPage(),
+                'ultima' => $resultado->lastPage(),
+                'total' => $resultado->total(),
+                'dados' => [
+                    'itens' => $resultado->items(),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erro ao buscar parecer rota', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
+
+            return response()->json([
+                'msg' => 'Erro ao carregar dados'
+            ], 500);
+        }
     }
 
+    /**
+     * Método de filtro usando ParecerRotaFilter (mantido para compatibilidade)
+     */
     public function filtro(Request $request)
     {
-        $resultado = FeedbackCurriculo::with(
-            'Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
-            'Cliente:id,razao_social',
-            'VagaAberta.VagaSelecionada',
-            'parecerRh',
-            'parecerTecnica',
-            'parecerRota',
-            'parecerTeste')
-            ->has('parecerRh')
-            ->whereIn('selecionado', ['sim', 'standby'])->whereInteresse(true);
-
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
-            $resultado->whereHas('parecerRota', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('created_at', '>=', $dataInicio->dataHoraInsert())
-                    ->where('created_at', '<=', $dataFim->dataHoraInsert());
-            });
-        }
-
-        if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
-            });
-        }
-
-        if ($request->filled('campoCliente')) {
-            $resultado->whereClienteId($request->campoCliente);
-        }
-
-        if ($request->filled('campoVaga')) {
-            $resultado->whereHas('VagaAberta', function ($query) use ($request) {
-                $query->whereId($request->campoVaga);
-            });
-        }
-
-        if ($request->filled('campoUf')) {
-            $resultado->whereHas('Curriculo', function ($q) use ($request) {
-                $q->whereUfVaga($request->campoUf);
-            });
-        }
-
-        if ($request->filled('campoCPF')) {
-            $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->whereCpf($request->campoCPF);
-            });
-        }
-
-        if ($request->filled('campoPcd')) {
-            $campoPcd = $request->campoPcd == 'true' ? true : false;
-            $resultado->whereHas('Curriculo', function ($query) use ($campoPcd) {
-                $query->wherePcd($campoPcd);
-            });
-        }
-        return $resultado->orderByDesc('created_at');
-
+        return ParecerRotaFilter::make()
+            ->apply($request)
+            ->getQuery();
     }
 
-    public function export(Request $request)
+    /**
+     * Export usando novo Job robusto
+     */
+    public function export(Request $request): JsonResponse
     {
-        $resultado = $this->filtro($request)->get();
-        $head = [
-            "Nome",
-            "Vaga",
-            "PCD",
-            "Parecer RH Nota",
-            "Observação",
-            "E-mail",
-            "Bairro",
-            "CEP",
-            "Endereço",
-            "municipio",
-            "Estado",
-            "Complemento"
-        ];
+        try {
+            $userId = auth()->id();
+            $requestData = $request->all();
 
-        $rows = [];
+            // Criar uma chave única baseada no usuário e parâmetros da request
+            $cacheKey = 'export_parecer_rota_' . $userId . '_' . md5(json_encode($requestData));
 
-        foreach ($resultado as $row) {
-            $rows[] = [
-                $row->Curriculo->nome,
-                $row->vaga_aberta_municipio,
-                $row->Curriculo->pcd = false ? "SIM":"NÂO",
-                $row->parecerRh->nota,
-                $row->obs,
-                $row->Curriculo->email,
-                $row->Curriculo->bairro,
-                $row->Curriculo->cep,
-                $row->Curriculo->logradouro,
-                $row->Curriculo->municipio,
-                $row->Curriculo->uf,
-                $row->Curriculo->complemento,
+            // Verificar se já existe um export em andamento
+            if (Cache::has($cacheKey)) {
+                $cacheData = Cache::get($cacheKey);
 
-            ];
+                $status = $cacheData['status'] ?? 'processing';
+                $attempts = $cacheData['attempt'] ?? 1;
+                $maxTries = $cacheData['max_tries'] ?? 3;
+
+                $message = match ($status) {
+                    'processing' => "Exportação em andamento (tentativa {$attempts}/{$maxTries}). Aguarde a conclusão.",
+                    'retrying' => "Exportação tentando novamente (tentativa {$attempts}/{$maxTries}). Aguarde.",
+                    'completed' => "Exportação já foi concluída. Verifique suas notificações.",
+                    'failed' => "Última exportação falhou após {$maxTries} tentativas. Você pode tentar novamente.",
+                    default => "Já existe uma exportação em andamento. Aguarde a conclusão."
+                };
+
+                return response()->json([
+                    'msg' => $message,
+                    'status' => $status,
+                    'initiated_at' => $cacheData['initiated_at'] ?? null,
+                    'attempts' => $attempts,
+                    'max_tries' => $maxTries,
+                    'last_error' => $cacheData['last_error'] ?? null
+                ], 200);
+            }
+
+            // Validar se vai encontrar registros antes de disparar o job
+            $filter = ParecerRotaFilter::make()->apply($requestData);
+
+
+            // Se tem selecionados, aplica o filtro de IDs
+            if (!empty($requestData['selecionados'])) {
+                $filter->whereIds($requestData['selecionados']);
+            }
+
+            $count = $filter->count();
+
+            if ($count === 0) {
+                return response()->json([
+                    'msg' => 'Nenhum registro encontrado com os filtros aplicados'
+                ], 400);
+            }
+
+            $nameArquivo = "parecer_rota_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+            $expiresAt = now()->addMinutes(15);
+
+            // Armazenar no cache com tempo de expiração definido
+            Cache::put($cacheKey, [
+                'filename' => $nameArquivo,
+                'initiated_at' => now(),
+                'expires_at' => $expiresAt,
+                'user_id' => $userId,
+                'status' => 'queued',
+                'attempt' => 0,
+                'max_tries' => 3,
+                'progress' => 0
+            ], $expiresAt);
+
+            // Dispatch do job robusto
+            JobExportaParecerRota::dispatch(
+                $userId,
+                $requestData,
+                $nameArquivo,
+                $cacheKey
+            );
+
+            return response()->json([
+                'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.',
+                'export_id' => $cacheKey,
+                'estimated_time' => $this->estimateExportTime($count),
+                'registros_encontrados' => $count
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("Erro ao iniciar exportação de parecer rota", [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'user_id' => auth()->id()
+            ]);
+
+            // Limpar cache em caso de erro
+            if (isset($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
+
+            return response()->json([
+                'msg' => 'Erro interno ao iniciar exportação'
+            ], 500);
         }
-
-        $nameArquivo = "parecer_rota" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Parecer - Rota", $head, $rows, $nameArquivo);
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
 
+    /**
+     * Geração de PDF
+     */
     public function getFichaPdf(Request $request)
     {
         $parecer_rota = ParecerRota::find($request->id)->append('data_entrevista');
@@ -279,5 +402,66 @@ class ParecerRotaController extends Controller
         $pdf = PDF::loadView('pdf.entrevista.parecer_rota.ficha', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("parecer_rota" . Str::slug($parecer_rota->FeedbackCurriculo->Curriculo->nome) . ".pdf");
+    }
+
+    /**
+     * Estatísticas
+     */
+    public function estatisticas(Request $request): JsonResponse
+    {
+        try {
+            $filter = ParecerRotaFilter::make()->apply($request);
+
+            $total = $filter->count();
+
+            // Estatísticas específicas usando o filter
+            $comRota = ParecerRotaFilter::make()
+                ->apply($request)
+                ->whereRaw('EXISTS (SELECT 1 FROM parecer_rotas WHERE parecer_rotas.feedback_id = feedback_curriculos.id AND parecer_rotas.tem_rota = 1)')
+                ->count();
+
+            $semRota = $total - $comRota;
+
+            $pcdTotal = ParecerRotaFilter::make()
+                ->apply($request)
+                ->whereRaw('EXISTS (SELECT 1 FROM curriculos WHERE curriculos.id = feedback_curriculos.curriculo_id AND curriculos.pcd = 1)')
+                ->count();
+
+            return response()->json([
+                'total' => $total,
+                'com_rota' => $comRota,
+                'sem_rota' => $semRota,
+                'pcd_total' => $pcdTotal,
+                'percentual_com_rota' => $total > 0 ? round(($comRota / $total) * 100, 2) : 0,
+                'percentual_pcd' => $total > 0 ? round(($pcdTotal / $total) * 100, 2) : 0,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erro ao calcular estatísticas parecer rota', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
+
+            return response()->json([
+                'msg' => 'Erro ao calcular estatísticas'
+            ], 500);
+        }
+    }
+
+    /**
+     * Método auxiliar para estimar tempo de exportação
+     */
+    private function estimateExportTime(int $recordCount): string
+    {
+        if ($recordCount < 100) {
+            return '30 segundos - 1 minuto';
+        } elseif ($recordCount < 1000) {
+            return '1-3 minutos';
+        } elseif ($recordCount < 5000) {
+            return '3-8 minutos';
+        } else {
+            return '8-15 minutos';
+        }
     }
 }

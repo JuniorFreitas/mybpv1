@@ -7,28 +7,43 @@
 
 
             <div class="custom-control custom-switch mb-2">
-                <input type="checkbox" v-model="colunasTabela.pcd" @click="colunasTabela.pcd = !colunasTabela.pcd" class="custom-control-input" id="pcd">
+                <input type="checkbox" v-model="colunasTabela.pcd" @click="colunasTabela.pcd = !colunasTabela.pcd"
+                       class="custom-control-input" id="pcd"
+                >
                 <label class="custom-control-label"
-                       for="pcd">PCD</label>
+                       for="pcd"
+                >PCD</label>
             </div>
 
 
             <div class="custom-control custom-switch mb-2">
-                <input type="checkbox" v-model="colunasTabela.parecer_rh" @click="colunasTabela.parecer_rh = !colunasTabela.parecer_rh" class="custom-control-input" id="parecer_rh">
+                <input type="checkbox" v-model="colunasTabela.parecer_rh"
+                       @click="colunasTabela.parecer_rh = !colunasTabela.parecer_rh" class="custom-control-input"
+                       id="parecer_rh"
+                >
                 <label class="custom-control-label"
-                       for="parecer_rh">PARECER RH NOTA</label>
+                       for="parecer_rh"
+                >PARECER RH NOTA</label>
             </div>
 
             <div class="custom-control custom-switch mb-2">
-                <input type="checkbox" v-model="colunasTabela.tecnica_nota" @click="colunasTabela.tecnica_nota = !colunasTabela.tecnica_nota" class="custom-control-input" id="tecnica_nota">
+                <input type="checkbox" v-model="colunasTabela.tecnica_nota"
+                       @click="colunasTabela.tecnica_nota = !colunasTabela.tecnica_nota" class="custom-control-input"
+                       id="tecnica_nota"
+                >
                 <label class="custom-control-label"
-                       for="tecnica_nota">ENTREVISTA TÉCNICA NOTA</label>
+                       for="tecnica_nota"
+                >ENTREVISTA TÉCNICA NOTA</label>
             </div>
 
             <div class="custom-control custom-switch mb-2">
-                <input type="checkbox" v-model="colunasTabela.teste_pratico_nota" @click="colunasTabela.teste_pratico_nota = !colunasTabela.teste_pratico_nota" class="custom-control-input" id="teste_pratico_nota">
+                <input type="checkbox" v-model="colunasTabela.teste_pratico_nota"
+                       @click="colunasTabela.teste_pratico_nota = !colunasTabela.teste_pratico_nota"
+                       class="custom-control-input" id="teste_pratico_nota"
+                >
                 <label class="custom-control-label"
-                       for="teste_pratico_nota">TESTE PRÁTICO NOTA</label>
+                       for="teste_pratico_nota"
+                >TESTE PRÁTICO NOTA</label>
             </div>
         </template>
     </modal>
@@ -46,7 +61,8 @@
                             <div class="form-group">
                                 <label>Tipo de Contratação</label>
                                 <select class="form-control" disabled="disabled"
-                                        v-model="form.parecer_rota.rota_tipo">
+                                        v-model="form.parecer_rota.rota_tipo"
+                                >
                                     <option value="">Selecione</option>
                                     <option value="parada">Parada</option>
                                     <option value="fixo">Fixo</option>
@@ -63,7 +79,8 @@
                                         :disabled="visualizar"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form.parecer_rota.tem_rota">
+                                        v-model="form.parecer_rota.tem_rota"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -71,7 +88,8 @@
 
                                 <select v-if="form.parecer_rota.rota_tipo === 'parada'" class="form-control"
                                         :disabled="visualizar"
-                                        v-model="form.parecer_rota.tem_rota">
+                                        v-model="form.parecer_rota.tem_rota"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -84,7 +102,8 @@
                                 <label>Qual</label>
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        {{--                                           onblur="valida_campo_vazio(this,1)"--}}
-                                       v-model="form.parecer_rota.qual">
+                                       v-model="form.parecer_rota.qual"
+                                >
                             </div>
                         </div>
                     </div>
@@ -96,11 +115,13 @@
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        onblur="valida_campo_vazio(this,1)"
                                        v-if="form.parecer_rota.rota_tipo === 'fixo'"
-                                       v-model="form.parecer_rota.bairro_rota">
+                                       v-model="form.parecer_rota.bairro_rota"
+                                >
 
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                       v-model="form.parecer_rota.bairro_rota">
+                                       v-model="form.parecer_rota.bairro_rota"
+                                >
                             </div>
                         </div>
 
@@ -110,11 +131,13 @@
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        onblur="valida_campo_vazio(this,1)"
                                        v-if="form.parecer_rota.rota_tipo === 'fixo'"
-                                       v-model="form.parecer_rota.ponto_referencia_rota">
+                                       v-model="form.parecer_rota.ponto_referencia_rota"
+                                >
 
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                       v-model="form.parecer_rota.ponto_referencia_rota">
+                                       v-model="form.parecer_rota.ponto_referencia_rota"
+                                >
                             </div>
                         </div>
                     </div>
@@ -128,7 +151,8 @@
                                         v-if="form.parecer_rota.rota_tipo === 'fixo'"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form.parecer_rota.pega_onibus">
+                                        v-model="form.parecer_rota.pega_onibus"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -136,7 +160,8 @@
 
                                 <select class="form-control" :disabled="visualizar"
                                         v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                        v-model="form.parecer_rota.pega_onibus">
+                                        v-model="form.parecer_rota.pega_onibus"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -150,11 +175,13 @@
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        onblur="valida_campo_vazio(this,1)"
                                        v-if="form.parecer_rota.rota_tipo === 'fixo'"
-                                       v-model="form.parecer_rota.pega_onibus_qual_ponto">
+                                       v-model="form.parecer_rota.pega_onibus_qual_ponto"
+                                >
 
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                       v-model="form.parecer_rota.pega_onibus_qual_ponto">
+                                       v-model="form.parecer_rota.pega_onibus_qual_ponto"
+                                >
                             </div>
                         </div>
                     </div>
@@ -166,11 +193,13 @@
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        onblur="valida_campo_vazio(this,1)"
                                        v-if="form.parecer_rota.rota_tipo === 'fixo'"
-                                       v-model="form.parecer_rota.bairro_residencia">
+                                       v-model="form.parecer_rota.bairro_residencia"
+                                >
 
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                       v-model="form.parecer_rota.bairro_residencia">
+                                       v-model="form.parecer_rota.bairro_residencia"
+                                >
                             </div>
                         </div>
 
@@ -180,10 +209,12 @@
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        onblur="valida_campo_vazio(this,1)"
                                        v-if="form.parecer_rota.rota_tipo === 'fixo'"
-                                       v-model="form.parecer_rota.ponto_referencia_residencia">
+                                       v-model="form.parecer_rota.ponto_referencia_residencia"
+                                >
                                 <input type="text" class="form-control" :disabled="visualizar"
                                        v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                       v-model="form.parecer_rota.ponto_referencia_residencia">
+                                       v-model="form.parecer_rota.ponto_referencia_residencia"
+                                >
                             </div>
                         </div>
                     </div>
@@ -197,7 +228,8 @@
                                         v-if="form.parecer_rota.rota_tipo === 'fixo'"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form.parecer_rota.vale_transporte">
+                                        v-model="form.parecer_rota.vale_transporte"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -205,7 +237,8 @@
 
                                 <select class="form-control" :disabled="visualizar"
                                         v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                        v-model="form.parecer_rota.vale_transporte">
+                                        v-model="form.parecer_rota.vale_transporte"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -227,7 +260,8 @@
                                         v-if="form.parecer_rota.rota_tipo === 'fixo'"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form.parecer_rota.rota_disponivel_turno_a">
+                                        v-model="form.parecer_rota.rota_disponivel_turno_a"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -235,7 +269,8 @@
 
                                 <select class="form-control" :disabled="visualizar"
                                         v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                        v-model="form.parecer_rota.rota_disponivel_turno_a">
+                                        v-model="form.parecer_rota.rota_disponivel_turno_a"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -250,7 +285,8 @@
                                         v-if="form.parecer_rota.rota_tipo === 'fixo'"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form.parecer_rota.rota_disponivel_turno_b">
+                                        v-model="form.parecer_rota.rota_disponivel_turno_b"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -258,7 +294,8 @@
 
                                 <select class="form-control" :disabled="visualizar"
                                         v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                        v-model="form.parecer_rota.rota_disponivel_turno_b">
+                                        v-model="form.parecer_rota.rota_disponivel_turno_b"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -273,7 +310,8 @@
                                         v-if="form.parecer_rota.rota_tipo === 'fixo'"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form.parecer_rota.rota_disponivel_turno_c">
+                                        v-model="form.parecer_rota.rota_disponivel_turno_c"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -281,7 +319,8 @@
 
                                 <select class="form-control" :disabled="visualizar"
                                         v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                        v-model="form.parecer_rota.rota_disponivel_turno_c">
+                                        v-model="form.parecer_rota.rota_disponivel_turno_c"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -296,7 +335,8 @@
                                         v-if="form.parecer_rota.rota_tipo === 'fixo'"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form.parecer_rota.rota_disponivel_turno_o">
+                                        v-model="form.parecer_rota.rota_disponivel_turno_o"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -304,7 +344,8 @@
 
                                 <select class="form-control" :disabled="visualizar"
                                         v-if="form.parecer_rota.rota_tipo === 'parada'"
-                                        v-model="form.parecer_rota.rota_disponivel_turno_o">
+                                        v-model="form.parecer_rota.rota_disponivel_turno_o"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -318,7 +359,8 @@
                                 <input type="text" :disabled="visualizar"
                                        {{--                                                       onblur="valida_campo_vazio(this,1)" --}}
                                        class="form-control"
-                                       v-model="form.parecer_rota.rota_disponivel_outros">
+                                       v-model="form.parecer_rota.rota_disponivel_outros"
+                                >
                             </div>
                         </div>
 
@@ -334,7 +376,8 @@
                                 <select class="custom-select" :disabled="visualizar"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form.parecer_rota.rota_atende">
+                                        v-model="form.parecer_rota.rota_atende"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
@@ -348,7 +391,8 @@
                                 <label>Entrevistado Por:</label>
                                 <input type="text" :disabled="visualizar" autocomplete="off" class="form-control"
                                        onblur="valida_campo_vazio(this,3)"
-                                       v-model="form.parecer_rota.quem_entrevistou">
+                                       v-model="form.parecer_rota.quem_entrevistou"
+                                >
                             </div>
                         </div>
                     </div>
@@ -358,7 +402,8 @@
                     <legend>Observação</legend>
                     <textarea v-model="form.parecer_rota.observacao" class="form-control" cols="3"
                               :disabled="visualizar"
-                              rows="3"></textarea>
+                              rows="3"
+                    ></textarea>
                 </fieldset>
 
             </div>
@@ -367,12 +412,14 @@
             <div v-show="!visualizar">
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="editando && !atualizado  && !preload"
-                        @click.prevent="alterar">
+                        @click.prevent="alterar"
+                >
                     <i class="fa fa-edit"></i> Alterar
                 </button>
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="!editando && !cadastrado  && !preload"
-                        @click.prevent="cadastrar">
+                        @click.prevent="cadastrar"
+                >
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </div>
@@ -387,13 +434,15 @@
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
                                id="filtroIntervalo"
-                               v-model="controle.dados.filtroPeriodo">
+                               v-model="controle.dados.filtroPeriodo"
+                        >
                         <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
                     </div>
                     <div class="form-group">
                         <datepicker range formsm label=""
                                     :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                    v-model="controle.dados.periodo"></datepicker>
+                                    v-model="controle.dados.periodo"
+                        ></datepicker>
                     </div>
                 </div>
 
@@ -404,7 +453,8 @@
                                placeholder="Buscar por nome"
                                autocomplete="off"
                                class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                               v-model="controle.dados.campoBusca"
+                        >
                     </div>
                 </div>
 
@@ -417,7 +467,8 @@
                                onblur="valida_cpf(this)"
                                v-mascara:cpf
                                class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoCPF">
+                               v-model="controle.dados.campoCPF"
+                        >
                     </div>
                 </div>
 
@@ -430,7 +481,8 @@
                                       :disabled="controle.carregando"
                                       placeholder="Por cargo"
                                       @onblur="resetaCampo"
-                                     @onselect="selecionaVaga"></autocomplete>
+                                      @onselect="selecionaVaga"
+                        ></autocomplete>
                     </div>
                 </div>
 
@@ -438,7 +490,8 @@
                     <div class="form-group">
                         <label>Estado</label>
                         <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.campoUf">
+                                v-model="controle.dados.campoUf"
+                        >
                             <option value="">SEM FILTRO</option>
                             <option value="MA">MA</option>
                             <option value="AC">AC</option>
@@ -475,10 +528,12 @@
                     <div class="form-group">
                         <label for="">Rota</label>
                         <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.campoRota">
+                                v-model="controle.dados.campoRota"
+                        >
                             <option value="">Geral</option>
-                            <option :value="true">Tem Rota</option>
-                            <option :value="false">Não tem Rota</option>
+                            <option value="sem_parecer">Sem parecer</option>
+                            <option value="sim">Tem Rota</option>
+                            <option value="não">Não tem Rota</option>
                         </select>
                     </div>
                 </div>
@@ -488,7 +543,8 @@
                         <label for="">Exibir</label>
                         <select class="form-control form-control-sm" @change="atualizar"
                                 :disabled="controle.carregando"
-                                v-model="controle.dados.pages">
+                                v-model="controle.dados.pages"
+                        >
                             <option value="20">20</option>
                             <option value="50">50</option>
                             <option value="100">100</option>
@@ -501,20 +557,25 @@
         <div class="col-12">
             <div class="row">
                 <button type="button" class="btn btn-sm btn-success mb-1 mr-1" :disabled="controle.carregando"
-                        @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                        @click="atualizar"
+                ><i
+                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"
+                    ></i>
                     Atualizar
                 </button>
                 <button class="btn btn-sm btn-danger mb-1 mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionados.length === 0" @click="selecionados = []">
+                        :disabled="selecionados.length === 0" @click="selecionados = []"
+                >
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
                 <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
                         @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
+                        :disabled="controle.carregando || preloadExportacao || lista.length===0"
+                >
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                                                                           v-show="selecionados.length > 0"
+                    >@{{ selecionados.length }}</span>
                 </button>
             </div>
         </div>
@@ -536,7 +597,8 @@
                            :content="comRota.length > 0 ? 'Selecionar todos' : 'Não possui cadastrodo no RH'"
                            v-tippy
                            style="cursor: pointer"
-                           @change.prevent="selecionaTodos">
+                           @change.prevent="selecionaTodos"
+                    >
                 </th>
                 <th class="text-center">CÓD</th>
                 <th>Nome</th>
@@ -549,7 +611,8 @@
                 <th>
                     <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
                             data-toggle="modal"
-                            data-target="#filtroColunas">
+                            data-target="#filtroColunas"
+                    >
                         <i class="bx bxs-filter-alt" aria-hidden="true"></i>
                     </button>
                 </th>
@@ -604,12 +667,14 @@
 
                 <td class="text-center">
                     <form :action="`${URL_ADMIN}/entrevistas/parecer-rota/ficha_pdf`" target="_blank"
-                          method="post">
+                          method="post"
+                    >
                         <button class="btn btn-sm btn-primary mb-2" content="Entrevistar" v-tippy
                                 v-show="!entrevista.parecer_rota"
                                 @click.prevent="formEntrevistar(entrevista.id)"
                                 data-toggle="modal"
-                                data-target="#janelaParecerEntrevista">
+                                data-target="#janelaParecerEntrevista"
+                        >
                             <i class="far fa-list-alt"></i>
                         </button>
 
@@ -618,7 +683,8 @@
                                     v-show="entrevista.parecer_rota"
                                     @click.prevent="formEntrevistar(entrevista.id); editando = true"
                                     data-toggle="modal"
-                                    data-target="#janelaParecerEntrevista">
+                                    data-target="#janelaParecerEntrevista"
+                            >
                                 <i class="fa fa-edit" aria-hidden="true"></i>
                             </button>
                         @endcan
@@ -627,15 +693,18 @@
                                 v-show="entrevista.parecer_rota"
                                 @click.prevent="formEntrevistar(entrevista.id); visualizar = true"
                                 data-toggle="modal"
-                                data-target="#janelaParecerEntrevista">
+                                data-target="#janelaParecerEntrevista"
+                        >
                             <i class="fa fa-search-plus" aria-hidden="true"></i>
                         </button>
 
                         @csrf
                         <input type="hidden" name="id" :value="entrevista.parecer_rota.id"
-                               v-if="entrevista.parecer_rota">
+                               v-if="entrevista.parecer_rota"
+                        >
                         <button type="submit" content="Gerar PDF" v-tippy v-show="entrevista.parecer_rota"
-                                class="btn btn-sm btn-primary mb-2">
+                                class="btn btn-sm btn-primary mb-2"
+                        >
                             <i class="fa fa-file-pdf" aria-hidden="true"></i>
                         </button>
                     </form>
@@ -646,7 +715,8 @@
                             url="{{route('g.entrevista.parecer_rota_transporte.atualizar')}}"
                             :por-pagina="controle.dados.porPagina"
                             :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+                            v-on:carregou="carregou" v-on:carregando="carregando"
+        ></controle-paginacao>
     </div>
 
 @stop

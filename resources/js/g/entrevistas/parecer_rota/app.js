@@ -124,6 +124,11 @@ const app = new Vue({
                 return item.parecer_rota
             })
         },
+        paramsExport() {
+            let dados = this.controle.dados
+            dados.selecionados = this.selecionados
+            return dados
+        },
         tudoMarcado() {
             let totalItens = this.comRota.length
             let totalEncontrado = 0
@@ -154,12 +159,6 @@ const app = new Vue({
         }, 200)
     },
     methods: {
-        paramsExport() {
-            let params = {
-                selecionados: this.selecionados
-            }
-            return _.merge(params, this.controle.dados)
-        },
         /***Campos de Filtros ****/
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
