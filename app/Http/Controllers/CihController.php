@@ -383,8 +383,6 @@ class CihController extends Controller
      */
     public function filtro(Request $request)
     {
-
-
         if (auth()->user()->can('admissao_cih_privilegio_adm')) {
             $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
                     $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
@@ -498,6 +496,7 @@ class CihController extends Controller
             "Data Ocorrência",
             "Ocorrência",
             "Responsável Lançamento",
+            'Data Lançamento',
             "Ação",
             "Status Aprovação Gestor",
             "Data Aprovação Gestor",
@@ -516,6 +515,7 @@ class CihController extends Controller
                 "Data Ocorrência",
                 "Ocorrência",
                 "Responsável Lançamento",
+                'Data Lançamento',
                 "Ação",
                 "Status Aprovação Gestor",
                 "Data Aprovação Gestor",
@@ -539,6 +539,7 @@ class CihController extends Controller
                         'data_ocorrencia' => $row->data_lancamento ?: '',
                         'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
                         'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                        'data_lancamento' => $row->data_lancamento ?: '',
                         'acao' => $row->acao,
                         'status' => $row->status ?: "aguardando",
                         'data_aprovacao' => $row->data_aprovacao ?: '',
@@ -555,6 +556,7 @@ class CihController extends Controller
                         'data_ocorrencia' => $row->data_lancamento ?: '',
                         'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
                         'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
+                        'data_lancamento' => $row->data_lancamento ?: '',
                         'acao' => $row->acao,
                         'status' => $row->status ?: "aguardando",
                         'data_aprovacao' => $row->data_aprovacao ?: '',
