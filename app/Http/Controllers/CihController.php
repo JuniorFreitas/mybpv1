@@ -25,7 +25,7 @@ class CihController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
     public function index()
     {
@@ -48,7 +48,7 @@ class CihController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
     {
         $this->authorize('admissao_cih_lancar');
         $dados = $request->input();
@@ -539,7 +539,7 @@ class CihController extends Controller
                         'data_ocorrencia' => $row->data_lancamento ?: '',
                         'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
                         'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                        'data_lancamento' => $row->data_lancamento ?: '',
+                        'data_lancamento' => $row->created_at ?: '',
                         'acao' => $row->acao,
                         'status' => $row->status ?: "aguardando",
                         'data_aprovacao' => $row->data_aprovacao ?: '',
@@ -556,7 +556,7 @@ class CihController extends Controller
                         'data_ocorrencia' => $row->data_lancamento ?: '',
                         'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
                         'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                        'data_lancamento' => $row->data_lancamento ?: '',
+                        'data_lancamento' => $row->created_at ?: '',
                         'acao' => $row->acao,
                         'status' => $row->status ?: "aguardando",
                         'data_aprovacao' => $row->data_aprovacao ?: '',
