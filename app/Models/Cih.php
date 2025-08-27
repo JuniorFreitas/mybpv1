@@ -179,6 +179,13 @@ class Cih extends Model
         'user_deletou_id' => 'int'
     ];
 
+    protected $appends = ['data_criacao'];
+
+    public function getDataCriacaoAttribute()
+    {
+        return (new DataHora($this->created_at))->dataHoraCompleta();
+    }
+
     /**
      * Scope a query para mostrar apenas cihs vinculados ao user autenticado.
      *
