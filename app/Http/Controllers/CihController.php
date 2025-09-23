@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\Admissao\Apontamento\Cih\JobCihAprovarReprovar;
 use App\Jobs\Admissao\Apontamento\Cih\JobCihStore;
-use App\Jobs\JobExportaExcel;
+use App\Jobs\JobExportaCihCsvFinal;
 use App\Jobs\JobExportaPdf;
 use App\Models\AreaEtiqueta;
 use App\Models\Arquivo;
@@ -15,6 +15,7 @@ use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\FeedbackCurriculo;
 use App\Models\User;
+use App\Services\Cih\CihQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -323,7 +324,8 @@ class CihController extends Controller
      */
     public function atualizar(Request $request)
     {
-        $resultado = $this->filtro($request)->paginate($request->pages);
+//        $resultado = CihQueryBuilder::forListing(auth()->user(), $request->all())->paginate($request->input('per_page', 100));
+        $resultado = $this->filtro($request)->paginate($request->pages ?? 100);
 
 //        $periodo = Cih::get();
         $tags = CihTag::orderBy('label')->whereAtivo(true)->get();
@@ -476,7 +478,13 @@ class CihController extends Controller
             });
         }
 
+        $resultado->with('Colaboradores.Admissao:id,feedback_id,data_admissao,pis,centro_custo_id',
+            'Colaboradores.Admissao.CentroCusto:id,label'
+        );
+
         return $resultado->orderByDesc('created_at');
+
+//        return CihQueryBuilder::forListing(auth()->user(), $request->all());
 
     }
 
@@ -486,93 +494,19 @@ class CihController extends Controller
      */
     public function export(Request $request)
     {
-        $resultado = $this->filtro($request)->get();
-
-//        return $resultado;
-        $head = [
-            "Colaborador",
-            "Cargo",
-            "Área",
-            "Data Ocorrência",
-            "Ocorrência",
-            "Responsável Lançamento",
-            'Data Lançamento',
-            "Ação",
-            "Status Aprovação Gestor",
-            "Data Aprovação Gestor",
-            "Responsável Aprovação Gestor",
-            "Status Aprovação RH",
-            "Data Aprovação RH",
-            "Responsável Aprovação RH"
-        ];
-
         $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
-        if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
-            $head = [
-                "Colaborador",
-                "Cargo",
-                "Centro de Custo",
-                "Data Ocorrência",
-                "Ocorrência",
-                "Responsável Lançamento",
-                'Data Lançamento',
-                "Ação",
-                "Status Aprovação Gestor",
-                "Data Aprovação Gestor",
-                "Responsável Aprovação Gestor",
-                "Status Aprovação RH",
-                "Data Aprovação RH",
-                "Responsável Aprovação RH"
-            ];
-        }
+        $nameArquivo = "admissao_cih" . rand(1000, 9999) . "_" . date('YmdHis') . ".csv";
+        $filtros = $request->all();
+        \Log::info('Filtros: ' . json_encode($filtros));
+        JobExportaCihCsvFinal::dispatch(
+            auth()->id(),
+            "Admissão - CIH",
+            $nameArquivo,
+            $filtros,
+            $modelo_cih_config
+        );
 
-        $rows = [];
-
-        foreach ($resultado as $row) {
-            foreach ($row->colaboradores as $colaborador) {
-                $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
-                if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
-                    $rows[] = [
-                        'colaborador' => $colaborador->Curriculo->nome,
-                        'cargo' => $colaborador->VagaAberta->Vaga->nome,
-                        'centro_de_custo' => $row->CentroDeCusto->label,
-                        'data_ocorrencia' => $row->data_lancamento ?: '',
-                        'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
-                        'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                        'data_lancamento' => $row->data_criacao ?: '',
-                        'acao' => $row->acao,
-                        'status' => $row->status ?: "aguardando",
-                        'data_aprovacao' => $row->data_aprovacao ?: '',
-                        'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
-                        'resposta_rh' => $row->resposta_rh ?: "",
-                        'data_aprovacao_rh' => $row->data_aprovacao_rh ?: '',
-                        'rh_aprovacao' => $row->RhAprovacao ? $row->RhAprovacao->nome : '',
-                    ];
-                } else {
-                    $rows[] = [
-                        'colaborador' => $colaborador->Curriculo->nome,
-                        'cargo' => $colaborador->VagaAberta->Vaga->nome,
-                        'area' => $row->area_id ? $row->Area->label : $row->outra_area,
-                        'data_ocorrencia' => $row->data_lancamento ?: '',
-                        'tag' => $row->Tag ? $row->Tag->label : $row->outra_tag,
-                        'responsavel_lancamento' => $row->ResponsavelLancamento ? $row->ResponsavelLancamento->nome : '',
-                        'data_lancamento' => $row->data_criacao ?: '',
-                        'acao' => $row->acao,
-                        'status' => $row->status ?: "aguardando",
-                        'data_aprovacao' => $row->data_aprovacao ?: '',
-                        'responsavel_aprovacao' => $row->ResponsavelAprovacao ? $row->ResponsavelAprovacao->nome : '',
-                        'resposta_rh' => $row->resposta_rh ?: "",
-                        'data_aprovacao_rh' => $row->data_aprovacao_rh ?: '',
-                        'rh_aprovacao' => $row->RhAprovacao ? $row->RhAprovacao->nome : '',
-                    ];
-                }
-            }
-        }
-
-
-        $nameArquivo = "admissao_cih" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Admissão - CIH", $head, $rows, $nameArquivo);
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo CSV, assim que finalizado você será notificado.']);
     }
 
     /**

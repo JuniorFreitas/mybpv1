@@ -179,11 +179,44 @@ class Cih extends Model
         'user_deletou_id' => 'int'
     ];
 
-    protected $appends = ['data_criacao'];
+    protected $appends = ['data_criacao', 'data_iso_criacao', 'data_iso_lancamento', 'data_iso_aprovacao_rh', 'data_iso_aprovacao_gestor'];
 
     public function getDataCriacaoAttribute()
     {
         return (new DataHora($this->created_at))->dataHoraCompleta();
+    }
+
+    public function getDataIsoCriacaoAttribute()
+    {
+        if ($this->created_at) {
+            $data = new DataHora($this->created_at);
+            return $data->dataInsert();
+        }
+    }
+
+    public function getDataIsoAprovacaoRhAttribute()
+    {
+        if ($this->data_aprovacao_rh) {
+            $data = new DataHora($this->data_aprovacao_rh);
+            return $data->dataInsert();
+        }
+    }
+
+    public function getDataIsoAprovacaoGestorAttribute()
+    {
+        if ($this->data_aprovacao) {
+            $data = new DataHora($this->data_aprovacao);
+            return $data->dataInsert();
+        }
+    }
+
+
+    public function getDataIsoLancamentoAttribute($value)
+    {
+        if ($this->data_lancamento) {
+            $data = new DataHora($this->attributes['data_lancamento']);
+            return $data->dataInsert();
+        }
     }
 
     /**
@@ -203,6 +236,7 @@ class Cih extends Model
     {
         return $date->format('Y-m-d H:i:s');
     }
+
 
     public function getDataLancamentoAttribute($value)
     {
@@ -321,7 +355,7 @@ class Cih extends Model
     public function Colaboradores()
     {
         return $this->belongsToMany(FeedbackCurriculo::class, 'cih_feedback', 'cih_id', 'feedback_id')
-            ->select(['id', 'curriculo_id', 'vagas_abertas_id'])->with('Curriculo:id,nome,rg,orgao_expeditor,nascimento', 'Admissao:id,feedback_id,cargo');
+            ->select(['id', 'curriculo_id', 'vagas_abertas_id'])->with('Curriculo:id,nome,rg,orgao_expeditor,nascimento', 'Admissao:id,feedback_id,cargo,pis');
     }
 
     public function CihFeedbacks()

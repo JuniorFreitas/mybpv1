@@ -12,7 +12,7 @@
                     <div class="row">
                         <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
                             <div class="form-group">
-                                <label>Nome</label>
+                                <label>Nome <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control" v-model="form.nome"
                                        placeholder="Nome"
                                        autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">
@@ -21,7 +21,7 @@
 
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>CPF</label>
+                                <label>CPF <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control" v-model="form.cpf"
                                        placeholder="CPF"
                                        disabled
@@ -59,7 +59,7 @@
 
                         <div class="col-12 col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label>Nascimento</label>
+                                <label>Nascimento <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control" v-model="form.nascimento"
                                        placeholder="Ex: 10/10/2010"
                                        v-mascara:data
@@ -117,7 +117,7 @@
 
                         <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
                             <div class="form-group">
-                                <label>E-mail</label>
+                                <label>E-mail <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control" v-model="form.email"
                                        placeholder="Ex.: email@email.com"
                                        autocomplete="mastertag" onblur="validaEmailVazio(this)">
@@ -246,7 +246,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
-                                <label>Selecionado</label>
+                                <label>Selecionado <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
@@ -262,7 +262,7 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'nao'">
                             <div class="form-group">
-                                <label>Enviar e-mail desclassificação</label>
+                                <label>Enviar e-mail desclassificação <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
@@ -277,11 +277,11 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
                             <div class="form-group">
-                                <label>Selecione uma vaga</label>
+                                <label>Selecione uma vaga <span style="color: red;">*</span></label>
                                 <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete"
                                               :valido="form_feedback.vaga_id !== ''"
                                               v-model="form_feedback.autocomplete_label_vaga_modal"
-                                              placeholder="Digite o nome da cargo"
+                                              placeholder="Digite o nome da vaga"
                                               :id="`vaga_modal_${hash}`"
                                               @onblur="resetaCampoVagaModal"
                                               @onselect="selecionaVagaModal"></autocomplete>
@@ -291,7 +291,7 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'sim' && form_feedback.tem_provas">
                             <div class="form-group">
-                                <label>Enviar e-mail links de provas</label>
+                                <label>Enviar e-mail links de provas <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
@@ -306,7 +306,7 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'sim'">
                             <div class="form-group">
-                                <label>Enviar e-mail de avanço de etapa</label>
+                                <label>Enviar e-mail de avanço de etapa <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
@@ -321,7 +321,7 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
                             <div class="form-group">
-                                <label for="">Contato Realizado</label>
+                                <label for="">Contato Realizado <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
@@ -348,7 +348,7 @@
                             <div class="col-12 col-md-4"
                                  v-if="form_feedback.contato_realizado">
                                 <div class="form-group">
-                                    <label>Enviar Notificação via whatsApp</label>
+                                    <label>Enviar Notificação via whatsApp <span style="color: red;">*</span></label>
                                     <select class="form-control"
                                             onblur="valida_campo_vazio(this,1)"
                                             onchange="valida_campo_vazio(this,1)"
@@ -364,7 +364,7 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
                             <div class="form-group">
-                                <label for="">Interesse</label>
+                                <label for="">Interesse <span style="color: red;">*</span></label>
                                 <select class="form-control" onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
                                         v-model="form_feedback.interesse">
@@ -390,7 +390,7 @@
                         <div class="col-12 col-md-4"
                              v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
                             <div class="form-group">
-                                <label for="">Local Entrevista</label>
+                                <label for="">Local Entrevista <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control"
                                        onblur="valida_campo_vazio(this,1)"
                                        v-model="form_feedback.local_entrevista">
@@ -616,6 +616,9 @@
                     <th>UF</th>
                     <th>Vaga</th>
                     <th>PCD</th>
+                    <th>Selecionado</th>
+                    <th>Contato Realizado</th>
+                    <th>Interesse</th>
                     <th>Data</th>
                     <th>Lido</th>
                     <th>Ação</th>
@@ -640,6 +643,15 @@
                     </td>
                     <td data-label="PCD">
                         @{{curriculo.pcd ? "SIM" : "NÃO"}}
+                    </td>
+                    <td data-label="Selecionado">
+                        @{{curriculo.feed_back ? curriculo.feed_back.selecionado ? curriculo.feed_back.selecionado.toUpperCase() : "--" : "--"}}
+                    </td>
+                    <td data-label="Contato Realizado">
+                        @{{curriculo.feed_back ? curriculo.feed_back.contato_realizado ? "SIM" : "NÃO" : "NÃO"}}
+                    </td>
+                    <td data-label="Interesse">
+                        @{{curriculo.feed_back ? curriculo.feed_back.interesse ? "SIM" : "NÃO" : "--"}}
                     </td>
                     <td data-label="Data">
                         @{{curriculo.created_at}}

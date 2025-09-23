@@ -1,31 +1,44 @@
-import endereco from "../../../components/Endereco";
-import telefone from "../../../components/Telefones";
-import datepicker from "../../../components/DatePicker";
-import ExportacaoMixin from "../../../mixins/Exportacoes";
+import endereco from '../../../components/Endereco'
+import telefone from '../../../components/Telefones'
+import datepicker from '../../../components/DatePicker'
+import ExportacaoMixin from '../../../mixins/Exportacoes'
 
-// Constantes
+// ===== CONSTANTES E CONFIGURAÇÕES =====
 const SELECOES = {
-    NAO_SELECIONADO: "nao",
-    EMPTY: ""
-};
+    NAO_SELECIONADO: 'nao',
+    EMPTY: ''
+}
 
-const DELAY_BUSCA = 600;
-const DELAY_VALIDACAO = 100;
+const DELAYS = {
+    BUSCA: 600,
+    VALIDACAO: 100
+}
+
+const ESTADOS = {
+    VISUALIZANDO: 'Visualizando Curriculo',
+    EDITANDO: 'Editando Curriculo'
+}
+
+const MENSAGENS = {
+    ERRO_VAGA_VAZIA: 'O Campo Vaga não pode ficar vazio',
+    ERRO_TELEFONE_PRINCIPAL: 'Nenhum telefone foi marcado como principal',
+    ERRO_CAMPOS_INVALIDOS: 'Verifique os campos',
+    SUCESSO_FEEDBACK: 'Feedback realizado com sucesso!'
+}
 
 const app = new Vue({
-    mixins: [ExportacaoMixin],
-    el: "#app",
-
+    el: '#app',
     components: {
         endereco,
         datepicker,
         telefone
     },
+    mixins: [ExportacaoMixin],
 
     data() {
         return {
-            // Estados da aplicação
-            tituloJanela: "Visualizando Curriculo",
+            // ===== ESTADOS DA APLICAÇÃO =====
+            tituloJanela: ESTADOS.VISUALIZANDO,
             preloadAjax: false,
             editando: false,
             apagado: false,
@@ -33,430 +46,539 @@ const app = new Vue({
             cadastrado: false,
             atualizado: false,
 
-            // Configurações
+            // ===== CONFIGURAÇÕES =====
             permite_envio_whatsapp: null,
             preloadExportacao: false,
             hash: `mastertag_${this.generateRandomId()}`,
             empresa: 0,
             urlExportacao: `${URL_ADMIN}/curriculos/recrutamentos/export`,
 
-            // Listas para selects
+            // ===== LISTAS PARA SELECTS =====
             lista_sexos: [],
             lista_estados_civis: [],
             lista: [],
             ufs: [],
             vagas: [],
 
-            // Formulário principal
+            // ===== FORMULÁRIOS =====
             form: this.createInitialForm(),
             formDefault: null,
-
-            // Formulário de feedback
             form_feedback: this.createInitialFeedback(),
             form_feedbackDefault: null,
 
-            // Campo para referência
+            // ===== CAMPOS DE REFERÊNCIA =====
             campoNome: null,
 
-            // Controles de busca e paginação
+            // ===== CONTROLES DE BUSCA E PAGINAÇÃO =====
             controle: {
                 carregando: false,
                 dados: {
-                    caminho_autocomplete: "autocomplete/todas-vagas-abertas-ativas",
-                    caminho_cliente_autocomplete: "autocomplete/todos-clientes-ativos",
-                    autocomplete_label_anterior: "",
-                    autocomplete_label: "",
+                    caminho_autocomplete: 'autocomplete/todas-vagas-abertas-ativas',
+                    caminho_cliente_autocomplete: 'autocomplete/todos-clientes-ativos',
+                    autocomplete_label_anterior: '',
+                    autocomplete_label: '',
                     pages: 20,
-                    campoBusca: "",
-                    campoVaga: "",
-                    campoLido: "",
-                    campoFiltro: "",
-                    campoUf: "",
-                    campoPcd: "",
-                    campoCPF: "",
+                    campoBusca: '',
+                    campoVaga: '',
+                    campoLido: '',
+                    campoFiltro: '',
+                    campoUf: '',
+                    campoPcd: '',
+                    campoCPF: '',
                     filtroPeriodo: false,
-                    periodo: ""
+                    periodo: ''
                 }
             }
-        };
+        }
     },
 
     mounted() {
-        this.inicializar();
+        this.inicializar()
     },
 
     methods: {
         // ===== MÉTODOS DE INICIALIZAÇÃO =====
         inicializar() {
-            this.formDefault = _.cloneDeep(this.form);
-            this.form_feedbackDefault = _.cloneDeep(this.form_feedback);
-            this.atualizar();
-            this.listaVagas();
+            this.inicializarFormularios()
+            this.carregarDadosIniciais()
+        },
+
+        inicializarFormularios() {
+            this.formDefault = _.cloneDeep(this.form)
+            this.form_feedbackDefault = _.cloneDeep(this.form_feedback)
+        },
+
+        async carregarDadosIniciais() {
+            await Promise.all([this.atualizar(), this.listaVagas()])
         },
 
         createInitialForm() {
             return {
-                id: "",
-                bairro: "",
-                cep: "",
-                cnh: "",
-                complemento: "",
-                cpf: "",
-                sexo: "",
-                estado_civil: "",
-                created_at: "",
-                datalido: "",
-                email: "",
+                id: '',
+                bairro: '',
+                cep: '',
+                cnh: '',
+                complemento: '',
+                cpf: '',
+                sexo: '',
+                estado_civil: '',
+                created_at: '',
+                datalido: '',
+                email: '',
                 experiencias: [],
-                feed_back: "",
+                feed_back: '',
                 formacao: {},
-                formacao_curso: "",
-                formacao_instituicao: "",
-                formacao_status: "",
-                lido: "",
-                logradouro: "",
-                municipio: "",
-                nascimento: "",
-                nome: "",
+                formacao_curso: '',
+                formacao_instituicao: '',
+                formacao_status: '',
+                lido: '',
+                logradouro: '',
+                municipio: '',
+                nascimento: '',
+                nome: '',
                 qualificacoes: [],
                 telefones: [],
                 telefonesDelete: [],
-                uf: "",
-                usuario: "",
-                usuario_lido: "",
+                uf: '',
+                usuario: '',
+                usuario_lido: '',
                 vaga: {},
-                vaga_pretendida: ""
-            };
+                vaga_pretendida: ''
+            }
         },
 
         createInitialFeedback() {
             return {
-                selecionado: "",
-                autocomplete_label_vaga_modal: "",
-                autocomplete_label_vaga_modal_anterior: "",
-                vaga_id: "",
-                contato_realizado: "",
-                interesse: "",
-                data_entrevista: "",
-                local_entrevista: "",
-                obs: "",
-                autocomplete_label_cliente_modal: "",
-                autocomplete_label_cliente_modal_anterior: "",
-                cliente_id: "",
-                telefone_id: "",
-                envia_mail_desclassificacao: "",
+                selecionado: '',
+                autocomplete_label_vaga_modal: '',
+                autocomplete_label_vaga_modal_anterior: '',
+                vaga_id: '',
+                contato_realizado: '',
+                interesse: '',
+                data_entrevista: '',
+                local_entrevista: '',
+                obs: '',
+                autocomplete_label_cliente_modal: '',
+                autocomplete_label_cliente_modal_anterior: '',
+                cliente_id: '',
+                telefone_id: '',
+                envia_mail_desclassificacao: '',
                 tem_provas: false,
-                envia_mail_provas: "",
-                envia_mail_proxima_etapa: "",
-                envia_whatsapp: ""
-            };
+                envia_mail_provas: '',
+                envia_mail_proxima_etapa: '',
+                envia_whatsapp: ''
+            }
         },
 
         generateRandomId() {
-            return parseInt((Math.random() * 999999));
+            return parseInt(Math.random() * 999999)
         },
 
         // ===== MÉTODOS DE SELEÇÃO DE VAGAS =====
         selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id;
-            this.controle.dados.autocomplete_label = obj.label;
-            this.controle.dados.autocomplete_label_anterior = obj.label;
-            this.controle.carregando = true;
+            if (!this.validarObjetoVaga(obj)) {
+                return
+            }
 
-            this.executarBuscaComDelay();
+            this.atualizarDadosVaga(obj)
+            this.controle.carregando = true
+            this.executarBuscaComDelay()
+        },
+
+        validarObjetoVaga(obj) {
+            return obj && obj.id && obj.label
+        },
+
+        atualizarDadosVaga(obj) {
+            this.controle.dados.campoVaga = obj.id
+            this.controle.dados.autocomplete_label = obj.label
+            this.controle.dados.autocomplete_label_anterior = obj.label
         },
 
         executarBuscaComDelay() {
             setTimeout(() => {
-                if (this.$refs.componente) {
-                    this.$refs.componente.buscar();
-                }
-            }, DELAY_BUSCA);
+                this.executarBusca()
+            }, DELAYS.BUSCA)
         },
 
-        resetaCampo() {
-            if (this.campoFoiAlterado(this.controle.dados.autocomplete_label_anterior, this.controle.dados.autocomplete_label)) {
-                this.limparCamposVaga();
-                if (this.$refs.componente) {
-                    this.$refs.componente.buscar();
-                }
+        executarBusca() {
+            if (this.$refs.componente) {
+                this.$refs.componente.buscar()
             }
         },
 
-        limparCamposVaga() {
-            this.controle.dados.autocomplete_label_anterior = "";
-            this.controle.dados.autocomplete_label = "";
-            this.controle.dados.campoVaga = "";
+        resetaCampo() {
+            if (this.campoFoiAlterado()) {
+                this.limparCamposVaga()
+                this.executarBusca()
+            }
         },
 
-        campoFoiAlterado(anterior, atual) {
-            return anterior !== atual;
+        campoFoiAlterado() {
+            return this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label
+        },
+
+        limparCamposVaga() {
+            this.controle.dados.autocomplete_label_anterior = ''
+            this.controle.dados.autocomplete_label = ''
+            this.controle.dados.campoVaga = ''
         },
 
         // ===== MÉTODOS DE MODAL DE VAGA =====
         selecionaVagaModal(obj) {
-            this.form_feedback.vaga_id = obj.id;
-            this.form_feedback.autocomplete_label_vaga_modal = obj.label;
-            this.form_feedback.autocomplete_label_vaga_modal_anterior = obj.label;
-            this.form_feedback.tem_provas = obj.simulado_vaga?.length > 0 || false;
+            if (!this.validarObjetoVaga(obj)) {
+                return
+            }
+
+            this.atualizarDadosVagaModal(obj)
+        },
+
+        atualizarDadosVagaModal(obj) {
+            this.form_feedback.vaga_id = obj.id
+            this.form_feedback.autocomplete_label_vaga_modal = obj.label
+            this.form_feedback.autocomplete_label_vaga_modal_anterior = obj.label
+            this.form_feedback.tem_provas = obj.simulado_vaga?.length > 0 || false
         },
 
         resetaCampoVagaModal() {
-            if (this.campoFoiAlterado(
-                this.form_feedback.autocomplete_label_vaga_modal_anterior,
-                this.form_feedback.autocomplete_label_vaga_modal
-            )) {
-                this.limparCamposVagaModal();
-                this.validarCampoVagaModal();
+            if (this.campoVagaModalFoiAlterado()) {
+                this.limparCamposVagaModal()
+                this.validarCampoVagaModal()
             }
         },
 
+        campoVagaModalFoiAlterado() {
+            return this.form_feedback.autocomplete_label_vaga_modal_anterior !== this.form_feedback.autocomplete_label_vaga_modal
+        },
+
         limparCamposVagaModal() {
-            this.form_feedback.autocomplete_label_vaga_modal_anterior = "";
-            this.form_feedback.autocomplete_label_vaga_modal = "";
-            this.form_feedback.vaga_id = "";
+            this.form_feedback.autocomplete_label_vaga_modal_anterior = ''
+            this.form_feedback.autocomplete_label_vaga_modal = ''
+            this.form_feedback.vaga_id = ''
         },
 
         validarCampoVagaModal() {
             setTimeout(() => {
                 if (this.form_feedback.vaga_id === SELECOES.EMPTY) {
-                    this.mostrarErroVagaVazia();
+                    this.mostrarErroVagaVazia()
                 }
-            }, DELAY_VALIDACAO);
+            }, DELAYS.VALIDACAO)
         },
 
         mostrarErroVagaVazia() {
-            const campoId = `#vaga_modal_${this.hash}`;
-            valida_campo_vazio($(campoId), 1);
-            $(`#janelaCadastrar ${campoId}`).focus().trigger("blur");
-            mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
+            const campoId = `#vaga_modal_${this.hash}`
+            valida_campo_vazio($(campoId), 1)
+            $(`#janelaCadastrar ${campoId}`).focus().trigger('blur')
+            mostraErro('Erro', MENSAGENS.ERRO_VAGA_VAZIA)
         },
 
         // ===== MÉTODOS DE FORMULÁRIO =====
         async formAlterar(id) {
-            this.resetarEstados();
-            this.form.id = id;
-            this.preloadAjax = true;
+            if (!this.validarId(id)) {
+                return
+            }
+
+            this.resetarEstados()
+            this.form.id = id
+            this.preloadAjax = true
 
             try {
-                const response = await axios.get(`${URL_ADMIN}/curriculos/recrutamentos/${id}/editar`);
-                this.processarDadosFormulario(response.data);
+                const response = await this.carregarDadosFormulario(id)
+                this.processarDadosFormulario(response.data)
             } catch (error) {
-                console.error("Erro ao carregar dados:", error);
-                this.preloadAjax = false;
+                this.tratarErroCarregamento(error)
             }
+        },
+
+        validarId(id) {
+            return id && id !== ''
+        },
+
+        async carregarDadosFormulario(id) {
+            return await axios.get(`${URL_ADMIN}/curriculos/recrutamentos/${id}/editar`)
+        },
+
+        tratarErroCarregamento(error) {
+            console.error('Erro ao carregar dados:', error)
+            this.preloadAjax = false
+            this.mostrarErroGenerico('Erro ao carregar dados do formulário')
+        },
+
+        mostrarErroGenerico(mensagem) {
+            mostraErro('Erro', mensagem)
         },
 
         resetarEstados() {
-            this.feedback = false;
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            Object.assign(this.form_feedback, this.form_feedbackDefault);
-            this.form.telefonesDelete = [];
-            formReset();
+            this.feedback = false
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            Object.assign(this.form_feedback, this.form_feedbackDefault)
+            this.form.telefonesDelete = []
+            formReset()
         },
 
         processarDadosFormulario(data) {
-            this.marcaLido(data);
+            this.marcaLido(data)
             if (this.$refs.componente) {
-                this.$refs.componente.buscar();
+                this.$refs.componente.buscar()
             }
 
-            Object.assign(this.form, data);
+            Object.assign(this.form, data)
 
             if (data.feed_back) {
-                this.processarFeedback(data.feed_back);
+                this.processarFeedback(data.feed_back)
             }
 
-            this.finalizarCarregamentoFormulario(data);
+            this.finalizarCarregamentoFormulario(data)
         },
 
         processarFeedback(feedbackData) {
-            Object.assign(this.form_feedback, feedbackData);
-            this.feedback = true;
+            Object.assign(this.form_feedback, feedbackData)
+            this.feedback = true
 
             if (feedbackData.vaga_aberta?.vaga_selecionada) {
-                this.configurarVagaSelecionada(feedbackData.vaga_aberta);
+                this.configurarVagaSelecionada(feedbackData.vaga_aberta)
+            } else {
+                this.form_feedback.vaga_id = ''
+                this.form_feedback.autocomplete_label_vaga_modal = ''
+            }
+
+            if (!this.form_feedback.contato_realizado) {
+                this.form_feedback.envia_whatsapp = ''
             }
 
             if (feedbackData.cliente) {
-                this.configurarClienteSelecionado(feedbackData.cliente);
+                this.configurarClienteSelecionado(feedbackData.cliente)
             }
         },
 
         configurarVagaSelecionada(vagaAberta) {
-            const vaga = vagaAberta.vaga_selecionada;
-            const municipio = vagaAberta.municipio;
+            const vaga = vagaAberta.vaga_selecionada
+            const municipio = vagaAberta.municipio
 
-            this.form_feedback.autocomplete_label_vaga_modal =
-                `${vaga.nome} - ${municipio.nome} - ${municipio.uf}`;
-            this.form_feedback.tem_provas = vaga.simulado_vaga?.length > 0 || false;
+            this.form_feedback.autocomplete_label_vaga_modal = `${vaga.nome} - ${municipio.nome} - ${municipio.uf}`
+            this.form_feedback.tem_provas = vaga.simulado_vaga?.length > 0 || false
         },
 
         configurarClienteSelecionado(cliente) {
-            this.form_feedback.autocomplete_label_cliente_modal =
-                cliente.tipo === "Pessoa Jurídica" ? cliente.nome_fantasia : cliente.nome;
+            this.form_feedback.autocomplete_label_cliente_modal = cliente.tipo === 'Pessoa Jurídica' ? cliente.nome_fantasia : cliente.nome
         },
 
         finalizarCarregamentoFormulario(data) {
-            this.tituloJanela = `Visualizando Curriculo - ${data.nome}`;
-            this.editando = true;
-            this.preloadAjax = false;
-            setupCampo();
+            this.tituloJanela = `Visualizando Curriculo - ${data.nome}`
+            this.editando = true
+            this.preloadAjax = false
+            setupCampo()
         },
 
         async marcaLido(dados) {
             try {
-                await axios.put(`${URL_ADMIN}/curriculos/recrutamentos/${dados.id}/lido`, dados);
+                await axios.put(`${URL_ADMIN}/curriculos/recrutamentos/${dados.id}/lido`, dados)
             } catch (error) {
-                console.error("Erro ao marcar como lido:", error);
+                console.error('Erro ao marcar como lido:', error)
             }
         },
 
         // ===== MÉTODOS DE VALIDAÇÃO E ALTERAÇÃO =====
         async alterar() {
             if (!this.validarFormulario()) {
-                return false;
+                return false
             }
 
-            this.form_feedback.curriculos = this.form;
-            this.preloadAjax = true;
+            this.prepararDadosAlteracao()
+            this.preloadAjax = true
 
             try {
-                const response = await axios.put(`${URL_ADMIN}/curriculos/recrutamentos/${this.form.id}`, this.form_feedback);
-
-                if (response.status === 201) {
-                    this.processarSucessoAlteracao();
-                }
+                const response = await this.enviarAlteracao()
+                this.processarRespostaAlteracao(response)
             } catch (error) {
-                this.preloadAjax = false;
-                console.error("Erro ao alterar:", error);
+                this.tratarErroAlteracao(error)
             }
+        },
+
+        prepararDadosAlteracao() {
+            this.form_feedback.curriculos = this.form
+        },
+
+        async enviarAlteracao() {
+            return await axios.put(`${URL_ADMIN}/curriculos/recrutamentos/${this.form.id}`, this.form_feedback)
+        },
+
+        processarRespostaAlteracao(response) {
+            if (response.status === 201) {
+                this.processarSucessoAlteracao()
+            }
+        },
+
+        tratarErroAlteracao(error) {
+            this.preloadAjax = false
+            console.error('Erro ao alterar:', error)
+            this.mostrarErroGenerico('Erro ao processar alteração')
         },
 
         validarFormulario() {
-            if (!this.validarTelefonePrincipal()) {
-                return false;
-            }
+            const validacoes = [() => this.validarTelefonePrincipal(), () => this.validarVagaSelecionada(), () => this.validarCamposObrigatorios()]
 
-            if (!this.validarVagaSelecionada()) {
-                return false;
-            }
-
-            if (!this.validarCamposObrigatorios()) {
-                return false;
-            }
-
-            return true;
+            return validacoes.every((validacao) => validacao())
         },
 
         validarTelefonePrincipal() {
-            const buscaTel = _.findIndex(this.form.telefones, { "principal": true });
+            const telefonePrincipal = _.findIndex(this.form.telefones, { principal: true })
 
-            if (buscaTel <= -1) {
-                mostraErro("", "Nenhum telefone foi marcado como principal");
-                return false;
+            if (telefonePrincipal <= -1) {
+                mostraErro('', MENSAGENS.ERRO_TELEFONE_PRINCIPAL)
+                return false
             }
 
-            return true;
+            return true
         },
 
         validarVagaSelecionada() {
-            const feedbackSelecionado = this.form_feedback.selecionado !== SELECOES.EMPTY &&
-                this.form_feedback.selecionado !== SELECOES.NAO_SELECIONADO;
+            const feedbackSelecionado = this.isFeedbackSelecionado()
 
             if (feedbackSelecionado && this.form_feedback.vaga_id === SELECOES.EMPTY) {
-                this.mostrarErroVagaVazia();
-                return false;
+                this.mostrarErroVagaVazia()
+                return false
             }
 
-            return true;
+            return true
+        },
+
+        isFeedbackSelecionado() {
+            return this.form_feedback.selecionado !== SELECOES.EMPTY && this.form_feedback.selecionado !== SELECOES.NAO_SELECIONADO
         },
 
         validarCamposObrigatorios() {
-            $("#janelaCadastrar :input:visible").trigger("blur");
+            $('#janelaCadastrar :input:visible').trigger('blur')
 
-            if ($("#janelaCadastrar :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os campos");
-                return false;
+            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+                mostraErro('', MENSAGENS.ERRO_CAMPOS_INVALIDOS)
+                return false
             }
 
-            return true;
+            return true
         },
 
         processarSucessoAlteracao() {
-            this.preloadAjax = false;
-            this.atualizado = true;
+            this.preloadAjax = false
+            this.atualizado = true
+            this.atualizarLista()
+            this.fecharModal()
+            this.mostrarSucesso()
+        },
 
+        atualizarLista() {
             if (this.$refs.componente) {
-                this.$refs.componente.buscar();
+                this.$refs.componente.buscar()
             }
+        },
 
-            $("#janelaCadastrar").modal("hide");
-            mostraSucesso("", "Feedback realizado com sucesso!");
+        fecharModal() {
+            $('#janelaCadastrar').modal('hide')
+        },
+
+        mostrarSucesso() {
+            mostraSucesso('', MENSAGENS.SUCESSO_FEEDBACK)
         },
 
         // ===== MÉTODOS DE EXCLUSÃO =====
         async apagar() {
-            this.erros = [];
-            this.preloadAjax = true;
+            if (!this.validarId(this.form.id)) {
+                return
+            }
+
+            this.limparErros()
+            this.preloadAjax = true
 
             try {
-                await axios.delete(`${URL_ADMIN}/curriculos/recrutamentos/${this.form.id}`, this.form);
-                this.processarSucessoExclusao();
+                await this.enviarExclusao()
+                this.processarSucessoExclusao()
             } catch (error) {
-                this.preloadAjax = false;
-                console.error("Erro ao apagar:", error);
+                this.tratarErroExclusao(error)
             }
+        },
+
+        limparErros() {
+            this.erros = []
+        },
+
+        async enviarExclusao() {
+            return await axios.delete(`${URL_ADMIN}/curriculos/recrutamentos/${this.form.id}`, this.form)
         },
 
         processarSucessoExclusao() {
-            this.preloadAjax = false;
-            this.apagado = true;
+            this.preloadAjax = false
+            this.apagado = true
+            this.atualizarLista()
+        },
 
-            if (this.$refs.componente) {
-                this.$refs.componente.buscar();
-            }
+        tratarErroExclusao(error) {
+            this.preloadAjax = false
+            console.error('Erro ao apagar:', error)
+            this.mostrarErroGenerico('Erro ao excluir registro')
         },
 
         janelaConfirmar(id) {
-            this.form.id = id;
-            this.apagado = false;
-            this.preloadAjax = false;
+            if (this.validarId(id)) {
+                this.form.id = id
+                this.apagado = false
+                this.preloadAjax = false
+            }
         },
 
         // ===== MÉTODOS DE DADOS =====
         async listaVagas() {
-            this.preloadAjax = true;
+            this.preloadAjax = true
 
             try {
-                const response = await axios.get(`${URL_PUBLICO}/lista-vagas`);
-                this.vagas = response.data.vagas;
+                const response = await this.carregarVagas()
+                this.processarVagas(response.data)
             } catch (error) {
-                console.error("Erro ao carregar vagas:", error);
+                this.tratarErroCarregamentoVagas(error)
             } finally {
-                this.preloadAjax = false;
+                this.preloadAjax = false
             }
         },
 
+        async carregarVagas() {
+            return await axios.get(`${URL_PUBLICO}/lista-vagas`)
+        },
+
+        processarVagas(data) {
+            this.vagas = data.vagas
+        },
+
+        tratarErroCarregamentoVagas(error) {
+            console.error('Erro ao carregar vagas:', error)
+            this.mostrarErroGenerico('Erro ao carregar lista de vagas')
+        },
+
         carregou(dados) {
-            this.lista = dados.items;
-            this.lista_sexos = dados.lista_sexos;
-            this.lista_estados_civis = dados.lista_estados_civis;
-            this.permite_envio_whatsapp = dados.permite_envio_whatsapp;
-            this.controle.carregando = false;
+            this.processarDadosCarregados(dados)
+            this.controle.carregando = false
+        },
+
+        processarDadosCarregados(dados) {
+            this.lista = dados.items
+            this.lista_sexos = dados.lista_sexos
+            this.lista_estados_civis = dados.lista_estados_civis
+            this.permite_envio_whatsapp = dados.permite_envio_whatsapp
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
 
         atualizar() {
             if (this.$refs.componente) {
-                this.$refs.componente.atual = 1;
-                this.$refs.componente.buscar();
+                this.resetarPaginacao()
+                this.executarBusca()
             }
+        },
+
+        resetarPaginacao() {
+            this.$refs.componente.atual = 1
         }
     }
-});
+})

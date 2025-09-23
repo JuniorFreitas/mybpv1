@@ -350,7 +350,7 @@ class ParecerRhController extends Controller
 
         if ($request->filled('campoCPF')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->whereCpf($request->campoBusca);
+                $query->whereCpf($request->campoCPF);
             });
         }
 
