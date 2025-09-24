@@ -33,6 +33,10 @@
                         <a href="#abaHabilidades" class="nav-link" aria-controls="profile" role="tab"
                            data-toggle="tab">Habilidades</a>
                     </li>
+                    <li role="presentation" v-if="editando">
+                        <a href="#abaUsuarios" class="nav-link" aria-controls="usuarios" role="tab"
+                           data-toggle="tab">Usuários Vinculados</a>
+                    </li>
                 </ul>
 
                 <!-- Tab panes -->
@@ -64,46 +68,307 @@
                         </div>
                     </div>
 
-                    <div role="tabpanel" class="tab-pane" id="abaHabilidades">
+                    <div role="tabpanel" class="tab-pane p-1" id="abaHabilidades">
+                        <!-- Filtros para habilidades -->
+                        <div class="row mb-3 py-3">
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fa fa-search"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" 
+                                           v-model="filtroHabilidades" 
+                                           @input="filtrarHabilidades"
+                                           placeholder="Buscar habilidades..." 
+                                           class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <select v-model="categoriaFiltro" 
+                                        @change="filtrarHabilidades" 
+                                        class="form-control form-control-sm">
+                                    <option value="">Todas as categorias</option>
+                                    <option v-for="categoria in categoriasHabilidades" 
+                                            :key="categoria" 
+                                            :value="categoria">
+                                        @{{ categoria }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <span class="badge badge-info">
+                                    @{{ habilidadesFiltradas.length }} de @{{ listaDeHabilidades.length }} habilidades
+                                </span>
+                                <span class="badge badge-success ml-2">
+                                    @{{ habilidadesSelecionadas }} selecionadas
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Botões de seleção rápida por categoria -->
+                        <div class="row mb-3" v-if="categoriasHabilidades.length > 0">
+                            <div class="col-12">
+                                <div class="card border-light">
+                                    <div class="card-body py-2">
+                                        <div class="d-flex flex-wrap align-items-center">
+                                            <span class="text-muted small font-weight-bold mr-3 mb-2 mb-md-0">
+                                                <i class="fa fa-magic mr-1"></i>Seleção Rápida:
+                                            </span>
+                                            <div class="d-flex flex-wrap" style="gap: 4px;">
+                                                <button type="button" 
+                                                        v-for="categoria in categoriasHabilidades" 
+                                                        :key="categoria"
+                                                        @click.prevent="selecionarPorCategoria(categoria)"
+                                                        class="btn btn-sm btn-outline-primary"
+                                                        style="margin-bottom: 4px; white-space: nowrap;">
+                                                    <i class="fa fa-check mr-1"></i>@{{ categoria }}
+                                                </button>
+                                                <div class="dropdown-divider mx-2 my-1" style="height: 20px; border-left: 1px solid #dee2e6;"></div>
+                                                <button type="button" 
+                                                        @click.prevent="selecionarTodas()" 
+                                                        class="btn btn-sm btn-success"
+                                                        style="margin-bottom: 4px; white-space: nowrap;">
+                                                    <i class="fa fa-check-double mr-1"></i>Todas
+                                                </button>
+                                                <button type="button" 
+                                                        @click.prevent="desmarcarTodas()" 
+                                                        class="btn btn-sm btn-danger"
+                                                        style="margin-bottom: 4px; white-space: nowrap;">
+                                                    <i class="fa fa-times mr-1"></i>Nenhuma
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="table-responsive">
-                            <table class="table table-hover table-condensed">
-                                <thead>
+                            <table class="table table-hover table-striped">
+                                <thead class="thead-light">
                                 <tr>
-                                    {{--<th>Cód.</th>--}}
-                                    <th>nome</th>
-                                    <th>Descrição</th>
-                                    <th>
-                                        <a class="btn btn-sm btn-success" href="javascript://"
-                                           @click.prevent="selecionarTodas()" v-if="!todasHabilidades">
-                                            <span class="fa fa-ok" aria-hidden="true"></span> Todas
+                                    <th class="py-3">
+                                        <i class="fa fa-key mr-2"></i>Nome da Habilidade
+                                    </th>
+                                    <th class="py-3">
+                                        <i class="fa fa-info-circle mr-2"></i>Descrição
+                                    </th>
+                                    <th class="py-3 text-center" style="width: 120px;">
+                                        <a class="btn btn-sm btn-outline-success" href="javascript://"
+                                           @click.prevent="selecionarTodas()" v-if="!todasHabilidades"
+                                           title="Selecionar todas as habilidades">
+                                            <span class="fa fa-check" aria-hidden="true"></span> Todas
                                         </a>
-                                        <a class="btn btn-sm btn-danger" href="javascript://"
-                                           @click.prevent="selecionarTodas()" v-if="todasHabilidades">
-                                            <span class="fa fa-remove" aria-hidden="true"></span> Todas
+                                        <a class="btn btn-sm btn-outline-danger" href="javascript://"
+                                           @click.prevent="selecionarTodas()" v-if="todasHabilidades"
+                                           title="Desmarcar todas as habilidades">
+                                            <span class="fa fa-times" aria-hidden="true"></span> Todas
                                         </a>
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody>
-
-                                <tr v-for="habilidade in listaDeHabilidades">
-                                    <td>@{{habilidade.nome}}</td>
-                                    <td>@{{habilidade.descricao}}</td>
-                                    <td>
-                                        <a class="btn btn-sm btn-block btn-success" href="javascript://"
-                                           @click.prevent="habilidade.acesso=!habilidade.acesso"
-                                           v-if="habilidade.acesso">
-                                            <span class="fa fa-check" aria-hidden="true"></span>
-                                        </a>
-                                        <a class="btn btn-sm btn-block btn-danger" href="javascript://"
-                                           @click.prevent="habilidade.acesso=!habilidade.acesso"
-                                           v-if="!habilidade.acesso">
-                                            <span class="fa fa-times" aria-hidden="true"></span>
-                                        </a>
+                                <tr v-for="habilidade in habilidadesPaginadas" :key="habilidade.id" class="align-middle">
+                                    <td class="py-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fa fa-shield-alt text-primary mr-2"></i>
+                                            <strong class="text-dark">@{{habilidade.nome}}</strong>
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="text-muted small">@{{habilidade.descricao}}</span>
+                                    </td>
+                                    <td class="py-3 text-center">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-success" 
+                                                    @click.prevent="habilidade.acesso=!habilidade.acesso"
+                                                    v-if="habilidade.acesso"
+                                                    title="Clique para desmarcar">
+                                                <span class="fa fa-check" aria-hidden="true"></span>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-secondary" 
+                                                    @click.prevent="habilidade.acesso=!habilidade.acesso"
+                                                    v-if="!habilidade.acesso"
+                                                    title="Clique para marcar">
+                                                <span class="fa fa-times" aria-hidden="true"></span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="habilidadesFiltradas.length === 0">
+                                    <td colspan="3" class="text-center text-muted py-5">
+                                        <div class="py-4">
+                                            <i class="fa fa-search fa-2x mb-3"></i>
+                                            <p class="mb-0">Nenhuma habilidade encontrada</p>
+                                            <small>Tente ajustar o filtro de busca</small>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        
+                        <!-- Controles de paginação para habilidades -->
+                        <div class="row mt-3 py-3" v-if="totalPaginasHabilidades > 1">
+                            <div class="col-md-6">
+                                <div class="btn-group" role="group">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            @click="paginaHabilidades = 1"
+                                            :disabled="paginaHabilidades === 1">
+                                        <i class="fa fa-angle-double-left"></i>
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            @click="paginaHabilidades--"
+                                            :disabled="paginaHabilidades === 1">
+                                        <i class="fa fa-angle-left"></i>
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            @click="paginaHabilidades++"
+                                            :disabled="paginaHabilidades === totalPaginasHabilidades">
+                                        <i class="fa fa-angle-right"></i>
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            @click="paginaHabilidades = totalPaginasHabilidades"
+                                            :disabled="paginaHabilidades === totalPaginasHabilidades">
+                                        <i class="fa fa-angle-double-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <span class="text-muted">
+                                    Página @{{ paginaHabilidades }} de @{{ totalPaginasHabilidades }}
+                                    (@{{ habilidadesFiltradas.length }} habilidades)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba de Usuários Vinculados -->
+                    <div role="tabpanel" class="tab-pane p-1" id="abaUsuarios">
+                        <!-- Filtros para usuários -->
+                        <div class="row mb-3 py-3">
+                            <div class="col-md-6">
+                                <div class="input-group input-group-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fa fa-search"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" 
+                                           v-model="filtroUsuarios" 
+                                           @input="filtrarUsuarios"
+                                           placeholder="Buscar usuários..." 
+                                           class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <span class="badge badge-info">
+                                    @{{ usuariosFiltrados.length }} usuários vinculados
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th class="py-3">
+                                        <i class="fa fa-user mr-2"></i>Nome
+                                    </th>
+                                    <th class="py-3">
+                                        <i class="fa fa-envelope mr-2"></i>Email
+                                    </th>
+                                    <th class="py-3 text-center">
+                                        <i class="fa fa-toggle-on mr-2"></i>Status
+                                    </th>
+                                    <th class="py-3 text-center">
+                                        <i class="fa fa-calendar mr-2"></i>Último Acesso
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="usuario in usuariosPaginados" :key="usuario.id" class="align-middle">
+                                    <td class="py-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fa fa-user-circle text-primary mr-2"></i>
+                                            <strong class="text-dark">@{{usuario.nome}}</strong>
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="text-muted">@{{usuario.email}}</span>
+                                    </td>
+                                   
+                                    <td class="py-3 text-center">
+                                        <span v-if="usuario.ativo" class="badge badge-success">
+                                            <i class="fa fa-check mr-1"></i>Ativo
+                                        </span>
+                                        <span v-else class="badge badge-danger">
+                                            <i class="fa fa-times mr-1"></i>Inativo
+                                        </span>
+                                    </td>
+                                    <td class="py-3 text-center">
+                                        <small class="text-muted">
+                                            @{{usuario.ultimo_acesso ? usuario.ultimo_acesso : 'Nunca'}}
+                                        </small>
+                                    </td>
+                                </tr>
+                                <tr v-if="usuariosFiltrados.length === 0">
+                                    <td colspan="4" class="text-center text-muted py-5">
+                                        <div class="py-4">
+                                            <i class="fa fa-users fa-2x mb-3"></i>
+                                            <p class="mb-0">Nenhum usuário vinculado a este papel</p>
+                                            <small>Os usuários aparecerão aqui quando forem associados a este papel</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Controles de paginação para usuários -->
+                        <div class="row mt-3 py-3" v-if="totalPaginasUsuarios > 1">
+                            <div class="col-md-6">
+                                <div class="btn-group" role="group">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            @click="paginaUsuarios = 1"
+                                            :disabled="paginaUsuarios === 1">
+                                        <i class="fa fa-angle-double-left"></i>
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            @click="paginaUsuarios--"
+                                            :disabled="paginaUsuarios === 1">
+                                        <i class="fa fa-angle-left"></i>
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            @click="paginaUsuarios++"
+                                            :disabled="paginaUsuarios === totalPaginasUsuarios">
+                                        <i class="fa fa-angle-right"></i>
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-secondary"
+                                            @click="paginaUsuarios = totalPaginasUsuarios"
+                                            :disabled="paginaUsuarios === totalPaginasUsuarios">
+                                        <i class="fa fa-angle-double-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <span class="text-muted">
+                                    Página @{{ paginaUsuarios }} de @{{ totalPaginasUsuarios }}
+                                    (@{{ usuariosFiltrados.length }} usuários)
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -190,6 +455,7 @@
                     {{--<th>Cód.</th>--}}
                     <th class="text-center">Nome</th>
                     <th class="text-center">Descrição</th>
+                    <th class="text-center">Qnt Usuários</th>
                     <th class="text-center">Status</th>
                     <th>Ações</th>
                 </tr>
@@ -201,6 +467,7 @@
                     {{--<td>@{{ab.id}}</td>--}}
                     <td data-label="Nome" class="text-center">@{{papel.nome}}</td>
                     <td data-label="Descrição" class="text-center">@{{papel.descricao}}</td>
+                    <td data-label="Qnt Usuários" class="text-center">@{{papel.usuariosVinculados}}</td>
                     <td data-label="Status" class="text-center" v-if="papel.master !== true">
                         <bt-ativo :rota="`papeis/${papel.id}/ativa-desativa`" :model="papel"></bt-ativo>
                     </td>

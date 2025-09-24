@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Habilidade;
 use App\Models\Papel;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PapeisController extends Controller
@@ -44,7 +44,7 @@ class PapeisController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -81,7 +81,7 @@ class PapeisController extends Controller
      * Display the specified resource.
      *
      * @param \App\Models\Papel $papel
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show(Papel $papel)
     {
@@ -108,7 +108,16 @@ class PapeisController extends Controller
             return $habilidade;
         });
 
-        return response()->json(['listaDeHabilidade' => $listaDeHabilidades->habilidades, 'papel' => $papel], 201);
+        $usuariosVinculados = User::where('grupo_id', $papel->id)
+            ->where('empresa_id', auth()->user()->empresa_id)
+            ->select(['id', 'nome', 'login as email', 'ativo', 'ultimo_acesso'])
+            ->orderBy('nome')
+            ->get();
+
+        return response()->json(['listaDeHabilidade' => $listaDeHabilidades->habilidades,
+            'papel' => $papel,
+            'usuariosVinculados' => $usuariosVinculados
+        ], 201);
     }
 
     /**
@@ -182,11 +191,18 @@ class PapeisController extends Controller
 
         $resultado = $resultado->paginate($porPagina);
 
+        $itens = collect($resultado->items())->transform(function ($item) {
+            $item->usuariosVinculados = User::where('grupo_id', $item->id)
+                ->where('empresa_id', auth()->user()->empresa_id)
+                ->count();
+            return $item;
+        });
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['itens' => $resultado->items(), 'empresa_id' => auth()->user()->empresa_id]
+            'dados' => ['itens' => $itens, 'empresa_id' => auth()->user()->empresa_id]
         ]);
     }
 
@@ -198,4 +214,5 @@ class PapeisController extends Controller
         $papel->refresh();
         return response()->json(['ativo' => $papel->ativo], 201);
     }
+
 }
