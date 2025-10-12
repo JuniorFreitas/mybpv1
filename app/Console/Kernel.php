@@ -40,25 +40,26 @@ class Kernel extends ConsoleKernel
         //$schedule->command('inspire')->everyMinute();
 
         // Jobs com execução em apenas um servidor
-        $schedule->call(new LembreteTarefaJob)->everyMinute()->onOneServer();
-        $schedule->call(new VerificaJornadasJob)->daily()->onOneServer();
-        $schedule->call(new VerificaVencimentoFeriasJob)->monthly()->onOneServer();
-        $schedule->call(new VerificaSaidaFeriasJob)->monthly()->onOneServer();
-        $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily()->onOneServer();
-        $schedule->call(new JobDeletaExportacaoExcel)->daily()->onOneServer();
-        $schedule->call(new JobAniversariantesDia)->daily()->onOneServer();
-        $schedule->call(new JobConvocacaoIntermitente())->hourly()->onOneServer();
-        $schedule->call(new JobFerias())->daily()->onOneServer();
-        $schedule->call(new JobCalculoAvos())->weekly()->onOneServer();
-        $schedule->call(new JobCorrigePonto())->daily()->onOneServer();
+        $schedule->call(new LembreteTarefaJob)->everyMinute()->name('LembreteTarefaJob')->onOneServer();
+        $schedule->call(new VerificaJornadasJob)->daily()->name('VerificaJornadasJob')->onOneServer();
+        $schedule->call(new VerificaVencimentoFeriasJob)->monthly()->name('VerificaVencimentoFeriasJob')->onOneServer();
+        $schedule->call(new VerificaSaidaFeriasJob)->monthly()->name('VerificaSaidaFeriasJob')->onOneServer();
+        $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily()->name('AvaliacaoNoventaVencimentoJob')->onOneServer();
+        $schedule->call(new JobDeletaExportacaoExcel)->daily()->name('JobDeletaExportacaoExcel')->onOneServer();
+        $schedule->call(new JobAniversariantesDia)->daily()->name('JobAniversariantesDia')->onOneServer();
+        $schedule->call(new JobConvocacaoIntermitente())->hourly()->name('JobConvocacaoIntermitente')->onOneServer();
+        $schedule->call(new JobFerias())->daily()->name('JobFerias')->onOneServer();
+        $schedule->call(new JobCalculoAvos())->weekly()->name('JobCalculoAvos')->onOneServer();
+        $schedule->call(new JobCorrigePonto())->daily()->name('JobCorrigePonto')->onOneServer();
 
         // Comandos Artisan com execução em apenas um servidor
-        $schedule->command('horizon:snapshot')->everyFiveMinutes()->onOneServer();
-        $schedule->command('mybp:vencimentoAso')->daily()->onOneServer();
-        $schedule->command('mybp:ferias')->daily()->onOneServer();
+        $schedule->command('horizon:snapshot')->everyFiveMinutes()->name('horizon_snapshot')->onOneServer();
+        $schedule->command('mybp:vencimentoAso')->daily()->name('mybp_vencimentoAso')->onOneServer();
+        $schedule->command('mybp:ferias')->daily()->name('mybp_ferias')->onOneServer();
         $schedule->command('mybp:treinamento-vencimento --chunk-size=2000 --lote-size=100 --id=78862')
             ->fridays()
             ->at('00:00')
+            ->name('mybp_treinamento_vencimento')
             ->onOneServer();
     }
 
