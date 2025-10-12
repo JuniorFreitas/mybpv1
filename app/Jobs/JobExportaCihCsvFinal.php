@@ -12,6 +12,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class JobExportaCihCsvFinal implements ShouldQueue
 {
@@ -26,6 +28,8 @@ class JobExportaCihCsvFinal implements ShouldQueue
     protected $nomeArquivo;
     protected $filtros;
     protected $modelo_cih_config;
+    protected $lockKey;
+    protected $lockTimeout = 1200; // 20 minutos
 
     const CHUNK_SIZE = 1000; // Chunk maior para reduzir requisições
 
@@ -39,6 +43,9 @@ class JobExportaCihCsvFinal implements ShouldQueue
         $this->nomeArquivo = $nomeArquivo;
         $this->filtros = $filtros;
         $this->modelo_cih_config = $modelo_cih_config;
+        
+        // Gerar chave de lock única baseada no arquivo e usuário
+        $this->lockKey = 'cih_export_lock_' . md5($nomeArquivo . '_' . $usuario . '_' . json_encode($filtros));
     }
 
     /**
@@ -46,9 +53,18 @@ class JobExportaCihCsvFinal implements ShouldQueue
      */
     public function handle()
     {
+        // Tentar adquirir lock distribuído
+        if (!$this->acquireLock()) {
+            \Log::info("Job CIH já está sendo processado por outra instância. Lock key: {$this->lockKey}");
+            // Não falha o job, apenas retorna para permitir retry
+            return;
+        }
+
         try {
             \Log::info('Iniciando exportação CIH CSV final');
+            \Log::info('Lock adquirido com sucesso. Lock key: ' . $this->lockKey);
             \Log::info('Filtros: ' . json_encode($this->filtros));
+            
             $headers = $this->getHeaders();
             \Log::info('Cabeçalhos: ' . json_encode($headers));
 
@@ -71,10 +87,15 @@ class JobExportaCihCsvFinal implements ShouldQueue
                 'removido' => false,
             ]);
 
+            \Log::info('Exportação CIH CSV finalizada com sucesso');
+
         } catch (\Exception $e) {
             \Log::error('Erro na exportação CIH CSV: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             throw $e;
+        } finally {
+            // Sempre liberar o lock
+            $this->releaseLock();
         }
     }
 
@@ -413,5 +434,55 @@ class JobExportaCihCsvFinal implements ShouldQueue
             $cleanText($cih->data_iso_aprovacao_rh ?? ''),
             $cleanText($cih->RhAprovacao ? $cih->RhAprovacao->nome : ''),
         ];
+    }
+
+
+    /**
+     * Adquirir lock distribuído usando Redis/Cache
+     */
+    private function acquireLock()
+    {
+        $lockValue = gethostname() . '_' . getmypid() . '_' . time();
+        
+        try {
+            // Tentar adquirir o lock usando atomic operation
+            $acquired = Cache::store('redis')->add($this->lockKey, $lockValue, $this->lockTimeout);
+            
+            if ($acquired) {
+                \Log::info("Lock adquirido: {$this->lockKey} = {$lockValue}");
+                return true;
+            }
+            
+            \Log::info("Falha ao adquirir lock: {$this->lockKey} - Lock já existe");
+            return false;
+            
+        } catch (\Exception $e) {
+            \Log::error("Erro ao tentar adquirir lock: {$e->getMessage()}");
+            // Em caso de erro no Redis, permite execução para não quebrar o sistema
+            return true;
+        }
+    }
+
+    /**
+     * Liberar lock distribuído
+     */
+    private function releaseLock()
+    {
+        try {
+            $deleted = Cache::store('redis')->forget($this->lockKey);
+            \Log::info("Lock liberado: {$this->lockKey} - Deleted: " . ($deleted ? 'true' : 'false'));
+        } catch (\Exception $e) {
+            \Log::error("Erro ao liberar lock: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Método chamado quando o job falha
+     */
+    public function failed(\Throwable $exception)
+    {
+        \Log::error("Job CIH falhou: {$exception->getMessage()}");
+        \Log::error("Stack trace: {$exception->getTraceAsString()}");
+        $this->releaseLock();
     }
 }
