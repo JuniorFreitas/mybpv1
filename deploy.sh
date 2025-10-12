@@ -13,8 +13,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configurações padrão
-DOCKER_REGISTRY="juniorfreitas"
-IMAGE_NAME="mybp"
+AWS_REGION="us-east-1"
+ECR_REGISTRY=""
+IMAGE_NAME="mybp/sistema"
 DEFAULT_TAG="latest"
 
 # Função para exibir banner
@@ -46,13 +47,38 @@ check_docker() {
     fi
 }
 
-# Função para validar se o Docker está logado no registry
-check_docker_login() {
-    if ! docker info | grep -q "Username"; then
-        echo -e "${YELLOW}Aviso: Você não está logado no Docker Hub!${NC}"
-        echo "Fazendo login no Docker Hub..."
-        docker login
+# Função para obter o ECR registry
+get_ecr_registry() {
+    if [ -z "$ECR_REGISTRY" ]; then
+        echo -e "${GREEN}Obtendo ECR registry...${NC}"
+        ECR_REGISTRY=$(aws ecr describe-registry --region "${AWS_REGION}" --query 'registryId' --output text 2>/dev/null)
+        if [ -z "$ECR_REGISTRY" ] || [ "$ECR_REGISTRY" = "None" ]; then
+            echo -e "${RED}Erro: Não foi possível obter o ECR registry!${NC}"
+            echo "Verifique se o AWS CLI está configurado e se você tem permissões para acessar o ECR."
+            exit 1
+        fi
+        ECR_REGISTRY="${ECR_REGISTRY}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        echo "ECR Registry: ${ECR_REGISTRY}"
     fi
+}
+
+# Função para validar se o Docker está logado no ECR
+check_ecr_login() {
+    if ! command -v aws &> /dev/null; then
+        echo -e "${RED}Erro: AWS CLI não está instalado!${NC}"
+        exit 1
+    fi
+    
+    if ! aws sts get-caller-identity &> /dev/null; then
+        echo -e "${RED}Erro: AWS CLI não está configurado ou credenciais inválidas!${NC}"
+        echo "Execute: aws configure"
+        exit 1
+    fi
+    
+    get_ecr_registry
+    
+    echo -e "${GREEN}Fazendo login no ECR...${NC}"
+    aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${ECR_REGISTRY}"
 }
 
 # Função para gerar tag baseada no ambiente e timestamp
@@ -115,7 +141,9 @@ build_image() {
     local app_url=$1
     local tag=$2
     local environment=$3
-    local full_image_name="${DOCKER_REGISTRY}/${IMAGE_NAME}:${tag}"
+    
+    get_ecr_registry
+    local full_image_name="${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
     
     echo -e "${GREEN}Construindo imagem Docker...${NC}"
     echo "APP_URL: ${app_url}"
@@ -136,7 +164,7 @@ build_image() {
     
     # Tag adicional como latest se for produção
     if [[ "$1" == *"sistema.mybp.com.br"* ]]; then
-        docker tag "${full_image_name}" "${DOCKER_REGISTRY}/${IMAGE_NAME}:latest"
+        docker tag "${full_image_name}" "${ECR_REGISTRY}/${IMAGE_NAME}:latest"
     fi
     
     echo -e "${GREEN}Build concluído!${NC}"
@@ -146,7 +174,9 @@ build_image() {
 # Função para push da imagem
 push_image() {
     local tag=$1
-    local full_image_name="${DOCKER_REGISTRY}/${IMAGE_NAME}:${tag}"
+    
+    get_ecr_registry
+    local full_image_name="${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
     
     echo -e "${GREEN}Fazendo push da imagem...${NC}"
     echo "Imagem: ${full_image_name}"
@@ -158,7 +188,7 @@ push_image() {
     # Push do latest se for produção
     if [[ "$tag" == *"prod"* ]]; then
         echo "Fazendo push da tag latest..."
-        docker push "${DOCKER_REGISTRY}/${IMAGE_NAME}:latest"
+        docker push "${ECR_REGISTRY}/${IMAGE_NAME}:latest"
     fi
     
     echo -e "${GREEN}Push concluído!${NC}"
@@ -174,13 +204,14 @@ deploy_dev() {
     echo -e "${GREEN}Iniciando build e push para DESENVOLVIMENTO...${NC}"
     
     check_docker
-    check_docker_login
+    check_ecr_login
     
     build_image "${app_url}" "${tag}" "${environment}"
     push_image "${tag}"
     
     echo -e "${GREEN}Deploy de desenvolvimento concluído!${NC}"
-    echo "Imagem: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${tag}"
+    get_ecr_registry
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
     echo "URL: ${app_url}"
 }
 
@@ -193,13 +224,14 @@ deploy_qa() {
     echo -e "${GREEN}Iniciando build e push para QA/HOMOLOGAÇÃO...${NC}"
     
     check_docker
-    check_docker_login
+    check_ecr_login
     
     build_image "${app_url}" "${tag}" "${environment}"
     push_image "${tag}"
     
     echo -e "${GREEN}Deploy de QA concluído!${NC}"
-    echo "Imagem: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${tag}"
+    get_ecr_registry
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
     echo "URL: ${app_url}"
 }
 
@@ -221,14 +253,15 @@ deploy_prod() {
     echo -e "${GREEN}Iniciando build e push para PRODUÇÃO...${NC}"
     
     check_docker
-    check_docker_login
+    check_ecr_login
     
     build_image "${app_url}" "${tag}" "${environment}"
     push_image "${tag}"
     
     echo -e "${GREEN}Deploy de produção concluído!${NC}"
-    echo "Imagem: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${tag}"
-    echo "Imagem latest: ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest"
+    get_ecr_registry
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
+    echo "Imagem latest: ${ECR_REGISTRY}/${IMAGE_NAME}:latest"
     echo "URL: ${app_url}"
 }
 
@@ -262,7 +295,7 @@ deploy_custom() {
     fi
     
     check_docker
-    check_docker_login
+    check_ecr_login
     
     build_image "${app_url}" "${custom_tag}" "${custom_env}"
     
@@ -272,7 +305,8 @@ deploy_custom() {
     fi
     
     echo -e "${GREEN}Build customizado concluído!${NC}"
-    echo "Imagem: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${custom_tag}"
+    get_ecr_registry
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${custom_tag}"
 }
 
 # Função principal

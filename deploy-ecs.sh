@@ -14,8 +14,23 @@ NC='\033[0m' # No Color
 
 # Configurações padrão
 AWS_REGION="us-east-1"
-DOCKER_REGISTRY="juniorfreitas"
-IMAGE_NAME="mybp"
+ECR_REGISTRY=""
+IMAGE_NAME="mybp/sistema"
+
+# Função para obter o ECR registry
+get_ecr_registry() {
+    if [ -z "$ECR_REGISTRY" ]; then
+        echo -e "${GREEN}Obtendo ECR registry...${NC}"
+        ECR_REGISTRY=$(aws ecr describe-registry --region "${AWS_REGION}" --query 'registryId' --output text 2>/dev/null)
+        if [ -z "$ECR_REGISTRY" ] || [ "$ECR_REGISTRY" = "None" ]; then
+            echo -e "${RED}Erro: Não foi possível obter o ECR registry!${NC}"
+            echo "Verifique se o AWS CLI está configurado e se você tem permissões para acessar o ECR."
+            exit 1
+        fi
+        ECR_REGISTRY="${ECR_REGISTRY}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        echo "ECR Registry: ${ECR_REGISTRY}"
+    fi
+}
 
 # Função para capturar tag da imagem (via parâmetro ou input)
 get_image_tag() {
@@ -191,12 +206,14 @@ deploy_to_ecs() {
     local service_name=$2
     local image_tag=$3
     
+    get_ecr_registry
+    
     # Verificar se a tag já contém o registry completo
     local full_image_name
-    if [[ "$image_tag" == *"${DOCKER_REGISTRY}/${IMAGE_NAME}:"* ]]; then
+    if [[ "$image_tag" == *"${ECR_REGISTRY}/${IMAGE_NAME}:"* ]]; then
         full_image_name="$image_tag"
     else
-        full_image_name="${DOCKER_REGISTRY}/${IMAGE_NAME}:${image_tag}"
+        full_image_name="${ECR_REGISTRY}/${IMAGE_NAME}:${image_tag}"
     fi
     
     echo -e "${GREEN}Fazendo deploy no ECS...${NC}"
@@ -243,9 +260,11 @@ deploy_dev() {
         image_tag="latest"
     fi
     
+    get_ecr_registry
+    
     # Garantir que a tag não contenha o registry completo
-    if [[ "$image_tag" == *"${DOCKER_REGISTRY}/${IMAGE_NAME}:"* ]]; then
-        image_tag=$(echo "$image_tag" | sed "s/.*${DOCKER_REGISTRY}\/${IMAGE_NAME}://")
+    if [[ "$image_tag" == *"${ECR_REGISTRY}/${IMAGE_NAME}:"* ]]; then
+        image_tag=$(echo "$image_tag" | sed "s/.*${ECR_REGISTRY}\/${IMAGE_NAME}://")
     fi
     
     check_aws_cli
@@ -266,9 +285,11 @@ deploy_qa() {
         image_tag="latest"
     fi
     
+    get_ecr_registry
+    
     # Garantir que a tag não contenha o registry completo
-    if [[ "$image_tag" == *"${DOCKER_REGISTRY}/${IMAGE_NAME}:"* ]]; then
-        image_tag=$(echo "$image_tag" | sed "s/.*${DOCKER_REGISTRY}\/${IMAGE_NAME}://")
+    if [[ "$image_tag" == *"${ECR_REGISTRY}/${IMAGE_NAME}:"* ]]; then
+        image_tag=$(echo "$image_tag" | sed "s/.*${ECR_REGISTRY}\/${IMAGE_NAME}://")
     fi
     
     check_aws_cli
@@ -319,10 +340,12 @@ deploy_custom() {
     read -p "Digite o nome do serviço: " service_name
     read -p "Digite a tag da imagem: " image_tag
     
+    get_ecr_registry
+    
     echo -e "${YELLOW}Configuração:${NC}"
     echo "Cluster: ${cluster_name}"
     echo "Serviço: ${service_name}"
-    echo "Imagem: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${image_tag}"
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${image_tag}"
     echo ""
     
     read -p "Deseja continuar? (y/N): " confirm
