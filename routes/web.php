@@ -3,6 +3,14 @@
 use App\Models\CartaOferta;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'Service is running',
+        'timestamp' => now()->toIso8601String(),
+    ]);
+})->name('health');
+
 Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])->name('recuperaSenhanew');
 Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::class, 'recuperaSenhaPost'])->name('recuperaSenhaPost');
 

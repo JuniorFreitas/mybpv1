@@ -3,6 +3,24 @@
 <p align="center">
 </p>
 
+## 📚 Documentação
+
+Para documentação técnica completa, consulte a pasta [`docs/`](./docs/README.md):
+
+- **Deploy e Infraestrutura** - Processo de deploy e melhorias
+- **Soluções Técnicas** - Jobs e comandos agendados em ECS
+- **Acesso e Segurança** - Primeiro acesso e reset de senhas
+
+## 🚀 Deploy Rápido
+
+```bash
+# Deploy completo
+./deploy-full.sh
+
+# Deploy específico
+./deploy.sh
+```
+
 ## METODOS ÚTEIS
 
 ORDENAÇÃO COM JOIN
