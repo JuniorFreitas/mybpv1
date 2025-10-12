@@ -106,13 +106,12 @@ if [ "$ENABLE_NGINX" = "true" ] ; then
 else
     rm -f $NGINX_CONF
 fi
-
 # NVM and NodeJS setup
-printf "${COL_GREEN} -----> Info:${COL_RESET} Instalando NodeJS\n"
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-nvm install 14
+# printf "${COL_GREEN} -----> Info:${COL_RESET} Instalando NodeJS\n"
+# wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+# export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+# nvm install 14
 
 printf "${COL_GREEN} -----> Info:${COL_RESET} Launching supervisord...\n"
 /usr/local/bin/supervisord -n -c /etc/supervisord.conf

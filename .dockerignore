@@ -2,7 +2,7 @@
 .github
 .idea
 
-# .env
+.env.*
 .DS_Store
 .*ignore
 *.log
