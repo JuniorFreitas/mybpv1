@@ -43,7 +43,7 @@ return [
 
         'custom' => [
             'driver' => 'stack',
-            'channels' => ['single','telegram'],
+            'channels' => ['stderr','telegram'],
         ],
 
         'single' => [
