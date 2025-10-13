@@ -153,6 +153,7 @@ const app = new Vue({
                 autocomplete_label_vaga_modal: '',
                 autocomplete_label_vaga_modal_anterior: '',
                 vaga_id: '',
+                vagas_abertas_id: '',
                 contato_realizado: '',
                 interesse: '',
                 data_entrevista: '',
@@ -229,12 +230,12 @@ const app = new Vue({
             if (!this.validarObjetoVaga(obj)) {
                 return
             }
-
             this.atualizarDadosVagaModal(obj)
         },
 
         atualizarDadosVagaModal(obj) {
-            this.form_feedback.vaga_id = obj.id
+            this.form_feedback.vagas_abertas_id = obj.id
+            this.form_feedback.vaga_id = obj.vaga_id
             this.form_feedback.autocomplete_label_vaga_modal = obj.label
             this.form_feedback.autocomplete_label_vaga_modal_anterior = obj.label
             this.form_feedback.tem_provas = obj.simulado_vaga?.length > 0 || false

@@ -79,7 +79,7 @@ class RecrutamentoController extends Controller
     {
         $recrutamento->estado_civil = $recrutamento->estado_civil ?? '';
         $recrutamento->sexo = $recrutamento->sexo ?? '';
-        
+
         return $recrutamento->load('Atualizacao', 'Qualificacoes', 'Experiencias', 'VagaAberta.VagaSelecionada', 'Formacao', 'Telefones', 'Usuario')->load(['FeedBack' => function ($query) {
             $query->with('VagaAberta.VagaSelecionada.SimuladoVaga', 'VagaAberta.Municipio', 'Cliente', 'QuemMarcou', 'TelPrincipal');
         }]);
@@ -95,18 +95,18 @@ class RecrutamentoController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $requestData = $this->prepareRequestData($request->input());
             $curriculumData = $requestData['curriculos'];
             $candidato = Curriculo::find($curriculumData['id']);
             $empresa = Cliente::find(auth()->user()->empresa_id);
-            
+
             // Capturar dados antes da atualização para o histórico
             $dadosAnteriores = $candidato->toArray();
-            
+
             // Atualizar dados do currículo
             $this->updateCurriculumData($candidato, $curriculumData);
-            
+
             // Registrar histórico da atualização do currículo
             RecrutamentoHistorico::registrar(
                 $candidato->id,
@@ -118,19 +118,19 @@ class RecrutamentoController extends Controller
                 $candidato->fresh()->toArray(),
                 $request->all()
             );
-            
+
             // Processar telefones
             $this->processPhones($candidato, $curriculumData, $requestData);
-            
+
             // Configurar dados de envio
             $requestData = $this->configureEmailAndWhatsappData($requestData);
-            
+
             // Processar feedback do candidato
             $this->processCandidateFeedback($recrutamento, $requestData, $curriculumData, $empresa);
-            
+
             DB::commit();
             return response()->json([], 201);
-            
+
         } catch (\Exception $e) {
             DB::rollback();
             $errorMessage = "error FEEDBACK: {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
@@ -152,7 +152,7 @@ class RecrutamentoController extends Controller
         $input['envia_mail_provas'] = $input['envia_mail_provas'] == 'true';
         $input['envia_mail_proxima_etapa'] = $input['envia_mail_proxima_etapa'] == 'true';
         $input['envia_mail_desclassificacao'] = $input['envia_mail_desclassificacao'] == 'true';
-        
+
         return $input;
     }
 
@@ -202,7 +202,7 @@ class RecrutamentoController extends Controller
                         $telefone->toArray(),
                         null
                     );
-                    
+
                     $telefone->delete();
                 }
             }
@@ -212,12 +212,12 @@ class RecrutamentoController extends Controller
         if (isset($curriculumData['telefones'])) {
             foreach ($curriculumData['telefones'] as $phoneData) {
                 $phoneData['principal'] = $phoneData['principal'] == 'true';
-                
+
                 if ($phoneData['id'] == 0) {
                     // Criar novo telefone
                     $newPhone = $candidato->Telefones()->create($phoneData);
                     $newPhoneId = $newPhone->id;
-                    
+
                     // Registrar histórico da criação
                     RecrutamentoHistorico::registrar(
                         $candidato->id,
@@ -228,7 +228,7 @@ class RecrutamentoController extends Controller
                         null,
                         $newPhone->toArray()
                     );
-                    
+
                     if ($phoneData['principal']) {
                         $requestData['telefone_id'] = $newPhoneId;
                     }
@@ -236,9 +236,9 @@ class RecrutamentoController extends Controller
                     // Atualizar telefone existente
                     $telefoneExistente = $candidato->Telefones->find($phoneData['id']);
                     $dadosAnteriores = $telefoneExistente->toArray();
-                    
+
                     $telefoneExistente->update($phoneData);
-                    
+
                     // Registrar histórico da atualização
                     RecrutamentoHistorico::registrar(
                         $candidato->id,
@@ -249,7 +249,7 @@ class RecrutamentoController extends Controller
                         $dadosAnteriores,
                         $telefoneExistente->fresh()->toArray()
                     );
-                    
+
                     if ($phoneData['principal']) {
                         $requestData['telefone_id'] = $phoneData['id'];
                     }
@@ -310,7 +310,7 @@ class RecrutamentoController extends Controller
         if ($requestData['selecionado'] == 'nao') {
             $this->processRejection($requestData, $curriculumData, $empresa);
             $feedback = $curriculo->FeedBack()->create($requestData);
-            
+
             // Registrar histórico da rejeição
             RecrutamentoHistorico::registrar(
                 $curriculo->id,
@@ -323,12 +323,7 @@ class RecrutamentoController extends Controller
             );
         } else {
             $this->processSelection($requestData, $curriculumData, $empresa, $curriculo);
-            
-            $requestData['vagas_abertas_id'] = $requestData['vaga_id'];
-            $requestData['vaga_id'] = VagasAbertas::find($requestData['vagas_abertas_id'])->vaga_id;
-            
             $feedback = $curriculo->FeedBack()->create($requestData);
-            
             // Registrar histórico da seleção
             RecrutamentoHistorico::registrar(
                 $curriculo->id,
@@ -349,25 +344,21 @@ class RecrutamentoController extends Controller
     {
         // Se vaga_id está presente na requisição, usar ela
         if (!empty($requestData['vaga_id'])) {
-            $requestData['vagas_abertas_id'] = $requestData['vaga_id'];
-            
             // Buscar a vaga real para garantir que vaga_id está correto
             $vagaAberta = VagasAbertas::find($requestData['vaga_id']);
             if ($vagaAberta) {
                 $requestData['vaga_id'] = $vagaAberta->vaga_id;
             }
-        }
-        // Se não há vaga_id mas há vaga no currículo, usar a do currículo
+        } // Se não há vaga_id mas há vaga no currículo, usar a do currículo
         else if ($curriculo->VagaAberta) {
             $requestData['vagas_abertas_id'] = $curriculo->VagaAberta->id;
             $requestData['vaga_id'] = $curriculo->VagaAberta->vaga_id;
-        }
-        // Se ainda não há vaga, tentar buscar pelo feedback anterior
+        } // Se ainda não há vaga, tentar buscar pelo feedback anterior
         else if ($curriculo->FeedBack && $curriculo->FeedBack->vagas_abertas_id) {
             $requestData['vagas_abertas_id'] = $curriculo->FeedBack->vagas_abertas_id;
             $requestData['vaga_id'] = $curriculo->FeedBack->vaga_id;
         }
-        
+
         // Validar se os dados estão consistentes
         if (!empty($requestData['vagas_abertas_id']) && empty($requestData['vaga_id'])) {
             $vagaAberta = VagasAbertas::find($requestData['vagas_abertas_id']);
@@ -375,7 +366,7 @@ class RecrutamentoController extends Controller
                 $requestData['vaga_id'] = $vagaAberta->vaga_id;
             }
         }
-        
+
         return $requestData;
     }
 
@@ -386,12 +377,12 @@ class RecrutamentoController extends Controller
     {
         // Garantir que sempre haja uma vaga associada
         $requestData = $this->ensureJobAssociation($requestData, $curriculo);
-        
+
         // Capturar dados antes da atualização
         $dadosAnteriores = $curriculo->FeedBack->toArray();
-        
+
         $curriculo->FeedBack->update($requestData);
-        
+
         // Registrar histórico da atualização do feedback
         RecrutamentoHistorico::registrar(
             $curriculo->id,
@@ -477,7 +468,7 @@ class RecrutamentoController extends Controller
         if ($requestData['envia_mail_proxima_etapa']) {
             $requestData['data_envia_mail_proxima_etapa'] = (new DataHora())->dataHoraInsert();
             $requestData['user_envia_mail_proxima_etapa'] = auth()->id();
-            
+
             $vagaAbertaId = isset($requestData['vaga_aberta']['id']) ? $requestData['vaga_aberta']['id'] : $requestData['vagas_abertas_id'];
             $vagaAberta = VagasAbertas::find($vagaAbertaId);
 
@@ -501,12 +492,12 @@ class RecrutamentoController extends Controller
         if ($requestData['envia_mail_proxima_etapa']) {
             $requestData['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
             $requestData['user_envia_mail_provas'] = auth()->id();
-            
+
             $vagaAbertaId = isset($requestData['vaga_aberta']['id']) ? $requestData['vaga_aberta']['id'] : $requestData['vagas_abertas_id'];
 
             $vagaAberta = VagasAbertas::find($vagaAbertaId);
-            
-            
+
+
             JobProximaEtapa::dispatch([
                 'nome' => $curriculumData['nome'],
                 'email' => $curriculumData['email'],
@@ -526,12 +517,12 @@ class RecrutamentoController extends Controller
     {
         $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
         $whatsappEnabled = !empty($whatsappConfig) && $whatsappConfig->envia_whatsapp;
-        
+
         if ($requestData['contato_realizado'] && $requestData['envia_whatsapp'] && $whatsappEnabled) {
             $vagaAbertaId = isset($requestData['vaga_aberta']['id']) ? $requestData['vaga_aberta']['id'] : $requestData['vagas_abertas_id'];
             $vagaAberta = VagasAbertas::find($vagaAbertaId);
             $message = $this->buildSelectionWhatsAppMessage($curriculumData, $requestData, $empresa, $vagaAberta);
-            
+
             $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
             if ($telefonePrincipal && $telefonePrincipal->tipo == 'whatsapp') {
                 JobEnviaZap::dispatch([
@@ -550,10 +541,10 @@ class RecrutamentoController extends Controller
     {
         $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
         $whatsappEnabled = !empty($whatsappConfig) && $whatsappConfig->envia_whatsapp;
-        
+
         if ($requestData['contato_realizado'] && $requestData['envia_whatsapp'] && $whatsappEnabled) {
             $message = $this->buildSelectionWhatsAppMessage($curriculumData, $requestData, $empresa, $vagaAberta);
-            
+
             $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
             if ($telefonePrincipal && $telefonePrincipal->tipo == 'whatsapp') {
                 JobEnviaZap::dispatch([
@@ -581,12 +572,12 @@ class RecrutamentoController extends Controller
         if ($requestData['envia_mail_provas']) {
             $requestData['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
             $requestData['user_envia_mail_provas'] = auth()->id();
-            
+
             $vagaAbertaId = isset($requestData['vaga_aberta']['id']) ? $requestData['vaga_aberta']['id'] : $requestData['vaga_id'];
             $provas = SimuladoVaga::whereVagasAbertasId($vagaAbertaId)->whereOnline(true)->get();
-            
+
             $this->sendExamWhatsAppMessage($requestData, $curriculumData, $curriculo, $provas);
-            
+
             JobProva::dispatch([
                 'nome' => $curriculumData['nome'],
                 'email' => $curriculumData['email'],
@@ -609,11 +600,11 @@ class RecrutamentoController extends Controller
         if ($requestData['envia_mail_provas']) {
             $requestData['data_envia_mail_provas'] = (new DataHora())->dataHoraInsert();
             $requestData['user_envia_mail_provas'] = auth()->id();
-            
+
             $provas = SimuladoVaga::whereVagasAbertasId($requestData['vagas_abertas_id'])->whereOnline(true)->get();
-            
+
             $this->sendExamWhatsAppMessage($requestData, $curriculumData, $curriculo, $provas);
-            
+
             JobProva::dispatch([
                 'nome' => $curriculumData['nome'],
                 'email' => $curriculumData['email'],
@@ -631,11 +622,11 @@ class RecrutamentoController extends Controller
     {
         $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
         $whatsappEnabled = !empty($whatsappConfig) && $whatsappConfig->envia_whatsapp;
-        
+
         if ($requestData['contato_realizado'] && $requestData['envia_whatsapp'] && $whatsappEnabled) {
             $quantidadeProvas = count($provas);
             $message = $this->buildExamWhatsAppMessage($curriculumData, $requestData, $quantidadeProvas, $provas);
-            
+
             $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
             if ($telefonePrincipal && $telefonePrincipal->tipo == 'whatsapp') {
                 JobEnviaZap::dispatch([
@@ -657,13 +648,13 @@ class RecrutamentoController extends Controller
         } else {
             $message = "Parabéns, *{$curriculumData['nome']}*. Você foi *selecionado(a)*!\nVocê está recebendo um convite para realizar a avaliação abaixo relacionada ao seu processo seletivo para a vaga de *{$requestData['autocomplete_label_vaga_modal']}* através da plataforma MyBP.\nUma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n\n";
         }
-        
+
         foreach ($provas as $prova) {
             $message .= route('provas.prova.simulado', [$prova->vaga_id, $prova->simulado_id, $prova->Simulado->slug]) . "\n";
         }
-        
+
         $message .= "\n\nCuidado para não perder o prazo! Esperamos te ver em breve!\n\n*Equipe RH BPSE*";
-        
+
         return $message;
     }
 
@@ -690,7 +681,7 @@ class RecrutamentoController extends Controller
             $curriculo->datalido = (new DataHora())->dataHoraInsert();
             $curriculo->save();
             $curriculo->refresh();
-            
+
             // Registrar histórico da marcação como lido
             RecrutamentoHistorico::registrar(
                 $curriculo->id,
@@ -699,7 +690,7 @@ class RecrutamentoController extends Controller
                 null,
                 "Currículo foi marcado como lido"
             );
-            
+
             return response()->json(['lido' => $curriculo->lido], 201);
         }
     }
@@ -709,7 +700,7 @@ class RecrutamentoController extends Controller
      */
     public function atualizar(Request $request)
     {
-        $resultado = $this->filtro($request)->paginate($request->pages?:300);
+        $resultado = $this->filtro($request)->paginate($request->pages ?: 300);
 
         $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
         $whatsappEnabled = !empty($whatsappConfig) ? $whatsappConfig->envia_whatsapp : false;
@@ -741,9 +732,9 @@ class RecrutamentoController extends Controller
             'vaga_pretendida', 'pcd', 'uf_vaga', 'municipio_id', 'sexo',
             'estado_civil', 'lido', 'created_at'
         ])
-        ->with('VagaAberta.VagaSelecionada',
-        'FeedBack:id,curriculo_id,interesse,selecionado,contato_realizado')
-        ->doesntHave('FeedBack.parecerRh');
+            ->with('VagaAberta.VagaSelecionada',
+                'FeedBack:id,curriculo_id,interesse,selecionado,contato_realizado')
+            ->doesntHave('FeedBack.parecerRh');
 
         // Filtro por período
         if ($request->filtroPeriodo == 'true') {
@@ -766,7 +757,7 @@ class RecrutamentoController extends Controller
         $dataFim = new DataHora($periodoParts[1] . ' 23:59:59');
 
         $query->where('updated_at', '>=', $dataInicio->dataHoraInsert())
-              ->where('updated_at', '<=', $dataFim->dataHoraInsert());
+            ->where('updated_at', '<=', $dataFim->dataHoraInsert());
     }
 
     /**
@@ -820,7 +811,7 @@ class RecrutamentoController extends Controller
         $rows = $this->prepareExportRows($resultado);
 
         $filename = "recrutamento" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        
+
         // Registrar histórico da exportação
         RecrutamentoHistorico::registrar(
             0, // ID genérico para exportação
@@ -832,9 +823,9 @@ class RecrutamentoController extends Controller
             null,
             $request->all()
         );
-        
+
         JobExportaExcel::dispatch(auth()->id(), "Recrutamento", $headers, $rows, $filename);
-        
+
         return response()->json([
             'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.'
         ]);
@@ -876,7 +867,7 @@ class RecrutamentoController extends Controller
     public function historico(Curriculo $curriculo)
     {
         $historico = RecrutamentoHistorico::porCurriculo($curriculo->id);
-        
+
         return response()->json([
             'curriculo' => $curriculo->load('Usuario'),
             'historico' => $historico->map(function ($item) {

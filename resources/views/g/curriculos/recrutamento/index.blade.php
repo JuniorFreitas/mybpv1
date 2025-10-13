@@ -15,7 +15,8 @@
                                 <label>Nome <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control" v-model="form.nome"
                                        placeholder="Nome"
-                                       autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">
+                                       autocomplete="mastertag" onblur="valida_campo_vazio(this,3)"
+                                >
                             </div>
                         </div>
 
@@ -25,7 +26,8 @@
                                 <input type="text" class="form-control" v-model="form.cpf"
                                        placeholder="CPF"
                                        disabled
-                                       autocomplete="mastertag" v-mascara:cpf onblur="valida_cpf_vazio(this)">
+                                       autocomplete="mastertag" v-mascara:cpf onblur="valida_cpf_vazio(this)"
+                                >
                             </div>
                         </div>
 
@@ -35,7 +37,8 @@
                                 <input type="text" class="form-control" v-model="form.rg"
                                        placeholder="RG"
                                        autocomplete="mastertag" v-mascara:numero
-                                       onblur="valida_campo(this,1)">
+                                       onblur="valida_campo(this,1)"
+                                >
                             </div>
                         </div>
 
@@ -44,7 +47,8 @@
                                 <label>Orgão Expeditor (RG)</label>
                                 <input type="text" class="form-control" v-model="form.orgao_expeditor"
                                        placeholder="Orgão"
-                                       autocomplete="mastertag" onblur="valida_campo(this,1)">
+                                       autocomplete="mastertag" onblur="valida_campo(this,1)"
+                                >
                             </div>
                         </div>
 
@@ -53,7 +57,8 @@
                                 <label>CNH</label>
                                 <input type="text" class="form-control" v-model="form.cnh"
                                        placeholder="Tipo da CNH"
-                                       autocomplete="mastertag">
+                                       autocomplete="mastertag"
+                                >
                             </div>
                         </div>
 
@@ -63,7 +68,8 @@
                                 <input type="text" class="form-control" v-model="form.nascimento"
                                        placeholder="Ex: 10/10/2010"
                                        v-mascara:data
-                                       autocomplete="mastertag" onblur="valida_data_vazio(this)">
+                                       autocomplete="mastertag" onblur="valida_data_vazio(this)"
+                                >
                             </div>
                         </div>
 
@@ -101,7 +107,8 @@
                                 <input type="text" class="form-control" v-model="form.filiacao_pai"
                                        placeholder="Nome"
                                        onblur="valida_campo(this,3)"
-                                       autocomplete="mastertag">
+                                       autocomplete="mastertag"
+                                >
                             </div>
                         </div>
 
@@ -111,7 +118,8 @@
                                 <input type="text" class="form-control" v-model="form.filiacao_mae"
                                        onblur="valida_campo(this,3)"
                                        placeholder="Nome"
-                                       autocomplete="mastertag">
+                                       autocomplete="mastertag"
+                                >
                             </div>
                         </div>
 
@@ -120,7 +128,8 @@
                                 <label>E-mail <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control" v-model="form.email"
                                        placeholder="Ex.: email@email.com"
-                                       autocomplete="mastertag" onblur="validaEmailVazio(this)">
+                                       autocomplete="mastertag" onblur="validaEmailVazio(this)"
+                                >
                             </div>
                         </div>
 
@@ -142,7 +151,8 @@
                         <div class="col-12 col-sm-12 col-lg-12 col-xl-12">
                             <telefone :model="form.telefones" :model-delete="form.telefonesDelete" :qnt_min="1"
                                       :pais="false"
-                                      :ramal="false"></telefone>
+                                      :ramal="false"
+                            ></telefone>
                         </div>
                     </div>
                 </fieldset>
@@ -153,7 +163,8 @@
                         <div class="col-12" style="font-size: 0.8rem;">
                             <p>Formação: <span v-if="editando">@{{ form.formacao.tipo }}</span></p>
                             <p>Curso: <span
-                                    v-if="editando">@{{ form.formacao_curso }} ( @{{ form.formacao_status }} )</span>
+                                    v-if="editando"
+                                >@{{ form.formacao_curso }} ( @{{ form.formacao_status }} )</span>
                             </p>
                             <p>Instituição: <span v-if="editando">@{{ form.formacao_instituicao }}</span></p>
                         </div>
@@ -186,7 +197,8 @@
                                 <p>Curso: <span v-if="editando">@{{ item.nome }}</span></p>
                                 <p>Instituição: <span v-if="editando">@{{ item.instituicao }}</span></p>
                                 <p>Conclusão: <span
-                                        v-if="editando">@{{ item.mes_conclusao }}/@{{ item.ano_conclusao }}</span></p>
+                                        v-if="editando"
+                                    >@{{ item.mes_conclusao }}/@{{ item.ano_conclusao }}</span></p>
                             </div>
                         </div>
                     </div>
@@ -205,7 +217,8 @@
                             <div class="form-group">
                                 <label>Vaga Pretendida</label>
                                 <input type="text" disabled="disabled" class="form-control"
-                                       :value="form.vaga_aberta.vaga_selecionada.nome">
+                                       :value="form.vaga_aberta.vaga_selecionada.nome"
+                                >
                             </div>
 
                         </div>
@@ -232,7 +245,8 @@
                             <div class="form-group">
                                 <label>Cota PCD (Lei nº 8.213/91)</label>
                                 <input type="text" disabled="disabled" class="form-control"
-                                       :value="!form.pcd ? 'Não': 'Sim'">
+                                       :value="!form.pcd ? 'Não': 'Sim'"
+                                >
                             </div>
                         </div>
 
@@ -240,7 +254,8 @@
                             <div class="form-group">
                                 <label>CID</label>
                                 <input type="text" disabled="disabled" class="form-control"
-                                       :value="form.cid">
+                                       :value="form.cid"
+                                >
                             </div>
                         </div>
 
@@ -250,7 +265,8 @@
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.selecionado">
+                                        v-model="form_feedback.selecionado"
+                                >
                                     <option value="">Selecione</option>
                                     <option value="sim">SIM</option>
                                     <option value="nao">NÃO</option>
@@ -260,13 +276,15 @@
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'nao'">
+                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'nao'"
+                        >
                             <div class="form-group">
                                 <label>Enviar e-mail desclassificação <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.envia_mail_desclassificacao">
+                                        v-model="form_feedback.envia_mail_desclassificacao"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">SIM</option>
                                     <option :value="false">NÃO</option>
@@ -275,27 +293,31 @@
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
+                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
+                        >
                             <div class="form-group">
                                 <label>Selecione uma vaga <span style="color: red;">*</span></label>
                                 <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete"
-                                              :valido="form_feedback.vaga_id !== ''"
+                                              :valido="form_feedback.vagas_abertas_id !== ''"
                                               v-model="form_feedback.autocomplete_label_vaga_modal"
                                               placeholder="Digite o nome da vaga"
                                               :id="`vaga_modal_${hash}`"
                                               @onblur="resetaCampoVagaModal"
-                                              @onselect="selecionaVagaModal"></autocomplete>
+                                              @onselect="selecionaVagaModal"
+                                ></autocomplete>
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'sim' && form_feedback.tem_provas">
+                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'sim' && form_feedback.tem_provas"
+                        >
                             <div class="form-group">
                                 <label>Enviar e-mail links de provas <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.envia_mail_provas">
+                                        v-model="form_feedback.envia_mail_provas"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">SIM</option>
                                     <option :value="false">NÃO</option>
@@ -304,13 +326,15 @@
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'sim'">
+                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'sim'"
+                        >
                             <div class="form-group">
                                 <label>Enviar e-mail de avanço de etapa <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.envia_mail_proxima_etapa">
+                                        v-model="form_feedback.envia_mail_proxima_etapa"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">SIM</option>
                                     <option :value="false">NÃO</option>
@@ -319,13 +343,15 @@
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
+                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
+                        >
                             <div class="form-group">
                                 <label for="">Contato Realizado <span style="color: red;">*</span></label>
                                 <select class="form-control"
                                         onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.contato_realizado">
+                                        v-model="form_feedback.contato_realizado"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">SIM</option>
                                     <option :value="false">NÃO</option>
@@ -346,13 +372,15 @@
 
                         <template v-if="permite_envio_whatsapp">
                             <div class="col-12 col-md-4"
-                                 v-if="form_feedback.contato_realizado">
+                                 v-if="form_feedback.contato_realizado"
+                            >
                                 <div class="form-group">
                                     <label>Enviar Notificação via whatsApp <span style="color: red;">*</span></label>
                                     <select class="form-control"
                                             onblur="valida_campo_vazio(this,1)"
                                             onchange="valida_campo_vazio(this,1)"
-                                            v-model="form_feedback.envia_whatsapp">
+                                            v-model="form_feedback.envia_whatsapp"
+                                    >
                                         <option value="">Selecione</option>
                                         <option :value="true">SIM</option>
                                         <option :value="false">NÃO</option>
@@ -362,12 +390,14 @@
                         </template>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
+                             v-if="form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
+                        >
                             <div class="form-group">
                                 <label for="">Interesse <span style="color: red;">*</span></label>
                                 <select class="form-control" onblur="valida_campo_vazio(this,1)"
                                         onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.interesse">
+                                        v-model="form_feedback.interesse"
+                                >
                                     <option value="">Selecione</option>
                                     <option :value="true">SIM</option>
                                     <option :value="false">NÃO</option>
@@ -376,45 +406,50 @@
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
+                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
+                        >
                             <div class="form-group">
                                 {{--                                <label for="">Entrevista</label>--}}
                                 <datepicker :hora="true"
                                             label="Entrevista"
                                             min="{{(new \MasterTag\DataHora())->dataCompleta()}}"
-                                            posicao="up" v-model="form_feedback.data_entrevista"></datepicker>
+                                            posicao="up" v-model="form_feedback.data_entrevista"
+                                ></datepicker>
 
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">
+                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
+                        >
                             <div class="form-group">
                                 <label for="">Local Entrevista <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control"
                                        onblur="valida_campo_vazio(this,1)"
-                                       v-model="form_feedback.local_entrevista">
+                                       v-model="form_feedback.local_entrevista"
+                                >
                             </div>
                         </div>
 
-{{--                        <div class="col-12 col-md-4"--}}
-{{--                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">--}}
-{{--                            <div class="form-group">--}}
-{{--                                <label for="">Selecione um cliente</label>--}}
-{{--                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete"--}}
-{{--                                              :valido="form_feedback.cliente_id !== ''"--}}
-{{--                                              v-model="form_feedback.autocomplete_label_cliente_modal"--}}
-{{--                                              :id="`cliente_modal_${hash}`"--}}
-{{--                                              placeholder="Digite o nome da empresa"--}}
-{{--                                              @onblur="resetaCampoClienteModal"--}}
-{{--                                              @onselect="selecionaClienteModal"></autocomplete>--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
+                        {{--                        <div class="col-12 col-md-4"--}}
+                        {{--                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">--}}
+                        {{--                            <div class="form-group">--}}
+                        {{--                                <label for="">Selecione um cliente</label>--}}
+                        {{--                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete"--}}
+                        {{--                                              :valido="form_feedback.cliente_id !== ''"--}}
+                        {{--                                              v-model="form_feedback.autocomplete_label_cliente_modal"--}}
+                        {{--                                              :id="`cliente_modal_${hash}`"--}}
+                        {{--                                              placeholder="Digite o nome da empresa"--}}
+                        {{--                                              @onblur="resetaCampoClienteModal"--}}
+                        {{--                                              @onselect="selecionaClienteModal"></autocomplete>--}}
+                        {{--                            </div>--}}
+                        {{--                        </div>--}}
                         <div class="col-12 col-md-12">
                             <div class="form-group">
                                 <label for="">Observações:</label>
                                 <input type="text" class="form-control"
-                                       v-model="form_feedback.obs">
+                                       v-model="form_feedback.obs"
+                                >
                             </div>
                         </div>
                         <div class="col-12 col-sm-12" style="font-size: 0.8rem;" v-if="feedback && form.lido">
@@ -428,7 +463,8 @@
         </template>
         <template slot="rodape">
             <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
-                    @click="alterar">
+                    @click="alterar"
+            >
                 Salvar
             </button>
 
@@ -474,12 +510,14 @@
             <div class="col-12 col-md-4">
                 <div class="form-check" style="margin-bottom: -11px;">
                     <input type="checkbox" class="form-check-input" :disabled="controle.carregando" id="filtroIntervalo"
-                           v-model="controle.dados.filtroPeriodo">
+                           v-model="controle.dados.filtroPeriodo"
+                    >
                     <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
                 </div>
                 <div class="form-group">
                     <datepicker range formsm label="" :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                v-model="controle.dados.periodo"></datepicker>
+                                v-model="controle.dados.periodo"
+                    ></datepicker>
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-md-6 col-lg-4">
@@ -489,7 +527,8 @@
                            placeholder="Buscar por nome"
                            autocomplete="off"
                            class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoBusca">
+                           v-model="controle.dados.campoBusca"
+                    >
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-md-6 col-lg-4">
@@ -501,7 +540,8 @@
                            onblur="valida_cpf(this)"
                            v-mascara:cpf
                            class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoCPF">
+                           v-model="controle.dados.campoCPF"
+                    >
                 </div>
             </div>
             <div class="col-12 col-sm-12 col-md-12 col-lg-12">
@@ -513,14 +553,16 @@
                                   :disabled="controle.carregando"
                                   placeholder="Por cargo"
                                   @onblur="resetaCampo"
-                                  @onselect="selecionaVaga"></autocomplete>
+                                  @onselect="selecionaVaga"
+                    ></autocomplete>
                 </div>
             </div>
             <div class="col-12 col-sm-4 col-md-3 col-lg-2">
                 <div class="form-group">
                     <label>Estado</label>
                     <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoUf">
+                            v-model="controle.dados.campoUf"
+                    >
                         <option value="">SEM FILTRO</option>
                         <option value="MA">MA</option>
                         <option value="AC">AC</option>
@@ -556,7 +598,8 @@
                 <div class="form-group">
                     <label>Lido</label>
                     <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoLido">
+                            v-model="controle.dados.campoLido"
+                    >
                         <option value="">Geral</option>
                         <option :value="true">Sim</option>
                         <option :value="false">Não</option>
@@ -567,7 +610,8 @@
                 <div class="form-group">
                     <label>PCD</label>
                     <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoPcd">
+                            v-model="controle.dados.campoPcd"
+                    >
                         <option value="">Geral</option>
                         <option :value="true">Sim</option>
                         <option :value="false">Não</option>
@@ -578,7 +622,8 @@
                 <div class="form-group">
                     <label>Exibir</label>
                     <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.pages">
+                            v-model="controle.dados.pages"
+                    >
                         <option value="20">20</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
@@ -588,12 +633,14 @@
             <div class="col-12 col-md-9">
                 <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
                     <i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"
+                    ></i>
                     Atualizar
                 </button>
                 <button type="button" class="btn btn-sm btn-primary  mr-1"
                         @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) "
+                >
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                 </button>
             </div>
@@ -645,7 +692,8 @@
                         @{{curriculo.pcd ? "SIM" : "NÃO"}}
                     </td>
                     <td data-label="Selecionado">
-                        @{{curriculo.feed_back ? curriculo.feed_back.selecionado ? curriculo.feed_back.selecionado.toUpperCase() : "--" : "--"}}
+                        @{{curriculo.feed_back ? curriculo.feed_back.selecionado ?
+                        curriculo.feed_back.selecionado.toUpperCase() : "--" : "--"}}
                     </td>
                     <td data-label="Contato Realizado">
                         @{{curriculo.feed_back ? curriculo.feed_back.contato_realizado ? "SIM" : "NÃO" : "NÃO"}}
@@ -671,12 +719,15 @@
                            @click.prevent="formAlterar(curriculo.id)"
                            content="Recrutar" v-tippy
                            data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                           data-target="#janelaCadastrar"
+                        >
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
 
-                        <a :href="`recrutamentos/${curriculo.ctoken}`" target="_blank" class="btn btn-sm mb-2 btn-primary"
-                           content="Gerar PDF" v-tippy>
+                        <a :href="`recrutamentos/${curriculo.ctoken}`" target="_blank"
+                           class="btn btn-sm mb-2 btn-primary"
+                           content="Gerar PDF" v-tippy
+                        >
                             <i class="far fa-file-pdf"></i>
                         </a>
 
@@ -684,7 +735,8 @@
                             <a href="javascript://" class="btn btn-sm mb-2 btn-danger" content="Remover" v-tippy
                                @click.prevent="janelaConfirmar(curriculo.id)"
                                data-toggle="modal"
-                               data-target="#janelaConfirmar">
+                               data-target="#janelaConfirmar"
+                            >
                                 <i class="fa fa-trash" aria-hidden="true"></i>
                             </a>
                         @endcan
@@ -704,7 +756,8 @@
                             url="{{route('g.recrutamento.recrutamentos.atualizar')}}"
                             :por-pagina="controle.dados.porPagina"
                             :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+                            v-on:carregou="carregou" v-on:carregando="carregando"
+        ></controle-paginacao>
     </div>
 @stop
 @push('js')
