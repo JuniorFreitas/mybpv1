@@ -207,17 +207,24 @@ class DemissaoPrevistaController extends Controller
             ->join('users as us', 'dp.user_id', '=', 'us.id')
             ->join('curriculos as c', 'u.id', '=', 'c.id')
             ->join('feedback_curriculos as fc', function ($join) {
-                $join->on('u.id', '=', 'fc.curriculo_id')->whereNull('fc.deleted_at');
+                $join->on('u.id', '=', 'fc.curriculo_id')
+                    ->whereNull('fc.deleted_at')
+                    ->whereRaw('fc.id = (SELECT MAX(id) FROM feedback_curriculos WHERE curriculo_id = u.id AND feedback_curriculos.deleted_at IS NULL)');
             })
             ->join('admissoes as a', function ($join) {
-                $join->on('fc.id', '=', 'a.feedback_id')->whereNull('a.deleted_at')->whereNull('fc.deleted_at');
+                $join->on('fc.id', '=', 'a.feedback_id')
+                    ->whereNull('a.deleted_at')
+                    ->whereRaw('a.id = (SELECT MAX(id) FROM admissoes WHERE feedback_id = fc.id AND admissoes.deleted_at IS NULL)');
             })
             ->leftjoin('centro_custos as cc', 'dp.centro_custo_id', '=', 'cc.id')
             ->leftjoin('centro_custo_filials as ccf', 'dp.centro_custo_filial_id', '=', 'ccf.id')
             ->leftjoin('users as ugestor', 'ugestor.id', '=', 'dp.gestor_id')
             ->leftjoin('users as urh', 'urh.id', '=', 'dp.rh_aprovacao_id')
             ->leftjoin('users as usa', 'dp.user_aprovacao_id', '=', 'usa.id')
-            ->leftjoin('demissaos as d', 'fc.id', '=', 'd.feedback_id')
+            ->leftjoin('demissaos as d', function ($join) {
+                $join->on('fc.id', '=', 'd.feedback_id')
+                    ->whereRaw('d.id = (SELECT MAX(id) FROM demissaos WHERE feedback_id = fc.id)');
+            })
             ->where('dp.empresa_id', '=', auth()->user()->empresa_id)
             ->whereNull('dp.deleted_at');
 
