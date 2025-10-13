@@ -202,14 +202,29 @@ cleanup_ecr_images() {
     
     # Listar imagens do ECR com o prefixo
     local images_to_delete
-    images_to_delete=$(aws ecr list-images \
+    local aws_response
+    aws_response=$(aws ecr list-images \
         --repository-name "${IMAGE_NAME}" \
         --region "${AWS_REGION}" \
         --query "imageIds[?starts_with(imageTag, '${prefix}') && imageTag != '${tag}']" \
-        --output json 2>/dev/null || echo "[]")
+        --output json 2>/dev/null)
+    
+    # Verificar se a resposta do AWS é válida
+    if [ $? -ne 0 ] || [ -z "$aws_response" ]; then
+        echo "Erro ao listar imagens do ECR ou repositório vazio"
+        return 1
+    fi
+    
+    # Validar se a resposta é um JSON válido
+    if ! echo "$aws_response" | jq empty 2>/dev/null; then
+        echo "Resposta inválida do AWS ECR: $aws_response"
+        return 1
+    fi
+    
+    images_to_delete="$aws_response"
     
     # Verificar se há imagens para remover
-    local image_count=$(echo "$images_to_delete" | jq '. | length')
+    local image_count=$(echo "$images_to_delete" | jq '. | length' 2>/dev/null || echo "0")
     
     if [ "$image_count" -gt 0 ]; then
         echo "Encontradas ${image_count} imagens antigas para remover:"
@@ -222,29 +237,59 @@ cleanup_ecr_images() {
         if [ "$AUTO_CLEANUP_ECR" = true ]; then
             echo "Modo automático ativado - removendo imagens antigas..."
             echo "$images_to_delete" | jq -r '.[]' | while read -r image_id; do
-                local image_tag=$(echo "$image_id" | jq -r '.imageTag')
+                # Validar se image_id é um JSON válido
+                if ! echo "$image_id" | jq empty 2>/dev/null; then
+                    echo "Aviso: ID de imagem inválido: $image_id"
+                    continue
+                fi
+                
+                local image_tag=$(echo "$image_id" | jq -r '.imageTag // empty' 2>/dev/null)
+                if [ -z "$image_tag" ]; then
+                    echo "Aviso: Não foi possível extrair tag da imagem: $image_id"
+                    continue
+                fi
+                
                 echo "Removendo: ${image_tag}"
-                aws ecr batch-delete-image \
+                if aws ecr batch-delete-image \
                     --repository-name "${IMAGE_NAME}" \
                     --region "${AWS_REGION}" \
                     --image-ids "$image_id" \
-                    --output text > /dev/null 2>&1 || echo "Aviso: Não foi possível remover ${image_tag}"
+                    --output text > /dev/null 2>&1; then
+                    echo "✓ Removido com sucesso: ${image_tag}"
+                else
+                    echo "✗ Aviso: Não foi possível remover ${image_tag}"
+                fi
             done
-            echo -e "${GREEN}Imagens antigas removidas do ECR!${NC}"
+            echo -e "${GREEN}Processo de remoção de imagens antigas concluído!${NC}"
         else
             read -p "Deseja remover essas imagens antigas do ECR? (y/N): " confirm
             if [[ "$confirm" =~ ^[Yy]$ ]]; then
                 echo "Removendo imagens antigas..."
                 echo "$images_to_delete" | jq -r '.[]' | while read -r image_id; do
-                    local image_tag=$(echo "$image_id" | jq -r '.imageTag')
+                    # Validar se image_id é um JSON válido
+                    if ! echo "$image_id" | jq empty 2>/dev/null; then
+                        echo "Aviso: ID de imagem inválido: $image_id"
+                        continue
+                    fi
+                    
+                    local image_tag=$(echo "$image_id" | jq -r '.imageTag // empty' 2>/dev/null)
+                    if [ -z "$image_tag" ]; then
+                        echo "Aviso: Não foi possível extrair tag da imagem: $image_id"
+                        continue
+                    fi
+                    
                     echo "Removendo: ${image_tag}"
-                    aws ecr batch-delete-image \
+                    if aws ecr batch-delete-image \
                         --repository-name "${IMAGE_NAME}" \
                         --region "${AWS_REGION}" \
                         --image-ids "$image_id" \
-                        --output text > /dev/null 2>&1 || echo "Aviso: Não foi possível remover ${image_tag}"
+                        --output text > /dev/null 2>&1; then
+                        echo "✓ Removido com sucesso: ${image_tag}"
+                    else
+                        echo "✗ Aviso: Não foi possível remover ${image_tag}"
+                    fi
                 done
-                echo -e "${GREEN}Imagens antigas removidas do ECR!${NC}"
+                echo -e "${GREEN}Processo de remoção de imagens antigas concluído!${NC}"
             else
                 echo -e "${YELLOW}Remoção de imagens antigas cancelada.${NC}"
             fi
