@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Imports\Admissaoimport;
 use App\Jobs\Admissao\Importacao\ImportJob;
-use App\Jobs\Admissao\Processo\JobExportarExcel;
+use App\Jobs\JobExportaAdmissoes;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaVencimento;
@@ -29,6 +29,7 @@ use App\Models\VagasAbertas;
 use App\Rules\CpfValidoEmpresaRules;
 use App\Rules\VagaAbertaEmpresaRules;
 use App\Rules\VerificaCpfEmpresaRules;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -1729,6 +1730,83 @@ class AdmissaoController extends Controller
         return Arquivo::anexoDownload(Arquivo::DISCO_FOTOCURRICULO, $arquivo);
     }
 
+    public function export(Request $request): JsonResponse
+    {
+        try {
+            $userId = auth()->id();
+            $requestData = $request->all();
+
+            // Criar uma chave única baseada no usuário e parâmetros da request
+            $cacheKey = 'export_admissoes_' . $userId . '_' . md5(json_encode($requestData));
+
+            // Verificar se já existe um export em andamento
+            if (Cache::get($cacheKey)) {
+                $cacheData = Cache::get($cacheKey);
+
+                // Verifica diferentes status
+                $status = $cacheData['status'] ?? 'processing';
+                $attempts = $cacheData['attempt'] ?? 1;
+                $maxTries = $cacheData['max_tries'] ?? 3;
+
+                $message = match ($status) {
+                    'processing' => "Exportação em andamento (tentativa {$attempts}/{$maxTries}). Aguarde a conclusão.",
+                    'retrying' => "Exportação tentando novamente (tentativa {$attempts}/{$maxTries}). Aguarde.",
+                    'completed' => "Exportação já foi concluído. Verifique suas notificações.",
+                    'failed' => "Última Exportação falhou após {$maxTries} tentativas. Você pode tentar novamente.",
+                    default => "Já existe uma Exportação em andamento. Aguarde a conclusão."
+                };
+
+                return response()->json([
+                    'msg' => $message,
+                    'status' => $status,
+                    'initiated_at' => $cacheData['initiated_at'] ?? null,
+                    'attempts' => $attempts,
+                    'max_tries' => $maxTries,
+                    'last_error' => $cacheData['last_error'] ?? null
+                ], 200); // 409 Conflict apenas se ainda processando
+            }
+            
+            $nameArquivo = "admissoes-exportado" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+            $expiresAt = now()->addMinutes(15);
+
+            // Armazenar no cache com tempo de expiração definido
+            Cache::put($cacheKey, [
+                'filename' => $nameArquivo,
+                'initiated_at' => now(),
+                'expires_at' => $expiresAt, // Para controle de TTL
+                'user_id' => $userId,
+                'status' => 'queued', // Status inicial
+                'attempt' => 0,
+                'max_tries' => 3,
+                'progress' => 0
+            ], $expiresAt);
+
+            // Dispatch do job
+            JobExportaAdmissoes::dispatch(
+                $userId,
+                $requestData,
+                $nameArquivo,
+                $cacheKey
+            );
+
+            return response()->json([
+                'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.',
+                'export_id' => $cacheKey,
+                'estimated_time' => '5-15 minutos'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("Erro no controller de export admissões: " . $e->getMessage() . " " . $e->getFile() . " on line " . $e->getLine());
+
+            // Limpar cache em caso de erro
+            if (isset($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
+
+            return response()->json(['error' => 'Erro interno'], 500);
+        }
+    }
+
 //PDF
     public function getFichaPdf($fc_token)
     {
@@ -1756,12 +1834,6 @@ class AdmissaoController extends Controller
     }
 
 //Excel
-    public function export(Request $request)
-    {
-        $nomeArquivo = "admissao_processo_" . auth()->id() . '_' . rand(1000, 9999) . "_" . date('YmdHis');
-        JobExportarExcel::dispatch(auth()->id(), "Admissão - Processo", $request, $nomeArquivo);
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
-    }
 
     public function buscaCPF(Request $request)
     {
