@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\JobAutoAvaliacaoConcluida;
+use App\Jobs\JobExportaAvaliacoesCsv;
 use App\Models\Avaliacao;
 use App\Models\AvaliacaoAvaliadoresTipos;
 use App\Models\AvaliacaoFeedback;
@@ -170,7 +171,7 @@ class AvaliacaoController extends Controller
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    private function filtro(Request $request)
+    public function filtro(Request $request)
     {
 
         $resultado = Avaliacao::with('AvaliacaoTipo')
@@ -238,6 +239,25 @@ class AvaliacaoController extends Controller
                 'lista_avaliacoes_por_ano' => $filtroListaAvaliacaoPorAnoComTipoPj
             ]
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        $this->authorize('cadastro_avaliacao');
+        
+        $nameArquivo = "avaliacoes_" . rand(1000, 9999) . "_" . date('YmdHis') . ".csv";
+        $filtros = $request->all();
+        
+        \Log::info('Exportando avaliações - Filtros: ' . json_encode($filtros));
+        
+        JobExportaAvaliacoesCsv::dispatch(
+            auth()->id(),
+            "Cadastro - Avaliações",
+            $nameArquivo,
+            $filtros
+        );
+
+        return response()->json(['msg' => 'Estamos gerando seu arquivo CSV, assim que finalizado você será notificado.']);
     }
 
     public function ativaDesativa(Request $request)
