@@ -491,6 +491,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
             Route::group(['as' => 'avaliacao.'], function () {
                 Route::post('avaliacao/atualizar', [\App\Http\Controllers\AvaliacaoController::class, 'atualizar'])->name('avaliacao.atualizar')->middleware('can:cadastro_avaliacao');
+                Route::post('avaliacao/export', [\App\Http\Controllers\AvaliacaoController::class, 'export'])->name('avaliacao.export')->middleware('can:cadastro_avaliacao'); // manter essa rota antes do resource
                 Route::put('avaliacao/{avaliacao}/ativa-desativa', [\App\Http\Controllers\AvaliacaoController::class, 'ativaDesativa'])->name('avaliacao.ativaDesativa')->middleware('can:cadastro_avaliacao');
                 Route::resource('avaliacao', \App\Http\Controllers\AvaliacaoController::class)->middleware('can:cadastro_avaliacao');
             });
