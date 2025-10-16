@@ -233,6 +233,12 @@
                             data-target="#janelaCadastrar">
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
+
+                    <button type="button" class="btn btn-sm btn-info" :disabled="controle.carregando || exportando"
+                            @click="exportar">
+                        <i :class="exportando ? 'fa fa-sync fa-spin' : 'fa fa-file-excel'"></i>
+                        {{ exportando ? 'Exportando...' : 'Exportar Excel' }}
+                    </button>
                 </div>
             </form>
         </fieldset>
@@ -367,6 +373,7 @@ export default {
             editando: false,
             cadastrado: false,
             abrirAssociar: false,
+            exportando: false,
 
             form: {
                 titulo: '',
@@ -588,6 +595,18 @@ export default {
         },
         carregando() {
             this.controle.carregando = true
+        },
+        exportar() {
+            this.exportando = true
+            axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/export`, this.controle.dados)
+                .then(response => {
+                    mostraSucesso('', response.data.msg)
+                    this.exportando = false
+                })
+                .catch(error => {
+                    mostraErro('', 'Erro ao exportar avaliações')
+                    this.exportando = false
+                })
         },
         atualizar() {
             this.$refs.componente.atual = 1
