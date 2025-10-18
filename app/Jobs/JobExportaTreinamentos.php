@@ -605,24 +605,23 @@ class JobExportaTreinamentos implements ShouldQueue
             // Salva temporariamente no servidor
             $writer->save($tempFile);
 
-            // Upload para S3 usando o disco de exportação
-            $s3Path = Storage::disk(Arquivo::DISCO_EXPORTACAO)
-                ->putFile('', new \Illuminate\Http\File($tempFile), 'private');
-
-            if (!$s3Path) {
-                throw new \Exception('Falha ao fazer upload para S3');
-            }
+            // Construir nome do arquivo como no JobExportaCihCsvFinal
+            $nomeArquivo = "treinamento_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+            
+            // Upload para S3 usando nome específico - igual ao JobExportaCihCsvFinal
+            $fileContent = file_get_contents($tempFile);
+            Storage::disk(Arquivo::DISCO_EXPORTACAO)->put($nomeArquivo, $fileContent);
 
             // Remove arquivo temporário do servidor
             unlink($tempFile);
 
             $local = "Carteira Treinamentos";
 
-            // Registra na tabela de exportações
+            // Registra na tabela de exportações - igual ao JobExportaCihCsvFinal
             Exportacao::create([
                 'user_id' => $this->userId,
-                'arquivo' => basename($s3Path), // Apenas o nome do arquivo
-                'local' => $local, // Caminho completo no S3
+                'arquivo' => $nomeArquivo, // Nome específico do arquivo
+                'local' => $local, // Nome amigável
                 'removido' => false,
             ]);
 
@@ -640,7 +639,7 @@ class JobExportaTreinamentos implements ShouldQueue
                 'local' => $local,
             ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
 
-            \Log::info("Exportação concluída e salva no S3. Arquivo: {$s3Path}. Memória final: " . memory_get_usage(true) / 1024 / 1024 . " MB");
+            \Log::info("Exportação concluída e salva no S3. Arquivo: {$nomeArquivo}. Memória final: " . memory_get_usage(true) / 1024 / 1024 . " MB");
 
         } catch (\Exception $e) {
             // Remove arquivo temporário se existir
