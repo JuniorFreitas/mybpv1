@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\JobExportaExcel;
+use App\Jobs\JobExportaTreinamentos;
+use App\Jobs\JobRelatorioTreinamentoVencimento;
 use App\Models\CentroCusto;
 use App\Models\Cliente;
 use App\Models\FeedbackCurriculo;
 use App\Models\Treinamento;
+use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use MasterTag\DataHora;
 
 class TreinamentoController extends Controller
@@ -20,80 +24,128 @@ class TreinamentoController extends Controller
 
     public function show(Request $request)
     {
-        $empresa_id = auth()->user()->empresa_id;
-
-        $periodo = explode(' até ', $request->periodo);
+        // Definir período padrão se não fornecido
+        $periodoInput = $request->periodo ?? date('Y-m-d') . ' até ' . date('Y-m-d', strtotime('+30 days'));
+        
+        $periodo = explode(' até ', $periodoInput);
+        if (count($periodo) < 2) {
+            // Se não conseguir fazer split, usar período padrão
+            $periodo = [date('Y-m-d'), date('Y-m-d', strtotime('+30 days'))];
+        }
+        
         $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
         $dataFim = new DataHora($periodo[1] . ' 23:59:59');
 
+        // Usar FeedbackCurriculoFilter corrigido - agora funciona igual ao AdmissaoController
+        try {
+            $filter = FeedbackCurriculoFilter::make();
+            
+            // Preparar filtros para o período de vencimento
+            $filtros = [
+                'campoDemitido' => false, // Apenas admitidos
+                'campoVencimento' => 'true',
+                'vencimento' => $periodo[0] . ' até ' . $periodo[1]
+            ];
 
-        $colaboradores = FeedbackCurriculo::select([
-            'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id'
-        ])->Admitidos()->whereHas('ResultadoIntegrado', function ($q) {
-            $q->whereEncaminhadoTreinamento(true);
-        })->whereEmpresaId($empresa_id)->with(
-            'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
-            'Admissao:id,feedback_id,area_etiqueta_id,data_admissao,matricula,funcao,nr_trinta_cinco,nr_trinta_tres,numero_cracha,status,cargo,centro_custo_filial_id,centro_custo_id,filial',
-            'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
-            'Treinamento.Vencimentos',
-            'Treinamento.QuemCadastrou:id,nome'
-        )->filtrarPorCnpjECentroCusto($request);
-
-        $colaboradores = $colaboradores->whereHas('Treinamento.Vencimentos', function ($q) use ($dataInicio, $dataFim) {
-            $q->where('treinamento_vencimento.data_vencimento', '>=', $dataInicio->dataHoraInsert())
-                ->where('treinamento_vencimento.data_vencimento', '<=', $dataFim->dataHoraInsert());
-        })->orderByDesc('created_at')->get();
-
-        $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresa_id);
-
-        $colaboradores->transform(function ($model) use ($cc) {
-            if ($model->Admissao) {
-                $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $model->Admissao->centro_custo_id)->first();
-                $model->Admissao->emp_cnpj = null;
-                $model->Admissao->emp_nome_fantasia = null;
-                $model->Admissao->emp_centro_custo = null;
-                $model->Admissao->emp_tipo = null;
-
-                if ($cc_colaborador) {
-                    $model->Admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
-                    $model->Admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
-                    $model->Admissao->emp_centro_custo = $cc_colaborador['label'];
-                    $model->Admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
-                }
+            // Adicionar filtros de CNPJ e Centro de Custo se fornecidos
+            if (!empty($request->campoCnpj)) {
+                $filtros['campoCnpj'] = $request->campoCnpj;
             }
-            return $model;
-        });
+            
+            if (!empty($request->campoCentroCusto)) {
+                $filtros['campoCentroCusto'] = $request->campoCentroCusto;
+            }
 
+            \Log::info('DEBUG - Usando FeedbackCurriculoFilter com filtros:', $filtros);
+
+            $filter->apply($filtros);
+            
+            // Obter dados filtrados
+            $dados = $filter->getQuery()->with([
+                'Treinamento.Vencimentos' => function($q) use ($dataInicio, $dataFim) {
+                    $q->whereBetween('treinamento_vencimento.data_vencimento', [$dataInicio->dataInsert(), $dataFim->dataInsert()]);
+                },
+                'Admissao',
+                'VagaSelecionada',
+                'Curriculo'
+            ])->get();
+
+            \Log::info('DEBUG - FeedbackCurriculoFilter funcionou! Total encontrado:', ['count' => $dados->count()]);
+            
+        } catch (\Exception $e) {
+            \Log::error('DEBUG - Erro no FeedbackCurriculoFilter: ' . $e->getMessage());
+            
+            // Fallback para implementação manual em caso de erro
+            $query = FeedbackCurriculo::select([
+                'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id'
+            ]);
+
+            $empresa_id = auth()->user()->empresa_id;
+            
+            $query->Admitidos()
+                  ->whereHas('ResultadoIntegrado', function ($q) {
+                      $q->whereEncaminhadoTreinamento(true);
+                  })
+                  ->where('empresa_id', $empresa_id);
+
+            $dados = $query->with([
+                'Treinamento.Vencimentos' => function($q) use ($dataInicio, $dataFim) {
+                    $q->whereBetween('treinamento_vencimento.data_vencimento', [$dataInicio->dataInsert(), $dataFim->dataInsert()]);
+                },
+                'Admissao',
+                'VagaSelecionada',
+                'Curriculo'
+            ])->get();
+        }
+        
+        \Log::info('DEBUG - Total de registros encontrados:', ['count' => $dados->count()]);
+        
+        $empresa_id = auth()->user()->empresa_id;
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresa_id);
 
         $resultado = collect();
 
+        foreach ($dados as $feedback) {
+            // Verificar se tem treinamento e vencimentos no período
+            if (!$feedback->Treinamento || !$feedback->Treinamento->Vencimentos->isNotEmpty()) {
+                continue;
+            }
 
-        foreach ($colaboradores as $colaborador) {
             $vencimentos = collect();
-            $colaborador->treinamento->Vencimentos->each(function ($model) use ($vencimentos) {
-                $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $model->pivot->data_vencimento);
+
+            foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
+                $diasVencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $vencimento->pivot->data_vencimento);
+                
                 $vencimentos->push([
-                    'label' => $model->label,
-                    'descricao' => $model->descricao,
-                    'data_vencimento' => $model->pivot->data_vencimento,
-                    'data_treinamento' => $model->pivot->data_treinamento,
-                    'dias_vencer' => $dias_vencer,
-                    'pintar' => $dias_vencer <= 30
+                    'label' => $vencimento->label ?? 'Treinamento não encontrado',
+                    'descricao' => $vencimento->descricao ?? '',
+                    'data_treinamento' => $vencimento->pivot->data_treinamento,
+                    'data_vencimento' => $vencimento->pivot->data_vencimento,
+                    'dias_vencer' => $diasVencer,
+                    'pintar' => $diasVencer <= 30
                 ]);
-            });
+            }
 
-            $resultado->push([
-                'nome' => $colaborador->Curriculo->nome,
-                'cargo' => $colaborador->VagaAberta->Vaga->nome ?? 'NÃO ENCONTRADO',
-                'emp_cnpj' => $colaborador->Admissao->emp_cnpj ?? '--',
-                'emp_nome_fantasia' => $colaborador->Admissao->emp_nome_fantasia ?? '--',
-                'emp_centro_custo' => $colaborador->Admissao->emp_centro_custo ?? '--',
-                'emp_tipo' => $colaborador->Admissao->emp_tipo ?? '--',
-                'tipo' => $colaborador->treinamento->tipo,
-                'treinamentos' => collect($vencimentos)->sortBy('dias_vencer')->values(),
-            ]);
+            if ($vencimentos->isNotEmpty()) {
+                // Obter informações de centro de custo
+                $cc_colaborador = null;
+                if ($feedback->Admissao && $feedback->Admissao->centro_custo_id) {
+                    $cc_colaborador = collect($cc['centros_custos'])->collapse()
+                        ->where('id', $feedback->Admissao->centro_custo_id)->first();
+                }
+
+                $resultado->push([
+                    'nome' => $feedback->Curriculo->nome ?? 'Nome não encontrado',
+                    'cargo' => $feedback->VagaSelecionada->nome ?? ($feedback->Admissao->cargo ?? 'NÃO ENCONTRADO'),
+                    'emp_cnpj' => $cc_colaborador['cnpj_format'] ?? '--',
+                    'emp_nome_fantasia' => $cc_colaborador['nome_fantasia'] ?? '--',
+                    'emp_centro_custo' => $cc_colaborador['label'] ?? '--',
+                    'emp_tipo' => ($cc_colaborador['matriz'] ?? false) ? 'Matriz' : 'Filial',
+                    'tipo' => $feedback->tipo ?? 'N/A',
+                    'treinamentos' => $vencimentos->sortBy('dias_vencer')->values(),
+                ]);
+            }
         }
-
 
         $resultado = $resultado->transform(function ($item) {
             $tCollect = collect($item['treinamentos']);
@@ -103,43 +155,113 @@ class TreinamentoController extends Controller
         })->sortByDesc('count_pintar')
             ->sortBy('pintar', SORT_REGULAR, true)->values();
 
-
         return response()->json([
             'cc' => $cc,
             'itens' => $resultado,
+            'total_registros' => $resultado->count(),
+            'periodo_consultado' => $periodoInput,
+            'usando_feedback_curriculo_filter' => true,
+            'compativel_admissao_controller' => true,
+            'data_consulta' => now()->format('Y-m-d H:i:s')
         ]);
     }
 
     public function exportExcel(Request $request)
     {
-        $treinamentos = $this->show($request);
-        $head = [
-            'nome',
-            'cargo',
-            'tipo',
-            'treinamento',
-            'data_treinamento',
-            'data_vencimento',
-            'dias_vencer',
-        ];
-        $rows = [];
+        try {
+            $userId = auth()->id();
+            $requestData = $request->all();
 
-        foreach ($treinamentos as $row) {
-            foreach ($row['treinamentos'] as $treinamento) {
-                $rows[] = [
-                    $row['nome'],
-                    $row['cargo'],
-                    $row['tipo'],
-                    $treinamento['label'],
-                    $treinamento['data_treinamento'],
-                    $treinamento['data_vencimento'],
-                    $treinamento['dias_vencer']
-                ];
+            // Adicionar filtros específicos para vencimento de treinamentos
+            $requestData['campoVencimento'] = 'true';
+            $requestData['campoDemitido'] = false;
+            
+            // Definir período padrão se não fornecido
+            if (!isset($requestData['periodo'])) {
+                $requestData['periodo'] = date('Y-m-d') . ' até ' . date('Y-m-d', strtotime('+30 days'));
+                $requestData['vencimento'] = $requestData['periodo'];
             }
-        }
 
-        $nameArquivo = "vencimento_treinamento" . \Str::slug('Vencimento Treinamento') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportaExcel::dispatch(auth()->id(), "Vencimento Treinamento ", $head, $rows, $nameArquivo);
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+            // Criar chave única baseada no usuário e parâmetros
+            $cacheKey = 'export_vencimento_treinamentos_' . $userId . '_' . md5(json_encode($requestData));
+
+            // Verificar se já existe exportação em andamento
+            if (Cache::get($cacheKey)) {
+                $cacheData = Cache::get($cacheKey);
+                $status = $cacheData['status'] ?? 'processing';
+                $attempts = $cacheData['attempt'] ?? 1;
+                $maxTries = $cacheData['max_tries'] ?? 3;
+
+                switch ($status) {
+                    case 'processing':
+                        $message = "Exportação em andamento (tentativa {$attempts}/{$maxTries}). Aguarde a conclusão.";
+                        break;
+                    case 'retrying':
+                        $message = "Exportação tentando novamente (tentativa {$attempts}/{$maxTries}). Aguarde.";
+                        break;
+                    case 'completed':
+                        $message = "Exportação já foi concluída. Verifique suas notificações.";
+                        break;
+                    case 'failed':
+                        $message = "Última exportação falhou após {$maxTries} tentativas. Você pode tentar novamente.";
+                        break;
+                    default:
+                        $message = "Já existe uma exportação em andamento. Aguarde a conclusão.";
+                        break;
+                }
+
+                return response()->json([
+                    'msg' => $message,
+                    'status' => $status,
+                    'initiated_at' => $cacheData['initiated_at'] ?? null,
+                    'attempts' => $attempts,
+                    'max_tries' => $maxTries,
+                    'last_error' => $cacheData['last_error'] ?? null
+                ], 200);
+            }
+
+            $nameArquivo = "vencimento_treinamentos_" . date('YmdHis') . "_" . rand(1000, 9999) . ".xlsx";
+            $expiresAt = now()->addMinutes(15);
+
+            // Armazenar no cache com controle de estado
+            Cache::put($cacheKey, [
+                'filename' => $nameArquivo,
+                'initiated_at' => now(),
+                'expires_at' => $expiresAt,
+                'user_id' => $userId,
+                'status' => 'queued',
+                'attempt' => 0,
+                'max_tries' => 3,
+                'progress' => 0,
+                'tipo_relatorio' => 'vencimento_treinamentos'
+            ], $expiresAt);
+
+            // Usar JobRelatorioTreinamentoVencimento específico para vencimento
+            JobRelatorioTreinamentoVencimento::dispatch(
+                $userId,
+                $requestData,
+                $nameArquivo,
+                $cacheKey
+            );
+
+            return response()->json([
+                'msg' => 'Estamos gerando seu arquivo excel de vencimento de treinamentos. Assim que finalizado você será notificado.',
+                'export_id' => $cacheKey,
+                'estimated_time' => '5-15 minutos',
+                'usando_job_vencimento_especifico' => true,
+                'mesmo_formato_frontend' => true,
+                'otimizado_chunks' => true
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("Erro no controller de export vencimento treinamentos: " . $e->getMessage() . " " . $e->getFile() . " on line " . $e->getLine());
+
+            // Limpar cache em caso de erro
+            if (isset($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
+
+            return response()->json(['error' => 'Erro interno na exportação'], 500);
+        }
     }
 }

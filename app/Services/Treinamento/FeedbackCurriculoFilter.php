@@ -125,10 +125,8 @@ class FeedbackCurriculoFilter
      */
     private function applyBasicFilters(): self
     {
-        // Filtro CNPJ e Centro de Custo
-        if (method_exists($this->query->getModel(), 'filtrarPorCnpjECentroCusto')) {
-            $this->query = $this->query->filtrarPorCnpjECentroCusto($this->filters);
-        }
+        // Filtro CNPJ e Centro de Custo - usando a mesma abordagem do AdmissaoController
+        $this->applyCnpjECentroCustoFilter();
 
         // Filtro demitido/admitido
         if (isset($this->filters['campoDemitido']) && $this->filters['campoDemitido']) {
@@ -140,6 +138,131 @@ class FeedbackCurriculoFilter
         }
 
         return $this;
+    }
+
+    /**
+     * Aplica filtro de CNPJ e Centro de Custo seguindo o padrão do AdmissaoController
+     */
+    private function applyCnpjECentroCustoFilter(): void
+    {
+        try {
+            // Se não há filtros de CNPJ nem Centro de Custo, não aplica filtro
+            $temCnpj = isset($this->filters['campoCnpj']) && !empty($this->filters['campoCnpj']);
+            $temCentroCusto = isset($this->filters['campoCentroCusto']) && !empty($this->filters['campoCentroCusto']);
+            
+            if (!$temCnpj && !$temCentroCusto) {
+                return;
+            }
+
+            // Usar o mesmo método que o AdmissaoController
+            if ($temCnpj) {
+                $centroCusto = new \App\Models\CentroCusto();
+                $centros_custos = $centroCusto->listaCentroCustoPorCnpj($this->user->empresa_id);
+                
+                if (!$temCentroCusto) {
+                    // Apenas CNPJ - buscar todos os centros de custo deste CNPJ
+                    $this->applyFilterByCnpjOnly($centros_custos);
+                } else {
+                    // CNPJ + Centro de Custo específico
+                    $this->applyFilterByCnpjAndCentroCusto($centros_custos);
+                }
+            } elseif ($temCentroCusto) {
+                // Apenas Centro de Custo (sem CNPJ específico)
+                $this->applyFilterByCentroCustoOnly();
+            }
+
+        } catch (\Exception $e) {
+            \Log::warning("Erro ao aplicar filtro CNPJ/Centro de Custo: " . $e->getMessage());
+            // Não aplica filtro se houver erro - deixa passar todos os registros
+        }
+    }
+
+    /**
+     * Aplica filtro apenas por CNPJ (todos os centros de custo deste CNPJ)
+     */
+    private function applyFilterByCnpjOnly($centros_custos): void
+    {
+        $cnpj = $this->filters['campoCnpj'];
+        $cnpjNumerico = preg_replace("/[^0-9]/", "", $cnpj);
+        
+        // Verificar se o CNPJ existe nos centros de custo
+        if (!isset($centros_custos['centros_custos'][$cnpjNumerico])) {
+            // CNPJ não encontrado, não retorna nenhum resultado
+            $this->query->whereRaw('1 = 0');
+            return;
+        }
+
+        $cc = $centros_custos['centros_custos'][$cnpjNumerico];
+        
+        $this->query->whereHas('Admissao', function ($query) use ($cc) {
+            if ($cc[0]['matriz']) {
+                // É matriz - buscar por centro_custo_id
+                $query->where(function ($q) use ($cc) {
+                    $q->whereIn('centro_custo_id', $cc->pluck('id')->toArray())
+                      ->orWhere('centro_custo_id', null);
+                })->where('filial', false);
+            } else {
+                // É filial - buscar por centro_custo_filial_id  
+                $query->where(function ($q) use ($cc) {
+                    $q->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')->toArray())
+                      ->orWhere('centro_custo_filial_id', null);
+                })->where('filial', true);
+            }
+        });
+    }
+
+    /**
+     * Aplica filtro por CNPJ + Centro de Custo específico
+     */
+    private function applyFilterByCnpjAndCentroCusto($centros_custos): void
+    {
+        $cnpj = $this->filters['campoCnpj'];
+        $cnpjNumerico = preg_replace("/[^0-9]/", "", $cnpj);
+        $centroCustoId = $this->filters['campoCentroCusto'];
+        
+        // Verificar se o CNPJ existe nos centros de custo
+        if (!isset($centros_custos['centros_custos'][$cnpjNumerico])) {
+            $this->query->whereRaw('1 = 0');
+            return;
+        }
+
+        $cc = $centros_custos['centros_custos'][$cnpjNumerico];
+        
+        $this->query->whereHas('Admissao', function ($query) use ($cc, $centroCustoId) {
+            if ($cc[0]['matriz']) {
+                // É matriz - buscar por centro_custo_id
+                $campoCentroCusto = $centroCustoId != '--naoinformado--' ? $centroCustoId : null;
+                $query->where('centro_custo_id', $campoCentroCusto)
+                      ->where('filial', false);
+            } else {
+                // É filial - buscar por centro_custo_filial_id
+                $campoCentroCusto = $centroCustoId != '--naoinformado--' ? $centroCustoId : null;
+                $query->where('centro_custo_filial_id', $campoCentroCusto)
+                      ->where('filial', true);
+            }
+        });
+    }
+
+    /**
+     * Aplica filtro apenas por Centro de Custo (sem CNPJ específico)
+     */
+    private function applyFilterByCentroCustoOnly(): void
+    {
+        $centroCustoId = $this->filters['campoCentroCusto'];
+        
+        $this->query->whereHas('Admissao', function ($query) use ($centroCustoId) {
+            if ($centroCustoId === '--naoinformado--') {
+                $query->where(function ($q) {
+                    $q->whereNull('centro_custo_id')
+                      ->whereNull('centro_custo_filial_id');
+                });
+            } else {
+                $query->where(function ($q) use ($centroCustoId) {
+                    $q->where('centro_custo_id', $centroCustoId)
+                      ->orWhere('centro_custo_filial_id', $centroCustoId);
+                });
+            }
+        });
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Models\TipoRecebeEmail;
 use App\Models\Treinamento;
 use App\Models\User;
 use App\Models\Vencimento;
+use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -164,7 +165,7 @@ class TreinamentoVencimento extends Command
 
     private function processarTreinamentosEmChunks($empresaId, $vencimentos): array
     {
-        $this->info("Iniciando processamento em chunks...");
+        $this->info("Iniciando processamento usando mesma lógica do export...");
 
         $chunkSize = (int)$this->option('chunk-size') ?: self::CHUNK_SIZE_DEFAULT;
         $this->info("Tamanho do chunk: {$chunkSize}");
@@ -175,67 +176,106 @@ class TreinamentoVencimento extends Command
             self::CATEGORIAS['ATENCAO'] => []
         ];
 
-        $totalProcessados = 0;
-        $chunkAtual = 0;
+        try {
+            // Fazer login temporário de um usuário da empresa para os scopes funcionarem
+            $usuarioTemp = User::withoutGlobalScopes()
+                ->where('empresa_id', $empresaId)
+                ->where('ativo', true)
+                ->whereNotNull('login')
+                ->first();
 
-        // Buscar admitidos em chunks
-        Admissao::withoutGlobalScopes()
-            ->join('feedback_curriculos as fc', 'fc.id', '=', 'admissoes.feedback_id')
-            ->join('curriculos as c', 'c.id', '=', 'fc.curriculo_id')
-            ->join('centro_custos as cc', 'cc.id', '=', 'admissoes.centro_custo_id')
-            ->where('admissoes.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
-            ->where('fc.empresa_id', $empresaId)
-            ->select([
-                'admissoes.id as admissao_id',
-                'admissoes.funcao',
-                'admissoes.cargo',
-                'admissoes.data_admissao',
-                'admissoes.centro_custo_id',
-                'admissoes.centro_custo_filial_id',
-                'admissoes.filial',
-                'admissoes.numero_cracha',
-                'admissoes.matricula',
-                'cc.label as centro_custo_label',
-                'c.id as curriculo_id',
-                'c.nome',
-                'c.cpf',
-                'fc.empresa_id',
-                'fc.id as feedback_id',
-            ])
-            ->chunk($chunkSize, function ($admitidos) use (&$treinamentosAgrupados, &$totalProcessados, &$chunkAtual, $vencimentos) {
+            if ($usuarioTemp) {
+                $this->info("Fazendo login temporário do usuário: {$usuarioTemp->nome} (ID: {$usuarioTemp->id})");
+                \Auth::login($usuarioTemp);
+            } else {
+                $this->warn("Nenhum usuário encontrado para login temporário. Continuando sem autenticação...");
+            }
+
+            // Buscar feedbacks com admissão, currículo e treinamentos
+            // Usando a mesma base do export de treinamentos
+            $query = \App\Models\FeedbackCurriculo::select([
+                    'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'
+                ])
+                ->with([
+                    'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
+                    'Admissao' => function($query) {
+                        $query->where('status', \App\Models\Admissao::STATUS_ADMISSAO_ADMITIDO)
+                              ->with('CentroCusto:id,label');
+                    },
+                    'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
+                    'Treinamento.Vencimentos',
+                ])
+                ->whereHas('Admissao', function($q) {
+                    $q->where('status', \App\Models\Admissao::STATUS_ADMISSAO_ADMITIDO);
+                })
+                ->where('empresa_id', $empresaId);
+
+            $totalRegistros = $query->count();
+            $this->info("Total de registros encontrados: {$totalRegistros}");
+
+            if ($totalRegistros === 0) {
+                $this->info("Nenhum registro encontrado para processar.");
+                return $treinamentosAgrupados;
+            }
+
+            $totalProcessados = 0;
+            $chunkAtual = 0;
+
+            // Processar em chunks
+            $query->chunk($chunkSize, function ($feedbacks) use (&$treinamentosAgrupados, &$totalProcessados, &$chunkAtual, $vencimentos) {
                 $chunkAtual++;
-                $this->info("Processando chunk {$chunkAtual} com {$admitidos->count()} admitidos...");
+                $this->info("Processando chunk {$chunkAtual} com {$feedbacks->count()} registros...");
 
                 $memoryChunkInicio = memory_get_usage(true);
 
-                // Indexar admitidos por feedback_id para performance
-                $admitidosIndexados = $admitidos->keyBy('feedback_id');
+                foreach ($feedbacks as $feedback) {
+                    // Verificar se tem admissão
+                    if (!$feedback->Admissao) {
+                        continue;
+                    }
 
-                // Buscar treinamentos para este chunk
-                $feedbackIds = $admitidos->pluck('feedback_id');
-                $treinamentos = $this->buscarTreinamentosChunk($feedbackIds);
+                    // Verificar se tem treinamentos
+                    if (!$feedback->Treinamento || !$feedback->Treinamento->Vencimentos) {
+                        continue;
+                    }
 
-                $this->info("Treinamentos encontrados neste chunk: {$treinamentos->count()}");
+                    // Processar cada vencimento do treinamento
+                    foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
+                        // Buscar dados do treinamento_vencimento
+                        $treinamentoVencimento = \DB::table('treinamento_vencimento')
+                            ->where('treinamento_id', $feedback->Treinamento->id)
+                            ->where('vencimento_id', $vencimento->id)
+                            ->first();
 
-                // Processar treinamentos do chunk
-                $treinamentosProcessados = $this->classificarTreinamentos($treinamentos, $vencimentos);
-                $treinamentosAlerta = $this->filtrarTreinamentosAlerta($treinamentosProcessados);
+                        if (!$treinamentoVencimento) {
+                            continue;
+                        }
 
-                // Agrupar treinamentos do chunk
-                $grupoChunk = $this->agruparTreinamentos($treinamentosAlerta, $admitidosIndexados);
+                        // Criar objeto similar ao método antigo
+                        $item = (object) [
+                            'id' => $feedback->Treinamento->id,
+                            'feedback_id' => $feedback->id,
+                            'treinamento_id' => $feedback->Treinamento->id,
+                            'vencimento_id' => $vencimento->id,
+                            'data_treinamento' => $treinamentoVencimento->data_treinamento,
+                            'data_vencimento' => $treinamentoVencimento->data_vencimento,
+                            'numero_fat' => $treinamentoVencimento->numero_fat ?? null,
+                        ];
 
-                // Mesclar com resultado geral
-                foreach ($grupoChunk as $categoria => $funcionarios) {
-                    $treinamentosAgrupados[$categoria] = array_merge(
-                        $treinamentosAgrupados[$categoria],
-                        $funcionarios
-                    );
+                        // Classificar o treinamento
+                        $this->classificarTreinamentoItem($item, $vencimentos);
+
+                        // Filtrar apenas os que precisam de alerta
+                        if ($item->dias_vencer <= self::DIAS_ALERTA) {
+                            $this->adicionarTreinamentoAoGrupo($treinamentosAgrupados, $item, $feedback);
+                        }
+                    }
                 }
 
-                $totalProcessados += $admitidos->count();
+                $totalProcessados += $feedbacks->count();
 
                 // Limpeza de memória do chunk
-                unset($admitidos, $admitidosIndexados, $treinamentos, $treinamentosProcessados, $treinamentosAlerta, $grupoChunk);
+                unset($feedbacks);
                 gc_collect_cycles();
 
                 $memoryChunkFim = memory_get_usage(true);
@@ -245,26 +285,84 @@ class TreinamentoVencimento extends Command
                 $this->info("Total processados: {$totalProcessados}");
             });
 
-        $this->info("Processamento em chunks concluído. Total de admitidos processados: {$totalProcessados}");
+            $this->info("Processamento concluído. Total de registros processados: {$totalProcessados}");
+
+        } catch (\Exception $e) {
+            $this->error("Erro no processamento: {$e->getMessage()}");
+            $this->error("Stack trace: {$e->getTraceAsString()}");
+        } finally {
+            // Limpar autenticação temporária
+            \Auth::logout();
+        }
 
         return $treinamentosAgrupados;
     }
 
-    private function buscarTreinamentosChunk(\Illuminate\Support\Collection $feedbackIds): \Illuminate\Database\Eloquent\Collection
+    /**
+     * Classifica um item individual de treinamento
+     */
+    private function classificarTreinamentoItem($item, $vencimentos): void
     {
-        return Treinamento::withoutGlobalScopes()
-            ->join('treinamento_vencimento as tv', 'tv.treinamento_id', '=', 'treinamentos.id')
-            ->whereIn('treinamentos.feedback_id', $feedbackIds)
-            ->select([
-                'treinamentos.id',
-                'treinamentos.feedback_id',
-                'tv.treinamento_id',
-                'tv.vencimento_id',
-                'tv.data_treinamento',
-                'tv.data_vencimento',
-                'tv.numero_fat',
-            ])
-            ->get();
+        $hoje = new DataHora();
+        $dataAtual = $hoje->dataInsert();
+
+        $item->dias_vencer = $this->calcularDiasParaVencer($item->data_vencimento, $dataAtual);
+        $item->vencimento_nome = $this->obterNomeVencimento($item->vencimento_id, $vencimentos);
+        $this->definirCategoriaEStatus($item);
+    }
+
+    /**
+     * Adiciona um treinamento ao grupo apropriado
+     */
+    private function adicionarTreinamentoAoGrupo(&$treinamentosAgrupados, $item, $feedback): void
+    {
+        if ($item->categoria === self::CATEGORIAS['REGULAR']) {
+            return;
+        }
+
+        $feedbackId = $feedback->id;
+        $categoria = $item->categoria;
+
+        if (!isset($treinamentosAgrupados[$categoria][$feedbackId])) {
+            $treinamentosAgrupados[$categoria][$feedbackId] = $this->criarGrupoFuncionarioFromFeedback($feedback);
+        }
+
+        $treinamentosAgrupados[$categoria][$feedbackId]['treinamentos'][] = $this->extrairDadosTreinamento($item);
+    }
+
+    /**
+     * Cria grupo de funcionário a partir do feedback
+     */
+    private function criarGrupoFuncionarioFromFeedback($feedback): array
+    {
+        $admissao = $feedback->Admissao;
+        $curriculo = $feedback->Curriculo;
+
+        // Buscar centro de custo
+        $centroCusto = \App\Models\CentroCusto::find($admissao->centro_custo_id);
+        $centroCustoLabel = $centroCusto ? $centroCusto->label : 'N/A';
+
+        return [
+            'funcionario' => [
+                'nome' => $curriculo->nome,
+                'cargo' => $admissao->cargo,
+                'data_admissao' => $admissao->data_admissao,
+                'admissao_id' => $admissao->id,
+                'funcao' => $admissao->funcao,
+                'centro_custo_id' => $admissao->centro_custo_id,
+                'centro_custo_label' => $centroCustoLabel,
+                'centro_custo_filial' => Sistema::getFilial($feedback->empresa_id, $admissao->centro_custo_filial_id) ?: null,
+                'filial' => $admissao->filial,
+                'numero_cracha' => $admissao->numero_cracha,
+                'matricula' => $admissao->matricula,
+                'curriculo_id' => $curriculo->id,
+                'cpf' => $curriculo->cpf,
+                'empresa_id' => $feedback->empresa_id,
+                'feedback_id' => $feedback->id,
+                'cnpj_lotacao' => Sistema::getEmpresaFilialMatriz($admissao->centro_custo_filial_id, $feedback->empresa_id) ?? null,
+            ],
+            'treinamentos' => []
+        ];
     }
 
     private function buscarUsuariosEmail(int $empresaId): \Illuminate\Database\Eloquent\Collection
@@ -291,21 +389,7 @@ class TreinamentoVencimento extends Command
             ->keyBy('id');
     }
 
-    private function classificarTreinamentos($treinamentos, $vencimentos)
-    {
-        $hoje = new DataHora();
-        $dataAtual = $hoje->dataInsert();
-
-        return $treinamentos->map(function ($item) use ($dataAtual, $vencimentos) {
-            $item->dias_vencer = $this->calcularDiasParaVencer($item->data_vencimento, $dataAtual);
-            $item->vencimento_nome = $this->obterNomeVencimento($item->vencimento_id, $vencimentos);
-            $this->definirCategoriaEStatus($item);
-
-            return $item;
-        });
-    }
-
-    private function calcularDiasParaVencer(?string $dataVencimento, string $dataAtual): int|float
+    private function calcularDiasParaVencer($dataVencimento, string $dataAtual)
     {
         if (!$dataVencimento) {
             return PHP_INT_MAX;
@@ -346,64 +430,6 @@ class TreinamentoVencimento extends Command
         }
     }
 
-    private function filtrarTreinamentosAlerta($treinamentosProcessados)
-    {
-        return $treinamentosProcessados->filter(function ($item) {
-            return $item->dias_vencer <= self::DIAS_ALERTA;
-        });
-    }
-
-    private function agruparTreinamentos($treinamentosAlerta, $admitidos)
-    {
-        $agrupados = [
-            self::CATEGORIAS['VENCIDO'] => [],
-            self::CATEGORIAS['PROXIMO'] => [],
-            self::CATEGORIAS['ATENCAO'] => []
-        ];
-
-        foreach ($treinamentosAlerta as $treinamento) {
-            if ($treinamento->categoria === self::CATEGORIAS['REGULAR']) {
-                continue;
-            }
-
-            $feedbackId = $treinamento->feedback_id;
-            $categoria = $treinamento->categoria;
-
-            if (!isset($agrupados[$categoria][$feedbackId])) {
-                $agrupados[$categoria][$feedbackId] = $this->criarGrupoFuncionario($admitidos[$feedbackId]);
-            }
-
-            $agrupados[$categoria][$feedbackId]['treinamentos'][] = $this->extrairDadosTreinamento($treinamento);
-        }
-
-        return $this->ordenarTreinamentosPorPrioridade($agrupados);
-    }
-
-    private function criarGrupoFuncionario($admitido): array
-    {
-        return [
-            'funcionario' => [
-                'nome' => $admitido->nome,
-                'cargo' => $admitido->cargo,
-                'data_admissao' => $admitido->data_admissao,
-                'admissao_id' => $admitido->admissao_id,
-                'funcao' => $admitido->funcao,
-                'centro_custo_id' => $admitido->centro_custo_id,
-                'centro_custo_label' => $admitido->centro_custo_label,
-                'centro_custo_filial' => Sistema::getFilial($admitido->empresa_id, $admitido->centro_custo_filial_id) ?: null,
-                'filial' => $admitido->filial,
-                'numero_cracha' => $admitido->numero_cracha,
-                'matricula' => $admitido->matricula,
-                'curriculo_id' => $admitido->curriculo_id,
-                'cpf' => $admitido->cpf,
-                'empresa_id' => $admitido->empresa_id,
-                'feedback_id' => $admitido->feedback_id,
-                'cnpj_lotacao' => Sistema::getEmpresaFilialMatriz($admitido->centro_custo_filial_id, $admitido->empresa_id) ?? null,
-            ],
-            'treinamentos' => []
-        ];
-    }
-
     private function extrairDadosTreinamento($treinamento): array
     {
         return [
@@ -417,19 +443,6 @@ class TreinamentoVencimento extends Command
             'status_label' => $treinamento->status_csv,
             'prioridade' => $treinamento->prioridade
         ];
-    }
-
-    private function ordenarTreinamentosPorPrioridade($agrupados)
-    {
-        foreach ($agrupados as &$grupo) {
-            foreach ($grupo as &$funcionario) {
-                usort($funcionario['treinamentos'], function ($a, $b) {
-                    return $b['prioridade'] <=> $a['prioridade'];
-                });
-            }
-        }
-
-        return $agrupados;
     }
 
     private function naoHaTreinamentosAlerta($treinamentosAgrupados): bool
@@ -612,7 +625,7 @@ class TreinamentoVencimento extends Command
                             if ($headers) {
                                 $headers->addTextHeader('X-Mailer', 'MyBP Sistema v1.0');
                                 $headers->addTextHeader('X-Batch-Number', (string)$numeroLote);
-                                $headers->addTextHeader('X-Priority', '3'); // Normal priority
+                                $headers->addTextHeader('X-Priority', '3');
                                 $headers->addTextHeader('X-Report-Type', 'Excel');
                             }
                         }
@@ -707,8 +720,8 @@ class TreinamentoVencimento extends Command
             $this->info("Iniciando criação do arquivo Excel...");
             $memoryInicial = memory_get_usage(true);
 
-            // Criar arquivo temporário
-            $nomeArquivo = "treinamentos_{$empresa->id}_" . date('YmdHis') . '.xlsx';
+            // Criar arquivo temporário - seguindo padrão do JobExportaCihCsvFinal
+            $nomeArquivo = "treinamento_vencimento_" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
             $caminhoTempLocal = sys_get_temp_dir() . '/' . $nomeArquivo;
 
             // Criar spreadsheet em modo de baixo uso de memória
@@ -754,8 +767,8 @@ class TreinamentoVencimento extends Command
             $tamanhoArquivo = filesize($caminhoTempLocal);
             $this->info("Arquivo Excel criado: " . $this->formatBytes($tamanhoArquivo));
 
-            // Upload para S3
-            $caminhoS3 = "relatorios/treinamentos/{$empresa->id}/" . date('Y/m/d') . '/' . Str::random(10) . '_' . $nomeArquivo;
+            // Upload para S3 - seguindo padrão do JobExportaCihCsvFinal
+            $caminhoS3 = $nomeArquivo;
 
             $this->info("Fazendo upload do arquivo para S3...");
 

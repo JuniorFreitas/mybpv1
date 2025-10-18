@@ -1,7 +1,7 @@
 import datepicker from '../../components/DatePicker'
-import ExportacaoMixin from "../../mixins/Exportacoes";
-import {Estados} from "../../mixins/Utils";
-import Upload from "../../components/Upload.vue";
+import ExportacaoMixin from '../../mixins/Exportacoes'
+import { Estados } from '../../mixins/Utils'
+import Upload from '../../components/Upload.vue'
 
 const app = new Vue({
     mixins: [ExportacaoMixin],
@@ -27,7 +27,7 @@ const app = new Vue({
         AUTENTICADO,
 
         urlExportacao: `${URL_ADMIN}/treinamento/export`,
-        hash: `mastertag_${parseInt((Math.random() * 999999))}`,
+        hash: `mybp_${parseInt(Math.random() * 999999)}`,
 
         cliente_id: '',
 
@@ -53,7 +53,7 @@ const app = new Vue({
                 nome: '',
                 idade: '',
                 cargo: '',
-                email: '',
+                email: ''
             },
 
             feedback_id: '',
@@ -168,21 +168,21 @@ const app = new Vue({
                 treinamentos_selecionados: [],
                 campoPeriodoTreinado: false,
                 periodoTreinado: '',
-                campoCnpj: "",
-                campoCentroCusto: "",
-
+                campoCnpj: '',
+                campoCentroCusto: ''
             }
         },
 
         url_anexo: `${URL_ADMIN}/treinamento/uploadAnexos`,
-        anexoUploadAndamento: false,
+        anexoUploadAndamento: false
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.formEnviarDefault = _.cloneDeep(this.formEnviar) //copia
         this.formEnviarAvisoDefault = _.cloneDeep(this.formEnviarAviso) //copia
         this.cliente_id = $('#cliente_id').val()
-        if (this.cliente_id) { //diferente de BPSE
+        if (this.cliente_id) {
+            //diferente de BPSE
             this.controle.dados.campoCliente = parseInt(this.cliente_id)
             this.controle.dados.cliente_custom = parseInt(this.cliente_id)
         }
@@ -193,31 +193,27 @@ const app = new Vue({
         let intervalId = setInterval(() => {
             if (this.listaTodosTreinamentos.length > 0) {
                 // Realiza o mapeamento
-                this.listaColunasTreinamentos = this.listaTodosTreinamentos.map(item => {
+                this.listaColunasTreinamentos = this.listaTodosTreinamentos.map((item) => {
                     return {
                         id: item.id,
                         label: item.label,
                         label_reduzida: item.label_reduzida,
                         checked: true
                     }
-                });
+                })
 
-                clearInterval(intervalId);
+                clearInterval(intervalId)
             }
-        }, 200);
-
+        }, 200)
     },
     computed: {
         isColunaTreinamentoSelecionada() {
             return (v) => {
-                return (
-                    this.listaColunasTreinamentos &&
-                    this.listaColunasTreinamentos.some((col) => col.id === v.id && col.checked)
-                );
-            };
+                return this.listaColunasTreinamentos && this.listaColunasTreinamentos.some((col) => col.id === v.id && col.checked)
+            }
         },
         emTreinamentos() {
-            return this.lista.filter(item => item.treinamento)
+            return this.lista.filter((item) => item.treinamento)
         },
         tudoMarcado() {
             let totalTreinamento = this.emTreinamentos.length
@@ -227,7 +223,7 @@ const app = new Vue({
                 return false
             }
 
-            this.emTreinamentos.forEach(item => {
+            this.emTreinamentos.forEach((item) => {
                 let id = item.id
                 if (this.selecionados.indexOf(id) >= 0) {
                     totalEncontrado++
@@ -241,21 +237,21 @@ const app = new Vue({
             return resultado
         },
         emTreinamentosMassa() {
-            return this.lista.filter(item => item.treinamento)
+            return this.lista.filter((item) => item.treinamento)
         },
 
         tudoMarcadoMassa() {
-            const totalTreinamento = this.emTreinamentosMassa.length;
+            const totalTreinamento = this.emTreinamentosMassa.length
 
-            if (totalTreinamento === 0) return false;
+            if (totalTreinamento === 0) return false
 
-            const todosSelecionados = this.emTreinamentosMassa.every(item => {
-                const id = item.id;
-                return this.selecionadosMassa.includes(id);
-            });
+            const todosSelecionados = this.emTreinamentosMassa.every((item) => {
+                const id = item.id
+                return this.selecionadosMassa.includes(id)
+            })
 
-            this.selecionaTudoMassa = todosSelecionados;
-            return todosSelecionados;
+            this.selecionaTudoMassa = todosSelecionados
+            return todosSelecionados
         },
 
         paramsExport() {
@@ -264,67 +260,71 @@ const app = new Vue({
             return dados
         },
         filtroListaCentroCustoCnpj() {
-            if (this.controle.dados.campoCnpj !== "" && this.AUTENTICADO.temFilial) {
-                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj];
+            if (this.controle.dados.campoCnpj !== '' && this.AUTENTICADO.temFilial) {
+                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj]
             }
             if (!this.AUTENTICADO.temFilial && this.lista_ccs) {
-                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
+                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]]
             }
-            return [];
+            return []
         },
 
         // Novos computed properties para suportar o UI aprimorado
         treinamentosFiltrados() {
-            if (!this.form.listaVencimentos) return [];
+            if (!this.form.listaVencimentos) return []
 
-            return this.form.listaVencimentos.filter(training => {
+            return this.form.listaVencimentos.filter((training) => {
                 // Apply search filter
-                const matchesSearch = this.trainingSearchQuery === '' ||
-                    training.label.toLowerCase().includes(this.trainingSearchQuery.toLowerCase());
+                const matchesSearch = this.trainingSearchQuery === '' || training.label.toLowerCase().includes(this.trainingSearchQuery.toLowerCase())
 
                 // Apply status filter
-                let matchesStatus = true;
+                let matchesStatus = true
                 if (this.trainingStatusFilter !== 'all') {
-                    const status = this.getTreinamentoStatus(training);
-                    matchesStatus = status === this.trainingStatusFilter;
+                    const status = this.getTreinamentoStatus(training)
+                    matchesStatus = status === this.trainingStatusFilter
                 }
 
-                return matchesSearch && matchesStatus;
-            });
+                return matchesSearch && matchesStatus
+            })
         },
 
         treinamentosNaoRealizados() {
-            return this.form.listaVencimentos ?
-                this.form.listaVencimentos.length - this.form.listaVencimentos.filter(t => t.fez_treinamento && this.getTreinamentoStatus(t) === 'ativo').length : 0;
+            return this.form.listaVencimentos
+                ? this.form.listaVencimentos.length -
+                      this.form.listaVencimentos.filter((t) => t.fez_treinamento && this.getTreinamentoStatus(t) === 'ativo').length
+                : 0
         },
 
         treinamentosRealizados() {
-            return this.form.listaVencimentos ?
-                this.form.listaVencimentos.filter(t => t.fez_treinamento && this.getTreinamentoStatus(t) === 'ativo').length : 0;
+            return this.form.listaVencimentos
+                ? this.form.listaVencimentos.filter((t) => t.fez_treinamento && this.getTreinamentoStatus(t) === 'ativo').length
+                : 0
         },
 
         treinamentosVencendo() {
-            return this.form.listaVencimentos ?
-                this.form.listaVencimentos.filter(t => t.fez_treinamento && this.getTreinamentoStatus(t) === 'avencer').length : 0;
+            return this.form.listaVencimentos
+                ? this.form.listaVencimentos.filter((t) => t.fez_treinamento && this.getTreinamentoStatus(t) === 'avencer').length
+                : 0
         },
         treinamentosVencidos() {
-            return this.form.listaVencimentos ?
-                this.form.listaVencimentos.filter(t => t.fez_treinamento && this.getTreinamentoStatus(t) === 'vencido').length : 0;
+            return this.form.listaVencimentos
+                ? this.form.listaVencimentos.filter((t) => t.fez_treinamento && this.getTreinamentoStatus(t) === 'vencido').length
+                : 0
         }
     },
     methods: {
         marcarDesmarcarTodosTreinamentosColuna(valor) {
-            this.listaColunasTreinamentos.map(item => {
+            this.listaColunasTreinamentos.map((item) => {
                 item.checked = valor
-            });
+            })
         },
         changeCnpj() {
-            this.controle.dados.campoCentroCusto = "";
-            this.atualizar();
+            this.controle.dados.campoCentroCusto = ''
+            this.atualizar()
         },
         selecionaTreinados(valor) {
             if (valor !== 'S') {
-                this.controle.dados.treinamentos_selecionados = [];
+                this.controle.dados.treinamentos_selecionados = []
             }
             this.atualizar()
         },
@@ -337,59 +337,57 @@ const app = new Vue({
                 }
             }
             if (valor === 'rm') {
-                this.controle.dados.treinamentos_selecionados = [];
-                this.controle.dados.treinamentos = '';
+                this.controle.dados.treinamentos_selecionados = []
+                this.controle.dados.treinamentos = ''
             }
             if (valor === 'todos') {
                 this.controle.dados.treinamentos_selecionados = []
-                this.listaTodosTreinamentos.forEach(item => this.controle.dados.treinamentos_selecionados.push(item.label));
+                this.listaTodosTreinamentos.forEach((item) => this.controle.dados.treinamentos_selecionados.push(item.label))
             }
 
-            this.controle.dados.treinamentos = '';
+            this.controle.dados.treinamentos = ''
 
-            this.controle.dados.campo_treinados = this.controle.dados.treinamentos_selecionados.length > 0 ? 'S' : '';
+            this.controle.dados.campo_treinados = this.controle.dados.treinamentos_selecionados.length > 0 ? 'S' : ''
             this.atualizar()
-
         },
         removeTreinamento(indice) {
             this.controle.dados.treinamentos_selecionados.splice(indice, 1)
-            this.controle.dados.campo_treinados = this.controle.dados.treinamentos_selecionados.length > 0 ? 'S' : '';
+            this.controle.dados.campo_treinados = this.controle.dados.treinamentos_selecionados.length > 0 ? 'S' : ''
             this.atualizar()
         },
         selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo;
+            this.selecionaTudo = !this.selecionaTudo
 
-            const selectedSet = new Set(this.selecionados);
+            const selectedSet = new Set(this.selecionados)
 
-            this.emTreinamentos.forEach(item => {
-                const id = item.id;
-                this.selecionaTudo ? selectedSet.add(id) : selectedSet.delete(id);
-            });
+            this.emTreinamentos.forEach((item) => {
+                const id = item.id
+                this.selecionaTudo ? selectedSet.add(id) : selectedSet.delete(id)
+            })
 
-            this.selecionados = Array.from(selectedSet);
+            this.selecionados = Array.from(selectedSet)
         },
 
         selecionaTodosMassa() {
-            this.selecionaTudoMassa = !this.selecionaTudoMassa;
+            this.selecionaTudoMassa = !this.selecionaTudoMassa
 
-            const selectedSet = new Set(this.selecionadosMassa);
+            const selectedSet = new Set(this.selecionadosMassa)
 
-            this.lista.forEach(item => {
-                const id = item.id;
-                this.selecionaTudoMassa ? selectedSet.add(id) : selectedSet.delete(id);
-            });
+            this.lista.forEach((item) => {
+                const id = item.id
+                this.selecionaTudoMassa ? selectedSet.add(id) : selectedSet.delete(id)
+            })
 
-            this.selecionadosMassa = Array.from(selectedSet);
+            this.selecionadosMassa = Array.from(selectedSet)
         },
 
         gerarCarteiras() {
-            axios.get(`${URL_ADMIN}/treinamento/carteiras`, {selecionados: this.selecionados})
-                .then(response => {
+            axios
+                .get(`${URL_ADMIN}/treinamento/carteiras`, { selecionados: this.selecionados })
+                .then((response) => {
                     let data = response.data
                 })
-                .catch(error => {
-
-                })
+                .catch((error) => {})
         },
 
         formCadastra() {
@@ -399,20 +397,20 @@ const app = new Vue({
         },
 
         async abrirFormMassa() {
-            this.preload = true;
+            this.preload = true
 
             if (this.formMassa.listaVencimentos.length > 0 && !this.formMassaDefault) {
-                this.formMassaDefault = await _.cloneDeep(this.formMassa); // Cópia profunda assíncrona
+                this.formMassaDefault = await _.cloneDeep(this.formMassa) // Cópia profunda assíncrona
             }
 
-            _.assign(this.formMassa, this.formMassaDefault);
+            _.assign(this.formMassa, this.formMassaDefault)
 
-            this.atualizado = false;
-            this.cadastrando = false;
-            this.visualizar = false;
-            this.cadastrado = false;
+            this.atualizado = false
+            this.cadastrando = false
+            this.visualizar = false
+            this.cadastrado = false
 
-            this.preload = false; // Remova o indicador de carregamento
+            this.preload = false // Remova o indicador de carregamento
         },
 
         formAlterar(curriculo_id) {
@@ -423,12 +421,13 @@ const app = new Vue({
             this.visualizar = false
             this.cadastrado = false
             this.form = _.cloneDeep(this.formDefault) //copia
-            this.form.curriculo_id = curriculo_id;
+            this.form.curriculo_id = curriculo_id
 
-            axios.get(`${URL_ADMIN}/treinamento/${this.form.curriculo_id}/editar`)
-                .then(response => {
+            axios
+                .get(`${URL_ADMIN}/treinamento/${this.form.curriculo_id}/editar`)
+                .then((response) => {
                     let data = response.data
-                    this.form.dadosFuncionario = data.dadosFuncionario;
+                    this.form.dadosFuncionario = data.dadosFuncionario
 
                     if (data.treinamento) {
                         this.editando = true
@@ -456,18 +455,17 @@ const app = new Vue({
 
                     if (!this.form.nr_trinta_tres) {
                         //NR33
-                        let index = _.findIndex(this.form.listaVencimentos, {'id': 7})
+                        let index = _.findIndex(this.form.listaVencimentos, { id: 7 })
                         this.form.listaVencimentos.splice(index, 1)
                     }
                     if (!this.form.nr_trinta_cinco) {
                         //NR35
-                        let index = _.findIndex(this.form.listaVencimentos, {'id': 6})
+                        let index = _.findIndex(this.form.listaVencimentos, { id: 6 })
                         this.form.listaVencimentos.splice(index, 1)
                     }
                     this.preload = false
                 })
-                .catch(error => (this.preload = false))
-
+                .catch((error) => (this.preload = false))
         },
 
         salvar() {
@@ -477,7 +475,7 @@ const app = new Vue({
             // if (this.nr_trinta_tres || this.nr_trinta_cinco) {
             if (this.nr_trinta_tres) {
                 //NR33
-                let nr33 = _.find(this.form.listaVencimentos, {'id': 7, 'fez_treinamento': false})
+                let nr33 = _.find(this.form.listaVencimentos, { id: 7, fez_treinamento: false })
                 if (nr33) {
                     nr33.fez_treinamento = false
                     mostraErro('', 'ATENÇÃO NR33 não pode ser vazio!')
@@ -486,7 +484,7 @@ const app = new Vue({
             }
 
             if (this.nr_trinta_cinco) {
-                let nr35 = _.find(this.form.listaVencimentos, {'id': 6, 'fez_treinamento': false})
+                let nr35 = _.find(this.form.listaVencimentos, { id: 6, fez_treinamento: false })
 
                 if (nr35) {
                     nr35.fez_treinamento = false
@@ -496,7 +494,6 @@ const app = new Vue({
             }
             // }
 
-
             if ($('#janelaTreinamento :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os erros')
                 return false
@@ -504,37 +501,40 @@ const app = new Vue({
 
             this.preload = true
 
-            axios.post(`${URL_ADMIN}/treinamento`, this.form)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/treinamento`, this.form)
+                .then((response) => {
                     if (response.status === 201) {
                         this.preload = false
                         this.cadastrado = true
                         this.atualizar()
                     }
-                }).catch(error => (this.preload = false))
+                })
+                .catch((error) => (this.preload = false))
         },
 
         salvarMassa() {
             formReset()
             $('#janelaTreinamentoMassa :input:visible').trigger('blur')
 
-
             if ($('#janelaTreinamentoMassa :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os erros')
                 return false
             }
 
-            this.preload = true;
-            this.formMassa.selecionadosMassa = this.selecionadosMassa;
+            this.preload = true
+            this.formMassa.selecionadosMassa = this.selecionadosMassa
 
-            axios.post(`${URL_ADMIN}/treinamento/salvar-massa`, this.formMassa)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/treinamento/salvar-massa`, this.formMassa)
+                .then((response) => {
                     if (response.status === 201) {
                         this.preload = false
                         this.cadastrado = true
                         this.atualizar()
                     }
-                }).catch(error => (this.preload = false))
+                })
+                .catch((error) => (this.preload = false))
         },
 
         abriJanelaEnviar(obj) {
@@ -556,13 +556,14 @@ const app = new Vue({
             }
 
             this.formEnviar.preload = true
-            axios.post(`${URL_ADMIN}/treinamento/enviar-carteira`, this.formEnviar)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/treinamento/enviar-carteira`, this.formEnviar)
+                .then((response) => {
                     let data = response.data
                     this.formEnviar.preload = false
                     this.formEnviar.enviado = data.enviado
                 })
-                .catch(error => {
+                .catch((error) => {
                     this.formEnviar.preload = false
                     this.formEnviar.enviado = false
                 })
@@ -582,13 +583,14 @@ const app = new Vue({
             }
 
             this.formEnviarAviso.preload = true
-            axios.post(`${URL_ADMIN}/treinamento/proximovencimento`, this.formEnviarAviso)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/treinamento/proximovencimento`, this.formEnviarAviso)
+                .then((response) => {
                     let data = response.data
                     this.formEnviarAviso.preload = false
                     this.formEnviarAviso.enviado = data.enviado
                 })
-                .catch(error => {
+                .catch((error) => {
                     this.formEnviarAviso.preload = false
                     this.formEnviarAviso.enviado = false
                 })
@@ -669,9 +671,9 @@ const app = new Vue({
             this.listaTodosTreinamentos = dados.vencimentos
             this.selecionaTudo = this.tudoMarcado
             this.formMassa.listaVencimentos = dados.vencimentos
-            this.lista_ccs = dados.cc;
+            this.lista_ccs = dados.cc
             if (!this.AUTENTICADO.temFilial) {
-                this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0];
+                this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0]
             }
             this.controle.carregando = false
         },
@@ -687,110 +689,104 @@ const app = new Vue({
 
         // Acorde panel controls
         togglePanel(index) {
-            const position = this.openPanels.indexOf(index);
+            const position = this.openPanels.indexOf(index)
             if (position !== -1) {
-                this.openPanels.splice(position, 1);
+                this.openPanels.splice(position, 1)
             } else {
-                this.openPanels.push(index);
+                this.openPanels.push(index)
             }
         },
 
         toggleAllPanels() {
             if (this.expandAll) {
                 // Close all panels
-                this.openPanels = [];
+                this.openPanels = []
             } else {
                 // Open all panels
-                this.openPanels = this.form.listaVencimentos.map((_, index) => index);
+                this.openPanels = this.form.listaVencimentos.map((_, index) => index)
             }
-            this.expandAll = !this.expandAll;
+            this.expandAll = !this.expandAll
         },
 
         // Training status methods
         getTreinamentoStatus(treinamento) {
-            if (!treinamento.fez_treinamento) return 'inativo';
-            if (!treinamento.data_vencimento) return 'ativo';
+            if (!treinamento.fez_treinamento) return 'inativo'
+            if (!treinamento.data_vencimento) return 'ativo'
 
-            const today = new Date();
+            const today = new Date()
 
             // Parse date in DD/MM/YYYY format
-            let expiryDate;
+            let expiryDate
             if (typeof treinamento.data_vencimento === 'string') {
-                const parts = treinamento.data_vencimento.split('/');
+                const parts = treinamento.data_vencimento.split('/')
                 if (parts.length === 3) {
-                    expiryDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                    expiryDate = new Date(parts[2], parts[1] - 1, parts[0])
                 } else {
-                    return 'ativo'; // Invalid date format
+                    return 'ativo' // Invalid date format
                 }
             } else {
-                expiryDate = new Date(treinamento.data_vencimento);
+                expiryDate = new Date(treinamento.data_vencimento)
             }
 
             // Check if already expired
             if (expiryDate < today) {
-                return 'vencido';
+                return 'vencido'
             }
 
             // Check if expiring soon (within 30 days)
-            const thirtyDaysFromNow = new Date();
-            thirtyDaysFromNow.setDate(today.getDate() + 30);
+            const thirtyDaysFromNow = new Date()
+            thirtyDaysFromNow.setDate(today.getDate() + 30)
 
             if (expiryDate <= thirtyDaysFromNow) {
-                return 'avencer';
+                return 'avencer'
             }
 
-            return 'ativo';
+            return 'ativo'
         },
 
         getStatusText(treinamento) {
             if (!treinamento.fez_treinamento) {
-                return 'Não Realizado';
+                return 'Não Realizado'
             }
 
-            const status = this.getTreinamentoStatus(treinamento);
+            const status = this.getTreinamentoStatus(treinamento)
 
             switch (status) {
                 case 'ativo':
-                    return 'Em dia';
+                    return 'Em dia'
                 case 'avencer':
-                    return 'A Vencer';
+                    return 'A Vencer'
                 case 'vencido':
-                    return 'Vencido';
+                    return 'Vencido'
                 default:
-                    return 'Desconhecido';
+                    return 'Desconhecido'
             }
         },
 
         calculoDataExpiracao(treinamento) {
-            if (!treinamento.data_treinamento) return;
+            if (!treinamento.data_treinamento) return
 
-            const dateParts = treinamento.data_treinamento.split('/');
-            if (dateParts.length !== 3) return;
+            const dateParts = treinamento.data_treinamento.split('/')
+            if (dateParts.length !== 3) return
 
-            const trainingDate = new Date(
-                parseInt(dateParts[2]),
-                parseInt(dateParts[1]) - 1,
-                parseInt(dateParts[0])
-            );
+            const trainingDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]))
 
-            let expiryDate = new Date(trainingDate);
+            let expiryDate = new Date(trainingDate)
 
             if (this.form.tipo === 'Parada' && treinamento.prazo_parada) {
-                expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_parada));
+                expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_parada))
             } else if (this.form.tipo === 'Fixo' && treinamento.prazo_fixo) {
-                expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_fixo));
+                expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_fixo))
             } else {
-                return;
+                return
             }
 
             // Format date as DD/MM/YYYY
-            const dd = String(expiryDate.getDate()).padStart(2, '0');
-            const mm = String(expiryDate.getMonth() + 1).padStart(2, '0');
-            const yyyy = expiryDate.getFullYear();
+            const dd = String(expiryDate.getDate()).padStart(2, '0')
+            const mm = String(expiryDate.getMonth() + 1).padStart(2, '0')
+            const yyyy = expiryDate.getFullYear()
 
-            treinamento.data_vencimento = `${dd}/${mm}/${yyyy}`;
+            treinamento.data_vencimento = `${dd}/${mm}/${yyyy}`
         }
     }
 })
-
-
