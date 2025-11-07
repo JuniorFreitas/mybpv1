@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
 use App\Services\AvaliacaoNoventaService;
+use App\Jobs\GerarTokenAvaliacaoNoventaDiasJob;
+use App\Models\AvaliacaoNoventaVencimento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -31,9 +33,9 @@ class AvaliacaoNoventaDiasController extends Controller
             true // incluir completas (2 avaliações) no relatório manual
         );
 
-        // Monta vencimentos e gera tokens automaticamente (mesma lógica do comando)
+    // Monta vencimentos sem gerar tokens para não custar o carregamento do relatório
         $dataAtual = (new \MasterTag\DataHora())->dataCompleta();
-        $vencimentos = $this->avaliacaoService->montarVencimentos($avaliacoes, $dataAtual);
+    $vencimentos = $this->avaliacaoService->montarVencimentos($avaliacoes, $dataAtual, false);
 
         // Ordena por prioridade: VENCIDO > VENCE HOJE > A VENCER > COMPLETA
         $ordemStatus = [
@@ -233,5 +235,130 @@ class AvaliacaoNoventaDiasController extends Controller
                 'em_processamento' => false
             ]);
         }
+    }
+
+    /**
+     * Gera token de forma assíncrona para um determinado feedback
+     */
+    public function gerarLink(Request $request, int $feedbackId)
+    {
+        $usuario = auth()->user();
+        $empresaId = $usuario->empresa_id;
+
+        // Valida se pertence à empresa do usuário
+        $existe = AvaliacaoNoventaVencimento::query()
+            ->where('feedback_id', $feedbackId)
+            ->whereHas('FeedbackCurriculo', function ($q) use ($empresaId) {
+                $q->where('empresa_id', $empresaId);
+            })
+            ->exists();
+
+        if (!$existe) {
+            \Log::warning('gerarLink: registro não encontrado para feedback', [
+                'feedback_id' => $feedbackId,
+                'empresa_id' => $empresaId,
+                'usuario_id' => $usuario->id,
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Registro não encontrado'
+            ], 404);
+        }
+
+        \Log::info('gerarLink: enfileirando geração de token', [
+            'feedback_id' => $feedbackId,
+            'empresa_id' => $empresaId,
+            'usuario_id' => $usuario->id,
+        ]);
+        GerarTokenAvaliacaoNoventaDiasJob::dispatch($feedbackId, $empresaId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Geração de link enfileirada'
+        ], 202);
+    }
+
+    /**
+     * Gera tokens em lote para múltiplos feedbacks
+     */
+    public function gerarLinksLote(Request $request)
+    {
+        $usuario = auth()->user();
+        $empresaId = $usuario->empresa_id;
+
+        $feedbackIds = $request->input('feedback_ids', []);
+        if (empty($feedbackIds) || !is_array($feedbackIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nenhum ID fornecido'
+            ], 400);
+        }
+
+        // Valida que todos pertencem à empresa do usuário
+        $validos = AvaliacaoNoventaVencimento::query()
+            ->whereIn('feedback_id', $feedbackIds)
+            ->whereHas('FeedbackCurriculo', function ($q) use ($empresaId) {
+                $q->where('empresa_id', $empresaId);
+            })
+            ->pluck('feedback_id')
+            ->toArray();
+
+        if (empty($validos)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nenhum registro válido encontrado'
+            ], 404);
+        }
+
+        \Log::info('gerarLinksLote: enfileirando geração em lote', [
+            'total_solicitados' => count($feedbackIds),
+            'total_validos' => count($validos),
+            'empresa_id' => $empresaId,
+            'usuario_id' => $usuario->id,
+        ]);
+
+        // Dispara job para cada ID válido
+        foreach ($validos as $feedbackId) {
+            GerarTokenAvaliacaoNoventaDiasJob::dispatch($feedbackId, $empresaId);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => count($validos) . ' link(s) enfileirado(s) para geração',
+            'total' => count($validos)
+        ], 202);
+    }
+
+    /**
+     * Consulta o link (token) atual de um feedback
+     */
+    public function consultarLink(Request $request, int $feedbackId)
+    {
+        $usuario = auth()->user();
+        $empresaId = $usuario->empresa_id;
+
+        $vencimento = AvaliacaoNoventaVencimento::query()
+            ->where('feedback_id', $feedbackId)
+            ->whereHas('FeedbackCurriculo', function ($q) use ($empresaId) {
+                $q->where('empresa_id', $empresaId);
+            })
+            ->first(['token_avaliacao', 'token_expiracao', 'avaliacao_realizada']);
+
+        if (!$vencimento) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registro não encontrado'
+            ], 404);
+        }
+
+        $link = null;
+        if (!empty($vencimento->token_avaliacao) && !empty($vencimento->token_expiracao) && \Carbon\Carbon::parse($vencimento->token_expiracao)->isFuture() && !$vencimento->avaliacao_realizada) {
+            $link = url('/avaliacao-90-dias/' . $vencimento->token_avaliacao);
+        }
+
+        return response()->json([
+            'success' => true,
+            'link' => $link,
+        ]);
     }
 }
