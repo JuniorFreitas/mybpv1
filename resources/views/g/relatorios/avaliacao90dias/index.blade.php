@@ -20,9 +20,10 @@
         @foreach($vencimentos as $v)
             @php($ehGestorGlobal = $ehGestorGlobal || (auth()->id() === ($v['gestor_id'] ?? null)))
         @endforeach
-        <input type="hidden" id="currentUserId" value="{{ auth()->id() }}">
+    <input type="hidden" id="currentUserId" value="{{ auth()->id() }}">
         <input type="hidden" id="userCanGestaoRh" value="{{ $temPermissaoGestaoRh ? 1 : 0 }}">
         <input type="hidden" id="isGestorGlobal" value="{{ $ehGestorGlobal ? 1 : 0 }}">
+    <input type="hidden" id="avaliacao90BaseUrl" value="{{ url('g/relatorios/avaliacao-90-dias') }}">
         
         <!-- Toggle Cards de Resumo -->
         <div class="mb-3">
@@ -383,7 +384,13 @@
                     <div>
                         <span class="text-muted">Exibindo <span id="infoExibindo">0</span> de <span id="infoTotal">0</span> registros</span>
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center">
+                        @if($temPermissaoGestaoRh || $ehGestorGlobal)
+                            <button id="btnGerarLinksTodos" class="btn btn-sm btn-outline-primary mr-2" onclick="gerarLinksTodosEmLote()">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                <span class="label">Gerar todos os links</span>
+                            </button>
+                        @endif
                         <label class="mb-0 mr-2">Itens por página:</label>
                         <select id="itensPorPagina" class="form-control form-control-sm" style="width: auto; display: inline-block;">
                             <option value="40">40</option>
@@ -491,17 +498,22 @@
                                             </span>
                                     @endif
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center" id="celula-link-{{ $vencimento['feedback_id'] ?? 'x' }}">
                                     @php($ehGestor = auth()->id() === ($vencimento['gestor_id'] ?? null))
                                     @if(empty($vencimento['link_avaliacao']))
-                                        <span class="text-muted">-</span>
-                                    @elseif($ehGestor || $temPermissaoGestaoRh)
-                                        <!-- <button class="btn btn-sm" style="background-color: #003755; color: white;"
-                                                    data-link="{{ $vencimento['link_avaliacao'] }}"
-                                                    onclick="copiarLink(this)"
-                                                    title="Clique para copiar o link">
-                                                <i class="fas fa-copy"></i> Copiar Link
-                                            </button> -->
+                                        @if($ehGestor || $temPermissaoGestaoRh)
+                        <button class="btn btn-sm btn-outline-primary"
+                            data-feedback-id="{{ $vencimento['feedback_id'] ?? '' }}"
+                            onclick="gerarLinkAvaliacao(this)"
+                            title="Gerar link de avaliação"
+                        >
+                                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                                <span class="label">Gerar link</span>
+                                            </button>
+                                        @else
+                                            <span class="text-muted">Restrito ao gestor</span>
+                                        @endif
+                                    @else
                                         <a href="{{ $vencimento['link_avaliacao'] }}"
                                            target="_blank"
                                            class="btn btn-sm btn-success ml-1"
@@ -509,8 +521,6 @@
                                         >
                                             <i class="fas fa-external-link-alt"></i>
                                         </a>
-                                    @else
-                                        <span class="text-muted">Restrito ao gestor</span>
                                     @endif
                                 </td>
                             </tr>
@@ -809,6 +819,91 @@
             }, 300);
         }
 
+        // ----- Geração em lote para todas as linhas elegíveis -----
+        function gerarLinksTodosEmLote() {
+            try {
+                if (!(window.userCanGestaoRh || window.isGestorGlobal)) {
+                    toastr.warning('Você não tem permissão para gerar links em lote.');
+                    return;
+                }
+
+                const $btnHeader = $('#btnGerarLinksTodos');
+                const $spin = $btnHeader.find('.spinner-border');
+                const $label = $btnHeader.find('.label');
+
+                // Coleta IDs elegíveis em TODAS as linhas (não só visíveis)
+                const feedbackIds = [];
+                $('#tabelaAvaliacoes tbody tr').each(function() {
+                    const $tr = $(this);
+                    const gestorId = ($tr.data('gestor') || '').toString();
+
+                    // Restrição por perfil: RH pega todos; gestor pega apenas os seus
+                    if (!window.userCanGestaoRh) {
+                        if (!window.currentUserId || gestorId !== window.currentUserId.toString()) {
+                            return; // pula linhas que não são do gestor logado
+                        }
+                    }
+
+                    // Se já existe link, não precisa gerar
+                    if ($tr.find('td:last a[href]')[0]) return;
+
+                    const $btn = $tr.find('td:last button.btn-outline-primary[data-feedback-id]').first();
+                    if ($btn.length) {
+                        const fid = parseInt($btn.data('feedback-id'), 10);
+                        if (fid && !isNaN(fid)) {
+                            feedbackIds.push(fid);
+                        }
+                    }
+                });
+
+                if (feedbackIds.length === 0) {
+                    toastr.info('Nenhuma linha requer geração de link.');
+                    return;
+                }
+
+                // UI header
+                $btnHeader.prop('disabled', true);
+                $spin.removeClass('d-none');
+                $label.text('Processando...');
+
+                const baseUrl = $('#avaliacao90BaseUrl').val() || '/g/relatorios/avaliacao-90-dias';
+                const urlLote = baseUrl.replace(/\/$/, '') + '/gerar-links-lote';
+
+                $.ajax({
+                    url: urlLote,
+                    type: 'POST',
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    contentType: 'application/json',
+                    data: JSON.stringify({ feedback_ids: feedbackIds }),
+                    success: function(resp) {
+                        $btnHeader.prop('disabled', false);
+                        $spin.addClass('d-none');
+                        $label.text('Gerar todos os links');
+                        const total = resp.total || feedbackIds.length;
+                        toastr.info(
+                            total + ' link(s) enfileirado(s) para geração em segundo plano.<br><strong>Atualize a página em alguns minutos para ver os links.</strong>',
+                            'Processando em background',
+                            { 
+                                timeOut: 8000,
+                                extendedTimeOut: 3000,
+                                closeButton: true,
+                                progressBar: true
+                            }
+                        );
+                    },
+                    error: function(xhr) {
+                        $btnHeader.prop('disabled', false);
+                        $spin.addClass('d-none');
+                        $label.text('Gerar todos os links');
+                        const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao processar lote';
+                        toastr.error(msg);
+                    }
+                });
+            } catch (e) {
+                console.warn('gerarLinksTodosEmLote error', e);
+            }
+        }
+
         function limparFiltros() {
             $("#filtroStatus").val("");
             $("#filtroNome").val("");
@@ -949,5 +1044,127 @@
                 }
             }, 3000);
         });
+
+        // ----- Geração assíncrona de link de avaliação -----
+        function gerarLinkAvaliacao(btnEl) {
+            try {
+                const $btn = $(btnEl);
+                const feedbackIdRaw = $btn.data('feedback-id');
+                const feedbackId = parseInt(feedbackIdRaw, 10);
+                if (!feedbackId || isNaN(feedbackId)) {
+                    toastr.error('ID de feedback não encontrado.');
+                    return;
+                }
+
+                // URLs preferenciais geradas pelo Blade via route()
+                const urlPostAttr = $btn.data('url-post');
+                const urlGetAttr = $btn.data('url-get');
+                const baseUrl = $('#avaliacao90BaseUrl').val() || '/g/relatorios/avaliacao-90-dias';
+                const urlPostCandidates = [
+                    urlPostAttr || '',
+                    baseUrl.replace(/\/$/, '') + '/' + feedbackId + '/gerar-link',
+                    '/g/relatorios/avaliacao-90-dias/' + feedbackId + '/gerar-link',
+                    '/g/avaliacao-90-dias/' + feedbackId + '/gerar-link'
+                ].filter(Boolean);
+
+                const $spinner = $btn.find('.spinner-border');
+                const $label = $btn.find('.label');
+                $btn.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $label.text('Gerando...');
+
+                tentativaPost(0);
+
+                function tentativaPost(idx) {
+                    if (idx >= urlPostCandidates.length) {
+                        $btn.prop('disabled', false);
+                        $spinner.addClass('d-none');
+                        $label.text('Gerar link');
+                        toastr.error('Não foi possível enfileirar a geração do link.');
+                        return;
+                    }
+                    const urlPost = urlPostCandidates[idx];
+                    $.ajax({
+                        url: urlPost,
+                        type: 'POST',
+                        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                        success: function() {
+                            // inicia polling
+                            consultarLinkComTentativas(feedbackId, 10, 1000, function(link) {
+                                if (link) {
+                                    substituirCelulaPorLink(feedbackId, link);
+                                    toastr.success('Link gerado com sucesso.');
+                                } else {
+                                    $btn.prop('disabled', false);
+                                    $spinner.addClass('d-none');
+                                    $label.text('Gerar link');
+                                    toastr.info('Geração enfileirada. O link deve aparecer em instantes.');
+                                }
+                            });
+                        },
+                        error: function(xhr) {
+                            if (xhr && xhr.status === 404) {
+                                // tenta próxima URL candidata
+                                tentativaPost(idx + 1);
+                                return;
+                            }
+                            $btn.prop('disabled', false);
+                            $spinner.addClass('d-none');
+                            $label.text('Gerar link');
+                            const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Erro ao enfileirar geração do link';
+                            toastr.error(msg);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('gerarLinkAvaliacao error', e);
+            }
+        }
+
+    function consultarLinkComTentativas(feedbackId, tentativas, intervaloMs, callback) {
+            const baseUrl = $('#avaliacao90BaseUrl').val() || '/g/relatorios/avaliacao-90-dias';
+            // Se houver botão ainda presente, aproveita url-get do atributo
+            const $btn = $('#celula-link-' + feedbackId + ' button[data-url-get]');
+            const urlGetAttr = $btn.length ? $btn.data('url-get') : null;
+            const urlGetCandidates = [
+                urlGetAttr || '',
+                baseUrl.replace(/\/$/, '') + '/' + feedbackId + '/link',
+                '/g/relatorios/avaliacao-90-dias/' + feedbackId + '/link',
+                '/g/avaliacao-90-dias/' + feedbackId + '/link'
+            ].filter(Boolean);
+            let count = 0;
+            const timer = setInterval(function() {
+                const idx = Math.min(count, urlGetCandidates.length - 1);
+                const urlGet = urlGetCandidates[idx];
+                $.get(urlGet)
+                    .done(function(resp) {
+                        const link = resp && resp.link ? resp.link : null;
+                        if (link) {
+                            clearInterval(timer);
+                            callback(link);
+                        } else if (++count >= tentativas) {
+                            clearInterval(timer);
+                            callback(null);
+                        }
+                    })
+                    .fail(function() {
+                        if (++count >= tentativas) {
+                            clearInterval(timer);
+                            callback(null);
+                        }
+                    });
+            }, intervaloMs);
+        }
+
+        function substituirCelulaPorLink(feedbackId, link) {
+            const $celula = $('#celula-link-' + feedbackId);
+            if ($celula.length === 0) return;
+            const html = [
+                '<a href="' + link + '" target="_blank" class="btn btn-sm btn-success ml-1" title="Abrir avaliação em nova aba">',
+                '    <i class="fas fa-external-link-alt"></i>',
+                '</a>'
+            ].join('');
+            $celula.html(html);
+        }
     </script>
 @endpush

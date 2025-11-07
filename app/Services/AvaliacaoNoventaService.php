@@ -138,10 +138,10 @@ class AvaliacaoNoventaService
             ->get();
     }
 
-    public function montarVencimentos(Collection $avaliacoes, string $dataAtual): Collection
+    public function montarVencimentos(Collection $avaliacoes, string $dataAtual, bool $gerarTokens = true): Collection
     {
         return $avaliacoes
-            ->map(function ($avaliacao) use ($dataAtual) {
+            ->map(function ($avaliacao) use ($dataAtual, $gerarTokens) {
                 $resultado = $this->verificarVencimento($avaliacao, $dataAtual);
 
                 if (!$resultado) {
@@ -156,10 +156,27 @@ class AvaliacaoNoventaService
                 $centro = $avaliacao->FeedbackCurriculo->Admissao->CentroCusto ?? null;
                 $gestor = $centro ? $centro->Gestor : null;
 
-                // Gera ou recupera token para avaliação pública, apenas se ainda não estiver completa
+                // Token: opcionalmente gera/reutiliza em tempo de execução
+                // Para não custar o carregamento do relatório, permitimos não gerar tokens aqui (apenas reutilizar se já houver válido)
                 $tokenData = [];
                 if ($qntAvaliacoes < self::MAX_AVALIACOES_PERMITIDAS) {
-                    $tokenData = $this->gerarOuRecuperarToken($avaliacao);
+                    if ($gerarTokens) {
+                        $tokenData = $this->gerarOuRecuperarToken($avaliacao);
+                    } else {
+                        // Reutiliza token existente somente se ainda válido (não bloqueia com geração)
+                        if (
+                            $avaliacao->token_avaliacao &&
+                            $avaliacao->token_expiracao &&
+                            \Carbon\Carbon::parse($avaliacao->token_expiracao)->isFuture() &&
+                            !$avaliacao->avaliacao_realizada
+                        ) {
+                            $tokenData = [
+                                'token' => $avaliacao->token_avaliacao,
+                                'url' => url("/avaliacao-90-dias/{$avaliacao->token_avaliacao}"),
+                                'expiracao' => \Carbon\Carbon::parse($avaliacao->token_expiracao)
+                            ];
+                        }
+                    }
                 }
 
                 // Se já estiver completa (2 avaliações), força status 'COMPLETA'
@@ -171,6 +188,7 @@ class AvaliacaoNoventaService
                 $observacao = $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS ? 'Avaliação completa' : $resultado['observacao'];
 
                 return [
+                    'feedback_id' => $avaliacao->feedback_id,
                     'colaborador' => $avaliacao->FeedbackCurriculo->Curriculo->nome ?? 'Nome não disponível',
                     'cargo' => $avaliacao->FeedbackCurriculo->Admissao->cargo ?? null,
                     'funcao' => $avaliacao->FeedbackCurriculo->Admissao->funcao ?? null,
@@ -495,12 +513,13 @@ class AvaliacaoNoventaService
      * @param int $diasValidade (padrão: 60 dias)
      * @return array ['token' => string, 'expiracao' => Carbon]
      */
-    public function gerarTokenAvaliacao(int $feedbackId, int $diasValidade = 60): array
+    public function gerarTokenAvaliacao(int $feedbackId, int $diasValidade = 60): ?array
     {
         $token = bin2hex(random_bytes(32)); // 64 caracteres hexadecimais
         $expiracao = Carbon::now()->addDays($diasValidade);
 
-        $vencimento = AvaliacaoNoventaVencimento::where('feedback_id', $feedbackId)->first();
+    // Em contextos fora de request (ex.: queue), escopos globais de empresa podem depender de auth(); desabilita-os
+    $vencimento = AvaliacaoNoventaVencimento::withoutGlobalScopes()->where('feedback_id', $feedbackId)->first();
 
         if ($vencimento) {
             $vencimento->update([
@@ -514,13 +533,17 @@ class AvaliacaoNoventaService
                 'token' => substr($token, 0, 10) . '...',
                 'expiracao' => $expiracao->format('Y-m-d H:i:s')
             ]);
+            return [
+                'token' => $token,
+                'expiracao' => $expiracao,
+                'url' => url("/avaliacao-90-dias/{$token}")
+            ];
         }
 
-        return [
-            'token' => $token,
-            'expiracao' => $expiracao,
-            'url' => url("/avaliacao-90-dias/{$token}")
-        ];
+        Log::warning('gerarTokenAvaliacao: vencimento não encontrado para feedback', [
+            'feedback_id' => $feedbackId,
+        ]);
+        return null;
     }
 
     /**
