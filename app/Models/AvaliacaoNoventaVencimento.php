@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use MasterTag\DataHora;
 use function PHPUnit\Framework\isNull;
 
@@ -44,6 +45,9 @@ class AvaliacaoNoventaVencimento extends Model
         'prazo_dez_final',
         'prazo_cinco_final',
         'prazo_dia_final',
+            'token_avaliacao',
+            'token_expiracao',
+            'avaliacao_realizada',
     ];
 
     protected $casts = [
@@ -157,5 +161,10 @@ class AvaliacaoNoventaVencimento extends Model
     public function FeedbackCurriculo()
     {
         return $this->hasOne(FeedbackCurriculo::class, 'id', 'feedback_id');
+    }
+
+    public function qntFeedback()
+    {
+        return $this->hasMany(AvaliacaoNoventaFeedbackQuantidade::class, 'feedback_id', 'feedback_id');
     }
 }

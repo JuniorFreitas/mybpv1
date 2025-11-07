@@ -53,6 +53,16 @@ Route::get('download-checklist/{empresa}', function ($empresa) {
 
 Route::redirect('/', 'g/login');
 
+// Rotas para avaliação de 90 dias (requer autenticação, mas não está no menu)
+Route::middleware(['auth'])->group(function () {
+    Route::get('avaliacao-90-dias/{token}', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'mostrarFormulario'])
+        ->name('avaliacao.publica.formulario');
+    Route::post('avaliacao-90-dias/{token}', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'salvarAvaliacao'])
+        ->name('avaliacao.publica.salvar');
+    Route::get('avaliacao-90-dias/{token}/erro', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'exibirErro'])
+        ->name('avaliacao.publica.erro');
+});
+
 Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
     Route::get('controle-exames/ficha-encaminhamento/{exame}/{token}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('encaminhamento_exame_fichapdf');
     Route::post('cnpjbusca', [\App\Http\Controllers\PublicoController::class, 'cnpjbusca'])->name('cnpjbusca');
@@ -1172,6 +1182,12 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('efetivo/pdf', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'exportPdf'])->name('exportPdf')->middleware('can:relatorio_efetivo');
             Route::post('efetivo/export-excel', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_efetivo');
             Route::post('efetivo/atualizar', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_efetivo');
+        });
+
+        Route::group(['as' => 'avaliacao90dias.'], function () {
+            Route::get('avaliacao-90-dias', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'index'])->name('index')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::post('avaliacao-90-dias/exportar', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'exportar'])->name('exportar')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::get('avaliacao-90-dias/status-exportacao', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'statusExportacao'])->name('statusExportacao')->middleware('can:relatorio_avaliacao_90_dias');
         });
 
         //Aniversariantes
