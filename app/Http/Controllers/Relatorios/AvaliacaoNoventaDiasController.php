@@ -33,9 +33,9 @@ class AvaliacaoNoventaDiasController extends Controller
             true // incluir completas (2 avaliações) no relatório manual
         );
 
-        // Monta vencimentos e gera tokens automaticamente (mesma lógica do comando)
+    // Monta vencimentos sem gerar tokens para não custar o carregamento do relatório
         $dataAtual = (new \MasterTag\DataHora())->dataCompleta();
-        $vencimentos = $this->avaliacaoService->montarVencimentos($avaliacoes, $dataAtual);
+    $vencimentos = $this->avaliacaoService->montarVencimentos($avaliacoes, $dataAtual, false);
 
         // Ordena por prioridade: VENCIDO > VENCE HOJE > A VENCER > COMPLETA
         $ordemStatus = [

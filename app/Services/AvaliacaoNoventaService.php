@@ -156,7 +156,6 @@ class AvaliacaoNoventaService
                 $centro = $avaliacao->FeedbackCurriculo->Admissao->CentroCusto ?? null;
                 $gestor = $centro ? $centro->Gestor : null;
 
-                // Gera ou recupera token para avaliação pública, apenas se ainda não estiver completa
                 // Token: opcionalmente gera/reutiliza em tempo de execução
                 // Para não custar o carregamento do relatório, permitimos não gerar tokens aqui (apenas reutilizar se já houver válido)
                 $tokenData = [];
@@ -534,14 +533,12 @@ class AvaliacaoNoventaService
                 'token' => substr($token, 0, 10) . '...',
                 'expiracao' => $expiracao->format('Y-m-d H:i:s')
             ]);
+            return [
+                'token' => $token,
+                'expiracao' => $expiracao,
+                'url' => url("/avaliacao-90-dias/{$token}")
+            ];
         }
-
-        return [
-            'token' => $token,
-            'expiracao' => $expiracao,
-            'url' => url("/avaliacao-90-dias/{$token}")
-        ];
-    }
 
         Log::warning('gerarTokenAvaliacao: vencimento não encontrado para feedback', [
             'feedback_id' => $feedbackId,

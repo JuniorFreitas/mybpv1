@@ -20,11 +20,10 @@
         @foreach($vencimentos as $v)
             @php($ehGestorGlobal = $ehGestorGlobal || (auth()->id() === ($v['gestor_id'] ?? null)))
         @endforeach
-        <input type="hidden" id="currentUserId" value="{{ auth()->id() }}">
+    <input type="hidden" id="currentUserId" value="{{ auth()->id() }}">
         <input type="hidden" id="userCanGestaoRh" value="{{ $temPermissaoGestaoRh ? 1 : 0 }}">
         <input type="hidden" id="isGestorGlobal" value="{{ $ehGestorGlobal ? 1 : 0 }}">
     <input type="hidden" id="avaliacao90BaseUrl" value="{{ url('g/relatorios/avaliacao-90-dias') }}">
-
         <!-- Toggle Cards de Resumo -->
         <div class="mb-3">
             <button class="btn btn-sm btn-outline-secondary" id="toggleResumo" onclick="toggleCardsResumo()">
@@ -521,8 +520,6 @@
                                         >
                                             <i class="fas fa-external-link-alt"></i>
                                         </a>
-                                    @else
-                                        <span class="text-muted">Restrito ao gestor</span>
                                     @endif
                                 </td>
                             </tr>

@@ -1210,6 +1210,9 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('avaliacao-90-dias', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'index'])->name('index')->middleware('can:relatorio_avaliacao_90_dias');
             Route::post('avaliacao-90-dias/exportar', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'exportar'])->name('exportar')->middleware('can:relatorio_avaliacao_90_dias');
             Route::get('avaliacao-90-dias/status-exportacao', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'statusExportacao'])->name('statusExportacao')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::post('avaliacao-90-dias/gerar-links-lote', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'gerarLinksLote'])->name('gerarLinksLote')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::post('avaliacao-90-dias/{feedbackId}/gerar-link', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'gerarLink'])->name('gerarLink')->whereNumber('feedbackId')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::get('avaliacao-90-dias/{feedbackId}/link', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'consultarLink'])->name('consultarLink')->whereNumber('feedbackId')->middleware('can:relatorio_avaliacao_90_dias');
         });
 
         //Aniversariantes
