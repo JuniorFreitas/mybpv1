@@ -325,6 +325,11 @@ class User extends Authenticatable
         return $this->listaDeHabilidade;
     }
 
+    public function UserHabilidades()
+    {
+        return $this->hasMany(Papel::class, 'id', 'grupo_id');
+    }
+
     public function getLoginlAttribute($value)
     {
         return trim(mb_strtolower($value));
@@ -557,6 +562,15 @@ class User extends Authenticatable
             ->whereNull('deleted_at');
     }
 
+    public function scopeUsuariosPrivilegioRh($queryBuilder)
+    {
+        return $queryBuilder->whereHas('UserHabilidades', function ($query) {
+            $query->where('ativo', true)->whereHas('habilidades', function ($q) {
+                $q->where('nome', 'privilegio_gestao_rh');
+            });
+        });
+    }
+
     public function enviaWhatsApp()
     {
         return $this->EmpresaConfiguracoes->envia_whatsapp;
@@ -646,6 +660,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(UsuarioTelefone::class, 'user_id', 'id');
     }
+
 
     protected static function booted()
     {

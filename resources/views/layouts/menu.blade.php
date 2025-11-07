@@ -897,6 +897,15 @@
                 @endcan
             </ul>
             <ul aria-expanded="false">
+                @can('relatorio_avaliacao_90_dias')
+                    <li>
+                        <a href="{{ route('g.relatorios.avaliacao90dias.index') }}" parent="relatorios" key="avaliacao90dias">
+                            Avaliação 90 Dias
+                        </a>
+                    </li>
+                 @endcan
+            </ul>
+            <ul aria-expanded="false">
                 @can('relatorio_aniversariantes')
                     <li>
                         <a href="{{route('g.relatorios.aniversariantes.relatorioNivers')}}" parent="relatorios"

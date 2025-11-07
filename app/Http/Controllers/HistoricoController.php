@@ -69,9 +69,12 @@ class HistoricoController extends Controller
             $resultado->Admitidos();
         }
         if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Curriculo', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%');
+            $resultado->where(function ($query) use ($request) {
+                $query->whereHas('Curriculo', function ($q) use ($request) {
+                    $q->where('nome', 'like', '%' . $request->campoBusca . '%');
+                })->orWhere('id', $request->campoBusca);
             });
+           
         }
         if ($request->filled('campoCargo')) {
             $resultado->whereHas('Admissao', function ($q) use ($request) {
@@ -347,11 +350,9 @@ class HistoricoController extends Controller
         } else {
             try {
                 DB::beginTransaction();
-
-                $avaliacao = AvaliacaoNoventaFeedbackQuantidade::whereFeedbackId($dados['feedback_id'])->get('quantidade_avaliacao')->count();
-
-
-                $qntAvaliacao = $avaliacao > 0 ? intval($avaliacao['quantidade_avaliacao']) + 1 : 1;
+                $total = AvaliacaoNoventaFeedbackQuantidade::where('feedback_id', $dados['feedback_id'])
+                    ->sum('quantidade_avaliacao');
+                $qntAvaliacao = $total > 0 ? intval($total) + 1 : 1;
 
                 $info = [
                     'feedback_id' => $dados['feedback_id'],
