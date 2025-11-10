@@ -1,23 +1,43 @@
 {
     "extends": [
-      "plugin:prettier/recommended",
-      "plugin:vue/recommended"
+        "eslint:recommended",
+        "@vue/eslint-config-prettier",
+        "plugin:vue/vue3-recommended"
     ],
 
-    "plugins": ["prettier", "vue"],
+    "plugins": ["vue"],
+
+    "parser": "vue-eslint-parser",
 
     "parserOptions": {
-      "ecmaVersion": 2020,
-      "sourceType": "module"
+        "parser": "@babel/eslint-parser",
+        "ecmaVersion": 2020,
+        "sourceType": "module",
+        "requireConfigFile": false,
+        "babelOptions": {
+            "parserOpts": {
+                "plugins": ["jsx"]
+            }
+        }
     },
 
     "rules": {
-      "prettier/prettier": "error",
-      "vue/multi-word-component-names": "off"
+        "prettier/prettier": "error",
+        "vue/multi-word-component-names": "off",
+        "vue/no-multiple-template-root": "off",
+        "vue/no-v-model-argument": "off"
     },
 
     "env": {
-      "browser": true,
-      "es6": true
+        "browser": true,
+        "es6": true,
+        "node": true
+    },
+
+    "globals": {
+        "defineProps": "readonly",
+        "defineEmits": "readonly",
+        "defineExpose": "readonly",
+        "withDefaults": "readonly"
     }
-  }
+}
