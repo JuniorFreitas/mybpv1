@@ -886,6 +886,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('anexo-delete');
             Route::post('/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('.upload-anexos');
             Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
+            Route::put('/remover-medida-administrativa', [\App\Http\Controllers\HistoricoController::class, 'removerMedidaAdministrativa'])->middleware('can:privilegio_gestao_rh');
         });
 
         //Rotas Afastamento Historico
