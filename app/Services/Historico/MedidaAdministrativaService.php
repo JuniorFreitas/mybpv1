@@ -265,4 +265,3 @@ class MedidaAdministrativaService
         )->first();
     }
 }
-
