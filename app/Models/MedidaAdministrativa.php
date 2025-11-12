@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -49,7 +50,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class MedidaAdministrativa extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'MedidaAdministrativa';
@@ -75,7 +76,8 @@ class MedidaAdministrativa extends Model
         'motivo',
         'causa',
         'data_solicitacao',
-        'data_retorno'
+        'data_retorno',
+        'quem_deletou_id'
     ];
 
     protected $casts = [
@@ -88,6 +90,7 @@ class MedidaAdministrativa extends Model
         'causa' => 'string',
         'data_solicitacao' => 'string',
         'data_retorno' => 'string',
+        'quem_deletou_id' => 'int',
         'created_at' => 'date:d/m/Y'
     ];
 
@@ -184,6 +187,11 @@ class MedidaAdministrativa extends Model
     public function Anexos()
     {
         return $this->belongsToMany(Arquivo::class, 'medida_evidencia', 'medida_id', 'arquivo_id');
+    }
+
+    public function QuemDeletou()
+    {
+        return $this->hasOne(User::class, 'id', 'quem_deletou_id');
     }
 
 }

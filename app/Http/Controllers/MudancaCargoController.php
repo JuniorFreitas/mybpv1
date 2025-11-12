@@ -9,6 +9,7 @@ use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Ferias;
+use App\Models\LogHistorico;
 use App\Models\MudancaCargo;
 use App\Models\PeriodoAquisitivo;
 use App\Models\Sistema;
@@ -431,14 +432,24 @@ class MudancaCargoController extends Controller
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
             ]);
 
-            if ($dados['status_aprovacao_rh'] === 'aprovado') {
+            $mudancaCargo->load([
+                'CentroCustoAnterior',
+                'CentroCustoNovo',
+                'VagaAbertaAnterior.Vaga',
+                'VagaAbertaNova.Vaga'
+            ]);
 
-                $admissao = Admissao::find($dados['admissao_id']);
+            $admissao = Admissao::find($dados['admissao_id']);
+            $admissao->load('CentroCusto');
+        
+
+            if ($dados['status_aprovacao_rh'] === 'aprovado') {
                 if (!$dados['mantem_cargo']) {
                     $admissao->Feedback->update([
                         'vagas_abertas_id' => $mudancaCargo->VagaAbertaNova->id
                     ]);
                 }
+                
                 $admissao->update([
                     'centro_custo_filial_id' => !$dados['mantem_centro_custo'] && $dados['novo_filial'] ? $dados['novo_centro_custo_filial_id'] : $admissao->centro_custo_filial_id,
                     'filial' => !$dados['mantem_centro_custo'] ? $dados['novo_filial'] : $admissao->filial,
@@ -447,6 +458,40 @@ class MudancaCargoController extends Controller
                     'cargo' => !$dados['mantem_cargo'] ? $mudancaCargo->VagaAbertaNova->Vaga->nome : $admissao->cargo,
                     'salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : $admissao->salario,
                 ]);
+            }
+
+            // Log de mudança de centro de custo
+            if (!$dados['mantem_centro_custo'] && $mudancaCargo->CentroCustoAnterior && $mudancaCargo->CentroCustoNovo) {
+                LogHistorico::createLog(
+                    $admissao->Feedback->id,
+                    'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança de Centro de Custo de ' . $mudancaCargo->CentroCustoAnterior->label . ' para ' . $mudancaCargo->CentroCustoNovo->label . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
+                );
+            }
+            
+            // Log de mudança de cargo
+            if (!$dados['mantem_cargo'] && $mudancaCargo->VagaAbertaAnterior && $mudancaCargo->VagaAbertaNova) {
+                $cargoAnterior = $mudancaCargo->VagaAbertaAnterior->Vaga ? $mudancaCargo->VagaAbertaAnterior->Vaga->nome : ($admissao->cargo ?? 'sem cargo');
+                $cargoNovo = $mudancaCargo->VagaAbertaNova->Vaga ? $mudancaCargo->VagaAbertaNova->Vaga->nome : 'sem cargo';
+                LogHistorico::createLog(
+                    $admissao->Feedback->id,
+                    'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança de Cargo de ' . $cargoAnterior . ' para ' . $cargoNovo . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
+                );
+            }
+            
+            // Log de mudança de função
+            if (!$dados['mantem_funcao'] && $mudancaCargo->anterior_funcao && $mudancaCargo->nova_funcao) {
+                LogHistorico::createLog(
+                    $admissao->Feedback->id,
+                    'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança de Função de ' . $mudancaCargo->anterior_funcao . ' para ' . $mudancaCargo->nova_funcao . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
+                );
+            }
+            
+            // Log de mudança de salário
+            if (!$dados['mantem_salario'] && isset($mudancaCargo->anterior_salario) && isset($mudancaCargo->novo_salario)) {
+                LogHistorico::createLog(
+                    $admissao->Feedback->id,
+                   'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança de Salário na solicitação de mudança de cargo #' . $mudancaCargo->id
+                );
             }
 
             DB::commit();

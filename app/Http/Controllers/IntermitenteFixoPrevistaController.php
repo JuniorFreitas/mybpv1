@@ -10,6 +10,7 @@ use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPr
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\IntermitenteFixoPrevista;
+use App\Models\LogHistorico;
 use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -228,14 +229,34 @@ class IntermitenteFixoPrevistaController extends Controller
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
             ]);
 
-            $admissao_id = $intermitenteFixoPrevista->Colaborador->Curriculo->FeedBack->Admissao->id;
-            Admissao::find($admissao_id)->update([
-                'centro_custo_id' => $dados['centro_custo_id'],
-                'filial' => $dados['filial'],
-                'centro_custo_filial_id' => $dados['centro_custo_filial_id'],
-                'cargo' => $intermitenteFixoPrevista->VagaAbertaNova->Vaga->nome,
-                'salario' => $dados['novo_salario']
+            $intermitenteFixoPrevista->load([
+                'CentroCusto',
+                'VagaAbertaAnterior.Vaga',
+                'VagaAbertaNova.Vaga'
             ]);
+
+
+            if ($dados['status_aprovacao_rh'] === 'aprovado') {
+                $admissao_id = $intermitenteFixoPrevista->Colaborador->Curriculo->FeedBack->Admissao->id;
+                $admissao = Admissao::find($admissao_id);
+                $admissao->load('CentroCusto');
+                
+                $admissao->update([
+                    'centro_custo_id' => $dados['centro_custo_id'],
+                    'filial' => $dados['filial'],
+                    'centro_custo_filial_id' => $dados['centro_custo_filial_id'],
+                    'cargo' => $intermitenteFixoPrevista->VagaAbertaNova->Vaga->nome,
+                    'salario' => $dados['novo_salario']
+                ]);
+            }
+
+           
+            // Log de mudança de centro de custo
+            LogHistorico::createLog(
+                $intermitenteFixoPrevista->Colaborador->Curriculo->FeedBack->id,
+                'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na solicitação de intermitente fixo #' . $intermitenteFixoPrevista->id
+            );
+            
             DB::commit();
 
             JobMudaIntermitenteFixoPrevistaAprovarRH::dispatch($intermitenteFixoPrevista);

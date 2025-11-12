@@ -652,6 +652,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('transferencia-prevista/atualizacao-status', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizacaoStatus'])->name('transferencia-prevista.atualizacaoStatus');
                 Route::post('transferencia-prevista/atualizar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('transferencia-prevista/{transferenciaPrevista}/aprovarrh', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('transferencia-prevista/export', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'export'])->name('transferencia-prevista.excel');
                 Route::resource('transferencia-prevista', \App\Http\Controllers\TransferenciaPrevistaController::class, ['parameters' => ['transferencia-prevista' => 'transferencia_prevista']]);
             });
@@ -885,6 +886,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('anexo-delete');
             Route::post('/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('.upload-anexos');
             Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
+            Route::put('/remover-medida-administrativa', [\App\Http\Controllers\HistoricoController::class, 'removerMedidaAdministrativa'])->middleware('can:privilegio_gestao_rh');
         });
 
         //Rotas Afastamento Historico

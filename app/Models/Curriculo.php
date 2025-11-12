@@ -334,8 +334,8 @@ class Curriculo extends Model
 
     public function getRgFormatAttribute()
     {
-        if (!is_null($this->attributes['rg'])) {
-            $rg = "RG: {$this->attributes['rg']} <br/> Emitente: {$this->attributes['orgao_expeditor']}";
+        if (isset($this->attributes['rg']) && !is_null($this->attributes['rg'])) {
+            $rg = "RG: {$this->attributes['rg']} <br/> Emitente: " . (isset($this->attributes['orgao_expeditor']) ? $this->attributes['orgao_expeditor'] : '');
             return $rg;
         }
         return null;
@@ -370,6 +370,9 @@ class Curriculo extends Model
 
     public function getIdadeAttribute()
     {
+        if (!isset($this->attributes['nascimento']) || is_null($this->attributes['nascimento'])) {
+            return null;
+        }
         $dataH = new DataHora();
         return DataHora::distanciaTempo($this->nascimento . ' ' . $dataH->hora() . ':' . $dataH->minuto() . ':00', $dataH->dataHoraInsert())['ano'];
     }
@@ -384,6 +387,9 @@ class Curriculo extends Model
     //Acessor ->nascimento
     public function getNascimentoAttribute($value)
     {
+        if (!isset($this->attributes['nascimento']) || is_null($this->attributes['nascimento'])) {
+            return null;
+        }
         $data = new DataHora($this->attributes['nascimento']);
         return $data->dataCompleta();
     }

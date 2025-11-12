@@ -77,6 +77,10 @@ class TransferenciaPrevista extends Model
         'status_aprovacao',
         'empresa_id',
         'gestor_id',
+        'rh_aprovacao_id',
+        'status_aprovacao_rh',
+        'obs_rh',
+        'data_aprovacao_rh',
     ];
 
     protected $casts = [
@@ -95,7 +99,11 @@ class TransferenciaPrevista extends Model
         'empresa_id' => 'int',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
-        'gestor_id' => 'int'
+        'gestor_id' => 'int',
+        'rh_aprovacao_id' => 'int',
+        'status_aprovacao_rh' => 'string',
+        'obs_rh' => 'string',
+        'data_aprovacao_rh' => 'date:d/m/Y',
     ];
 
     protected function serializeDate(DateTimeInterface $date)
@@ -146,6 +154,11 @@ class TransferenciaPrevista extends Model
     public function UserAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
+
+    public function RhAprovacao()
+    {
+        return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
     }
 
     public function Anexos()

@@ -12,6 +12,7 @@ use App\Models\LogHistorico;
 use App\Models\MedidaAdministrativa;
 use App\Models\User;
 use App\Models\Vaga;
+use App\Services\Historico\MedidaAdministrativaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -29,7 +30,14 @@ class HistoricoController extends Controller
     {
         $feedback_id = $feedback;
 
-        $feedback = FeedbackCurriculo::select('id')->whereId($feedback_id)->with('MedidasAdministrativas.Anexos')->first();
+        $feedback = FeedbackCurriculo::whereId($feedback_id)
+            ->with([
+                'MedidasAdministrativas.Anexos',
+                'Curriculo:id,nome,cpf',
+                'Empresa:id,nome,nome_fantasia',
+                'VagaAberta.Vaga:id,nome'
+            ])
+            ->first();
         $perguntas = AvaliacaoNoventaDias::get()->transform(function ($item) {
             $item->nota = '';
             return $item;
@@ -49,7 +57,8 @@ class HistoricoController extends Controller
             'tabelaNoventa' => $tabelaNoventa,
             'avNoventaVencimento' => $avNoventaVencimento,
             'hoje' => (new DataHora())->dataCompleta(),
-            'restricao' => $restricao->dataCompleta()
+            'restricao' => $restricao->dataCompleta(),
+            'privilegio_gestao_rh' => auth()->user()->can('privilegio_gestao_rh')
         ], 200);
     }
 
@@ -108,6 +117,7 @@ class HistoricoController extends Controller
             'afastamento' => auth()->user()->can('admissao_historico_aba_afastamento'),
             'filtrar_demitido' => auth()->user()->can('admissao_historico_filtrar_demitido'),
             'logs' => auth()->user()->can('admissao_historico_aba_log'),
+            'privilegio_gestao_rh' => auth()->user()->can('privilegio_gestao_rh'),
         ];
 
         $itens = collect($resultado->items())->transform(function ($item) {
@@ -130,85 +140,32 @@ class HistoricoController extends Controller
     //************MEDIDAS ADMINISTRATIVAS**************//
     public function storeMedidas(Request $request, $feedback)
     {
+        $service = new MedidaAdministrativaService();
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados, [
-            'medidas_administrativas.*.solicitante' => 'required',
-            'medidas_administrativas.*.tipo' => 'required',
-            'medidas_administrativas.*.causa' => 'required',
-//            'medidas_administrativas.*.definicao' => 'required',
-            'medidas_administrativas.*.motivo' => 'required',
-            'medidas_administrativas.*.data_solicitacao' => 'required',
-        ]);
+        $dadosValidados = $service->validarDados($dados);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Salvar Informações',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                //todo Verifica se ja existe a pessoa se existir so da um increment
-                DB::beginTransaction();
-                foreach ($dados['medidas_administrativas'] as $medida) {
-                    if (isset($medida['novo'])) {
-                        $medida['user_id'] = auth()->id();
-                        $medidaAdm = MedidaAdministrativa::create($medida);
-                        //Remove a foto de anexo
+        }
 
-                        if (isset($medida['anexosDel'])) {
-                            foreach ($medida['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-
-                        // inseri uma nova foto de anexo
-                        if (isset($medida['anexos'])) {
-                            foreach ($medida['anexos'] as $index => $anexo) {
-                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                if ($arquivo) {
-                                    $arquivo->temporario = false;
-                                    $arquivo->chave = '';
-                                    $arquivo->save();
-                                    $medidaAdm->Anexos()->attach($arquivo->id);
-                                }
-                            }
-                        }
-                    } else {
-                        if (isset($medida['anexosDel'])) {
-                            foreach ($medida['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-                        $Medida = MedidaAdministrativa::find($medida['id']);
-                        if (isset($medida['anexos'])) {
-                            foreach ($medida['anexos'] as $index => $anexo) {
-                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                if ($arquivo) {
-                                    $arquivo->temporario = false;
-                                    $arquivo->chave = '';
-                                    $arquivo->save();
-                                    $Medida->Anexos()->attach($arquivo->id);
-                                }
-                            }
-                        }
-                    }
-                }
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE MEDIDAS ADMINISTRATIVAS:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        try {
+            $service->storeMedidas($dados, $feedback);
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            $usuario = User::find(auth()->id());
+            $msg = "error STORE MEDIDAS ADMINISTRATIVAS: {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . ($usuario ? $usuario->nome : 'N/A');
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
     public function updateMedidas(Request $request, $feedback)
     {
+        $service = new MedidaAdministrativaService();
         $dados = $request->input();
 
         $dadosValidados = \Validator::make($dados, [
@@ -218,96 +175,37 @@ class HistoricoController extends Controller
 //            'treinamento_sgi_id' => 'required',
         ]);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Salvar Informações',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                foreach ($dados['medidas_administrativas'] as $medida) {
-                    $medida['user_id'] = auth()->id();
-                    if (!isset($medida['id'])) {
-                        $medidaSingle = MedidaAdministrativa::create($medida);
+        }
 
-                        if (isset($medida['anexosDel'])) {
-                            foreach ($medida['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-
-                        // inseri uma nova foto de anexo
-                        if (isset($medida['anexos'])) {
-                            foreach ($medida['anexos'] as $index => $anexo) {
-                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                if ($arquivo) {
-                                    $arquivo->temporario = false;
-                                    $arquivo->chave = '';
-                                    $arquivo->save();
-                                    $medidaSingle->Anexos()->attach($arquivo->id);
-                                }
-                            }
-                        }
-
-                    } else {
-                        $medidaSingle = MedidaAdministrativa::find($medida['id']);
-                        if (isset($medida['anexosDel'])) {
-                            foreach ($medida['anexosDel'] as $id_anexo) {
-                                $arquivo = Arquivo::find($id_anexo);
-                                $arquivo->excluir();
-                            }
-                        }
-
-                        // inseri uma nova foto de anexo
-                        if (isset($medida['anexos'])) {
-                            foreach ($medida['anexos'] as $index => $anexo) {
-                                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                                if ($arquivo) {
-                                    $arquivo->temporario = false;
-                                    $arquivo->chave = '';
-                                    $arquivo->save();
-                                    $medidaSingle->Anexos()->attach($arquivo->id);
-                                }
-                            }
-                        }
-
-                        $medidaSingle->update($medida);
-                    }
-                }
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error UPDATE MEDIDAS ADMINISTRATIVAS:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+        try {
+            $service->updateMedidas($dados, $feedback);
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            $usuario = User::find(auth()->id());
+            $msg = "error UPDATE MEDIDAS ADMINISTRATIVAS: {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . ($usuario ? $usuario->nome : 'N/A');
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
     public function medidasAdministrativasPDF($medida, $feedback_id)
     {
-        $medida = MedidaAdministrativa::whereId($medida)->with('Feedback');
+        $service = new MedidaAdministrativaService();
+        $medida = $service->buscarParaPDF($medida);
 
-        if ($medida->count() == 0) {
+        if (!$medida) {
             return abort(404);
-        } else {
-            $medida = $medida->with(
-                'Anexos',
-                'Feedback:id,curriculo_id,empresa_id',
-                'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento',
-                'Feedback.Empresa:id,cnpj,razao_social,nome_fantasia,cep,logradouro,numero,complemento,bairro,municipio,uf,contato',
-                'Feedback.Empresa.Logo:id,nome,layout,disco,imagem,file,thumb',
-                'Feedback.Admissao:id,feedback_id,data_admissao'
-            )->first();
-
-            $pdf = PDF::loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida'));
-            $pdf->setPaper('A4', 'portrait');
-
-            return $pdf->stream("carta_" . Str::slug($medida->tipo) . (new DataHora())->nomeUnico() . ".pdf");
         }
+
+        $pdf = PDF::loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida'));
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->stream("carta_" . Str::slug($medida->tipo) . (new DataHora())->nomeUnico() . ".pdf");
     }
 
     // Anexos-------------------------------------------------
@@ -391,5 +289,25 @@ class HistoricoController extends Controller
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream((new DataHora())->nomeUnico() . ".pdf");
 
+    }
+
+    public function removerMedidaAdministrativa(Request $request)
+    {
+        $this->authorize('privilegio_gestao_rh');
+        $dados = $request->input();
+        
+        try {
+            $service = new MedidaAdministrativaService();
+            $medidaId = $dados['medida_id'] ?? $dados['id'];
+            $motivo = $dados['motivo'] ?? null;
+            
+            $service->removerMedidaAdministrativa($medidaId, $motivo);
+            
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            $msg = "error HISTÓRICO - REMOVER MEDIDA ADMINISTRATIVA: {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $e->getMessage() === 'Medida administrativa não encontrada!' ? $e->getMessage() : 'Houve um erro por favor tente novamente!'], 400);
+        }
     }
 }
