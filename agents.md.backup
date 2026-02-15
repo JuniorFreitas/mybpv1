@@ -1,0 +1,1205 @@
+# MyBP - Guia para LLMs/Agents
+
+## Visão Geral
+
+**MyBP** é um sistema de gestão de RH desenvolvido em **Laravel 8 (PHP 8.2)** + **Vue.js 2**.
+
+### Stack Principal
+- **Backend**: Laravel 8.12, Sanctum, Horizon (Redis), Websockets
+- **Frontend**: Vue 2.7.16, Bootstrap Vue, Laravel Mix
+- **Database**: MySQL/MariaDB + Redis
+- **Storage**: AWS S3
+- **Infra**: Docker, AWS ECS
+- **Integrações**: WhatsApp (ZapMe), Excel (Maatwebsite), PDF (DomPDF)
+
+### Características Críticas
+- **Multi-tenant**: Sempre filtrar por `empresa_id`
+- **Sistema de Aprovações**: 3 níveis (Gestor → Aprovação Extra → RH)
+- **Real-time**: Laravel Websockets + Echo
+- **Jobs**: Horizon para filas assíncronas
+-   **Cache/Queue**: Redis
+-   **ORM**: Eloquent
+
+### Infrastructure
+
+-   **Containers**: Docker + Docker Compose
+-   **Cloud**: AWS (ECS, ECR, S3)
+-   **CI/CD**: Bitbucket Pipelines
+
+---
+
+## Estrutura de Diretórios (Resumo)
+
+```
+mybp/
+├── app/
+│   ├── Classes/           # ZapNotificacao (WhatsApp)
+│   ├── Http/Controllers/  # Controllers
+│   ├── Models/            # 150+ models Eloquent
+│   ├── Services/          # Zapme/, Dynamus/, Cih/, Entrevistas/, Treinamento/
+│   ├── Jobs/              # Jobs assíncronos
+│   └── Tenant/            # Multi-tenancy
+├── database/migrations/   # Migrations
+├── docs/                  # Documentação técnica completa
+├── resources/js/          # Componentes Vue
+├── routes/web.php         # Rotas (1463 linhas)
+└── docker-compose*.yml    # Configs Docker
+```
+
+---
+
+## Principais Models (Domínio)
+
+### Recrutamento e Seleção
+
+-   `Curriculo` - Currículos dos candidatos
+-   `Vaga` - Vagas abertas
+-   `VagasAbertas` - Vagas publicadas
+-   `RequisicaoVaga` - Requisições de novas vagas
+-   `FeedbackCurriculo` - Feedbacks de currículos
+-   `EntrevistaRh` - Entrevistas RH
+-   `ParecerRh` - Pareceres RH
+-   `ParecerTestePratico` - Pareceres de testes práticos
+-   `Simulado` - Simulados/testes para candidatos
+
+### Admissão
+
+-   `Admissao` - Admissões
+-   `AdmissoesPrevista` - Admissões planejadas
+-   `DadosAdmissao` - Dados da admissão
+-   `DocumentosPreAdmissao` - Documentos pré-admissão
+-   `EmailPreAdmissao` - Emails de pré-admissão
+-   `CartaOferta` - Cartas de oferta
+
+### Gestão de Pessoas
+
+-   `User` - Usuários/Funcionários
+-   `Departamento` - Departamentos
+-   `CentroCusto` - Centros de custo
+-   `Papel` - Papéis/Permissões
+-   `Habilidade` - Habilidades/Competências
+
+### Processos de Aprovação
+
+-   `DemissaoPrevista` - Demissões planejadas
+-   `MudancaCargo` - Mudanças de cargo
+-   `FeriasPrevista` - Férias planejadas
+-   `ValorExtraPrevista` - Valores extras planejados
+-   `TransferenciaPrevista` - Transferências planejadas
+-   `AprovacaoExtraConfig` - Configuração de aprovações extras
+
+### Treinamentos
+
+-   `Treinamento` - Treinamentos
+-   `TreinamentoEvento` - Eventos de treinamento
+-   `Instrutor` - Instrutores
+-   `CertificadoNr` - Certificados NR
+-   `TreinamentoSgi` - Treinamentos SGI
+
+### Avaliações
+
+-   `Avaliacao` - Avaliações
+-   `AvaliacaoNoventaDias` - Avaliações 90 dias
+-   `AvaliacaoAnualFeedback` - Feedback avaliações anuais
+-   `AvaliacaoFeedback` - Feedbacks de avaliações
+-   `AvaliacaoResposta` - Respostas de avaliações
+-   `Formulario` - Formulários de avaliação
+
+### Medicina/Segurança do Trabalho
+
+-   `Exame` - Exames médicos
+-   `ExameFuncionario` - Exames de funcionários
+-   `Pcmso` - PCMSO
+-   `MedidaAdministrativa` - Medidas administrativas
+-   `Afastamento` - Afastamentos
+
+### Cliente/Empresa (Multi-tenant)
+
+-   `Cliente` - Clientes/Empresas
+-   `ClienteConfig` - Configurações do cliente
+-   `ClienteFilial` - Filiais do cliente
+-   `EmpresaConfig` - Configurações da empresa
+-   `PessoaEmpresa` - Pessoas vinculadas à empresa
+
+### Comunicação
+
+-   `Notificacao` - Notificações gerais
+-   `NotificacaoWhatsapp` - Notificações WhatsApp
+-   `MensagemChat` - Mensagens de chat
+-   `GruposChat` - Grupos de chat
+
+### Sistema
+
+-   `Sistema` - Configurações do sistema
+-   `LogHistorico` - Logs do sistema
+-   `Cloud` - Armazenamento cloud
+-   `Arquivo` - Arquivos
+
+---
+
+## Sistema de Aprovações (Padrão Importante)
+
+O MyBP implementa um **Sistema de Aprovação Extra** configurável, usado em 4 processos principais:
+
+### Fluxo de Aprovação (3 Níveis)
+
+1. **Gestor** → Aprovação do gestor direto
+2. **Aprovação Extra** → Camada adicional configurável (ex: Gerência, Diretoria)
+3. **RH** → Aprovação final do RH
+
+### Processos com Aprovação Extra
+
+-   `DemissaoPrevista` (demissao)
+-   `MudancaCargo` (mudanca_cargo)
+-   `FeriasPrevista` (ferias)
+-   `ValorExtraPrevista` (valor_extra)
+
+### Model AprovacaoExtraConfig
+
+```php
+// Estrutura da tabela
+empresa_id           - ID da empresa
+tipo_processo        - 'demissao', 'mudanca_cargo', 'ferias', 'valor_extra'
+nome_aprovacao       - Ex: "Gerência", "Diretoria"
+usuarios_autorizados - JSON array de user IDs
+emails_aprovadores   - JSON array de emails
+ativo                - boolean
+```
+
+### Permissões de Aprovação
+
+Podem aprovar na "Aprovação Extra":
+
+1. Usuários com `privilegio_gestao_rh` (sempre)
+2. Usuários com `privilegio_aprovar_por_rh` (sempre)
+3. Usuários na lista `usuarios_autorizados` da config
+
+### Colunas em Tabelas de Processos
+
+Cada processo tem estas colunas relacionadas:
+
+-   `aprovacao_extra_id` - ID do aprovador extra
+-   `status_aprovacao_extra` - Status da aprovação
+-   `obs_aprovacao_extra` - Observações
+-   `data_aprovacao_extra` - Data/hora da aprovação
+
+### Documentação Completa
+
+Veja [docs/PADRAO_APROVACAO_EXTRA.md](./docs/PADRAO_APROVACAO_EXTRA.md) para detalhes completos de implementação.
+
+---
+
+## Padrões de Código
+
+### Controllers
+
+#### Estrutura Típica
+
+```php
+class ExemploController extends Controller
+{
+    // Retorna lista paginada com permissões
+    public function atualizar(Request $request) {
+        $resultado = $this->filtro($request)->paginate($request->pages);
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $resultado->items(),
+                'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
+            ]
+        ]);
+    }
+
+    // Filtros com query builder
+    private function filtro($request) {
+        $query = Model::query()
+            ->with(['relacionamento1', 'relacionamento2'])
+            ->where('empresa_id', auth()->user()->empresa_id);
+
+        if ($request->campo) {
+            $query->where('campo', 'like', "%{$request->campo}%");
+        }
+
+        return $query->orderBy('created_at', 'desc');
+    }
+}
+```
+
+#### Padrões de Resposta
+
+```php
+// Sucesso
+return response()->json(['sucesso' => true, 'mensagem' => 'Operação realizada']);
+
+// Erro
+return response()->json(['erro' => true, 'mensagem' => 'Erro ao processar'], 400);
+
+// Lista paginada
+return response()->json([
+    'atual' => $paginacao->currentPage(),
+    'ultima' => $paginacao->lastPage(),
+    'total' => $paginacao->total(),
+    'dados' => $paginacao->items()
+]);
+```
+
+### Models
+
+#### Relacionamentos Típicos
+
+```php
+class Exemplo extends Model
+{
+    protected $fillable = ['campo1', 'campo2'];
+
+    protected $casts = [
+        'data' => 'datetime',
+        'ativo' => 'boolean',
+        'meta_dados' => 'array',
+    ];
+
+    // Relacionamentos
+    public function empresa() {
+        return $this->belongsTo(Cliente::class, 'empresa_id');
+    }
+
+    public function usuario() {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
+}
+```
+
+#### Multi-tenancy (Importante!)
+
+Sempre filtrar por `empresa_id`:
+
+```php
+$query->where('empresa_id', auth()->user()->empresa_id);
+```
+
+### Notificações WhatsApp (ZapNotificacao)
+
+```php
+use App\Classes\ZapNotificacao;
+
+// Enviar mensagem simples
+(new ZapNotificacao())->enviar([
+    'telefone' => '5598999023762',
+    'mensagem' => 'Olá, sua solicitação foi aprovada!',
+    'enviado_id' => auth()->id(),
+]);
+
+// Enviar com anexo PDF
+(new ZapNotificacao())->enviar([
+    'telefone' => '5598999023762',
+    'mensagem' => 'Segue documento em anexo',
+    'enviado_id' => auth()->id(),
+    'anexo' => [
+        'arquivo' => base64_encode(file_get_contents($pdfPath)),
+        'tipo' => ZapNotificacao::EXTENSAO_PDF
+    ]
+]);
+
+// Enviar com imagem
+(new ZapNotificacao())->enviar([
+    'telefone' => '5598999023762',
+    'mensagem' => 'Confira a imagem',
+    'enviado_id' => auth()->id(),
+    'anexo' => [
+        'arquivo' => $urlImagem,
+        'tipo' => ZapNotificacao::TIPO_IMAGEM
+    ]
+]);
+```
+
+### Collections (Filtros)
+
+```php
+// Filtrar collection
+$resultado = collect($dados)->filter(function ($item) use ($request) {
+    return stripos($item['campo'], $request->busca) !== false;
+})->values();
+```
+
+### Ordenação com Join
+
+```php
+$query->select('tabela.*')
+    ->join('outra_tabela', 'outra_tabela.id', '=', 'tabela.outra_id')
+    ->orderBy('outra_tabela.nome');
+```
+
+---
+
+## Frontend (Vue.js 2)
+
+### Estrutura de Componentes Vue
+
+Componentes ficam em `resources/js/components/` e são compilados via Laravel Mix.
+
+#### Template Típico
+
+```vue
+<template>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <!-- Cabeçalho com filtros -->
+                <div class="card">
+                    <div class="card-body">
+                        <input v-model="filtros.campo" @keyup.enter="atualizar" />
+                        <button @click="atualizar">Buscar</button>
+                    </div>
+                </div>
+
+                <!-- Tabela -->
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Coluna</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in dados" :key="item.id">
+                                    <td>{{ item.campo }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Paginação -->
+                <pagination v-model="pagina" :ultima="ultima" @input="atualizar" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+export default {
+    data() {
+        return {
+            dados: [],
+            filtros: {
+                campo: ''
+            },
+            pagina: 1,
+            ultima: 1,
+            total: 0
+        }
+    },
+    mounted() {
+        this.atualizar()
+    },
+    methods: {
+        atualizar() {
+            axios
+                .post('/api/rota/atualizar', {
+                    ...this.filtros,
+                    pages: this.pagina
+                })
+                .then((response) => {
+                    this.dados = response.data.dados.itens
+                    this.pagina = response.data.atual
+                    this.ultima = response.data.ultima
+                    this.total = response.data.total
+                })
+        },
+        salvar() {
+            axios
+                .post('/api/rota/salvar', this.form)
+                .then(() => {
+                    this.$swal('Sucesso!', 'Registro salvo', 'success')
+                    this.atualizar()
+                })
+                .catch(() => {
+                    this.$swal('Erro!', 'Erro ao salvar', 'error')
+                })
+        }
+    }
+}
+</script>
+```
+
+### Bibliotecas Vue Disponíveis
+
+-   **SweetAlert2**: `this.$swal('Título', 'Mensagem', 'success')`
+-   **Toastr**: Para notificações toast
+-   **BootstrapVue**: Componentes Bootstrap em Vue
+-   **vue-multiselect**: Selects avançados
+-   **vuedraggable**: Drag & drop
+-   **TinyMCE**: Editor de texto rico
+
+---
+
+## Rotas
+
+### Estrutura de Rotas Web
+
+O arquivo [routes/web.php](./routes/web.php) tem **1463 linhas** com rotas web e API.
+
+#### Padrão de Nomenclatura
+
+```php
+// API RESTful
+Route::post('/api/modelo/atualizar', [Controller::class, 'atualizar']);
+Route::post('/api/modelo/salvar', [Controller::class, 'salvar']);
+Route::post('/api/modelo/deletar', [Controller::class, 'deletar']);
+
+// Aprovações
+Route::post('/api/modelo/aprovar-gestor', [Controller::class, 'aprovarGestor']);
+Route::post('/api/modelo/aprovar-extra', [Controller::class, 'aprovarExtra']);
+Route::post('/api/modelo/aprovar-rh', [Controller::class, 'aprovarRh']);
+
+// Views
+Route::get('/modelo', function () {
+    return view('modelo.index');
+})->name('modelo');
+```
+
+### Health Check
+
+```php
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'Service is running',
+        'timestamp' => now()->toIso8601String(),
+    ]);
+});
+```
+
+## Comandos Essenciais
+
+```bash
+# Docker
+docker compose up -d
+docker compose exec mybpdp bash
+docker compose logs -f mybpdp
+
+# Laravel (no container)
+php artisan migrate
+php artisan cache:clear && php artisan config:clear
+php artisan horizon
+
+# Assets
+npm run watch        # Desenvolvimento
+npm run prod         # Produção (.env.prod)
+
+# Deploy
+./deploy-full.sh     # Deploy completo
+```
+
+**📖 Lista completa**: [COMANDOS_UTEIS.md](./COMANDOS_UTEIS.md)
+
+---
+
+## Deploy e Infraestrutura
+
+### AWS ECS
+
+O projeto roda em containers Docker no AWS ECS (Elastic Container Service).
+
+### Scripts de Deploy
+
+-   `deploy-full.sh` - Deploy completo com build e push
+-   `deployDocker.sh` - Deploy Docker
+-   Bitbucket Pipelines configurado em `bitbucket-pipelines.yml`
+
+### Documentação de Deploy
+
+Veja [docs/README-DEPLOY.md](./docs/README-DEPLOY.md) para processo completo.
+
+### Soluções Técnicas
+
+-   **Jobs ECS**: [docs/SOLUCAO_DUPLICACAO_JOB_ECS.md](./docs/SOLUCAO_DUPLICACAO_JOB_ECS.md)
+-   **Comandos Agendados**: [docs/SOLUCAO_KERNEL_ECS.md](./docs/SOLUCAO_KERNEL_ECS.md)
+-   **Limpeza ECR**: [docs/LIMPEZA_ECR_AUTOMATICA.md](./docs/LIMPEZA_ECR_AUTOMATICA.md)
+
+---
+
+## Autenticação e Permissões
+
+### Autenticação
+
+-   **Laravel Sanctum** para autenticação API
+-   **Laravel Auth** para sessões web
+
+### Sistema de Permissões (Habilidades)
+
+Permissões são gerenciadas através de "habilidades" no model `User`:
+
+```php
+// Verificar permissão
+if (auth()->user()->can('privilegio_gestao_rh')) {
+    // Usuário tem permissão
+}
+
+// Listar todas as habilidades do usuário
+$habilidades = auth()->user()->listaDeHabilidades();
+```
+
+#### Principais Permissões
+
+-   `privilegio_gestao_rh` - Gestão completa de RH
+-   `privilegio_aprovar_por_gestor` - Aprovar como gestor
+-   `privilegio_aprovar_por_rh` - Aprovar como RH
+-   `privilegio_recrutamento` - Acesso ao recrutamento
+-   `privilegio_admissao` - Acesso à admissão
+
+---
+
+## Integração WhatsApp (ZapMe)
+
+O sistema usa o SDK **ZapMe** para enviar notificações via WhatsApp.
+
+### Classe: ZapNotificacao
+
+Localizada em `app/Classes/ZapNotificacao.php`
+
+### Tipos de Anexo
+
+```php
+ZapNotificacao::EXTENSAO_PDF      // PDF
+ZapNotificacao::EXTENSAO_DOCX     // Word
+ZapNotificacao::TIPO_IMAGEM       // Imagem (URL)
+```
+
+### Uso Prático
+
+```php
+// Notificar aprovação
+(new ZapNotificacao())->enviar([
+    'telefone' => $funcionario->telefone,
+    'mensagem' => "Sua solicitação de férias foi aprovada!",
+    'enviado_id' => auth()->id(),
+]);
+
+// Notificar com documento
+(new ZapNotificacao())->enviar([
+    'telefone' => $candidato->telefone,
+    'mensagem' => "Parabéns! Segue sua carta de oferta.",
+    'enviado_id' => auth()->id(),
+    'anexo' => [
+        'arquivo' => $pdfBase64,
+        'tipo' => ZapNotificacao::EXTENSAO_PDF
+    ]
+]);
+```
+
+---
+
+## Jobs e Filas
+
+### Laravel Horizon
+
+O sistema usa **Laravel Horizon** para gerenciamento de filas.
+
+### Queue Driver
+
+-   **Driver**: Redis
+-   **Connection**: Predis
+
+### Comandos
+
+```bash
+# Iniciar Horizon
+php artisan horizon
+
+# Terminar Horizon gracefully
+php artisan horizon:terminate
+
+# Processar fila específica
+php artisan queue:work --queue=high,default
+```
+
+### Estrutura de Jobs
+
+Jobs ficam em `app/Jobs/`
+
+Exemplo:
+
+```php
+namespace App\Jobs;
+
+class ExemploJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public function handle() {
+        // Lógica do job
+    }
+}
+
+// Dispatch
+ExemploJob::dispatch($parametros);
+```
+
+---
+
+## Websockets (Real-time)
+
+### Laravel Websockets
+
+-   **Pacote**: beyondcode/laravel-websockets 1.9
+-   **Pusher Protocol**: Compatível
+
+### Broadcasting
+
+Eventos de broadcast ficam em `app/Events/`
+
+### Channels
+
+Definidos em `routes/channels.php`
+
+### Frontend (Laravel Echo)
+
+```javascript
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: process.env.MIX_PUSHER_APP_KEY,
+    wsHost: window.location.hostname,
+    wsPort: 6001,
+    forceTLS: false,
+    disableStats: true
+})
+
+// Escutar evento
+Echo.channel('channel-name').listen('EventName', (e) => {
+    console.log(e)
+})
+```
+
+---
+
+## Exportações e Importações
+
+### Excel (Maatwebsite)
+
+#### Exports
+
+Classes em `app/Exports/`
+
+```php
+use App\Exports\ExemploExport;
+use Maatwebsite\Excel\Facades\Excel;
+
+// Download
+return Excel::download(new ExemploExport($dados), 'arquivo.xlsx');
+
+// Store
+Excel::store(new ExemploExport($dados), 'arquivo.xlsx', 's3');
+```
+
+#### Imports
+
+Classes em `app/Imports/`
+
+```php
+use App\Imports\ExemploImport;
+
+Excel::import(new ExemploImport, $arquivo);
+```
+
+### PDF (DomPDF)
+
+```php
+use Barryvdh\DomPDF\Facade\Pdf;
+
+$pdf = Pdf::loadView('pdf.template', $dados);
+return $pdf->download('arquivo.pdf');
+```
+
+---
+
+## Storage e Upload
+
+### Disks Configurados
+
+-   **local** - storage/app
+-   **public** - storage/app/public
+-   **s3** - AWS S3 (produção)
+
+### Upload de Arquivo
+
+```php
+// Store
+$path = $request->file('arquivo')->store('pasta', 's3');
+
+// Get URL
+$url = Storage::disk('s3')->url($path);
+
+// Delete
+Storage::disk('s3')->delete($path);
+```
+
+### Helper Sistema::convertBase2
+
+Converte URL/arquivo para base64:
+
+```php
+$base64 = \App\Models\Sistema::convertBase2($urlOuPath, true);
+```
+
+---
+
+## Testes
+
+### PHPUnit
+
+Configurado em `phpunit.xml`
+
+```bash
+# Rodar todos os testes
+./vendor/bin/phpunit
+
+# Teste específico
+./vendor/bin/phpunit --filter NomeDoTeste
+```
+
+---
+
+## Logging e Auditoria
+
+### Spatie Activity Log
+
+Pacote: `spatie/laravel-activitylog 3.16`
+
+### Uso
+
+```php
+// Log automático no model
+use Spatie\Activitylog\Traits\LogsActivity;
+
+class Exemplo extends Model
+{
+    use LogsActivity;
+
+    protected static $logAttributes = ['*'];
+}
+
+// Log manual
+activity()
+    ->performedOn($model)
+    ->causedBy($user)
+    ->log('Descrição da ação');
+```
+
+### Model LogHistorico
+
+Sistema próprio de log em `app/Models/LogHistorico.php`
+
+---
+
+## Multi-tenancy (Importante!)
+
+### Estrutura
+
+Cada registro no sistema pertence a uma `empresa_id` (Cliente).
+
+### Sempre Filtrar
+
+```php
+// Em queries
+$query->where('empresa_id', auth()->user()->empresa_id);
+
+// Em Models (Global Scope)
+protected static function booted()
+{
+    static::addGlobalScope('empresa', function (Builder $builder) {
+        $builder->where('empresa_id', auth()->user()->empresa_id ?? 0);
+    });
+}
+```
+
+### Model Cliente
+
+O model `Cliente` representa empresas/clientes no sistema.
+
+---
+
+## Convenções de Nomenclatura
+
+### Database
+
+-   **Tabelas**: plural, snake_case (ex: `demissoes_previstas`)
+-   **Colunas**: snake_case (ex: `created_at`, `empresa_id`)
+-   **Foreign Keys**: `{tabela_singular}_id` (ex: `usuario_id`)
+
+### PHP/Laravel
+
+-   **Classes**: PascalCase (ex: `DemissaoPrevista`)
+-   **Methods**: camelCase (ex: `aprovarGestor()`)
+-   **Variables**: camelCase (ex: `$empresaId`)
+
+### JavaScript/Vue
+
+-   **Components**: PascalCase (ex: `ListagemDemissoes`)
+-   **Methods**: camelCase (ex: `atualizar()`)
+-   **Props**: camelCase (ex: `empresaId`)
+
+---
+
+## Configurações Importantes
+
+### .env
+
+```bash
+# App
+APP_NAME=MyBP
+APP_ENV=production
+APP_DEBUG=false
+
+# Database
+DB_CONNECTION=mysql
+DB_HOST=
+DB_DATABASE=
+DB_USERNAME=
+DB_PASSWORD=
+
+# Redis
+REDIS_HOST=
+REDIS_PASSWORD=
+REDIS_PORT=6379
+
+# AWS
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+
+# Queue
+QUEUE_CONNECTION=redis
+
+# Broadcasting
+BROADCAST_DRIVER=pusher
+
+# ZapMe
+ZAPME_TOKEN=
+ZAPME_INSTANCE=
+```
+
+---
+
+## Debugging e IDE
+
+### Laravel Debugbar
+
+Habilitado em desenvolvimento via `barryvdh/laravel-debugbar`
+
+### IDE Helper
+
+```bash
+# Gerar helpers para IDE
+php artisan ide-helper:generate
+php artisan ide-helper:models
+php artisan ide-helper:meta
+```
+
+Arquivos gerados:
+
+-   `_ide_helper.php` - Helper geral
+-   `_ide_helper_models.php` - Helper de models
+
+---
+
+## Documentação Adicional
+
+### Pasta docs/
+
+Toda documentação técnica fica em `docs/`:
+
+-   [README.md](./docs/README.md) - Índice da documentação
+-   [README-DEPLOY.md](./docs/README-DEPLOY.md) - Deploy completo
+-   [PADRAO_APROVACAO_EXTRA.md](./docs/PADRAO_APROVACAO_EXTRA.md) - Sistema de aprovações
+-   [COMANDOS_UTEIS.md](./COMANDOS_UTEIS.md) - Comandos úteis (335 linhas)
+-   E muitos outros...
+
+### CHANGELOG
+
+Veja [CHANGELOG.md](./CHANGELOG.md) para histórico de mudanças.
+
+---
+
+## Fluxos Principais
+
+### 1. Recrutamento e Seleção
+
+```
+Vaga Aberta → Currículos → Triagem → Entrevista RH →
+Teste Prático → Parecer → Aprovação → Admissão
+```
+
+### 2. Admissão
+
+```
+Pré-admissão → Documentos → Exames → Carta de Oferta →
+Admissão Efetivada
+```
+
+### 3. Demissão (com Aprovação Extra)
+
+```
+Solicitação → Aprovação Gestor → Aprovação Extra (opcional) →
+Aprovação RH → Demissão Efetivada
+```
+
+### 4. Férias
+
+```
+Solicitação → Aprovação Gestor → Aprovação Extra (opcional) →
+Aprovação RH → Férias Aprovadas
+```
+
+### 5. Treinamentos
+
+```
+Planejamento → Convocação → Realização → Certificação →
+Controle de Vencimentos
+```
+
+### 6. Avaliações
+
+```
+Período Avaliativo → Formulários → Respostas →
+Consolidação → Feedback
+```
+
+---
+
+## Comandos Artisan Customizados
+
+Definidos em `routes/MybpCommand.php` e `app/Console/Commands/`
+
+### Comandos Disponíveis
+
+```bash
+# Listar comandos customizados
+php artisan list mybp
+```
+
+---
+
+## Migrations
+
+### Localização
+
+`database/migrations/`
+
+### Padrão de Nomenclatura
+
+```
+YYYY_MM_DD_HHMMSS_create_tabela_table.php
+YYYY_MM_DD_HHMMSS_add_coluna_to_tabela_table.php
+```
+
+### Comandos
+
+```bash
+# Rodar migrations
+php artisan migrate
+
+# Status
+php artisan migrate:status
+
+# Rollback
+php artisan migrate:rollback --step=1
+
+# Refresh (perigoso!)
+php artisan migrate:refresh
+```
+
+---
+
+## Queries Comuns
+
+### Paginação com Filtros
+
+```php
+$query = Model::query()
+    ->where('empresa_id', auth()->user()->empresa_id)
+    ->when($request->busca, function($q) use ($request) {
+        $q->where('nome', 'like', "%{$request->busca}%");
+    })
+    ->orderBy('created_at', 'desc');
+
+return $query->paginate($request->pages ?? 15);
+```
+
+### Joins com Eager Loading
+
+```php
+$query = Model::query()
+    ->with(['relacionamento1', 'relacionamento2'])
+    ->join('outra_tabela', 'outra_tabela.id', '=', 'model.outra_id')
+    ->select('model.*', 'outra_tabela.campo');
+```
+
+### Aggregations
+
+```php
+$total = Model::where('empresa_id', $id)->count();
+$soma = Model::where('empresa_id', $id)->sum('valor');
+$media = Model::where('empresa_id', $id)->avg('nota');
+```
+
+---
+
+## Troubleshooting
+
+### Erro de Permissão
+
+Verificar:
+
+1. Usuário tem habilidade necessária?
+2. Filtro `empresa_id` está aplicado?
+3. Global scope está funcionando?
+
+### Job não Executa
+
+Verificar:
+
+1. Horizon está rodando?
+2. Redis está conectado?
+3. Queue está correta?
+
+### WhatsApp não Envia
+
+Verificar:
+
+1. Configurações ZapMe em `.env`
+2. Telefone está no formato correto? `55DDD9XXXXXXXX`
+3. Instância ZapMe está ativa?
+
+### Deploy Falha
+
+Verificar:
+
+1. AWS credentials corretas?
+2. ECR registry existe?
+3. ECS task definition atualizada?
+
+---
+
+## Boas Práticas
+
+### 1. Sempre Filtrar por empresa_id
+
+```php
+// ✅ Correto
+Model::where('empresa_id', auth()->user()->empresa_id)->get();
+
+// ❌ Errado (vaza dados entre empresas!)
+Model::all();
+```
+
+### 2. Usar Eager Loading
+
+```php
+// ✅ Correto (1 query)
+Model::with('relacionamento')->get();
+
+// ❌ Errado (N+1 queries)
+$models = Model::all();
+foreach ($models as $model) {
+    $model->relacionamento; // Query extra!
+}
+```
+
+### 3. Validar Requests
+
+```php
+// ✅ Usar Form Requests
+class StoreRequest extends FormRequest {
+    public function rules() {
+        return ['campo' => 'required|string|max:255'];
+    }
+}
+```
+
+### 4. Try/Catch em Operações Críticas
+
+```php
+try {
+    DB::beginTransaction();
+    // operações
+    DB::commit();
+} catch (\Exception $e) {
+    DB::rollback();
+    Log::error($e->getMessage());
+    return response()->json(['erro' => true], 500);
+}
+```
+
+### 5. Usar Filas para Operações Lentas
+
+```php
+// ✅ Dispatch job
+EnviarEmailJob::dispatch($dados);
+
+// ❌ Processar síncrono (lento!)
+Mail::send(...);
+```
+
+---
+
+## Glossário
+
+-   **BP/MyBP**: Nome do sistema (Business People)
+-   **Cliente**: Empresa/organização que usa o sistema (multi-tenant)
+-   **Empresa**: Sinônimo de Cliente
+-   **Gestor**: Gerente direto que aprova solicitações
+-   **RH**: Recursos Humanos, aprovação final
+-   **Aprovação Extra**: Camada adicional de aprovação (Gerência/Diretoria)
+-   **Habilidade**: Permissão/privilégio de usuário
+-   **Zapme**: Serviço de WhatsApp integrado
+-   **Horizon**: Interface para gerenciar filas Laravel
+
+---
+
+## Links Úteis
+
+-   **Laravel 8 Docs**: https://laravel.com/docs/8.x
+-   **Vue 2 Docs**: https://v2.vuejs.org/
+-   **Bootstrap Vue**: https://bootstrap-vue.org/
+-   **Horizon**: https://laravel.com/docs/8.x/horizon
+-   **Sanctum**: https://laravel.com/docs/8.x/sanctum
+
+---
+
+## Contato e Suporte
+
+Para dúvidas sobre o código:
+
+1. Consulte a documentação em `docs/`
+2. Veja o arquivo `COMANDOS_UTEIS.md`
+3. Verifique os comentários no código
+4. Analise os testes existentes
+
+---
+
+## Checklist para Novos Desenvolvedores
+
+-   [ ] Ler este `agents.md` completamente
+-   [ ] Configurar ambiente local com Docker
+-   [ ] Rodar migrations
+-   [ ] Testar login e permissões
+-   [ ] Explorar principais models (User, Cliente, Curriculo, Demissao)
+-   [ ] Testar fluxo de aprovação (DemissaoPrevista)
+-   [ ] Ler documentação de deploy
+-   [ ] Entender sistema de multi-tenancy
+-   [ ] Testar notificações WhatsApp (ambiente de teste)
+-   [ ] Revisar padrões de código nos controllers existentes
+
+---
+
+**Última atualização**: 2026-02-07  
+**Versão Laravel**: 8.12  
+**Versão PHP**: 8.2  
+**Versão Vue**: 2.7.16

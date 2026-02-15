@@ -103,7 +103,11 @@ class ValorExtraPrevista extends Model
         'status_aprovacao_rh',
         'data_aprovacao_rh',
         'aprovado_via_script',
-        'quem_deletou_id'
+        'quem_deletou_id',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra',
     ];
 
     protected $casts = [
@@ -130,7 +134,11 @@ class ValorExtraPrevista extends Model
         'status_aprovacao_rh' => 'string',
         'data_aprovacao_rh' => 'datetime:d/m/Y à\s H:i:s',
         'aprovado_via_script' => 'boolean',
-        'quem_deletou_id' => 'int'
+        'quem_deletou_id' => 'int',
+        'aprovacao_extra_id' => 'int',
+        'status_aprovacao_extra' => 'string',
+        'obs_aprovacao_extra' => 'string',
+        'data_aprovacao_extra' => 'datetime:d/m/Y à\s H:i:s',
     ];
 
     const STATUS_APROVADO = 'aprovado';
@@ -181,9 +189,13 @@ class ValorExtraPrevista extends Model
         return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
     }
 
+    public function AprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
+    }
+
     public function Anexos()
     {
         return $this->belongsToMany(Arquivo::class, 'valor_extra_previstas_anexos', 'valor_extra_prevista_id', 'arquivo_id');
     }
-
 }

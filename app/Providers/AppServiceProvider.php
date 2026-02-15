@@ -17,7 +17,6 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isLocal()) {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
         }
-
     }
 
     /**
@@ -31,8 +30,10 @@ class AppServiceProvider extends ServiceProvider
             \URL::forceScheme('https');
         }
 
-
         Schema::defaultStringLength(250);
+
+        // ✅ Observer para invalidar cache de RH automaticamente
+        \App\Models\User::observe(\App\Observers\UserRHCacheObserver::class);
 
         \Route::resourceVerbs([
             'create' => 'novo',
@@ -42,7 +43,5 @@ class AppServiceProvider extends ServiceProvider
             'show' => 'exibir',
             'destroy' => 'apagar'
         ]);
-
-
     }
 }

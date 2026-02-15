@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivot\TreinamentoVencimento;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -88,7 +89,7 @@ class Vencimento extends Model
     {
         return $this->hasManyThrough(
             Arquivo::class,
-            'treinamento_vencimento',
+            TreinamentoVencimento::class,
             'vencimento_id',
             'id',
             'id',

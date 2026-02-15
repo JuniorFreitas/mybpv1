@@ -2,84 +2,100 @@
 
 namespace App\Jobs\Movimentacao\DemissaoPrevista;
 
+use App\Events\Notificacoes\NotificacaoEvent;
+use App\Models\AprovacaoExtraConfig;
+use App\Models\Exportacao;
 use App\Models\User;
+use App\Services\DemissaoPrevista\DemissaoPrevistaCsvFileManager;
+use App\Services\DemissaoPrevista\DemissaoPrevistaExportFormatter;
+use App\Services\DemissaoPrevista\DemissaoPrevistaExportQueryBuilder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use MasterTag\CsvExporter;
+use Illuminate\Support\Facades\Event;
 
 class JobDemissaoPrevistaExportaExcel implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 3;
-    public $timeout = 0;
+    public int $tries = 3;
+    public int $timeout = 600;
 
-    public $user;
-    private $linhas = [];
+    /** @var int */
+    protected $userId;
+    /** @var string */
+    protected $local;
+    /** @var string */
+    protected $nomeArquivo;
+    /** @var array */
+    protected $filtros;
 
-    public function __construct(User $user, $collection)
+    public function __construct(int $userId, string $local, string $nomeArquivo, array $filtros = [])
     {
-        $this->user = $user;
-        $collection->chunk(100, function ($rows) {
-            foreach ($rows as $row) {
-                $this->linhas[] = $this->getDataRow($row);
-            }
-        });
+        $this->userId = $userId;
+        $this->local = $local;
+        $this->nomeArquivo = $nomeArquivo;
+        $this->filtros = $filtros;
     }
 
-    public function handle()
+    public function handle(): void
     {
-        $header = [
-            "Quem Solicitou",
-            "Data da Solicitação",
-            "Centro de Custo",
-            "Filial",
-            "Colaborador",
-            "Data Admissão",
-            "Cargo",
-            "Data Demissão",
-            "Tipo de Aviso",
-            "Gestor Aprovação",
-            "Observação",
-            "Status",
-            "Quem Aprovou/Reprovou",
-            "Data da Aprovação/Reprovação",
-            'Observação Aprovação/Reprovação',
-            "Status RH",
-            "Quem Aprovou/Reprovou RH",
-            "Data da Aprovação/Reprovação RH",
-            'Observação Aprovação/Reprovação RH'
-        ];
+        try {
+            \Log::info('Iniciando exportação Demissão Prevista CSV');
 
-        $CsvExport = new CsvExporter($this->user, 'Planejamento - Movimentação - Demissão', $header, $this->linhas);
-        $CsvExport->export();
+            $user = $this->authenticateUser();
+            $configExtra = AprovacaoExtraConfig::getConfigAtiva($user->empresa_id, 'demissao');
+            $nomeAprovacaoExtra = $configExtra ? $configExtra->nome_aprovacao : null;
+            $formatter = new DemissaoPrevistaExportFormatter($nomeAprovacaoExtra);
+            $fileManager = new DemissaoPrevistaCsvFileManager();
+
+            $headers = $formatter->getHeaders();
+            $fileManager->createTempFile($headers);
+
+            $query = DemissaoPrevistaExportQueryBuilder::forExport($user, $this->filtros);
+            $fileManager->writeDataInChunks($query, $formatter);
+
+            $fileManager->closeFile();
+            $fileManager->uploadToS3($this->nomeArquivo);
+            $fileManager->cleanup();
+
+            $this->sendNotification();
+            $this->createExportRecord();
+
+            \Log::info('Exportação Demissão Prevista concluída.');
+        } catch (\Exception $e) {
+            \Log::error('Erro na exportação Demissão Prevista CSV: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
-    private function getDataRow($row): array
+    private function authenticateUser(): User
     {
-        return [
-            $row->solicitante_nome,
-            $row->data_solicitacao,
-            $row->centro_custo,
-            $row->filial > 0 ? $row->centro_custo_filial_id : '',
-            $row->colaborador_nome,
-            $row->data_admissao,
-            $row->cargo,
-            $row->data_demissao,
-            $row->tipo_aviso,
-            $row->gestor_nome,
-            $row->obs,
-            $row->status_aprovacao ?: "aberto",
-            $row->UserAprovacao->nome ?? "aguardando",
-            $row->data_aprovacao ?? '',
-            $row->obs,
-            $row->status_aprovacao ?: "",
-            $row->rh_aprovacao_nome ?? "",
-            $row->data_aprovacao_rh ?? '',
-            $row->obs_rh,
-        ];
+        $user = User::find($this->userId);
+        if (!$user) {
+            throw new \Exception("Usuário não encontrado: {$this->userId}");
+        }
+        auth()->login($user);
+        return $user;
+    }
+
+    private function sendNotification(): void
+    {
+        Event::dispatch(new NotificacaoEvent([
+            'user_id' => $this->userId,
+            'local' => $this->local,
+        ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
+    }
+
+    private function createExportRecord(): void
+    {
+        Exportacao::create([
+            'user_id' => $this->userId,
+            'arquivo' => $this->nomeArquivo,
+            'local' => $this->local,
+            'removido' => false,
+        ]);
     }
 }

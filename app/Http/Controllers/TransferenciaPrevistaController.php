@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaAprovar;
-use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaAprovarRH;
+use App\Jobs\Movimentacao\TransferenciaPrevista\JobNotificacaoRecursiva;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaExportaExcel;
-use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaStore;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
-use App\Models\LogHistorico;
 use App\Models\TransferenciaPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +24,8 @@ class TransferenciaPrevistaController extends Controller
         $dados = $request->input();
         $dados['user_id'] = auth()->id();
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_origem_id' => 'required',
                 'centro_custo_destino_id' => 'required',
@@ -54,7 +53,10 @@ class TransferenciaPrevistaController extends Controller
                     }
                 }
                 DB::commit();
-                JobTransferenciaPrevistaStore::dispatch($transferenciaPrevista);
+
+                // Envia notificação para a próxima etapa (gestor)
+                JobNotificacaoRecursiva::dispatch($transferenciaPrevista->id, $transferenciaPrevista->empresa_id);
+
                 return response()->json('', 201);
             } catch (\Exception $e) {
                 DB::rollback();
@@ -80,6 +82,13 @@ class TransferenciaPrevistaController extends Controller
         $transferenciaPrevista->autocomplete_label_gestor_modal_anterior = $transferenciaPrevista->GestorAprovacao ? $transferenciaPrevista->GestorAprovacao->nome : '';
         $transferenciaPrevista->anexosDel = [];
         $transferenciaPrevista->load('Anexos');
+
+        // Informações de aprovação extra
+        $config = AprovacaoExtraConfig::getConfigAtiva($transferenciaPrevista->empresa_id, 'transferencia');
+        $transferenciaPrevista->tem_aprovacao_extra = $config ? true : false;
+        $transferenciaPrevista->pode_aprovar_extra = $config ? $config->usuarioPodeAprovar(auth()->id()) : false;
+        $transferenciaPrevista->nome_aprovacao_extra = $config ? $config->nome_aprovacao : '';
+
         return $transferenciaPrevista;
     }
 
@@ -95,7 +104,8 @@ class TransferenciaPrevistaController extends Controller
         $dados = $request->input();
         $dados['user_id'] = auth()->user()->id;
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_origem_id' => 'required',
                 'centro_custo_destino_id' => 'required',
@@ -155,7 +165,8 @@ class TransferenciaPrevistaController extends Controller
             }
             DB::commit();
 
-            JobTransferenciaPrevistaAprovar::dispatch($transferenciaPrevista);
+            // Notifica próxima etapa (Aprovação Extra ou RH) + etapas anteriores
+            JobNotificacaoRecursiva::dispatch($transferenciaPrevista->id, $transferenciaPrevista->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -164,69 +175,33 @@ class TransferenciaPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
 
-    public function aprovarRH(Request $request, TransferenciaPrevista $transferenciaPrevista)
+    public function aprovarExtra(Request $request, TransferenciaPrevista $transferenciaPrevista)
     {
-        $this->authorize('privilegio_aprovar_por_rh');
+        // Verifica se usu\u00e1rio pode aprovar (via config)
+        $config = AprovacaoExtraConfig::getConfigAtiva($transferenciaPrevista->empresa_id, 'transferencia');
+
+        if (!$config || !$config->usuarioPodeAprovar(auth()->id())) {
+            return response()->json(['msg' => 'Voc\u00ea n\u00e3o tem permiss\u00e3o para aprovar esta etapa'], 403);
+        }
+
         $dados = $request->input();
+
         try {
             DB::beginTransaction();
-            $transferenciaPrevista->update([
-                'rh_aprovacao_id' => auth()->id(),
-                'status_aprovacao_rh' => $dados['status_aprovacao_rh'],
-                'obs_rh' => $dados['obs_rh'],
-                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
-            ]);
 
-            if ($dados['status_aprovacao_rh'] === 'aprovado') {
-                // Atualiza o centro de custo do colaborador na admissão
-                $transferenciaPrevista->load([
-                    'Colaborador.Feedback.Admissao',
-                    'CentroCustoDestino' => function ($query) {
-                        $query->with(['Filiais' => function ($q) {
-                            $q->where('ativo', true);
-                        }]);
-                    }
-                ]);
-                
-                if ($transferenciaPrevista->Colaborador && 
-                    $transferenciaPrevista->Colaborador->Feedback && 
-                    $transferenciaPrevista->Colaborador->Feedback->Admissao) {
-                    
-                    $admissao = $transferenciaPrevista->Colaborador->Feedback->Admissao;
-                    
-                    // Verifica se o centro de custo destino tem filiais ativas
-                    $centroCustoDestino = $transferenciaPrevista->CentroCustoDestino;
-                    $filiaisAtivas = $centroCustoDestino && $centroCustoDestino->Filiais ? $centroCustoDestino->Filiais : collect();
-                    $temFilial = $filiaisAtivas->count() > 0;
-                    
-                    // Se tem filial e foi informado o centro_custo_filial_id, usa ele, senão usa a primeira filial ativa
-                    $centroCustoFilialId = null;
-                    if ($temFilial) {
-                        if (isset($dados['centro_custo_filial_id']) && $dados['centro_custo_filial_id']) {
-                            $centroCustoFilialId = $dados['centro_custo_filial_id'];
-                        } else {
-                            $primeiraFilial = $filiaisAtivas->first();
-                            $centroCustoFilialId = $primeiraFilial ? $primeiraFilial->id : null;
-                        }
-                    }
-                    
-                    $admissao->update([
-                        'centro_custo_id' => $transferenciaPrevista->centro_custo_destino_id,
-                        'filial' => $temFilial,
-                        'centro_custo_filial_id' => $centroCustoFilialId,
-                    ]);
-                }
-            }
+            $transferenciaPrevista->update([
+                'aprovacao_extra_id' => auth()->id(),
+                'data_aprovacao_extra' => (new DataHora())->dataHoraInsert(),
+                'obs_aprovacao_extra' => $dados['obs_aprovacao_extra'] ?? null,
+                'status_aprovacao_extra' => $dados['status_aprovacao_extra'],
+            ]);
 
             if (isset($dados['anexosDel'])) {
                 foreach ($dados['anexosDel'] as $id_anexo) {
                     $arquivo = Arquivo::find($id_anexo);
-                    if ($arquivo) {
-                        $arquivo->excluir();
-                    }
+                    $arquivo->excluir();
                 }
             }
 
@@ -242,14 +217,58 @@ class TransferenciaPrevistaController extends Controller
                 }
             }
 
-            LogHistorico::createLog(
-                $transferenciaPrevista->Colaborador->Feedback->id,
-               'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança Centro de Custo na solicitação de transferência #' . $transferenciaPrevista->id
-            );
+            DB::commit();
+
+            // Notifica pr\u00f3xima etapa (RH) + etapas anteriores
+            JobNotificacaoRecursiva::dispatch($transferenciaPrevista->id, $transferenciaPrevista->empresa_id);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao aprovar APROVA\u00c7\u00c3O EXTRA - TRANSFER\u00caNCIA:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+    }
+
+    public function aprovarRH(Request $request, TransferenciaPrevista $transferenciaPrevista)
+    {
+        if (!auth()->user()->can('privilegio_gestao_rh') && !auth()->user()->can('privilegio_aprovar_por_rh') && !auth()->user()->can('privilegio_aprovar_rh')) {
+            abort(403, 'This action is unauthorized.');
+        }
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $transferenciaPrevista->update([
+                'user_rh_id' => auth()->id(),
+                'resposta_rh' => $dados['resposta_rh'],
+                'obs_rh' => $dados['obs_rh'],
+                'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
+            ]);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $transferenciaPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
 
             DB::commit();
 
-            JobTransferenciaPrevistaAprovarRH::dispatch($transferenciaPrevista);
+            // Notifica todas as etapas anteriores (aprovação final)
+            JobNotificacaoRecursiva::dispatch($transferenciaPrevista->id, $transferenciaPrevista->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -258,13 +277,14 @@ class TransferenciaPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
 
     public function atualizar(Request $request)
     {
-
         $resultado = $this->filtro($request)->paginate($request->pages);
+
+        // Busca configuração de aprovação extra
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'transferencia');
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -273,57 +293,45 @@ class TransferenciaPrevistaController extends Controller
             'dados' => [
                 'itens' => $resultado->items(),
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
-                'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
+                'aprovar_por_rh' => auth()->user()->can('privilegio_gestao_rh') || auth()->user()->can('privilegio_aprovar_por_rh') || auth()->user()->can('privilegio_aprovar_rh'),
+                'tem_aprovacao_extra' => $config ? true : false,
+                'pode_aprovar_extra' => $config ? $config->usuarioPodeAprovar(auth()->id()) : false,
+                'nome_aprovacao_extra' => $config ? $config->nome_aprovacao : '',
             ]
         ]);
     }
 
     public function filtro(Request $request)
     {
+        $user = auth()->user();
         $resultado = TransferenciaPrevista::with(
             'CentroCustoOrigem',
             'CentroCustoDestino',
             'QuemAprovou:id,nome',
             'UserCadastrou:id,nome',
             'GestorAprovacao:id,nome',
-            'Colaborador.Feedback.Admissao.CentroCusto:id,label',
+            'Colaborador',
             'UserAprovacao:id,nome',
-            'RhAprovacao:id,nome');
+            'UserAprovacaoExtra:id,nome',
+            'RhAprovacao:id,nome'
+        )->where('empresa_id', $user->empresa_id);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())
-                ->where('created_at', '<=', $dataFim->dataHoraInsert());
-        }
+        $filterApplier = new \App\Services\TransferenciaPrevista\TransferenciaPrevistaFilterApplier($request->all(), $user);
+        $filterApplier->apply($resultado);
 
-        if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Colaborador', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
-            });
-        }
-
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
-            $resultado->whereStatusAprovacao($status);
-        }
-
-
-        if (!auth()->user()->can('privilegio_gestao_rh')){
-            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
-        }
-
-        return $resultado->orderByDesc('created_at');
+        return $resultado;
     }
 
     public function export(Request $request)
     {
-        JobTransferenciaPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        $filtros = $request->all();
+        $filtros['_full_export_access'] = auth()->user()->can('privilegio_gestao_rh')
+            || auth()->user()->can('privilegio_aprovar_por_rh')
+            || auth()->user()->can('privilegio_aprovar_rh');
 
+        $nomeArquivo = 'transferencia_prevista_' . rand(1000, 9999) . '_' . date('YmdHis') . '.csv';
+        JobTransferenciaPrevistaExportaExcel::dispatch(auth()->id(), 'Planejamento - Movimentação - Transferência', $nomeArquivo, $filtros);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
     }
     public function atualizacaoStatus(Request $request)
     {
@@ -351,5 +359,4 @@ class TransferenciaPrevistaController extends Controller
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
-
 }

@@ -1,7 +1,7 @@
 <template>
     <div class="col-12">
         <div class="form-group">
-            <label>Colaborador </label>
+            <label>{{ label }}</label>
             <autocomplete :caminho="urlAutocomplete"
                           :formsm="formsm"
                           :valido="model.colaborador_id !== ''"
@@ -24,6 +24,10 @@ export default {
         autocomplete,
     },
     props: {
+        label: {
+            type: String,
+            default: 'Colaborador',
+        },
         model: {
             type: Object,
             required: true,
@@ -39,9 +43,9 @@ export default {
             }
         },
         tipo: {
-          type: String,
-          required: false,
-          default: '',
+            type: String,
+            required: false,
+            default: '',
         },
         formsm: {
             type: Boolean,

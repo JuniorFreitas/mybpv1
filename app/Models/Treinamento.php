@@ -4,9 +4,7 @@ namespace App\Models;
 
 use App\Models\Pivot\TreinamentoVencimento;
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -113,13 +111,13 @@ class Treinamento extends Model
         return $date->format('Y-m-d H:i:s');
     }
 
-//    public function getUpdatedAtAttribute($value)
-//    {
-//        if ($value) {
-//            $data = new DataHora($this->attributes['updated_at']);
-//            return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto();
-//        }
-//    }
+    //    public function getUpdatedAtAttribute($value)
+    //    {
+    //        if ($value) {
+    //            $data = new DataHora($this->attributes['updated_at']);
+    //            return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto();
+    //        }
+    //    }
 
     public function FeedbackCurriculo()
     {
@@ -130,7 +128,7 @@ class Treinamento extends Model
     {
         return $this->hasManyThrough(
             Arquivo::class,
-            'treinamento_vencimento',
+            TreinamentoVencimento::class,
             'treinamento_id',
             'id',
             'id',
@@ -144,15 +142,15 @@ class Treinamento extends Model
             ->using(TreinamentoVencimento::class)
             ->withPivot(['data_vencimento', 'data_treinamento', 'numero_fat', 'arquivo_id'])->orderBy('id');
 
-//        return $this
-//            ->belongsToMany(Vencimento::class, 'treinamento_vencimento')
-//            ->using(TreinamentoVencimento::class)           // pivot customizado
-//            ->withPivot([
-//                'data_vencimento',
-//                'data_treinamento',
-//                'numero_fat',
-//                'arquivo_id',                              // novo campo
-//            ]);
+        //        return $this
+        //            ->belongsToMany(Vencimento::class, 'treinamento_vencimento')
+        //            ->using(TreinamentoVencimento::class)           // pivot customizado
+        //            ->withPivot([
+        //                'data_vencimento',
+        //                'data_treinamento',
+        //                'numero_fat',
+        //                'arquivo_id',                              // novo campo
+        //            ]);
     }
 
     public function Curriculo()
@@ -164,5 +162,4 @@ class Treinamento extends Model
     {
         return $this->hasOne(User::class, 'id', 'cadastrou');
     }
-
 }

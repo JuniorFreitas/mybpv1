@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeClientesEmpresa;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +30,10 @@ use MasterTag\DataHora;
  * @property \Illuminate\Support\Carbon|null $data_aprovacao
  * @property string|null $obs_aprovacao
  * @property string|null $status_aprovacao
+ * @property int|null $rh_aprovacao_id
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_rh
+ * @property string|null $obs_rh
+ * @property string|null $status_aprovacao_rh
  * @property-read \App\Models\AreaEtiqueta|null $Area
  * @property-read \App\Models\Vaga|null $Cargo
  * @property-read \App\Models\CentroCusto|null $CentroCusto
@@ -40,6 +43,8 @@ use MasterTag\DataHora;
  * @property-read \App\Models\User|null $User
  * @property-read \App\Models\User|null $UserAprovacao
  * @property-read \App\Models\User|null $UserCadastrou
+ * @property-read \App\Models\User|null $AprovacaoRh
+ * @property-read \App\Models\RequisicaoVagaMovimentacao|null $Movimentacao
  * @property-read mixed $data_solicitacao
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga newQuery()
@@ -89,6 +94,14 @@ class RequisicaoVaga extends Model
         'data_aprovacao',
         'obs_aprovacao',
         'status_aprovacao',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra',
+        'rh_aprovacao_id',
+        'data_aprovacao_rh',
+        'obs_rh',
+        'status_aprovacao_rh',
     ];
 
     protected $casts = [
@@ -110,13 +123,31 @@ class RequisicaoVaga extends Model
         'data_aprovacao' => 'date:d/m/Y',
         'obs_aprovacao' => 'string',
         'status_aprovacao' => 'string',
+        'aprovacao_extra_id' => 'int',
+        'status_aprovacao_extra' => 'string',
+        'obs_aprovacao_extra' => 'string',
+        'data_aprovacao_extra' => 'datetime:d/m/Y à\s H:i:s',
+        'rh_aprovacao_id' => 'int',
+        'data_aprovacao_rh' => 'date:d/m/Y',
+        'obs_rh' => 'string',
+        'status_aprovacao_rh' => 'string',
     ];
 
-    protected $appends = ['data_solicitacao'];
+    protected $appends = ['data_solicitacao', 'created_at_formatado', 'updated_at_formatado'];
 
     public function getDataSolicitacaoAttribute()
     {
         return (new DataHora($this->created_at))->dataCompleta();
+    }
+
+    public function getCreatedAtFormatadoAttribute()
+    {
+        return (new DataHora($this->created_at))->dataCompleta();
+    }
+
+    public function getUpdatedAtFormatadoAttribute()
+    {
+        return (new DataHora($this->updated_at))->dataCompleta();
     }
 
     public function setPrevisaoInicioAttribute($value)
@@ -184,17 +215,56 @@ class RequisicaoVaga extends Model
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
     }
 
-    //Scopo de ClienteID (Empresa)
-//    protected static function booted()
-//    {
-//        static::creating(function ($model) {
-//            $model->user_id = auth()->id();
-//        });
-//
-//        static::updating(function ($model) {
-//            $model->user_id = auth()->id();
-//        });
+    public function AprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
+    }
 
-//        static::addGlobalScope(new ScopeClientesEmpresa);
-//    }
+    public function AprovacaoRh()
+    {
+        return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
+    }
+
+    public function Movimentacao()
+    {
+        return $this->hasOne(RequisicaoVagaMovimentacao::class, 'id', 'id');
+    }
+
+    // Métodos auxiliares
+
+    public function podeSerAprovadaPorGestor()
+    {
+        return is_null($this->user_aprovacao_id);
+    }
+
+    public function podeSerAprovadaPorExtra()
+    {
+        return $this->status_aprovacao === 'aprovado' && is_null($this->aprovacao_extra_id);
+    }
+
+    public function podeSerAprovadaPorRh()
+    {
+        return $this->status_aprovacao === 'aprovado' && $this->status_aprovacao_extra === 'aprovado' && is_null($this->rh_aprovacao_id);
+    }
+
+    public function temAprovacaoCompleta()
+    {
+        return $this->status_aprovacao === 'aprovado' &&
+            $this->status_aprovacao_extra === 'aprovado' &&
+            $this->status_aprovacao_rh === 'aprovado';
+    }
+
+    //Scopo de ClienteID (Empresa)
+    //    protected static function booted()
+    //    {
+    //        static::creating(function ($model) {
+    //            $model->user_id = auth()->id();
+    //        });
+    //
+    //        static::updating(function ($model) {
+    //            $model->user_id = auth()->id();
+    //        });
+
+    //        static::addGlobalScope(new ScopeClientesEmpresa);
+    //    }
 }

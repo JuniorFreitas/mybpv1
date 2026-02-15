@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovar;
-use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaExportaExcel;
-use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaStore;
+use App\Jobs\Movimentacao\AdmissaoPrevista\JobNotificacaoRecursiva;
 use App\Models\AdmissoesPrevista;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
-use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -27,13 +25,19 @@ class AdmissoesPrevistaController extends Controller
         $dados['salario'] = $dados['salario_format'];
         $dados['user_id'] = auth()->user()->id;
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_id' => 'required',
                 'centro_custo_filial_id' => 'required_if:filial,true',
                 'tipo_contrato' => 'required',
                 'cargo_id' => 'required',
                 'salario_format' => 'required',
+                'nome_pessoa' => ['required', 'string', 'max:255', function ($attr, $value, $fail) {
+                    if (trim((string) $value) === '') {
+                        $fail('O campo Nome do Colaborador é obrigatório na solicitação.');
+                    }
+                }],
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -57,11 +61,11 @@ class AdmissoesPrevistaController extends Controller
                 }
             }
             DB::commit();
-            JobAdmissaoPrevistaStore::dispatch($admPrevista);
+            JobNotificacaoRecursiva::dispatch($admPrevista->id, $admPrevista->empresa_id);
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();
-            $msg = "erro ao salvar Solicitação de Admissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome. " | " . auth()->user()->Empresa->razao_social;
+            $msg = "erro ao salvar Solicitação de Admissão:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome . " | " . auth()->user()->Empresa->razao_social;
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
@@ -89,6 +93,10 @@ class AdmissoesPrevistaController extends Controller
         $admissoesPrevista->status_aprovacao = $admissoesPrevista->status_aprovacao ?: '';
         $admissoesPrevista->status_aprovacao_rh = $admissoesPrevista->status_aprovacao_rh ?: '';
 
+        // Aprovação Extra
+        $admissoesPrevista->aprovacao_extra_nome = $admissoesPrevista->UserAprovacaoExtra ? $admissoesPrevista->UserAprovacaoExtra->nome : '';
+        $admissoesPrevista->status_aprovacao_extra = $admissoesPrevista->status_aprovacao_extra ?: '';
+
         return $admissoesPrevista;
     }
 
@@ -105,7 +113,8 @@ class AdmissoesPrevistaController extends Controller
         $dados = $request->input();
         $dados['salario'] = $dados['salario_format'];
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_id' => 'required',
                 'tipo_contrato' => 'required',
@@ -184,7 +193,11 @@ class AdmissoesPrevistaController extends Controller
 
             DB::commit();
 
-            JobAdmissaoPrevistaAprovar::dispatch($admissoesPrevista);
+            \Log::info("=== DISPARANDO NOTIFICAÇÃO RECURSIVA - ADMISSÃO #{$admissoesPrevista->id} ===");
+            \Log::info("Status: {$dados['status_aprovacao']}");
+
+            // Dispara notificação recursiva que determina automaticamente os destinatários
+            JobNotificacaoRecursiva::dispatch($admissoesPrevista->id, $admissoesPrevista->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -193,7 +206,6 @@ class AdmissoesPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
 
     public function aprovarRH(Request $request, AdmissoesPrevista $admissoesPrevista)
@@ -211,30 +223,11 @@ class AdmissoesPrevistaController extends Controller
 
             DB::commit();
 
-            $dados_email = [
-                'dados_quem_cadastrou' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $admissoesPrevista->UserCadastrou->nome,
-                    'email_para' => $admissoesPrevista->UserCadastrou->login,
-                    'cargo' => $admissoesPrevista->Cargo->nome,
-                    'status_aprovacao' => $admissoesPrevista->status_aprovacao_rh,
-                    'id' => $admissoesPrevista->id,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ],
-                'dados_gestor' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $admissoesPrevista->RhAprovacao->nome,
-                    'email_para' => $admissoesPrevista->RhAprovacao->login,
-                    'cargo' => $admissoesPrevista->Cargo->nome,
-                    'status_aprovacao' => $admissoesPrevista->status_aprovacao_rh,
-                    'id' => $admissoesPrevista->id,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ]
-            ];
+            \Log::info("=== DISPARANDO NOTIFICAÇÃO RECURSIVA - ADMISSÃO #{$admissoesPrevista->id} ===");
+            \Log::info("Status RH: {$dados['status_aprovacao_rh']}");
 
-            JobAdmissaoPrevistaAprovarRH::dispatch($dados_email);
+            // Dispara notificação recursiva
+            JobNotificacaoRecursiva::dispatch($admissoesPrevista->id, $admissoesPrevista->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -249,6 +242,16 @@ class AdmissoesPrevistaController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
+        // Busca configuração de aprovação extra ativa
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'admissao');
+        $podeAprovarExtra = false;
+        $nomeAprovacaoExtra = '';
+
+        if ($config) {
+            $podeAprovarExtra = $config->podeAprovar(auth()->id());
+            $nomeAprovacaoExtra = $config->nome_aprovacao;
+        }
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -257,9 +260,11 @@ class AdmissoesPrevistaController extends Controller
                 'itens' => $resultado->items(),
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
+                'pode_aprovar_extra' => $podeAprovarExtra,
+                'tem_aprovacao_extra' => $config ? true : false,
+                'nome_aprovacao_extra' => $nomeAprovacaoExtra,
             ]
         ]);
-
     }
 
     public function atualizacaoStatus(Request $request)
@@ -291,55 +296,77 @@ class AdmissoesPrevistaController extends Controller
 
     public function filtro(Request $request)
     {
+        $user = auth()->user();
         $resultado = AdmissoesPrevista::with(
             'Cargo',
             'CentroCusto',
             'CentroCustoFilial',
             'UserCadastrou:id,nome',
-            'GestorAprovacao:id,nome', 'UserAprovacao:id,nome', 'RhAprovacao:id,nome');
+            'GestorAprovacao:id,nome',
+            'UserAprovacao:id,nome',
+            'UserAprovacaoExtra:id,nome',
+            'RhAprovacao:id,nome'
+        )->where('empresa_id', $user->empresa_id);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        $filterApplier = new \App\Services\AdmissoesPrevista\AdmissoesPrevistaFilterApplier($request->all(), $user);
+        $filterApplier->apply($resultado);
 
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0]. ' 00:00:00');
-            $dataFim = new DataHora($periodo[1]. ' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
-        }
-
-        if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Cargo', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
-            });
-        }
-
-        if ($request->filled('campoStatusAprovacao')) {
-            $status = $request->campoStatusAprovacao;
-            if ($request->campoStatusAprovacao == "aberto"){
-                $resultado->whereNull('status_aprovacao');
-            }
-            elseif ($request->campoStatusAprovacao == "aprovado_gestor"){
-                $resultado->where('status_aprovacao',AdmissoesPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
-            }elseif ($request->campoStatusAprovacao == "aprovado_rh"){
-                $resultado->where('status_aprovacao_rh', AdmissoesPrevista::STATUS_APROVADO);
-            }else{
-                $resultado->whereStatusAprovacao(AdmissoesPrevista::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', AdmissoesPrevista::STATUS_REPROVADO);
-            }
-        }
-
-        if (!auth()->user()->can('privilegio_gestao_rh')) {
-            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
-        }
-
-        return $resultado->orderByDesc('created_at');
-
+        return $resultado;
     }
+
+    public function aprovarExtra(Request $request, AdmissoesPrevista $admissoesPrevista)
+    {
+        $dados = $request->input();
+
+        // Verifica se o usuário pode aprovar
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'admissao');
+        if (!$config || !$config->podeAprovar(auth()->id())) {
+            return response()->json(['msg' => 'Você não tem permissão para aprovar esta etapa'], 403);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $admissoesPrevista->update([
+                'aprovacao_extra_id' => auth()->id(),
+                'data_aprovacao_extra' => now(),
+                'obs_aprovacao_extra' => $dados['obs_aprovacao_extra'] ?? null,
+                'status_aprovacao_extra' => $dados['status_aprovacao_extra'],
+            ]);
+
+            DB::commit();
+
+            \Log::info("=== DISPARANDO NOTIFICAÇÃO RECURSIVA - ADMISSÃO #{$admissoesPrevista->id} ===");
+            \Log::info("Status Aprovação Extra: {$dados['status_aprovacao_extra']}");
+
+            // Dispara notificação recursiva que determina automaticamente os destinatários
+            JobNotificacaoRecursiva::dispatch($admissoesPrevista->id, $admissoesPrevista->empresa_id);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error("Erro ao aprovar extra admissão prevista: {$e->getMessage()}", [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'user' => auth()->user()->nome
+            ]);
+            return response()->json(['msg' => 'Houve um erro. Por favor, tente novamente'], 400);
+        }
+    }
+
+    // Notificações agora são gerenciadas pelo JobNotificacaoRecursiva
+    // Não há mais necessidade de métodos separados de notificação
 
     //Excel
     public function export(Request $request)
     {
-        JobAdmissaoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        $filtros = $request->all();
+        $filtros['_full_export_access'] = auth()->user()->can('privilegio_gestao_rh')
+            || auth()->user()->can('privilegio_aprovar_por_rh')
+            || auth()->user()->can('privilegio_aprovar_rh');
+
+        $nomeArquivo = 'admissao_prevista_' . rand(1000, 9999) . '_' . date('YmdHis') . '.csv';
+        JobAdmissaoPrevistaExportaExcel::dispatch(auth()->id(), 'Planejamento - Movimentação - Admissão', $nomeArquivo, $filtros);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
     }
 }
