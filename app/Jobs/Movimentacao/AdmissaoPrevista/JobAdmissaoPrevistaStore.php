@@ -30,6 +30,7 @@ class JobAdmissaoPrevistaStore implements ShouldQueue
             'nome_para' => $admissaoPrevista->GestorAprovacao->nome,
             'email_para' => $admissaoPrevista->GestorAprovacao->login,
             'admissao_id' => $admissaoPrevista->id,
+            'nome_pessoa' => $admissaoPrevista->nome_pessoa ?? ($admissaoPrevista->Colaborador ? $admissaoPrevista->Colaborador->nome : ''),
             'cargo' => $admissaoPrevista->Cargo->nome,
             'empresa_id' => auth()->user()->empresa_id
         ];

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('convocacao/{resposta}/{hash}/', [\App\Http\Controllers\IntermitenteController::class, "respostaConvocacao"])->name('respostaConvocacao');
 
 Route::middleware('apitoken')->post('envia-whats', function (Request $request) {
-//     $arquivo =  Sistema::convertBase2(CartaOferta::checklistArquivo('equatorialservicos'), true);
+    //     $arquivo =  Sistema::convertBase2(CartaOferta::checklistArquivo('equatorialservicos'), true);
     try {
         (new ZapNotificacao())->enviar([
             'enviado_id' => 1,
@@ -26,21 +26,21 @@ Route::middleware('apitoken')->post('envia-whats', function (Request $request) {
         return response()->json(['msg' => __('msg.HOUVE_UM_ERRO')], 400);
     }
 
-//    'json' => [
-//        "enviado_id" => 104,
-//        "telefone" => env('APP_ENV') == 'local' ? "5598999023762" : $dados['telefone'],
-//        "mensagem" => $dados['mensagem'],
-//        "sistema" => "sgi"
-//    ]
+    //    'json' => [
+    //        "enviado_id" => 104,
+    //        "telefone" => env('APP_ENV') == 'local' ? "5598999023762" : $dados['telefone'],
+    //        "mensagem" => $dados['mensagem'],
+    //        "sistema" => "sgi"
+    //    ]
 });
 
 
 Route::middleware('api')->get('/login', function (Request $request) {
     return response()->json(['erro' => 'Não autorizado'], 403);
-})->name("login");
+})->name("api.login.unauthorized");
 
 Route::middleware('api')
-    ->post('/login', [\App\Http\Controllers\Api\LoginController::class, 'login'])->name("login");
+    ->post('/login', [\App\Http\Controllers\Api\LoginController::class, 'login'])->name("api.login");
 
 
 //Route::middleware('auth:api')->group(function () {
@@ -52,7 +52,7 @@ Route::middleware(['api', 'auth:sanctum', 'usuario.ativo'])->group(function () {
 
     //Route::group(['middleware' => ['auth', 'habilidades', 'horario_ativo'], 'as' => 'g.'], function () {
 
-//    Route::apiResource('empresas', "EmpresasController", ['parameters' => ['empresas' => 'empresa']])->middleware('can:empresa');
+    //    Route::apiResource('empresas', "EmpresasController", ['parameters' => ['empresas' => 'empresa']])->middleware('can:empresa');
 
 
     Route::apiResource('habilidades', \App\Http\Controllers\Api\HabilidadeController::class)->middleware('can.sanctum:habilidades');
@@ -70,7 +70,7 @@ Route::group(['as' => 'v1', 'prefix' => 'v1/{empresa_slug}', 'middleware' => ['a
 Route::group(['as' => 'vaga'], function () {
     Route::get('{empresa_slug}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagasAbertasByEmpresa']);
     Route::get('{empresa_slug}/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagaAberta']);
-//    Route::get('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'index']);
+    //    Route::get('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'index']);
     Route::post('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'atualizar']);
 
     Route::post('busca-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCurriculo']);

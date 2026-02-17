@@ -305,21 +305,15 @@
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
-                <div class="col-12 col-md-3">
-                    <div class="form-check" style="margin-bottom: -11px;">
-                        <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                               @change.prevent="atualizar()"
-                               id="filtroIntervalo"
-                               v-model="controle.dados.filtroPeriodo">
-                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                    </div>
-                    <div class="form-group">
-                        <datepicker range formsm label=""
-                                    @onselect="atualizar()"
-                                    :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                    v-model="controle.dados.periodo"></datepicker>
-                    </div>
-                </div>
+                <date-range-filter
+                    :enabled.sync="controle.dados.filtroPeriodo"
+                    :start-date.sync="controle.dados.dataInicio"
+                    :end-date.sync="controle.dados.dataFim"
+                    :disabled="controle.carregando"
+                    :id-suffix="hash"
+                    label="Por período"
+                    wrapper-class="col-12 col-md-3"
+                />
 
                 <div class="col-12 col-md-5">
                     <div class="form-group">
@@ -603,6 +597,7 @@ import autocomplete from "../../AutoComplete";
 import DatePicker from "../../DatePicker";
 import Upload from "../../Upload";
 import ControlePaginacao from "../../ControlePaginacao";
+import DateRangeFilter from "../../DateRangeFilter.vue";
 import ExportacaoMixin from "../../../mixins/Exportacoes";
 import Validacoes from "../../../mixins/Validacoes";
 
@@ -611,6 +606,7 @@ export default {
     components: {
         autocomplete,
         DatePicker,
+        DateRangeFilter,
         Upload,
         ControlePaginacao,
         gestoraprovacao
@@ -649,6 +645,8 @@ export default {
             selecionados: [],
 
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
+
+            _atualizarPeriodoTimeout: null,
 
             datarelatorio: "",
             tipoRelatorio: "pdf",
@@ -726,6 +724,8 @@ export default {
                     campoCentrosDeCusto: "",
                     campoGestores: "",
                     filtroPeriodo: false,
+                    dataInicio: "",
+                    dataFim: "",
                     periodo: "",
                     pages: 50
                 }
@@ -735,9 +735,29 @@ export default {
     mounted() {
         this.formDefault = _.cloneDeep(this.form); //copia
         this.atualizar();
-        let inicio_de_mes = moment().startOf("month").format("DD/MM/YYYY");
-        let fim_de_mes = moment().add(1, "M").endOf("month").format("DD/MM/YYYY");
-        this.controle.dados.periodo = `${inicio_de_mes} até ${fim_de_mes}`;
+    },
+    watch: {
+        "controle.dados.dataInicio"() {
+            this.syncPeriodoFromDates();
+            this.debounceAtualizarPeriodo();
+        },
+        "controle.dados.dataFim"() {
+            this.syncPeriodoFromDates();
+            this.debounceAtualizarPeriodo();
+        },
+        "controle.dados.filtroPeriodo"(ativo) {
+            if (ativo) {
+                this.$nextTick(() => {
+                    this.controle.dados.dataInicio = moment().startOf("month").format("YYYY-MM-DD");
+                    this.controle.dados.dataFim = moment().endOf("month").format("YYYY-MM-DD");
+                    this.syncPeriodoFromDates();
+                    this.atualizar();
+                });
+            } else {
+                this.syncPeriodoFromDates();
+                this.atualizar();
+            }
+        }
     },
     computed: {
         // tudoMarcado() {
@@ -774,6 +794,27 @@ export default {
         },
     },
     methods: {
+        syncPeriodoFromDates() {
+            const d = this.controle.dados;
+            if (!d.filtroPeriodo || !d.dataInicio || !d.dataFim) {
+                d.periodo = "";
+                return;
+            }
+            const fmt = (ymd) => {
+                if (!ymd) return "";
+                const [y, m, day] = ymd.split("-");
+                return `${day}/${m}/${y}`;
+            };
+            d.periodo = `${fmt(d.dataInicio)} até ${fmt(d.dataFim)}`;
+        },
+        debounceAtualizarPeriodo() {
+            if (!this.controle.dados.filtroPeriodo) return;
+            if (this._atualizarPeriodoTimeout) clearTimeout(this._atualizarPeriodoTimeout);
+            this._atualizarPeriodoTimeout = setTimeout(() => {
+                this._atualizarPeriodoTimeout = null;
+                this.atualizar();
+            }, 150);
+        },
         exportaExcel() {
             if (!this.controle.dados.filtroPeriodo) {
                 mostraErro("", "Selecione um periodo por favor!");

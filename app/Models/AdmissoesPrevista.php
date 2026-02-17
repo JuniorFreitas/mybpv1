@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Scopes\ScopeClientesEmpresa;
 use App\Tenant\Traits\TenantTrait;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +14,7 @@ use MasterTag\DataHora;
  * @property int $id
  * @property int|null $cliente_id
  * @property int|null $colaborador_id
+ * @property string|null $nome_pessoa
  * @property int $centro_custo_id
  * @property string $tipo_contrato
  * @property int $cargo_id
@@ -91,6 +91,7 @@ class AdmissoesPrevista extends Model
 
     protected $fillable = [
         'colaborador_id',
+        'nome_pessoa',
         'centro_custo_id',
         'filial',
         'centro_custo_filial_id',
@@ -105,6 +106,10 @@ class AdmissoesPrevista extends Model
         'data_aprovacao',
         'obs_aprovacao',
         'status_aprovacao',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra',
         'empresa_id',
         'gestor_id',
         'rh_aprovacao_id',
@@ -119,6 +124,7 @@ class AdmissoesPrevista extends Model
         'id' => 'int',
         'cliente_id' => 'int',
         'colaborador_id' => 'int',
+        'nome_pessoa' => 'string',
         'centro_custo_id' => 'int',
         'filial' => 'boolean',
         'centro_custo_filial_id' => 'int',
@@ -135,8 +141,12 @@ class AdmissoesPrevista extends Model
         'data_aprovacao' => 'date:d/m/Y',
         'obs_aprovacao' => 'string',
         'status_aprovacao' => 'string',
+        'aprovacao_extra_id' => 'int',
+        'status_aprovacao_extra' => 'string',
+        'obs_aprovacao_extra' => 'string',
+        'data_aprovacao_extra' => 'datetime:d/m/Y à\s H:i:s',
         'empresa_id' => 'int',
-        'gestor_id'=>'int',
+        'gestor_id' => 'int',
         'rh_aprovacao_id' => 'int',
         'obs_rh' => 'string',
         'status_aprovacao_rh' => 'string',
@@ -153,7 +163,7 @@ class AdmissoesPrevista extends Model
         return $date->format('Y-m-d H:i:s');
     }
 
-    protected $appends = ['salario_format'];
+    protected $appends = ['salario_format', 'aprovacao_extra_nome'];
 
     public function setDataAdmissaoAttribute($value)
     {
@@ -168,6 +178,11 @@ class AdmissoesPrevista extends Model
     public function getSalarioFormatAttribute()
     {
         return number_format($this->attributes['salario'], 2, ',', '.');
+    }
+
+    public function getAprovacaoExtraNomeAttribute()
+    {
+        return $this->UserAprovacaoExtra ? $this->UserAprovacaoExtra->nome : '';
     }
 
     public function setSalarioAttribute($value)
@@ -214,6 +229,16 @@ class AdmissoesPrevista extends Model
     public function UserAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
+
+    public function UserAprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
+    }
+
+    public function AprovacaoExtra()
+    {
+        return $this->belongsTo(AprovacaoExtraConfig::class, 'aprovacao_extra_id');
     }
 
     public function RhAprovacao()

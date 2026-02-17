@@ -108,7 +108,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'entrevista_parecer_rh_insert', 'descricao' => 'Pode cadastrar um Parecer Rh'];
         $lista[] = ['nome' => 'entrevista_parecer_rh_update', 'descricao' => 'Pode alterar um Parecer Rh'];
         $lista[] = ['nome' => 'entrevista_parecer_rh_delete', 'descricao' => 'Pode apagar um Parecer Rh'];
-//@can
+        //@can
         //ParecerRota------------------------------
         $lista[] = ['nome' => 'entrevista_parecer_rota', 'descricao' => 'Acessar rota/menu Parecer Rota Transporte'];
         $lista[] = ['nome' => 'entrevista_parecer_rota_insert', 'descricao' => 'Pode cadastrar um Parecer Rota Transporte'];
@@ -300,7 +300,7 @@ class HabilidadesTableSeeder extends Seeder
 
         $lista[] = ['nome' => 'administracao_planejamentodiario', 'descricao' => 'Acessar Planejamento Diário'];
 
-//        Categoria planos de conta
+        //        Categoria planos de conta
         $lista[] = ['nome' => 'financeiro_classificacao-plano-conta', 'descricao' => 'Acessar rota/menu Classificação de planos de conta'];
         $lista[] = ['nome' => 'financeiro_classificacao-plano-conta_insert', 'descricao' => 'Pode cadastrar uma nova classificação de planos de conta'];
         $lista[] = ['nome' => 'financeiro_classificacao-plano-conta_update', 'descricao' => 'Pode alterar uma classificação de planos de conta'];
@@ -352,6 +352,12 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'administracao_aniversariantes', 'descricao' => 'Acessar Aniversariantes'];
         $lista[] = ['nome' => 'administracao_aniversariantes_enviar', 'descricao' => 'Enviar Email Para os Aniversariantes'];
 
+        //Aprovações Extras------------------------------
+        $lista[] = ['nome' => 'administracao_aprovacao_extra_config', 'descricao' => 'Acessar Configuração de Aprovações Extras'];
+        $lista[] = ['nome' => 'administracao_aprovacao_extra_config_insert', 'descricao' => 'Pode cadastrar uma Configuração de Aprovação Extra'];
+        $lista[] = ['nome' => 'administracao_aprovacao_extra_config_update', 'descricao' => 'Pode alterar uma Configuração de Aprovação Extra'];
+        $lista[] = ['nome' => 'administracao_aprovacao_extra_config_delete', 'descricao' => 'Pode apagar uma Configuração de Aprovação Extra'];
+
         //Relatorios
         $lista[] = ['nome' => 'relatorio_relatorios', 'descricao' => 'Acessar Relatórios'];
         $lista[] = ['nome' => 'relatorio_controleusuarios', 'descricao' => 'Acessar Controle de Usuarios'];
@@ -361,7 +367,6 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'relatorio_ferias', 'descricao' => 'Acessar Relatorio de Férias'];
         $lista[] = ['nome' => 'relatorio_centro_de_custo', 'descricao' => 'Acessar Relatorio de Centro de Custo'];
         $lista[] = ['nome' => 'relatorio_aniversariantes', 'descricao' => 'Acessar Relatórios de Aniversariantes'];
-        $lista[] = ['nome' => 'relatorio_avaliacao_90_dias', 'descricao' => 'Pode acessar o relatório de avaliação de 90 dias'];
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
@@ -447,13 +452,13 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'acesso_clinica', 'descricao' => 'Acesso clinica'];
         $lista[] = ['nome' => 'acesso_clinica_insert', 'descricao' => 'Pode cadastrar exame'];
         $lista[] = ['nome' => 'acesso_clinica_update', 'descricao' => 'Pode alterar exame'];
-//        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
+        //        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
 
         //HABILIDADES PROJETO------------------------------
         $lista[] = ['nome' => 'cadastro_projetos', 'descricao' => 'Acesso ao menu Projeto'];
         $lista[] = ['nome' => 'cadastro_projetos_insert', 'descricao' => 'Pode cadastrar Projeto'];
         $lista[] = ['nome' => 'cadastro_projetos_update', 'descricao' => 'Pode alterar Projeto'];
-//        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
+        //        $lista[] = ['nome' => 'cadastro_empresa_temporaria_delete', 'descricao' => 'Pode apagar empresa_temporaria'];
 
         //HABILIDADES PLANEJAMENTO MOBILIZAÇÃO------------------------------
         $lista[] = ['nome' => 'planejamento_mobilizacao', 'descricao' => 'Acesso ao menu Mobilização dentro de Planejamento'];

@@ -87,6 +87,10 @@ class MudaCargoPrevista extends Model
         'status_aprovacao',
         'empresa_id',
         'gestor_id',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra',
     ];
 
     protected $casts = [
@@ -107,7 +111,11 @@ class MudaCargoPrevista extends Model
         'obs_aprovacao' => 'string',
         'status_aprovacao' => 'string',
         'empresa_id' => 'int',
-        'gestor_id' => 'int'
+        'gestor_id' => 'int',
+        'aprovacao_extra_id' => 'int',
+        'status_aprovacao_extra' => 'string',
+        'obs_aprovacao_extra' => 'string',
+        'data_aprovacao_extra' => 'datetime:d/m/Y à\s H:i:s',
     ];
 
     protected function serializeDate(DateTimeInterface $date)
@@ -176,6 +184,11 @@ class MudaCargoPrevista extends Model
     public function UserAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
+    }
+
+    public function AprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
     }
 
     public function Anexos()

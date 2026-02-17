@@ -35,7 +35,7 @@
     </li>
 @endif--}}
 <div id="system-menu">
-    @if(\App\Models\Sistema::permitirLinks('administracao_clientes','administracao_fornecedores','administracao_atareuniao','administracao_pesquisaclima','administracao_planejamentodiario','administracao_aniversariantes', 'administracao_documentos_legais'))
+    @if(\App\Models\Sistema::permitirLinks('administracao_clientes','administracao_fornecedores','administracao_atareuniao','administracao_pesquisaclima','administracao_planejamentodiario','administracao_aniversariantes', 'administracao_documentos_legais', 'administracao_aprovacao_extra_config'))
         <li id="administracao">
             <a href="javascript://" class="has-arrow waves-effect" parent="administracao">
                 <i class="bx bxs-book-content"></i>
@@ -131,6 +131,14 @@
                         <a href="{{route('g.administracao.aniversariantes.aniversariantes.index')}}"
                            parent="administracao" key="aniversariantes">
                             Aniversariantes
+                        </a>
+                    </li>
+                @endcan
+                @can('administracao_aprovacao_extra_config')
+                    <li>
+                        <a href="{{route('g.administracao.aprovacao-extra-config.index')}}"
+                           parent="administracao" key="aprovacao-extra-config">
+                            Aprovações Extras
                         </a>
                     </li>
                 @endcan
@@ -741,7 +749,7 @@
                 <span>CLOUD</span>
             </a>
             <ul aria-expanded="false">
-                {{--                auth()->user()->GrupoCloud?->nome == 'Administradores'--}}
+                {{-- auth()->user()->GrupoCloud?->nome == 'Administradores'--}}
                 @foreach(auth()->user()->CloudsAtivo as $cloud)
                     <li>
                         <a href="{{route('g.cloud.cloud.single', [$cloud->id, $cloud->nome])}}" parent="cloud"
@@ -752,13 +760,13 @@
                     </li>
                 @endforeach
 
-                {{--            @can('cloud_configuracoes')--}}
+                {{-- @can('cloud_configuracoes')--}}
                 <li>
                     <a href="{{ route('g.cloud.cadastro.indexCadastro') }}" parent="cloud" key="cloud_cadastro">
                         Cadastro
                     </a>
                 </li>
-                {{--            @endcan--}}
+                {{-- @endcan--}}
 
                 @can('cloud_configuracoes')
                     <li>
@@ -897,15 +905,6 @@
                 @endcan
             </ul>
             <ul aria-expanded="false">
-                @can('relatorio_avaliacao_90_dias')
-                    <li>
-                        <a href="{{ route('g.relatorios.avaliacao90dias.index') }}" parent="relatorios" key="avaliacao90dias">
-                            Avaliação 90 Dias
-                        </a>
-                    </li>
-                 @endcan
-            </ul>
-            <ul aria-expanded="false">
                 @can('relatorio_aniversariantes')
                     <li>
                         <a href="{{route('g.relatorios.aniversariantes.relatorioNivers')}}" parent="relatorios"
@@ -985,7 +984,7 @@
 
 @push('js')
     <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             // Verifica se o menu 'cloud' está ativo
             let cloudMenu = document.getElementById("cloud");
             if (cloudMenu && cloudMenu.classList.contains("mm-active")) {
@@ -1000,19 +999,19 @@
             }
         });
 
-        $.expr[":"].contains = $.expr.createPseudo(function (arg) {
-            return function (elem) {
+        $.expr[":"].contains = $.expr.createPseudo(function(arg) {
+            return function(elem) {
                 return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
             };
         });
 
-        $("#filter-menu").keyup(function () {
+        $("#filter-menu").keyup(function() {
             let stringPesquisa = $("#filter-menu").val();
             if (stringPesquisa.length == 0) {
                 $('a').css("color", "");
             } else {
                 $('a').css("color", "");
-                $('a:contains(' + stringPesquisa + ')').each(function (index) {
+                $('a:contains(' + stringPesquisa + ')').each(function(index) {
                     let id_parent = $(this).attr('parent');
                     let id_sub_parent = $(this).attr('subparent');
                     let a_parent = $("#" + id_parent + "").children().first();

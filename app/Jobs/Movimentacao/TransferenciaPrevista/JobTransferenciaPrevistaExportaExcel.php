@@ -2,71 +2,85 @@
 
 namespace App\Jobs\Movimentacao\TransferenciaPrevista;
 
+use App\Events\Notificacoes\NotificacaoEvent;
+use App\Models\Exportacao;
 use App\Models\User;
+use App\Services\TransferenciaPrevista\TransferenciaPrevistaCsvFileManager;
+use App\Services\TransferenciaPrevista\TransferenciaPrevistaExportFormatter;
+use App\Services\TransferenciaPrevista\TransferenciaPrevistaExportQueryBuilder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use MasterTag\CsvExporter;
-use MasterTag\DataHora;
+use Illuminate\Support\Facades\Event;
 
 class JobTransferenciaPrevistaExportaExcel implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 3;
-    public $timeout = 0;
+    public int $tries = 3;
+    public int $timeout = 600;
 
-    public $user;
-    private $linhas = [];
+    protected int $userId;
+    protected string $local;
+    protected string $nomeArquivo;
+    protected array $filtros;
 
-    public function __construct(User $user, $collection)
+    public function __construct(int $userId, string $local, string $nomeArquivo, array $filtros = [])
     {
-        $this->user = $user;
-        $collection->chunk(100, function ($rows) {
-            foreach ($rows as $row) {
-                $this->linhas[] = $this->getDataRow($row);
-            }
-        });
+        $this->userId = $userId;
+        $this->local = $local;
+        $this->nomeArquivo = $nomeArquivo;
+        $this->filtros = $filtros;
     }
 
-    public function handle()
+    public function handle(): void
     {
-        $header = [
-            "Quem Solicitou",
-            "Data da Solicitação",
-            "Colaborador",
-            "Centro de Custo Origem",
-            "Centro de Custo Destino",
-            "Data da Tranferência",
-            "Gestor Aprovação",
-            "Observação",
-            "Status",
-            "Quem Aprovou/Reprovou",
-            "Data da Aprovação/Reprovação",
-            'Observação Aprovação/Reprovação',
-        ];
-
-        $CsvExport = new CsvExporter($this->user, 'Planejamento - Movimentação - Transferência', $header, $this->linhas);
-        $CsvExport->export();
+        try {
+            $user = $this->authenticateUser();
+            $formatter = new TransferenciaPrevistaExportFormatter();
+            $fileManager = new TransferenciaPrevistaCsvFileManager();
+            $headers = $formatter->getHeaders();
+            $fileManager->createTempFile($headers);
+            $query = TransferenciaPrevistaExportQueryBuilder::forExport($user, $this->filtros);
+            $fileManager->writeDataInChunks($query, $formatter);
+            $fileManager->closeFile();
+            $fileManager->uploadToS3($this->nomeArquivo);
+            $fileManager->cleanup();
+            $this->sendNotification();
+            $this->createExportRecord();
+        } catch (\Exception $e) {
+            \Log::error('Erro na exportação Transferência Prevista CSV: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
-    private function getDataRow($row): array
+    private function authenticateUser(): User
     {
-        return [
-            $row->UserCadastrou->nome,
-            (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5),
-            $row->Colaborador->nome,
-            $row->CentroCustoOrigem->label,
-            $row->CentroCustoDestino->label,
-            (new DataHora($row->data_transferencia))->dataCompleta(),
-            $row->GestorAprovacao->nome,
-            $row->obs,
-            $row->status_aprovacao ? $row->status_aprovacao : "aberto",
-            $row->QuemAprovou ? $row->QuemAprovou->nome : "aguardando",
-            $row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : '',
-            $row->obs_aprovacao,
-        ];
+        $user = User::find($this->userId);
+        if (!$user) {
+            throw new \Exception("Usuário não encontrado: {$this->userId}");
+        }
+        auth()->login($user);
+        return $user;
+    }
+
+    private function sendNotification(): void
+    {
+        Event::dispatch(new NotificacaoEvent([
+            'user_id' => $this->userId,
+            'local' => $this->local,
+        ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
+    }
+
+    private function createExportRecord(): void
+    {
+        Exportacao::create([
+            'user_id' => $this->userId,
+            'arquivo' => $this->nomeArquivo,
+            'local' => $this->local,
+            'removido' => false,
+        ]);
     }
 }

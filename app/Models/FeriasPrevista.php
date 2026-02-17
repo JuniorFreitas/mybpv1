@@ -43,6 +43,10 @@ use MasterTag\DataHora;
  * @property \Illuminate\Support\Carbon|null $ultima_data
  * @property string|null $mes
  * @property int|null $periodo_aquisitivo_id
+ * @property int|null $aprovacao_extra_id
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
@@ -55,6 +59,7 @@ use MasterTag\DataHora;
  * @property-read User|null $QuemAprovou
  * @property-read User|null $RhAprovacao
  * @property-read User|null $UserCadastrou
+ * @property-read User|null $AprovacaoExtra
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista query()
@@ -120,7 +125,11 @@ class FeriasPrevista extends Model
         'empresa_id',
         'periodo_aquisitivo',
         'ultima_data',
-        'periodo_aquisitivo_id'
+        'periodo_aquisitivo_id',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra'
     ];
 
     protected $casts = [
@@ -157,6 +166,10 @@ class FeriasPrevista extends Model
         'ultima_data' => 'date:d/m/Y',
 
         'periodo_aquisitivo_id' => 'int',
+        'aprovacao_extra_id' => 'int',
+        'status_aprovacao_extra' => 'string',
+        'obs_aprovacao_extra' => 'string',
+        'data_aprovacao_extra' => 'datetime:d/m/Y à\s H:i:s'
     ];
 
     const STATUS_APROVADO = 'aprovado';
@@ -247,6 +260,11 @@ class FeriasPrevista extends Model
     public function RhAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'user_rh_id');
+    }
+
+    public function AprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
     }
 
     public function PeriodoAquisitivo()

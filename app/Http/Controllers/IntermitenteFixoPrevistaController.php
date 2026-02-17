@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
-
-use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermintenteFixoPrevistaStore;
-use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovar;
-use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobMudaIntermitenteFixoPrevistaExportaExcel;
+use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobNotificacaoRecursiva;
 use App\Models\Admissao;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
 use App\Models\IntermitenteFixoPrevista;
-use App\Models\LogHistorico;
 use App\Models\VagasAbertas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +29,8 @@ class IntermitenteFixoPrevistaController extends Controller
         $dados['user_id'] = auth()->user()->id;
         $dados['centro_custo_filial_id'] = $dados['filial'] ? $dados['centro_custo_filial_id'] : null;
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_id' => 'required',
                 'centro_custo_filial_id' => 'required_if:filial,true',
@@ -67,14 +65,17 @@ class IntermitenteFixoPrevistaController extends Controller
                     }
                 }
                 DB::commit();
-                JobMudaIntermintenteFixoPrevistaStore::dispatch($intermitenteFixoPrevista);
+
+                // Envia notificação para a próxima etapa (gestor)
+                JobNotificacaoRecursiva::dispatch($intermitenteFixoPrevista->id, $intermitenteFixoPrevista->empresa_id);
+
                 return response()->json('', 201);
             } catch (\Exception $e) {
                 DB::rollback();
                 $msg = "erro ao salvar  Mudança Intermitente Fixo:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
                 \Log::debug($msg);
                 return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
     }
@@ -124,7 +125,8 @@ class IntermitenteFixoPrevistaController extends Controller
         $dados['user_id'] = auth()->user()->id;
 
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
@@ -203,7 +205,7 @@ class IntermitenteFixoPrevistaController extends Controller
                 }
             }
             DB::commit();
-            JobMudaIntermitenteFixoPrevistaAprovar::dispatch($intermitenteFixoPrevista);
+            JobNotificacaoRecursiva::dispatch($intermitenteFixoPrevista->id, $intermitenteFixoPrevista->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -213,7 +215,60 @@ class IntermitenteFixoPrevistaController extends Controller
             return response()->json(['msg' => $msg], 400);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
+    }
 
+    public function aprovarExtra(Request $request, IntermitenteFixoPrevista $intermitenteFixoPrevista)
+    {
+        // Verifica se tem configuração ativa
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'intermitente_fixo');
+
+        if (!$config) {
+            return response()->json(['msg' => 'Aprovação extra não configurada para esta empresa'], 400);
+        }
+
+        // Verifica se usuário pode aprovar
+        if (!$config->podeAprovar(auth()->id())) {
+            return response()->json(['msg' => 'Você não tem permissão para aprovar'], 403);
+        }
+
+        $dados = $request->input();
+        try {
+            DB::beginTransaction();
+            $intermitenteFixoPrevista->update([
+                'aprovacao_extra_id' => auth()->id(),
+                'data_aprovacao_extra' => (new DataHora())->dataHoraInsert(),
+                'obs_aprovacao_extra' => $dados['obs_aprovacao_extra'],
+                'status_aprovacao_extra' => $dados['status_aprovacao_extra'],
+            ]);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
+                }
+            }
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $intermitenteFixoPrevista->Anexos()->attach($arquivo->id);
+                    }
+                }
+            }
+            DB::commit();
+            JobNotificacaoRecursiva::dispatch($intermitenteFixoPrevista->id, $intermitenteFixoPrevista->empresa_id);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error ao aprovar extra Intermitente Fixo Prevista:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
+        }
     }
 
     public function aprovarRH(Request $request, IntermitenteFixoPrevista $intermitenteFixoPrevista)
@@ -229,37 +284,17 @@ class IntermitenteFixoPrevistaController extends Controller
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
             ]);
 
-            $intermitenteFixoPrevista->load([
-                'CentroCusto',
-                'VagaAbertaAnterior.Vaga',
-                'VagaAbertaNova.Vaga'
+            $admissao_id = $intermitenteFixoPrevista->Colaborador->Curriculo->FeedBack->Admissao->id;
+            Admissao::find($admissao_id)->update([
+                'centro_custo_id' => $dados['centro_custo_id'],
+                'filial' => $dados['filial'],
+                'centro_custo_filial_id' => $dados['centro_custo_filial_id'],
+                'cargo' => $intermitenteFixoPrevista->VagaAbertaNova->Vaga->nome,
+                'salario' => $dados['novo_salario']
             ]);
-
-
-            if ($dados['status_aprovacao_rh'] === 'aprovado') {
-                $admissao_id = $intermitenteFixoPrevista->Colaborador->Curriculo->FeedBack->Admissao->id;
-                $admissao = Admissao::find($admissao_id);
-                $admissao->load('CentroCusto');
-                
-                $admissao->update([
-                    'centro_custo_id' => $dados['centro_custo_id'],
-                    'filial' => $dados['filial'],
-                    'centro_custo_filial_id' => $dados['centro_custo_filial_id'],
-                    'cargo' => $intermitenteFixoPrevista->VagaAbertaNova->Vaga->nome,
-                    'salario' => $dados['novo_salario']
-                ]);
-            }
-
-           
-            // Log de mudança de centro de custo
-            LogHistorico::createLog(
-                $intermitenteFixoPrevista->Colaborador->Curriculo->FeedBack->id,
-                'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na solicitação de intermitente fixo #' . $intermitenteFixoPrevista->id
-            );
-            
             DB::commit();
 
-            JobMudaIntermitenteFixoPrevistaAprovarRH::dispatch($intermitenteFixoPrevista);
+            JobNotificacaoRecursiva::dispatch($intermitenteFixoPrevista->id, $intermitenteFixoPrevista->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -268,12 +303,21 @@ class IntermitenteFixoPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => $msg], 400);
         }
-
     }
 
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
+
+        // Busca configuração de aprovação extra ativa
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'intermitente_fixo');
+        $podeAprovarExtra = false;
+        $nomeAprovacaoExtra = '';
+
+        if ($config) {
+            $podeAprovarExtra = $config->podeAprovar(auth()->id());
+            $nomeAprovacaoExtra = $config->nome_aprovacao;
+        }
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -283,12 +327,16 @@ class IntermitenteFixoPrevistaController extends Controller
                 'itens' => $resultado->items(),
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
+                'pode_aprovar_extra' => $podeAprovarExtra,
+                'tem_aprovacao_extra' => $config ? true : false,
+                'nome_aprovacao_extra' => $nomeAprovacaoExtra,
             ]
         ]);
     }
 
     public function filtro(Request $request)
     {
+        $user = auth()->user();
         $resultado = IntermitenteFixoPrevista::with(
             'CentroCusto',
             'CargoAnterior',
@@ -298,53 +346,30 @@ class IntermitenteFixoPrevistaController extends Controller
             'VagaAbertaAnterior',
             'VagaAbertaNova',
             'UserAprovacao:id,nome',
+            'UserAprovacaoExtra:id,nome',
             'Solicitante:id,nome',
             'GestorAprovacao:id,nome',
             'RhAprovacao:id,nome',
             'QuemDeletou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo', 'GestorAprovacao:id,nome', 'UserAprovacao:id,nome');
+            'Colaborador:id,nome,login,tipo,ativo'
+        )->where('empresa_id', $user->empresa_id);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        $filterApplier = new \App\Services\IntermitenteFixoPrevista\IntermitenteFixoPrevistaFilterApplier($request->all(), $user);
+        $filterApplier->apply($resultado);
 
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0].' 00:00:00');
-            $dataFim = new DataHora($periodo[1].' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())
-                ->where('created_at', '<=', $dataFim->dataHoraInsert());
-        }
-
-        if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Colaborador', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
-            });
-        }
-
-        if ($request->filled('campoStatusAprovacao')) {
-            $status = $request->campoStatusAprovacao;
-            if ($request->campoStatusAprovacao == "aberto") {
-                $resultado->whereNull('status_aprovacao');
-            } elseif ($request->campoStatusAprovacao == "aprovado_gestor") {
-                $resultado->where('status_aprovacao', IntermitenteFixoPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
-            } elseif ($request->campoStatusAprovacao == "aprovado_rh") {
-                $resultado->where('status_aprovacao_rh', IntermitenteFixoPrevista::STATUS_APROVADO);
-            } else {
-                $resultado->whereStatusAprovacao(IntermitenteFixoPrevista::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', IntermitenteFixoPrevista::STATUS_REPROVADO);
-            }
-        }
-
-        if (!auth()->user()->can('privilegio_gestao_rh')) {
-            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
-        }
-
-        return $resultado->orderByDesc('created_at');
+        return $resultado;
     }
 
     public function export(Request $request)
     {
-        JobMudaIntermitenteFixoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        $filtros = $request->all();
+        $filtros['_full_export_access'] = auth()->user()->can('privilegio_gestao_rh')
+            || auth()->user()->can('privilegio_aprovar_por_rh')
+            || auth()->user()->can('privilegio_aprovar_rh');
+
+        $nomeArquivo = 'intermitente_fixo_prevista_' . rand(1000, 9999) . '_' . date('YmdHis') . '.csv';
+        JobMudaIntermitenteFixoPrevistaExportaExcel::dispatch(auth()->id(), 'Planejamento - Movimentação - Mudança de Intermitente para Fixo', $nomeArquivo, $filtros);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
     }
 
     public function atualizacaoStatus(Request $request)

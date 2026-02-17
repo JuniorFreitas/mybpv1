@@ -64,6 +64,7 @@ class TipoContratacao extends Model
         'processo',
         'nome_indicacao',
         'contrato',
+        'local_trabalho',
         'horario',
         'gestor_id',
         'gestor',

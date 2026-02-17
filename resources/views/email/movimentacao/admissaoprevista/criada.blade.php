@@ -7,6 +7,9 @@
                 Olá, <strong>{{ $dados['nome_para'] }}</strong>!<br><br>
                 <strong>{{ $dados['nome_de'] }}</strong>, criou e marcou você em uma admissão prevista. <br>
                 ID: <strong>{{$dados['admissao_id']}}</strong>. <br>
+                @if(!empty($dados['nome_pessoa']))
+                    Nome do Colaborador: <strong>{{ $dados['nome_pessoa'] }}</strong>. <br>
+                @endif
                 Cargo: <strong>{{$dados['cargo']}}</strong>. <br>
                 <br><br>
                 Para visualizar acesse o sistema <a href="{{ route('g.movimentacao.index') }}">clique aqui</a> .

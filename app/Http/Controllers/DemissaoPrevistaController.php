@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovar;
-use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaExportaExcel;
-use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaStore;
+use App\Jobs\Movimentacao\DemissaoPrevista\JobNotificacaoRecursiva;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
-use App\Models\Cliente;
 use App\Models\DemissaoPrevista;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
 use PDF;
@@ -30,7 +29,8 @@ class DemissaoPrevistaController extends Controller
         $dados['valor'] = $dados['valor_format'];
         $dados['user_id'] = auth()->user()->id;
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_id' => 'required',
                 'centro_custo_filial_id' => 'required_if:filial,true',
@@ -60,7 +60,11 @@ class DemissaoPrevistaController extends Controller
                 }
             }
             DB::commit();
-            JobDemissaoPrevistaStore::dispatch($demissaoPrevista);
+            Log::info('DemissaoPrevistaController@store - Demissão Prevista ID: ' . $demissaoPrevista->id);
+
+            // Notifica próxima etapa + etapas anteriores (recursivo)
+            JobNotificacaoRecursiva::dispatch($demissaoPrevista->id, $demissaoPrevista->empresa_id);
+
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
@@ -86,6 +90,11 @@ class DemissaoPrevistaController extends Controller
         $demissaoPrevista->anexosDel = [];
         $demissaoPrevista->user_aprovacao = $demissaoPrevista->UserAprovacao ? $demissaoPrevista->UserAprovacao->nome : '';
         $demissaoPrevista->rh_aprovacao = $demissaoPrevista->RhAprovacao ? $demissaoPrevista->RhAprovacao->nome : '';
+        $demissaoPrevista->aprovacao_extra = $demissaoPrevista->AprovacaoExtra ? [
+            'nome' => $demissaoPrevista->AprovacaoExtra->nome,
+            'id' => $demissaoPrevista->AprovacaoExtra->id
+        ] : null;
+        $demissaoPrevista->aprovacao_extra_nome = $demissaoPrevista->AprovacaoExtra ? $demissaoPrevista->AprovacaoExtra->nome : null;
         $demissaoPrevista->status_aprovacao = $demissaoPrevista->status_aprovacao ?: '';
         $demissaoPrevista->status_aprovacao_rh = $demissaoPrevista->status_aprovacao_rh ?: '';
         $demissaoPrevista->load('Anexos');
@@ -106,7 +115,8 @@ class DemissaoPrevistaController extends Controller
         $dados = $request->input();
         $dados['valor'] = $dados['valor_format'];
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
@@ -149,12 +159,22 @@ class DemissaoPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
 
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
+
+        // Busca configuração de aprovação extra ativa
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'demissao');
+        $podeAprovarExtra = false;
+        $nomeAprovacaoExtra = '';
+
+        if ($config) {
+            $podeAprovarExtra = $config->podeAprovar(auth()->id());
+            $nomeAprovacaoExtra = $config->nome_aprovacao;
+        }
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -163,10 +183,12 @@ class DemissaoPrevistaController extends Controller
                 'itens' => $resultado->items(),
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
+                'pode_aprovar_extra' => $podeAprovarExtra,
+                'tem_aprovacao_extra' => $config ? true : false,
+                'nome_aprovacao_extra' => $nomeAprovacaoExtra,
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
         ]);
-
     }
 
     public function filtro(Request $request)
@@ -184,21 +206,25 @@ class DemissaoPrevistaController extends Controller
                 'dp.centro_custo_filial_id',
                 'dp.data_aprovacao',
                 'dp.data_aprovacao_rh',
+                'dp.data_aprovacao_extra',
                 DB::raw("DATE_FORMAT(d.data_desmobilizacao, '%d/%m/%Y') as data_desmobilizacao"),
                 DB::raw("DATE_FORMAT(a.data_admissao, '%d/%m/%Y') as data_admissao"),
                 DB::raw("DATE_FORMAT(dp.data_demissao, '%d/%m/%Y') as data_demissao"),
                 DB::raw("DATE_FORMAT(dp.created_at, '%d/%m/%Y às %H:%i:%s') as data_solicitacao"),
                 DB::raw("DATE_FORMAT(dp.data_aprovacao_rh, '%d/%m/%Y às %H:%i:%s') as data_aprovacao_rh"),
                 DB::raw("DATE_FORMAT(dp.data_aprovacao, '%d/%m/%Y às %H:%i:%s') as data_aprovacao"),
+                DB::raw("DATE_FORMAT(dp.data_aprovacao_extra, '%d/%m/%Y às %H:%i:%s') as data_aprovacao_extra"),
                 'a.cargo',
                 'dp.tipo_aviso',
                 'dp.aprovado_via_script',
                 'dp.status',
                 'dp.status_aprovacao',
                 'dp.status_aprovacao_rh',
+                'dp.status_aprovacao_extra',
                 'ugestor.nome as gestor_nome',
                 'usa.nome as user_aprovacao_nome',
                 'urh.nome as rh_aprovacao_nome',
+                'uextra.nome as aprovacao_extra_nome',
                 'dp.created_at',
                 'dp.obs',
                 'dp.obs_rh'
@@ -221,6 +247,7 @@ class DemissaoPrevistaController extends Controller
             ->leftjoin('users as ugestor', 'ugestor.id', '=', 'dp.gestor_id')
             ->leftjoin('users as urh', 'urh.id', '=', 'dp.rh_aprovacao_id')
             ->leftjoin('users as usa', 'dp.user_aprovacao_id', '=', 'usa.id')
+            ->leftjoin('users as uextra', 'dp.aprovacao_extra_id', '=', 'uextra.id')
             ->leftjoin('demissaos as d', function ($join) {
                 $join->on('fc.id', '=', 'd.feedback_id')
                     ->whereRaw('d.id = (SELECT MAX(id) FROM demissaos WHERE feedback_id = fc.id)');
@@ -228,19 +255,44 @@ class DemissaoPrevistaController extends Controller
             ->where('dp.empresa_id', '=', auth()->user()->empresa_id)
             ->whereNull('dp.deleted_at');
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        // Filtro por token (mascara o id na URL/request). Formato: hash . 'lpve' . id
+        if ($request->filled('token')) {
+            $token = (string) $request->token;
+            if (strpos($token, 'lpve') !== false) {
+                $parts = explode('lpve', $token, 2);
+                $id = isset($parts[1]) ? (int) $parts[1] : 0;
+                if ($id > 0) {
+                    $resultado->where('dp.id', $id);
+                }
+            }
+        }
+
+        $filtroPeriodo = $request->boolean('filtroPeriodo') || $request->filtroPeriodo == 'true';
 
         if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-            $resultado->where('dp.created_at', '>=', $dataInicio->dataHoraInsert())
-                ->where('dp.created_at', '<=', $dataFim->dataHoraInsert());
+            $dataInicio = $request->dataInicio;
+            $dataFim = $request->dataFim;
+
+            if ($dataInicio && $dataFim) {
+                $inicio = new DataHora($dataInicio . ' 00:00:00');
+                $fim = new DataHora($dataFim . ' 23:59:59');
+                $resultado->where('dp.created_at', '>=', $inicio->dataHoraInsert())
+                    ->where('dp.created_at', '<=', $fim->dataHoraInsert());
+            } elseif ($request->filled('periodo')) {
+                $periodo = explode(' até ', $request->periodo);
+                if (count($periodo) === 2) {
+                    $inicio = new DataHora($periodo[0] . ' 00:00:00');
+                    $fim = new DataHora($periodo[1] . ' 23:59:59');
+                    $resultado->where('dp.created_at', '>=', $inicio->dataHoraInsert())
+                        ->where('dp.created_at', '<=', $fim->dataHoraInsert());
+                }
+            }
         }
 
         if ($request->filled('campoBusca')) {
             $resultado->where(function ($r) use ($request) {
                 $r->where('c.nome', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('c.id', $request->campoBusca)
                     ->orWhere('dp.id', $request->campoBusca);
             });
         }
@@ -251,6 +303,11 @@ class DemissaoPrevistaController extends Controller
             })
                 ->when($request->campoStatusAprovacao == 'aprovado_gestor', function ($query) {
                     return $query->where('dp.status_aprovacao', DemissaoPrevista::STATUS_APROVADO)
+                        ->whereNull('dp.status_aprovacao_extra')
+                        ->whereNull('dp.status_aprovacao_rh');
+                })
+                ->when($request->campoStatusAprovacao == 'aprovado_extra', function ($query) {
+                    return $query->where('dp.status_aprovacao_extra', DemissaoPrevista::STATUS_APROVADO)
                         ->whereNull('dp.status_aprovacao_rh');
                 })
                 ->when($request->campoStatusAprovacao == 'aprovado_rh', function ($query) {
@@ -259,6 +316,7 @@ class DemissaoPrevistaController extends Controller
                 ->when($request->campoStatusAprovacao == 'reprovado', function ($query) {
                     return $query->where(function ($query) {
                         $query->where('dp.status_aprovacao', DemissaoPrevista::STATUS_REPROVADO)
+                            ->orWhere('dp.status_aprovacao_extra', DemissaoPrevista::STATUS_REPROVADO)
                             ->orWhere('dp.status_aprovacao_rh', DemissaoPrevista::STATUS_REPROVADO);
                     });
                 });
@@ -271,7 +329,22 @@ class DemissaoPrevistaController extends Controller
             });
         }
 
-        return $resultado->orderByDesc('dp.created_at');
+        // Ordenação
+        $ordenacao = $request->input('ordenacao', 'created_at_desc');
+        switch ($ordenacao) {
+            case 'created_at_asc':
+                $resultado->orderBy('dp.created_at', 'asc');
+                break;
+            case 'updated_at_desc':
+                $resultado->orderBy('dp.updated_at', 'desc');
+                break;
+            case 'created_at_desc':
+            default:
+                $resultado->orderBy('dp.created_at', 'desc');
+                break;
+        }
+
+        return $resultado;
     }
 
     public function aprovar(Request $request, DemissaoPrevista $demissaoPrevista)
@@ -280,6 +353,10 @@ class DemissaoPrevistaController extends Controller
         $dados = $request->input();
         try {
             DB::beginTransaction();
+
+            // Busca configuração ativa de aprovação extra
+            $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'demissao');
+
             $demissaoPrevista->update([
                 'user_aprovacao_id' => auth()->id(),
                 'data_aprovacao' => (new DataHora())->dataHoraInsert(),
@@ -288,18 +365,63 @@ class DemissaoPrevistaController extends Controller
             ]);
             DB::commit();
 
-            JobDemissaoPrevistaAprovar::dispatch($demissaoPrevista);
+            // Dispara notificação recursiva
+            JobNotificacaoRecursiva::dispatch($demissaoPrevista->id, $demissaoPrevista->empresa_id);
 
-            return response()->json([], 201);
+            return response()->json(['tem_aprovacao_extra' => $config ? true : false], 201);
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "error ao aprovar Solicitação:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
 
+    public function aprovarExtra(Request $request, DemissaoPrevista $demissaoPrevista)
+    {
+        $dados = $request->input();
+
+        // Busca configuração ativa de aprovação extra para demissão
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'demissao');
+
+        if (!$config) {
+            return response()->json(['msg' => 'Não existe configuração de aprovação extra ativa'], 400);
+        }
+
+        // Verifica se o usuário pode aprovar
+        if (!$config->podeAprovar(auth()->id())) {
+            return response()->json(['msg' => 'Você não tem permissão para aprovar esta solicitação'], 403);
+        }
+
+        try {
+            DB::beginTransaction();
+            $demissaoPrevista->update([
+                'aprovacao_extra_id' => auth()->id(),
+                'status_aprovacao_extra' => $dados['status_aprovacao_extra'],
+                'obs_aprovacao_extra' => $dados['obs_aprovacao_extra'],
+                'data_aprovacao_extra' => (new DataHora())->dataHoraInsert()
+            ]);
+            DB::commit();
+
+            // Dispara notificação recursiva
+            JobNotificacaoRecursiva::dispatch($demissaoPrevista->id, $demissaoPrevista->empresa_id);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "Erro ao aprovar solicitação (Aprovação Extra): {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+    }
+
+    /**
+     * Aprovação pelo RH
+     *
+     * @param Request $request
+     * @param DemissaoPrevista $demissaoPrevista
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function aprovarRH(Request $request, DemissaoPrevista $demissaoPrevista)
     {
         $this->authorize('privilegio_aprovar_por_rh');
@@ -315,30 +437,8 @@ class DemissaoPrevistaController extends Controller
 
             DB::commit();
 
-            $dados_email = [
-                'dados_quem_cadastrou' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $demissaoPrevista->UserCadastrou->nome,
-                    'email_para' => $demissaoPrevista->UserCadastrou->login,
-                    'status_aprovacao' => $demissaoPrevista->status_aprovacao_rh,
-                    'id' => $demissaoPrevista->id,
-                    'colaborador' => $demissaoPrevista->Colaborador->nome,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ],
-                'dados_gestor' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $demissaoPrevista->GestorAprovacao->nome,
-                    'email_para' => $demissaoPrevista->GestorAprovacao->login,
-                    'status_aprovacao' => $demissaoPrevista->status_aprovacao_rh,
-                    'id' => $demissaoPrevista->id,
-                    'colaborador' => $demissaoPrevista->Colaborador->nome,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ]
-            ];
-
-            JobDemissaoPrevistaAprovarRH::dispatch($dados_email);
+            // Dispara notificação recursiva
+            JobNotificacaoRecursiva::dispatch($demissaoPrevista->id, $demissaoPrevista->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -347,14 +447,22 @@ class DemissaoPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
+
+    // Notificações agora são gerenciadas pelo JobNotificacaoRecursiva
+    // Não há mais necessidade de métodos separados de notificação
 
     //Excel
     public function export(Request $request)
     {
-        JobDemissaoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        $filtros = $request->all();
+        $filtros['_full_export_access'] = auth()->user()->temPrivilegioGestaoRh()
+            || auth()->user()->can('privilegio_aprovar_por_rh')
+            || auth()->user()->can('privilegio_aprovar_rh');
+
+        $nomeArquivo = 'demissao_prevista_' . rand(1000, 9999) . '_' . date('YmdHis') . '.csv';
+        JobDemissaoPrevistaExportaExcel::dispatch(auth()->id(), 'Planejamento - Movimentação - Demissão', $nomeArquivo, $filtros);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
     }
 
     public function pdf(DemissaoPrevista $demissaoPrevista, Request $request)
@@ -366,6 +474,12 @@ class DemissaoPrevistaController extends Controller
     }
 
 
+    /**
+     * Atualização de status em massa
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function atualizacaoStatus(Request $request)
     {
         try {
@@ -392,5 +506,4 @@ class DemissaoPrevistaController extends Controller
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
-
 }

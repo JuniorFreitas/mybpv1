@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaAprovarRH;
 use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaExportaExcel;
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaStore;
-use App\Jobs\Movimentacao\FeriasPrevista\JobFeriasPrevistaUpdate;
+use App\Jobs\Movimentacao\FeriasPrevista\JobNotificacaoRecursiva;
 use App\Models\Admissao;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Ferias;
@@ -54,7 +53,8 @@ class FeriasPrevistaController extends Controller
         $dados['tem_faltas'] = $dados['tem_faltas'] == 'true' ? true : false;
         $dados['qnt_faltas'] = $dados['qnt_faltas'] == null ? 0 : $dados['qnt_faltas'];
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'centro_custo_id' => 'required',
                 'qnt_dias' => 'required',
@@ -104,7 +104,7 @@ class FeriasPrevistaController extends Controller
                 $ferias_saldo = $ferias->dias_saldo ?? 0;
                 $dados['dias_saldo'] = $ferias_saldo - $dados['qnt_dias'];
             }
-            
+
             if ($dados['dias_saldo'] < 0) {
                 return response()->json([
                     'msg' => 'Tentando tirar mais dias do que tem de saldo o maximo que pode tirar é ' . $ferias_saldo . ' dias.'
@@ -150,7 +150,10 @@ class FeriasPrevistaController extends Controller
             }
 
             DB::commit();
-            JobFeriasPrevistaStore::dispatch($feriasPrevista);
+
+            // Notifica próxima etapa + etapas anteriores (recursivo)
+            JobNotificacaoRecursiva::dispatch($feriasPrevista->id, $feriasPrevista->empresa_id);
+
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();
@@ -190,14 +193,26 @@ class FeriasPrevistaController extends Controller
         $ferias->colaborador_id = $curriculo->id ?? '';
         $ferias->autocomplete_label_gestor_modal = $gestor->nome ?? '';
         $ferias->autocomplete_label_gestor_modal_anterior = $gestor->nome ?? '';
-        $ferias->gestor_aprovacao = $ferias->GestorAprovacao->nome ?? '';
+        $ferias->gestor_aprovacao = $ferias->GestorAprovacao ? [
+            'nome' => $ferias->GestorAprovacao->nome,
+            'id' => $ferias->GestorAprovacao->id
+        ] : null;
         $ferias->centro_custo_id = $admissao ? $admissao->centro_custo_id : $ferias->FeriasPrevista->centro_custo_id;
         $ferias->centro_custo = $centroCusto ?? '';
-        $ferias->rh_aprovacao = $rhAprovacao->nome ?? '';
+        $ferias->rh_aprovacao = $rhAprovacao ? [
+            'nome' => $rhAprovacao->nome,
+            'id' => $rhAprovacao->id
+        ] : null;
+        $ferias->aprovacao_extra = $ferias->AprovacaoExtra ? [
+            'nome' => $ferias->AprovacaoExtra->nome,
+            'id' => $ferias->AprovacaoExtra->id
+        ] : null;
+        $ferias->aprovacao_extra_nome = $ferias->AprovacaoExtra ? $ferias->AprovacaoExtra->nome : null;
         $ferias->solicitante = $solicitante->nome ?? '';
         $ferias->gestor_id = $ferias->gestor_id ?? '';
         $ferias->data_admissao = $admissao->data_admissao ?? '';
         $ferias->status_aprovacao_gestor = $ferias->status_aprovacao_gestor ?? '';
+        $ferias->status_aprovacao_extra = $ferias->status_aprovacao_extra ?? '';
         $ferias->status_aprovacao_rh = $ferias->status_aprovacao_rh ?? '';
         $ferias->periodo_label = $ferias->PeriodoAquisitivo->label ?? '';
         $ferias->anexosDel = [];
@@ -216,10 +231,24 @@ class FeriasPrevistaController extends Controller
     public function update(Request $request, Ferias $ferias)
     {
         $this->authorize('planejamento_movimentacao_ferias_editar');
-        $dados = $request->only(['admissao_id', 'centro_custo_id', 'periodo_aquisitivo_id', 'data_saida',
-            'data_retorno', 'ultima_data', 'qnt_dias', 'dias_saldo', 'tem_faltas', 'qnt_faltas', 'gestor_id',
-            'solicitante_id', 'abono_pecuniario', 'adiantamento_decimo_terceiro',
-            'obs_solicitante', 'anexosDel', 'anexos'
+        $dados = $request->only([
+            'admissao_id',
+            'centro_custo_id',
+            'periodo_aquisitivo_id',
+            'data_saida',
+            'data_retorno',
+            'ultima_data',
+            'qnt_dias',
+            'dias_saldo',
+            'tem_faltas',
+            'qnt_faltas',
+            'gestor_id',
+            'solicitante_id',
+            'abono_pecuniario',
+            'adiantamento_decimo_terceiro',
+            'obs_solicitante',
+            'anexosDel',
+            'anexos'
         ]);
 
         // Converter as datas para o formato desejado
@@ -303,17 +332,7 @@ class FeriasPrevistaController extends Controller
 
             DB::commit();
 
-            $dadosJobsEmail = [
-                'nome_de' => auth()->user()->nome,
-                'email_de' => auth()->user()->login,
-                'nome_para' => $ferias->Gestor->nome,
-                'email_para' => $ferias->Gestor->login,
-                'ferias_id' => $ferias->id,
-                'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
-                'empresa_id' => auth()->user()->empresa_id
-            ];
-
-            JobFeriasPrevistaUpdate::dispatch($dadosJobsEmail);
+            JobNotificacaoRecursiva::dispatch($ferias->id, $ferias->empresa_id);
 
             return response()->json('', 201);
         } catch (\Exception $e) {
@@ -369,6 +388,9 @@ class FeriasPrevistaController extends Controller
 
             $ferias = Ferias::find($dados['id']);
 
+            // Busca configuração ativa de aprovação extra
+            $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'ferias');
+
             $ferias->update([
                 'gestor_aprovacao_id' => auth()->id(),
                 'data_aprovacao_gestor' => (new DataHora())->dataHoraInsert(),
@@ -396,32 +418,9 @@ class FeriasPrevistaController extends Controller
             }
             DB::commit();
 
-            $dados_email = [
-                'dados_quem_cadastrou' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $ferias->Solicitante->nome,
-                    'email_para' => $ferias->Solicitante->login,
-                    'status_aprovacao' => $ferias->status_aprovacao_gestor,
-                    'ferias_id' => $ferias->id,
-                    'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ],
-                'dados_gestor' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $ferias->GestorAprovacao->nome,
-                    'email_para' => $ferias->GestorAprovacao->login,
-                    'status_aprovacao' => $ferias->status_aprovacao_gestor,
-                    'ferias_id' => $ferias->id,
-                    'colaborador' => $ferias->Admissao->Feedback->Curriculo->nome,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ]
-            ];
+            JobNotificacaoRecursiva::dispatch($ferias->id, $ferias->empresa_id);
 
-            JobFeriasPrevistaAprovarRH::dispatch($dados_email);
-
-            return response()->json([], 201);
+            return response()->json(['tem_aprovacao_extra' => $config ? true : false], 201);
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "error ao aprovar Solicitação de Férias - Gestor:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
@@ -429,7 +428,6 @@ class FeriasPrevistaController extends Controller
             Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
 
     public function aprovarRH(Request $request, Ferias $ferias)
@@ -458,15 +456,13 @@ class FeriasPrevistaController extends Controller
 
             DB::commit();
 
-            $dados_email = $this->prepararDadosEmail($ferias);
-            JobFeriasPrevistaAprovarRH::dispatch($dados_email);
+            JobNotificacaoRecursiva::dispatch($ferias->id, $ferias->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollback();
             $msg = "Erro ao aprovar solicitação - RH: {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
-            Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro, por favor tente novamente!'], 400);
         }
     }
@@ -522,16 +518,35 @@ class FeriasPrevistaController extends Controller
             'delete' => auth()->user()->can('planejamento_movimentacao_ferias_deletar')
         ];
 
+        // Busca configuração de aprovação extra ativa
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'ferias');
+        $podeAprovarExtra = false;
+        $nomeAprovacaoExtra = '';
+
+        if ($config) {
+            $podeAprovarExtra = $config->podeAprovar(auth()->id());
+            $nomeAprovacaoExtra = $config->nome_aprovacao;
+        }
+
+        // Adiciona o nome do aprovador extra em cada item
+        $itens = $resultado->items();
+        foreach ($itens as $item) {
+            $item->aprovacao_extra_nome = $item->AprovacaoExtra ? $item->AprovacaoExtra->nome : null;
+        }
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'periodo' => $periodo,
                 'permissoes' => $permissoes,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
+                'pode_aprovar_extra' => $podeAprovarExtra,
+                'tem_aprovacao_extra' => $config ? true : false,
+                'nome_aprovacao_extra' => $nomeAprovacaoExtra,
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
         ]);
@@ -539,11 +554,12 @@ class FeriasPrevistaController extends Controller
 
     public function filtro(Request $request)
     {
-
+        $user = auth()->user();
         $resultado = Ferias::with(
             'PeriodoAquisitivo',
             'Gestor:id,nome',
             'GestorAprovacao:id,nome',
+            'AprovacaoExtra:id,nome',
             'RhAprovacao:id,nome',
             'Solicitante:id,nome',
             'Admissao:id,centro_custo_id,cargo,funcao,data_admissao,feedback_id',
@@ -554,73 +570,12 @@ class FeriasPrevistaController extends Controller
             'Admissao.CentroCusto:id,label',
             'FeriasPrevista:id,centro_custo_id',
             'FeriasPrevista.CentroCusto:id,label',
-        );
+        )->where('empresa_id', $user->empresa_id);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-            $resultado->where('data_solicitacao', '>=', $dataInicio->dataHoraInsert())
-                ->where('data_solicitacao', '<=', $dataFim->dataHoraInsert());
-        }
+        $filterApplier = new \App\Services\FeriasPrevista\FeriasPrevistaFilterApplier($request->all(), $user);
+        $filterApplier->apply($resultado);
 
-        $filtroVencimento = $request->filtroVencimento == 'true';
-        if ($filtroVencimento) {
-            $periodoVenc = explode(' até ', $request->vencimento);
-            $dataInicioVenc = new DataHora($periodoVenc[0] . ' 00:00:00');
-            $dataFimVenc = new DataHora($periodoVenc[1] . ' 23:59:59');
-            $resultado->where('ultima_data', '>=', $dataInicioVenc->dataHoraInsert())
-                ->where('ultima_data', '<=', $dataFimVenc->dataHoraInsert());
-        }
-
-        $filtroInicioFerias = $request->filtroInicioFerias == 'true';
-        if ($filtroInicioFerias) {
-            $periodoFer = explode(' até ', $request->inicioFerias);
-            $dataInicioFer = new DataHora($periodoFer[0] . ' 00:00:00');
-            $dataFimFer = new DataHora($periodoFer[1] . ' 23:59:59');
-            $resultado->where('data_saida', '>=', $dataInicioFer->dataHoraInsert())
-                ->where('data_saida', '<=', $dataFimFer->dataHoraInsert());
-        }
-
-        if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Admissao.Feedback.Curriculo', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
-            });
-        }
-
-        if ($request->filled('campoStatusAprovacao')) {
-            $status = $request->campoStatusAprovacao;
-            if ($request->campoStatusAprovacao == "aberto") {
-                $resultado->whereNull('status_aprovacao_gestor');
-            } elseif ($request->campoStatusAprovacao == "aprovado_gestor") {
-                $resultado->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
-            } elseif ($request->campoStatusAprovacao == "aprovado_rh") {
-                $resultado->where('status_aprovacao_rh', Ferias::STATUS_APROVADO);
-            } else {
-                $resultado->whereStatusAprovacaoGestor(Ferias::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', Ferias::STATUS_REPROVADO);
-            }
-        }
-
-
-        if (!auth()->user()->can('privilegio_gestao_rh')) {
-            $resultado->whereSolicitanteId(auth()->user()->id)
-                ->orWhere('gestor_id', auth()->user()->id);
-        }
-
-        if ($request->filled('filtroPeriodoAquisitivo')) {
-            $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
-                $q->where('id', $request->filtroPeriodoAquisitivo);
-            });
-        } else {
-            $resultado->whereHas('PeriodoAquisitivo', function ($q) use ($request) {
-                $q->whereIn('ano_inicial', [date('Y') - 3, date('Y') - 2, date('Y') - 1, (int)date('Y')]);
-            });
-        }
-
-        // Fazer o filtro pra excluir gozada
-        return $resultado->orderByDesc('data_solicitacao');
+        return $resultado;
     }
 
     public function buscaDataAdmissao(Request $request)
@@ -660,7 +615,6 @@ class FeriasPrevistaController extends Controller
             $data_retorno = $date->dia() . '/' . $date->mes() . '/' . $periodo['ano_inicial'];
             $newDate = new DataHora($ultimoAnoPeriodoAquisitivo);
             $ultimaData = $newDate->addDia(330);
-
         } elseif ($colaboradorPeriodo !== null && $request->visualizar) {
             $periodo = $colaboradorPeriodo;
             $data_saida = $ferias->data_saida;
@@ -714,13 +668,62 @@ class FeriasPrevistaController extends Controller
             Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
 
     //Excel
     public function export(Request $request)
     {
-        JobFeriasPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        $filtros = $request->all();
+        $filtros['_full_export_access'] = auth()->user()->can('privilegio_gestao_rh')
+            || auth()->user()->can('privilegio_aprovar_por_rh')
+            || auth()->user()->can('privilegio_aprovar_rh');
+
+        $nomeArquivo = 'ferias_prevista_' . rand(1000, 9999) . '_' . date('YmdHis') . '.csv';
+        JobFeriasPrevistaExportaExcel::dispatch(auth()->id(), 'Planejamento - Movimentação - Férias', $nomeArquivo, $filtros);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
+    }
+
+    /**
+     * Aprovar ou reprovar aprovação extra
+     *
+     * @param Request $request
+     * @param FeriasPrevista $feriasPrevista
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function aprovarExtra(Request $request, Ferias $ferias)
+    {
+        $dados = $request->input();
+
+        // Busca configuração ativa de aprovação extra para férias
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'ferias');
+
+        if (!$config) {
+            return response()->json(['msg' => 'Não existe configuração de aprovação extra ativa'], 400);
+        }
+
+        // Verifica se o usuário pode aprovar
+        if (!$config->podeAprovar(auth()->id())) {
+            return response()->json(['msg' => 'Você não tem permissão para aprovar esta solicitação'], 403);
+        }
+
+        try {
+            DB::beginTransaction();
+            $ferias->update([
+                'aprovacao_extra_id' => auth()->id(),
+                'status_aprovacao_extra' => $dados['status_aprovacao_extra'],
+                'obs_aprovacao_extra' => $dados['obs_aprovacao_extra'] ?? null,
+                'data_aprovacao_extra' => (new DataHora())->dataHoraInsert()
+            ]);
+            DB::commit();
+
+            JobNotificacaoRecursiva::dispatch($ferias->id, $ferias->empresa_id);
+
+            return response()->json(['msg' => 'Aprovação extra registrada com sucesso!'], 200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "Erro ao aprovar extra férias prevista: {$e->getMessage()} | Usuario: " . auth()->user()->nome;
+            \Log::error($msg);
+            return response()->json(['msg' => 'Houve um erro, por favor tente novamente!'], 400);
+        }
     }
 }

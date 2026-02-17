@@ -77,8 +77,12 @@ class TransferenciaPrevista extends Model
         'status_aprovacao',
         'empresa_id',
         'gestor_id',
-        'rh_aprovacao_id',
-        'status_aprovacao_rh',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra',
+        'user_rh_id',
+        'resposta_rh',
         'obs_rh',
         'data_aprovacao_rh',
     ];
@@ -100,10 +104,14 @@ class TransferenciaPrevista extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
         'gestor_id' => 'int',
-        'rh_aprovacao_id' => 'int',
-        'status_aprovacao_rh' => 'string',
+        'aprovacao_extra_id' => 'int',
+        'status_aprovacao_extra' => 'string',
+        'obs_aprovacao_extra' => 'string',
+        'data_aprovacao_extra' => 'datetime:d/m/Y à\s H:i:s',
+        'user_rh_id' => 'int',
+        'resposta_rh' => 'string',
         'obs_rh' => 'string',
-        'data_aprovacao_rh' => 'date:d/m/Y',
+        'data_aprovacao_rh' => 'datetime:d/m/Y à\s H:i:s',
     ];
 
     protected function serializeDate(DateTimeInterface $date)
@@ -141,6 +149,11 @@ class TransferenciaPrevista extends Model
         return $this->hasOne(User::class, 'id', 'user_id');
     }
 
+    public function Solicitante()
+    {
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
     public function QuemAprovou()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
@@ -156,9 +169,19 @@ class TransferenciaPrevista extends Model
         return $this->hasOne(User::class, 'id', 'user_aprovacao_id');
     }
 
+    public function UserAprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
+    }
+
+    public function AprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
+    }
+
     public function RhAprovacao()
     {
-        return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
+        return $this->hasOne(User::class, 'id', 'user_rh_id');
     }
 
     public function Anexos()
