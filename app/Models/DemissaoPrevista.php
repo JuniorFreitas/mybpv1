@@ -39,6 +39,10 @@ use MasterTag\DataHora;
  * @property bool $aprovado_via_script
  * @property int|null $quem_deletou_id
  * @property string|null $deleted_at
+ * @property int|null $aprovacao_extra_id
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \App\Models\CentroCusto|null $CentroCusto
@@ -48,6 +52,7 @@ use MasterTag\DataHora;
  * @property-read User|null $GestorAprovacao
  * @property-read User|null $RhAprovacao
  * @property-read User|null $UserAprovacao
+ * @property-read User|null $AprovacaoExtra
  * @property-read User|null $UserCadastrou
  * @property-read mixed $valor_format
  * @property-write mixed $data_pagamento
@@ -112,7 +117,11 @@ class DemissaoPrevista extends Model
         'status_aprovacao_rh',
         'data_aprovacao_rh',
         'aprovado_via_script',
-        'quem_deletou_id'
+        'quem_deletou_id',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra'
     ];
 
     protected $casts = [
@@ -140,7 +149,11 @@ class DemissaoPrevista extends Model
         'status_aprovacao_rh' => 'string',
         'data_aprovacao_rh' => 'datetime:d/m/Y à\s H:i:s',
         'aprovado_via_script' => 'boolean',
-        'quem_deletou_id' => 'int'
+        'quem_deletou_id' => 'int',
+        'aprovacao_extra_id' => 'int',
+        'status_aprovacao_extra' => 'string',
+        'obs_aprovacao_extra' => 'string',
+        'data_aprovacao_extra' => 'datetime:d/m/Y à\s H:i:s'
     ];
 
     const STATUS_APROVADO = 'aprovado';
@@ -224,9 +237,13 @@ class DemissaoPrevista extends Model
         return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
     }
 
+    public function AprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
+    }
+
     public function Anexos()
     {
         return $this->belongsToMany(Arquivo::class, 'demissao_previstas_anexos', 'demissao_prevista_id', 'arquivo_id');
     }
-
 }

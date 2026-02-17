@@ -320,22 +320,30 @@ class Curriculo extends Model
         return $date->format('Y-m-d H:i:s');
     }
 
-//    public function getCpfFormatAttribute()
+    //    public function getCpfFormatAttribute()
     public function getCpfFormatAttribute()
     {
-        $cpf = $this->attributes['cpf'];
+        $cpf = $this->attributes['cpf'] ?? null;
+
+        if (empty($cpf) || strlen($cpf) < 11) {
+            return null;
+        }
+
         $pt1 = substr($cpf, 4, 3);
         $pt2 = substr($cpf, 8, 3);
 
         return "XXX.{$pt1}.{$pt2}-XX";
-//        return $pt1 . '.XXX.XXX-' . $pt2;
+        //        return $pt1 . '.XXX.XXX-' . $pt2;
     }
 
 
     public function getRgFormatAttribute()
     {
-        if (isset($this->attributes['rg']) && !is_null($this->attributes['rg'])) {
-            $rg = "RG: {$this->attributes['rg']} <br/> Emitente: " . (isset($this->attributes['orgao_expeditor']) ? $this->attributes['orgao_expeditor'] : '');
+        $rgValor = $this->attributes['rg'] ?? null;
+
+        if (!is_null($rgValor) && $rgValor !== '') {
+            $orgao = $this->attributes['orgao_expeditor'] ?? '';
+            $rg = "RG: {$rgValor} <br/> Emitente: {$orgao}";
             return $rg;
         }
         return null;
@@ -370,27 +378,33 @@ class Curriculo extends Model
 
     public function getIdadeAttribute()
     {
-        if (!isset($this->attributes['nascimento']) || is_null($this->attributes['nascimento'])) {
+        $nascimento = $this->getRawOriginal('nascimento');
+
+        if (empty($nascimento)) {
             return null;
         }
+
         $dataH = new DataHora();
-        return DataHora::distanciaTempo($this->nascimento . ' ' . $dataH->hora() . ':' . $dataH->minuto() . ':00', $dataH->dataHoraInsert())['ano'];
+        return DataHora::distanciaTempo($nascimento . ' ' . $dataH->hora() . ':' . $dataH->minuto() . ':00', $dataH->dataHoraInsert())['ano'];
     }
 
     //Acessor ->nascimento
-//    public function getCreatedAtAttribute($value)
-//    {
-//        $data = new DataHora($this->attributes['created_at']);
-//        return $data->dataCompleta() . ' ' . $data->hora() . ':' . $data->minuto() . 'h';
-//    }
+    //    public function getCreatedAtAttribute($value)
+    //    {
+    //        $data = new DataHora($this->attributes['created_at']);
+    //        return $data->dataCompleta() . ' ' . $data->hora() . ':' . $data->minuto() . 'h';
+    //    }
 
     //Acessor ->nascimento
     public function getNascimentoAttribute($value)
     {
-        if (!isset($this->attributes['nascimento']) || is_null($this->attributes['nascimento'])) {
+        $nascimento = $value ?? $this->getRawOriginal('nascimento');
+
+        if (empty($nascimento)) {
             return null;
         }
-        $data = new DataHora($this->attributes['nascimento']);
+
+        $data = new DataHora($nascimento);
         return $data->dataCompleta();
     }
 
@@ -404,8 +418,10 @@ class Curriculo extends Model
     //Acessor ->nascimento
     public function getCnhVencimentoAttribute($value)
     {
-        if (!is_null($this->attributes['cnh_vencimento'])) {
-            $data = new DataHora($this->attributes['cnh_vencimento']);
+        $cnh = $value ?? ($this->attributes['cnh_vencimento'] ?? null);
+
+        if (!is_null($cnh) && $cnh !== '') {
+            $data = new DataHora($cnh);
             return $data->dataCompleta();
         } else {
             return null;
@@ -426,10 +442,14 @@ class Curriculo extends Model
     //Acessor ->rg_data_emissao
     public function getRgDataEmissaoAttribute($value)
     {
-        if ($value) {
-            $data = new DataHora($this->attributes['rg_data_emissao']);
+        $rgDataEmissao = $value ?? ($this->attributes['rg_data_emissao'] ?? null);
+
+        if (!is_null($rgDataEmissao) && $rgDataEmissao !== '') {
+            $data = new DataHora($rgDataEmissao);
             return $data->dataCompleta();
         }
+
+        return null;
     }
 
     //Modificador ->rg_data_emissao
@@ -443,15 +463,24 @@ class Curriculo extends Model
 
     public function getEnderecoCompletoAttribute()
     {
-        $endereco = $this->logradouro;
-        $cep = $this->cep;
-        $numero = $this->end_numero == '' ? 'S/N' : $this->end_numero;
-        $complemento = $this->complemento;
+        $endereco = $this->attributes['logradouro'] ?? null;
+        $cep = $this->attributes['cep'] ?? null;
+        $numero = $this->attributes['end_numero'] ?? '';
+        $complemento = $this->attributes['complemento'] ?? null;
+        $bairro = $this->attributes['bairro'] ?? null;
+        $municipio = $this->attributes['municipio'] ?? null;
+        $uf = $this->attributes['uf'] ?? null;
+
+        if (empty($endereco) || empty($cep) || empty($bairro) || empty($municipio) || empty($uf)) {
+            return null;
+        }
+
+        $numero = $numero === '' ? 'S/N' : $numero;
 
         if ($complemento) {
-            $endereco_completo = "{$endereco}, {$complemento}, {$numero}, {$cep}, {$this->bairro}, {$this->municipio} / {$this->uf}.";
+            $endereco_completo = "{$endereco}, {$complemento}, {$numero}, {$cep}, {$bairro}, {$municipio} / {$uf}.";
         } else {
-            $endereco_completo = "{$endereco}, {$numero}, {$cep}, {$this->bairro}, {$this->municipio} / {$this->uf}.";
+            $endereco_completo = "{$endereco}, {$numero}, {$cep}, {$bairro}, {$municipio} / {$uf}.";
         }
 
         return $endereco_completo;
@@ -467,7 +496,7 @@ class Curriculo extends Model
         return $this->hasMany(UsuarioDependente::class, 'user_id', 'id');
     }
 
-//   Novo Relacionamento
+    //   Novo Relacionamento
     public function Pessoa()
     {
         return $this->hasOne(User::class, 'id', 'id');
@@ -691,5 +720,4 @@ class Curriculo extends Model
 
         static::addGlobalScope(new ScopeEmpresa);
     }
-
 }

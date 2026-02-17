@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class AprovacaoMail extends Mailable
+class AprovacaoRhMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -16,17 +16,17 @@ class AprovacaoMail extends Mailable
      *
      * @return void
      */
+
     public $dados = [];
 
     public function __construct(array $dados)
     {
         $this->dados = $dados;
         $this->to($this->dados['email_para'], $this->dados['nome_para']);
-        $this->from('naoresponda@mybp.com.br', 'BPSE-BUSINESS PARTNERS SERVIÇOS EMPRESARIAIS');
-        $this->subject = "ATUALIZAÇÃO NA DEMISSÃO PREVISTA  - COLABORADOR {$this->dados['colaborador']}  CÓD - ". $this->dados['demissao_id'];
+        $this->from('naoresponda@mybp.com.br', $this->dados['nome_empresa']);
+        $this->subject = "ATUALIZAÇÃO PARA DEMISSÃO PREVISTA  - COLABORADOR {$this->dados['colaborador']}  CÓD - ". $this->dados['id'];
         $this->assunto = $this->subject;
     }
-
 
     /**
      * Build the message.
@@ -35,6 +35,6 @@ class AprovacaoMail extends Mailable
      */
     public function build()
     {
-        return $this->view('email.movimentacao.demissaoprevista.aprovar_reprovar');
+        return $this->view('email.movimentacao.demissaoprevista.aprovar_rh');
     }
 }

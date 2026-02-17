@@ -20,7 +20,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
-                                <label>Selecione um cargo</label>
+                                <label>Selecione um cargo <span class="text-danger">*</span></label>
                                 <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete"
                                               :disabled="visualizar"
                                               :valido="form.cargo_id !== ''"
@@ -34,7 +34,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
-                                <label>Área</label>
+                                <label>Área <span class="text-danger">*</span></label>
                                 <select v-model="form.area_id" class="form-control" :disabled="visualizar"
                                         onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)">
@@ -46,7 +46,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
-                                <label>Centro de Custo</label>
+                                <label>Centro de Custo <span class="text-danger">*</span></label>
                                 <select v-model="form.centro_custo_id" class="form-control" :disabled="visualizar"
                                         onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)">
@@ -58,7 +58,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
-                                <label>Tipo de Contratação</label>
+                                <label>Tipo de Contratação <span class="text-danger">*</span></label>
                                 <select v-model="form.tipo_contratacao" class="form-control" :disabled="visualizar"
                                         onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)">
@@ -74,7 +74,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
-                                <label>Prioridade</label>
+                                <label>Prioridade <span class="text-danger">*</span></label>
                                 <select v-model="form.prioridade" class="form-control" :disabled="visualizar"
                                         onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)">
@@ -88,7 +88,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
-                                <label>Quantidade</label>
+                                <label>Quantidade <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control"
                                        onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
                                        v-mascara:numero v-model="form.quantidade">
@@ -101,7 +101,7 @@
                                 <div class="row">
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Posição</label>
+                                            <label>Posição <span class="text-danger">*</span></label>
                                             <select v-model="form.outras_informacoes.posicao" class="form-control"
                                                     :disabled="visualizar"
                                                     onchange="valida_campo_vazio(this,1)"
@@ -118,7 +118,7 @@
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Processo</label>
+                                            <label>Processo <span class="text-danger">*</span></label>
                                             <select v-model="form.outras_informacoes.processo" class="form-control"
                                                     :disabled="visualizar"
                                                     onchange="valida_campo_vazio(this,1)"
@@ -144,7 +144,7 @@
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Tipo</label>
+                                            <label>Tipo <span class="text-danger">*</span></label>
                                             <select v-model="form.outras_informacoes.contrato" class="form-control"
                                                     :disabled="visualizar"
                                                     onchange="valida_campo_vazio(this,1)"
@@ -158,13 +158,13 @@
                                     </div>
 
                                     <!--                                    <div class="col-12 col-md-4">
-                                                                            <div class="form-group">
-                                                                                <label>Local de Trabalho</label>
-                                                                                <input type="text" class="form-control"
-                                                                                       onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
-                                                                                       v-model="form.outras_informacoes.local_trabalho">
-                                                                            </div>
-                                                                        </div>-->
+                                                                                <div class="form-group">
+                                                                                    <label>Local de Trabalho</label>
+                                                                                    <input type="text" class="form-control"
+                                                                                           onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
+                                                                                           v-model="form.outras_informacoes.local_trabalho">
+                                                                                </div>
+                                                                            </div>-->
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
@@ -177,16 +177,23 @@
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Gestor da vaga</label>
-                                            <input type="text" class="form-control"
-                                                   onblur="valida_campo_vazio(this,1)" :disabled="visualizar"
-                                                   v-model="form.outras_informacoes.gestor">
+                                            <label>Gestor da vaga <span class="text-danger">*</span></label>
+                                            <autocomplete
+                                                :caminho="'autocomplete/todos-gestores-ativos'"
+                                                :formsm="false"
+                                                :valido="form.outras_informacoes.gestor_id !== ''"
+                                                v-model="form.outras_informacoes.autocomplete_label_gestor"
+                                                placeholder="Digite o nome do(a) gestor(a)"
+                                                :disabled="visualizar"
+                                                :id="`gestor_${hash}`"
+                                                @onblur="resetaCampoGestor"
+                                                @onselect="selecionaGestor"></autocomplete>
                                         </div>
                                     </div>
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Cargo está no PPRA e PCMSO?</label>
+                                            <label>Cargo está no PPRA e PCMSO? <span class="text-danger">*</span></label>
                                             <select v-model="form.outras_informacoes.ppra" class="form-control"
                                                     :disabled="visualizar"
                                                     onchange="valida_campo_vazio(this,1)"
@@ -200,7 +207,7 @@
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Salário</label>
+                                            <label>Salário <span class="text-danger">*</span></label>
                                             <select v-model="form.outras_informacoes.salario" class="form-control"
                                                     :disabled="visualizar"
                                                     onchange="valida_campo_vazio(this,1)"
@@ -224,7 +231,7 @@
 
                                     <div class="col-12 col-md-4">
                                         <div class="form-group">
-                                            <label>Benefício</label>
+                                            <label>Benefício <span class="text-danger">*</span></label>
                                             <select v-model="form.outras_informacoes.beneficio" class="form-control"
                                                     :disabled="visualizar"
                                                     onchange="valida_campo_vazio(this,1)"
@@ -296,7 +303,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="form-group">
-                                <label>Solicitante</label>
+                                <label>Solicitante <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
                                        :disabled="visualizar"
                                        v-model="form.solicitante">
@@ -313,37 +320,42 @@
                     </div>
                 </fieldset>
 
-                <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
-                    Esta solicitação ainda não foi aprovada ou reprovada!
+                <div class="alert alert-warning d-flex align-items-center" v-if="!form.data_aprovacao && !cadastrando">
+                    <i class="fas fa-hourglass-half fa-2x mr-3"></i>
+                    <div>
+                        <strong>Aguardando Aprovação</strong><br>
+                        <small>Esta solicitação ainda não foi aprovada ou reprovada pelo gestor.</small>
+                    </div>
                 </div>
 
-                <fieldset v-if="aprovando">
-                    <legend>Aprovação</legend>
+                <fieldset v-if="aprovando || (visualizar && form.status_aprovacao)">
+                    <legend>Aprovação Gestor</legend>
                     <div class="row">
+                        <div v-if="!aprovando && form.user_aprovacao" class="col-12">
+                            <legend>@{{ form.status_aprovacao }} por: @{{ form.user_aprovacao }} em @{{ form.data_aprovacao }}</legend>
+                        </div>
+
                         <div class="col-12">
                             <div class="form-group">
-                                <label for="">Observação</label>
-                                <textarea class="form-control" :disabled="form.data_aprovacao || !aprovando"
-                                          v-model="form.obs_aprovacao"
-                                          cols="5" rows="5"></textarea>
+                                <label>Observação</label>
+                                <textarea
+                                    class="form-control form-control-sm"
+                                    :disabled="!aprovando"
+                                    v-model="form.obs_aprovacao"
+                                    cols="5"
+                                    rows="5"></textarea>
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="">Status</label>
-                                <select :disabled="form.data_aprovacao || !aprovando " v-model="form.status_aprovacao"
-                                        v-if="!editando"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)" class="form-control">
-                                    <option value="">Selecione...</option>
-                                    <option value="aprovado">Aprovar</option>
-                                    <option value="reprovado">Reprovar</option>
-                                </select>
-
-                                <select :disabled="form.data_aprovacao || !aprovando " v-model="form.status_aprovacao"
-                                        v-if="editando"
-                                        class="form-control">
+                                <label>Status</label>
+                                <select
+                                    :disabled="!aprovando"
+                                    v-model="form.status_aprovacao"
+                                    class="form-control form-control-sm validacampo"
+                                    onchange="valida_campo_vazio(this, 1)"
+                                    onblur="valida_campo_vazio(this, 1)">
                                     <option value="">Selecione...</option>
                                     <option value="aprovado">Aprovar</option>
                                     <option value="reprovado">Reprovar</option>
@@ -352,6 +364,93 @@
                         </div>
                     </div>
                 </fieldset>
+
+                <div class="alert alert-warning" v-if="aprovandoExtra && temAprovacaoExtra">
+                    Esta solicitação ainda não foi aprovada ou reprovada pela @{{ nomeAprovacaoExtra }}!
+                </div>
+
+                <fieldset v-if="(aprovandoExtra || (visualizar && form.status_aprovacao_extra)) && temAprovacaoExtra">
+                    <div v-if="!temAprovacaoExtra" class="alert alert-info">
+                        <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
+                    </div>
+
+                    <legend v-if="temAprovacaoExtra">@{{ nomeAprovacaoExtra }}</legend>
+                    <div class="row" v-if="temAprovacaoExtra">
+                        <div v-if="!aprovandoExtra && form.aprovacao_extra_nome" class="col-12">
+                            <legend>@{{ form.status_aprovacao_extra }} por: @{{ form.aprovacao_extra_nome }} em @{{ form.data_aprovacao_extra }}</legend>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Observação</label>
+                                <textarea
+                                    class="form-control form-control-sm"
+                                    :disabled="!aprovandoExtra || aprovandoRh"
+                                    v-model="form.obs_aprovacao_extra"
+                                    cols="5"
+                                    rows="5"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select
+                                    :disabled="!aprovandoExtra || aprovandoRh"
+                                    v-model="form.status_aprovacao_extra"
+                                    class="form-control form-control-sm validacampo"
+                                    onchange="valida_campo_vazio(this, 1)"
+                                    onblur="valida_campo_vazio(this, 1)">
+                                    <option value="">Selecione...</option>
+                                    <option value="aprovado">Aprovar</option>
+                                    <option value="reprovado">Reprovar</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="alert alert-warning" v-if="aprovandoRh">
+                    Esta solicitação ainda não foi aprovada ou reprovada!
+                </div>
+
+                <fieldset v-if="aprovandoRh || (visualizar && form.status_aprovacao_rh)">
+                    <legend>Aprovação RH</legend>
+                    <div class="row">
+                        <div v-if="!aprovandoRh && form.rh_aprovacao_nome" class="col-12">
+                            <legend>@{{ form.status_aprovacao_rh }} por: @{{ form.rh_aprovacao_nome }} em @{{ form.data_aprovacao_rh }}</legend>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Observação</label>
+                                <textarea
+                                    class="form-control form-control-sm"
+                                    :disabled="!aprovandoRh"
+                                    v-model="form.obs_rh"
+                                    cols="5"
+                                    rows="5"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select
+                                    :disabled="!aprovandoRh"
+                                    v-model="form.status_aprovacao_rh"
+                                    class="form-control form-control-sm validacampo"
+                                    onchange="valida_campo_vazio(this, 1)"
+                                    onblur="valida_campo_vazio(this, 1)">
+                                    <option value="">Selecione...</option>
+                                    <option value="aprovado">Aprovar</option>
+                                    <option value="reprovado">Reprovar</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
             </form>
         </template>
         <template slot="rodape">
@@ -371,6 +470,16 @@
                         @click.prevent="aprovar">
                     <i class="fa fa-save"></i> Aprovar
                 </button>
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="aprovandoExtra && !preload && !cadastrando"
+                        @click.prevent="aprovarExtra">
+                    <i class="fa fa-save"></i> Salvar
+                </button>
+                <button type="button" class="btn btn-sm btn-primary"
+                        v-show="aprovandoRh && !preload && !cadastrando"
+                        @click.prevent="aprovarRh">
+                    <i class="fa fa-save"></i> Salvar
+                </button>
             </div>
         </template>
     </modal>
@@ -378,22 +487,16 @@
     <fieldset>
         <legend>Filtro</legend>
         <form class="row" @submit.prevent="$refs.componente.buscar()">
-            <div class="col-12 col-md-3">
-                <div class="form-check" style="margin-bottom: -11px;">
-                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                           id="filtroIntervalo"
-                           v-model="controle.dados.filtroPeriodo">
-                    <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                </div>
-                <div class="form-group">
-                    <datepicker range formsm label=""
-                                :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                v-model="controle.dados.periodo"></datepicker>
-                </div>
-            </div>
+            <date-range-filter
+                :enabled.sync="controle.dados.filtroPeriodo"
+                :start-date.sync="controle.dados.dataInicio"
+                :end-date.sync="controle.dados.dataFim"
+                :disabled="controle.carregando"
+                :id-suffix="hash"
+                wrapper-class="col-12 col-md-3">
+            </date-range-filter>
 
-
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label>Pesquisar</label>
                     <input type="text"
@@ -404,7 +507,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
                 <div class="form-group">
                     <label>Status</label>
                     <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
@@ -413,6 +516,18 @@
                         <option value="aberto">Aberto</option>
                         <option value="aprovado">Aprovado</option>
                         <option value="reprovado">Reprovado</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3">
+                <div class="form-group">
+                    <label>Ordenar por</label>
+                    <select class="form-control form-control-sm" v-model="controle.dados.ordenacao"
+                            :disabled="controle.carregando" @change="atualizar()">
+                        <option value="created_at_desc">Mais Recentes</option>
+                        <option value="created_at_asc">Mais Antigos</option>
+                        <option value="updated_at_desc">Última Modificação</option>
                     </select>
                 </div>
             </div>
@@ -445,104 +560,232 @@
             <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
         </div>
 
-
-        <div class="col-12 mb-2 mt-2 pt-1 pb-1 border-bottom" v-show="!controle.carregando && lista.length > 0">
-        <span class="small text-right">
-                Legenda:
-                <i class="fas fa-circle text-warning"></i> Aguardando
-                <i class="fas fa-circle text-success ml-2"></i> Aprovado
-                <i class="fas fa-circle text-danger ml-2"></i> Reprovado
-            </span>
-        </div>
-        <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
-                <thead>
-                <tr class="bg-default">
-                    <th>QNT</th>
-                    <th>Cargo</th>
-                    <th>Solicitação</th>
-                    <th>Solicitante</th>
-                    <th>Área</th>
-                    <th>Centro de Custo</th>
-                    <th>Contratação</th>
-                    <th>Prioridade</th>
-                    <th>Ínicio</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="item in lista"
-                    :class="!item.status_aprovacao ? 'table-warning' : item.status_aprovacao === 'reprovado' ? 'table-danger' : item.status_aprovacao === 'aprovado' ? 'table-success' : null">
-                    <td>
-                        @{{item.quantidade}}
-                    </td>
-
-                    <td>
-                        @{{item.cargo.nome}}
-                    </td>
-
-                    <td>
-                        @{{item.data_solicitacao}}
-                    </td>
-
-                    <td>
-                        @{{item.solicitante}}
-                    </td>
-
-                    <td>
-                        @{{item.area.label}}
-                    </td>
-
-                    <td>
-                        @{{item.centro_custo.label}}
-                    </td>
-
-                    <td>
-                        @{{item.tipo_contratacao}}
-                    </td>
-
-                    <td>
-                        @{{item.prioridade}}
-                    </td>
-
-                    <td>
-                        <span v-show="item.imediata">
-                             Imediata
+        <!-- Cards Compactos -->
+        <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="solicitacao-card" v-for="item in lista" :key="item.id">
+                <!-- Cabeçalho do Card -->
+                <div class="card-header-row">
+                    <div class="card-left">
+                        <span class="badge-id">#@{{ item.id }}</span>
+                        <div class="colaborador-principal">
+                            <i class="fas fa-briefcase text-primary mr-1"></i>
+                            <strong>@{{ item.cargo.nome }}</strong>
+                        </div>
+                    </div>
+                    <div class="card-right">
+                    <span class="status-badge" :class="{
+                        'status-reprovado': item.status_aprovacao === 'reprovado' || item.status_aprovacao_extra === 'reprovado',
+                        'status-aprovado': item.status_aprovacao === 'aprovado' && (!temAprovacaoExtra || item.status_aprovacao_extra === 'aprovado'),
+                        'status-aprovado-extra': temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado',
+                        'status-aprovado-gestor': item.status_aprovacao === 'aprovado' && (!temAprovacaoExtra || !item.status_aprovacao_extra),
+                        'status-pendente': !item.status_aprovacao,
+                    }">
+                        <span v-if="item.status_aprovacao === 'reprovado' || item.status_aprovacao_extra === 'reprovado'">
+                            <i class="fas fa-times-circle"></i> REPROVADO
                         </span>
-                        <span v-show="!item.imediata">
-                             @{{ item.previsao_inicio }}
+                        <span v-else-if="item.status_aprovacao === 'aprovado' && (!temAprovacaoExtra || item.status_aprovacao_extra === 'aprovado')">
+                            <i class="fas fa-check-circle"></i> APROVADO
                         </span>
-                    </td>
-
-
-                    <td class="text-center">
-                        @can('privilegio_aprovar_por_gestor')
-                            <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Aprovar"
-                               v-if="!item.data_aprovacao"
-                               @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; editando = false"
-                               data-toggle="modal"
-                               data-target="#janelaCadastrar">
-                                <i class="fa fa-check"></i>
+                        <span v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado'">
+                            <i class="fas fa-check-circle"></i> APROVADO EXTRA
+                        </span>
+                        <span v-else-if="item.status_aprovacao === 'aprovado'">
+                            <i class="fas fa-check-circle"></i> APROVADO GESTOR
+                        </span>
+                        <span v-else>
+                            <i class="fas fa-clock"></i> EM ABERTO
+                        </span>
+                    </span>
+                        <div class="dropdown show">
+                            <a class="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
                             </a>
-                        @endcan
-                        <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                           v-if="item.status_aprovacao !== 'aprovado'"
-                           @click.prevent="formOpen(item.id); editando = true; aprovando = false"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
-                            <i class="fa fa-edit"></i>
-                        </a>
+                            <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                @can('privilegio_aprovar_por_gestor')
+                                    <a class="dropdown-item" href="javascript://" title="Aprovação Gestor" data-toggle="modal" data-target="#janelaCadastrar"
+                                       @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; aprovandoExtra = false; aprovandoRh = false; editando = false; cadastrando = false"
+                                       v-if="!item.data_aprovacao && aprovaGestor">
+                                        Aprovação Gestor
+                                    </a>
+                                @endcan
+                                <a class="dropdown-item" href="javascript://" :title="nomeAprovacaoExtra" data-toggle="modal" data-target="#janelaCadastrar"
+                                   @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; editando = false; cadastrando = false"
+                                   v-if="temAprovacaoExtra && item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra && aprovaExtra">
+                                    @{{ nomeAprovacaoExtra }}
+                                </a>
+                                <a class="dropdown-item" href="javascript://" title="Aprovação RH" data-toggle="modal" data-target="#janelaCadastrar"
+                                   @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; editando = false; cadastrando = false"
+                                   v-if="((item.status_aprovacao === 'aprovado' && !temAprovacaoExtra) || (item.status_aprovacao_extra === 'aprovado')) && !item.rh_aprovacao_id && aprovaRh">
+                                    Aprovação RH
+                                </a>
+                                <a v-if="false" class="dropdown-item" href="javascript://" title="Editar" data-toggle="modal" data-target="#janelaCadastrar"
+                                   @click.prevent="formOpen(item.id); editando = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; cadastrando = false; visualizar = false"
+                                   v-if="item.status_aprovacao !== 'aprovado'">
+                                    Editar
+                                </a>
+                                <a class="dropdown-item" href="javascript://" title="Visualizar" data-toggle="modal" data-target="#janelaCadastrar"
+                                   @click.prevent="formOpen(item.id); visualizar = true; editando = false; aprovando = false; aprovandoExtra = false; aprovandoRh = false; cadastrando = false">
+                                    Visualizar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                        <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                           @click.prevent="formOpen(item.id); visualizar = true; editando = false; aprovando = false; cadastrando = false"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
-                            <i class="fa fa-search-plus"></i>
-                        </a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                <!-- Detalhes do Card -->
+                <div class="card-details-row">
+                    <div class="detail-item">
+                        <i class="fas fa-hashtag text-muted"></i>
+                        <span class="detail-label">Quantidade:</span>
+                        <span class="detail-value">@{{ item.quantidade }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-user text-muted"></i>
+                        <span class="detail-label">Solicitante:</span>
+                        <span class="detail-value">@{{ item.solicitante }}</span>
+                    </div>
+                    <div class="detail-item" v-if="item.OutrasInformacoes && item.OutrasInformacoes.GestorAprovacao">
+                        <i class="fas fa-user-tie text-muted"></i>
+                        <span class="detail-label">Gestor:</span>
+                        <span class="detail-value">@{{ item.OutrasInformacoes.GestorAprovacao.nome }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-alt text-muted"></i>
+                        <span class="detail-label">Solicitação:</span>
+                        <span class="detail-value">@{{ item.data_solicitacao }}</span>
+                    </div>
+                </div>
+                <div class="card-details-row">
+                    <div class="detail-item">
+                        <i class="fas fa-building text-muted"></i>
+                        <span class="detail-label">Centro Custo:</span>
+                        <span class="detail-value">@{{ item.centro_custo.label }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-tag text-muted"></i>
+                        <span class="detail-label">Área:</span>
+                        <span class="detail-value">@{{ (item.area && item.area.label) || '-' }}</span>
+                    </div>
+                </div>
+                <div class="card-details-row">
+                    <div class="detail-item">
+                        <i class="fas fa-file-contract text-muted"></i>
+                        <span class="detail-label">Contratação:</span>
+                        <span class="detail-value">@{{ item.tipo_contratacao }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-exclamation-triangle text-muted"></i>
+                        <span class="detail-label">Prioridade:</span>
+                        <span class="detail-value">@{{ item.prioridade }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock text-muted"></i>
+                        <span class="detail-label">Início:</span>
+                        <span class="detail-value" v-if="item.imediata">Imediata</span>
+                        <span class="detail-value" v-else>@{{ item.previsao_inicio }}</span>
+                    </div>
+                </div>
+
+                <!-- Datas de Criação e Modificação -->
+                <div class="card-details-row" v-if="false">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-plus text-muted"></i>
+                        <span class="detail-label">Criação:</span>
+                        <span class="detail-value">@{{ item.created_at }}</span>
+                    </div>
+                    <div class="detail-item" v-if="item.updated_at && item.updated_at !== item.created_at">
+                        <span class="mx-2 text-muted">|</span>
+                    </div>
+                    <div class="detail-item" v-if="item.updated_at && item.updated_at !== item.created_at">
+                        <i class="fas fa-calendar-check text-muted"></i>
+                        <span class="detail-label">Modificação:</span>
+                        <span class="detail-value">@{{ item.updated_at }}</span>
+                    </div>
+                </div>
+
+                <!-- Fluxo de Aprovação -->
+                <div class="card-aprovacao-row">
+                    <div class="fluxo-icons">
+                        <!-- Solicitante -->
+                        <div class="fluxo-step">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <div class="fluxo-info">
+                                <small class="fluxo-etapa">Solicitante</small>
+                                <small class="fluxo-aprovador text-success">
+                                    @{{ item.solicitante || 'Sem informação' }}
+                                </small>
+                                <small class="fluxo-data">@{{ item.created_at_br }}</small>
+                            </div>
+                        </div>
+
+                        <i class="fas fa-chevron-right text-muted mx-2"></i>
+
+                        <!-- Gestor -->
+                        <div class="fluxo-step">
+                            <i v-if="item.status_aprovacao === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                            <i v-else-if="item.status_aprovacao === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                            <i v-else class="fas fa-clock text-muted"></i>
+                            <div class="fluxo-info">
+                                <small class="fluxo-etapa">Gestor</small>
+                                <small v-if="item.user_aprovacao" class="fluxo-aprovador text-success">
+                                    @{{ item.user_aprovacao.nome }}
+                                </small>
+                                <small v-else class="fluxo-status text-warning">Aguardando</small>
+                                <small v-if="item.data_aprovacao_br" class="fluxo-data">@{{ item.data_aprovacao_br }}</small>
+                            </div>
+                        </div>
+
+                        <template v-if="temAprovacaoExtra">
+                            <i class="fas fa-chevron-right text-muted mx-2"></i>
+                            <!-- Aprovação Extra -->
+                            <div class="fluxo-step">
+                                <i v-if="item.status_aprovacao === 'reprovado'" class="fas fa-ban text-secondary"></i>
+                                <i v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                                <i v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                                <i v-else-if="item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra" class="fas fa-clock text-warning"></i>
+                                <i v-else class="fas fa-circle text-muted"></i>
+                                <div class="fluxo-info">
+                                    <small class="fluxo-etapa">@{{ nomeAprovacaoExtra }}</small>
+                                    <small v-if="item.status_aprovacao === 'reprovado'" class="fluxo-status text-secondary">Cancelada</small>
+                                    <small v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fluxo-aprovador text-success">
+                                        @{{ item.aprovacao_extra_nome }}
+                                    </small>
+                                    <small v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fluxo-aprovador text-danger">
+                                        @{{ item.aprovacao_extra_nome }}
+                                    </small>
+                                    <small v-else-if="item.status_aprovacao === 'aprovado'" class="fluxo-status text-warning">Aguardando</small>
+                                    <small v-else class="fluxo-status">Pendente</small>
+                                    <small v-if="item.data_aprovacao_extra" class="fluxo-data">@{{ item.data_aprovacao_extra }}</small>
+                                </div>
+                            </div>
+                        </template>
+
+                        <i class="fas fa-chevron-right text-muted mx-2"></i>
+
+                        <!-- RH -->
+                        <div class="fluxo-step">
+                            <i v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')" class="fas fa-ban text-secondary"></i>
+                            <i v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                            <i v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                            <i v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')" class="fas fa-clock text-warning"></i>
+                            <i v-else class="fas fa-circle text-muted"></i>
+                            <div class="fluxo-info">
+                                <small class="fluxo-etapa">RH</small>
+                                <small v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')" class="fluxo-status text-secondary">Cancelada</small>
+                                <small v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fluxo-aprovador text-success">
+                                    @{{ item.rh_aprovacao_nome }}
+                                </small>
+                                <small v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fluxo-aprovador text-danger">
+                                    @{{ item.rh_aprovacao_nome }}
+                                </small>
+                                <small v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')" class="fluxo-status text-warning">Aguardando</small>
+                                <small v-else class="fluxo-status">Pendente</small>
+                                <small v-if="item.data_aprovacao_rh_br || item.data_aprovacao_rh" class="fluxo-data">@{{ item.data_aprovacao_rh_br || item.data_aprovacao_rh }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <controle-paginacao
@@ -559,4 +802,248 @@
 @stop
 @push('js')
     <script src="{{mix('js/g/planejamento/requisicao-vagas/app.js')}}"></script>
+@endpush
+
+@push('css')
+    <style>
+        /* Cards Lista */
+        .cards-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Card Individual */
+        .solicitacao-card {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .solicitacao-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+            border-color: #007bff;
+            transform: translateY(-2px);
+        }
+
+        /* Header do Card */
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f1f3f5;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .card-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .badge-id {
+            background: #174257;
+            color: white;
+            padding: 0.25rem 0.625rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .colaborador-principal {
+            display: flex;
+            align-items: center;
+            font-size: 0.938rem;
+            color: #212529;
+            overflow: hidden;
+        }
+
+        .colaborador-principal strong {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+        }
+
+        .status-reprovado {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-aprovado {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-aprovado-gestor {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .status-aprovado-extra {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .status-pendente {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        /* Detalhes do Card */
+        .card-details-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f1f3f5;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.813rem;
+            min-width: 0;
+        }
+
+        .detail-item i {
+            flex-shrink: 0;
+            font-size: 0.875rem;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+
+        .detail-value {
+            color: #212529;
+            font-weight: 400;
+        }
+
+        /* Fluxo de Aprovação */
+        .card-aprovacao-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .fluxo-icons {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .fluxo-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f8f9fa;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .fluxo-step i {
+            font-size: 1.125rem;
+            margin-top: 0.125rem;
+            flex-shrink: 0;
+        }
+
+        .fluxo-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .fluxo-etapa {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.688rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .fluxo-aprovador,
+        .fluxo-status {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .fluxo-data {
+            font-size: 0.688rem;
+            color: #6c757d;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu-custom {
+            min-width: 10rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #dee2e6;
+        }
+
+        .dropdown-menu-custom .dropdown-item {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .dropdown-menu-custom .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #007bff;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-header-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .card-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .fluxo-icons {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .fluxo-icons>i.fa-chevron-right {
+                transform: rotate(90deg);
+                margin: 0;
+            }
+        }
+    </style>
 @endpush

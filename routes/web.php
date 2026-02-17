@@ -53,16 +53,6 @@ Route::get('download-checklist/{empresa}', function ($empresa) {
 
 Route::redirect('/', 'g/login');
 
-// Rotas para avaliação de 90 dias (requer autenticação, mas não está no menu)
-Route::middleware(['auth'])->group(function () {
-    Route::get('avaliacao-90-dias/{token}', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'mostrarFormulario'])
-        ->name('avaliacao.publica.formulario');
-    Route::post('avaliacao-90-dias/{token}', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'salvarAvaliacao'])
-        ->name('avaliacao.publica.salvar');
-    Route::get('avaliacao-90-dias/{token}/erro', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'exibirErro'])
-        ->name('avaliacao.publica.erro');
-});
-
 Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
     Route::get('controle-exames/ficha-encaminhamento/{exame}/{token}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('encaminhamento_exame_fichapdf');
     Route::post('cnpjbusca', [\App\Http\Controllers\PublicoController::class, 'cnpjbusca'])->name('cnpjbusca');
@@ -75,16 +65,15 @@ Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
     Route::get('foto/{nome}', [\App\Http\Controllers\PublicoController::class, 'download'])->name('foto-download');
 
     Route::get('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoShow'])->name('cloud.anexo-show');
-//    Route::get('cloud/{arquivo}', [\App\Http\Controllers\CloudController::class,'download'])->name('cloud.anexo-download')->middleware(['auth', 'habilidades', 'can:cloud']);
+    //    Route::get('cloud/{arquivo}', [\App\Http\Controllers\CloudController::class,'download'])->name('cloud.anexo-download')->middleware(['auth', 'habilidades', 'can:cloud']);
     Route::get('cloud/anexoDownload/{arquivo}', [\App\Http\Controllers\CloudController::class, 'download'])->name('cloud.anexo-download');
     Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('cloud.anexo-delete')->middleware(['auth', 'configuracao_habilidades', 'can:cloud']);
 
 
     Route::get('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoShow'])->name('cloud.anexo-show');
-//    Route::get('cloud/{arquivo}', [\App\Http\Controllers\CloudController::class,'download'])->name('cloud.anexo-download')->middleware(['auth', 'habilidades', 'can:cloud']);
+    //    Route::get('cloud/{arquivo}', [\App\Http\Controllers\CloudController::class,'download'])->name('cloud.anexo-download')->middleware(['auth', 'habilidades', 'can:cloud']);
     Route::get('cloud/anexoDownload/{arquivo}', [\App\Http\Controllers\CloudController::class, 'download'])->name('cloud.anexo-download');
     Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('cloud.anexo-delete')->middleware(['auth', 'configuracao_habilidades', 'can:cloud']);
-
 });
 
 
@@ -107,7 +96,6 @@ Route::group(['prefix' => 'g'], function () {
     // Password Change Routes (fora do middleware check.password.reset para evitar loop)
     Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('auth');
     Route::put('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'update'])->name('alterar-senha.update')->middleware('auth');
-
 });
 
 Route::get('carteira/{curriculo}', [\App\Http\Controllers\TreinamentoController::class, 'carteiraIndividual'])->name('treinamento.carteira');
@@ -137,7 +125,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('/carregaResposta', [\App\Http\Controllers\FormularioController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('/{formulario}', [\App\Http\Controllers\FormularioController::class, 'carrega'])->name('carrega');
         Route::get('buscaFormulario/{tipo}', [\App\Http\Controllers\FormularioController::class, 'buscaFormulario'])->name('buscaFormulario');
-//        Route::get('carregaResposta/{resposta}', [\App\Http\Controllers\FormularioController::class, 'carregaResposta'])->name('carregaResposta');
+        //        Route::get('carregaResposta/{resposta}', [\App\Http\Controllers\FormularioController::class, 'carregaResposta'])->name('carregaResposta');
 
     });
 
@@ -175,7 +163,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('colaboradores-ferias', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradoresFerias'])->name('colaboradoresFerias');
         Route::get('cargosEmpresa', [\App\Http\Controllers\AutoCompletesController::class, 'cargosEmpresa'])->name('cargosEmpresa');
         Route::get('buscaUsuariosAtivos', [\App\Http\Controllers\AutoCompletesController::class, 'buscaUsuariosAtivos'])->name('buscaUsuariosAtivos');
-//        Route::get('colaboradorIntermitente/{cliente_id}', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitenteCliente'])->name('colaboradorIntermitenteCliente');
+        //        Route::get('colaboradorIntermitente/{cliente_id}', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitenteCliente'])->name('colaboradorIntermitenteCliente');
 
         Route::get('funcionarios', [\App\Http\Controllers\AutoCompletesController::class, 'funcionarios'])->name('funcionarios');
         Route::get('documentos-contratos', [\App\Http\Controllers\AutoCompletesController::class, 'documentosLegaisContrato'])->name('documentosLegaisContrato');
@@ -213,7 +201,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('clientes/mascoteDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteDownload'])->name('clientes.mascote-download')->middleware('can:administracao_clientes');
         Route::delete('clientes/mascote/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'mascoteDelete'])->name('clientes.mascote-delete')->middleware('can:administracao_clientes');
 
-//            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('clientes.excel')->middleware('can:administracao_clientes');
+        //            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('clientes.excel')->middleware('can:administracao_clientes');
         Route::get('clientes/buscar-cnpj', [\App\Http\Controllers\ClientesController::class, 'buscaCNPJ'])->name('clientes.verifica-cnpj')->middleware('can:administracao_clientes');
         Route::get('clientes/buscar-cpf', [\App\Http\Controllers\ClientesController::class, 'buscaCPF'])->name('clientes.verifica-cpf')->middleware('can:administracao_clientes');
 
@@ -225,7 +213,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('clientes/anexoDownload/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'download'])->name('anexo-download')->middleware('can:administracao_clientes');
             Route::delete('clientes/anexo/{arquivo}', [\App\Http\Controllers\ClientesController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:administracao_clientes');
 
-//            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('excel')->middleware('can:administracao_clientes');
+            //            Route::get('clientes/export', [\App\Http\Controllers\ClientesController::class,'export'])->name('excel')->middleware('can:administracao_clientes');
             Route::get('clientes/buscar-cnpj', [\App\Http\Controllers\ClientesController::class, 'buscaCNPJ'])->name('verifica-cnpj')->middleware('can:administracao_clientes');
             Route::get('clientes/buscar-cpf', [\App\Http\Controllers\ClientesController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_clientes');
 
@@ -242,7 +230,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::put('filial/{filial}', [\App\Http\Controllers\FilialController::class, 'update'])->name('update');
                 Route::post('filial/atualizar', [\App\Http\Controllers\FilialController::class, 'atualizar'])->name('atualizar');
             });
-
         });
 
 
@@ -262,7 +249,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('contrato/search', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'searchCliente'])->name('search')->middleware('can:administracao_documentos_legais');
                 Route::post('contrato/atualizar', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_documentos_legais');
                 Route::resource('contrato', \App\Http\Controllers\DocumentosLegaisContratoController::class)->middleware('can:administracao_documentos_legais');
-
             });
 
             Route::group(['as' => 'empresa.'], function () {
@@ -307,7 +293,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('formacontrato/atualizar', [\App\Http\Controllers\FormaContratoDocumentoLegalController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_documentos_legais');
                 Route::resource('formacontrato', \App\Http\Controllers\FormaContratoDocumentoLegalController::class)->middleware('can:administracao_documentos_legais');
             });
-
         });
 
         // Fornecedores
@@ -361,6 +346,20 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('aniversariantes/atualizar', [\App\Http\Controllers\AniversariantesController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_aniversariantes');
             Route::post('aniversariantes/enviaEmail', [\App\Http\Controllers\AniversariantesController::class, 'enviaEmail'])->name('enviaEmail')->middleware('can:administracao_aniversariantes');
             Route::resource('aniversariantes', \App\Http\Controllers\AniversariantesController::class)->middleware('can:administracao_aniversariantes');
+        });
+
+        // Aprovação Extra Config
+        Route::group(['as' => 'aprovacao-extra-config.', 'prefix' => 'aprovacao-extra-config'], function () {
+            Route::get('/', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'index'])->name('index')->middleware('can:administracao_aprovacao_extra_config');
+            Route::get('/listar', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'listar'])->name('listar')->middleware('can:administracao_aprovacao_extra_config');
+            Route::get('/tipos-processo', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'tiposProcesso'])->name('tipos-processo')->middleware('can:administracao_aprovacao_extra_config');
+            Route::get('/listar-usuarios', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'listarUsuarios'])->name('listar-usuarios')->middleware('can:administracao_aprovacao_extra_config');
+            Route::get('/buscar-por-tipo', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'buscarPorTipo'])->name('buscar-por-tipo')->middleware('can:administracao_aprovacao_extra_config');
+            Route::post('/', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'store'])->name('store')->middleware('can:administracao_aprovacao_extra_config');
+            Route::put('/{id}', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'update'])->name('update')->middleware('can:administracao_aprovacao_extra_config');
+            Route::delete('/{id}', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'destroy'])->name('destroy')->middleware('can:administracao_aprovacao_extra_config');
+            Route::post('/{id}/toggle-ativo', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'toggleAtivo'])->name('toggle-ativo')->middleware('can:administracao_aprovacao_extra_config');
+            Route::post('/pode-aprovar', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'podeAprovar'])->name('pode-aprovar')->middleware('can:administracao_aprovacao_extra_config');
         });
     });
 
@@ -573,7 +572,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                     Route::get('avaliar', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarIndex'])->name('avaliarIndex')->middleware('can:avaliacoes_listar');
                 });
             });
-
         });
     });
 
@@ -581,6 +579,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     Route::group(['prefix' => 'planejamento'], function () {
         Route::group(['as' => 'requisicao_vagas.'], function () {
             Route::put('requisicao-vaga/{requisicaoVaga}/aprovar', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovar'])->name('aprovar')->middleware('can:planejamento_requisicao_vaga');
+            Route::put('requisicao-vaga/{requisicaoVaga}/aprovarextra', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovarExtra'])->name('aprovarExtra')->middleware('can:planejamento_requisicao_vaga');
+            Route::put('requisicao-vaga/{requisicaoVaga}/aprovarrh', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovarRh'])->name('aprovarRh')->middleware('can:planejamento_requisicao_vaga');
             Route::post('requisicao-vaga/atualizar', [\App\Http\Controllers\RequisicaoVagaController::class, 'atualizar'])->name('atualizar')->middleware('can:planejamento_requisicao_vaga');
             Route::post('requisicao-vaga/export', [\App\Http\Controllers\RequisicaoVagaController::class, 'export'])->name('requisicao-vaga.excel')->middleware('can:planejamento_requisicao_vaga');
             Route::resource('requisicao-vaga', \App\Http\Controllers\RequisicaoVagaController::class)->middleware('can:planejamento_requisicao_vaga');
@@ -598,6 +598,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
                 Route::post('demissao-prevista/atualizar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('demissao-prevista/{demissaoPrevista}/aprovarextra', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovarrh', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('demissao-prevista/export', [\App\Http\Controllers\DemissaoPrevistaController::class, 'export'])->name('demissao-prevista.excel');
                 Route::resource('demissao-prevista', \App\Http\Controllers\DemissaoPrevistaController::class, ['parameters' => ['demissao-prevista' => 'demissao_prevista']]);
@@ -605,6 +606,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
             Route::group(['as' => 'solicitacao_ferias.'], function () {
                 Route::put('ferias-prevista/{ferias}/aprovargestor', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarGestor'])->name('aprovarGestor');
+                Route::put('ferias-prevista/{ferias}/aprovarextra', [\App\Http\Controllers\FeriasPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::post('ferias-prevista/export', [\App\Http\Controllers\FeriasPrevistaController::class, 'export'])->name('ferias-prevista.excel');
                 Route::post('ferias-prevista/atualizacao-status', [\App\Http\Controllers\FeriasPrevistaController::class, 'atualizacaoStatus'])->name('ferias-prevista.atualizacaoStatus');
                 Route::post('ferias-prevista/atualizar', [\App\Http\Controllers\FeriasPrevistaController::class, 'atualizar'])->name('atualizar');
@@ -617,6 +619,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('admissoes-prevista/atualizacao-status', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizacaoStatus'])->name('admissoes-prevista.atualizacaoStatus');
                 Route::post('admissoes-prevista/atualizar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('admissoes-prevista/{admissoesPrevista}/aprovar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('admissoes-prevista/{admissoesPrevista}/aprovar-extra', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::put('admissoes-prevista/{admissoesPrevista}/aprovarrh', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('admissoes-prevista/export', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'export'])->name('admissoes-prevista.excel');
                 Route::resource('admissoes-prevista', \App\Http\Controllers\AdmissoesPrevistaController::class, ['parameters' => ['admissoes-prevista' => 'admissoes_prevista']]);
@@ -626,6 +629,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('valor-extra-prevista/atualizacao-status', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'atualizacaoStatus'])->name('valor-extra-prevista.atualizacaoStatus');
                 Route::post('valor-extra-prevista/atualizar', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('valor-extra-prevista/{valorExtraPrevista}/aprovar', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('valor-extra-prevista/{valorExtraPrevista}/aprovarextra', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::put('valor-extra-prevista/{valorExtraPrevista}/aprovarrh', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('valor-extra-prevista/export', [\App\Http\Controllers\ValorExtraPrevistaController::class, 'export'])->name('valor-extra-prevista.excel');
                 Route::resource('valor-extra-prevista', \App\Http\Controllers\ValorExtraPrevistaController::class, ['parameters' => ['valor-extra-prevista' => 'valor_extra_prevista']]);
@@ -633,6 +637,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
             Route::group(['as' => 'solicitacao_cargo.'], function () {
                 Route::put('mudanca-cargo/{solicitacao}/aprovargestor', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarGestor'])->name('mudanca-cargo.aprovarGestor');
+                Route::put('mudanca-cargo/{solicitacao}/aprovarextra', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarExtra'])->name('mudanca-cargo.aprovarExtra');
                 Route::post('mudanca-cargo/export', [\App\Http\Controllers\MudancaCargoController::class, 'export'])->name('mudanca-cargo.excel');
                 Route::post('mudanca-cargo/atualizar', [\App\Http\Controllers\MudancaCargoController::class, 'atualizar'])->name('mudanca-cargo.atualizar');
                 Route::put('mudanca-cargo/{solicitacao}/aprovarrh', [\App\Http\Controllers\MudancaCargoController::class, 'aprovarRH'])->name('mudanca-cargo.aprovarRH');
@@ -643,6 +648,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('intermitente-fixo-prevista/atualizacao-status', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizacaoStatus'])->name('intermitente-fixo-prevista.atualizacaoStatus');
                 Route::post('intermitente-fixo-prevista/atualizar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('intermitente-fixo-prevista/{intermitenteFixoPrevista}/aprovar', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('intermitente-fixo-prevista/{intermitenteFixoPrevista}/aprovar-extra', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::put('intermitente-fixo-prevista/{intermitenteFixoPrevista}/aprovarrh', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'aprovarRh'])->name('mudanca-cargo.aprovarRH');
                 Route::post('intermitente-fixo-prevista/export', [\App\Http\Controllers\IntermitenteFixoPrevistaController::class, 'export'])->name('intermitente-fixo-prevista.excel');
                 Route::resource('intermitente-fixo-prevista', \App\Http\Controllers\IntermitenteFixoPrevistaController::class, ['parameters' => ['intermitente-fixo-prevista' => 'intermitente_fixo_prevista']]);
@@ -652,6 +658,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('transferencia-prevista/atualizacao-status', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizacaoStatus'])->name('transferencia-prevista.atualizacaoStatus');
                 Route::post('transferencia-prevista/atualizar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar-extra', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovarrh', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('transferencia-prevista/export', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'export'])->name('transferencia-prevista.excel');
                 Route::resource('transferencia-prevista', \App\Http\Controllers\TransferenciaPrevistaController::class, ['parameters' => ['transferencia-prevista' => 'transferencia_prevista']]);
@@ -689,7 +696,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::group(['as' => 'curriculoselecao.'], function () {
             Route::post('curriculos-selecionados/atualizar', [\App\Http\Controllers\CurriculosSelecionadosController::class, 'atualizar'])->name('curriculos-selecionados.atualizar');
             Route::get('curriculos-selecionados/{feedback}/selecionado', [\App\Http\Controllers\CurriculosSelecionadosController::class, 'getCurriculo'])->name('curriculos-selecionados.getCurriculo');
-//        Route::put('curriculos-selecionados/{curriculo}/desclassificar', [\App\Http\Controllers\CurriculosSelecionadosController::class,'desclassificar'])->name('curriculos-selecionados.desclassificar');
+            //        Route::put('curriculos-selecionados/{curriculo}/desclassificar', [\App\Http\Controllers\CurriculosSelecionadosController::class,'desclassificar'])->name('curriculos-selecionados.desclassificar');
             Route::put('modificaStatus', [\App\Http\Controllers\CurriculosSelecionadosController::class, 'modificaStatus'])->name('curriculos-selecionados.modificaStatus');
             Route::get('curriculos-selecionados', [\App\Http\Controllers\CurriculosSelecionadosController::class, 'index'])->name('curriculos-selecionados.index');
         });
@@ -751,10 +758,9 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
             Route::post('resultado-integrado/export', [\App\Http\Controllers\ResultadoIntegradoController::class, 'export'])->name('resultado_integrado.excel')->middleware('can:entrevista_resultado_integrado');
             Route::post('resultado-integrado/atualizar', [\App\Http\Controllers\ResultadoIntegradoController::class, 'atualizar'])->name('resultado_integrado.atualizar')->middleware('can:entrevista_resultado_integrado');
-//            Route::get('resultado-integrado/ficha/{resultado}', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getFichaPdf'])->name('resultado_integrado.getFichapdf')->middleware('can:entrevista_resultado_integrado');
+            //            Route::get('resultado-integrado/ficha/{resultado}', [\App\Http\Controllers\ResultadoIntegradoController::class, 'getFichaPdf'])->name('resultado_integrado.getFichapdf')->middleware('can:entrevista_resultado_integrado');
             Route::resource('resultado-integrado', \App\Http\Controllers\ResultadoIntegradoController::class)->middleware('can:entrevista_resultado_integrado');
         });
-
     });
 
     //Controle de Exames
@@ -886,7 +892,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('anexo-delete');
             Route::post('/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('.upload-anexos');
             Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
-            Route::put('/remover-medida-administrativa', [\App\Http\Controllers\HistoricoController::class, 'removerMedidaAdministrativa'])->middleware('can:privilegio_gestao_rh');
         });
 
         //Rotas Afastamento Historico
@@ -913,7 +918,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoShow'])->name('anexo-show');
             Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\DossieController::class, 'download'])->name('anexo-download');
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoDelete'])->name('anexo-delete');
-//        Route::get('/{feedback_id}/pdf', [\App\Http\Controllers\DossieController::class,'medidasAdministrativasPDF'])->name('pdfDossie');
+            //        Route::get('/{feedback_id}/pdf', [\App\Http\Controllers\DossieController::class,'medidasAdministrativasPDF'])->name('pdfDossie');
             Route::post('/{feedback}', [\App\Http\Controllers\DossieController::class, 'store'])->name('store');
             Route::get('/{feedback}', [\App\Http\Controllers\DossieController::class, 'show'])->name('show');
             Route::get('/{tipo_modelo}/{curriculo_id}/{feedback_id}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('downloadModelo');
@@ -964,14 +969,12 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::group(['as' => 'logshistorico.', 'prefix' => 'log-historico'], function () {
             Route::post('/atualizar', [\App\Http\Controllers\LogsHistoricoController::class, 'atualizar'])->name('atualizarLog'); // manter essa rota antes do resource
         });
-
-
     });
     //Fim Menu Admissao
 
     //Componente Etapa Classifica e desclassifica
     Route::group(['as' => 'etapa.'], function () {
-//        Route::get('etapa/{curriculo}/selecionado', 'CurriculosSelecionadosController@getCurriculo')->name('etapa.getCurriculo');
+        //        Route::get('etapa/{curriculo}/selecionado', 'CurriculosSelecionadosController@getCurriculo')->name('etapa.getCurriculo');
         Route::post('etapa/{feedback}/desclassificar', [\App\Http\Controllers\EtapasController::class, 'desclassificar'])->name('etapa.desclassificar');
         Route::post('etapa/{feedback}/classificar', [\App\Http\Controllers\EtapasController::class, 'classificar'])->name('etapa.classificar');
     });
@@ -1038,22 +1041,20 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::resource('cloud', \App\Http\Controllers\CloudController::class)->middleware('can:cloud');
 
         Route::group(['as' => 'cadastro.', 'prefix' => 'clouds'], function () {
-            Route::get('cadastro', [\App\Http\Controllers\CloudController::class, 'indexCadastro'])->name('indexCadastro')//                ->middleware('can:cloud_cadastro')
+            Route::get('cadastro', [\App\Http\Controllers\CloudController::class, 'indexCadastro'])->name('indexCadastro') //                ->middleware('can:cloud_cadastro')
             ;
-            Route::post('cadastro/atualizar', [\App\Http\Controllers\CloudController::class, 'listarClouds'])->name('listarClouds')//                ->middleware('can:cloud_cadastro')
+            Route::post('cadastro/atualizar', [\App\Http\Controllers\CloudController::class, 'listarClouds'])->name('listarClouds') //                ->middleware('can:cloud_cadastro')
             ;
-            Route::post('cadastro', [\App\Http\Controllers\CloudController::class, 'storeCloud'])->name('storeCloud')//                ->middleware('can:cloud_cadastro')
+            Route::post('cadastro', [\App\Http\Controllers\CloudController::class, 'storeCloud'])->name('storeCloud') //                ->middleware('can:cloud_cadastro')
             ;
-            Route::get('cadastro/{cloud}/editar', [\App\Http\Controllers\CloudController::class, 'edit'])->name('edit')//                ->middleware('can:cloud_cadastro')
-            ;
-
-            Route::put('cadastro/{cloud}', [\App\Http\Controllers\CloudController::class, 'updateCloud'])->name('updateCloud')//                ->middleware('can:cloud_cadastro')
+            Route::get('cadastro/{cloud}/editar', [\App\Http\Controllers\CloudController::class, 'edit'])->name('edit') //                ->middleware('can:cloud_cadastro')
             ;
 
-            Route::put('cadastro/{cloud}/ativa-desativa', [\App\Http\Controllers\CloudController::class, 'ativaDesativa'])->name('ativaDesativa')//                ->middleware('can:cloud_cadastro')
+            Route::put('cadastro/{cloud}', [\App\Http\Controllers\CloudController::class, 'updateCloud'])->name('updateCloud') //                ->middleware('can:cloud_cadastro')
             ;
 
-
+            Route::put('cadastro/{cloud}/ativa-desativa', [\App\Http\Controllers\CloudController::class, 'ativaDesativa'])->name('ativaDesativa') //                ->middleware('can:cloud_cadastro')
+            ;
         });
 
         Route::group(['as' => 'configuracoes.', 'prefix' => 'clouds'], function () {
@@ -1114,7 +1115,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::group(['as' => 'cliente.'], function () {
             Route::post('cliente-logo/atualizar', [\App\Http\Controllers\ClienteLogoSiteController::class, 'atualizar'])->name('atualizar')->middleware('can:site_cartela_cliente_site');
             Route::post('cliente-logo/fotoUpload', [\App\Http\Controllers\ClienteLogoSiteController::class, 'fotoUpload'])->name('upload-fotos')->middleware('can:site_cartela_cliente_site_insert');
-//                Route::get('cliente/fotoDownload/{arquivo}', 'ClientesController@download')->name('foto-download');
+            //                Route::get('cliente/fotoDownload/{arquivo}', 'ClientesController@download')->name('foto-download');
             Route::resource('cliente-logo', \App\Http\Controllers\ClienteLogoSiteController::class)->middleware('can:site_cartela_cliente_site');
         });
 
@@ -1136,7 +1137,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::group(['as' => 'controleusuarios.'], function () {
             Route::get('controleusuarios', [\App\Http\Controllers\ControleUsuariosController::class, 'index'])->name('index')->middleware('can:relatorio_relatorios');
             Route::post('controleusuarios/dados', [\App\Http\Controllers\ControleUsuariosController::class, 'dadosusuarioSistema'])->name('dadosusuarioSistema')->middleware('can:relatorio_relatorios');
-//            Route::get('relatorios/controleusuarios/pdf/{dados}', [\App\Http\Controllers\ControleUsuariosController::class, 'usuarioSistema'])->name('usuarioSistema')->middleware('can:relatorios');
+            //            Route::get('relatorios/controleusuarios/pdf/{dados}', [\App\Http\Controllers\ControleUsuariosController::class, 'usuarioSistema'])->name('usuarioSistema')->middleware('can:relatorios');
         });
         Route::group(['as' => 'vencimentoasos.'], function () {
             Route::get('vencimentoasos', [\App\Http\Controllers\Relatorios\VencimentoAsosController::class, 'index'])->name('index')->middleware('can:relatorio_asos');
@@ -1154,14 +1155,12 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('vencimento-treinamento', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'index'])->name('index')->middleware('can:relatorio_treinamento');
             Route::post('vencimento-treinamento', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'show'])->name('show')->middleware('can:relatorio_treinamento');
             Route::post('vencimento-treinamento/export-excel', [\App\Http\Controllers\Relatorios\TreinamentoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_treinamento');
-
         });
 
         Route::group(['as' => 'vencimentoferias.'], function () {
             Route::get('vencimento-ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'indexVencimentoFerias'])->name('indexVencimentoFerias')->middleware('can:relatorio_ferias');
             Route::post('vencimento-ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'showVencimentoFerias'])->name('showVencimentoFerias')->middleware('can:relatorio_ferias');
             Route::post('vencimento-ferias/export-excel', [\App\Http\Controllers\Relatorios\FeriasController::class, 'exportExcelVencimentoFerias'])->name('exportExcelVencimentoFerias')->middleware('can:relatorio_ferias');
-
         });
 
         Route::group(['as' => 'ferias.'], function () {
@@ -1169,7 +1168,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('ferias', [\App\Http\Controllers\Relatorios\FeriasController::class, 'show'])->name('show')->middleware('can:relatorio_ferias');
             Route::post('ferias/listaperiodos', [\App\Http\Controllers\Relatorios\FeriasController::class, 'listaperiodos'])->name('listaperiodos')->middleware('can:relatorio_ferias');
             Route::post('ferias/export-excel', [\App\Http\Controllers\Relatorios\FeriasController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_ferias');
-
         });
 
         Route::group(['as' => 'centrodecusto.'], function () {
@@ -1184,15 +1182,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('efetivo/pdf', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'exportPdf'])->name('exportPdf')->middleware('can:relatorio_efetivo');
             Route::post('efetivo/export-excel', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'exportExcel'])->name('exportExcel')->middleware('can:relatorio_efetivo');
             Route::post('efetivo/atualizar', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_efetivo');
-        });
-
-        Route::group(['as' => 'avaliacao90dias.'], function () {
-            Route::get('avaliacao-90-dias', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'index'])->name('index')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::post('avaliacao-90-dias/exportar', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'exportar'])->name('exportar')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::get('avaliacao-90-dias/status-exportacao', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'statusExportacao'])->name('statusExportacao')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::post('avaliacao-90-dias/gerar-links-lote', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'gerarLinksLote'])->name('gerarLinksLote')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::post('avaliacao-90-dias/{feedbackId}/gerar-link', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'gerarLink'])->name('gerarLink')->whereNumber('feedbackId')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::get('avaliacao-90-dias/{feedbackId}/link', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'consultarLink'])->name('consultarLink')->whereNumber('feedbackId')->middleware('can:relatorio_avaliacao_90_dias');
         });
 
         //Aniversariantes
@@ -1217,7 +1206,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
         //busca os grupos da uma empresa
         Route::get('usuario/busca-grupo-empresa/{empresa_id}', [\App\Http\Controllers\UserController::class, 'buscaGrupoEmpresa'])->name('buscaGrupoEmpresa')->middleware('can:usuario_usuarios');
-
     });
 
     Route::group(['as' => 'perfil.'], function () {
@@ -1264,7 +1252,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('formas-pagamento/atualizar', [\App\Http\Controllers\FormaPagamentoController::class, 'atualizar'])->name('atualizar')->middleware('can:financeiro_formas-pagamento');
         });
         Route::resource('formas-pagamento', \App\Http\Controllers\FormaPagamentoController::class, ['parameters' => ['formas-pagamento' => 'forma']])->middleware('can:financeiro_formas-pagamento');
-
     });
 
     //Controle de ponto
@@ -1275,7 +1262,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('configuracoes/buscarPerimetros', [\App\Http\Controllers\EmpresaConfigController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
             Route::post('configuracoes/atualizarFuncionarios', [\App\Http\Controllers\EmpresaConfigController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_config_empresa');
             Route::get('configuracoes/getPermissoes', [\App\Http\Controllers\EmpresaConfigController::class, 'getPermissoes'])->name('getPermissoes');
-
         });
         Route::resource('configuracoes', \App\Http\Controllers\EmpresaConfigController::class, ['parameters' => ['configuracoes' => 'config']])->middleware('can:controle_ponto_config_empresa');
 
@@ -1308,7 +1294,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
             Route::post('escalas/atualizarFuncionarios', [\App\Http\Controllers\EmpresaEscalaController::class, 'atualizarFuncionarios'])->name('atualizarFuncionarios')->middleware('can:controle_ponto_escalas');
             Route::get('escalas/getPermissoes', [\App\Http\Controllers\EmpresaEscalaController::class, 'getPermissoes'])->name('getPermissoes');
-
         });
         Route::resource('escalas', \App\Http\Controllers\EmpresaEscalaController::class, ['parameters' => ['escalas' => 'escala']])->middleware('can:controle_ponto_escalas');
 
@@ -1345,7 +1330,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('imprimir', [\App\Http\Controllers\FolhaManualController::class, 'imprimir'])->name('folha-manual_imprimir')->middleware('can:controle_ponto_folha_ponto_manual');
             Route::get('', [\App\Http\Controllers\FolhaManualController::class, 'index'])->name('index')->middleware('can:controle_ponto_folha_ponto_manual');
         });
-
     });
 
     //Weekley report
@@ -1438,7 +1422,6 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('acesso-clinica/atualizar', [\App\Http\Controllers\Clinica\ControleExamesController::class, 'atualizar'])->name('atualizar')->middleware('can:acesso_clinica');
         Route::resource('acesso-clinica', \App\Http\Controllers\Clinica\ControleExamesController::class)->middleware('can:acesso_clinica');
     });
-
 });
 
 
@@ -1455,7 +1438,6 @@ Route::group(['as' => 'provas.'], function () {
 
 
     Route::get('provas/{empresa_id}/{vagas_abertas_id}/{simulado_id}', [\App\Http\Controllers\SimuladoCandidatoController::class, 'index'])->name('prova.simulado');
-
 });
 
 //Rotas de pre-admissao protegidas
@@ -1469,7 +1451,6 @@ Route::group(['as' => 'documentospreadmissao.'], function () {
 
         Route::get('carta-oferta/{token}', [\App\Http\Controllers\CartaOfertaController::class, 'index'])->name('carta-oferta.index');
         Route::post('carta-oferta/{token}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');
-
     });
 
     Route::post('documentos/uploadAnexos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'uploadAnexos'])->name('documentos.upload-anexos');

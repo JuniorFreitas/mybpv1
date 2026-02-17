@@ -5,11 +5,17 @@
         <tr>
             <td style="text-align: justify">
                 Olá, <strong>{{ $dados['nome_para'] }}</strong>!<br><br>
-                <strong>{{ $dados['nome_de'] }}</strong>, criou e marcou você em uma demissão prevista. <br>
-                ID: <strong>{{$dados['demissao_id']}}</strong>. <br>
-                Colaborador: <strong>{{$dados['colaborador']}}</strong>. <br>
+
+                <strong>{{ $dados['nome_de'] }}</strong> criou uma nova solicitação de demissão prevista que está <strong>pendente de aprovação</strong> na etapa de aprovação do gestor.<br>
+
+                <br>
+                <strong>Detalhes da Solicitação:</strong><br>
+                Cód: <strong>{{ $dados['demissao_id'] }}</strong><br>
+                Colaborador: <strong>{{ $dados['colaborador'] }}</strong><br>
+                Etapa: <strong>Gestor</strong><br>
+
                 <br><br>
-                Para visualizar acesse o sistema <a href="{{ route('g.movimentacao.index') }}">clique aqui</a> .
+                Para visualizar e aprovar, acesse o sistema <a href="{{ route('g.movimentacao.index') }}" style="color: #007bff; text-decoration: none; font-weight: bold;">clicando aqui</a>.
 
             </td>
         </tr>

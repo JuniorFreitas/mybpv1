@@ -18,6 +18,9 @@ COPY . /usr/share/nginx/html/
 
 COPY .deploy/scripts/start $APP_SCRIPTS/start
 
+# Normalizar line endings (evita "bad interpreter: Permission denied" por CRLF)
+RUN sed -i 's/\r$//' $APP_SCRIPTS/start /usr/share/nginx/html/.deploy/scripts/start
+
 # Definir permissões corretas para os scripts
 RUN chmod +x $APP_SCRIPTS/start && \
     chmod +x /usr/share/nginx/html/.deploy/scripts/start && \
@@ -30,4 +33,5 @@ RUN chmod +x $APP_SCRIPTS/start && \
 
 EXPOSE 80 9001
 
-CMD ["/usr/share/nginx/html/.deploy/scripts/start"]
+# Usar script dentro da imagem (não o do volume) para evitar CRLF/permissão do host
+CMD ["/usr/deploy/scripts/start"]

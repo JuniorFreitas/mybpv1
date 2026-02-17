@@ -134,6 +134,10 @@ class IntermitenteFixoPrevista extends Model
         'data_aprovacao_rh',
         'aprovado_via_script',
         'quem_deletou_id',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra',
     ];
 
     protected $casts = [
@@ -156,7 +160,7 @@ class IntermitenteFixoPrevista extends Model
         'obs_aprovacao' => 'string',
         'status_aprovacao' => 'string',
         'empresa_id' => 'int',
-        'gestor_id'=>'int',
+        'gestor_id' => 'int',
         'anterior_vaga_aberta_id' => 'int',
         'nova_vaga_aberta_id' => 'int',
         'area_etiqueta_id' => 'int',
@@ -166,6 +170,10 @@ class IntermitenteFixoPrevista extends Model
         'data_aprovacao_rh' => 'date:d/m/Y',
         'aprovado_via_script' => 'boolean',
         'quem_deletou_id' => 'int',
+        'aprovacao_extra_id' => 'int',
+        'status_aprovacao_extra' => 'string',
+        'obs_aprovacao_extra' => 'string',
+        'data_aprovacao_extra' => 'datetime:d/m/Y à\s H:i:s',
     ];
 
     const STATUS_APROVADO = 'aprovado';
@@ -181,12 +189,17 @@ class IntermitenteFixoPrevista extends Model
         return $date->format('Y-m-d H:i:s');
     }
 
-    protected $appends = ['salario_anterior_format', 'novo_salario_format'];
+    protected $appends = ['salario_anterior_format', 'novo_salario_format', 'aprovacao_extra_nome'];
 
 
     public function getSalarioAnteriorFormatAttribute()
     {
         return number_format($this->attributes['salario_anterior'], 2, ',', '.');
+    }
+
+    public function getAprovacaoExtraNomeAttribute()
+    {
+        return $this->UserAprovacaoExtra ? $this->UserAprovacaoExtra->nome : '';
     }
 
     public function setSalarioAnteriorAttribute($value)
@@ -264,6 +277,11 @@ class IntermitenteFixoPrevista extends Model
         return $this->hasOne(User::class, 'id', 'rh_aprovacao_id');
     }
 
+    public function UserAprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
+    }
+
     public function QuemDeletou()
     {
         return $this->hasOne(User::class, 'id', 'quem_deletou_id');
@@ -283,5 +301,4 @@ class IntermitenteFixoPrevista extends Model
     {
         return $this->hasOne(AreaEtiqueta::class, 'id', 'area_etiqueta_id');
     }
-
 }

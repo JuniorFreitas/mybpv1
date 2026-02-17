@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaExportaExcel;
-use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaStore;
+use App\Jobs\Movimentacao\MudancaCargo\JobNotificacaoRecursiva;
 use App\Models\Admissao;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
-use App\Models\Cliente;
-use App\Models\Ferias;
-use App\Models\LogHistorico;
 use App\Models\MudancaCargo;
 use App\Models\PeriodoAquisitivo;
 use App\Models\Sistema;
@@ -49,7 +46,8 @@ class MudancaCargoController extends Controller
     {
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make($dados,
+        $dadosValidados = \Validator::make(
+            $dados,
             [
                 'novo_centro_custo_id' => 'required_if:mantem_centro_custo,false',
                 'novo_centro_custo_filial_id' => 'required_if:novo_filial,true',
@@ -70,48 +68,8 @@ class MudancaCargoController extends Controller
                         }
                     }
                 ],
-                'treinamento_data_inicio' => 'required_if:treinamento_funcao,true',
-                'treinamento_data_fim' => 'required_if:treinamento_funcao,true',
-                'treinamento_termo_ciencia' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
-                            if (empty($value) || !is_array($value) || count($value) == 0) {
-                                $fail('O Termo de Ciência de Treinamento é obrigatório quando há treinamento na função');
-                            }
-                        }
-                    }
-                ],
-                'treinamento_certificado' => [
-                    function ($attribute, $value, $fail) use ($dados) {
-                        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
-                            if (empty($value) || !is_array($value) || count($value) == 0) {
-                                $fail('O Certificado de Treinamento é obrigatório quando há treinamento na função');
-                            }
-                        }
-                    }
-                ],
             ]
         );
-
-        // Validação de datas de treinamento
-        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
-            if (isset($dados['treinamento_data_inicio']) && isset($dados['treinamento_data_fim']) && 
-                !empty($dados['treinamento_data_inicio']) && !empty($dados['treinamento_data_fim'])) {
-                
-                try {
-                    $dataInicio = new DataHora($dados['treinamento_data_inicio']);
-                    $dataFim = new DataHora($dados['treinamento_data_fim']);
-                    
-                    if ($dataInicio->dataInsert() > $dataFim->dataInsert()) {
-                        $dadosValidados->errors()->add('treinamento_data_inicio', 'A data de início do treinamento não pode ser maior que a data de fim do treinamento');
-                        $dadosValidados->errors()->add('treinamento_data_fim', 'A data de fim do treinamento não pode ser menor que a data de início do treinamento');
-                    }
-                } catch (\Exception $e) {
-                    // Se houver erro na conversão das datas, a validação padrão já vai pegar
-                }
-            }
-        }
-        
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao Solicitar Mudança de Cargo',
@@ -154,19 +112,16 @@ class MudancaCargoController extends Controller
                 'anterior_funcao' => $dados['anterior_funcao'],
                 'nova_funcao' => !$dados['mantem_funcao'] ? $dados['nova_funcao'] : null,
                 'mantem_salario' => $dados['mantem_salario'],
-                'anterior_salario' => $dados['anterior_salario'] ?? '0,00',
-                'novo_salario' => $dados['mantem_salario'] ? '0,00' : ($dados['novo_salario'] ?? '0,00'),
+                'anterior_salario' => $dados['anterior_salario'],
+                'novo_salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : null,
                 'solicitante_id' => $dados['solicitante_id'],
                 'obs_solicitante' => $dados['obs_solicitante'],
                 'data_solicitacao' => $dados['data_solicitacao'],
                 'gestor_id' => $dados['gestor_id'],
-                'treinamento_funcao' => $dados['treinamento_funcao'] ?? false,
-                'treinamento_data_inicio' => isset($dados['treinamento_data_inicio']) && !empty($dados['treinamento_data_inicio']) ? (new DataHora($dados['treinamento_data_inicio']))->dataInsert() : null,
-                'treinamento_data_fim' => isset($dados['treinamento_data_fim']) && !empty($dados['treinamento_data_fim']) ? (new DataHora($dados['treinamento_data_fim']))->dataInsert() : null,
                 'aprovado_via_script' => false,
             ];
 
-            $mudancaCargo = MudancaCargo::create($dadosMudancaCargo);
+            $mudancaCargo = MudancaCargo::create($dados);
 
             if (isset($dados['anexos'])) {
                 foreach ($dados['anexos'] as $index => $anexo) {
@@ -175,37 +130,16 @@ class MudancaCargoController extends Controller
                         $arquivo->temporario = false;
                         $arquivo->chave = '';
                         $arquivo->save();
-                        $mudancaCargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'anexo_default']);
-                    }
-                }
-            }
-
-            if (isset($dados['treinamento_termo_ciencia'])) {
-                foreach ($dados['treinamento_termo_ciencia'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $mudancaCargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'termo_ciencia_treinamento']);
-                    }
-                }
-            }
-
-            if (isset($dados['treinamento_certificado'])) {
-                foreach ($dados['treinamento_certificado'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $mudancaCargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'certificado_treinamento']);
+                        $mudancaCargo->Anexos()->attach($arquivo->id);
                     }
                 }
             }
 
             DB::commit();
-            JobMudaCargoPrevistaStore::dispatch($mudancaCargo);
+
+            // Notifica próxima etapa + etapas anteriores (recursivo)
+            JobNotificacaoRecursiva::dispatch($mudancaCargo->id, $mudancaCargo->empresa_id);
+
             return response()->json('', 201);
         } catch (\Exception $e) {
             DB::rollback();
@@ -233,37 +167,33 @@ class MudancaCargoController extends Controller
      */
     public function edit(MudancaCargo $mudancaCargo)
     {
+        // Recarrega com eager load restrito (apenas id,nome para usuários) para não expor dados sensíveis
+        $mudancaCargo = MudancaCargo::where('empresa_id', auth()->user()->empresa_id)
+            ->with([
+                'Admissao.Feedback.Curriculo:id,nome',
+                'Gestor:id,nome',
+                'GestorAprovacao:id,nome',
+                'RhAprovacao:id,nome',
+                'AprovacaoExtra:id,nome',
+                'Solicitante:id,nome',
+                'VagaAbertaAnterior:id,titulo',
+                'VagaAbertaNova:id,titulo',
+                'Anexos',
+            ])
+            ->findOrFail($mudancaCargo->id);
+
         $mudancaCargo->autocomplete_label_colaborador = $mudancaCargo->Admissao->Feedback->Curriculo ? $mudancaCargo->Admissao->Feedback->Curriculo->nome : '';
         $mudancaCargo->autocomplete_label_colaborador_anterior = $mudancaCargo->Admissao->Feedback->Curriculo ? $mudancaCargo->Admissao->Feedback->Curriculo->nome : '';
         $mudancaCargo->autocomplete_label_gestor_modal = $mudancaCargo->Gestor ? $mudancaCargo->Gestor->nome : '';
         $mudancaCargo->autocomplete_label_gestor_modal_anterior = $mudancaCargo->Gestor ? $mudancaCargo->Gestor->nome : '';
         $mudancaCargo->autocomplete_label_vaga_nova = $mudancaCargo->VagaAbertaNova ? $mudancaCargo->VagaAbertaNova->titulo : '';
         $mudancaCargo->autocomplete_label_vaga_anterior = $mudancaCargo->VagaAbertaAnterior ? $mudancaCargo->VagaAbertaAnterior->titulo : '';
-        $mudancaCargo->gestor_aprovacao = $mudancaCargo->GestorAprovacao ? $mudancaCargo->GestorAprovacao->nome : '';
-        $mudancaCargo->rh_aprovacao = $mudancaCargo->RhAprovacao ? $mudancaCargo->RhAprovacao->nome : '';
+        $mudancaCargo->aprovacao_extra_nome = $mudancaCargo->AprovacaoExtra ? $mudancaCargo->AprovacaoExtra->nome : '';
         $mudancaCargo->solicitante = $mudancaCargo->Solicitante->nome ?? '';
         $mudancaCargo->status_aprovacao_gestor = $mudancaCargo->status_aprovacao_gestor ?: '';
+        $mudancaCargo->status_aprovacao_extra = $mudancaCargo->status_aprovacao_extra ?: '';
         $mudancaCargo->status_aprovacao_rh = $mudancaCargo->status_aprovacao_rh ?: '';
         $mudancaCargo->anexosDel = [];
-        $mudancaCargo->treinamento_termo_cienciaDel = [];
-        $mudancaCargo->treinamento_certificadoDel = [];
-        $mudancaCargo->load('Anexos');
-
-        // Separa os anexos por tipo
-        $mudancaCargo->treinamento_termo_ciencia = $mudancaCargo->Anexos->filter(function ($anexo) {
-            return ($anexo->pivot->tipo_anexo ?? 'anexo_default') === 'termo_ciencia_treinamento';
-        })->values();
-        $mudancaCargo->treinamento_certificado = $mudancaCargo->Anexos->filter(function ($anexo) {
-            return ($anexo->pivot->tipo_anexo ?? 'anexo_default') === 'certificado_treinamento';
-        })->values();
-        $mudancaCargo->anexos = $mudancaCargo->Anexos->filter(function ($anexo) {
-            $tipo = $anexo->pivot->tipo_anexo ?? null;
-            // Inclui apenas anexos com tipo_anexo = 'anexo_default' ou null (anexos antigos sem tipo)
-            return $tipo === 'anexo_default' || $tipo === null;
-        })->values();
-
-        // Remove o relacionamento Anexos para evitar que todos os anexos sejam serializados
-        $mudancaCargo->unsetRelation('Anexos');
 
         return response()->json($mudancaCargo, 200);
     }
@@ -323,88 +253,14 @@ class MudancaCargoController extends Controller
                         $arquivo->temporario = false;
                         $arquivo->chave = '';
                         $arquivo->save();
-                        $mudanca_cargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'anexo_default']);
-                    }
-                }
-            }
-
-            if (isset($dados['treinamento_termo_cienciaDel'])) {
-                foreach ($dados['treinamento_termo_cienciaDel'] as $id_anexo) {
-                    $arquivo = Arquivo::find($id_anexo);
-                    if ($arquivo) {
-                        DB::table('mudanca_cargo_anexos')
-                            ->where('mudanca_cargo_id', $mudanca_cargo->id)
-                            ->where('arquivo_id', $id_anexo)
-                            ->where('tipo_anexo', 'termo_ciencia_treinamento')
-                            ->delete();
-                        $arquivo->excluir();
-                    }
-                }
-            }
-
-            if (isset($dados['treinamento_termo_ciencia'])) {
-                foreach ($dados['treinamento_termo_ciencia'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $mudanca_cargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'termo_ciencia_treinamento']);
-                    }
-                }
-            }
-
-            if (isset($dados['treinamento_certificadoDel'])) {
-                foreach ($dados['treinamento_certificadoDel'] as $id_anexo) {
-                    $arquivo = Arquivo::find($id_anexo);
-                    if ($arquivo) {
-                        DB::table('mudanca_cargo_anexos')
-                            ->where('mudanca_cargo_id', $mudanca_cargo->id)
-                            ->where('arquivo_id', $id_anexo)
-                            ->where('tipo_anexo', 'certificado_treinamento')
-                            ->delete();
-                        $arquivo->excluir();
-                    }
-                }
-            }
-
-            if (isset($dados['treinamento_certificado'])) {
-                foreach ($dados['treinamento_certificado'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $mudanca_cargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'certificado_treinamento']);
+                        $mudanca_cargo->Anexos()->attach($arquivo->id);
                     }
                 }
             }
             DB::commit();
 
-            $dados_email = [
-                'dados_quem_cadastrou' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $mudanca_cargo->Solicitante->nome,
-                    'email_para' => $mudanca_cargo->Solicitante->login,
-                    'status_aprovacao' => $mudanca_cargo->status_aprovacao_gestor,
-                    'mudanca_cargo_id' => $mudanca_cargo->id,
-                    'colaborador' => $mudanca_cargo->Admissao->Feedback->Curriculo->nome,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ],
-                'dados_gestor' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $mudanca_cargo->GestorAprovacao->nome,
-                    'email_para' => $mudanca_cargo->GestorAprovacao->login,
-                    'status_aprovacao' => $mudanca_cargo->status_aprovacao_gestor,
-                    'mudanca_cargo_id' => $mudanca_cargo->id,
-                    'colaborador' => $mudanca_cargo->Admissao->Feedback->Curriculo->nome,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ]
-            ];
-
-            JobMudaCargoPrevistaAprovarRH::dispatch($dados_email);
+            // Notifica próxima etapa + etapas anteriores (recursivo)
+            JobNotificacaoRecursiva::dispatch($mudanca_cargo->id, $mudanca_cargo->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -414,7 +270,49 @@ class MudancaCargoController extends Controller
             Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
+    }
 
+    public function aprovarExtra(Request $request)
+    {
+        $dados = $request->input();
+
+        // Busca configuração ativa de aprovação extra para mudança de cargo
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'mudanca_cargo');
+
+        if (!$config) {
+            return response()->json(['msg' => 'Não existe configuração de aprovação extra ativa'], 400);
+        }
+
+        // Verifica se o usuário pode aprovar
+        if (!$config->podeAprovar(auth()->id())) {
+            return response()->json(['msg' => 'Você não tem permissão para aprovar esta solicitação'], 403);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $mudanca_cargo = MudancaCargo::find($dados['id']);
+
+            $mudanca_cargo->update([
+                'aprovacao_extra_id' => auth()->id(),
+                'data_aprovacao_extra' => (new DataHora())->dataHoraInsert(),
+                'obs_aprovacao_extra' => $dados['obs_aprovacao_extra'] ?? null,
+                'status_aprovacao_extra' => $dados['status_aprovacao_extra'],
+            ]);
+
+            DB::commit();
+
+            // Notifica próxima etapa + etapas anteriores (recursivo)
+            JobNotificacaoRecursiva::dispatch($mudanca_cargo->id, $mudanca_cargo->empresa_id);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao aprovar Solicitação de Mudança de Cargo - Aprovação Extra: {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            Sistema::LogFormatado($dados);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
     }
 
     public function aprovarRH(Request $request)
@@ -432,24 +330,14 @@ class MudancaCargoController extends Controller
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
             ]);
 
-            $mudancaCargo->load([
-                'CentroCustoAnterior',
-                'CentroCustoNovo',
-                'VagaAbertaAnterior.Vaga',
-                'VagaAbertaNova.Vaga'
-            ]);
-
-            $admissao = Admissao::find($dados['admissao_id']);
-            $admissao->load('CentroCusto');
-        
-
             if ($dados['status_aprovacao_rh'] === 'aprovado') {
+
+                $admissao = Admissao::find($dados['admissao_id']);
                 if (!$dados['mantem_cargo']) {
                     $admissao->Feedback->update([
                         'vagas_abertas_id' => $mudancaCargo->VagaAbertaNova->id
                     ]);
                 }
-                
                 $admissao->update([
                     'centro_custo_filial_id' => !$dados['mantem_centro_custo'] && $dados['novo_filial'] ? $dados['novo_centro_custo_filial_id'] : $admissao->centro_custo_filial_id,
                     'filial' => !$dados['mantem_centro_custo'] ? $dados['novo_filial'] : $admissao->filial,
@@ -460,66 +348,10 @@ class MudancaCargoController extends Controller
                 ]);
             }
 
-            // Log de mudança de centro de custo
-            if (!$dados['mantem_centro_custo'] && $mudancaCargo->CentroCustoAnterior && $mudancaCargo->CentroCustoNovo) {
-                LogHistorico::createLog(
-                    $admissao->Feedback->id,
-                    'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança de Centro de Custo de ' . $mudancaCargo->CentroCustoAnterior->label . ' para ' . $mudancaCargo->CentroCustoNovo->label . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
-                );
-            }
-            
-            // Log de mudança de cargo
-            if (!$dados['mantem_cargo'] && $mudancaCargo->VagaAbertaAnterior && $mudancaCargo->VagaAbertaNova) {
-                $cargoAnterior = $mudancaCargo->VagaAbertaAnterior->Vaga ? $mudancaCargo->VagaAbertaAnterior->Vaga->nome : ($admissao->cargo ?? 'sem cargo');
-                $cargoNovo = $mudancaCargo->VagaAbertaNova->Vaga ? $mudancaCargo->VagaAbertaNova->Vaga->nome : 'sem cargo';
-                LogHistorico::createLog(
-                    $admissao->Feedback->id,
-                    'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança de Cargo de ' . $cargoAnterior . ' para ' . $cargoNovo . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
-                );
-            }
-            
-            // Log de mudança de função
-            if (!$dados['mantem_funcao'] && $mudancaCargo->anterior_funcao && $mudancaCargo->nova_funcao) {
-                LogHistorico::createLog(
-                    $admissao->Feedback->id,
-                    'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança de Função de ' . $mudancaCargo->anterior_funcao . ' para ' . $mudancaCargo->nova_funcao . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
-                );
-            }
-            
-            // Log de mudança de salário
-            if (!$dados['mantem_salario'] && isset($mudancaCargo->anterior_salario) && isset($mudancaCargo->novo_salario)) {
-                LogHistorico::createLog(
-                    $admissao->Feedback->id,
-                   'Solicitação foi '.$dados['status_aprovacao_rh'].' pelo RH na mudança de Salário na solicitação de mudança de cargo #' . $mudancaCargo->id
-                );
-            }
-
             DB::commit();
 
-            $dados_email = [
-                'dados_quem_cadastrou' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $mudancaCargo->Solicitante->nome,
-                    'email_para' => $mudancaCargo->Solicitante->login,
-                    'status_aprovacao' => $mudancaCargo->status_aprovacao_gestor,
-                    'mudanca_cargo_id' => $mudancaCargo->id,
-                    'colaborador' => $mudancaCargo->Admissao->Feedback->Curriculo->nome,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ],
-                'dados_gestor' => [
-                    'nome_de' => auth()->user()->nome,
-                    'nome_para' => $mudancaCargo->GestorAprovacao->nome,
-                    'email_para' => $mudancaCargo->GestorAprovacao->login,
-                    'status_aprovacao' => $mudancaCargo->status_aprovacao_gestor,
-                    'mudanca_cargo_id' => $mudancaCargo->id,
-                    'colaborador' => $mudancaCargo->Admissao->Feedback->Curriculo->nome,
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'nome_empresa' => Cliente::find(auth()->user()->empresa_id)->razao_social
-                ]
-            ];
-
-            JobMudaCargoPrevistaAprovarRH::dispatch($dados_email);
+            // Notifica etapas anteriores + finalização (recursivo)
+            JobNotificacaoRecursiva::dispatch($mudancaCargo->id, $mudancaCargo->empresa_id);
 
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -529,7 +361,6 @@ class MudancaCargoController extends Controller
             Sistema::LogFormatado($dados);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
-
     }
 
 
@@ -540,15 +371,44 @@ class MudancaCargoController extends Controller
 
         $periodo = PeriodoAquisitivo::whereIn('ano_inicial', [date('Y') - 2, date('Y') - 1, date('Y')])->get();
 
+        // Busca configuração de aprovação extra ativa
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'mudanca_cargo');
+        $podeAprovarExtra = false;
+        $nomeAprovacaoExtra = '';
+
+        if ($config) {
+            $podeAprovarExtra = $config->podeAprovar(auth()->id());
+            $nomeAprovacaoExtra = $config->nome_aprovacao;
+
+            // Log para debug
+            \Log::info('MudancaCargo - Verificação de aprovação extra', [
+                'user_id' => auth()->id(),
+                'user_email' => auth()->user()->email,
+                'habilidades' => auth()->user()->listaDeHabilidades(),
+                'config_id' => $config->id,
+                'usuarios_autorizados' => $config->usuarios_autorizados,
+                'pode_aprovar_extra' => $podeAprovarExtra
+            ]);
+        }
+
+        // Mapear itens com dados mínimos de aprovadores (id,nome já vêm do filtro) e nomes/datas para o frontend
+        $itens = collect($resultado->items())->map(function ($item) {
+            $item->aprovacao_extra_nome = $item->AprovacaoExtra ? $item->AprovacaoExtra->nome : '';
+            return $item;
+        })->toArray();
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'periodo' => $periodo,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
+                'pode_aprovar_extra' => $podeAprovarExtra,
+                'tem_aprovacao_extra' => $config ? true : false,
+                'nome_aprovacao_extra' => $nomeAprovacaoExtra,
                 'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
             ]
         ]);
@@ -556,6 +416,7 @@ class MudancaCargoController extends Controller
 
     public function filtro(Request $request)
     {
+        $user = auth()->user();
         $resultado = MudancaCargo::with(
             'CentroCustoAnterior',
             'CentroCustoNovo',
@@ -566,52 +427,29 @@ class MudancaCargoController extends Controller
             'Solicitante:id,nome',
             'GestorAprovacao:id,nome',
             'Gestor:id,nome',
+            'AprovacaoExtra:id,nome',
             'RhAprovacao:id,nome',
             'QuemDeletou:id,nome',
             'VagaAbertaNova',
-            'Colaborador:id,nome,login,tipo,ativo');
+            'Colaborador:id,nome,login,tipo,ativo'
+        )->where('empresa_id', $user->empresa_id);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        $filterApplier = new \App\Services\MudancaCargo\MudancaCargoFilterApplier($request->all(), $user);
+        $filterApplier->apply($resultado);
 
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())
-                ->where('created_at', '<=', $dataFim->dataHoraInsert());
-        }
-
-        if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Colaborador', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
-            });
-        }
-
-        if ($request->filled('campoStatusAprovacao')) {
-            $status = $request->campoStatusAprovacao;
-            if ($request->campoStatusAprovacao == "aberto") {
-                $resultado->whereNull('status_aprovacao_gestor');
-            } elseif ($request->campoStatusAprovacao == "aprovado_gestor") {
-                $resultado->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
-            } elseif ($request->campoStatusAprovacao == "aprovado_rh") {
-                $resultado->where('status_aprovacao_rh', Ferias::STATUS_APROVADO);
-            } else {
-                $resultado->whereStatusAprovacaoGestor(Ferias::STATUS_REPROVADO)->orWhere('status_aprovacao_rh', Ferias::STATUS_REPROVADO);
-            }
-        }
-
-        if (!auth()->user()->can('privilegio_gestao_rh')) {
-            $resultado->whereSolicitanteId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
-        }
-
-        return $resultado->orderByDesc('created_at');
+        return $resultado;
     }
 
     //Excel
     public function export(Request $request)
     {
-        JobMudaCargoPrevistaExportaExcel::dispatch(auth()->user(), $this->filtro($request));
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        $filtros = $request->all();
+        $filtros['_full_export_access'] = auth()->user()->can('privilegio_gestao_rh')
+            || auth()->user()->can('privilegio_aprovar_por_rh')
+            || auth()->user()->can('privilegio_aprovar_rh');
+
+        $nomeArquivo = 'mudanca_cargo_' . rand(1000, 9999) . '_' . date('YmdHis') . '.csv';
+        JobMudaCargoPrevistaExportaExcel::dispatch(auth()->id(), 'Planejamento - Movimentação - Mudança de Cargo', $nomeArquivo, $filtros);
+        return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
     }
 }
