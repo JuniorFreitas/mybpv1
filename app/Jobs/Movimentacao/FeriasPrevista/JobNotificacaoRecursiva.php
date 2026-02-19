@@ -23,6 +23,12 @@ class JobNotificacaoRecursiva implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    /** Número de tentativas antes de marcar o job como falho. */
+    public $tries = 3;
+
+    /** Tempo máximo de execução em segundos (5 min). */
+    public $timeout = 300;
+
     private $feriasId;
     private $empresaId;
     private $ferias;

@@ -21,8 +21,8 @@ class JobAdmissaoPrevistaAprovar implements ShouldQueue
      * @return void
      */
     public $mail;
-
     public $tries = 3;
+    public $timeout = 300;
 
     public function __construct($admissaoPrevista)
     {

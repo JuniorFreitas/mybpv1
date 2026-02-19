@@ -20,6 +20,7 @@ class JobMudaCargoPrevistaAprovarRH implements ShouldQueue
      */
     public $mail;
     public $tries = 3;
+    public $timeout = 300;
     public $mailGestor;
 
     public function __construct($dados)

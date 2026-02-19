@@ -21,6 +21,7 @@ class VerificaVencimentoFeriasJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+    public $timeout = 300;
 
     /**
      * Create a new job instance.

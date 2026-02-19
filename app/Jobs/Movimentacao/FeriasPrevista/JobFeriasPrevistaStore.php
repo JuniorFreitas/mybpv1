@@ -20,6 +20,7 @@ class JobFeriasPrevistaStore implements ShouldQueue
      */
     public $mail;
     public $tries = 3;
+    public $timeout = 300;
 
     public function __construct($feriasPrevista)
     {
