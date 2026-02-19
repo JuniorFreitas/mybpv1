@@ -19,6 +19,7 @@ class JobDemissaoPrevistaStore implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+    public $timeout = 300;
 
     protected $demissaoId;
     protected $gestorId;

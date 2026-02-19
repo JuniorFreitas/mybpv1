@@ -39,7 +39,7 @@ class FeriasPrevistaExportFormatter
             'Status',
             "Status {$extra}",
             "Quem Aprovou {$extra}",
-            "Data e Hora Aprovação {$extra}",
+            "Data Aprovação {$extra}",
             'RH Aprovação',
             'Data da Aprovação RH',
             'Resposta RH',
@@ -55,9 +55,9 @@ class FeriasPrevistaExportFormatter
             ? (is_object($row->Admissao->data_admissao) ? $row->Admissao->data_admissao->format('d/m/Y') : (new DataHora($row->Admissao->data_admissao))->dataCompleta())
             : '';
 
-        $dataHoraAprovacaoExtra = '';
+        $dataAprovacaoExtra = '';
         if (!empty($row->data_aprovacao_extra)) {
-            $dataHoraAprovacaoExtra = (new DataHora($row->data_aprovacao_extra))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_extra))->horaCompleta(), 0, 5);
+            $dataAprovacaoExtra = (new DataHora($row->data_aprovacao_extra))->dataCompleta();
         }
 
         return [
@@ -77,13 +77,13 @@ class FeriasPrevistaExportFormatter
             $this->cleanText($row->Solicitante->nome ?? ''),
             $this->cleanText($row->Gestor->nome ?? ''),
             $this->cleanText($row->GestorAprovacao->nome ?? ''),
-            $this->cleanText($row->status_aprovacao_gestor && $row->data_aprovacao_gestor ? (new DataHora($row->data_aprovacao_gestor))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_gestor))->horaCompleta(), 0, 5) : ''),
+            $this->cleanText($row->status_aprovacao_gestor && $row->data_aprovacao_gestor ? (new DataHora($row->data_aprovacao_gestor))->dataCompleta() : ''),
             $this->cleanText($row->status_aprovacao_gestor ?? ''),
             $this->cleanText($row->status_aprovacao_extra ?? ''),
             $this->cleanText($row->AprovacaoExtra->nome ?? ''),
-            $this->cleanText($dataHoraAprovacaoExtra),
+            $this->cleanText($dataAprovacaoExtra),
             $this->cleanText($row->status_aprovacao_rh && $row->RhAprovacao ? $row->RhAprovacao->nome : ''),
-            $this->cleanText($row->status_aprovacao_rh && $row->data_aprovacao_rh ? (new DataHora($row->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_rh))->horaCompleta(), 0, 5) : ''),
+            $this->cleanText($row->status_aprovacao_rh && $row->data_aprovacao_rh ? (new DataHora($row->data_aprovacao_rh))->dataCompleta() : ''),
             $this->cleanText($row->status_aprovacao_rh ?? ''),
         ];
     }

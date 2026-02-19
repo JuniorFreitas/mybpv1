@@ -658,7 +658,7 @@ class FeriasController extends Controller
                 'gestor' => $ferias['gestor_aprovacao']['nome'] ?? '---',
                 'quem_aprovou' => $ferias['gestor']['nome'] ?? '---',
                 'status_aprovacao' => $ferias['status_aprovacao_gestor'],
-                'data_aprovacao' => $ferias['data_aprovacao_gestor'],
+                'data_aprovacao' => !empty($ferias['data_aprovacao_gestor']) ? (new DataHora($ferias['data_aprovacao_gestor']))->dataCompleta() : '',
                 'centro_custo' => $centro_custo,
                 'qnt_dias' => $ferias['qnt_dias'],
                 'dias_saldo' => $ferias['dias_saldo'],
@@ -670,7 +670,7 @@ class FeriasController extends Controller
                 'ultima_data' => $ferias['ultima_data'],
                 'usuario_cadastrou' => $ferias['solicitante']['nome'],
                 'resposta_rh' => strlen(trim($ferias['status_aprovacao_rh'])) > 0 ? $ferias['status_aprovacao_rh'] : '---',
-                'data_aprovacao_rh' => $ferias['data_aprovacao_rh'],
+                'data_aprovacao_rh' => !empty($ferias['data_aprovacao_rh']) ? (new DataHora($ferias['data_aprovacao_rh']))->dataCompleta() : '',
                 'rh' => $ferias['aprovado_via_script'] ? 'POR AUTOMAÇÃO' : $ferias['rh_aprovacao']['nome'] ?? '',
             ]);
         }
