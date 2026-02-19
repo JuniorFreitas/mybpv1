@@ -23,6 +23,7 @@ class JobTransferenciaPrevistaAprovarRH implements ShouldQueue
     public $mail;
     public $mailGestor;
     public $tries = 3;
+    public $timeout = 300;
 
     public function __construct($transferenciaPrevista)
     {

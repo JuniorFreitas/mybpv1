@@ -22,6 +22,17 @@ $nome_aprovacao_extra = $dados['nome_aprovacao_extra'];
 $url = $dados['url'];
 $has_aprovacao_extra = $dados['has_aprovacao_extra'] ?? false;
 
+// Datas podem vir como string d/m/Y (acessor do model) ou Carbon/DateTime; normalizar para exibição
+$formatarData = function($v) {
+    if ($v === null || $v === '') return '';
+    if (is_object($v) && method_exists($v, 'format')) return $v->format('d/m/Y');
+    $v = (string) $v;
+    if (preg_match('#^\d{1,2}/\d{1,2}/\d{4}$#', $v)) return $v;
+    try { return \Carbon\Carbon::parse($v)->format('d/m/Y'); } catch (\Throwable $e) {}
+    try { return \Carbon\Carbon::createFromFormat('d/m/Y', $v)->format('d/m/Y'); } catch (\Throwable $e) {}
+    return $v;
+};
+
 $titulos = [
 'criacao' => 'Nova solicitação de férias — sua aprovação é necessária',
 'pendente_aprovacao_extra' => "Férias — aguardando aprovação de {$nome_aprovacao_extra}",
@@ -161,15 +172,15 @@ $mensagem = $mensagens[$tipo] ?? '';
                     @endif
                     <tr>
                         <td style="color: #555;"><strong>Data de Saída:</strong></td>
-                        <td>{{ $data_saida ? \Carbon\Carbon::parse($data_saida)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarData($data_saida) }}</td>
                     </tr>
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Data de Retorno:</strong></td>
-                        <td>{{ $data_retorno ? \Carbon\Carbon::parse($data_retorno)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarData($data_retorno) }}</td>
                     </tr>
                     <tr>
                         <td style="color: #555;"><strong>Última Data:</strong></td>
-                        <td>{{ $ultima_data ? \Carbon\Carbon::parse($ultima_data)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarData($ultima_data) }}</td>
                     </tr>
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Quantidade de Dias:</strong></td>
@@ -182,7 +193,7 @@ $mensagem = $mensagens[$tipo] ?? '';
                     @if($data_admissao)
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Data de Admissão:</strong></td>
-                        <td>{{ \Carbon\Carbon::parse($data_admissao)->format('d/m/Y') }}</td>
+                        <td>{{ $formatarData($data_admissao) }}</td>
                     </tr>
                     @endif
                     <tr>
@@ -195,21 +206,21 @@ $mensagem = $mensagens[$tipo] ?? '';
                     </tr>
                     <tr>
                         <td style="color: #555;"><strong>Data de Criação:</strong></td>
-                        <td>{{ $ferias->created_at ? \Carbon\Carbon::parse($ferias->created_at)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarData($ferias->created_at) }}</td>
                     </tr>
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Data Atualização Gestor:</strong></td>
-                        <td>{{ $ferias->data_aprovacao_gestor ? \Carbon\Carbon::parse($ferias->data_aprovacao_gestor)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarData($ferias->data_aprovacao_gestor) }}</td>
                     </tr>
                     @if($has_aprovacao_extra)
                     <tr>
                         <td style="color: #555;"><strong>Data Atualização {{ $nome_aprovacao_extra }}:</strong></td>
-                        <td>{{ $ferias->data_aprovacao_extra ? \Carbon\Carbon::parse($ferias->data_aprovacao_extra)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarData($ferias->data_aprovacao_extra) }}</td>
                     </tr>
                     @endif
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Data Atualização RH:</strong></td>
-                        <td>{{ $ferias->data_aprovacao_rh ? \Carbon\Carbon::parse($ferias->data_aprovacao_rh)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarData($ferias->data_aprovacao_rh) }}</td>
                     </tr>
                 </table>
             </div>
