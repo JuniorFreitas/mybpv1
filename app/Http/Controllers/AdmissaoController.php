@@ -1414,6 +1414,8 @@ class AdmissaoController extends Controller
                 'Empresa.Area',
                 'VagaAberta.Projetos.Projeto',
                 'Admissao',
+                'Admissao.UltimoAso:id,feedback_id,data_realizacao,data_vencimento',
+                'Admissao.Demissao:id,feedback_id,data_desmobilizacao',
                 'UltimoAso:id,feedback_id,data_realizacao,data_vencimento'
             ])->filtrarPorCnpjECentroCusto($request);
 
@@ -1487,10 +1489,16 @@ class AdmissaoController extends Controller
         }
 
         if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('cpf', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
+            $busca = $request->campoBusca;
+            $resultado->where(function ($q) use ($busca) {
+                $q->whereHas('Curriculo', function ($query) use ($busca) {
+                    $query->where('nome', 'like', '%' . $busca . '%')
+                        ->orWhere('cpf', 'like', '%' . $busca . '%')
+                        ->orWhere('id', $busca);
+                });
+                if (is_numeric(trim($busca))) {
+                    $q->orWhere('id', (int) $busca);
+                }
             });
         }
 
