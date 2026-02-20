@@ -1062,9 +1062,20 @@ export default {
             if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao');
             if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca');
             if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao');
+            if (urlParams.get('filtroPeriodoAquisitivo')) this.controle.dados.filtroPeriodoAquisitivo = urlParams.get('filtroPeriodoAquisitivo');
             if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio');
             if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim');
             if (urlParams.get('dataInicio') || urlParams.get('dataFim')) this.controle.dados.filtroPeriodo = true;
+            const filtroPeriodoUrl = urlParams.get('filtroPeriodo');
+            if (filtroPeriodoUrl === '1' || filtroPeriodoUrl === 'true') this.controle.dados.filtroPeriodo = true;
+            if (urlParams.get('dataInicioVencimento')) this.controle.dados.dataInicioVencimento = urlParams.get('dataInicioVencimento');
+            if (urlParams.get('dataFimVencimento')) this.controle.dados.dataFimVencimento = urlParams.get('dataFimVencimento');
+            const filtroVencimentoUrl = urlParams.get('filtroVencimento');
+            if (filtroVencimentoUrl === '1' || filtroVencimentoUrl === 'true' || urlParams.get('dataInicioVencimento') || urlParams.get('dataFimVencimento')) this.controle.dados.filtroVencimento = true;
+            if (urlParams.get('dataInicioFerias')) this.controle.dados.dataInicioFerias = urlParams.get('dataInicioFerias');
+            if (urlParams.get('dataFimFerias')) this.controle.dados.dataFimFerias = urlParams.get('dataFimFerias');
+            const filtroInicioFeriasUrl = urlParams.get('filtroInicioFerias');
+            if (filtroInicioFeriasUrl === '1' || filtroInicioFeriasUrl === 'true' || urlParams.get('dataInicioFerias') || urlParams.get('dataFimFerias')) this.controle.dados.filtroInicioFerias = true;
         },
         syncUrlFiltros() {
             if (typeof this.atualizarUrlMovimentacao !== 'function') return;
@@ -1072,8 +1083,16 @@ export default {
             const params = { pages: d.pages || 50, ordenacao: d.ordenacao || 'created_at_desc' };
             if (d.campoBusca) params.campoBusca = d.campoBusca;
             if (d.campoStatusAprovacao) params.campoStatusAprovacao = d.campoStatusAprovacao;
+            if (d.filtroPeriodoAquisitivo) params.filtroPeriodoAquisitivo = d.filtroPeriodoAquisitivo;
+            if (d.filtroPeriodo) params.filtroPeriodo = 1;
             if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio;
             if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim;
+            if (d.filtroVencimento) params.filtroVencimento = 1;
+            if (d.filtroVencimento && d.dataInicioVencimento) params.dataInicioVencimento = d.dataInicioVencimento;
+            if (d.filtroVencimento && d.dataFimVencimento) params.dataFimVencimento = d.dataFimVencimento;
+            if (d.filtroInicioFerias) params.filtroInicioFerias = 1;
+            if (d.filtroInicioFerias && d.dataInicioFerias) params.dataInicioFerias = d.dataInicioFerias;
+            if (d.filtroInicioFerias && d.dataFimFerias) params.dataFimFerias = d.dataFimFerias;
             if (d.token) params.token = d.token;
             this.atualizarUrlMovimentacao(params);
         },

@@ -82,7 +82,8 @@ class FeriasPrevistaFilterApplier
 
     private function applyFiltroVencimento(Builder $query): void
     {
-        if (($this->filtros['filtroVencimento'] ?? '') !== 'true') {
+        $ativo = $this->filtros['filtroVencimento'] ?? false;
+        if ($ativo !== true && $ativo !== 'true') {
             return;
         }
         $dataInicioVenc = $this->filtros['dataInicioVencimento'] ?? null;
@@ -107,7 +108,8 @@ class FeriasPrevistaFilterApplier
 
     private function applyFiltroInicioFerias(Builder $query): void
     {
-        if (($this->filtros['filtroInicioFerias'] ?? '') !== 'true') {
+        $ativo = $this->filtros['filtroInicioFerias'] ?? false;
+        if ($ativo !== true && $ativo !== 'true') {
             return;
         }
         $dataInicioFer = $this->filtros['dataInicioFerias'] ?? null;
@@ -115,8 +117,8 @@ class FeriasPrevistaFilterApplier
         if ($dataInicioFer && $dataFimFer) {
             $inicio = new DataHora($dataInicioFer . ' 00:00:00');
             $fim = new DataHora($dataFimFer . ' 23:59:59');
-            $query->where('data_saida', '>=', $inicio->dataHoraInsert())
-                ->where('data_saida', '<=', $fim->dataHoraInsert());
+            $query->where('data_saida', '>=', $inicio->dataInsert())
+                ->where('data_saida', '<=', $fim->dataInsert());
             return;
         }
         if (!empty($this->filtros['inicioFerias'])) {
