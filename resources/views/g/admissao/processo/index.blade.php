@@ -1312,47 +1312,38 @@
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <form class="row" @submit.prevent="$refs.componente.buscar()">
-            <div class="col-12 col-md-2">
-                <div class="form-check" style="margin-bottom: -11px;">
-                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                           id="filtroIntervalo"
-                           v-model="controle.dados.filtroPeriodo">
-                    <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                </div>
-                <div class="form-group">
-                    <datepicker range formsm label=""
-                                :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                v-model="controle.dados.periodo"></datepicker>
-                </div>
-            </div>
+            <date-range-filter
+                :key="'filtro-periodo'"
+                :enabled.sync="controle.dados.filtroPeriodo"
+                :start-date.sync="controle.dados.dataInicio"
+                :end-date.sync="controle.dados.dataFim"
+                :disabled="!!controle.carregando"
+                :id-suffix="'periodo-' + hash"
+                label="Por período"
+                wrapper-class="col-12 col-md-3">
+            </date-range-filter>
 
-            <div class="col-12 col-md-2">
-                <div class="form-check" style="margin-bottom: -11px;">
-                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                           id="filtroIntervaloAso"
-                           v-model="controle.dados.filtroAso">
-                    <label class="form-check-label cursor-pointer" for="filtroIntervaloAso">Data do ASO</label>
-                </div>
-                <div class="form-group">
-                    <datepicker range formsm label=""
-                                :disabled="controle.carregando || !controle.dados.filtroAso"
-                                v-model="controle.dados.campoAso"></datepicker>
-                </div>
-            </div>
+            <date-range-filter
+                :key="'filtro-aso'"
+                :enabled.sync="controle.dados.filtroAso"
+                :start-date.sync="controle.dados.dataInicioAso"
+                :end-date.sync="controle.dados.dataFimAso"
+                :disabled="!!controle.carregando"
+                :id-suffix="'aso-' + hash"
+                label="Data do ASO"
+                wrapper-class="col-12 col-md-3">
+            </date-range-filter>
 
-            <div class="col-12 col-md-2">
-                <div class="form-check" style="margin-bottom: -11px;">
-                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                           id="filtroAdmissao"
-                           v-model="controle.dados.filtroDataAdmissao">
-                    <label class="form-check-label cursor-pointer" for="filtroAdmissao">Data da Admissao</label>
-                </div>
-                <div class="form-group">
-                    <datepicker range formsm label=""
-                                :disabled="controle.carregando || !controle.dados.filtroDataAdmissao"
-                                v-model="controle.dados.campoAdmisaoData"></datepicker>
-                </div>
-            </div>
+            <date-range-filter
+                :key="'filtro-admissao'"
+                :enabled.sync="controle.dados.filtroDataAdmissao"
+                :start-date.sync="controle.dados.dataInicioAdmissao"
+                :end-date.sync="controle.dados.dataFimAdmissao"
+                :disabled="!!controle.carregando"
+                :id-suffix="'admissao-' + hash"
+                label="Data da Admissão"
+                wrapper-class="col-12 col-md-3">
+            </date-range-filter>
             <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs && AUTENTICADO.temFilial">
                 <div class="form-group">
                     <label for="">Por Cnpj</label>
@@ -1717,7 +1708,7 @@
                     </td>
 
                     <td v-if="controle.dados.filtroAso">
-                        @{{item.admissao ? item.admissao.ultimo_aso.data_realizacao : '' }}
+                        @{{(item.admissao && item.ultimo_aso) ? item.ultimo_aso.data_realizacao : '' }}
                     </td>
 
                     <td v-if="controle.dados.filtroDataAdmissao">
