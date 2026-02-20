@@ -1393,7 +1393,7 @@
                 <div class="form-group">
                     <label>Nome</label>
                     <input type="text"
-                           placeholder="Buscar por nome"
+                           placeholder="Buscar por nome ou ID"
                            autocomplete="off"
                            class="form-control form-control-sm"
                            :disabled="controle.carregando"
@@ -1513,270 +1513,376 @@
     <preload v-if="controle.carregando" class="text-center"></preload>
 
     <div id="conteudo">
-        <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
-            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+        <div class="empty-state" v-show="!controle.carregando && lista.length===0">
+            <div class="empty-state-icon"><i class="fas fa-user-clock"></i></div>
+            <h3 class="empty-state-title">Nenhum registro encontrado</h3>
+            <p class="empty-state-text">Ajuste os filtros ou aguarde novos candidatos no processo de admissão.</p>
         </div>
-        <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="table table-centered bg-white">
-                <thead>
-                <tr>
-                    <th class="text-center">
 
-                        <input type="checkbox"
-                               :checked="tudoMarcado"
-                               :disabled="comAdm.length === 0"
-                               :style="comAdm.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                               @click="selecionaTodos">
-                    </th>
-                    <th class="text-center text-nowrap">Nome</th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'tbl_cpf')?.checked"
-                    >CPF
-                    </th>
-                    <th class="text-center text-nowrap"
-                        v-if="AUTENTICADO.temFilial"
-                    >CNPJ
-                    </th>
-                    <th class="text-center text-nowrap">Centro de Custo</th>
-                    <th class="text-center text-nowrap">Cargo</th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'tbl_dt_admissao')?.checked"
-                    >Dt. Admissão
-                    </th>
-                    <th class="text-center text-nowrap"
-                        style="width: 150px;"
-                        v-if="colunasTabela.find(item => item.id === 'tbl_contato')?.checked"
-                    >Contato
-                    </th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'pcd').checked">
-                        PCD
-                    </th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'enc_documento').checked">
-                        Enc. Doc
-                    </th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'enc_exame').checked"
-                    >Enc. Exame
-                    </th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'enc_treinamento').checked"
-                    >Enc. Treinamento
-                    </th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'resp_encaminhamento').checked"
-                    >Resp. Encaminhamento
-                    </th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'cracha').checked"
-                    >Crachá
-                    </th>
-                    <th class="text-center text-nowrap"
-                        v-if="colunasTabela.find(item => item.id === 'foto_3x4').checked"
-                    >Foto 3x4
-                    </th>
-                    <th class="text-center text-nowrap" v-if="controle.dados.filtroAso">Data ASO</th>
-                    <th class="text-center text-nowrap" v-if="controle.dados.filtroDataAdmissao">Data da Admissao</th>
-                    <th class="text-center text-nowrap">Status Admissão</th>
-                    <th>
-                        <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
-                                data-toggle="modal"
-                                data-target="#filtroColunas">
-                            <i class="bx bxs-filter-alt" aria-hidden="true"></i>
-                        </button>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="item in lista" :key="item.id">
-                    <td class="text-center">
-                        <label :for="item.id">
-                            <input
-                                type="checkbox"
-                                v-model="selecionados"
-                                :value="item.id"
-                                :id="item.id"
-                                :style="item.admissao ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                :title="item.admissao ? null : 'Não possui cadastro em Admissão'"
-                                v-if="item.admissao"
-                            >
-                            <input type="checkbox" v-else disabled="disabled"
-                                   title="Sem parecer Informação em Admissão">
+        <div class="cards-toolbar" v-show="!controle.carregando && lista.length > 0">
+            <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="selTodosProcesso"
+                       :checked="tudoMarcado"
+                       :disabled="comAdm.length === 0"
+                       :style="comAdm.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                       @click="selecionaTodos">
+                <label class="custom-control-label" for="selTodosProcesso" style="width: max-content">Selecionar todos com admissão</label>
+            </div>
+            <!-- <span class="cards-toolbar-count">@{{ lista.length }} registro(s)</span> -->
+            <button class="btn btn-sm btn-outline-secondary ml-auto" data-toggle="modal" data-target="#filtroColunas" v-tippy content="Mostrar e Ocultar Colunas">
+                <i class="bx bxs-filter-alt"></i> Colunas
+            </button>
+        </div>
 
+        <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="solicitacao-card" v-for="item in lista" :key="item.id"
+                 :class="{ 'card-status-em-processo': !item.admissao, 'card-status-admitido': item.admissao && (item.admissao.status === 'ADMITIDO' || item.admissao.status === 'Admitido'), 'card-status-demitido': item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido') }">
+                <div class="card-header-row">
+                    <div class="card-left">
+                        <label class="checkbox-inline mb-0" v-if="item.admissao">
+                            <input type="checkbox" class="custom-checkbox" v-model="selecionados" :value="item.id" :id="'chk_' + item.id">
                         </label>
-                    </td>
-
-                    <td class="text-center">
-                        @{{item.curriculo.nome}}
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'tbl_cpf')?.checked"
-                    >
-                        @{{ item.curriculo.cpf ? item.curriculo.cpf : '---' }}
-                    </td>
-
-                    <td class="text-center"
-                        v-if="AUTENTICADO.temFilial"
-                    >
-                        <span v-if="item.admissao && item.admissao.emp_cnpj">
-                            @{{item.admissao.emp_nome_fantasia}}<br>
-                            (@{{item.admissao.emp_tipo}})
+                        <input type="checkbox" class="custom-checkbox" v-else disabled title="Sem cadastro em Admissão">
+                        <span class="badge-id">#@{{ item.id }}</span>
+                        <div class="colaborador-principal">
+                            <i class="fas fa-user-circle mr-1"></i>
+                            <strong>@{{ item.curriculo.nome }}</strong>
+                        </div>
+                        <span class="status-badge" :class="{
+                            'status-admitido': item.admissao && (item.admissao.status === 'ADMITIDO' || item.admissao.status === 'Admitido'),
+                            'status-demitido': item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido'),
+                            'status-processo': item.admissao && item.admissao.status && item.admissao.status !== 'ADMITIDO' && item.admissao.status !== 'DEMITIDO' && item.admissao.status !== 'Admitido' && item.admissao.status !== 'Demitido',
+                            'status-pendente': !item.admissao
+                        }">
+                            @{{ item.admissao ? item.admissao.status : 'Em processo' }}
                         </span>
-                        <span v-else>---</span>
-                    </td>
-
-                    <td class="text-center">
-                        <span v-if="item.admissao && item.admissao.emp_centro_custo">
-                             @{{item.admissao.emp_centro_custo}}
-                        </span>
-                        <span v-else>---</span>
-                    </td>
-
-                    <td class="text-center">
-                        @{{item.vaga_aberta_municipio}}
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'tbl_dt_admissao')?.checked"
-                    >
-                        @{{ item.admissao ? item.admissao.data_admissao : '---' }}
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'tbl_contato')?.checked"
-                    >
-                        @{{ item.curriculo.tel_principal ? item.curriculo.tel_principal.numero : '---' }}
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'pcd').checked"
-                    >
-                        @{{item.curriculo.pcd ? 'Sim' : 'Não'}}
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'enc_documento').checked"
-                    >
-                        <span v-if="item.resultado_integrado">
-                           @{{item.resultado_integrado.documentos_entregue ? 'Sim' : 'Não'}} <br>
-                           @{{item.resultado_integrado.documentos_entregue_data}} <br>
-                        </span>
-                        <span v-else>---</span>
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'enc_exame').checked"
-                    >
-                        <span v-if="item.resultado_integrado">
-                           @{{item.resultado_integrado.encaminhado_exame ? 'Sim' : 'Não'}} <br>
-                           @{{item.resultado_integrado.encaminhado_exame_data}} <br>
-                        </span>
-                        <span v-else>---</span>
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'enc_treinamento').checked"
-                    >
-                        <span v-if="item.resultado_integrado">
-                           @{{item.resultado_integrado.encaminhado_treinamento ? 'Sim' : 'Não'}} <br>
-                           @{{item.resultado_integrado.encaminhado_treinamento_data}} <br>
-                        </span>
-                        <span v-else>---</span>
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'resp_encaminhamento').checked"
-                    >
-                        <span v-if="item.resultado_integrado">
-                           @{{item.resultado_integrado.responsavel_envio}}
-                        </span>
-                        <span v-else>---</span>
-                    </td>
-
-                    <td class="text-center"
-                        v-show="colunasTabela.find(item => item.id === 'cracha').checked"
-                    >
-                        @{{item.admissao ? item.admissao.numero_cracha : ''}}
-                    </td>
-
-                    <td class="text-center"
-                        v-if="colunasTabela.find(item => item.id === 'foto_3x4').checked"
-                    >
-                        @{{item.curriculo.foto_tres.length > 0 ? 'SIM' : 'NÃO' }}
-                    </td>
-
-                    <td v-if="controle.dados.filtroAso">
-                        @{{(item.admissao && item.ultimo_aso) ? item.ultimo_aso.data_realizacao : '' }}
-                    </td>
-
-                    <td v-if="controle.dados.filtroDataAdmissao">
-                        @{{item.admissao ? item.admissao.data_admissao : '' }}
-                    </td>
-
-                    <td class="text-center">
-                        @{{item.admissao ? item.admissao.status : ''}}
-                    </td>
-
-                    <td>
-
+                    </div>
+                    <div class="card-right">
                         <div class="dropdown show">
-                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
-                               id="dropdownMenuLink"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="btn-actions-compact" href="#" role="button" :id="'dropdownProcesso_' + item.id" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-ellipsis-v"></i>
                             </a>
-
-                            <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                 aria-labelledby="dropdownMenuLink">
-                                <a class="dropdown-item" href="javascript://" title="Admitir"
-                                   @click.prevent="formEntrevistar(item.id); visualizar = false"
-                                   v-if="!filtrarDemitidos"
-                                   data-toggle="modal"
-                                   data-target="#janelaCadastrar"
-                                >
-                                    Admitir
-                                </a>
-
-                                <a class="dropdown-item" href="javascript://" title="Demitir"
-                                   @click.prevent="formDemitir(item); visualizar = false"
-                                   v-if="permissoes.privilegio_processo_demitir && !filtrarDemitidos"
-                                   data-toggle="modal"
-                                   data-target="#janelaDemitir"
-                                >
-                                    Demitir
-                                </a>
-
-                                <a class="dropdown-item" href="javascript://" title="Visualizar"
-                                   @click.prevent="formEntrevistar(item.id); visualizar = true"
-                                   data-toggle="modal"
-                                   data-target="#janelaCadastrar"
-                                >
-                                    Visualizar
-                                </a>
-
-                                <a class="dropdown-item" v-if="item.admissao" :href="`${item.fc_token}/pdf`"
-                                   title="Gerar PDFs"
-                                   target="_blank">
-                                    Gerar PDF
-                                </a>
+                            <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" :aria-labelledby="'dropdownProcesso_' + item.id">
+                                <a class="dropdown-item" href="javascript://" title="Admitir" @click.prevent="formEntrevistar(item.id); visualizar = false" v-if="!filtrarDemitidos" data-toggle="modal" data-target="#janelaCadastrar"><i class="fas fa-user-plus mr-2 text-success"></i> Admitir</a>
+                                <a class="dropdown-item" href="javascript://" title="Demitir" @click.prevent="formDemitir(item); visualizar = false" v-if="permissoes.privilegio_processo_demitir && !filtrarDemitidos" data-toggle="modal" data-target="#janelaDemitir"><i class="fas fa-user-minus mr-2 text-danger"></i> Demitir</a>
+                                <a class="dropdown-item" href="javascript://" title="Visualizar" @click.prevent="formEntrevistar(item.id); visualizar = true" data-toggle="modal" data-target="#janelaCadastrar"><i class="fas fa-eye mr-2 text-info"></i> Visualizar</a>
+                                <div class="dropdown-divider" v-if="item.admissao"></div>
+                                <a class="dropdown-item" v-if="item.admissao" :href="`${item.fc_token}/pdf`" title="Gerar PDFs" target="_blank"><i class="fas fa-file-pdf mr-2 text-danger"></i> Gerar PDF</a>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                <div class="card-details-row card-details-main">
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'tbl_cpf')?.checked">
+                        <i class="fas fa-id-card"></i>
+                        <span class="detail-label">CPF</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !item.curriculo.cpf }">@{{ item.curriculo.cpf || 'Não informado' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-building"></i>
+                        <span class="detail-label">Centro</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !(item.admissao && item.admissao.emp_centro_custo) }">@{{ (item.admissao && item.admissao.emp_centro_custo) ? item.admissao.emp_centro_custo : 'Não informado' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-briefcase"></i>
+                        <span class="detail-label">Cargo</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !item.vaga_aberta_municipio }">@{{ item.vaga_aberta_municipio || 'Não informado' }}</span>
+                    </div>
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'tbl_contato')?.checked">
+                        <i class="fas fa-phone"></i>
+                        <span class="detail-label">Contato</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !item.curriculo.tel_principal || !item.curriculo.tel_principal.numero }">@{{ item.curriculo.tel_principal && item.curriculo.tel_principal.numero ? item.curriculo.tel_principal.numero : 'Não informado' }}</span>
+                    </div>
+                    <div class="detail-item" v-if="AUTENTICADO.temFilial && item.admissao && item.admissao.emp_cnpj">
+                        <i class="fas fa-building"></i>
+                        <span class="detail-label">Unidade</span>
+                        <span class="detail-value">@{{ item.admissao.emp_nome_fantasia }} (@{{ item.admissao.emp_tipo }})</span>
+                    </div>
+                </div>
+
+                <div class="card-details-row card-details-docs" v-if="colunasTabela.find(c => c.id === 'pcd').checked || colunasTabela.find(c => c.id === 'enc_documento').checked || colunasTabela.find(c => c.id === 'enc_exame').checked || colunasTabela.find(c => c.id === 'enc_treinamento').checked || colunasTabela.find(c => c.id === 'resp_encaminhamento').checked || colunasTabela.find(c => c.id === 'cracha').checked || colunasTabela.find(c => c.id === 'foto_3x4').checked">
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'pcd').checked">
+                        <span class="detail-check" :class="item.curriculo.pcd ? 'detail-check-yes' : 'detail-check-no'"><i :class="item.curriculo.pcd ? 'fas fa-check' : 'fas fa-minus'"></i></span>
+                        <span class="detail-label">PCD</span>
+                    </div>
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'enc_documento').checked">
+                        <span class="detail-check" :class="(item.resultado_integrado && item.resultado_integrado.documentos_entregue) ? 'detail-check-yes' : 'detail-check-no'"><i :class="(item.resultado_integrado && item.resultado_integrado.documentos_entregue) ? 'fas fa-check' : 'fas fa-minus'"></i></span>
+                        <span class="detail-label">Enc. Doc</span>
+                        <span class="detail-value detail-value-small" v-if="item.resultado_integrado && item.resultado_integrado.documentos_entregue_data">@{{ item.resultado_integrado.documentos_entregue_data }}</span>
+                    </div>
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'enc_exame').checked">
+                        <span class="detail-check" :class="(item.resultado_integrado && item.resultado_integrado.encaminhado_exame) ? 'detail-check-yes' : 'detail-check-no'"><i :class="(item.resultado_integrado && item.resultado_integrado.encaminhado_exame) ? 'fas fa-check' : 'fas fa-minus'"></i></span>
+                        <span class="detail-label">Enc. Exame</span>
+                        <span class="detail-value detail-value-small" v-if="item.resultado_integrado && item.resultado_integrado.encaminhado_exame_data">@{{ item.resultado_integrado.encaminhado_exame_data }}</span>
+                    </div>
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'enc_treinamento').checked">
+                        <span class="detail-check" :class="(item.resultado_integrado && item.resultado_integrado.encaminhado_treinamento) ? 'detail-check-yes' : 'detail-check-no'"><i :class="(item.resultado_integrado && item.resultado_integrado.encaminhado_treinamento) ? 'fas fa-check' : 'fas fa-minus'"></i></span>
+                        <span class="detail-label">Enc. Trein.</span>
+                        <span class="detail-value detail-value-small" v-if="item.resultado_integrado && item.resultado_integrado.encaminhado_treinamento_data">@{{ item.resultado_integrado.encaminhado_treinamento_data }}</span>
+                    </div>
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'resp_encaminhamento').checked">
+                        <i class="fas fa-user-tie"></i>
+                        <span class="detail-label">Resp. Enc.</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !item.resultado_integrado || !item.resultado_integrado.responsavel_envio }">@{{ item.resultado_integrado && item.resultado_integrado.responsavel_envio ? item.resultado_integrado.responsavel_envio : '—' }}</span>
+                    </div>
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'cracha').checked">
+                        <span class="detail-check" :class="(item.admissao && item.admissao.numero_cracha) ? 'detail-check-yes' : 'detail-check-no'"><i :class="(item.admissao && item.admissao.numero_cracha) ? 'fas fa-check' : 'fas fa-minus'"></i></span>
+                        <span class="detail-label">Crachá</span>
+                        <span class="detail-value detail-value-small" v-if="item.admissao && item.admissao.numero_cracha">@{{ item.admissao.numero_cracha }}</span>
+                    </div>
+                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'foto_3x4').checked">
+                        <span class="detail-check" :class="(item.curriculo.foto_tres && item.curriculo.foto_tres.length > 0) ? 'detail-check-yes' : 'detail-check-no'"><i :class="(item.curriculo.foto_tres && item.curriculo.foto_tres.length > 0) ? 'fas fa-check' : 'fas fa-minus'"></i></span>
+                        <span class="detail-label">Foto 3x4</span>
+                    </div>
+                </div>
+
+                <div class="card-details-row card-details-fixas">
+                    <div class="detail-item">
+                        <i class="fas fa-notes-medical"></i>
+                        <span class="detail-label">Data ASO</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !getDataAso(item) }">@{{ getDataAso(item) || 'Não informado' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <span class="detail-label">Data Admissão</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !item.admissao || !item.admissao.data_admissao }">@{{ item.admissao && item.admissao.data_admissao ? item.admissao.data_admissao : 'Não informado' }}</span>
+                    </div>
+                    <div class="detail-item" v-if="item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido')">
+                        <i class="fas fa-calendar-times"></i>
+                        <span class="detail-label">Data Demissão</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !getDataDemissao(item) }">@{{ getDataDemissao(item) || 'Não informado' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-file-contract"></i>
+                        <span class="detail-label">Tipo Admissão</span>
+                        <span class="detail-value" :class="{ 'detail-value-empty': !getTipoAdmissao(item) }">@{{ getTipoAdmissao(item) || 'Não informado' }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             url="{{route('g.admissao.admissao.atualizar')}}"
-                            :por-pagina="controle.dados.porPagina"
+                            :por-pagina="controle.dados.pages"
                             :dados="controle.dados"
                             v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
     </div>
 @stop
 @push('js')
     <script src="{{mix('js/g/admissao/processo/app.js')}}"></script>
+@endpush
+@push('css')
+    <style>
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            background: linear-gradient(180deg, #f8f9fa 0%, #fff 100%);
+            border-radius: 12px;
+            border: 1px dashed #dee2e6;
+        }
+        .empty-state-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            background: #e9ecef;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: #6c757d;
+        }
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.25rem;
+        }
+        .empty-state-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin: 0;
+        }
+
+        /* Toolbar */
+        .cards-toolbar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .cards-toolbar .custom-control-label { font-size: 0.875rem; color: #495057; }
+        .cards-toolbar-count {
+            font-size: 0.813rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        /* Cards list */
+        .cards-lista { display: flex; flex-direction: column; gap: 1rem; }
+        .solicitacao-card {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0;
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border-left: 4px solid #6c757d;
+            overflow: hidden;
+        }
+        .solicitacao-card.card-status-em-processo { border-left-color: #17a2b8; }
+        .solicitacao-card.card-status-admitido { border-left-color: #28a745; }
+        .solicitacao-card.card-status-demitido { border-left-color: #dc3545; }
+        .solicitacao-card:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            border-color: #ced4da;
+            transform: translateY(-1px);
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+            border-bottom: 1px solid #f1f3f5;
+        }
+        .card-left { display: flex; align-items: center; gap: 0.75rem; flex: 1; overflow: hidden; min-width: 0; }
+        .card-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+        .checkbox-inline { margin: 0; cursor: pointer; display: flex; align-items: center; flex-shrink: 0; }
+        .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #174257; }
+        .badge-id {
+            background: #174257;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .colaborador-principal {
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            color: #212529;
+            overflow: hidden;
+            min-width: 0;
+        }
+        .colaborador-principal i { color: #174257; flex-shrink: 0; }
+        .colaborador-principal strong {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 600;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 20px;
+            font-size: 0.688rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .status-pendente { background: #e9ecef; color: #495057; }
+        .status-processo { background: #17a2b8; color: white; }
+        .status-admitido { background: #28a745; color: white; }
+        .status-demitido { background: #dc3545; color: white; }
+
+        .btn-actions-compact {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .btn-actions-compact:hover {
+            background: #174257;
+            border-color: #174257;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .card-details-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem 1.5rem;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f3f5;
+        }
+        .card-details-row:last-child { border-bottom: none; }
+        .card-details-main { padding-top: 0.75rem; }
+        .card-details-docs {
+            background: #fafbfc;
+            padding: 0.75rem 1.25rem;
+            gap: 0.75rem 1.25rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.813rem;
+            min-width: 0;
+        }
+        .detail-item i:first-child { flex-shrink: 0; font-size: 0.875rem; color: #6c757d; }
+        .detail-label { font-weight: 500; color: #6c757d; white-space: nowrap; }
+        .detail-value { color: #212529; font-weight: 400; }
+        .detail-value-small { font-size: 0.75rem; color: #6c757d; }
+        .detail-value-empty { color: #adb5bd; font-style: italic; }
+
+        .detail-check {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.625rem;
+            flex-shrink: 0;
+        }
+        .detail-check-yes { background: #d4edda; color: #155724; }
+        .detail-check-no { background: #f8d7da; color: #721c24; }
+
+        .dropdown-menu-custom {
+            min-width: 11rem;
+            padding: 0.25rem 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .dropdown-menu-custom .dropdown-item {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+        .dropdown-menu-custom .dropdown-item i { width: 1.25rem; text-align: center; }
+        .dropdown-menu-custom .dropdown-item:hover { background-color: #f8f9fa; color: #174257; }
+        .dropdown-menu-custom .dropdown-divider { margin: 0.25rem 0; }
+
+        @media (max-width: 768px) {
+            .card-header-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 0.75rem 1rem; }
+            .card-right { width: 100%; justify-content: flex-end; }
+            .cards-toolbar { padding: 0.5rem 0.75rem; }
+        }
+    </style>
 @endpush

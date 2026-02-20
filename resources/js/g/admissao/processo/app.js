@@ -727,6 +727,18 @@ const app = new Vue({
         this.listaVagas()
     },
     methods: {
+        getDataAso(item) {
+            if (item.admissao && item.admissao.ultimo_aso && item.admissao.ultimo_aso.data_realizacao) return item.admissao.ultimo_aso.data_realizacao
+            if (item.ultimo_aso && item.ultimo_aso.data_realizacao) return item.ultimo_aso.data_realizacao
+            return null
+        },
+        getDataDemissao(item) {
+            if (item.admissao && item.admissao.demissao && item.admissao.demissao.data_desmobilizacao) return item.admissao.demissao.data_desmobilizacao
+            return null
+        },
+        getTipoAdmissao(item) {
+            return (item.admissao && item.admissao.tipo_admissao) ? item.admissao.tipo_admissao : null
+        },
         async getColunaTabelas() {
             await axios.get(`${URL_ADMIN}/admissao/colunas-tabela-processo`).then(response => {
                 this.colunasTabela = response.data
