@@ -1,6 +1,7 @@
 import endereco from '../../../components/Endereco'
 import DadosBancarios from '../../../components/DadosBancarios'
 import datepicker from '../../../components/DatePicker'
+import DateRangeFilter from '../../../components/DateRangeFilter.vue'
 import upload from '../../../components/Upload'
 import telefone from '../../../components/Telefones'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
@@ -20,6 +21,7 @@ const app = new Vue({
     components: {
         endereco,
         datepicker,
+        DateRangeFilter,
         upload,
         telefone,
         DadosPessoais,
@@ -628,7 +630,17 @@ const app = new Vue({
                 campoAdmissao: '',
                 campoDemitido: false,
                 campoCnpj: '',
-                campoCentroCusto: ''
+                campoCentroCusto: '',
+                filtroPeriodo: false,
+                dataInicio: '',
+                dataFim: '',
+                filtroAso: false,
+                dataInicioAso: '',
+                dataFimAso: '',
+                filtroDataAdmissao: false,
+                dataInicioAdmissao: '',
+                dataFimAdmissao: '',
+                campoCPF: ''
             }
         }
     },
@@ -682,6 +694,15 @@ const app = new Vue({
         }
 
     },
+    watch: {
+        'controle.dados': {
+            handler() {
+                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
+                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400)
+            },
+            deep: true
+        }
+    },
     async mounted() {
         await this.getColunaTabelas()
 
@@ -695,6 +716,13 @@ const app = new Vue({
             this.controle.dados.campoCliente = parseInt(this.cliente_id)
             this.controle.dados.cliente_custom = parseInt(this.cliente_id)
         }
+        this.urlParamGet()
+        this.$nextTick(() => {
+            const page = this.controle.dados.page
+            if (this.$refs.componente && page >= 1) {
+                this.$refs.componente.atual = page
+            }
+        })
         this.atualizar()
         this.listaVagas()
     },
@@ -1206,8 +1234,73 @@ const app = new Vue({
             this.controle.carregando = true
         },
         atualizar() {
+            this.syncUrlFiltros()
             this.$refs.componente.atual = 1
             this.$refs.componente.buscar()
+        },
+        urlParamGet() {
+            const urlParams = new URLSearchParams(window.location.search)
+            if (urlParams.get('page')) {
+                const p = parseInt(urlParams.get('page'), 10)
+                if (p >= 1) this.controle.dados.page = p
+            }
+            if (urlParams.get('pages')) {
+                const pp = parseInt(urlParams.get('pages'), 10)
+                if ([10, 20, 50, 100].indexOf(pp) >= 0) this.controle.dados.pages = pp
+            }
+            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
+            if (urlParams.get('campoCPF')) this.controle.dados.campoCPF = urlParams.get('campoCPF')
+            if (urlParams.get('campoCliente')) this.controle.dados.campoCliente = urlParams.get('campoCliente')
+            if (urlParams.get('campoVaga')) this.controle.dados.campoVaga = urlParams.get('campoVaga')
+            if (urlParams.get('campoStatusAdmissao')) this.controle.dados.campoStatusAdmissao = urlParams.get('campoStatusAdmissao')
+            if (urlParams.get('campoTipoAdmissao')) this.controle.dados.campoTipoAdmissao = urlParams.get('campoTipoAdmissao')
+            if (urlParams.get('campoUf')) this.controle.dados.campoUf = urlParams.get('campoUf')
+            if (urlParams.get('campoCnpj')) this.controle.dados.campoCnpj = urlParams.get('campoCnpj')
+            if (urlParams.get('campoCentroCusto')) this.controle.dados.campoCentroCusto = urlParams.get('campoCentroCusto')
+            const fp = urlParams.get('filtroPeriodo')
+            if (fp === '1' || fp === 'true') this.controle.dados.filtroPeriodo = true
+            if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
+            if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim')
+            const fa = urlParams.get('filtroAso')
+            if (fa === '1' || fa === 'true') this.controle.dados.filtroAso = true
+            if (urlParams.get('dataInicioAso')) this.controle.dados.dataInicioAso = urlParams.get('dataInicioAso')
+            if (urlParams.get('dataFimAso')) this.controle.dados.dataFimAso = urlParams.get('dataFimAso')
+            const fda = urlParams.get('filtroDataAdmissao')
+            if (fda === '1' || fda === 'true') this.controle.dados.filtroDataAdmissao = true
+            if (urlParams.get('dataInicioAdmissao')) this.controle.dados.dataInicioAdmissao = urlParams.get('dataInicioAdmissao')
+            if (urlParams.get('dataFimAdmissao')) this.controle.dados.dataFimAdmissao = urlParams.get('dataFimAdmissao')
+            const cd = urlParams.get('campoDemitido')
+            if (cd === '1' || cd === 'true') this.controle.dados.campoDemitido = true
+            if (cd === '0' || cd === 'false') this.controle.dados.campoDemitido = false
+        },
+        syncUrlFiltros() {
+            const d = this.controle.dados
+            const atual = (this.$refs.componente && this.$refs.componente.atual) ? this.$refs.componente.atual : 1
+            const params = {}
+            if (atual > 1) params.page = atual
+            if (d.pages && d.pages !== 20) params.pages = d.pages
+            if (d.campoBusca) params.campoBusca = d.campoBusca
+            if (d.campoCPF) params.campoCPF = d.campoCPF
+            if (d.campoCliente) params.campoCliente = d.campoCliente
+            if (d.campoVaga) params.campoVaga = d.campoVaga
+            if (d.campoStatusAdmissao) params.campoStatusAdmissao = d.campoStatusAdmissao
+            if (d.campoTipoAdmissao) params.campoTipoAdmissao = d.campoTipoAdmissao
+            if (d.campoUf) params.campoUf = d.campoUf
+            if (d.campoCnpj) params.campoCnpj = d.campoCnpj
+            if (d.campoCentroCusto) params.campoCentroCusto = d.campoCentroCusto
+            if (d.filtroPeriodo) params.filtroPeriodo = 1
+            if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio
+            if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim
+            if (d.filtroAso) params.filtroAso = 1
+            if (d.filtroAso && d.dataInicioAso) params.dataInicioAso = d.dataInicioAso
+            if (d.filtroAso && d.dataFimAso) params.dataFimAso = d.dataFimAso
+            if (d.filtroDataAdmissao) params.filtroDataAdmissao = 1
+            if (d.filtroDataAdmissao && d.dataInicioAdmissao) params.dataInicioAdmissao = d.dataInicioAdmissao
+            if (d.filtroDataAdmissao && d.dataFimAdmissao) params.dataFimAdmissao = d.dataFimAdmissao
+            if (d.campoDemitido) params.campoDemitido = 1
+            const qs = new URLSearchParams(params).toString()
+            const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname
+            window.history.replaceState({}, '', url)
         }
     }
 })
