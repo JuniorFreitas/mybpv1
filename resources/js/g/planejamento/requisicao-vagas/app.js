@@ -143,9 +143,26 @@ const app = new Vue({
         }
     },
 
+    watch: {
+        'controle.dados': {
+            handler() {
+                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
+                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400)
+            },
+            deep: true
+        }
+    },
+
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
+        this.urlParamGet()
         this.usuarioAutenticado()
+        this.$nextTick(() => {
+            const page = this.controle.dados.page
+            if (this.$refs.componente && page >= 1) {
+                this.$refs.componente.atual = page
+            }
+        })
         setTimeout(() => {
             this.atualizar()
         }, 200)
@@ -481,8 +498,39 @@ const app = new Vue({
             this.controle.carregando = true
         },
         atualizar() {
+            this.syncUrlFiltros()
             this.$refs.componente.atual = 1
             this.$refs.componente.buscar()
+        },
+        urlParamGet() {
+            const urlParams = new URLSearchParams(window.location.search)
+            if (urlParams.get('page')) {
+                const p = parseInt(urlParams.get('page'), 10)
+                if (p >= 1) this.controle.dados.page = p
+            }
+            if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao')
+            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
+            if (urlParams.get('campoStatus')) this.controle.dados.campoStatus = urlParams.get('campoStatus')
+            if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
+            if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim')
+            if (urlParams.get('dataInicio') || urlParams.get('dataFim')) this.controle.dados.filtroPeriodo = true
+            const fp = urlParams.get('filtroPeriodo')
+            if (fp === '1' || fp === 'true') this.controle.dados.filtroPeriodo = true
+        },
+        syncUrlFiltros() {
+            const d = this.controle.dados
+            const atual = (this.$refs.componente && this.$refs.componente.atual) ? this.$refs.componente.atual : 1
+            const params = {}
+            if (atual > 1) params.page = atual
+            if (d.ordenacao && d.ordenacao !== 'created_at_desc') params.ordenacao = d.ordenacao
+            if (d.campoBusca) params.campoBusca = d.campoBusca
+            if (d.campoStatus) params.campoStatus = d.campoStatus
+            if (d.filtroPeriodo) params.filtroPeriodo = 1
+            if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio
+            if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim
+            const qs = new URLSearchParams(params).toString()
+            const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname
+            window.history.replaceState({}, '', url)
         },
         formatarDataHoraBR(data) {
             if (!data) return ''

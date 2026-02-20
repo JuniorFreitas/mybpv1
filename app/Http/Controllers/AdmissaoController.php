@@ -1412,18 +1412,32 @@ class AdmissaoController extends Controller
                 'VagaAberta.Municipio:id,nome,uf',
                 'Empresa:id,razao_social,cnpj,nome,cpf,area_id',
                 'Empresa.Area',
-                'VagaAberta.Projetos.Projeto'
+                'VagaAberta.Projetos.Projeto',
+                'Admissao',
+                'UltimoAso:id,feedback_id,data_realizacao,data_vencimento'
             ])->filtrarPorCnpjECentroCusto($request);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        $filtroPeriodo = $request->filtroPeriodo === true || $request->filtroPeriodo === 'true' || $request->filtroPeriodo === '1';
 
         if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-            $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
-            });
+            if ($request->filled('dataInicio') && $request->filled('dataFim')) {
+                $dataInicio = new DataHora($request->dataInicio . ' 00:00:00');
+                $dataFim = new DataHora($request->dataFim . ' 23:59:59');
+            } else {
+                $periodo = explode(' até ', $request->periodo ?? '');
+                if (count($periodo) === 2) {
+                    $dataInicio = new DataHora(trim($periodo[0]) . ' 00:00:00');
+                    $dataFim = new DataHora(trim($periodo[1]) . ' 23:59:59');
+                } else {
+                    $dataInicio = null;
+                    $dataFim = null;
+                }
+            }
+            if ($dataInicio && $dataFim) {
+                $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
+                    $q->where('created_at', '>=', $dataInicio->dataHoraInsert())->where('created_at', '<=', $dataFim->dataHoraInsert());
+                });
+            }
         }
 
         if ($request->campoDemitido) {
@@ -1432,26 +1446,40 @@ class AdmissaoController extends Controller
             $resultado->Admitidos();
         }
 
-        $filtroAso = $request->filtroAso == 'true';
+        $filtroAso = $request->filtroAso === true || $request->filtroAso === 'true' || $request->filtroAso === '1';
 
         if ($filtroAso) {
-            $periodo = explode(' até ', $request->campoAso);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-            $resultado->whereHas('UltimoAso', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('data_realizacao', '>=', $dataInicio->dataHoraInsert())->where('data_realizacao', '<=', $dataFim->dataHoraInsert());
-            });
+            if ($request->filled('dataInicioAso') && $request->filled('dataFimAso')) {
+                $dataInicioAso = new DataHora($request->dataInicioAso . ' 00:00:00');
+                $dataFimAso = new DataHora($request->dataFimAso . ' 23:59:59');
+            } else {
+                $periodo = explode(' até ', $request->campoAso ?? '');
+                $dataInicioAso = count($periodo) === 2 ? new DataHora(trim($periodo[0]) . ' 00:00:00') : null;
+                $dataFimAso = count($periodo) === 2 ? new DataHora(trim($periodo[1]) . ' 23:59:59') : null;
+            }
+            if ($dataInicioAso && $dataFimAso) {
+                $resultado->whereHas('UltimoAso', function ($q) use ($dataInicioAso, $dataFimAso) {
+                    $q->where('data_realizacao', '>=', $dataInicioAso->dataHoraInsert())->where('data_realizacao', '<=', $dataFimAso->dataHoraInsert());
+                });
+            }
         }
 
-        $filtroDataAdmissao = $request->filtroDataAdmissao == 'true';
+        $filtroDataAdmissao = $request->filtroDataAdmissao === true || $request->filtroDataAdmissao === 'true' || $request->filtroDataAdmissao === '1';
 
         if ($filtroDataAdmissao) {
-            $periodo = explode(' até ', $request->campoAdmisaoData);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-            $resultado->whereHas('Admissao', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('data_admissao', '>=', $dataInicio->dataHoraInsert())->where('data_admissao', '<=', $dataFim->dataHoraInsert());
-            });
+            if ($request->filled('dataInicioAdmissao') && $request->filled('dataFimAdmissao')) {
+                $dataInicioAdm = new DataHora($request->dataInicioAdmissao . ' 00:00:00');
+                $dataFimAdm = new DataHora($request->dataFimAdmissao . ' 23:59:59');
+            } else {
+                $periodo = explode(' até ', $request->campoAdmisaoData ?? '');
+                $dataInicioAdm = count($periodo) === 2 ? new DataHora(trim($periodo[0]) . ' 00:00:00') : null;
+                $dataFimAdm = count($periodo) === 2 ? new DataHora(trim($periodo[1]) . ' 23:59:59') : null;
+            }
+            if ($dataInicioAdm && $dataFimAdm) {
+                $resultado->whereHas('Admissao', function ($q) use ($dataInicioAdm, $dataFimAdm) {
+                    $q->where('data_admissao', '>=', $dataInicioAdm->dataHoraInsert())->where('data_admissao', '<=', $dataFimAdm->dataHoraInsert());
+                });
+            }
         }
 
         if ($request->filled('campoCliente')) {
