@@ -97,6 +97,7 @@ class RequisicaoVagaMovimentacao extends Model
         'beneficio_excecao',
         'treinamento',
         'treinamento_excecao',
+        'custom_values',
     ];
 
     protected $casts = [
@@ -143,9 +144,16 @@ class RequisicaoVagaMovimentacao extends Model
         'beneficio_excecao' => 'string',
         'treinamento' => 'string',
         'treinamento_excecao' => 'string',
+        'custom_values' => 'array',
     ];
 
     protected $appends = ['data_solicitacao', 'created_at_formatado', 'updated_at_formatado'];
+
+    public function getCustomValuesAttribute($value)
+    {
+        $decoded = is_string($value) ? json_decode($value, true) : $value;
+        return is_array($decoded) ? $decoded : [];
+    }
 
     public function getDataSolicitacaoAttribute()
     {

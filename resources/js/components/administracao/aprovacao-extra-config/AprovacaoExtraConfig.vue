@@ -1,125 +1,128 @@
 <template>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4 class="card-title mb-1">Configuração de Aprovações Extras</h4>
-                            <p class="card-subtitle text-muted mb-0">
-                                Configure aprovações adicionais personalizadas para cada tipo de processo
-                            </p>
-                        </div>
-                        <button class="btn btn-primary"
-                                data-toggle="modal"
-                                data-target="#modalConfig"
-                                @click="abrirModal()">
-                            <i class="bx bx-plus"></i> Nova Configuração
-                        </button>
+    <div id="componente">
+        <fieldset>
+            <legend>Filtro</legend>
+            <form class="row" @submit.prevent="carregarConfigs()">
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Buscar</label>
+                        <input type="text"
+                               placeholder="Buscar por nome ou tipo"
+                               autocomplete="off"
+                               class="form-control form-control-sm"
+                               :disabled="loading"
+                               v-model="filtroBusca">
                     </div>
+                </div>
+                <div class="col-12 col-md-12">
+                    <button type="button" class="btn btn-sm btn-success" :disabled="loading"
+                            @click="carregarConfigs()">
+                        <i :class="loading ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary"
+                            data-toggle="modal"
+                            data-target="#modalConfig"
+                            @click="abrirModal()">
+                        <i class="fa fa-plus"></i> Cadastrar
+                    </button>
+                </div>
+            </form>
+        </fieldset>
 
-                    <div class="card-body">
-                        <!-- Alerta informativo -->
-                        <div class="alert alert-info border-0" role="alert">
-                            <i class="bx bx-info-circle me-2"></i>
-                            <strong>Importante:</strong> RH sempre é a última aprovação.
-                            O fluxo será: Gestor → Aprovação Extra → RH (final)
-                        </div>
+        <div class="alert alert-info border-0 py-2" role="alert">
+            <i class="fa fa-info-circle me-2"></i>
+            <strong>Importante:</strong> O RH sempre é a última aprovação! <br> O fluxo será: <strong>Gestor → Aprovação Extra → RH (final)</strong>
+        </div>
 
-                        <!-- Tabela de configurações -->
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th width="180">Tipo de Processo</th>
-                                        <th>Nome da Aprovação</th>
-                                        <th>Usuários Autorizados</th>
-                                        <th width="100" class="text-center">Status</th>
-                                        <th width="120" class="text-center">Data Criação</th>
-                                        <th width="150" class="text-center">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-if="loading">
-                                        <td colspan="6" class="text-center py-4">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Carregando...</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr v-else-if="configs.length === 0">
-                                        <td colspan="6" class="text-center text-muted py-4">
-                                            <i class="bx bx-info-circle fs-3"></i>
-                                            <p class="mb-0 mt-2">Nenhuma configuração cadastrada</p>
-                                        </td>
-                                    </tr>
-                                    <tr v-for="config in configs" :key="config.id">
-                                        <td>
-                                            <span class="badge bg-info">
-                                                {{ tiposProcesso[config.tipo_processo] || config.tipo_processo }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <strong>{{ config.nome_aprovacao }}</strong>
-                                        </td>
-                                        <td>
-                                            <span v-if="config.usuarios_autorizados && config.usuarios_autorizados.length > 0"
-                                                  class="badge bg-secondary me-1"
-                                                  v-for="userId in config.usuarios_autorizados.slice(0, 3)"
-                                                  :key="userId">
-                                                {{ getNomeUsuario(userId) }}
-                                            </span>
-                                            <span v-if="config.usuarios_autorizados && config.usuarios_autorizados.length > 3"
-                                                  class="badge bg-secondary">
-                                                +{{ config.usuarios_autorizados.length - 3 }} mais
-                                            </span>
-                                            <span v-else-if="!config.usuarios_autorizados || config.usuarios_autorizados.length === 0"
-                                                  class="text-muted">
-                                                <small>Apenas usuários com privilegio_rh</small>
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge" :class="config.ativo ? 'bg-success' : 'bg-secondary'">
-                                                {{ config.ativo ? 'Ativo' : 'Inativo' }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <small>{{ formatarData(config.created_at) }}</small>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group" role="group">
-                                                <button class="btn btn-sm btn-warning"
-                                                        data-toggle="modal"
-                                                        data-target="#modalConfig"
-                                                        @click="abrirModal(config)"
-                                                        title="Editar">
-                                                    <i class="bx bx-edit"></i>
-                                                </button>
-                                                <button class="btn btn-sm"
-                                                        :class="config.ativo ? 'btn-secondary' : 'btn-success'"
-                                                        @click="toggleAtivo(config.id)"
-                                                        :title="config.ativo ? 'Desativar' : 'Ativar'">
-                                                    <i class="bx" :class="config.ativo ? 'bx-x' : 'bx-check'"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-danger"
-                                                        @click="deletar(config.id)"
-                                                        title="Deletar">
-                                                    <i class="bx bx-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+        <preload class="text-center" v-if="loading"></preload>
+
+        <div class="alert alert-warning text-center" v-show="!loading && configsFiltrados.length === 0">
+            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+        </div>
+
+        <!-- Cards no padrão processo admissão -->
+        <div class="cards-lista" v-show="!loading && configsFiltrados.length > 0">
+            <div class="solicitacao-card" v-for="config in configsFiltrados" :key="config.id">
+                <div class="card-header-row">
+                    <div class="card-left">
+                        <span class="badge-id">#{{ config.id }}</span>
+                        <div class="colaborador-principal">
+                            <span class="badge-tipo">{{ tiposProcesso[config.tipo_processo] || config.tipo_processo }}</span>
+                            <strong>{{ config.nome_aprovacao }}</strong>
                         </div>
+                        <div class="data-info ml-3">
+                            <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem;"></i>
+                            <small class="text-muted">{{ config.created_at }}</small>
+                        </div>
+                    </div>
+                    <div class="card-right">
+                        <bt-ativo :rota="`administracao/aprovacao-extra-config/${config.id}/ativa-desativa`"
+                                  :model="config"
+                                  @atualizou="carregarConfigs()"></bt-ativo>
+                        <div class="dropdown show">
+                            <a class="btn-actions-compact" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right">
+                                <a class="dropdown-item" href="javascript://" title="Editar" data-toggle="modal"
+                                   data-target="#modalConfig"
+                                   @click.prevent="abrirModal(config)">
+                                    <i class="fa fa-edit mr-1"></i> Editar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-details-row">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-alt text-muted"></i>
+                        <span class="detail-label">Data criação:</span>
+                        <span class="detail-value">{{ config.created_at }}</span>
+                    </div>
+                    <div class="detail-item" v-if="config.updated_at">
+                        <i class="fas fa-calendar-check text-muted"></i>
+                        <span class="detail-label">Última alteração:</span>
+                        <span class="detail-value">{{ config.updated_at }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-users text-muted"></i>
+                        <span class="detail-label">Usuários autorizados:</span>
+                        <span class="detail-value">
+                            <template v-if="config.usuarios_autorizados && config.usuarios_autorizados.length > 0">
+                                <strong>{{ config.usuarios_autorizados.length }}</strong> usuário(s) —
+                                <span v-for="userId in config.usuarios_autorizados.slice(0, 3)" :key="userId" class="me-1">
+                                    {{ getNomeUsuario(userId) }}
+                                </span>
+                                <span v-if="config.usuarios_autorizados.length > 3">
+                                    +{{ config.usuarios_autorizados.length - 3 }} mais
+                                </span>
+                            </template>
+                            <span v-else class="text-muted">Apenas privilegio_rh</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-details-row card-fluxo">
+                    <div class="detail-item detail-fluxo">
+                        <i class="fas fa-project-diagram text-primary"></i>
+                        <span class="detail-label">Fluxo:</span>
+                        <span class="detail-value">
+                            <span class="fluxo-texto">Gestor</span>
+                            <i class="fas fa-chevron-right text-muted mx-1" style="font-size: 0.65rem;"></i>
+                            <span class="fluxo-texto fluxo-extra">{{ config.nome_aprovacao }}</span>
+                            <i class="fas fa-chevron-right text-muted mx-1" style="font-size: 0.65rem;"></i>
+                            <span class="fluxo-texto">RH (final)</span>
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Modal de Cadastro/Edição -->
-        <modal id="modalConfig"
+    <!-- Modal de Cadastro/Edição -->
+    <modal id="modalConfig"
                :fechar="!salvando"
+               :mostrar-botao-fechar-no-rodape="false"
                size="lg"
                :titulo="(modoEdicao ? 'Editar' : 'Nova') + ' Configuração de Aprovação Extra'">
             <template slot="conteudo">
@@ -222,23 +225,23 @@
 
                             <!-- Alerta sobre fluxo -->
                             <div class="alert alert-warning border-0" role="alert">
-                                <i class="bx bx-info-circle me-2"></i>
+                                <i class="fa fa-info-circle me-2"></i>
                                 <strong>Lembre-se:</strong> O fluxo será
                                 <strong>Gestor → {{ form.nome_aprovacao || 'Aprovação Extra' }} → RH (final)</strong>
                             </div>
                 </form>
             </template>
             <template slot="rodape">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                    <i class="bx bx-x"></i> Cancelar
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+                    <i class="fa fa-times"></i> Cancelar
                 </button>
-                <button type="button" class="btn btn-primary" @click="salvar" :disabled="salvando">
+                <button type="button" class="btn btn-sm btn-primary" @click="salvar" :disabled="salvando">
                     <span v-if="salvando">
                         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                         Salvando...
                     </span>
                     <span v-else>
-                        <i class="bx bx-save"></i> Salvar
+                        <i class="fa fa-save"></i> Salvar
                     </span>
                 </button>
             </template>
@@ -266,7 +269,20 @@ export default {
             modoEdicao: false,
             loading: true,
             loadingUsuarios: false,
-            salvando: false
+            salvando: false,
+            filtroBusca: ''
+        }
+    },
+
+    computed: {
+        configsFiltrados() {
+            if (!this.filtroBusca || !this.filtroBusca.trim()) return this.configs;
+            const q = this.filtroBusca.trim().toLowerCase();
+            return this.configs.filter(c => {
+                const nome = (c.nome_aprovacao || '').toLowerCase();
+                const tipo = (this.tiposProcesso[c.tipo_processo] || c.tipo_processo || '').toLowerCase();
+                return nome.includes(q) || tipo.includes(q);
+            });
         }
     },
 
@@ -414,19 +430,6 @@ export default {
             }
         },
 
-        async toggleAtivo(id) {
-            try {
-                const response = await axios.post(
-                    `/g/administracao/aprovacao-extra-config/${id}/toggle-ativo`
-                );
-                toastr.success(response.data.message);
-                this.carregarConfigs();
-            } catch (error) {
-                console.error('Erro ao alterar status:', error);
-                toastr.error('Não foi possível alterar o status');
-            }
-        },
-
         async deletar(id) {
             if (!confirm('Tem certeza que deseja deletar esta configuração? Esta ação não poderá ser desfeita!')) {
                 return;
@@ -455,20 +458,203 @@ export default {
 </script>
 
 <style scoped>
-.card-subtitle {
-    font-size: 14px;
+/* Container de Cards - padrão processo admissão */
+.cards-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
-.badge {
-    font-size: 11px;
-    padding: 4px 8px;
+.solicitacao-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.btn-group .btn {
-    padding: 0.25rem 0.5rem;
+.solicitacao-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    border-color: #007bff;
+    transform: translateY(-2px);
 }
 
-.table > :not(caption) > * > * {
-    padding: 0.75rem;
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f3f5;
+    margin-bottom: 0.75rem;
+}
+
+.card-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    overflow: hidden;
+}
+
+.card-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.badge-id {
+    background: #174257;
+    color: white;
+    padding: 0.25rem 0.625rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.badge-tipo {
+    background: #6c757d;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.colaborador-principal {
+    display: flex;
+    align-items: center;
+    font-size: 0.938rem;
+    color: #212529;
+    overflow: hidden;
+}
+
+.colaborador-principal strong {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.data-info {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.card-details-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card-details-row.card-fluxo {
+    padding-top: 0.5rem;
+    border-top: 1px dashed #e9ecef;
+    margin-top: 0.25rem;
+}
+
+.detail-fluxo .detail-value {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.fluxo-texto {
+    font-weight: 500;
+}
+
+.fluxo-texto.fluxo-extra {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.813rem;
+    min-width: 0;
+}
+
+.detail-item i {
+    flex-shrink: 0;
+    font-size: 0.875rem;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.detail-value {
+    color: #212529;
+    font-weight: 400;
+}
+
+.btn-actions-compact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.btn-actions-compact:hover {
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+    transform: rotate(90deg);
+}
+
+.dropdown-menu-custom {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+    padding: 0.5rem 0;
+}
+
+.dropdown-menu-custom .dropdown-item {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu-custom .dropdown-item:hover {
+    background: #f8f9fa;
+    color: #007bff;
+    padding-left: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .card-header-row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .card-left {
+        width: 100%;
+    }
+
+    .card-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .card-details-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
 }
 </style>

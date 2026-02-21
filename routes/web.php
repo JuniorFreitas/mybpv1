@@ -356,16 +356,16 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
         // Aprovação Extra Config
         Route::group(['as' => 'aprovacao-extra-config.', 'prefix' => 'aprovacao-extra-config'], function () {
-            Route::get('/', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'index'])->name('index')->middleware('can:administracao_aprovacao_extra_config');
-            Route::get('/listar', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'listar'])->name('listar')->middleware('can:administracao_aprovacao_extra_config');
-            Route::get('/tipos-processo', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'tiposProcesso'])->name('tipos-processo')->middleware('can:administracao_aprovacao_extra_config');
-            Route::get('/listar-usuarios', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'listarUsuarios'])->name('listar-usuarios')->middleware('can:administracao_aprovacao_extra_config');
-            Route::get('/buscar-por-tipo', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'buscarPorTipo'])->name('buscar-por-tipo')->middleware('can:administracao_aprovacao_extra_config');
-            Route::post('/', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'store'])->name('store')->middleware('can:administracao_aprovacao_extra_config');
-            Route::put('/{id}', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'update'])->name('update')->middleware('can:administracao_aprovacao_extra_config');
-            Route::delete('/{id}', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'destroy'])->name('destroy')->middleware('can:administracao_aprovacao_extra_config');
-            Route::post('/{id}/toggle-ativo', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'toggleAtivo'])->name('toggle-ativo')->middleware('can:administracao_aprovacao_extra_config');
-            Route::post('/pode-aprovar', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'podeAprovar'])->name('pode-aprovar')->middleware('can:administracao_aprovacao_extra_config');
+            Route::get('/', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'index'])->name('index')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::get('/listar', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'listar'])->name('listar')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::get('/tipos-processo', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'tiposProcesso'])->name('tipos-processo')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::get('/listar-usuarios', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'listarUsuarios'])->name('listar-usuarios')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::get('/buscar-por-tipo', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'buscarPorTipo'])->name('buscar-por-tipo')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::post('/', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'store'])->name('store')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::put('/{id}', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'update'])->name('update')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::delete('/{id}', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'destroy'])->name('destroy')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::put('/{id}/ativa-desativa', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'ativaDesativa'])->name('ativa-desativa')->middleware('can:cadastro_customizacoes_aprovacao_extra');
+            Route::post('/pode-aprovar', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'podeAprovar'])->name('pode-aprovar')->middleware('can:cadastro_customizacoes_aprovacao_extra');
         });
     });
 
@@ -584,6 +584,12 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     //Planejamento
     Route::group(['prefix' => 'planejamento'], function () {
         Route::group(['as' => 'requisicao_vagas.'], function () {
+            Route::get('requisicao-vaga/configurar-campos', [\App\Http\Controllers\RequisicaoVagaController::class, 'configurarCampos'])->name('configurar-campos')->middleware('can:cadastro_customizacoes_requisicao_vaga');
+            // GET campos-custom: quem tem planejamento_requisicao_vaga pode ler (listagem/form); criar/editar/excluir exige cadastro_customizacoes
+            Route::get('requisicao-vaga/campos-custom', [\App\Http\Controllers\RequisicaoVagaCustomCampoController::class, 'index'])->name('campos-custom.index')->middleware('can:planejamento_requisicao_vaga');
+            Route::post('requisicao-vaga/campos-custom', [\App\Http\Controllers\RequisicaoVagaCustomCampoController::class, 'store'])->name('campos-custom.store')->middleware('can:cadastro_customizacoes_requisicao_vaga');
+            Route::put('requisicao-vaga/campos-custom/{id}', [\App\Http\Controllers\RequisicaoVagaCustomCampoController::class, 'update'])->name('campos-custom.update')->middleware('can:cadastro_customizacoes_requisicao_vaga');
+            Route::delete('requisicao-vaga/campos-custom/{id}', [\App\Http\Controllers\RequisicaoVagaCustomCampoController::class, 'destroy'])->name('campos-custom.destroy')->middleware('can:cadastro_customizacoes_requisicao_vaga');
             Route::put('requisicao-vaga/{requisicaoVaga}/aprovar', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovar'])->name('aprovar')->middleware('can:planejamento_requisicao_vaga');
             Route::put('requisicao-vaga/{requisicaoVaga}/aprovarextra', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovarExtra'])->name('aprovarExtra')->middleware('can:planejamento_requisicao_vaga');
             Route::put('requisicao-vaga/{requisicaoVaga}/aprovarrh', [\App\Http\Controllers\RequisicaoVagaController::class, 'aprovarRh'])->name('aprovarRh')->middleware('can:planejamento_requisicao_vaga');

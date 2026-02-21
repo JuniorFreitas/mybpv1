@@ -97,9 +97,11 @@ const app = new Vue({
                 beneficio_excecao: '',
                 treinamento: '',
                 treinamento_excecao: ''
-            }
+            },
+            custom_values: {}
         },
 
+        camposCustom: [],
         formDefault: null,
 
         lista: [],
@@ -157,6 +159,7 @@ const app = new Vue({
         this.formDefault = _.cloneDeep(this.form) //copia
         this.urlParamGet()
         this.usuarioAutenticado()
+        this.carregarCamposCustom()
         this.$nextTick(() => {
             const page = this.controle.dados.page
             if (this.$refs.componente && page >= 1) {
@@ -169,6 +172,24 @@ const app = new Vue({
     },
 
     methods: {
+        carregarCamposCustom() {
+            axios.get(`${URL_ADMIN}/planejamento/requisicao-vaga/campos-custom`)
+                .then((r) => {
+                    this.camposCustom = r.data || []
+                })
+                .catch(() => {
+                    this.camposCustom = []
+                })
+        },
+
+        initFormCustomValues() {
+            const cv = {}
+            this.camposCustom.forEach((c) => {
+                cv[c.id] = this.form.custom_values[c.id] != null ? this.form.custom_values[c.id] : ''
+            })
+            this.form.custom_values = cv
+        },
+
         /***Campos de Filtros ****/
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
@@ -254,6 +275,7 @@ const app = new Vue({
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.leitura = false
+            this.initFormCustomValues()
 
             this.listaAreasEtiquetas()
             this.listaCentroCusto()
@@ -285,6 +307,7 @@ const app = new Vue({
                 .then((response) => {
                     let data = response.data
                     Object.assign(this.form, data)
+                    this.initFormCustomValues()
 
                     this.listaCentroCusto()
 
@@ -294,6 +317,19 @@ const app = new Vue({
                 .catch((error) => {
                     this.preload = false
                 })
+        },
+
+        validarCamposCustomObrigatorios() {
+            for (let i = 0; i < this.camposCustom.length; i++) {
+                const c = this.camposCustom[i]
+                if (c.obrigatorio !== true && c.obrigatorio !== 1) continue
+                const val = this.form.custom_values[c.id]
+                if (val === undefined || val === null || String(val).trim() === '') {
+                    mostraErro('', `O campo "${c.label}" é obrigatório.`)
+                    return false
+                }
+            }
+            return true
         },
 
         cadastrar() {
@@ -312,6 +348,7 @@ const app = new Vue({
                 mostraErro('', 'Verifique os campos marcados')
                 return false
             }
+            if (!this.validarCamposCustomObrigatorios()) return false
 
             this.preload = true
 
@@ -342,6 +379,7 @@ const app = new Vue({
             }
 
             $('#janelaCadastrar :input:visible').trigger('blur')
+            $('#janelaCadastrar .campos-personalizados-modal :input').removeClass('is-invalid')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
                 return false
@@ -365,6 +403,7 @@ const app = new Vue({
 
         aprovar() {
             $('#janelaCadastrar :input:visible').trigger('blur')
+            $('#janelaCadastrar .campos-personalizados-modal :input').removeClass('is-invalid')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
                 return false
@@ -388,6 +427,7 @@ const app = new Vue({
 
         aprovarExtra() {
             $('#janelaCadastrar :input:visible').trigger('blur')
+            $('#janelaCadastrar .campos-personalizados-modal :input').removeClass('is-invalid')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
                 return false
@@ -411,6 +451,7 @@ const app = new Vue({
 
         aprovarRh() {
             $('#janelaCadastrar :input:visible').trigger('blur')
+            $('#janelaCadastrar .campos-personalizados-modal :input').removeClass('is-invalid')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
                 return false
