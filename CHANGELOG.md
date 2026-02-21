@@ -5,6 +5,21 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.2.0] - 2026-02-20
+
+### Adicionado
+
+-   **Relatório NPS – Exportação Excel**
+    -   Job `JobExportaNpsExcel` para exportação em chunks com notificação ao concluir
+    -   Endpoint `POST /g/relatorios/nps/export` no `NpsController` para disparar a exportação
+    -   Botão "Exportar Excel" no componente `NpsRelatorio.vue`
+    -   Arquivo gerado enviado para S3 e link disponível via notificação
+
+-   **Módulo NPS – Ciclos e estrutura**
+    -   Migrations: `nps_perguntas`, `nps_respostas`, `nps_resposta_itens`, `nps_ciclos`
+    -   Migration `add_nps_ciclo_id_to_nps_respostas` para vínculo de respostas ao ciclo
+
+
 ## [1.1.0] - 2026-02-11
 
 ### Adicionado

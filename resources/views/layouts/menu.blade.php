@@ -914,6 +914,15 @@
                     </li>
                 @endcan
             </ul>
+            @if(auth()->user()->empresa_id === \App\Models\User::MYBP_EMPRESA_ID)
+            <ul aria-expanded="false">
+                <li>
+                    <a href="{{ route('g.relatorios.nps.index') }}" parent="relatorios" key="relatorio_nps">
+                        NPS (Resultados)
+                    </a>
+                </li>
+            </ul>
+            @endif
         </li>
     @endif
 

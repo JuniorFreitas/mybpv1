@@ -108,7 +108,7 @@
         </footer>
     </div>
 
-
+    <nps-modal />
 </div>
 
 
