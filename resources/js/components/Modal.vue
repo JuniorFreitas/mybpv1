@@ -25,7 +25,7 @@
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" v-if="exibirFechar" @click="fecharModal">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" v-if="exibirFechar && mostrarBotaoFecharNoRodape" @click="fecharModal">
                             {{labelFechar}}
                         </button>
                         <slot name="rodape"></slot>
@@ -84,6 +84,11 @@
                 type: String,
                 required: false,
                 default: 'Fechar'
+            },
+            mostrarBotaoFecharNoRodape: {
+                type: Boolean,
+                required: false,
+                default: true
             },
             drag: {
                 type: Boolean,

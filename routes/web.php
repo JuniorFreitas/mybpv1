@@ -133,6 +133,12 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     Route::post('downloads', [\App\Http\Controllers\HomeController::class, 'downloads'])->name('downloads');
     Route::get('downloads/exportacao/{arquivo}', [\App\Http\Controllers\HomeController::class, 'downloadArquivo'])->name('downloadArquivo');
     Route::put('concordarTermos', [\App\Http\Controllers\HomeController::class, 'concordarTermos'])->name('concordarTermos');
+    Route::get('nps/deve-exibir', [\App\Http\Controllers\NpsController::class, 'deveExibir'])->name('nps.deve-exibir');
+    Route::post('nps', [\App\Http\Controllers\NpsController::class, 'store'])->name('nps.store');
+    Route::get('relatorios/nps', [\App\Http\Controllers\NpsController::class, 'gerenciamento'])->name('relatorios.nps.index');
+    Route::post('relatorios/nps/export', [\App\Http\Controllers\NpsController::class, 'export'])->name('relatorios.nps.export');
+    Route::get('relatorios/nps/ciclos', [\App\Http\Controllers\NpsController::class, 'ciclos'])->name('relatorios.nps.ciclos');
+    Route::post('relatorios/nps/ciclos', [\App\Http\Controllers\NpsController::class, 'storeCiclo'])->name('relatorios.nps.ciclos.store');
     Route::post('busca-data-admissao', [\App\Http\Controllers\FeriasPrevistaController::class, 'buscaDataAdmissao'])->name('buscaDataAdmissao');
     Route::get('busca-projetos/{projeto_id}', [\App\Http\Controllers\ProjetoController::class, 'buscaProjeto'])->name('buscaProjeto');
     Route::get('busca-projetos', [\App\Http\Controllers\ProjetoController::class, 'buscaTodosProjeto'])->name('buscaTodosProjeto');
