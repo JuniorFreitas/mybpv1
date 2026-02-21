@@ -357,6 +357,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'administracao_aprovacao_extra_config_insert', 'descricao' => 'Pode cadastrar uma Configuração de Aprovação Extra'];
         $lista[] = ['nome' => 'administracao_aprovacao_extra_config_update', 'descricao' => 'Pode alterar uma Configuração de Aprovação Extra'];
         $lista[] = ['nome' => 'administracao_aprovacao_extra_config_delete', 'descricao' => 'Pode apagar uma Configuração de Aprovação Extra'];
+        $lista[] = ['nome' => 'cadastro_customizacoes_aprovacao_extra', 'descricao' => 'Configurar Aprovações Extras (menu Customizações)'];
 
         //Relatorios
         $lista[] = ['nome' => 'relatorio_relatorios', 'descricao' => 'Acessar Relatórios'];
@@ -370,6 +371,7 @@ class HabilidadesTableSeeder extends Seeder
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];
+        $lista[] = ['nome' => 'cadastro_customizacoes_requisicao_vaga', 'descricao' => 'Configurar campos personalizados da Requisição de Vaga (menu Customizações)'];
 
         //weekly-report
         $lista[] = ['nome' => 'weekly_report', 'descricao' => 'Acessar rota Weekley report'];

@@ -304,7 +304,7 @@
             </template>
         </modal>
 
-        <fieldset class="mt-0">
+        <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
                 <date-range-filter
@@ -313,16 +313,17 @@
                     :end-date.sync="controle.dados.dataFim"
                     :disabled="controle.carregando"
                     :id-suffix="hash"
-                    wrapper-class="col-12 col-md-3"
-                />
+                    wrapper-class="col-12 col-md-3">
+                </date-range-filter>
 
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label>Pesquisar</label>
                         <input type="text"
                                placeholder="Buscar por colaborador"
                                autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando"
+                               class="form-control form-control-sm"
+                               :disabled="controle.carregando"
                                v-model="controle.dados.campoBusca">
                     </div>
                 </div>
@@ -330,8 +331,10 @@
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
-                                :disabled="controle.carregando" @change="atualizar()">
+                        <select class="form-control form-control-sm"
+                                v-model="controle.dados.campoStatusAprovacao"
+                                :disabled="controle.carregando"
+                                @change="atualizar()">
                             <option value="">Todos os Status</option>
                             <option value="aberto">Em aberto</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
@@ -341,24 +344,29 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-12 col-md-2">
+
+                <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Ordenar por</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.ordenacao"
-                                :disabled="controle.carregando" @change="atualizar()">
-                            <option value="created_at_desc">Mais recente</option>
-                            <option value="created_at_asc">Mais antigo</option>
-                            <option value="updated_at_desc">Última modificação</option>
+                        <select class="form-control form-control-sm"
+                                v-model="controle.dados.ordenacao"
+                                :disabled="controle.carregando"
+                                @change="atualizar()">
+                            <option value="created_at_desc">Mais Recentes</option>
+                            <option value="created_at_asc">Mais Antigos</option>
+                            <option value="updated_at_desc">Última Modificação</option>
                         </select>
                     </div>
                 </div>
+
                 <div class="col-12 col-md-2">
                     <div class="form-group">
-                        <label for="">Exibir</label>
-                        <select class="form-control form-control-sm" @change="atualizar()"
+                        <label>Exibir</label>
+                        <select class="form-control form-control-sm"
+                                v-model="controle.dados.pages"
                                 :disabled="controle.carregando"
-                                v-model="controle.dados.pages">
-                            <option v-for="item in por_pagina" :value="item">{{ item }}</option>
+                                @change="atualizar()">
+                            <option v-for="item in por_pagina" :key="item" :value="item">{{ item }}</option>
                         </select>
                     </div>
                 </div>
@@ -366,25 +374,29 @@
                 <div class="col-12"></div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
-                            @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
-                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
+                    <button type="button"
+                            class="btn btn-sm btn-success"
                             :disabled="controle.carregando"
+                            @click="atualizar">
+                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
+                    </button>
+                    <button type="button"
+                            class="btn btn-sm btn-primary"
+                            data-toggle="modal"
                             :data-target="`#${hash}`"
+                            :disabled="controle.carregando"
                             @click.prevent="formNovo">
                         Solicitar
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary mr-1"
+                    <button type="button"
+                            class="btn btn-sm btn-primary mr-1"
                             @click.prevent="exportaExcel()"
                             :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)">
                         <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                     </button>
-
-                    <button type="submit" class="btn btn-sm btn-primary mr-1" v-show="selecionados.length > 0"
-                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                    <button type="button"
+                            class="btn btn-sm btn-primary mr-1"
+                            v-show="selecionados.length > 0"
                             :disabled="selecionados.length === 0"
                             data-toggle="modal"
                             data-target="#janelaAtualizaStatus">
@@ -1718,8 +1730,6 @@ select.form-control-sm {
 
 /* Botões com melhor feedback */
 .btn {
-    border-radius: 6px;
-    padding: 0.5rem 1.25rem;
     font-weight: 500;
     transition: all 0.2s ease;
     letter-spacing: 0.3px;
@@ -1794,12 +1804,7 @@ legend {
     opacity: 0.7;
 }
 
-/* Placeholder melhorado */
-::placeholder {
-    color: #adb5bd;
-    font-style: italic;
-    font-size: 0.9rem;
-}
+
 
 /* Card body com padding consistente */
 .card-body {

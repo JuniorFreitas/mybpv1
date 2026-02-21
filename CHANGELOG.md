@@ -5,6 +5,17 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.2.1] - 2026-02-21
+
+### Modificado
+
+-   **Demissão Prevista (SolicitacaoDemissao.vue)**
+    -   Filtro e botões alinhados ao padrão do sistema: fieldset "Filtro" sem `mt-0`, grid com Período (col-3), Pesquisar (col-6), Status (col-3), Ordenar (col-3), Exibir (col-2); botões Atualizar (btn-success), Solicitar, EXPORTAR EXCEL e Atualizar Status no mesmo padrão de Aprovação Extra Config e Requisição de Vagas.
+
+-   **Requisição de Vagas (RequisicaoVaga.vue)**
+    -   Filtro e botões no mesmo layout da Demissão Prevista: date-range, Pesquisar, Status, Ordenar por em linha única; botões Atualizar, Solicitar e EXPORTAR EXCEL com mesma estrutura e estilos.
+    -   Grid de listagem (cards) no mesmo padrão da Demissão Prevista: card com badge-id, data-info (data da solicitação), status-badge (REPROVADO, APROVADO RH, APROVADO [Extra], APROVADO GESTOR, EM ABERTO), botão de ações circular (btn-actions-compact), detalhes em detail-item e fluxo de aprovação (Solicitante → Gestor → [Extra] → RH) com fluxo-info em coluna e estilos unificados (incl. responsividade).
+
 ## [1.2.0] - 2026-02-20
 
 ### Adicionado

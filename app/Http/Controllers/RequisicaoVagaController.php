@@ -6,6 +6,7 @@ use App\Jobs\JobExportaRequisicaoVaga;
 use App\Jobs\RequisicaoVaga\JobNotificacaoRecursiva;
 use App\Models\Arquivo;
 use App\Models\Cliente;
+use App\Models\RequisicaoVagaCustomCampo;
 use App\Models\RequisicaoVagaMovimentacao;
 use App\Models\User;
 use App\Models\Vaga;
@@ -24,6 +25,16 @@ class RequisicaoVagaController extends Controller
     public function index()
     {
         return view('g.planejamento.requisicao-vagas.index');
+    }
+
+    /**
+     * Tela de configuração dos campos personalizados por empresa.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function configurarCampos()
+    {
+        return view('g.planejamento.requisicao-vagas.campos-custom');
     }
 
     /**
@@ -73,25 +84,72 @@ class RequisicaoVagaController extends Controller
                 'msg' => 'Erro ao Solicitar Vaga',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $dados['empresa_id'] = auth()->user()->empresa_id;
-                $dadosMerge = array_merge($dados, $dados['outras_informacoes'] ?? []);
-                $dadosMerge['salario_valor'] = ($dados['outras_informacoes']['salario'] ?? '') == 'exceção' ? ($dados['outras_informacoes']['salario_valor_format'] ?? null) : null;
-                unset($dadosMerge['outras_informacoes']);
-                $requisicao = RequisicaoVagaMovimentacao::create($dadosMerge);
-                DB::commit();
-                JobNotificacaoRecursiva::dispatch($requisicao->id, $requisicao->empresa_id);
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar Solicitação:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-                //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+        $customValidation = $this->validarCustomValues(auth()->user()->empresa_id, $dados['custom_values'] ?? []);
+        if ($customValidation !== true) {
+            return response()->json([
+                'msg' => 'Erro ao Solicitar Vaga',
+                'erros' => $customValidation
+            ], 400);
+        }
+        try {
+            DB::beginTransaction();
+            $dados['empresa_id'] = auth()->user()->empresa_id;
+            $dadosMerge = array_merge($dados, $dados['outras_informacoes'] ?? []);
+            $dadosMerge['salario_valor'] = ($dados['outras_informacoes']['salario'] ?? '') == 'exceção' ? ($dados['outras_informacoes']['salario_valor_format'] ?? null) : null;
+            unset($dadosMerge['outras_informacoes']);
+            $dadosMerge['custom_values'] = $this->sanitizarCustomValues(auth()->user()->empresa_id, $dados['custom_values'] ?? []);
+            $requisicao = RequisicaoVagaMovimentacao::create($dadosMerge);
+            DB::commit();
+            JobNotificacaoRecursiva::dispatch($requisicao->id, $requisicao->empresa_id);
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar Solicitação:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
+        }
+    }
+
+    /**
+     * Valida valores dos campos custom obrigatórios. Retorna true se ok, ou array de erros.
+     */
+    private function validarCustomValues(int $empresaId, $customValues): bool|array
+    {
+        $campos = RequisicaoVagaCustomCampo::withoutGlobalScopes()
+            ->where('empresa_id', $empresaId)
+            ->where('obrigatorio', true)
+            ->get();
+        $erros = [];
+        $customValues = is_array($customValues) ? $customValues : [];
+        foreach ($campos as $campo) {
+            $valor = $customValues[$campo->id] ?? $customValues[(string) $campo->id] ?? null;
+            if ($valor === null || $valor === '') {
+                $erros['custom_values.' . $campo->id] = ["O campo \"{$campo->label}\" é obrigatório."];
             }
         }
+        return empty($erros) ? true : $erros;
+    }
+
+    /**
+     * Mantém apenas chaves que são ids de campos custom da empresa; valores como string.
+     */
+    private function sanitizarCustomValues(int $empresaId, array $customValues): array
+    {
+        $ids = RequisicaoVagaCustomCampo::withoutGlobalScopes()
+            ->where('empresa_id', $empresaId)
+            ->pluck('id')
+            ->all();
+        $out = [];
+        foreach ($ids as $id) {
+            $key = $id;
+            $keyStr = (string) $id;
+            $v = $customValues[$key] ?? $customValues[$keyStr] ?? null;
+            if ($v !== null && $v !== '') {
+                $out[$keyStr] = is_scalar($v) ? (string) $v : json_encode($v);
+            }
+        }
+        return $out;
     }
 
     /**
@@ -224,6 +282,7 @@ class RequisicaoVagaController extends Controller
             $dadosMerge = array_merge($dados, $dados['outras_informacoes'] ?? []);
             $dadosMerge['salario_valor'] = ($dados['outras_informacoes']['salario'] ?? '') == 'exceção' ? ($dados['outras_informacoes']['salario_valor_format'] ?? null) : null;
             unset($dadosMerge['outras_informacoes']);
+            $dadosMerge['custom_values'] = $this->sanitizarCustomValues($requisicaoVaga->empresa_id, $dados['custom_values'] ?? []);
             $requisicaoVaga->update($dadosMerge);
             DB::commit();
             return response()->json([], 201);
@@ -421,12 +480,12 @@ class RequisicaoVagaController extends Controller
     }
 
     /**
-     * Exportação no padrão CIH: só envia filtros ao job. Toda a query e formatação é feita no backend (job em chunks).
+     * Exportação no mesmo padrão do CIH: enfileira o job e responde na hora.
+     * Query e chunks rodam no worker (JobExportaCihCsvFinal faz o mesmo).
      */
     public function export(Request $request)
     {
         $filtros = $request->all();
-        // Repassar no request se o usuário tem acesso total (evita can() no job falhar e restringir demais)
         $filtros['_full_export_access'] = auth()->user()->can('privilegio_gestao_rh')
             || auth()->user()->can('privilegio_aprovar_por_rh')
             || auth()->user()->can('privilegio_aprovar_rh');

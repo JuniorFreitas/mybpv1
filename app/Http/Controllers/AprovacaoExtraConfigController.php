@@ -185,9 +185,9 @@ class AprovacaoExtraConfigController extends Controller
     }
 
     /**
-     * Ativa ou desativa uma configuração
+     * Ativa ou desativa uma configuração (padrão ativa-desativa do sistema, usado pelo bt-ativo)
      */
-    public function toggleAtivo($id)
+    public function ativaDesativa($id)
     {
         try {
             DB::beginTransaction();
@@ -210,11 +210,7 @@ class AprovacaoExtraConfigController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => $novoStatus ? 'Configuração ativada!' : 'Configuração desativada!',
-                'data' => $config
-            ]);
+            return response()->json(['ativo' => $config->fresh()->ativo]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
