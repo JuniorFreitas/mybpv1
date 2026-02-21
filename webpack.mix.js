@@ -191,6 +191,8 @@ mix.js('resources/js/app.js', 'public/js')
 
     //Planejamento -> Requisição de vagas
     .js('resources/js/g/planejamento/requisicao-vagas/app.js', 'public/js/g/planejamento/requisicao-vagas/')
+    .js('resources/js/g/planejamento/requisicao-vagas/requisicao-vaga-app.js', 'public/js/g/planejamento/requisicao-vagas/')
+    .js('resources/js/g/planejamento/requisicao-vagas/campos-custom-app.js', 'public/js/g/planejamento/requisicao-vagas/')
     //Planejamento -> Movimentação
     .js('resources/js/g/planejamento/movimentacao/app.js', 'public/js/g/planejamento/movimentacao/')
     //Planejamento -> Mobilizcao

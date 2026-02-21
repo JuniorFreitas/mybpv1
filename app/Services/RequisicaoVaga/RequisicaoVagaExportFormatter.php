@@ -2,6 +2,7 @@
 
 namespace App\Services\RequisicaoVaga;
 
+use App\Models\RequisicaoVagaCustomCampo;
 use App\Models\RequisicaoVagaMovimentacao;
 use MasterTag\DataHora;
 
@@ -10,15 +11,25 @@ class RequisicaoVagaExportFormatter
     /** Nome configurado da aprovação extra (ex: "Gerência"). Quando null, usa "Aprovação Extra". */
     private string $nomeAprovacaoExtra;
 
-    public function __construct(?string $nomeAprovacaoExtra = null)
+    /** Campos custom da empresa (para colunas dinâmicas no export). */
+    private $camposCustom = null;
+
+    public function __construct(?string $nomeAprovacaoExtra = null, ?int $empresaId = null)
     {
         $this->nomeAprovacaoExtra = $nomeAprovacaoExtra ?: 'Aprovação Extra';
+        if ($empresaId !== null) {
+            $this->camposCustom = RequisicaoVagaCustomCampo::withoutGlobalScopes()
+                ->where('empresa_id', $empresaId)
+                ->orderBy('ordem')
+                ->orderBy('id')
+                ->get();
+        }
     }
 
     public function getHeaders(): array
     {
         $extra = $this->nomeAprovacaoExtra;
-        return [
+        $headers = [
             'ID',
             'Quem Solicitou',
             'Data da Solicitação',
@@ -56,11 +67,21 @@ class RequisicaoVagaExportFormatter
             'Quem Aprovou RH',
             'Data Aprovação RH',
         ];
+        if ($this->camposCustom && $this->camposCustom->isNotEmpty()) {
+            foreach ($this->camposCustom as $campo) {
+                $headers[] = $this->cleanText($campo->label);
+            }
+        }
+        return $headers;
     }
 
     public function formatRow(RequisicaoVagaMovimentacao $row): array
     {
-        return [
+        $customValues = $row->custom_values ?? [];
+        if (!is_array($customValues)) {
+            $customValues = [];
+        }
+        $rowData = [
             $this->cleanText((string) $row->id),
             $this->cleanText($row->UserCadastrou->nome ?? ''),
             $this->cleanText($row->created_at ? (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5) : ''),
@@ -98,6 +119,13 @@ class RequisicaoVagaExportFormatter
             $this->cleanText($row->AprovacaoRh->nome ?? ''),
             $this->cleanText($row->data_aprovacao_rh ? (new DataHora($row->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_rh))->horaCompleta(), 0, 5) : ''),
         ];
+        if ($this->camposCustom && $this->camposCustom->isNotEmpty()) {
+            foreach ($this->camposCustom as $campo) {
+                $val = $customValues[$campo->id] ?? $customValues[(string) $campo->id] ?? '';
+                $rowData[] = $this->cleanText(is_scalar($val) ? (string) $val : '');
+            }
+        }
+        return $rowData;
     }
 
     private function cleanText(?string $text): string

@@ -35,7 +35,7 @@
     </li>
 @endif--}}
 <div id="system-menu">
-    @if(\App\Models\Sistema::permitirLinks('administracao_clientes','administracao_fornecedores','administracao_atareuniao','administracao_pesquisaclima','administracao_planejamentodiario','administracao_aniversariantes', 'administracao_documentos_legais', 'administracao_aprovacao_extra_config'))
+    @if(\App\Models\Sistema::permitirLinks('administracao_clientes','administracao_fornecedores','administracao_atareuniao','administracao_pesquisaclima','administracao_planejamentodiario','administracao_aniversariantes', 'administracao_documentos_legais'))
         <li id="administracao">
             <a href="javascript://" class="has-arrow waves-effect" parent="administracao">
                 <i class="bx bxs-book-content"></i>
@@ -134,19 +134,11 @@
                         </a>
                     </li>
                 @endcan
-                @can('administracao_aprovacao_extra_config')
-                    <li>
-                        <a href="{{route('g.administracao.aprovacao-extra-config.index')}}"
-                           parent="administracao" key="aprovacao-extra-config">
-                            Aprovações Extras
-                        </a>
-                    </li>
-                @endcan
             </ul>
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','cadastro_vagas','cadastro_vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','cadastro_beneficio','cadastro_areaetiqueta','cadastro_centrocusto','cadastro_empresa_temporaria'))
+    @if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','cadastro_vagas','cadastro_vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','cadastro_beneficio','cadastro_areaetiqueta','cadastro_centrocusto','cadastro_empresa_temporaria', 'administracao_aprovacao_extra_config'))
         <li id="cadastro">
             <a href="javascript://" class="has-arrow waves-effect" parent="cadastro">
                 <i class="bx bx-briefcase-alt-2"></i>
@@ -337,6 +329,31 @@
                         </ul>
                     </li>
                 @endcan
+
+                @if(\App\Models\Sistema::permitirLinks('cadastro_customizacoes_requisicao_vaga','cadastro_customizacoes_aprovacao_extra'))
+                <li id="customizacoes">
+                        <a href="javascript://" class="has-arrow waves-effect" parent="cadastro">
+                            Customizações</a>
+                        <ul aria-expanded="false">
+                            @can('cadastro_customizacoes_requisicao_vaga')
+                            <li>
+                                <a href="{{route('g.requisicao_vagas.configurar-campos')}}" parent="customizacoes"
+                                key="requisicao_vaga_campos">
+                                    Requisição de Vaga
+                                </a>
+                            </li>
+                            @endcan
+                            @can('cadastro_customizacoes_aprovacao_extra')
+                                <li>
+                                    <a href="{{route('g.administracao.aprovacao-extra-config.index')}}"
+                                    parent="customizacoes" key="aprovacao-extra-config">
+                                        Aprovações Extras
+                                    </a>
+                                </li>
+                            @endcan
+                        </ul>
+                </li>
+                @endif
             </ul>
         </li>
     @endif
