@@ -48,6 +48,7 @@ Vue.component("modal", require("./components/Modal").default);
 Vue.component("autocomplete", require("./components/AutoComplete").default);
 Vue.component("bt-ativo", require("./components/AtivoInativo").default);
 Vue.component("barra-top", require("./components/layout/BarraTop").default);
+Vue.component("nps-modal", require("./components/NpsModal").default);
 //
 //
 // //Diretivas globais
