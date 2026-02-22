@@ -7,6 +7,7 @@ use App\Jobs\Movimentacao\MudancaCargo\JobNotificacaoRecursiva;
 use App\Models\Admissao;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
+use App\Models\LogHistorico;
 use App\Models\MudancaCargo;
 use App\Models\PeriodoAquisitivo;
 use App\Models\Sistema;
@@ -46,8 +47,7 @@ class MudancaCargoController extends Controller
     {
         $dados = $request->input();
 
-        $dadosValidados = \Validator::make(
-            $dados,
+        $dadosValidados = \Validator::make($dados,
             [
                 'novo_centro_custo_id' => 'required_if:mantem_centro_custo,false',
                 'novo_centro_custo_filial_id' => 'required_if:novo_filial,true',
@@ -68,8 +68,48 @@ class MudancaCargoController extends Controller
                         }
                     }
                 ],
+                'treinamento_data_inicio' => 'required_if:treinamento_funcao,true',
+                'treinamento_data_fim' => 'required_if:treinamento_funcao,true',
+                'treinamento_termo_ciencia' => [
+                    function ($attribute, $value, $fail) use ($dados) {
+                        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
+                            if (empty($value) || !is_array($value) || count($value) == 0) {
+                                $fail('O Termo de Ciência de Treinamento é obrigatório quando há treinamento na função');
+                            }
+                        }
+                    }
+                ],
+                'treinamento_certificado' => [
+                    function ($attribute, $value, $fail) use ($dados) {
+                        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
+                            if (empty($value) || !is_array($value) || count($value) == 0) {
+                                $fail('O Certificado de Treinamento é obrigatório quando há treinamento na função');
+                            }
+                        }
+                    }
+                ],
             ]
         );
+
+        // Validação de datas de treinamento
+        if (isset($dados['treinamento_funcao']) && $dados['treinamento_funcao'] == true) {
+            if (isset($dados['treinamento_data_inicio']) && isset($dados['treinamento_data_fim']) &&
+                !empty($dados['treinamento_data_inicio']) && !empty($dados['treinamento_data_fim'])) {
+
+                try {
+                    $dataInicio = new DataHora($dados['treinamento_data_inicio']);
+                    $dataFim = new DataHora($dados['treinamento_data_fim']);
+
+                    if ($dataInicio->dataInsert() > $dataFim->dataInsert()) {
+                        $dadosValidados->errors()->add('treinamento_data_inicio', 'A data de início do treinamento não pode ser maior que a data de fim do treinamento');
+                        $dadosValidados->errors()->add('treinamento_data_fim', 'A data de fim do treinamento não pode ser menor que a data de início do treinamento');
+                    }
+                } catch (\Exception $e) {
+                    // Se houver erro na conversão das datas, a validação padrão já vai pegar
+                }
+            }
+        }
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao Solicitar Mudança de Cargo',
@@ -112,16 +152,19 @@ class MudancaCargoController extends Controller
                 'anterior_funcao' => $dados['anterior_funcao'],
                 'nova_funcao' => !$dados['mantem_funcao'] ? $dados['nova_funcao'] : null,
                 'mantem_salario' => $dados['mantem_salario'],
-                'anterior_salario' => $dados['anterior_salario'],
-                'novo_salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : null,
+                'anterior_salario' => $dados['anterior_salario'] ?? '0,00',
+                'novo_salario' => $dados['mantem_salario'] ? '0,00' : ($dados['novo_salario'] ?? '0,00'),
                 'solicitante_id' => $dados['solicitante_id'],
                 'obs_solicitante' => $dados['obs_solicitante'],
                 'data_solicitacao' => $dados['data_solicitacao'],
                 'gestor_id' => $dados['gestor_id'],
+                'treinamento_funcao' => $dados['treinamento_funcao'] ?? false,
+                'treinamento_data_inicio' => isset($dados['treinamento_data_inicio']) && !empty($dados['treinamento_data_inicio']) ? (new DataHora($dados['treinamento_data_inicio']))->dataInsert() : null,
+                'treinamento_data_fim' => isset($dados['treinamento_data_fim']) && !empty($dados['treinamento_data_fim']) ? (new DataHora($dados['treinamento_data_fim']))->dataInsert() : null,
                 'aprovado_via_script' => false,
             ];
 
-            $mudancaCargo = MudancaCargo::create($dados);
+            $mudancaCargo = MudancaCargo::create($dadosMudancaCargo);
 
             if (isset($dados['anexos'])) {
                 foreach ($dados['anexos'] as $index => $anexo) {
@@ -130,7 +173,31 @@ class MudancaCargoController extends Controller
                         $arquivo->temporario = false;
                         $arquivo->chave = '';
                         $arquivo->save();
-                        $mudancaCargo->Anexos()->attach($arquivo->id);
+                        $mudancaCargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'anexo_default']);
+                    }
+                }
+            }
+
+            if (isset($dados['treinamento_termo_ciencia'])) {
+                foreach ($dados['treinamento_termo_ciencia'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $mudancaCargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'termo_ciencia_treinamento']);
+                    }
+                }
+            }
+
+            if (isset($dados['treinamento_certificado'])) {
+                foreach ($dados['treinamento_certificado'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $mudancaCargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'certificado_treinamento']);
                     }
                 }
             }
@@ -194,6 +261,25 @@ class MudancaCargoController extends Controller
         $mudancaCargo->status_aprovacao_extra = $mudancaCargo->status_aprovacao_extra ?: '';
         $mudancaCargo->status_aprovacao_rh = $mudancaCargo->status_aprovacao_rh ?: '';
         $mudancaCargo->anexosDel = [];
+        $mudancaCargo->treinamento_termo_cienciaDel = [];
+        $mudancaCargo->treinamento_certificadoDel = [];
+        $mudancaCargo->load('Anexos');
+
+        // Separa os anexos por tipo
+        $mudancaCargo->treinamento_termo_ciencia = $mudancaCargo->Anexos->filter(function ($anexo) {
+            return ($anexo->pivot->tipo_anexo ?? 'anexo_default') === 'termo_ciencia_treinamento';
+        })->values();
+        $mudancaCargo->treinamento_certificado = $mudancaCargo->Anexos->filter(function ($anexo) {
+            return ($anexo->pivot->tipo_anexo ?? 'anexo_default') === 'certificado_treinamento';
+        })->values();
+        $mudancaCargo->anexos = $mudancaCargo->Anexos->filter(function ($anexo) {
+            $tipo = $anexo->pivot->tipo_anexo ?? null;
+            // Inclui apenas anexos com tipo_anexo = 'anexo_default' ou null (anexos antigos sem tipo)
+            return $tipo === 'anexo_default' || $tipo === null;
+        })->values();
+
+        // Remove o relacionamento Anexos para evitar que todos os anexos sejam serializados
+        $mudancaCargo->unsetRelation('Anexos');
 
         return response()->json($mudancaCargo, 200);
     }
@@ -253,7 +339,59 @@ class MudancaCargoController extends Controller
                         $arquivo->temporario = false;
                         $arquivo->chave = '';
                         $arquivo->save();
-                        $mudanca_cargo->Anexos()->attach($arquivo->id);
+                        $mudanca_cargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'anexo_default']);
+                    }
+                }
+            }
+
+            if (isset($dados['treinamento_termo_cienciaDel'])) {
+                foreach ($dados['treinamento_termo_cienciaDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    if ($arquivo) {
+                        DB::table('mudanca_cargo_anexos')
+                            ->where('mudanca_cargo_id', $mudanca_cargo->id)
+                            ->where('arquivo_id', $id_anexo)
+                            ->where('tipo_anexo', 'termo_ciencia_treinamento')
+                            ->delete();
+                        $arquivo->excluir();
+                    }
+                }
+            }
+
+            if (isset($dados['treinamento_termo_ciencia'])) {
+                foreach ($dados['treinamento_termo_ciencia'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $mudanca_cargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'termo_ciencia_treinamento']);
+                    }
+                }
+            }
+
+            if (isset($dados['treinamento_certificadoDel'])) {
+                foreach ($dados['treinamento_certificadoDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    if ($arquivo) {
+                        DB::table('mudanca_cargo_anexos')
+                            ->where('mudanca_cargo_id', $mudanca_cargo->id)
+                            ->where('arquivo_id', $id_anexo)
+                            ->where('tipo_anexo', 'certificado_treinamento')
+                            ->delete();
+                        $arquivo->excluir();
+                    }
+                }
+            }
+
+            if (isset($dados['treinamento_certificado'])) {
+                foreach ($dados['treinamento_certificado'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $mudanca_cargo->Anexos()->attach($arquivo->id, ['tipo_anexo' => 'certificado_treinamento']);
                     }
                 }
             }
@@ -346,6 +484,40 @@ class MudancaCargoController extends Controller
                     'cargo' => !$dados['mantem_cargo'] ? $mudancaCargo->VagaAbertaNova->Vaga->nome : $admissao->cargo,
                     'salario' => !$dados['mantem_salario'] ? $dados['novo_salario'] : $admissao->salario,
                 ]);
+            }
+
+            // Log de mudança de centro de custo
+            if (!$dados['mantem_centro_custo'] && $mudancaCargo->CentroCustoAnterior && $mudancaCargo->CentroCustoNovo) {
+                LogHistorico::createLog(
+                    $admissao->Feedback->id,
+                    'Solicitação foi ' . $dados['status_aprovacao_rh'] . ' pelo RH na mudança de Centro de Custo de ' . $mudancaCargo->CentroCustoAnterior->label . ' para ' . $mudancaCargo->CentroCustoNovo->label . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
+                );
+            }
+
+            // Log de mudança de cargo
+            if (!$dados['mantem_cargo'] && $mudancaCargo->VagaAbertaAnterior && $mudancaCargo->VagaAbertaNova) {
+                $cargoAnterior = $mudancaCargo->VagaAbertaAnterior->Vaga ? $mudancaCargo->VagaAbertaAnterior->Vaga->nome : ($admissao->cargo ?? 'sem cargo');
+                $cargoNovo = $mudancaCargo->VagaAbertaNova->Vaga ? $mudancaCargo->VagaAbertaNova->Vaga->nome : 'sem cargo';
+                LogHistorico::createLog(
+                    $admissao->Feedback->id,
+                    'Solicitação foi ' . $dados['status_aprovacao_rh'] . ' pelo RH na mudança de Cargo de ' . $cargoAnterior . ' para ' . $cargoNovo . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
+                );
+            }
+
+            // Log de mudança de função
+            if (!$dados['mantem_funcao'] && $mudancaCargo->anterior_funcao && $mudancaCargo->nova_funcao) {
+                LogHistorico::createLog(
+                    $admissao->Feedback->id,
+                    'Solicitação foi ' . $dados['status_aprovacao_rh'] . ' pelo RH na mudança de Função de ' . $mudancaCargo->anterior_funcao . ' para ' . $mudancaCargo->nova_funcao . ' na solicitação de mudança de cargo #' . $mudancaCargo->id
+                );
+            }
+
+            // Log de mudança de salário
+            if (!$dados['mantem_salario'] && isset($mudancaCargo->anterior_salario) && isset($mudancaCargo->novo_salario)) {
+                LogHistorico::createLog(
+                    $admissao->Feedback->id,
+                    'Solicitação foi ' . $dados['status_aprovacao_rh'] . ' pelo RH na mudança de Salário na solicitação de mudança de cargo #' . $mudancaCargo->id
+                );
             }
 
             DB::commit();
