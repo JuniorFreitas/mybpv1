@@ -37,7 +37,7 @@
                             <a class="nav-item nav-link" id="nav-formulario-noventa-tab" data-toggle="tab"
                                @click.prevent="trocaAba('abrirFormularioNoventa')"
                                href="#nav-formulario-noventa"
-                               role="tab" aria-controls="nav-formulario-noventa" aria-selected="false">AVALIAÇÃO 90 DIAS</a>
+                               role="tab" aria-controls="nav-formulario-noventa" aria-selected="false">AVALIAÇÃO DE EXPERIÊNCIA</a>
                         </li>
                         <li class="nav-item" v-if="permissoes.avaliacao_anual">
                             <a class="nav-item nav-link" id="nav-avaliacao-anual-tab" data-toggle="tab"
@@ -103,7 +103,8 @@
                         </div>
                         <div class="tab-pane fade show" id="nav-formulario-noventa" role="tabpanel" aria-labelledby="nav-formulario-noventa-tab">
                             <formulario-noventa-dias v-if="abas.abrirFormularioNoventa && permissoes.avaliacao_noventa_dias"
-                                                     :feedback_id="form.feedback_id"></formulario-noventa-dias>
+                                                     :feedback_id="form.feedback_id"
+                                                     :url-base-gerar-link="urlGerarLinkAvaliacaoExperiencia"></formulario-noventa-dias>
                         </div>
                         <div class="tab-pane fade show" id="nav-avaliacao-anual" role="tabpanel" aria-labelledby="nav-avaliacao-anual-tab">
                             <avaliacao-anual v-if="abas.abrirAvaliacaoAnual && permissoes.avaliacao_anual"
@@ -479,6 +480,10 @@ export default {
         urlAtualizar: {
             type: String,
             required: true
+        },
+        urlGerarLinkAvaliacaoExperiencia: {
+            type: String,
+            default: ''
         }
     },
 

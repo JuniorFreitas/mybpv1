@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Mail\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoMail;
 use App\Models\Admissao;
 use App\Models\AvaliacaoNoventaVencimento;
+use App\Models\FeedbackCurriculo;
 use App\Models\TipoRecebeEmail;
 use App\Models\User;
 use Carbon\Carbon;
@@ -221,6 +222,149 @@ class AvaliacaoNoventaService
             })
             ->filter()
             ->values();
+    }
+
+    /**
+     * Retorna um único item no mesmo formato do relatório, para exibição individual (Histórico / Avaliação de Experiência).
+     * Mesma regra do relatório: status, prazos, link (apenas reutiliza token existente, não gera novo).
+     */
+    public function getItemIndividualParaHistorico(int $feedbackId, int $empresaId): ?array
+    {
+        $avaliacao = AvaliacaoNoventaVencimento::query()
+            ->where('feedback_id', $feedbackId)
+            ->with([
+                'FeedbackCurriculo:id,curriculo_id,empresa_id',
+                'FeedbackCurriculo.Curriculo:id,nome',
+                'FeedbackCurriculo.Admissao:id,feedback_id,status,centro_custo_id,cargo,funcao,data_admissao',
+                'FeedbackCurriculo.Admissao.CentroCusto:id,gestor_id,label',
+                'FeedbackCurriculo.Admissao.CentroCusto.Gestor:id,nome,login',
+                'qntFeedback',
+            ])
+            ->whereHas('FeedbackCurriculo', function ($q) use ($empresaId) {
+                $q->where('empresa_id', $empresaId);
+            })
+            ->withCount('qntFeedback')
+            ->first();
+
+        if (!$avaliacao) {
+            // Sem registro de vencimento (ex.: ainda não criado, tipo de contrato sem prazo) — monta item "Fora do prazo" para o card aparecer
+            return $this->montarItemForaDoPrazo($feedbackId, $empresaId);
+        }
+
+        $dataAtual = (new \MasterTag\DataHora())->dataCompleta();
+        $resultado = $this->verificarVencimento($avaliacao, $dataAtual);
+
+        $qntAvaliacoes = (int) ($avaliacao->qnt_feedback_count ?? 0);
+        $avaliacaoStatusLabel = $qntAvaliacoes === 0
+            ? 'Nenhuma avaliação realizada'
+            : ($qntAvaliacoes === 1 ? '1ª avaliação realizada' : '2ª avaliação realizada');
+
+        $centro = $avaliacao->FeedbackCurriculo->Admissao->CentroCusto ?? null;
+        $gestor = $centro ? $centro->Gestor : null;
+
+        $tokenData = [];
+        if ($qntAvaliacoes < self::MAX_AVALIACOES_PERMITIDAS &&
+            $avaliacao->token_avaliacao &&
+            $avaliacao->token_expiracao &&
+            Carbon::parse($avaliacao->token_expiracao)->isFuture() &&
+            !$avaliacao->avaliacao_realizada
+        ) {
+            $tokenData = [
+                'token' => $avaliacao->token_avaliacao,
+                'url' => url("/avaliacao-de-experiencia/{$avaliacao->token_avaliacao}"),
+            ];
+        }
+
+        if (!$resultado) {
+            // Prazo não vigente: não entrou na janela de 30 dias, já passou, ou fora dos 180 dias — exibir card com "Fora do prazo"
+            $prazo = $avaliacao->prazo_dia_inicial ?: $avaliacao->prazo_dia_final ?: '—';
+            $status = $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS ? 'COMPLETA' : 'FORA DO PRAZO';
+            $resultado = [
+                'prazo' => $prazo,
+                'status' => $status,
+                'dias_atraso' => 0,
+                'dias_para_vencer' => 0,
+                'observacao' => $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS ? 'Avaliação completa' : 'Fora do período de acompanhamento (prazo não vigente)',
+            ];
+        }
+
+        $status = $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS
+            ? 'COMPLETA'
+            : $resultado['status'];
+        $diasAtraso = $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS ? 0 : $resultado['dias_atraso'];
+        $diasParaVencer = $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS ? 0 : $resultado['dias_para_vencer'];
+
+        $ultimaQuantidade = $avaliacao->qntFeedback->sortByDesc('quantidade_avaliacao')->first();
+        $definicaoContrato = $ultimaQuantidade && !empty($ultimaQuantidade->definicao_contrato)
+            ? $ultimaQuantidade->definicao_contrato
+            : null;
+
+        return [
+            'feedback_id' => $avaliacao->feedback_id,
+            'colaborador' => $avaliacao->FeedbackCurriculo->Curriculo->nome ?? 'Nome não disponível',
+            'cargo' => $avaliacao->FeedbackCurriculo->Admissao->cargo ?? null,
+            'funcao' => $avaliacao->FeedbackCurriculo->Admissao->funcao ?? null,
+            'centro_custo' => $centro ? $centro->label : null,
+            'gestor_id' => $gestor ? $gestor->id : null,
+            'gestor_nome' => $gestor ? $gestor->nome : null,
+            'gestor_login' => $gestor ? $gestor->login : null,
+            'prazo_vencido' => $resultado['prazo'],
+            'status' => $status,
+            'dias_atraso' => $diasAtraso,
+            'dias_para_vencer' => $diasParaVencer,
+            'observacao' => $resultado['observacao'],
+            'qnt_avaliacoes' => $qntAvaliacoes,
+            'avaliacao_status' => $avaliacaoStatusLabel,
+            'definicao_contrato' => $definicaoContrato,
+            'token' => $tokenData['token'] ?? null,
+            'link_avaliacao' => $tokenData['url'] ?? null,
+        ];
+    }
+
+    /**
+     * Monta item "Fora do prazo" quando não existe vencimento ou para exibir o card no histórico.
+     */
+    private function montarItemForaDoPrazo(int $feedbackId, int $empresaId): ?array
+    {
+        $feedback = FeedbackCurriculo::query()
+            ->where('id', $feedbackId)
+            ->where('empresa_id', $empresaId)
+            ->with([
+                'Curriculo:id,nome',
+                'Admissao:id,feedback_id,cargo,funcao,centro_custo_id',
+                'Admissao.CentroCusto:id,gestor_id,label',
+                'Admissao.CentroCusto.Gestor:id,nome,login',
+            ])
+            ->first();
+
+        if (!$feedback || !$feedback->Admissao) {
+            return null;
+        }
+
+        $admissao = $feedback->Admissao;
+        $centro = $admissao->CentroCusto ?? null;
+        $gestor = $centro ? $centro->Gestor : null;
+
+        return [
+            'feedback_id' => $feedbackId,
+            'colaborador' => $feedback->Curriculo->nome ?? 'Nome não disponível',
+            'cargo' => $admissao->cargo ?? null,
+            'funcao' => $admissao->funcao ?? null,
+            'centro_custo' => $centro ? $centro->label : null,
+            'gestor_id' => $gestor ? $gestor->id : null,
+            'gestor_nome' => $gestor ? $gestor->nome : null,
+            'gestor_login' => $gestor ? $gestor->login : null,
+            'prazo_vencido' => '—',
+            'status' => 'FORA DO PRAZO',
+            'dias_atraso' => 0,
+            'dias_para_vencer' => 0,
+            'observacao' => 'Fora do período de acompanhamento (prazo não vigente)',
+            'qnt_avaliacoes' => 0,
+            'avaliacao_status' => 'Nenhuma avaliação realizada',
+            'definicao_contrato' => null,
+            'token' => null,
+            'link_avaliacao' => null,
+        ];
     }
 
     /**

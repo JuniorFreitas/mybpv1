@@ -1,5 +1,5 @@
 /**
- * Mixin para lógica compartilhada de Avaliação 90 Dias
+ * Mixin para lógica compartilhada de Avaliação de Experiência
  * Reutilizável em qualquer parte do sistema
  */
 export default {
@@ -10,6 +10,7 @@ export default {
             perguntasAvaliacao: [],
             tabelaNoventaAvaliacao: [],
             avNoventaVencimentoData: null,
+            itemAvaliacaoExperiencia: null,
             formAvaliacao: {
                 gestor_imediato: '',
                 feedback_id: '',
@@ -30,7 +31,7 @@ export default {
         },
 
         /**
-         * Carrega dados da avaliação de 90 dias
+         * Carrega dados da avaliação de experiência
          * @param {Number} feedbackId - ID do feedback/admissão
          * @returns {Promise}
          */
@@ -45,6 +46,7 @@ export default {
                     this.perguntasAvaliacao = data.perguntas || []
                     this.tabelaNoventaAvaliacao = data.tabelaNoventa || []
                     this.avNoventaVencimentoData = data.avNoventaVencimento || null
+                    this.itemAvaliacaoExperiencia = data.item_avaliacao_experiencia || null
 
                     this.formAvaliacao.perguntas = _.cloneDeep(this.perguntasAvaliacao)
                     this.formAvaliacao.gestor_imediato = ''
@@ -85,7 +87,7 @@ export default {
         },
 
         /**
-         * Salva nova avaliação de 90 dias
+         * Salva nova avaliação de experiência
          * @param {String} modalId - ID do modal para fechar após salvar
          * @returns {Promise}
          */
@@ -109,7 +111,7 @@ export default {
                 .then((response) => {
                     if (response.status === 201) {
                         if (typeof mostraSucesso === 'function') {
-                            mostraSucesso('Avaliação de 90 dias criada com sucesso.')
+                            mostraSucesso('Avaliação de Experiência criada com sucesso.')
                         }
                         $(`#${modalId}`).modal('hide')
                         return this.carregarDadosAvaliacao(this.formAvaliacao.feedback_id)
