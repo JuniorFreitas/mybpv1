@@ -25,10 +25,10 @@ class AvaliacaoNoventaDiasController extends Controller
     public function index(Request $request)
     {
         $empresaId = auth()->user()->empresa_id;
-        
+
         // Busca avaliações vencidas ou vencendo (mesma lógica do comando)
         $avaliacoes = $this->avaliacaoService->buscarAvaliacoesVencendoOuVencidas(
-            $empresaId, 
+            $empresaId,
             AvaliacaoNoventaService::DIAS_ANTECEDENCIA,
             true // incluir completas (2 avaliações) no relatório manual
         );
@@ -48,7 +48,7 @@ class AvaliacaoNoventaDiasController extends Controller
         $vencimentos = $vencimentos->sortBy(function ($vencimento) use ($ordemStatus) {
             $status = $vencimento['status'] ?? 'COMPLETA';
             $prioridade = $ordemStatus[$status] ?? 999;
-            
+
             // Dentro de cada status, ordena por dias (mais atrasado/próximo primeiro)
             $dias = 0;
             if ($status === 'VENCIDO') {
@@ -56,7 +56,7 @@ class AvaliacaoNoventaDiasController extends Controller
             } elseif ($status === 'A VENCER') {
                 $dias = -($vencimento['dias_para_vencer'] ?? 0); // Menor dias para vencer primeiro (inverte sinal)
             }
-            
+
             return [$prioridade, -$dias]; // Negativo para ordem decrescente de dias
         })->values();
 
@@ -193,7 +193,7 @@ class AvaliacaoNoventaDiasController extends Controller
                     'error' => $releaseException->getMessage()
                 ]);
             }
-            
+
             \Cache::forget("avaliacao90dias_meta_" . auth()->id());
 
             Log::error('Erro ao exportar avaliação 90 dias', [
@@ -220,7 +220,7 @@ class AvaliacaoNoventaDiasController extends Controller
         // Verifica se o lock está ativo
         $lock = \Cache::lock($lockKey, 0);
         $emProcessamento = !$lock->get();
-        
+
         if ($emProcessamento) {
             // Lock ativo, busca metadata
             $data = \Cache::get("avaliacao90dias_meta_{$usuario->id}", []);

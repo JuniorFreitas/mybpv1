@@ -13,7 +13,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="py-3" id="mainContent" style="display: none;">
         @php($temPermissaoGestaoRh = in_array('privilegio_gestao_rh', auth()->user()->listaDeHabilidades()))
         @php($ehGestorGlobal = false)
@@ -24,7 +24,6 @@
         <input type="hidden" id="userCanGestaoRh" value="{{ $temPermissaoGestaoRh ? 1 : 0 }}">
         <input type="hidden" id="isGestorGlobal" value="{{ $ehGestorGlobal ? 1 : 0 }}">
     <input type="hidden" id="avaliacao90BaseUrl" value="{{ url('g/relatorios/avaliacao-90-dias') }}">
-        
         <!-- Toggle Cards de Resumo -->
         <div class="mb-3">
             <button class="btn btn-sm btn-outline-secondary" id="toggleResumo" onclick="toggleCardsResumo()">
@@ -32,7 +31,7 @@
                 <span id="textToggleResumo">Ocultar Resumo</span>
             </button>
         </div>
-        
+
         <!-- Cards de Resumo -->
         <div id="cardsResumo">
         <div class="row mb-4">
@@ -379,7 +378,7 @@
                         </li>
                     </ul>
                 </div>
-                
+
                 <div class="mb-3 d-flex justify-content-between align-items-center">
                     <div>
                         <span class="text-muted">Exibindo <span id="infoExibindo">0</span> de <span id="infoTotal">0</span> registros</span>
@@ -400,7 +399,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <!-- Loader da tabela -->
                 <div id="tabelaLoader" style="display: none; position: relative; min-height: 200px;">
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
@@ -410,7 +409,7 @@
                         <div class="mt-2 text-muted">Processando filtros...</div>
                     </div>
                 </div>
-                
+
                 <div class="table-responsive" id="tabelaContainer">
                     <table class="table table-bordered table-hover" id="tabelaAvaliacoes" style="width: 100%;">
                         <thead style="background-color: #003755; color: white;">
@@ -528,7 +527,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Paginação -->
                 <div id="paginacaoContainer" class="d-flex justify-content-center mt-3">
                     <nav>
@@ -538,7 +537,7 @@
             </div>
         </div>
 
-        
+
     </div><!-- Fim #mainContent -->
 
 @stop
@@ -579,7 +578,7 @@
     <script>
         // Mostra loader ao iniciar
         document.getElementById('pageLoader').style.display = 'flex';
-        
+
         const app = new Vue({
             el: "#app",
             data: {
@@ -589,7 +588,7 @@
         // Variáveis de paginação
         let paginaAtual = 1;
         let itensPorPagina = 40;
-        
+
         $(document).ready(function() {
             const uidEl = document.getElementById("currentUserId");
             window.currentUserId = uidEl ? parseInt(uidEl.value) : null;
@@ -597,23 +596,23 @@
             window.userCanGestaoRh = canEl ? parseInt(canEl.value) === 1 : false;
             const gestEl = document.getElementById("isGestorGlobal");
             window.isGestorGlobal = gestEl ? parseInt(gestEl.value) === 1 : false;
-            
+
             // Filtros
             $("#filtroStatus, #filtroNome, #filtroAvaliacoes, #filtroCentroCusto, #filtroGestor, #filtroCargo, #filtroFuncao").on("change keyup", function() {
                 paginaAtual = 1; // Reset para primeira página ao filtrar
                 filtrarTabela();
             });
-            
+
             // Mudança de itens por página
             $("#itensPorPagina").on("change", function() {
                 itensPorPagina = parseInt($(this).val());
                 paginaAtual = 1;
                 filtrarTabela();
             });
-            
+
             // Inicializa a tabela
             filtrarTabela();
-            
+
             // Oculta loader e mostra conteúdo após tudo carregar
             setTimeout(function() {
                 $('#pageLoader').fadeOut(300, function() {
@@ -626,7 +625,7 @@
             // Mostra loader e oculta tabela
             $("#tabelaLoader").show();
             $("#tabelaContainer").css('opacity', '0.3');
-            
+
             // Aguarda um momento para o loader aparecer
             setTimeout(function() {
                 const status = $("#filtroStatus").val().toUpperCase();
@@ -639,7 +638,7 @@
 
                 // Primeiro, filtra os registros
                 const linhasFiltradas = [];
-            
+
             $("#tabelaAvaliacoes tbody tr").each(function() {
                 const row = $(this);
                 const rowStatus = row.data("status");
@@ -698,11 +697,11 @@
                     linhasFiltradas.push(row);
                 }
             });
-            
+
             // Calcula paginação
             const totalRegistros = linhasFiltradas.length;
             const totalPaginas = Math.ceil(totalRegistros / itensPorPagina);
-            
+
             // Ajusta página atual se necessário
             if (paginaAtual > totalPaginas && totalPaginas > 0) {
                 paginaAtual = totalPaginas;
@@ -710,45 +709,45 @@
             if (paginaAtual < 1) {
                 paginaAtual = 1;
             }
-            
+
             const inicio = (paginaAtual - 1) * itensPorPagina;
             const fim = inicio + itensPorPagina;
-            
+
             // Esconde todas as linhas
             $("#tabelaAvaliacoes tbody tr").hide();
-            
+
             // Mostra apenas as linhas da página atual
             linhasFiltradas.forEach(function(row, index) {
                 if (index >= inicio && index < fim) {
                     row.show();
                 }
             });
-            
+
             // Atualiza info de registros
             const exibindo = Math.min(totalRegistros, fim) - inicio;
             $("#infoExibindo").text(exibindo);
             $("#infoTotal").text(totalRegistros);
-            
+
             // Renderiza paginação
             renderizarPaginacao(totalPaginas);
-            
+
             // Oculta loader e mostra tabela
             $("#tabelaLoader").hide();
             $("#tabelaContainer").css('opacity', '1');
             }, 50); // Fecha setTimeout
         }
-        
+
         function renderizarPaginacao(totalPaginas) {
             const paginacaoHtml = [];
-            
+
             if (totalPaginas <= 1) {
                 $("#paginacao").html('');
                 $("#paginacaoContainer").hide();
                 return;
             }
-            
+
             $("#paginacaoContainer").show();
-            
+
             // Botão Anterior
             paginacaoHtml.push(`
                 <li class="page-item ${paginaAtual === 1 ? 'disabled' : ''}">
@@ -757,16 +756,16 @@
                     </a>
                 </li>
             `);
-            
+
             // Páginas
             const maxBotoes = 5;
             let inicioPaginas = Math.max(1, paginaAtual - Math.floor(maxBotoes / 2));
             let fimPaginas = Math.min(totalPaginas, inicioPaginas + maxBotoes - 1);
-            
+
             if (fimPaginas - inicioPaginas < maxBotoes - 1) {
                 inicioPaginas = Math.max(1, fimPaginas - maxBotoes + 1);
             }
-            
+
             if (inicioPaginas > 1) {
                 paginacaoHtml.push(`
                     <li class="page-item">
@@ -777,7 +776,7 @@
                     paginacaoHtml.push(`<li class="page-item disabled"><span class="page-link">...</span></li>`);
                 }
             }
-            
+
             for (let i = inicioPaginas; i <= fimPaginas; i++) {
                 paginacaoHtml.push(`
                     <li class="page-item ${i === paginaAtual ? 'active' : ''}">
@@ -785,7 +784,7 @@
                     </li>
                 `);
             }
-            
+
             if (fimPaginas < totalPaginas) {
                 if (fimPaginas < totalPaginas - 1) {
                     paginacaoHtml.push(`<li class="page-item disabled"><span class="page-link">...</span></li>`);
@@ -796,7 +795,7 @@
                     </li>
                 `);
             }
-            
+
             // Botão Próximo
             paginacaoHtml.push(`
                 <li class="page-item ${paginaAtual === totalPaginas ? 'disabled' : ''}">
@@ -805,14 +804,14 @@
                     </a>
                 </li>
             `);
-            
+
             $("#paginacao").html(paginacaoHtml.join(''));
         }
-        
+
         function mudarPagina(novaPagina) {
             paginaAtual = novaPagina;
             filtrarTabela();
-            
+
             // Scroll suave para o topo da tabela
             $('html, body').animate({
                 scrollTop: $("#tabelaAvaliacoes").offset().top - 100
@@ -883,7 +882,7 @@
                         toastr.info(
                             total + ' link(s) enfileirado(s) para geração em segundo plano.<br><strong>Atualize a página em alguns minutos para ver os links.</strong>',
                             'Processando em background',
-                            { 
+                            {
                                 timeOut: 8000,
                                 extendedTimeOut: 3000,
                                 closeButton: true,
@@ -1000,13 +999,13 @@
             // Implementar exportação Excel se necessário
             toastr.info("Funcionalidade de exportação em desenvolvimento...");
         }
-        
+
         function toggleCardsResumo() {
             const cardsResumo = $("#cardsResumo");
             const icon = $("#iconToggleResumo");
             const text = $("#textToggleResumo");
             const btn = $("#toggleResumo");
-            
+
             if (cardsResumo.is(":visible")) {
                 // Ocultar
                 cardsResumo.slideUp(300);
@@ -1023,7 +1022,7 @@
                 localStorage.setItem('avaliacao90dias_resumo_oculto', 'false');
             }
         }
-        
+
         // Restaura estado ao carregar (executa antes de mostrar conteúdo)
         $(document).ready(function() {
             const resumoOculto = localStorage.getItem('avaliacao90dias_resumo_oculto') === 'true';
@@ -1034,7 +1033,7 @@
                 $("#toggleResumo").removeClass("btn-outline-secondary").addClass("btn-outline-primary");
             }
         });
-        
+
         // Fallback: garante que conteúdo seja exibido mesmo se houver erro
         window.addEventListener('load', function() {
             setTimeout(function() {
