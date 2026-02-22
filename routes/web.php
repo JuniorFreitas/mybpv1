@@ -928,6 +928,9 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::put('/{feedback}', [\App\Http\Controllers\AfastamentoController::class, 'update'])->name('update-afastamento')->middleware('can:admissao_historico_aba_afastamento');
         });
 
+        // Avaliação de Experiência: gerar link (individual, mesma regra do relatório)
+        Route::post('avaliacao-experiencia/{feedbackId}/gerar-link', [\App\Http\Controllers\HistoricoController::class, 'gerarLinkAvaliacaoExperiencia'])->name('avaliacao-experiencia.gerar-link')->middleware('can:admissao_historico_aba_avaliacao_noventa_dias')->whereNumber('feedbackId');
+
         //Rotas Formulario Noventa Dias
         Route::group(['as' => 'formulario-noventa-dias.', 'prefix' => 'formulario-noventa-dias'], function () {
             Route::post('/{feedback}', [\App\Http\Controllers\HistoricoController::class, 'storeFormularioNoventaDias'])->name('storeNoventaDias');

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GerarTokenAvaliacaoNoventaDiasJob;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaDias;
 use App\Models\AvaliacaoNoventaFeedback;
 use App\Models\AvaliacaoNoventaFeedbackQuantidade;
+use App\Models\AvaliacaoNoventaVencimento;
 use App\Models\CentroCusto;
+use App\Services\AvaliacaoNoventaService;
 use App\Models\Cliente;
 use App\Models\FeedbackCurriculo;
 use App\Models\LogHistorico;
@@ -23,6 +26,13 @@ use PDF;
 
 class HistoricoController extends Controller
 {
+    protected $avaliacaoNoventaService;
+
+    public function __construct(AvaliacaoNoventaService $avaliacaoNoventaService)
+    {
+        $this->avaliacaoNoventaService = $avaliacaoNoventaService;
+    }
+
     public function index()
     {
         return view('g.admissao.historico.index');
@@ -50,6 +60,11 @@ class HistoricoController extends Controller
         $restricao = new DataHora();
         $restricao->addDia(2);
 
+        $itemAvaliacaoExperiencia = $this->avaliacaoNoventaService->getItemIndividualParaHistorico(
+            (int) $feedback_id,
+            (int) auth()->user()->empresa_id
+        );
+
         return response()->json([
             'feedback' => $feedback,
             'causas' => MedidaAdministrativa::CAUSAS,
@@ -58,10 +73,50 @@ class HistoricoController extends Controller
             'perguntas' => $perguntas,
             'tabelaNoventa' => $tabelaNoventa,
             'avNoventaVencimento' => $avNoventaVencimento,
+            'item_avaliacao_experiencia' => $itemAvaliacaoExperiencia,
             'hoje' => (new DataHora())->dataCompleta(),
             'restricao' => $restricao->dataCompleta(),
             'privilegio_gestao_rh' => auth()->user()->can('privilegio_gestao_rh')
         ], 200);
+    }
+
+    /**
+     * Gera link de Avaliação de Experiência para um feedback (individual).
+     * Mesma regra do relatório: empresa, máximo 2 avaliações, enfileira job.
+     */
+    public function gerarLinkAvaliacaoExperiencia(Request $request, int $feedbackId)
+    {
+        $usuario = auth()->user();
+        $empresaId = $usuario->empresa_id;
+
+        $vencimento = AvaliacaoNoventaVencimento::query()
+            ->where('feedback_id', $feedbackId)
+            ->whereHas('FeedbackCurriculo', function ($q) use ($empresaId) {
+                $q->where('empresa_id', $empresaId);
+            })
+            ->withCount('qntFeedback')
+            ->first();
+
+        if (!$vencimento) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Registro não encontrado'
+            ], 404);
+        }
+
+        if (($vencimento->qnt_feedback_count ?? 0) >= AvaliacaoNoventaService::MAX_AVALIACOES_PERMITIDAS) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Avaliação já completa. Não é possível gerar novo link.'
+            ], 422);
+        }
+
+        GerarTokenAvaliacaoNoventaDiasJob::dispatch($feedbackId, $empresaId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Geração de link enfileirada'
+        ], 202);
     }
 
     public function atualizar(Request $request)
