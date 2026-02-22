@@ -183,6 +183,7 @@ mix.js('resources/js/app.js', 'public/js')
     .js('resources/js/g/relatorios/efetivo/app.js', 'public/js/g/relatorios/efetivo/')
     .js('resources/js/g/relatorios/aniversariantes/app.js', 'public/js/g/relatorios/aniversariantes/')
     .js('resources/js/g/relatorios/nps/app.js', 'public/js/g/relatorios/nps/')
+    .js('resources/js/g/relatorios/avaliacao-experiencia/app.js', 'public/js/g/relatorios/avaliacao-experiencia/')
 
     //Site G/
     .js('resources/js/g/site/galeria/app.js', 'public/js/g/site/galeria')

@@ -57,7 +57,7 @@ class Aval90dias extends Command
 
             $service = new AvaliacaoNoventaService();
 
-            // Buscar avaliações vencidas ou próximas do vencimento
+            // Buscar avaliações vencidas ou próximas do vencimento (mesma regra do relatório: somente < 180 dias de admissão)
             $avaliacoes = $service->buscarAvaliacoesVencendoOuVencidas($empresaId, AvaliacaoNoventaService::DIAS_ANTECEDENCIA);
             
             if ($avaliacoes->isEmpty()) {
@@ -250,7 +250,7 @@ class Aval90dias extends Command
             return Command::FAILURE;
         }
 
-        // Buscar avaliações vencidas ou próximas do vencimento
+        // Buscar avaliações vencidas ou próximas do vencimento (mesma regra: somente < 180 dias de admissão)
         $avaliacoes = $service->buscarAvaliacoesVencendoOuVencidas($empresaId, AvaliacaoNoventaService::DIAS_ANTECEDENCIA);
         
         if ($avaliacoes->isEmpty()) {
@@ -278,7 +278,7 @@ class Aval90dias extends Command
                 throw new \Exception("Falha ao gerar arquivo Excel no S3");
             }
             
-            // Despacha o job para a fila
+            // Despacha o job para a fila (e-mail com anexo)
             EnviarEmailAvaliacaoNoventaDiasJob::dispatch($usuario, $vencimentos->toArray(), $empresaId, $arquivoS3);
 
             $this->info("✅ Job enfileirado com sucesso para {$usuario->nome}");
