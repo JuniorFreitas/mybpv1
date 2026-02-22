@@ -7,6 +7,8 @@ use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaDias;
 use App\Models\AvaliacaoNoventaFeedback;
 use App\Models\AvaliacaoNoventaFeedbackQuantidade;
+use App\Models\CentroCusto;
+use App\Models\Cliente;
 use App\Models\FeedbackCurriculo;
 use App\Models\LogHistorico;
 use App\Models\MedidaAdministrativa;
@@ -72,6 +74,16 @@ class HistoricoController extends Controller
             $q->whereIn('status', [Admissao::STATUS_ADMISSAO_ADMITIDO, Admissao::STATUS_DEMITIDO]);
         })->with('Admissao', 'Curriculo', 'Cliente:id,nome,razao_social,cpf,cnpj,nome_fantasia', 'VagaSelecionada:id,nome');
 
+        $cliente = new Cliente();
+        $filialOuMatriz = $cliente->findFiliarOuMatriz(auth()->user()->empresa_id);
+        $temFilial = !isset($filialOuMatriz['matriz']);
+        if (!$temFilial && isset($filialOuMatriz['cnpjkey'])) {
+            $request->merge(['campoCnpj' => $filialOuMatriz['cnpjkey']]);
+        }
+        if ($request->filled('campoCnpj')) {
+            $resultado->filtrarPorCnpjECentroCusto($request);
+        }
+
         if ($request->campoDemitido) {
             $resultado->Demitidos();
         } else {
@@ -83,14 +95,35 @@ class HistoricoController extends Controller
                     $q->where('nome', 'like', '%' . $request->campoBusca . '%');
                 })->orWhere('id', $request->campoBusca);
             });
-           
         }
         if ($request->filled('campoCargo')) {
             $resultado->whereHas('Admissao', function ($q) use ($request) {
                 $q->where('cargo', 'like', '%' . $request->campoCargo . '%');
             });
         }
+        if ($request->filled('campoCPF')) {
+            $cpf = preg_replace('/[^0-9]/', '', $request->campoCPF);
+            $resultado->whereHas('Curriculo', function ($q) use ($cpf) {
+                $q->whereRaw('REPLACE(REPLACE(REPLACE(cpf, ".", ""), "-", ""), "/", "") like ?', ['%' . $cpf . '%']);
+            });
+        }
+        if ($request->filled('campoMatricula')) {
+            $resultado->whereHas('Admissao', function ($q) use ($request) {
+                $q->where('matricula', 'like', '%' . $request->campoMatricula . '%');
+            });
+        }
+        if ($request->filled('campoTipoAdmissao')) {
+            $resultado->whereHas('Admissao', function ($q) use ($request) {
+                $q->where('tipo_admissao', $request->campoTipoAdmissao);
+            });
+        }
+        if ($request->filled('campoFuncao')) {
+            $resultado->whereHas('Admissao', function ($q) use ($request) {
+                $q->where('funcao', 'like', '%' . $request->campoFuncao . '%');
+            });
+        }
         $cargos = Vaga::whereAtivo(true)->orderBy('nome')->get(['id', 'nome']);
+        $tiposAdmissao = Admissao::TODOS_TIPOS_ADMISSAO;
 
         /*   $idsCargos = DB::table('feedback_curriculos')->distinct('vaga_id')->pluck('vaga_id');
 
@@ -102,7 +135,63 @@ class HistoricoController extends Controller
                    ];
            }*/
 
-        $resultado = $resultado->orderByDesc('created_at')->paginate($request->pages);
+        $ordenacao = $request->filled('ordenacao') ? $request->ordenacao : 'created_at_desc';
+        $campo = 'feedback_curriculos.created_at';
+        $direcao = 'desc';
+        switch ($ordenacao) {
+            case 'created_at_asc':
+                $campo = 'feedback_curriculos.created_at';
+                $direcao = 'asc';
+                break;
+            case 'updated_at_desc':
+                $ultimoLogSub = LogHistorico::selectRaw('feedback_id, MAX(id) as ultimo_log_id')->groupBy('feedback_id');
+                $resultado = $resultado->leftJoinSub($ultimoLogSub, 'ultimo_log', 'feedback_curriculos.id', '=', 'ultimo_log.feedback_id')
+                    ->orderByRaw('COALESCE(ultimo_log.ultimo_log_id, 0) DESC')
+                    ->select('feedback_curriculos.*');
+                break;
+            case 'updated_at_asc':
+                $ultimoLogSub = LogHistorico::selectRaw('feedback_id, MAX(id) as ultimo_log_id')->groupBy('feedback_id');
+                $resultado = $resultado->leftJoinSub($ultimoLogSub, 'ultimo_log', 'feedback_curriculos.id', '=', 'ultimo_log.feedback_id')
+                    ->orderByRaw('COALESCE(ultimo_log.ultimo_log_id, 0) ASC')
+                    ->select('feedback_curriculos.*');
+                break;
+            case 'nome_asc':
+                $resultado = $resultado->join('curriculos', 'feedback_curriculos.curriculo_id', '=', 'curriculos.id')
+                    ->orderBy('curriculos.nome', 'asc')
+                    ->select('feedback_curriculos.*');
+                break;
+            case 'nome_desc':
+                $resultado = $resultado->join('curriculos', 'feedback_curriculos.curriculo_id', '=', 'curriculos.id')
+                    ->orderBy('curriculos.nome', 'desc')
+                    ->select('feedback_curriculos.*');
+                break;
+            case 'data_admissao_desc':
+                $resultado = $resultado->join('admissoes', 'feedback_curriculos.id', '=', 'admissoes.feedback_id')
+                    ->orderBy('admissoes.data_admissao', 'desc')
+                    ->select('feedback_curriculos.*');
+                break;
+            case 'data_admissao_asc':
+                $resultado = $resultado->join('admissoes', 'feedback_curriculos.id', '=', 'admissoes.feedback_id')
+                    ->orderBy('admissoes.data_admissao', 'asc')
+                    ->select('feedback_curriculos.*');
+                break;
+            case 'cargo_asc':
+                $resultado = $resultado->join('admissoes', 'feedback_curriculos.id', '=', 'admissoes.feedback_id')
+                    ->orderBy('admissoes.cargo', 'asc')
+                    ->select('feedback_curriculos.*');
+                break;
+            case 'cargo_desc':
+                $resultado = $resultado->join('admissoes', 'feedback_curriculos.id', '=', 'admissoes.feedback_id')
+                    ->orderBy('admissoes.cargo', 'desc')
+                    ->select('feedback_curriculos.*');
+                break;
+            default:
+                break;
+        }
+        if (! in_array($ordenacao, ['nome_asc', 'nome_desc', 'data_admissao_desc', 'data_admissao_asc', 'cargo_asc', 'cargo_desc', 'updated_at_desc', 'updated_at_asc'], true)) {
+            $resultado = $resultado->orderBy($campo, $direcao);
+        }
+        $resultado = $resultado->paginate($request->pages);
         $permissoes = [
             'dossie' => auth()->user()->can('admissao_historico_aba_dossie'),
             'medida_administrativa' => auth()->user()->can('admissao_historico_aba_medidas_administrativas'),
@@ -120,11 +209,44 @@ class HistoricoController extends Controller
             'privilegio_gestao_rh' => auth()->user()->can('privilegio_gestao_rh'),
         ];
 
-        $itens = collect($resultado->items())->transform(function ($item) {
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $itens = collect($resultado->items())->transform(function ($item) use ($cc) {
             $ultima_atualizacao = LogHistorico::whereFeedbackId($item->id)->orderByDesc('id')->first();
             $item->ultima_atualizacao = $ultima_atualizacao ? $ultima_atualizacao->data : '';
+
+                if ($item->admissao) {
+                    $item->admissao->emp_centro_custo = null;
+                    $item->admissao->emp_nome_fantasia = null;
+                    $item->admissao->emp_razao_social = null;
+                    $item->admissao->emp_tipo = null;
+                $centrosFlat = collect($cc['centros_custos'] ?? [])->collapse();
+                if ($item->admissao->filial && $item->admissao->centro_custo_filial_id) {
+                    $cc_colaborador = $centrosFlat->where('filial_id', $item->admissao->centro_custo_filial_id)->first();
+                } else {
+                    $cc_colaborador = $centrosFlat->where('id', $item->admissao->centro_custo_id)->where('matriz', true)->first();
+                }
+                if ($cc_colaborador) {
+                    $item->admissao->emp_centro_custo = $cc_colaborador['label'];
+                    $item->admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'] ?? null;
+                    $item->admissao->emp_razao_social = $cc_colaborador['razao_social'] ?? null;
+                    $item->admissao->emp_tipo = !empty($cc_colaborador['matriz']) ? 'Matriz' : 'Filial';
+                }
+            }
             return $item;
         });
+        $listaCentrosCusto = [];
+        if (!$temFilial && isset($filialOuMatriz['cnpjkey'], $cc['centros_custos'][$filialOuMatriz['cnpjkey']])) {
+            $listaCentrosCusto = $cc['centros_custos'][$filialOuMatriz['cnpjkey']]->values()->toArray();
+        }
+
+        $listaCnpjs = isset($cc['cnpjs']) ? $cc['cnpjs']->toArray() : [];
+        $listaCentrosPorCnpj = [];
+        if (isset($cc['centros_custos'])) {
+            foreach ($cc['centros_custos'] as $cnpjKey => $coll) {
+                $listaCentrosPorCnpj[$cnpjKey] = $coll->values()->toArray();
+            }
+        }
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
@@ -132,7 +254,12 @@ class HistoricoController extends Controller
             'dados' => [
                 'itens' => $itens,
                 'cargos' => $cargos,
-                'permissoes' => $permissoes
+                'permissoes' => $permissoes,
+                'lista_centros_custo' => $listaCentrosCusto,
+                'lista_cnpjs' => $listaCnpjs,
+                'lista_centros_por_cnpj' => $listaCentrosPorCnpj,
+                'tem_filial' => $temFilial,
+                'tipos_admissao' => $tiposAdmissao
             ]
         ]);
     }
