@@ -239,7 +239,7 @@ export default {
                 }
 
                 const base = window.location.origin
-                const url = `${base}/avaliacao-90-dias/${token}`
+                const url = `${base}/avaliacao-de-experiencia/${token}`
                 window.open(url, '_blank')
 
                 // Mantém o evento para quem escuta fora (telemetria/analytics)

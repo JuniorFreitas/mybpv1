@@ -53,13 +53,13 @@ Route::get('download-checklist/{empresa}', function ($empresa) {
 
 Route::redirect('/', 'g/login');
 
-// Rotas para avaliação de 90 dias (requer autenticação, mas não está no menu)
+// Rotas para avaliação de experiência (requer autenticação, mas não está no menu)
 Route::middleware(['auth'])->group(function () {
-    Route::get('avaliacao-90-dias/{token}', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'mostrarFormulario'])
+    Route::get('avaliacao-de-experiencia/{token}', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'mostrarFormulario'])
         ->name('avaliacao.publica.formulario');
-    Route::post('avaliacao-90-dias/{token}', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'salvarAvaliacao'])
+    Route::post('avaliacao-de-experiencia/{token}', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'salvarAvaliacao'])
         ->name('avaliacao.publica.salvar');
-    Route::get('avaliacao-90-dias/{token}/erro', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'exibirErro'])
+    Route::get('avaliacao-de-experiencia/{token}/erro', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'exibirErro'])
         ->name('avaliacao.publica.erro');
 });
 
@@ -1206,13 +1206,15 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('efetivo/atualizar', [\App\Http\Controllers\Relatorios\EfetivoController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_efetivo');
         });
 
-        Route::group(['as' => 'avaliacao90dias.'], function () {
-            Route::get('avaliacao-90-dias', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'index'])->name('index')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::post('avaliacao-90-dias/exportar', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'exportar'])->name('exportar')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::get('avaliacao-90-dias/status-exportacao', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'statusExportacao'])->name('statusExportacao')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::post('avaliacao-90-dias/gerar-links-lote', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'gerarLinksLote'])->name('gerarLinksLote')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::post('avaliacao-90-dias/{feedbackId}/gerar-link', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'gerarLink'])->name('gerarLink')->whereNumber('feedbackId')->middleware('can:relatorio_avaliacao_90_dias');
-            Route::get('avaliacao-90-dias/{feedbackId}/link', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'consultarLink'])->name('consultarLink')->whereNumber('feedbackId')->middleware('can:relatorio_avaliacao_90_dias');
+        Route::group(['as' => 'avaliacaoExperiencia.'], function () {
+            Route::get('avaliacao-de-experiencia', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'index'])->name('index')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::get('avaliacao-de-experiencia/dados', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'dados'])->name('dados')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::post('avaliacao-de-experiencia/atualizar', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'atualizar'])->name('atualizar')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::post('avaliacao-de-experiencia/exportar', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'exportar'])->name('exportar')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::get('avaliacao-de-experiencia/status-exportacao', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'statusExportacao'])->name('statusExportacao')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::post('avaliacao-de-experiencia/gerar-links-lote', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'gerarLinksLote'])->name('gerarLinksLote')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::post('avaliacao-de-experiencia/{feedbackId}/gerar-link', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'gerarLink'])->name('gerarLink')->whereNumber('feedbackId')->middleware('can:relatorio_avaliacao_90_dias');
+            Route::get('avaliacao-de-experiencia/{feedbackId}/link', [\App\Http\Controllers\Relatorios\AvaliacaoNoventaDiasController::class, 'consultarLink'])->name('consultarLink')->whereNumber('feedbackId')->middleware('can:relatorio_avaliacao_90_dias');
         });
 
         //Aniversariantes

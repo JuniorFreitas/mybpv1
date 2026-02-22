@@ -165,11 +165,14 @@ class AvaliacaoPublicaController extends Controller
         $validator = Validator::make($request->all(), [
             'gestor_imediato' => 'required|string|max:255',
             'observacao' => 'nullable|string|max:5000',
+            'definicao_contrato' => 'required|in:prorroga,finaliza',
             'perguntas' => 'required|array',
             'perguntas.*.id' => 'required|integer',
             'perguntas.*.nota' => 'required|integer|min:1|max:5'
         ], [
             'gestor_imediato.required' => 'O campo Gestor Imediato é obrigatório',
+            'definicao_contrato.required' => 'Selecione a definição sobre o colaborador (Prorroga ou Finaliza o contrato).',
+            'definicao_contrato.in' => 'Definição inválida.',
             'perguntas.required' => 'Todas as perguntas devem ser respondidas',
             'perguntas.*.nota.required' => 'Todas as perguntas devem ter uma nota',
             'perguntas.*.nota.min' => 'A nota mínima é 1',
@@ -190,9 +193,10 @@ class AvaliacaoPublicaController extends Controller
             $avaliacaoData = [
                 'gestor_imediato' => $request->input('gestor_imediato'),
                 'observacao' => $request->input('observacao'),
+                'definicao_contrato' => $request->input('definicao_contrato'),
                 'feedback_id' => $feedback->id,
                 'perguntas' => $request->input('perguntas'),
-                'gestor_id' => auth()->id() // Captura o ID do usuário autenticado
+                'gestor_id' => auth()->id()
             ];
 
             // Salva a avaliação (reutiliza lógica existente do sistema)
@@ -247,10 +251,11 @@ class AvaliacaoPublicaController extends Controller
                 ->sum('quantidade_avaliacao');
             $qntAvaliacao = $total > 0 ? intval($total) + 1 : 1;
 
-            // Cria registro de quantidade
+            // Cria registro de quantidade (inclui definição: prorroga/finaliza)
             AvaliacaoNoventaFeedbackQuantidade::create([
                 'feedback_id' => $dados['feedback_id'],
                 'quantidade_avaliacao' => $qntAvaliacao,
+                'definicao_contrato' => $dados['definicao_contrato'] ?? null,
             ]);
 
             // Salva cada resposta de pergunta

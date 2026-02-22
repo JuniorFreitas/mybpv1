@@ -53,7 +53,8 @@ class AvaliacaoNoventaFeedbackQuantidade extends Model
     protected $fillable = [
         'id',
         'feedback_id',
-        'quantidade_avaliacao'
+        'quantidade_avaliacao',
+        'definicao_contrato',
     ];
 
     protected $casts = [

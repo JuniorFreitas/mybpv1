@@ -22,25 +22,30 @@ class AvaliacaoNoventaService
 {
     public const DIAS_ANTECEDENCIA = 30;
     public const MAX_AVALIACOES_PERMITIDAS = 2;
+    /** Exibir no relatório apenas colaboradores com menos de 180 dias de admissão */
+    public const DIAS_LIMITE_EXIBICAO = 180;
 
     public function buscarAvaliacoesVencendoOuVencidas(int $empresaId, ?int $diasAntecedencia = null, bool $incluirCompletas = false): Collection
     {
         $dias = $diasAntecedencia ?? self::DIAS_ANTECEDENCIA;
         $dataLimite = Carbon::today()->addDays($dias);
+        $dataLimite180Dias = Carbon::today()->subDays(self::DIAS_LIMITE_EXIBICAO)->format('Y-m-d');
 
         return AvaliacaoNoventaVencimento::query()
             ->with([
                 'FeedbackCurriculo:id,curriculo_id,empresa_id',
                 'FeedbackCurriculo.Curriculo:id,nome',
-                'FeedbackCurriculo.Admissao:id,feedback_id,status,centro_custo_id,cargo,funcao',
+                'FeedbackCurriculo.Admissao:id,feedback_id,status,centro_custo_id,cargo,funcao,data_admissao',
                 'FeedbackCurriculo.Admissao.CentroCusto:id,gestor_id,label',
-                'FeedbackCurriculo.Admissao.CentroCusto.Gestor:id,nome,login'
+                'FeedbackCurriculo.Admissao.CentroCusto.Gestor:id,nome,login',
+                'qntFeedback',
             ])
             ->whereHas('FeedbackCurriculo', function ($query) use ($empresaId) {
                 $query->where('empresa_id', $empresaId);
             })
-            ->whereHas('FeedbackCurriculo.Admissao', function ($query) {
-                $query->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO);
+            ->whereHas('FeedbackCurriculo.Admissao', function ($query) use ($dataLimite180Dias) {
+                $query->where('status', Admissao::STATUS_ADMISSAO_ADMITIDO)
+                    ->where('data_admissao', '>=', $dataLimite180Dias);
             })
             ->withCount('qntFeedback')
             ->having('qnt_feedback_count', $incluirCompletas ? '<=' : '<', self::MAX_AVALIACOES_PERMITIDAS)
@@ -172,7 +177,7 @@ class AvaliacaoNoventaService
                         ) {
                             $tokenData = [
                                 'token' => $avaliacao->token_avaliacao,
-                                'url' => url("/avaliacao-90-dias/{$avaliacao->token_avaliacao}"),
+                                'url' => url("/avaliacao-de-experiencia/{$avaliacao->token_avaliacao}"),
                                 'expiracao' => \Carbon\Carbon::parse($avaliacao->token_expiracao)
                             ];
                         }
@@ -186,6 +191,12 @@ class AvaliacaoNoventaService
                 $diasAtraso = $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS ? 0 : $resultado['dias_atraso'];
                 $diasParaVencer = $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS ? 0 : $resultado['dias_para_vencer'];
                 $observacao = $qntAvaliacoes >= self::MAX_AVALIACOES_PERMITIDAS ? 'Avaliação completa' : $resultado['observacao'];
+
+                // Última definição sobre o colaborador (da última avaliação realizada)
+                $ultimaQuantidade = $avaliacao->qntFeedback->sortByDesc('quantidade_avaliacao')->first();
+                $definicaoContrato = $ultimaQuantidade && !empty($ultimaQuantidade->definicao_contrato)
+                    ? $ultimaQuantidade->definicao_contrato
+                    : null;
 
                 return [
                     'feedback_id' => $avaliacao->feedback_id,
@@ -203,6 +214,7 @@ class AvaliacaoNoventaService
                     'observacao' => $observacao,
                     'qnt_avaliacoes' => $qntAvaliacoes,
                     'avaliacao_status' => $avaliacaoStatusLabel,
+                    'definicao_contrato' => $definicaoContrato,
                     'token' => $tokenData['token'] ?? null,
                     'link_avaliacao' => $tokenData['url'] ?? null,
                 ];
@@ -232,7 +244,7 @@ class AvaliacaoNoventaService
 
             return [
                 'token' => $avaliacao->token_avaliacao,
-                'url' => url("/avaliacao-90-dias/{$avaliacao->token_avaliacao}"),
+                'url' => url("/avaliacao-de-experiencia/{$avaliacao->token_avaliacao}"),
                 'expiracao' => Carbon::parse($avaliacao->token_expiracao)
             ];
         }
@@ -273,6 +285,105 @@ class AvaliacaoNoventaService
         }
     }
 
+    /**
+     * Retorna vencimentos ordenados para exportação (mesma lógica do relatório).
+     * Se $filtros for informado, aplica os mesmos filtros da tela (sem filtro = total).
+     *
+     * @param int $empresaId
+     * @param array $filtros opcional: status, nome, centroCusto, gestor, avaliacoes, cargo, funcao
+     */
+    public function getVencimentosOrdenadosParaExportacao(int $empresaId, array $filtros = []): array
+    {
+        $avaliacoes = $this->buscarAvaliacoesVencendoOuVencidas(
+            $empresaId,
+            self::DIAS_ANTECEDENCIA,
+            true
+        );
+        $dataAtual = (new \MasterTag\DataHora())->dataCompleta();
+        $vencimentos = $this->montarVencimentos($avaliacoes, $dataAtual, false);
+
+        $ordemStatus = [
+            'VENCIDO' => 1,
+            'VENCE HOJE' => 2,
+            'A VENCER' => 3,
+            'COMPLETA' => 4,
+        ];
+        $vencimentos = $vencimentos->sortBy(function ($vencimento) use ($ordemStatus) {
+            $status = $vencimento['status'] ?? 'COMPLETA';
+            $prioridade = $ordemStatus[$status] ?? 999;
+            $dias = 0;
+            if ($status === 'VENCIDO') {
+                $dias = $vencimento['dias_atraso'] ?? 0;
+            } elseif ($status === 'A VENCER') {
+                $dias = -($vencimento['dias_para_vencer'] ?? 0);
+            }
+            return [$prioridade, -$dias];
+        })->values();
+
+        if (!empty($filtros)) {
+            $vencimentos = $this->aplicarFiltrosVencimentos($vencimentos, $filtros);
+        }
+
+        return $vencimentos->toArray();
+    }
+
+    /**
+     * Aplica filtros à coleção de vencimentos (mesma lógica do controller/relatório).
+     *
+     * @param \Illuminate\Support\Collection $vencimentos
+     * @param array $filtros status, nome, centroCusto, gestor, avaliacoes, cargo, funcao, definicao_contrato
+     * @return \Illuminate\Support\Collection
+     */
+    public function aplicarFiltrosVencimentos($vencimentos, array $filtros): Collection
+    {
+        $status = strtoupper(trim((string) ($filtros['status'] ?? '')));
+        $nome = trim((string) ($filtros['nome'] ?? ''));
+        $centroCusto = trim((string) ($filtros['centroCusto'] ?? ''));
+        $gestor = trim((string) ($filtros['gestor'] ?? ''));
+        $avaliacoes = $filtros['avaliacoes'] ?? null;
+        $cargo = trim((string) ($filtros['cargo'] ?? ''));
+        $funcao = trim((string) ($filtros['funcao'] ?? ''));
+        $definicaoContrato = trim((string) ($filtros['definicao_contrato'] ?? ''));
+
+        return $vencimentos->filter(function ($v) use ($status, $nome, $centroCusto, $gestor, $avaliacoes, $cargo, $funcao, $definicaoContrato) {
+            if ($status !== '' && ($v['status'] ?? '') !== $status) {
+                return false;
+            }
+            if ($nome !== '' && stripos($v['colaborador'] ?? '', $nome) === false) {
+                return false;
+            }
+            if ($avaliacoes !== '' && $avaliacoes !== null && (string) ($v['qnt_avaliacoes'] ?? '') !== (string) $avaliacoes) {
+                return false;
+            }
+            if ($centroCusto !== '') {
+                if ($centroCusto === '__SEM_CENTRO__' && (trim($v['centro_custo'] ?? '') !== '')) {
+                    return false;
+                }
+                if ($centroCusto !== '__SEM_CENTRO__' && ($v['centro_custo'] ?? '') !== $centroCusto) {
+                    return false;
+                }
+            }
+            if ($gestor !== '') {
+                if ($gestor === '__SEM_GESTOR__' && !empty(trim((string) ($v['gestor_id'] ?? '')))) {
+                    return false;
+                }
+                if ($gestor !== '__SEM_GESTOR__' && (string) ($v['gestor_id'] ?? '') !== $gestor) {
+                    return false;
+                }
+            }
+            if ($cargo !== '' && ($v['cargo'] ?? '') !== $cargo) {
+                return false;
+            }
+            if ($funcao !== '' && ($v['funcao'] ?? '') !== $funcao) {
+                return false;
+            }
+            if ($definicaoContrato !== '' && ($v['definicao_contrato'] ?? '') !== $definicaoContrato) {
+                return false;
+            }
+            return true;
+        })->values();
+    }
+
     public function gerarExcelS3(array $vencimentos, int $empresaId): ?array
     {
         $memoryInicial = memory_get_usage(true);
@@ -293,14 +404,14 @@ class AvaliacaoNoventaService
                 ->setDescription('Relatório de avaliações de 90 dias vencidas ou vencendo')
                 ->setCategory('Relatórios');
 
-            $cabecalhos = ['Colaborador', 'Cargo', 'Função', 'Centro de Custo', 'Gestor', 'Data de Vencimento', 'Status', 'Dias em Atraso', 'Observação', 'Avaliações Realizadas', 'Link Avaliação'];
+            $cabecalhos = ['Colaborador', 'Cargo', 'Função', 'Centro de Custo', 'Gestor', 'Data de Vencimento', 'Status', 'Dias em Atraso', 'Observação', 'Avaliações Realizadas', 'Definição', 'Link Avaliação'];
             $coluna = 'A';
             foreach ($cabecalhos as $cabecalho) {
                 $sheet->setCellValue($coluna . '1', $cabecalho);
                 $coluna++;
             }
 
-            $sheet->getStyle('A1:K1')->applyFromArray([
+            $sheet->getStyle('A1:L1')->applyFromArray([
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
@@ -324,7 +435,9 @@ class AvaliacaoNoventaService
                 $sheet->setCellValue('H' . $linha, $venc['dias_atraso'] > 0 ? $venc['dias_atraso'] : '-');
                 $sheet->setCellValue('I' . $linha, $venc['observacao'] ?? '');
                 $sheet->setCellValue('J' . $linha, $venc['avaliacao_status'] ?? '');
-                $sheet->setCellValue('K' . $linha, $venc['link_avaliacao'] ?? '-');
+                $definicao = $venc['definicao_contrato'] ?? null;
+                $sheet->setCellValue('K' . $linha, $definicao === 'prorroga' ? 'Prorroga o contrato' : ($definicao === 'finaliza' ? 'Finaliza o contrato' : '-'));
+                $sheet->setCellValue('L' . $linha, $venc['link_avaliacao'] ?? '-');
 
                 $linha++;
                 $contador++;
@@ -344,9 +457,10 @@ class AvaliacaoNoventaService
             $sheet->getColumnDimension('H')->setWidth(18); // Dias em Atraso
             $sheet->getColumnDimension('I')->setWidth(50); // Observação
             $sheet->getColumnDimension('J')->setWidth(28); // Avaliações Realizadas
-            $sheet->getColumnDimension('K')->setWidth(60); // Link Avaliação
+            $sheet->getColumnDimension('K')->setWidth(22); // Definição
+            $sheet->getColumnDimension('L')->setWidth(60); // Link Avaliação
 
-            $nomeArquivo = 'avaliacoes_90_dias_' . $empresaId . '_' . date('YmdHis') . '.xlsx';
+            $nomeArquivo = 'avaliacao_experiencia_' . $empresaId . '_' . date('YmdHis') . '.xlsx';
             $caminhoTempLocal = sys_get_temp_dir() . '/' . $nomeArquivo;
 
             $writer = new Xlsx($spreadsheet);
@@ -379,6 +493,13 @@ class AvaliacaoNoventaService
             if (!$uploadSuccess) {
                 throw new \Exception('Falha ao fazer upload para S3');
             }
+
+            // Grava também em disco-exportacao para aparecer na lista de exportações e download (padrão CIH)
+            Storage::disk('disco-exportacao')->put($nomeArquivo, $conteudoArquivo, [
+                'visibility' => 'private',
+                'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'ContentDisposition' => 'attachment; filename="' . $nomeArquivo . '"',
+            ]);
 
             $urlTemporaria = Storage::disk('s3')->temporaryUrl($caminhoS3, now()->addDays(7));
 
@@ -536,7 +657,7 @@ class AvaliacaoNoventaService
             return [
                 'token' => $token,
                 'expiracao' => $expiracao,
-                'url' => url("/avaliacao-90-dias/{$token}")
+                'url' => url("/avaliacao-de-experiencia/{$token}")
             ];
         }
 
