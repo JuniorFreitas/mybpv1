@@ -57,7 +57,7 @@ class CentroCusto extends Model
 
     public function Gestor()
     {
-        return $this->hasOne(User::class, 'id', 'gestor_id')->select(['id', 'nome', 'login']);
+        return $this->hasOne(User::class, 'id', 'gestor_id')->select(['id', 'nome', 'login', 'ativo']);
     }
 
     public function Admissao()

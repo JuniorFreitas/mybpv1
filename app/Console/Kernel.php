@@ -61,6 +61,8 @@ class Kernel extends ConsoleKernel
             ->at('00:00')
             ->name('mybp_treinamento_vencimento')
             ->onOneServer();
+        $schedule->command('mybp:avaliacao-experiencia')->mondays()->at('00:00')->name('mybp_avaliacao_experiencia')->onOneServer();
+
     }
 
     /**

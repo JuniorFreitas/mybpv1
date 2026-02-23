@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
-use App\Services\AvaliacaoNoventaService;
 use App\Jobs\GerarTokenAvaliacaoNoventaDiasJob;
+use App\Jobs\JobExportaAvaliacaoExperienciaExcel;
 use App\Models\AvaliacaoNoventaVencimento;
+use App\Services\AvaliacaoNoventaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -19,25 +20,159 @@ class AvaliacaoNoventaDiasController extends Controller
     }
 
     /**
-     * Exibe relatório de avaliações de 90 dias
-     * Lista todas as avaliações e gera tokens se necessário
+     * Retorna dados do relatório em JSON (para o componente Vue / front separado).
+     * @deprecated Use atualizar() com paginação e filtros no servidor.
+     */
+    public function dados(Request $request)
+    {
+        $payload = $this->construirDadosRelatorio();
+        $userId = auth()->id();
+        $temPermissaoGestaoRh = in_array('privilegio_gestao_rh', auth()->user()->listaDeHabilidades());
+        $ehGestorGlobal = collect($payload['vencimentos'])->contains(fn($v) => ($v['gestor_id'] ?? null) == $userId);
+
+        return response()->json([
+            'resumo' => $payload['resumo'],
+            'vencimentos' => $payload['vencimentos'],
+            'data_geracao' => $payload['dataGeracao'],
+            'centros_custo' => $payload['centrosCusto'],
+            'gestores' => $payload['gestores'],
+            'cargos' => $payload['cargos'],
+            'funcoes' => $payload['funcoes'],
+            'user_can_gestao_rh' => $temPermissaoGestaoRh,
+            'is_gestor_global' => $ehGestorGlobal,
+        ]);
+    }
+
+    /**
+     * Lista paginada com filtros no servidor (padrão do sistema: ControlePaginacao).
+     * POST: page, porPagina|pages, status, nome, centroCusto, gestor, avaliacoes, cargo, funcao
+     */
+    public function atualizar(Request $request)
+    {
+        $page = max(1, (int) $request->input('page', 1));
+        $perPage = max(1, (int) ($request->input('porPagina') ?: $request->input('pages', 20)));
+
+        $payload = $this->construirDadosRelatorio();
+        $vencimentos = $payload['vencimentos'];
+        $vencimentos = $this->aplicarFiltros($vencimentos, $request);
+
+        $total = $vencimentos->count();
+        $ultima = $total > 0 ? (int) ceil($total / $perPage) : 1;
+        $page = min($page, max(1, $ultima));
+
+        $resumo = [
+            'total' => $total,
+            'vencidos' => $vencimentos->where('status', 'VENCIDO')->count(),
+            'vence_hoje' => $vencimentos->where('status', 'VENCE HOJE')->count(),
+            'a_vencer' => $vencimentos->where('status', 'A VENCER')->count(),
+            'sem_avaliacao' => $vencimentos->where('qnt_avaliacoes', 0)->count(),
+            'uma_avaliacao' => $vencimentos->where('qnt_avaliacoes', 1)->count(),
+            'completas' => $vencimentos->filter(fn($v) => ($v['qnt_avaliacoes'] ?? 0) >= 2)->count(),
+            'gestores_unicos' => $vencimentos->pluck('gestor_id')->filter()->unique()->count(),
+            'sem_gestor' => $vencimentos->filter(fn($v) => empty($v['gestor_id']))->count(),
+        ];
+
+        $itens = $vencimentos->slice(($page - 1) * $perPage, $perPage)->values()->toArray();
+
+        $userId = auth()->id();
+        $temPermissaoGestaoRh = in_array('privilegio_gestao_rh', auth()->user()->listaDeHabilidades());
+        $ehGestorGlobal = collect($itens)->contains(fn($v) => ($v['gestor_id'] ?? null) == $userId);
+
+        return response()->json([
+            'atual' => $page,
+            'ultima' => $ultima,
+            'total' => $total,
+            'dados' => [
+                'itens' => $itens,
+                'resumo' => $resumo,
+                'data_geracao' => $payload['dataGeracao'],
+                'centros_custo' => $payload['centrosCusto'],
+                'gestores' => $payload['gestores'],
+                'cargos' => $payload['cargos'],
+                'funcoes' => $payload['funcoes'],
+                'user_can_gestao_rh' => $temPermissaoGestaoRh,
+                'is_gestor_global' => $ehGestorGlobal,
+            ],
+        ]);
+    }
+
+    /**
+     * Aplica filtros à coleção de vencimentos (mesma lógica do Vue).
+     */
+    private function aplicarFiltros($vencimentos, Request $request)
+    {
+        $status = strtoupper(trim((string) $request->input('status', '')));
+        $nome = trim((string) $request->input('nome', ''));
+        $centroCusto = trim((string) $request->input('centroCusto', ''));
+        $gestor = trim((string) $request->input('gestor', ''));
+        $avaliacoes = $request->input('avaliacoes');
+        $cargo = trim((string) $request->input('cargo', ''));
+        $funcao = trim((string) $request->input('funcao', ''));
+        $definicaoContrato = trim((string) $request->input('definicaoContrato', ''));
+
+        return $vencimentos->filter(function ($v) use ($status, $nome, $centroCusto, $gestor, $avaliacoes, $cargo, $funcao, $definicaoContrato) {
+            if ($status !== '' && ($v['status'] ?? '') !== $status) {
+                return false;
+            }
+            if ($nome !== '' && stripos($v['colaborador'] ?? '', $nome) === false) {
+                return false;
+            }
+            if ($avaliacoes !== '' && $avaliacoes !== null && (string)($v['qnt_avaliacoes'] ?? '') !== (string) $avaliacoes) {
+                return false;
+            }
+            if ($centroCusto !== '') {
+                if ($centroCusto === '__SEM_CENTRO__' && (trim($v['centro_custo'] ?? '') !== '')) {
+                    return false;
+                }
+                if ($centroCusto !== '__SEM_CENTRO__' && ($v['centro_custo'] ?? '') !== $centroCusto) {
+                    return false;
+                }
+            }
+            if ($gestor !== '') {
+                if ($gestor === '__SEM_GESTOR__' && !empty(trim((string)($v['gestor_id'] ?? '')))) {
+                    return false;
+                }
+                if ($gestor !== '__SEM_GESTOR__' && (string)($v['gestor_id'] ?? '') !== $gestor) {
+                    return false;
+                }
+            }
+            if ($cargo !== '' && ($v['cargo'] ?? '') !== $cargo) {
+                return false;
+            }
+            if ($funcao !== '' && ($v['funcao'] ?? '') !== $funcao) {
+                return false;
+            }
+            if ($definicaoContrato !== '' && ($v['definicao_contrato'] ?? '') !== $definicaoContrato) {
+                return false;
+            }
+            return true;
+        })->values();
+    }
+
+    /**
+     * Exibe a página do relatório (front Vue consome API /dados).
      */
     public function index(Request $request)
     {
+        return view('g.relatorios.avaliacao90dias.index');
+    }
+
+    /**
+     * Monta os dados do relatório (vencimentos, resumo, filtros).
+     */
+    private function construirDadosRelatorio(): array
+    {
         $empresaId = auth()->user()->empresa_id;
 
-        // Busca avaliações vencidas ou vencendo (mesma lógica do comando)
         $avaliacoes = $this->avaliacaoService->buscarAvaliacoesVencendoOuVencidas(
             $empresaId,
             AvaliacaoNoventaService::DIAS_ANTECEDENCIA,
-            true // incluir completas (2 avaliações) no relatório manual
+            true
         );
 
-    // Monta vencimentos sem gerar tokens para não custar o carregamento do relatório
         $dataAtual = (new \MasterTag\DataHora())->dataCompleta();
-    $vencimentos = $this->avaliacaoService->montarVencimentos($avaliacoes, $dataAtual, false);
+        $vencimentos = $this->avaliacaoService->montarVencimentos($avaliacoes, $dataAtual, false);
 
-        // Ordena por prioridade: VENCIDO > VENCE HOJE > A VENCER > COMPLETA
         $ordemStatus = [
             'VENCIDO' => 1,
             'VENCE HOJE' => 2,
@@ -48,26 +183,21 @@ class AvaliacaoNoventaDiasController extends Controller
         $vencimentos = $vencimentos->sortBy(function ($vencimento) use ($ordemStatus) {
             $status = $vencimento['status'] ?? 'COMPLETA';
             $prioridade = $ordemStatus[$status] ?? 999;
-
-            // Dentro de cada status, ordena por dias (mais atrasado/próximo primeiro)
             $dias = 0;
             if ($status === 'VENCIDO') {
-                $dias = $vencimento['dias_atraso'] ?? 0; // Maior atraso primeiro
+                $dias = $vencimento['dias_atraso'] ?? 0;
             } elseif ($status === 'A VENCER') {
-                $dias = -($vencimento['dias_para_vencer'] ?? 0); // Menor dias para vencer primeiro (inverte sinal)
+                $dias = -($vencimento['dias_para_vencer'] ?? 0);
             }
-
-            return [$prioridade, -$dias]; // Negativo para ordem decrescente de dias
+            return [$prioridade, -$dias];
         })->values();
 
-        // Separa por status para facilitar visualização
         $vencimentosPorStatus = [
             'VENCIDO' => $vencimentos->where('status', 'VENCIDO'),
             'VENCE HOJE' => $vencimentos->where('status', 'VENCE HOJE'),
             'A VENCER' => $vencimentos->where('status', 'A VENCER'),
         ];
 
-        // Contadores para resumo
         $resumo = [
             'total' => $vencimentos->count(),
             'vencidos' => $vencimentosPorStatus['VENCIDO']->count(),
@@ -80,18 +210,16 @@ class AvaliacaoNoventaDiasController extends Controller
             'sem_gestor' => $vencimentos->filter(fn($v) => empty($v['gestor_id']))->count(),
         ];
 
-        // Prepara listas únicas para os filtros
         $centrosCusto = $vencimentos->pluck('centro_custo')->unique()->filter()->sort()->values();
         $gestores = $vencimentos
-            ->filter(function($v) { return !empty($v['gestor_nome']); })
-            ->map(function($v) { return ['id' => $v['gestor_id'], 'nome' => $v['gestor_nome']]; })
+            ->filter(function ($v) { return !empty($v['gestor_nome']); })
+            ->map(function ($v) { return ['id' => $v['gestor_id'], 'nome' => $v['gestor_nome']]; })
             ->unique('id')
             ->sortBy('nome')
             ->values();
         $cargos = $vencimentos->pluck('cargo')->unique()->filter()->sort()->values();
         $funcoes = $vencimentos->pluck('funcao')->unique()->filter()->sort()->values();
 
-        // Top 5 Gestores com mais pendências (VENCIDO, VENCE HOJE, A VENCER)
         $pendentes = $vencimentos->filter(function ($v) {
             $status = $v['status'] ?? '';
             return in_array($status, ['VENCIDO', 'VENCE HOJE', 'A VENCER']) && !empty($v['gestor_id']);
@@ -120,10 +248,9 @@ class AvaliacaoNoventaDiasController extends Controller
             'usuario_id' => auth()->id(),
             'empresa_id' => $empresaId,
             'total_vencimentos' => $resumo['total'],
-            'tokens_gerados' => $vencimentos->filter(fn($v) => !empty($v['token']))->count()
         ]);
 
-        return view('g.relatorios.avaliacao90dias.index', [
+        return [
             'vencimentos' => $vencimentos,
             'vencimentosPorStatus' => $vencimentosPorStatus,
             'resumo' => $resumo,
@@ -133,80 +260,31 @@ class AvaliacaoNoventaDiasController extends Controller
             'cargos' => $cargos,
             'funcoes' => $funcoes,
             'topGestores' => $topGestores,
-        ]);
+        ];
     }
 
     /**
-     * Dispara o comando de notificação para o usuário logado
+     * Exportação Excel (padrão CIH: enfileira job, gera arquivo, grava em disco-exportacao, notifica).
+     * Usa os mesmos filtros da tela; sem filtro exporta o total.
      */
     public function exportar(Request $request)
     {
-        $usuario = auth()->user();
-        $empresaId = $usuario->empresa_id;
-        $lockKey = "avaliacao90dias_lock_{$usuario->id}";
+        $filtros = [
+            'status' => $request->input('status', ''),
+            'nome' => $request->input('nome', ''),
+            'centroCusto' => $request->input('centroCusto', ''),
+            'gestor' => $request->input('gestor', ''),
+            'avaliacoes' => $request->input('avaliacoes', ''),
+            'cargo' => $request->input('cargo', ''),
+            'funcao' => $request->input('funcao', ''),
+            'definicao_contrato' => $request->input('definicaoContrato', ''),
+        ];
 
-        // Tenta adquirir lock distribuído por 2 minutos (tempo estimado de processamento)
-        $lock = \Cache::lock($lockKey, 120);
+        JobExportaAvaliacaoExperienciaExcel::dispatch(auth()->id(), $filtros);
 
-        try {
-            // Tenta obter o lock
-            if (!$lock->get()) {
-                // Já existe uma exportação em andamento
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Já existe uma exportação em andamento. Aguarde a conclusão.',
-                    'em_processamento' => true
-                ], 429);
-            }
-
-            Log::info('Solicitação de exportação de avaliação 90 dias', [
-                'usuario_id' => $usuario->id,
-                'usuario_nome' => $usuario->nome,
-                'usuario_email' => $usuario->login,
-                'empresa_id' => $empresaId
-            ]);
-
-            // Armazena metadata do processamento
-            \Cache::put("avaliacao90dias_meta_{$usuario->id}", [
-                'iniciado_em' => now()->toDateTimeString(),
-                'usuario_id' => $usuario->id,
-                'status' => 'processando'
-            ], now()->addMinutes(2));
-
-            // Dispara o comando artisan em background usando queue
-            \Artisan::queue('mybp:avaliacao90dias', [
-                '--empresa_id' => $empresaId,
-                '--usuario' => $usuario->id
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Relatório em processamento! Você receberá o arquivo por e-mail em alguns instantes.'
-            ]);
-
-        } catch (\Throwable $e) {
-            // Libera o lock em caso de erro
-            try {
-                $lock->forceRelease();
-            } catch (\Exception $releaseException) {
-                Log::warning('Erro ao liberar lock', [
-                    'error' => $releaseException->getMessage()
-                ]);
-            }
-
-            \Cache::forget("avaliacao90dias_meta_" . auth()->id());
-
-            Log::error('Erro ao exportar avaliação 90 dias', [
-                'usuario_id' => auth()->id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erro ao processar exportação. Tente novamente.'
-            ], 500);
-        }
+        return response()->json([
+            'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.'
+        ]);
     }
 
     /**
@@ -245,15 +323,16 @@ class AvaliacaoNoventaDiasController extends Controller
         $usuario = auth()->user();
         $empresaId = $usuario->empresa_id;
 
-        // Valida se pertence à empresa do usuário
-        $existe = AvaliacaoNoventaVencimento::query()
+        // Valida se pertence à empresa e se ainda não está completo (2 avaliações)
+        $vencimento = AvaliacaoNoventaVencimento::query()
             ->where('feedback_id', $feedbackId)
             ->whereHas('FeedbackCurriculo', function ($q) use ($empresaId) {
                 $q->where('empresa_id', $empresaId);
             })
-            ->exists();
+            ->withCount('qntFeedback')
+            ->first();
 
-        if (!$existe) {
+        if (!$vencimento) {
             \Log::warning('gerarLink: registro não encontrado para feedback', [
                 'feedback_id' => $feedbackId,
                 'empresa_id' => $empresaId,
@@ -263,6 +342,13 @@ class AvaliacaoNoventaDiasController extends Controller
                 'success' => false,
                 'message' => 'Registro não encontrado'
             ], 404);
+        }
+
+        if (($vencimento->qnt_feedback_count ?? 0) >= AvaliacaoNoventaService::MAX_AVALIACOES_PERMITIDAS) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Avaliação já completa. Não é possível gerar novo link.'
+            ], 422);
         }
 
         \Log::info('gerarLink: enfileirando geração de token', [
@@ -294,13 +380,19 @@ class AvaliacaoNoventaDiasController extends Controller
             ], 400);
         }
 
-        // Valida que todos pertencem à empresa do usuário
+        // Valida que pertencem à empresa e que ainda não estão completos (2 avaliações)
         $validos = AvaliacaoNoventaVencimento::query()
             ->whereIn('feedback_id', $feedbackIds)
             ->whereHas('FeedbackCurriculo', function ($q) use ($empresaId) {
                 $q->where('empresa_id', $empresaId);
             })
+            ->withCount('qntFeedback')
+            ->get()
+            ->filter(function ($v) {
+                return ($v->qnt_feedback_count ?? 0) < AvaliacaoNoventaService::MAX_AVALIACOES_PERMITIDAS;
+            })
             ->pluck('feedback_id')
+            ->values()
             ->toArray();
 
         if (empty($validos)) {
@@ -353,7 +445,7 @@ class AvaliacaoNoventaDiasController extends Controller
 
         $link = null;
         if (!empty($vencimento->token_avaliacao) && !empty($vencimento->token_expiracao) && \Carbon\Carbon::parse($vencimento->token_expiracao)->isFuture() && !$vencimento->avaliacao_realizada) {
-            $link = url('/avaliacao-90-dias/' . $vencimento->token_avaliacao);
+            $link = url('/avaliacao-de-experiencia/' . $vencimento->token_avaliacao);
         }
 
         return response()->json([
