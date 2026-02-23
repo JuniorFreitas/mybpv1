@@ -6,6 +6,7 @@ use App\Jobs\Movimentacao\TransferenciaPrevista\JobNotificacaoRecursiva;
 use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaExportaExcel;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
+use App\Models\LogHistorico;
 use App\Models\TransferenciaPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -246,10 +247,53 @@ class TransferenciaPrevistaController extends Controller
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
             ]);
 
+            if ($dados['status_aprovacao_rh'] === 'aprovado') {
+                // Atualiza o centro de custo do colaborador na admissão
+                $transferenciaPrevista->load([
+                    'Colaborador.Feedback.Admissao',
+                    'CentroCustoDestino' => function ($query) {
+                        $query->with(['Filiais' => function ($q) {
+                            $q->where('ativo', true);
+                        }]);
+                    }
+                ]);
+
+                if ($transferenciaPrevista->Colaborador &&
+                    $transferenciaPrevista->Colaborador->Feedback &&
+                    $transferenciaPrevista->Colaborador->Feedback->Admissao) {
+
+                    $admissao = $transferenciaPrevista->Colaborador->Feedback->Admissao;
+
+                    // Verifica se o centro de custo destino tem filiais ativas
+                    $centroCustoDestino = $transferenciaPrevista->CentroCustoDestino;
+                    $filiaisAtivas = $centroCustoDestino && $centroCustoDestino->Filiais ? $centroCustoDestino->Filiais : collect();
+                    $temFilial = $filiaisAtivas->count() > 0;
+
+                    // Se tem filial e foi informado o centro_custo_filial_id, usa ele, senão usa a primeira filial ativa
+                    $centroCustoFilialId = null;
+                    if ($temFilial) {
+                        if (isset($dados['centro_custo_filial_id']) && $dados['centro_custo_filial_id']) {
+                            $centroCustoFilialId = $dados['centro_custo_filial_id'];
+                        } else {
+                            $primeiraFilial = $filiaisAtivas->first();
+                            $centroCustoFilialId = $primeiraFilial ? $primeiraFilial->id : null;
+                        }
+                    }
+
+                    $admissao->update([
+                        'centro_custo_id' => $transferenciaPrevista->centro_custo_destino_id,
+                        'filial' => $temFilial,
+                        'centro_custo_filial_id' => $centroCustoFilialId,
+                    ]);
+                }
+            }
+
             if (isset($dados['anexosDel'])) {
                 foreach ($dados['anexosDel'] as $id_anexo) {
                     $arquivo = Arquivo::find($id_anexo);
-                    $arquivo->excluir();
+                    if ($arquivo) {
+                        $arquivo->excluir();
+                    }
                 }
             }
 
@@ -264,6 +308,11 @@ class TransferenciaPrevistaController extends Controller
                     }
                 }
             }
+
+            LogHistorico::createLog(
+                $transferenciaPrevista->Colaborador->Feedback->id,
+                'Solicitação foi ' . $dados['status_aprovacao_rh'] . ' pelo RH na mudança Centro de Custo na solicitação de transferência #' . $transferenciaPrevista->id
+            );
 
             DB::commit();
 
@@ -333,6 +382,7 @@ class TransferenciaPrevistaController extends Controller
         JobTransferenciaPrevistaExportaExcel::dispatch(auth()->id(), 'Planejamento - Movimentação - Transferência', $nomeArquivo, $filtros);
         return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
     }
+
     public function atualizacaoStatus(Request $request)
     {
         try {

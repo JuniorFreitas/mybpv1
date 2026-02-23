@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobNotificacaoRecursiva;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaExportaExcel;
 use App\Models\Arquivo;
+use App\Models\LogHistorico;
 use App\Models\ValorExtraPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -230,6 +231,12 @@ class ValorExtraPrevistaController extends Controller
                 'obs_rh' => $dados['obs_rh'],
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
             ]);
+
+            LogHistorico::createLog(
+                $valorExtraPrevista->Colaborador->FeedBack->id,
+                'Solicitação foi ' . $dados['status_aprovacao_rh'] . ' pelo RH na solicitação de valor extra ' . $valorExtraPrevista->id
+            );
+
             DB::commit();
 
             JobNotificacaoRecursiva::dispatch($valorExtraPrevista->id, $valorExtraPrevista->empresa_id);
