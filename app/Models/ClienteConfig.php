@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $vencimento_aso
  * @property string $modelo_cih
  * @property bool $supervisor_etiqueta_bloqueio
+ * @property bool $schedule_avaliacao_experiencia Habilitar (true) ou desabilitar (false) o schedule de Avaliação de Experiência para esta empresa
  * @property-read \App\Models\Cliente|null $Cliente
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newQuery()
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereModeloCih($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereSupervisorEtiquetaBloqueio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereScheduleAvaliacaoExperiencia($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVerificaMesVencimento($value)
  * @mixin \Eloquent
  */
@@ -39,7 +41,8 @@ class ClienteConfig extends Model
         'cliente_id',
         'vencimento_aso',
         'modelo_cih',
-        'supervisor_etiqueta_bloqueio'
+        'supervisor_etiqueta_bloqueio',
+        'schedule_avaliacao_experiencia'
     ];
 
     protected $casts = [
@@ -48,7 +51,8 @@ class ClienteConfig extends Model
         'cliente_id' => 'int',
         'vencimento_aso' => 'int',
         'modelo_cih' => 'string',
-        'supervisor_etiqueta_bloqueio' => 'boolean'
+        'supervisor_etiqueta_bloqueio' => 'boolean',
+        'schedule_avaliacao_experiencia' => 'boolean'
     ];
 
     public $timestamps = false;

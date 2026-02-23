@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Mail\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoMail;
 use App\Models\Admissao;
 use App\Models\AvaliacaoNoventaVencimento;
+use App\Models\Cliente;
 use App\Models\FeedbackCurriculo;
 use App\Models\TipoRecebeEmail;
 use App\Models\User;
@@ -77,8 +78,8 @@ class AvaliacaoNoventaService
             $admissao = $avaliacao->FeedbackCurriculo->Admissao ?? null;
             $centro = $admissao ? $admissao->CentroCusto : null;
             $gestor = $centro ? $centro->Gestor : null; // User com id,nome,login
-            if (!$gestor) {
-                // Sem gestor definido, não enviaremos por este modo
+            if (!$gestor || !$gestor->ativo || $gestor->login === 'sistema@mybp.com.br') {
+                // Sem gestor, gestor inativo ou e-mail sistema: não enviar
                 continue;
             }
 
@@ -117,9 +118,11 @@ class AvaliacaoNoventaService
     public function buscarUsuariosParaNotificacao(int $empresaId): Collection
     {
         // Usuários que devem receber as notificações completas:
-        // somente quem possui a habilidade "privilegio_gestao_rh"
+        // somente quem possui a habilidade "privilegio_gestao_rh" e está ativo
         return User::query()
             ->where('empresa_id', $empresaId)
+            ->where('ativo', true)
+            ->where('login', '!=', 'sistema@mybp.com.br')
             ->select(['id', 'nome', 'login'])
             ->usuariosPrivilegioRh()
             ->orderBy('nome')
@@ -398,17 +401,33 @@ class AvaliacaoNoventaService
         return $this->gerarTokenAvaliacao($avaliacao->feedback_id, 60);
     }
 
+    /**
+     * Retorna a URL da logo da empresa (cliente) para uso em e-mails. Null se não houver logo.
+     */
+    public function obterLogoEmpresaUrl(int $empresaId): ?string
+    {
+        $cliente = Cliente::withoutGlobalScopes()->find($empresaId);
+        if (!$cliente) {
+            return null;
+        }
+        $logo = $cliente->Logo()->first();
+        return $logo ? $logo->urlThumb : null;
+    }
+
     public function enviarEmailVencimentos(User $usuario, array $vencimentos, int $empresaId, ?array $arquivoS3 = null): bool
     {
         try {
+            $logoEmpresa = $this->obterLogoEmpresaUrl($empresaId);
+
             Mail::send(new AvaliacaoNoventaVencimentoMail([
                 'usuario' => $usuario,
                 'vencimentos' => $vencimentos,
                 'empresa_id' => $empresaId,
                 'arquivo_s3' => $arquivoS3,
+                'logo_empresa' => $logoEmpresa,
             ]));
 
-            Log::info('E-mail de notificação de avaliação 90 dias enviado', [
+            Log::info('E-mail de notificação de Avaliação de Experiência enviado', [
                 'usuario_id' => $usuario->id,
                 'usuario_nome' => $usuario->nome,
                 'usuario_email' => $usuario->login,
@@ -418,7 +437,7 @@ class AvaliacaoNoventaService
 
             return true;
         } catch (\Throwable $e) {
-            Log::error('Erro ao enviar e-mail de avaliação 90 dias', [
+            Log::error('Erro ao enviar e-mail de Avaliação de Experiência', [
                 'usuario_id' => $usuario->id,
                 'usuario_nome' => $usuario->nome,
                 'error' => $e->getMessage(),
@@ -545,7 +564,7 @@ class AvaliacaoNoventaService
                 ->setCreator('Sistema MyBP')
                 ->setTitle('Avaliações de 90 Dias - Vencimentos')
                 ->setSubject('Avaliações')
-                ->setDescription('Relatório de avaliações de 90 dias vencidas ou vencendo')
+                ->setDescription('Relatório de Avaliação de Experiência vencidas ou vencendo')
                 ->setCategory('Relatórios');
 
             $cabecalhos = ['Colaborador', 'Cargo', 'Função', 'Centro de Custo', 'Gestor', 'Data de Vencimento', 'Status', 'Dias em Atraso', 'Observação', 'Avaliações Realizadas', 'Definição', 'Link Avaliação'];

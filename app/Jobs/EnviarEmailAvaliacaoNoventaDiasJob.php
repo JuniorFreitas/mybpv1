@@ -56,7 +56,7 @@ class EnviarEmailAvaliacaoNoventaDiasJob implements ShouldQueue, ShouldBeUnique
                 $this->arquivoS3
             );
 
-            Log::info('Job de envio de e-mail avaliação 90 dias processado com sucesso', [
+            Log::info('Job de envio de e-mail Avaliação de Experiência processado com sucesso', [
                 'usuario_id' => $this->usuario->id,
                 'usuario_email' => $this->usuario->login,
                 'empresa_id' => $this->empresaId,
@@ -67,7 +67,7 @@ class EnviarEmailAvaliacaoNoventaDiasJob implements ShouldQueue, ShouldBeUnique
             $this->delete();
 
         } catch (\Throwable $e) {
-            Log::error('Erro no Job de envio de e-mail avaliação 90 dias', [
+            Log::error('Erro no Job de envio de e-mail Avaliação de Experiência', [
                 'usuario_id' => $this->usuario->id,
                 'usuario_email' => $this->usuario->login,
                 'empresa_id' => $this->empresaId,
@@ -99,7 +99,7 @@ class EnviarEmailAvaliacaoNoventaDiasJob implements ShouldQueue, ShouldBeUnique
      */
     public function failed(\Throwable $exception)
     {
-        Log::error('Job de envio de e-mail avaliação 90 dias falhou após todas as tentativas', [
+        Log::error('Job de envio de e-mail Avaliação de Experiência falhou após todas as tentativas', [
             'usuario_id' => $this->usuario->id,
             'usuario_email' => $this->usuario->login,
             'empresa_id' => $this->empresaId,
