@@ -583,6 +583,26 @@ class Sistema
             ->get(['empresa_id'])->pluck('empresa_id')->toArray();
     }
 
+    /**
+     * Lista empresa_id que estão habilitadas para o schedule de Avaliação de Experiência (e-mail de vencimentos).
+     * Apenas empresas (Cliente) com ativo = true e que não tenham schedule desabilitado em cliente_configs.
+     * Respeita cliente_configs.schedule_avaliacao_experiencia: false = desabilitado, true ou sem registro = habilitado.
+     * Alterável sem deploy (atualizar direto na tabela ou por tela de configuração).
+     */
+    public static function listaEmpresasParaScheduleAvaliacaoExperiencia(): array
+    {
+        $todas = self::listaEmpresas();
+        $empresasAtivas = Cliente::withoutGlobalScopes()
+            ->where('ativo', true)
+            ->pluck('id')
+            ->toArray();
+        $todas = array_intersect($todas, $empresasAtivas);
+        $desabilitadas = ClienteConfig::where('schedule_avaliacao_experiencia', false)
+            ->pluck('cliente_id')
+            ->toArray();
+        return array_values(array_diff($todas, $desabilitadas));
+    }
+
     public static function syncFuncionarios()
     {
         $Empresas = \App\Models\User::select('id', 'nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\EnviarEmailAvaliacaoNoventaDiasJob;
+use App\Models\Sistema;
 use App\Models\User;
 use App\Services\AvaliacaoNoventaService;
 use Illuminate\Console\Command;
@@ -19,14 +20,23 @@ class Aval90dias extends Command
      *
      * @var string
      */
-    protected $signature = 'mybp:avaliacao90dias {--empresa_id= : ID da empresa a processar} {--destinatario=usuarios : Tipo de destinatário: usuarios|gestores|ambos} {--usuario= : ID do usuário específico para enviar (ignora destinatario)}';
+    protected $signature = 'mybp:avaliacao-experiencia {--empresa_id= : ID da empresa a processar} {--destinatario=usuarios : Tipo de destinatário: usuarios|gestores|ambos} {--usuario= : ID do usuário específico para enviar (ignora destinatario)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Envia notificações de vencimento de avaliações de 90 dias';
+    protected $description = 'Envia notificações de vencimento de Avaliação de Experiência (colaboradores com até 180 dias de admissão)';
+
+    /**
+     * Alias para compatibilidade (cron/schedule que ainda usam o nome antigo).
+     */
+    protected function configure(): void
+    {
+        parent::configure();
+        $this->setAliases(['mybp:avaliacao90dias']);
+    }
 
     /**
      * Execute the console command.
@@ -36,14 +46,9 @@ class Aval90dias extends Command
     public function handle(): int
     {
         try {
-            $empresaId = $this->option('empresa_id') ?? 73473;
+            $empresaIdOption = $this->option('empresa_id');
             $dataAtual = (new DataHora())->dataCompleta();
             $usuarioId = $this->option('usuario');
-
-            // Se especificou um usuário, envia apenas para ele
-            if ($usuarioId) {
-                return $this->processarParaUsuarioEspecifico($usuarioId, $empresaId);
-            }
 
             $destinatario = strtolower($this->option('destinatario') ?? 'usuarios');
             if (!in_array($destinatario, ['usuarios', 'gestores', 'ambos'])) {
@@ -51,52 +56,33 @@ class Aval90dias extends Command
                 $destinatario = 'usuarios';
             }
 
-            $this->info("🔍 Processando avaliações de 90 dias para empresa: {$empresaId} (destinatário: {$destinatario})");
+            // Uma empresa específica (manual ou schedule com --empresa_id)
+            if ($empresaIdOption !== null && $empresaIdOption !== '') {
+                $empresaId = (int) $empresaIdOption;
+                if ($usuarioId) {
+                    return $this->processarParaUsuarioEspecifico($usuarioId, $empresaId);
+                }
+                return $this->processarUmaEmpresa($empresaId, $dataAtual, $destinatario);
+            }
 
-            Auth::loginUsingId($empresaId);
-
-            $service = new AvaliacaoNoventaService();
-
-            // Buscar avaliações vencidas ou próximas do vencimento (mesma regra do relatório: somente < 180 dias de admissão)
-            $avaliacoes = $service->buscarAvaliacoesVencendoOuVencidas($empresaId, AvaliacaoNoventaService::DIAS_ANTECEDENCIA);
-            
-            if ($avaliacoes->isEmpty()) {
-                $this->info("✅ Nenhuma avaliação vencida ou vencendo encontrada.");
+            // Schedule: todas as empresas habilitadas (lista configurável em cliente_configs)
+            $empresasIds = Sistema::listaEmpresasParaScheduleAvaliacaoExperiencia();
+            if (empty($empresasIds)) {
+                $this->info('✅ Nenhuma empresa habilitada no schedule de Avaliação de Experiência.');
                 return Command::SUCCESS;
             }
 
-            $this->info("📋 Encontradas {$avaliacoes->count()} avaliações para processar");
-
-            $jobsEnviados = 0;
-
-            // Envio para usuários (RH) com habilidade privilegio_gestao_rh
-            if (in_array($destinatario, ['usuarios', 'ambos'])) {
-                $usuariosNotificacao = $service->buscarUsuariosParaNotificacao($empresaId);
-                if ($usuariosNotificacao->isEmpty()) {
-                    $this->warn("⚠️  Nenhum usuário (RH) com privilégio para receber notificações");
-                } else {
-                    $this->info("👥 Usuários RH a notificar: {$usuariosNotificacao->count()}");
-                    $jobsEnviados += $this->processarNotificacoes($usuariosNotificacao, $avaliacoes, $dataAtual, $empresaId, $service);
-                }
+            $this->info('🔍 Processando Avaliação de Experiência para ' . count($empresasIds) . ' empresa(s) (máx. 180 dias de admissão)');
+            $totalJobs = 0;
+            foreach ($empresasIds as $empresaId) {
+                $this->info("--- Empresa ID: {$empresaId} ---");
+                $totalJobs += $this->processarUmaEmpresa($empresaId, $dataAtual, $destinatario);
             }
-
-            // Envio para gestores (um e-mail por gestor com seus colaboradores)
-            if (in_array($destinatario, ['gestores', 'ambos'])) {
-                $grupos = $service->montarVencimentosPorGestor($avaliacoes, $dataAtual);
-                if ($grupos->isEmpty()) {
-                    $this->warn('⚠️  Nenhum gestor com vencimentos para notificar');
-                } else {
-                    $this->info("👥 Gestores a notificar: {$grupos->count()}");
-                    $jobsEnviados += $this->processarNotificacoesGestores($grupos, $empresaId, $service);
-                }
-            }
-
-            $this->info("✅ Processo concluído! {$jobsEnviados} job(s) enfileirado(s) para envio");
-
+            $this->info("✅ Processo concluído! {$totalJobs} job(s) enfileirado(s) no total");
             return Command::SUCCESS;
 
         } catch (Throwable $e) {
-            Log::error('Erro ao processar avaliações de 90 dias', [
+            Log::error('Erro ao processar Avaliação de Experiência', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -108,7 +94,49 @@ class Aval90dias extends Command
         }
     }
 
-  
+    /**
+     * Processa uma única empresa (RH e/ou gestores conforme destinatario).
+     *
+     * @return int Número de jobs enfileirados
+     */
+    private function processarUmaEmpresa(int $empresaId, string $dataAtual, string $destinatario): int
+    {
+        $this->info("🔍 Empresa {$empresaId} (destinatário: {$destinatario})");
+
+        Auth::loginUsingId($empresaId);
+
+        $service = new AvaliacaoNoventaService();
+        $avaliacoes = $service->buscarAvaliacoesVencendoOuVencidas($empresaId, AvaliacaoNoventaService::DIAS_ANTECEDENCIA);
+
+        if ($avaliacoes->isEmpty()) {
+            $this->info("✅ Nenhuma avaliação vencida ou vencendo.");
+            return 0;
+        }
+
+        $this->info("📋 {$avaliacoes->count()} avaliações para processar");
+        $jobsEnviados = 0;
+
+        if (in_array($destinatario, ['usuarios', 'ambos'])) {
+            $usuariosNotificacao = $service->buscarUsuariosParaNotificacao($empresaId);
+            if ($usuariosNotificacao->isEmpty()) {
+                $this->warn("⚠️  Nenhum usuário (RH) com privilégio para receber notificações");
+            } else {
+                $jobsEnviados += $this->processarNotificacoes($usuariosNotificacao, $avaliacoes, $dataAtual, $empresaId, $service);
+            }
+        }
+
+        if (in_array($destinatario, ['gestores', 'ambos'])) {
+            $grupos = $service->montarVencimentosPorGestor($avaliacoes, $dataAtual);
+            if ($grupos->isEmpty()) {
+                $this->warn('⚠️  Nenhum gestor com vencimentos para notificar');
+            } else {
+                $jobsEnviados += $this->processarNotificacoesGestores($grupos, $empresaId, $service);
+            }
+        }
+
+        return $jobsEnviados;
+    }
+
     /**
      * Processa notificações e envia e-mails diretamente
      *
@@ -149,7 +177,7 @@ class Aval90dias extends Command
 
                     $this->info("✅ Job enfileirado com sucesso para {$usuario->nome}");
 
-                    Log::info('Job de notificação de avaliação 90 dias enfileirado', [
+                    Log::info('Job de notificação de Avaliação de Experiência enfileirado', [
                         'usuario_id' => $usuario->id,
                         'usuario_nome' => $usuario->nome,
                         'usuario_email' => $usuario->login,
@@ -160,7 +188,7 @@ class Aval90dias extends Command
                     $emailsEnviados++;
                     
                 } catch (Throwable $e) {
-                    Log::error('Erro ao enfileirar job de avaliação 90 dias', [
+                    Log::error('Erro ao enfileirar job de Avaliação de Experiência', [
                         'usuario_id' => $usuario->id,
                         'usuario_nome' => $usuario->nome,
                         'error' => $e->getMessage(),
@@ -213,7 +241,7 @@ class Aval90dias extends Command
 
                     $emailsEnviados++;
                 } catch (\Throwable $e) {
-                    Log::error('Erro ao enfileirar job de avaliação 90 dias (gestores)', [
+                    Log::error('Erro ao enfileirar job de Avaliação de Experiência (gestores)', [
                         'usuario_id' => $usuario->id ?? null,
                         'usuario_nome' => $usuario->nome ?? null,
                         'error' => $e->getMessage(),
@@ -236,7 +264,7 @@ class Aval90dias extends Command
      */
     private function processarParaUsuarioEspecifico(int $usuarioId, int $empresaId): int
     {
-        $this->info("🔍 Processando avaliações de 90 dias para usuário: {$usuarioId}");
+        $this->info("🔍 Processando Avaliação de Experiência para usuário: {$usuarioId} (máx. 180 dias de admissão)");
 
         Auth::loginUsingId($empresaId);
 
@@ -250,7 +278,7 @@ class Aval90dias extends Command
             return Command::FAILURE;
         }
 
-        // Buscar avaliações vencidas ou próximas do vencimento (mesma regra: somente < 180 dias de admissão)
+        // Regra dos 180 dias: somente colaboradores com até 180 dias de admissão
         $avaliacoes = $service->buscarAvaliacoesVencendoOuVencidas($empresaId, AvaliacaoNoventaService::DIAS_ANTECEDENCIA);
         
         if ($avaliacoes->isEmpty()) {
@@ -283,7 +311,7 @@ class Aval90dias extends Command
 
             $this->info("✅ Job enfileirado com sucesso para {$usuario->nome}");
 
-            Log::info('Job de notificação de avaliação 90 dias enfileirado (usuário específico)', [
+            Log::info('Job de notificação de Avaliação de Experiência enfileirado (usuário específico)', [
                 'usuario_id' => $usuario->id,
                 'usuario_nome' => $usuario->nome,
                 'usuario_email' => $usuario->login,
@@ -294,7 +322,7 @@ class Aval90dias extends Command
             return Command::SUCCESS;
             
         } catch (Throwable $e) {
-            Log::error('Erro ao enfileirar job de avaliação 90 dias (usuário específico)', [
+            Log::error('Erro ao enfileirar job de Avaliação de Experiência (usuário específico)', [
                 'usuario_id' => $usuario->id,
                 'usuario_nome' => $usuario->nome,
                 'error' => $e->getMessage(),

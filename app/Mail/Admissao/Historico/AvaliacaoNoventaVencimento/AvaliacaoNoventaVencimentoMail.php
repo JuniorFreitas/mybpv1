@@ -32,13 +32,13 @@ class AvaliacaoNoventaVencimentoMail extends Mailable
     public function build()
     {
         return $this
-            ->subject('Lembrete de vencimento avaliação 90 dias')
+            ->subject('Lembrete de vencimento - Avaliação de Experiência')
             ->to($this->dados['usuario']->login, $this->dados['usuario']->nome)
             ->from(config('mail.from.address'), config('mail.from.name'))
             ->view('email.admissao.historico.avaliacaoNoventaVencimento')
             ->with([
                 'dados' => $this->dados,
-                'subject' => 'Lembrete de vencimento avaliação 90 dias'
+                'subject' => 'Lembrete de vencimento - Avaliação de Experiência'
             ]);
     }
 }

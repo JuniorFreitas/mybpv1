@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliações de 90 Dias</title>
+    <title>Avaliação de Experiência - Vencimentos</title>
 </head>
 <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f7f7f7; color: #333; line-height: 1.6;">
     <div style="width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
         
         <!-- Cabeçalho -->
         <div style="background-color: #003755; color: white; padding: 15px; text-align: center; margin-bottom: 20px; border-radius: 5px;">
-            <h1 style="margin: 0 0 10px 0;">Avaliações de 90 Dias</h1>
+            @if(!empty($dados['logo_empresa']))
+                <div style="margin-bottom: 12px;">
+                    <img src="{{ $dados['logo_empresa'] }}" alt="Logo da empresa" style="max-height: 50px; width: auto; max-width: 200px; display: inline-block; vertical-align: middle;">
+                </div>
+            @endif
+            <h1 style="margin: 0 0 10px 0;">Avaliação de Experiência</h1>
             <p style="margin: 5px 0;">Relatório de Vencimentos</p>
             <p style="margin: 5px 0;">Gerado em: {{ date('d/m/Y H:i') }}</p>
         </div>
@@ -86,7 +91,7 @@
         <div style="background-color: #fff3cd; color: #856404; padding: 16px; margin: 0 0 20px; border-radius: 5px; border-left: 5px solid #ffe69c;">
             <div style="font-weight: 700; margin-bottom: 8px;">Atenção aos prazos</div>
             <p style="margin: 6px 0 10px;">
-                As avaliações de 90 dias possuem <strong>dois marcos</strong> (1ª e 2ª avaliação). Para não perder os prazos:
+                A Avaliação de Experiência possui <strong>dois marcos</strong> (1ª e 2ª avaliação). Para não perder os prazos:
             </p>
             <ul style="margin: 0 0 0 18px; padding: 0;">
                 <li style="margin: 6px 0;">Priorize colaboradores com status <strong>VENCIDO</strong> e <strong>VENCE HOJE</strong>.</li>
