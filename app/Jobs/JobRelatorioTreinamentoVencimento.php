@@ -235,9 +235,13 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
                         continue;
                     }
 
+                    $segmentoId = $feedback->Admissao->segmento_treinamento_id ?? \App\Models\SegmentoTreinamento::getIdAlumar();
                     $vencimentos = collect();
 
                     foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
+                        if ($segmentoId && $vencimento->segmento_treinamento_id !== null && (int) $vencimento->segmento_treinamento_id !== (int) $segmentoId) {
+                            continue;
+                        }
                         $diasVencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $vencimento->pivot->data_vencimento);
                         
                         $vencimentos->push([

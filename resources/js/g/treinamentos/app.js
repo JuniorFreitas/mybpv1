@@ -524,6 +524,7 @@ const app = new Vue({
 
             this.preload = true
             this.formMassa.selecionadosMassa = this.selecionadosMassa
+            this.formMassa.tipo = 'Fixo' // vencimento usa somente prazo_fixo
 
             axios
                 .post(`${URL_ADMIN}/treinamento/salvar-massa`, this.formMassa)
@@ -773,9 +774,8 @@ const app = new Vue({
 
             let expiryDate = new Date(trainingDate)
 
-            if (this.form.tipo === 'Parada' && treinamento.prazo_parada) {
-                expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_parada))
-            } else if (this.form.tipo === 'Fixo' && treinamento.prazo_fixo) {
+            // Usar somente prazo_fixo para vencimento (não há mais fixo/parada)
+            if (treinamento.prazo_fixo) {
                 expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_fixo))
             } else {
                 return

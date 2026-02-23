@@ -91,9 +91,11 @@ const app = new Vue({
                 modelo_cih: '',
                 supervisor_etiqueta_bloqueio: true,
             },
+            segmentos_treinamento_ids: [],
 
             listaDeHabilidades: '',
         },
+        listaSegmentosTreinamento: [],
 
         urlAnexoUpload: `${URL_ADMIN}/administracao/clientes/uploadAnexos`,
         anexoUploadAndamento: false,
@@ -127,6 +129,9 @@ const app = new Vue({
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.atualizar();
+        axios.get(`${URL_ADMIN}/cadastro/segmentostreinamento/lista`).then(res => {
+            this.listaSegmentosTreinamento = res.data || [];
+        }).catch(() => {});
     },
     methods: {
         selecionarTodas() {
@@ -256,6 +261,7 @@ const app = new Vue({
             axios.get(`${URL_ADMIN}/administracao/clientes/${id}/editar`)
                 .then(response => {
                     Object.assign(this.form, response.data.cliente);
+                    this.form.segmentos_treinamento_ids = (response.data.cliente.segmentos_treinamento || []).map(s => s.id);
                     this.editando = true;
                     this.preloadAjax = false;
                     if (!response.data.cliente.cliente_config) {

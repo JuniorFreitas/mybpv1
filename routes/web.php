@@ -401,6 +401,13 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::resource('treinamentoindustria', \App\Http\Controllers\TreinamentoIndustriaController::class)->middleware('can:cadastro_treinamento_industria');
         });
 
+        Route::group(['as' => 'segmentostreinamento.'], function () {
+            Route::get('segmentostreinamento/lista', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'listar'])->name('lista');
+            Route::get('segmentostreinamento/habilitados-empresa', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'habilitadosEmpresa'])->name('habilitados-empresa');
+            Route::post('segmentostreinamento/atualizar', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_treinamento_industria');
+            Route::resource('segmentostreinamento', \App\Http\Controllers\SegmentoTreinamentoController::class)->only(['index', 'store', 'update'])->middleware('can:cadastro_treinamento_industria');
+        });
+
         Route::group(['as' => 'treinamentosgi.'], function () {
             Route::post('treinamentosgi/atualizar', [\App\Http\Controllers\TreinamentoSgiController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_treinamento_sgi');
             Route::resource('treinamentosgi', \App\Http\Controllers\TreinamentoSgiController::class)->middleware('can:cadastro_treinamento_sgi');

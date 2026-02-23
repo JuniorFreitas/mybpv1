@@ -399,6 +399,11 @@ class Cliente extends Model
         return $this->hasOne(ClienteConfig::class, 'cliente_id', 'id');
     }
 
+    public function SegmentosTreinamento()
+    {
+        return $this->belongsToMany(SegmentoTreinamento::class, 'cliente_segmento_treinamento', 'cliente_id', 'segmento_treinamento_id');
+    }
+
     public function EmpresaFuncionarios()
     {
         return $this->belongsToMany(User::class, 'empresa_funcionarios', 'empresa_id', 'funcionario_id');

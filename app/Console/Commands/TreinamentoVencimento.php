@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Admissao;
 use App\Models\Cliente;
+use App\Models\SegmentoTreinamento;
 use App\Models\Sistema;
 use App\Models\TipoRecebeEmail;
 use App\Models\Treinamento;
@@ -239,8 +240,12 @@ class TreinamentoVencimento extends Command
                         continue;
                     }
 
+                    $segmentoId = $feedback->Admissao->segmento_treinamento_id ?? SegmentoTreinamento::getIdAlumar();
                     // Processar cada vencimento do treinamento
                     foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
+                        if ($segmentoId && $vencimento->segmento_treinamento_id !== null && (int) $vencimento->segmento_treinamento_id !== (int) $segmentoId) {
+                            continue;
+                        }
                         // Buscar dados do treinamento_vencimento
                         $treinamentoVencimento = \DB::table('treinamento_vencimento')
                             ->where('treinamento_id', $feedback->Treinamento->id)

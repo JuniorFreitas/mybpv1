@@ -138,20 +138,8 @@
                                                         </div>
                                                     </fieldset>
                                                 </div>--}}
-                        <div class="col-md-12 mb-4">
-                            <label>Tipo</label>
-                            <select class="form-control" v-model="form.tipo"
-                                    onchange="valida_campo_vazio(this,1)"
-                                    onblur="valida_campo_vazio(this,1)"
-                            >
-                                <option value="">Selecione ...</option>
-                                <option value="Fixo">Fixo</option>
-                                <option value="Parada">Parada</option>
-                            </select>
-                        </div>
-
                         <div class="col-12 mb-2"
-                             v-if="form.tipo && form.listaVencimentos && form.listaVencimentos.length > 0"
+                             v-if="form.listaVencimentos && form.listaVencimentos.length > 0"
                         >
                             <div class="row">
 
@@ -205,7 +193,7 @@
 
 
                         {{--<div v-if="false" class="col-12" v-for="(treinamento, index) in form.listaVencimentos"
-                             v-if="form.tipo">
+                             v-if="form.listaVencimentos && form.listaVencimentos.length > 0">
                             <fieldset>
                                 <legend>@{{ treinamento.label }}</legend>
 
@@ -225,27 +213,24 @@
                                     </div>
 
                                     <template v-if="treinamento.fez_treinamento">
-                                        <template v-if="treinamento.prazo_fixo && treinamento.prazo_parada">
+                                        <template v-if="treinamento.prazo_fixo">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <template>
-                                                        <datepicker v-model="treinamento.data_treinamento"
-                                                                    label="Data do treinamento"
-                                                                    max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                                                    onblur="valida_data_vazio(this)"></datepicker>
-                                                    </template>
+                                                    <datepicker v-model="treinamento.data_treinamento"
+                                                                label="Data do treinamento"
+                                                                max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
+                                                                onblur="valida_data_vazio(this)"></datepicker>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6"
-                                                 v-show="treinamento.prazo_fixo || treinamento.prazo_parada">
+                                            <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label>Vencimento</label>
+                                                    <label>Vencimento (prazo fixo)</label>
                                                     <input class="form-control" readonly disabled
                                                            :value="treinamento.data_vencimento">
                                                 </div>
                                             </div>
                                         </template>
-                                        <template v-if="!treinamento.prazo_fixo && !treinamento.prazo_parada">
+                                        <template v-if="!treinamento.prazo_fixo">
                                             <datepicker v-model="treinamento.data_treinamento"
                                                         label="Data do treinamento"
                                                         max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
@@ -321,7 +306,7 @@
 
                     </div>
 
-                    <div class="mb-4" v-if="form.tipo && form.listaVencimentos && form.listaVencimentos.length > 0">
+                    <div class="mb-4" v-if="form.listaVencimentos && form.listaVencimentos.length > 0">
                         <div class="input-group input-group">
                             <input type="text" class="form-control" placeholder="Buscar treinamento..."
                                    v-model="trainingSearchQuery"
@@ -334,7 +319,7 @@
 
                     <!-- Accordion de treinamentos -->
                     <div class="accordion" id="accordionTreinamentos"
-                         v-if="form.tipo && treinamentosFiltrados.length > 0"
+                         v-if="treinamentosFiltrados.length > 0"
                     >
                         <div v-for="(treinamento, index) in treinamentosFiltrados"
                              :key="index"
@@ -399,10 +384,8 @@
                                     </div>
 
                                     <div class="row" v-if="treinamento.fez_treinamento">
-                                        <!-- Datas de treinamento e vencimento -->
-                                        <template
-                                            v-if="treinamento.prazo_fixo && treinamento.prazo_parada"
-                                        >
+                                        <!-- Datas de treinamento e vencimento (somente prazo fixo) -->
+                                        <template v-if="treinamento.prazo_fixo">
                                             <div class="col-md-6 mt-2">
                                                 <datepicker v-model="treinamento.data_treinamento"
                                                             label="Data do treinamento"
@@ -413,14 +396,14 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group mt-2">
-                                                    <label>Vencimento</label>
+                                                    <label>Vencimento (prazo fixo)</label>
                                                     <input class="form-control" readonly disabled
                                                            :value="treinamento.data_vencimento"
                                                     >
                                                 </div>
                                             </div>
                                         </template>
-                                        <template v-if="!treinamento.prazo_fixo && !treinamento.prazo_parada">
+                                        <template v-if="!treinamento.prazo_fixo">
                                             <div class="col-md-6 mt-2">
                                                 <datepicker v-model="treinamento.data_treinamento"
                                                             label="Data do treinamento"
@@ -471,15 +454,9 @@
 
                 <!-- Mensagem de nenhum treinamento encontrado -->
                 <div class="alert alert-info"
-                     v-if="form.tipo && (!treinamentosFiltrados || treinamentosFiltrados.length === 0)"
+                     v-if="form.listaVencimentos && form.listaVencimentos.length > 0 && (!treinamentosFiltrados || treinamentosFiltrados.length === 0)"
                 >
                     <i class="fa fa-info-circle"></i> Nenhum treinamento encontrado com os filtros atuais.
-                </div>
-
-                <!-- Mensagem para selecionar um tipo -->
-                <div class="alert alert-warning" v-if="!form.tipo">
-                    <i class="fa fa-exclamation-triangle"></i>
-                    Selecione um tipo para visualizar os treinamentos disponíveis.
                 </div>
             </div>
         </template>
@@ -506,22 +483,8 @@
                 <fieldset>
                     <legend>Treinamentos</legend>
                     <div class="row">
-                        <div class="col-12">
-                            <fieldset>
-                                <label>Tipo</label>
-                                <select class="form-control" v-model="formMassa.tipo"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        onblur="valida_campo_vazio(this,1)"
-                                >
-                                    <option value="">Selecione ...</option>
-                                    <option value="Fixo">Fixo</option>
-                                    <option value="Parada">Parada</option>
-                                </select>
-                            </fieldset>
-                        </div>
-
                         <div class="col-12 col-md-6" v-for="(treinamento, index) in formMassa.listaVencimentos"
-                             v-if="formMassa.tipo !== ''"
+                             v-if="formMassa.listaVencimentos && formMassa.listaVencimentos.length > 0"
                         >
                             <fieldset>
                                 <legend>@{{ treinamento.label }}</legend>
@@ -543,11 +506,9 @@
                                     </div>
                                     <div class="col-12 col-md-6" v-if="treinamento.fez_treinamento">
                                         <div class="form-group">
-                                            <template v-if="treinamento.prazo_fixo && treinamento.prazo_parada">
+                                            <template v-if="treinamento.prazo_fixo">
                                                 <label for="">Data do treinamento:
-                                                    <span class="text-danger" style="font-size: 0.85rem;"
-                                                          v-show="treinamento.prazo_fixo || treinamento.prazo_parada"
-                                                    >
+                                                    <span class="text-danger" style="font-size: 0.85rem;">
                                                      Vencimento: @{{ treinamento.data_vencimento }}
                                                 </span>
                                                 </label>
@@ -555,7 +516,6 @@
                                                             max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
                                                             onblur="valida_data_vazio(this)"
                                                 ></datepicker>
-
                                             </template>
                                         </div>
                                         <div class="form-group">
@@ -573,7 +533,7 @@
         </template>
         <template slot="rodape">
             <button type="button" class="btn btn-sm btn-primary" @click="salvarMassa"
-                    v-if="!preload && formMassa.tipo && (!cadastrado && !atualizado)"
+                    v-if="!preload && formMassa.listaVencimentos && formMassa.listaVencimentos.length > 0 && (!cadastrado && !atualizado)"
             >
                 <i class="fa fa-save"></i> Salvar
             </button>

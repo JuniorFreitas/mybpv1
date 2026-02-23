@@ -77,6 +77,7 @@ mix.js('resources/js/app.js', 'public/js')
     .js('resources/js/g/administracao/aniversariantes/app.js', 'public/js/g/aniversariantes/')
     //Cadastros
     .js('resources/js/g/cadastros/treinamentoindustria/app.js', 'public/js/g/treinamentoindustria/')
+    .js('resources/js/g/cadastros/segmentostreinamento/app.js', 'public/js/g/segmentostreinamento/')
     .js('resources/js/g/cadastros/treinamentosgi/app.js', 'public/js/g/treinamentosgi/')
     .js('resources/js/g/cadastros/departamento/app.js', 'public/js/g/departamento/')
     .js('resources/js/g/cadastros/instrutor/app.js', 'public/js/g/instrutor/')

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SegmentoTreinamento;
 use App\Models\User;
 use App\Models\Vencimento;
 use DB;
@@ -60,6 +61,7 @@ class TreinamentoIndustriaController extends Controller
                 if(!$dados['exibir_na_carteira']){
                     $dados['label_reduzida'] = null;
                 }
+                $dados['segmento_treinamento_id'] = $dados['segmento_treinamento_id'] ?? SegmentoTreinamento::getIdAlumar();
 
                 Vencimento::create($dados);
 
@@ -93,7 +95,7 @@ class TreinamentoIndustriaController extends Controller
      */
     public function edit($id)
     {
-        return Vencimento::whereId($id)->first();
+        return Vencimento::with('SegmentoTreinamento:id,nome,slug')->whereId($id)->first();
     }
 
     /**
@@ -130,6 +132,9 @@ class TreinamentoIndustriaController extends Controller
                 if(!$dados['exibir_na_carteira']){
                     $dados['label_reduzida'] = null;
                 }
+                if (array_key_exists('segmento_treinamento_id', $dados)) {
+                    $dados['segmento_treinamento_id'] = $dados['segmento_treinamento_id'] ?: SegmentoTreinamento::getIdAlumar();
+                }
 
                 $vencimento->update($dados);
 
@@ -157,7 +162,7 @@ class TreinamentoIndustriaController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = Vencimento::whereNotNull('label');
+        $resultado = Vencimento::with('SegmentoTreinamento:id,nome,slug')->whereNotNull('label');
 
         if ($request->filled('campoBusca')) {
             $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
@@ -166,6 +171,10 @@ class TreinamentoIndustriaController extends Controller
         if ($request->filled('campoStatus')) {
             $status = $request->campoStatus == 'true';
             $resultado->whereAtivo($status);
+        }
+
+        if ($request->filled('segmento_treinamento_id')) {
+            $resultado->where('segmento_treinamento_id', $request->segmento_treinamento_id);
         }
 
         $resultado = $resultado->paginate($request->pages);

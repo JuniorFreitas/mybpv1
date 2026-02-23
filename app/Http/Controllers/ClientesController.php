@@ -250,6 +250,10 @@ class ClientesController extends Controller
 
                 $papel->habilidades()->attach($habilidades);
 
+                if (isset($dados['segmentos_treinamento_ids']) && is_array($dados['segmentos_treinamento_ids'])) {
+                    $cliente->SegmentosTreinamento()->sync($dados['segmentos_treinamento_ids']);
+                }
+
                 $this->criaOuAtualizaEmpresaCliente($cliente->id);
                 $this->criaOuAtualizaGrupoAdm($cliente->id);
 
@@ -289,7 +293,7 @@ class ClientesController extends Controller
      */
     public function edit(Cliente $cliente)
     {
-        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote', 'ClienteConfig', 'Papel.habilidades');
+        $cliente = $cliente->load('Telefones', 'AreasEtiquetas', 'ServicosCliente.Anexos', 'ServicosProspect.Anexos', 'Logo', 'Mascote', 'ClienteConfig', 'Papel.habilidades', 'SegmentosTreinamento:id,nome,slug');
         $cliente->areas_etiquetas_del = [];
         $cliente->ServicosCliente->transform(function ($item) {
             $item->anexosDel = [];
@@ -571,6 +575,9 @@ class ClientesController extends Controller
                 }
             }
 
+            if (isset($dados['segmentos_treinamento_ids']) && is_array($dados['segmentos_treinamento_ids'])) {
+                $cliente->SegmentosTreinamento()->sync($dados['segmentos_treinamento_ids']);
+            }
             if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
                 $config = ClienteConfig::find($dados['cliente_config']['id']);
                 $config->update([

@@ -6,17 +6,21 @@
                 <td style="width: 50%; height: 8.30cm; vertical-align: top;">
                     <table>
                         <tr>
+                            @php
+                                $segmento_config = $treinamento['segmento_config'] ?? [];
+                                $cabecalho_img = !empty($segmento_config['cabecalho_img']) ? asset($segmento_config['cabecalho_img']) : asset('images/carteira/cabecalho_carteira_alumar.webp');
+                            @endphp
                             @if($empresa['empresa_id'] !== 78862)
                                 <td style="text-align: center;">
-                                    <img src="{{asset('images/carteira/cabecalho_carteira_alumar.webp')}}"
+                                    <img src="{{ $cabecalho_img }}"
                                          style="width: 5.7cm; margin-bottom: -1mm;">
                                 </td>
                             @else
                                 <td style="text-align: center;">
-                                    <img
-                                        src="{{$empresa['logo']}}"
-                                        alt="Logo" title="Logo" style="width: 1.6cm">
-                                    <img src="{{asset('images/carteira/cabecalho_carteira_alumar.webp')}}"
+                                    @if(!empty($empresa['logo']))
+                                        <img src="{{$empresa['logo']}}" alt="Logo" title="Logo" style="width: 1.6cm">
+                                    @endif
+                                    <img src="{{ $cabecalho_img }}"
                                          style="width: 5cm; margin-bottom: -1mm;">
                                 </td>
                             @endif
@@ -125,7 +129,10 @@
                     </table>
                 </td>
                 <td style="width: 50%; min-height: 8.30cm; text-align: center; border-left: 0.1mm dashed #cccccc;">
-                    <img src="{{asset('images/carteira/verso_carteira_alumar.webp')}}" style="width: 4.4cm">
+                    @php
+                        $verso_img = !empty($segmento_config['verso_img']) ? asset($segmento_config['verso_img']) : asset('images/carteira/verso_carteira_alumar.webp');
+                    @endphp
+                    <img src="{{ $verso_img }}" style="width: 4.4cm">
                 </td>
             </tr>
         </table>

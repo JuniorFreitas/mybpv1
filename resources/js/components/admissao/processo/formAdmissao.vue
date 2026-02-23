@@ -222,6 +222,19 @@
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
+                    <label>Padrão de treinamento</label>
+                    <select class="form-control" :disabled="visualizar || disabled"
+                            v-model="form.segmento_treinamento_id">
+                        <option :value="null">Selecione</option>
+                        <option v-for="s in (listSelects.segmentos_treinamento || [])" :key="s.id" :value="s.id">
+                            {{ s.nome }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6">
+                <div class="form-group">
                     <label>Status</label>
                     <select class="form-control" onchange="valida_campo_vazio(this,1)"
                             :disabled="visualizar || disabled"
@@ -453,6 +466,7 @@ export default {
                 numero_cracha: "",
                 foto_escaneada: "",
                 status_carteira_treinamento: "",
+                segmento_treinamento_id: null,
                 data_admissao: "",
                 data_adm_prevista: "",
 
