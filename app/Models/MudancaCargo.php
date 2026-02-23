@@ -152,7 +152,10 @@ class MudancaCargo extends Model
         'status_aprovacao_rh',
         'data_aprovacao_rh',
         'aprovado_via_script',
-        'quem_deletou_id'
+        'quem_deletou_id',
+        'treinamento_funcao',
+        'treinamento_data_inicio',
+        'treinamento_data_fim'
     ];
 
     protected $casts = [
@@ -193,6 +196,7 @@ class MudancaCargo extends Model
         'data_aprovacao_rh' => 'string',
         'aprovado_via_script' => 'boolean',
         'quem_deletou_id' => 'int',
+        'treinamento_funcao' => 'boolean',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s'
     ];
@@ -212,7 +216,11 @@ class MudancaCargo extends Model
 
     public function setAnteriorSalarioAttribute($value)
     {
-        $this->attributes['anterior_salario'] = Sistema::DinheiroInsert($value);
+        if (empty($value) || $value === null || trim($value) === '') {
+            $this->attributes['anterior_salario'] = 0.00;
+        } else {
+            $this->attributes['anterior_salario'] = Sistema::DinheiroInsert($value);
+        }
     }
 
     public function getNovoSalarioAttribute()
@@ -222,7 +230,11 @@ class MudancaCargo extends Model
 
     public function setNovoSalarioAttribute($value)
     {
-        $this->attributes['novo_salario'] = Sistema::DinheiroInsert($value);
+        if (empty($value) || $value === null || trim($value) === '') {
+            $this->attributes['novo_salario'] = 0.00;
+        } else {
+            $this->attributes['novo_salario'] = Sistema::DinheiroInsert($value);
+        }
     }
 
     public function setDataSolicitacaoAttribute($value)
@@ -271,6 +283,44 @@ class MudancaCargo extends Model
     {
         $data = new DataHora($this->attributes['data_aprovacao_rh']);
         return $data->dataCompleta();
+    }
+
+    public function setTreinamentoDataInicioAttribute($value)
+    {
+        if (!is_null($value) && !empty($value)) {
+            $data = new DataHora($value);
+            $this->attributes['treinamento_data_inicio'] = $data->dataInsert();
+        } else {
+            $this->attributes['treinamento_data_inicio'] = null;
+        }
+    }
+
+    public function getTreinamentoDataInicioAttribute($value)
+    {
+        if (isset($this->attributes['treinamento_data_inicio']) && !is_null($this->attributes['treinamento_data_inicio'])) {
+            $data = new DataHora($this->attributes['treinamento_data_inicio']);
+            return $data->dataCompleta();
+        }
+        return null;
+    }
+
+    public function setTreinamentoDataFimAttribute($value)
+    {
+        if (!is_null($value) && !empty($value)) {
+            $data = new DataHora($value);
+            $this->attributes['treinamento_data_fim'] = $data->dataInsert();
+        } else {
+            $this->attributes['treinamento_data_fim'] = null;
+        }
+    }
+
+    public function getTreinamentoDataFimAttribute($value)
+    {
+        if (isset($this->attributes['treinamento_data_fim']) && !is_null($this->attributes['treinamento_data_fim'])) {
+            $data = new DataHora($this->attributes['treinamento_data_fim']);
+            return $data->dataCompleta();
+        }
+        return null;
     }
 
     public function Admissao()
@@ -350,6 +400,7 @@ class MudancaCargo extends Model
 
     public function Anexos()
     {
-        return $this->belongsToMany(Arquivo::class, 'mudanca_cargo_anexos', 'mudanca_cargo_id', 'arquivo_id');
+        return $this->belongsToMany(Arquivo::class, 'mudanca_cargo_anexos', 'mudanca_cargo_id', 'arquivo_id')
+            ->withPivot('tipo_anexo');
     }
 }

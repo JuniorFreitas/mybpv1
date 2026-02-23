@@ -166,7 +166,8 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-4"
-                                 v-if="temFilial && form.novo_filial && !form.mantem_centro_custo">
+                                 v-if="temFilial && form.novo_filial && !form.mantem_centro_custo"
+                            >
                                 <div class="form-group">
                                     <label>Nova Filial</label>
                                     <select
@@ -176,7 +177,8 @@
                                     >
                                         <option value="">Selecione</option>
                                         <option v-for="item in centroCustoSelecionadoNovo" :value="item.id"
-                                                :key="item.id">
+                                                :key="item.id"
+                                        >
                                             {{ item.filial.razao_social }}
                                         </option>
                                     </select>
@@ -213,6 +215,77 @@
                                     >
                                 </div>
                             </div>
+                        </div>
+                    </fieldset>
+                    <fieldset v-if="form.colaborador_id">
+                        <legend>Treinamento/Certificado</legend>
+                        <div class="row">
+                            <div class="col-12 col-md-2">
+                                <div class="form-group">
+                                    <label>Treinamento na Função</label>
+                                    <select class="form-control form-control-sm"
+                                            @change.p.prevent="changeTreinamentoFuncao()"
+                                            v-model="form.treinamento_funcao"
+                                            :disabled="visualizar || aprovandoRh || aprovando"
+                                    >
+                                        <option :value="false">Não</option>
+                                        <option :value="true">Sim</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-3" v-if="form.treinamento_funcao">
+                                <div class="form-group">
+                                    <label>Data Início</label>
+                                    <datepicker formsm label="" class="corrigiDatepicker"
+                                                v-model="form.treinamento_data_inicio"
+                                                :disabled="visualizar || aprovandoRh || aprovando"
+                                    ></datepicker>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-3" v-if="form.treinamento_funcao">
+                                <div class="form-group">
+                                    <label>Data Fim</label>
+                                    <datepicker formsm label="" class="corrigiDatepicker"
+                                                v-model="form.treinamento_data_fim"
+                                                :disabled="visualizar || aprovandoRh || aprovando"
+                                    ></datepicker>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" v-if="form.treinamento_funcao">
+                            <div class="col-12 col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Treinamento</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <upload :model="form.treinamento_certificado"
+                                                :model-delete="form.treinamento_certificadoDel" :url="url_anexo"
+                                                :tipos="mimes"
+                                                :leitura="!podeanexar || visualizar || aprovandoRh || aprovando"
+                                                label="Selecionar" @onProgresso="anexoUploadAndamento = true"
+                                                @onFinalizado="anexoUploadAndamento = false"
+                                        ></upload>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Termo de Ciência</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <upload :model="form.treinamento_termo_ciencia"
+                                                :model-delete="form.treinamento_termo_cienciaDel" :url="url_anexo"
+                                                :tipos="mimes"
+                                                :leitura="!podeanexar || visualizar || aprovandoRh || aprovando"
+                                                label="Selecionar" @onProgresso="anexoUploadAndamento = true"
+                                                @onFinalizado="anexoUploadAndamento = false"
+                                        ></upload>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </fieldset>
                     <fieldset v-if="form.colaborador_id">
@@ -323,9 +396,14 @@
                     <fieldset v-if="visualizar || aprovando">
                         <legend>Aprovação Gestor</legend>
                         <div class="row">
-                            <div v-if="!aprovando && (form.gestor_aprovacao && (form.gestor_aprovacao.nome || typeof form.gestor_aprovacao === 'string'))" class="col-12">
+                            <div
+                                v-if="!aprovando && (form.gestor_aprovacao && (form.gestor_aprovacao.nome || typeof form.gestor_aprovacao === 'string'))"
+                                class="col-12"
+                            >
                                 <legend>{{ form.status_aprovacao_gestor }}
-                                    por: {{ (form.gestor_aprovacao && form.gestor_aprovacao.nome) || form.gestor_aprovacao || '' }} em {{ form.data_aprovacao_gestor }}
+                                    por:
+                                    {{ (form.gestor_aprovacao && form.gestor_aprovacao.nome) || form.gestor_aprovacao || ''
+                                    }} em {{ form.data_aprovacao_gestor }}
                                 </legend>
                             </div>
 
@@ -334,7 +412,8 @@
                                     <label>Observação</label>
                                     <textarea class="form-control form-control-sm" :disabled="!aprovando"
                                               v-model="form.obs_gestor_aprovacao"
-                                              cols="5" rows="5"></textarea>
+                                              cols="5" rows="5"
+                                    ></textarea>
                                 </div>
                             </div>
 
@@ -344,7 +423,8 @@
                                     <select :disabled="!aprovando"
                                             v-model="form.status_aprovacao_gestor"
                                             class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)">
+                                            onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)"
+                                    >
                                         <option value="">Selecione...</option>
                                         <option value="aprovado">Aprovar</option>
                                         <option value="reprovado">Reprovar</option>
@@ -376,7 +456,8 @@
                                     <label>Observação</label>
                                     <textarea class="form-control form-control-sm" :disabled="!aprovandoExtra"
                                               v-model="form.obs_aprovacao_extra"
-                                              cols="5" rows="5"></textarea>
+                                              cols="5" rows="5"
+                                    ></textarea>
                                 </div>
                             </div>
 
@@ -386,7 +467,8 @@
                                     <select :disabled="!aprovandoExtra"
                                             v-model="form.status_aprovacao_extra"
                                             class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)">
+                                            onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)"
+                                    >
                                         <option value="">Selecione...</option>
                                         <option value="aprovado">Aprovar</option>
                                         <option value="reprovado">Reprovar</option>
@@ -403,8 +485,14 @@
                     <fieldset v-if="visualizar || aprovandoRh">
                         <legend>Aprovação RH</legend>
                         <div class="row">
-                            <div v-if="!aprovandoRh && (form.rh_aprovacao && (form.rh_aprovacao.nome || typeof form.rh_aprovacao === 'string'))" class="col-12">
-                                <legend>{{ form.status_aprovacao_rh }} por: {{ (form.rh_aprovacao && form.rh_aprovacao.nome) || form.rh_aprovacao || '' }} em {{ form.data_aprovacao_rh }}</legend>
+                            <div
+                                v-if="!aprovandoRh && (form.rh_aprovacao && (form.rh_aprovacao.nome || typeof form.rh_aprovacao === 'string'))"
+                                class="col-12"
+                            >
+                                <legend>{{ form.status_aprovacao_rh }} por:
+                                    {{ (form.rh_aprovacao && form.rh_aprovacao.nome) || form.rh_aprovacao || '' }} em
+                                    {{ form.data_aprovacao_rh }}
+                                </legend>
                             </div>
 
                             <div class="col-12">
@@ -412,7 +500,8 @@
                                     <label>Observação</label>
                                     <textarea class="form-control form-control-sm" :disabled="!aprovandoRh"
                                               v-model="form.obs_rh"
-                                              cols="5" rows="5"></textarea>
+                                              cols="5" rows="5"
+                                    ></textarea>
                                 </div>
                             </div>
 
@@ -422,7 +511,8 @@
                                     <select :disabled="!aprovandoRh"
                                             v-model="form.status_aprovacao_rh"
                                             class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)">
+                                            onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)"
+                                    >
                                         <option value="">Selecione...</option>
                                         <option value="aprovado">Aprovar</option>
                                         <option value="reprovado">Reprovar</option>
@@ -441,26 +531,31 @@
                                 :leitura="!podeanexar"
                                 label="Selecionar"
                                 @onProgresso="anexoUploadAndamento=true"
-                                @onFinalizado="anexoUploadAndamento=false"></upload>
+                                @onFinalizado="anexoUploadAndamento=false"
+                        ></upload>
                     </fieldset>
                 </form>
             </template>
             <template slot="rodape">
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="cadastrando && !preload"
-                        @click.prevent="cadastrar">
+                        @click.prevent="cadastrar"
+                >
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
                 <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovando && !preload" @click.prevent="aprovarGestor">
+                        v-show="aprovando && !preload" @click.prevent="aprovarGestor"
+                >
                     <i class="fa fa-save"></i> Salvar
                 </button>
                 <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra">
+                        v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra"
+                >
                     <i class="fa fa-save"></i> Salvar
                 </button>
                 <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovandoRh && !preload" @click.prevent="aprovarRh">
+                        v-show="aprovandoRh && !preload" @click.prevent="aprovarRh"
+                >
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
@@ -484,7 +579,8 @@
                                placeholder="Buscar por colaborador"
                                autocomplete="off"
                                class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                               v-model="controle.dados.campoBusca"
+                        >
                     </div>
                 </div>
 
@@ -492,7 +588,8 @@
                     <div class="form-group">
                         <label>Status</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
-                                :disabled="controle.carregando" @change="atualizar()">
+                                :disabled="controle.carregando" @change="atualizar()"
+                        >
                             <option value="">Todos os Status</option>
                             <option value="aberto">Em aberto</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
@@ -506,7 +603,8 @@
                     <div class="form-group">
                         <label>Ordenar por</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.ordenacao"
-                                :disabled="controle.carregando" @change="atualizar()">
+                                :disabled="controle.carregando" @change="atualizar()"
+                        >
                             <option value="created_at_desc">Mais recente</option>
                             <option value="created_at_asc">Mais antigo</option>
                             <option value="updated_at_desc">Última modificação</option>
@@ -519,7 +617,8 @@
                         <label for="">Exibir</label>
                         <select class="form-control form-control-sm" @change="atualizar()"
                                 :disabled="controle.carregando"
-                                v-model="controle.dados.pages">
+                                v-model="controle.dados.pages"
+                        >
                             <option v-for="item in por_pagina" :value="item">{{ item }}</option>
                         </select>
                     </div>
@@ -529,19 +628,22 @@
 
                 <div class="col-12 col-md-9">
                     <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
-                            @click="atualizar">
+                            @click="atualizar"
+                    >
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
                     <button type="button" class="btn btn-sm btn-primary" data-toggle="modal"
                             :disabled="controle.carregando"
                             :data-target="`#${hash}`"
-                            @click.prevent="formNovo">
+                            @click.prevent="formNovo"
+                    >
                         Solicitar
                     </button>
                     <button type="button" class="btn btn-sm btn-primary  mr-1"
                             @click.prevent="exportaExcel()"
-                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) "
+                    >
                         <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                     </button>
 
@@ -549,7 +651,8 @@
                             :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="selecionados.length === 0"
                             data-toggle="modal"
-                            data-target="#janelaAtualizaStatus">
+                            data-target="#janelaAtualizaStatus"
+                    >
                         Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
                     </button>
                 </div>
@@ -598,7 +701,9 @@
                             <div class="data-info ml-3">
                                 <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem;"></i>
                                 <small class="text-muted">{{ item.created_at }}</small>
-                                <span v-if="item.updated_at && item.updated_at !== item.created_at" class="mx-2 text-muted">|</span>
+                                <span v-if="item.updated_at && item.updated_at !== item.created_at"
+                                      class="mx-2 text-muted"
+                                >|</span>
                                 <template v-if="item.updated_at && item.updated_at !== item.created_at">
                                     <i class="fas fa-calendar-check text-info" style="font-size: 0.75rem;"></i>
                                     <small class="text-info">{{ item.updated_at }}</small>
@@ -616,16 +721,22 @@
                                     'status-pendente': !item.status_aprovacao_gestor,
                                 }"
                             >
-                                <span v-if="item.status_aprovacao_gestor === 'reprovado' || item.status_aprovacao_extra === 'reprovado' || item.status_aprovacao_rh === 'reprovado'">
+                                <span
+                                    v-if="item.status_aprovacao_gestor === 'reprovado' || item.status_aprovacao_extra === 'reprovado' || item.status_aprovacao_rh === 'reprovado'"
+                                >
                                     <i class="fas fa-times-circle"></i> REPROVADO
                                 </span>
                                 <span v-else-if="item.status_aprovacao_rh === 'aprovado'">
                                     <i class="fas fa-check-circle"></i> APROVADO RH
                                 </span>
-                                <span v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh">
+                                <span
+                                    v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh"
+                                >
                                     <i class="fas fa-check-circle"></i> APROVADO {{ nomeAprovacaoExtra.toUpperCase() }}
                                 </span>
-                                <span v-else-if="item.status_aprovacao_gestor === 'aprovado' && !item.status_aprovacao_rh">
+                                <span
+                                    v-else-if="item.status_aprovacao_gestor === 'aprovado' && !item.status_aprovacao_rh"
+                                >
                                     <i class="fas fa-check-circle"></i> APROVADO GESTOR
                                 </span>
                                 <span v-else>
@@ -635,25 +746,30 @@
                             <div class="dropdown show">
                                 <a class="btn-actions-compact" href="#" role="button"
                                    id="dropdownMenuLink"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                     aria-labelledby="dropdownMenuLink">
+                                     aria-labelledby="dropdownMenuLink"
+                                >
                                     <a class="dropdown-item" href="javascript://" title="Aprovação Gestor"
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = true"
-                                       v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor">
+                                       v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor"
+                                    >
                                         Aprovação Gestor
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" :title="nomeAprovacaoExtra || 'Aprovação Extra'"
+                                    <a class="dropdown-item" href="javascript://"
+                                       :title="nomeAprovacaoExtra || 'Aprovação Extra'"
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
                                        @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false"
-                                       v-if="temAprovacaoExtra && aprovaExtra && item.status_aprovacao_gestor === 'aprovado' && !item.aprovacao_extra_id && !item.aprovado_via_script && !item.rh_aprovacao_id">
+                                       v-if="temAprovacaoExtra && aprovaExtra && item.status_aprovacao_gestor === 'aprovado' && !item.aprovacao_extra_id && !item.aprovado_via_script && !item.rh_aprovacao_id"
+                                    >
                                         {{ nomeAprovacaoExtra || 'Aprovação Extra' }}
                                     </a>
 
@@ -661,14 +777,16 @@
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; podeanexar = false"
-                                       v-if="((item.status_aprovacao_gestor === 'aprovado' && !temAprovacaoExtra) || (item.status_aprovacao_extra === 'aprovado')) && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh">
+                                       v-if="((item.status_aprovacao_gestor === 'aprovado' && !temAprovacaoExtra) || (item.status_aprovacao_extra === 'aprovado')) && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh"
+                                    >
                                         Aprovação Rh
                                     </a>
 
                                     <a class="dropdown-item" href="javascript://" title="Visualizar"
                                        data-toggle="modal"
                                        :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false">
+                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false"
+                                    >
                                         Visualizar
                                     </a>
                                 </div>
@@ -719,21 +837,30 @@
                             <!-- Gestor -->
                             <div class="fluxo-step">
                                 <i v-if="item.status_aprovacao_gestor === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
+                                   class="fas fa-check-circle text-success"
+                                ></i>
                                 <i v-else-if="item.status_aprovacao_gestor === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
+                                   class="fas fa-times-circle text-danger"
+                                ></i>
                                 <i v-else
-                                   class="fas fa-clock text-muted"></i>
+                                   class="fas fa-clock text-muted"
+                                ></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">Gestor</small>
-                                    <small v-if="item.status_aprovacao_gestor === 'aprovado'" class="fluxo-aprovador text-success">
+                                    <small v-if="item.status_aprovacao_gestor === 'aprovado'"
+                                           class="fluxo-aprovador text-success"
+                                    >
                                         {{ item.gestor_aprovacao.nome || '' }}
                                     </small>
-                                    <small v-else-if="item.status_aprovacao_gestor === 'reprovado'" class="fluxo-aprovador text-danger">
-                                        {{ (item.gestor_aprovacao && item.gestor_aprovacao.nome) || item.gestor_aprovacao || '' }}
+                                    <small v-else-if="item.status_aprovacao_gestor === 'reprovado'"
+                                           class="fluxo-aprovador text-danger"
+                                    >
+                                        {{ (item.gestor_aprovacao && item.gestor_aprovacao.nome) || item.gestor_aprovacao || ''
+                                        }}
                                     </small>
                                     <small v-else class="fluxo-status text-warning">Aguardando</small>
-                                    <small v-if="item.data_aprovacao_gestor" class="fluxo-data">{{ item.data_aprovacao_gestor }}</small>
+                                    <small v-if="item.data_aprovacao_gestor" class="fluxo-data"
+                                    >{{ item.data_aprovacao_gestor }}</small>
                                 </div>
                             </div>
 
@@ -742,31 +869,45 @@
                             <!-- Aprovação Extra (se configurada) -->
                             <div class="fluxo-step" v-if="temAprovacaoExtra">
                                 <i v-if="item.status_aprovacao_gestor === 'reprovado'"
-                                   class="fas fa-ban text-secondary"></i>
+                                   class="fas fa-ban text-secondary"
+                                ></i>
                                 <i v-else-if="item.status_aprovacao_extra === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
+                                   class="fas fa-check-circle text-success"
+                                ></i>
                                 <i v-else-if="item.status_aprovacao_extra === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
+                                   class="fas fa-times-circle text-danger"
+                                ></i>
                                 <i v-else-if="item.status_aprovacao_gestor === 'aprovado' && !item.status_aprovacao_extra"
-                                   class="fas fa-clock text-warning"></i>
+                                   class="fas fa-clock text-warning"
+                                ></i>
                                 <i v-else
-                                   class="fas fa-circle text-muted"></i>
+                                   class="fas fa-circle text-muted"
+                                ></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">{{ nomeAprovacaoExtra }}</small>
-                                    <small v-if="item.status_aprovacao_gestor === 'reprovado'" class="fluxo-status text-secondary">
+                                    <small v-if="item.status_aprovacao_gestor === 'reprovado'"
+                                           class="fluxo-status text-secondary"
+                                    >
                                         Cancelada
                                     </small>
-                                    <small v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fluxo-aprovador text-success">
+                                    <small v-else-if="item.status_aprovacao_extra === 'aprovado'"
+                                           class="fluxo-aprovador text-success"
+                                    >
                                         {{ item.aprovacao_extra_nome || '' }}
                                     </small>
-                                    <small v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fluxo-aprovador text-danger">
+                                    <small v-else-if="item.status_aprovacao_extra === 'reprovado'"
+                                           class="fluxo-aprovador text-danger"
+                                    >
                                         {{ item.aprovacao_extra_nome || '' }}
                                     </small>
-                                    <small v-else-if="item.status_aprovacao_gestor === 'aprovado'" class="fluxo-status text-warning">
+                                    <small v-else-if="item.status_aprovacao_gestor === 'aprovado'"
+                                           class="fluxo-status text-warning"
+                                    >
                                         Aguardando
                                     </small>
                                     <small v-else class="fluxo-status">Pendente</small>
-                                    <small v-if="item.data_aprovacao_extra" class="fluxo-data">{{ item.data_aprovacao_extra }}</small>
+                                    <small v-if="item.data_aprovacao_extra" class="fluxo-data"
+                                    >{{ item.data_aprovacao_extra }}</small>
                                 </div>
                             </div>
 
@@ -775,31 +916,47 @@
                             <!-- RH -->
                             <div class="fluxo-step">
                                 <i v-if="item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
-                                   class="fas fa-ban text-secondary"></i>
+                                   class="fas fa-ban text-secondary"
+                                ></i>
                                 <i v-else-if="item.status_aprovacao_rh === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
+                                   class="fas fa-check-circle text-success"
+                                ></i>
                                 <i v-else-if="item.status_aprovacao_rh === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
+                                   class="fas fa-times-circle text-danger"
+                                ></i>
                                 <i v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')"
-                                   class="fas fa-clock text-warning"></i>
+                                   class="fas fa-clock text-warning"
+                                ></i>
                                 <i v-else
-                                   class="fas fa-circle text-muted"></i>
+                                   class="fas fa-circle text-muted"
+                                ></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">RH</small>
-                                    <small v-if="item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')" class="fluxo-status text-secondary">
+                                    <small
+                                        v-if="item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
+                                        class="fluxo-status text-secondary"
+                                    >
                                         Cancelada
                                     </small>
-                                    <small v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fluxo-aprovador text-success">
+                                    <small v-else-if="item.status_aprovacao_rh === 'aprovado'"
+                                           class="fluxo-aprovador text-success"
+                                    >
                                         {{ item.rh_aprovacao.nome || '' }}
                                     </small>
-                                    <small v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fluxo-aprovador text-danger">
+                                    <small v-else-if="item.status_aprovacao_rh === 'reprovado'"
+                                           class="fluxo-aprovador text-danger"
+                                    >
                                         {{ (item.rh_aprovacao && item.rh_aprovacao.nome) || item.rh_aprovacao || '' }}
                                     </small>
-                                    <small v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')" class="fluxo-status text-warning">
+                                    <small
+                                        v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')"
+                                        class="fluxo-status text-warning"
+                                    >
                                         Aguardando
                                     </small>
                                     <small v-else class="fluxo-status">Pendente</small>
-                                    <small v-if="item.data_aprovacao_rh" class="fluxo-data">{{ item.data_aprovacao_rh }}</small>
+                                    <small v-if="item.data_aprovacao_rh" class="fluxo-data">{{ item.data_aprovacao_rh
+                                        }}</small>
                                 </div>
                             </div>
                         </div>
@@ -811,23 +968,27 @@
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             :url="urlPaginacao" :por-pagina="controle.dados.pages"
                             :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando"/>
+                            v-on:carregou="carregou" v-on:carregando="carregando"
+        />
     </div>
 </template>
 
 <script>
-import Upload from "../../Upload";
-import colaborador from "../../Colaborador";
-import gestoraprovacao from "../../GestorAprovacao";
-import ExportacaoMixin from "../../../mixins/Exportacoes";
-import Utils from "../../../mixins/Utils";
-import configuracoes from "../../../mixins/Configuracoes";
-import DateRangeFilter from "../../DateRangeFilter";
+import Upload from '../../Upload'
+import colaborador from '../../Colaborador'
+import gestoraprovacao from '../../GestorAprovacao'
+import ExportacaoMixin from '../../../mixins/Exportacoes'
+import Utils from '../../../mixins/Utils'
+import configuracoes from '../../../mixins/Configuracoes'
+import DateRangeFilter from '../../DateRangeFilter'
 
 export default {
     mixins: [ExportacaoMixin, Utils, configuracoes],
     inject: {
-        atualizarUrlMovimentacao: { default: () => () => {} }
+        atualizarUrlMovimentacao: {
+            default: () => () => {
+            }
+        }
     },
     components: {
         colaborador,
@@ -865,7 +1026,7 @@ export default {
             hash_gestor: `${parseInt((Math.random() * 999999))}`,
 
             colunasTabela: {
-                cliente: false,
+                cliente: false
             },
 
             selecionados: [],
@@ -874,7 +1035,7 @@ export default {
             formConfirmacao: {
                 selecionados: [],
                 obs_aprovacao: '',
-                status_aprovacao: '',
+                status_aprovacao: ''
             },
 
             formConfirmacaoDefault: null,
@@ -888,7 +1049,7 @@ export default {
                 anterior_centro_custo_id: '',
                 anterior_centro_custo_filial_id: '',
                 anterior_filial: '',
-                novo_centro_custo_id: "",
+                novo_centro_custo_id: '',
                 novo_centro_custo_filial_id: '',
                 novo_filial: '',
                 tipo_contrato: '',
@@ -903,6 +1064,14 @@ export default {
                 anterior_funcao: '',
                 nova_funcao: '',
 
+                treinamento_funcao: false,
+                treinamento_data_inicio: '',
+                treinamento_data_fim: '',
+                treinamento_termo_ciencia: [],
+                treinamento_termo_cienciaDel: [],
+                treinamento_certificado: [],
+                treinamento_certificadoDel: [],
+
                 mantem_salario: true,
                 anterior_salario: '0,00',
                 novo_salario: '0,00',
@@ -913,8 +1082,8 @@ export default {
                 data_solicitacao: '',
 
                 gestor_id: '',
-                autocomplete_label_gestor_modal: "",
-                autocomplete_label_gestor_modal_anterior: "",
+                autocomplete_label_gestor_modal: '',
+                autocomplete_label_gestor_modal_anterior: '',
                 gestor_aprovacao_id: '',
                 autocomplete_label_gestor_aprovacao: '',
                 obs_gestor_aprovacao: '',
@@ -955,22 +1124,22 @@ export default {
                     dataInicio: '',
                     dataFim: '',
                     token: '',
-                    ordenacao: 'created_at_desc',
-                },
-            },
+                    ordenacao: 'created_at_desc'
+                }
+            }
         }
     },
     mounted() {
-        this.urlParamGet();
+        this.urlParamGet()
         this.formDefault = _.cloneDeep(this.form) //copia
-        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao);
-        this.$nextTick(() => this.atualizar());
+        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao)
+        this.$nextTick(() => this.atualizar())
     },
     watch: {
         'controle.dados': {
             handler() {
-                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer);
-                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400);
+                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
+                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400)
             },
             deep: true
         }
@@ -1003,79 +1172,89 @@ export default {
             return resultado
         },
         por_pagina() {
-            return [20, 50, 100, 150];
+            return [20, 50, 100, 150]
         },
         centroCustoSelecionado() {
             if (this.form.anterior_centro_custo_id === undefined || this.form.anterior_centro_custo_id === null || this.form.anterior_centro_custo_id === '') {
-                return [];
+                return []
             }
-            let centroSelecionado = _.find(this.centro_custos, {id: this.form.anterior_centro_custo_id});
+            let centroSelecionado = _.find(this.centro_custos, { id: this.form.anterior_centro_custo_id })
             if (centroSelecionado && centroSelecionado.filiais && centroSelecionado.filiais.length) {
-                return centroSelecionado.filiais;
+                return centroSelecionado.filiais
             }
-            return [];
+            return []
         },
         centroCustoSelecionadoNovo() {
             if (this.form.novo_centro_custo_id === undefined || this.form.novo_centro_custo_id === null || this.form.novo_centro_custo_id === '') {
-                return [];
+                return []
             }
-            let centroSelecionado = _.find(this.centro_custos, {id: this.form.novo_centro_custo_id});
+            let centroSelecionado = _.find(this.centro_custos, { id: this.form.novo_centro_custo_id })
             if (centroSelecionado && centroSelecionado.filiais && centroSelecionado.filiais.length) {
-                return centroSelecionado.filiais;
+                return centroSelecionado.filiais
             }
-            return [];
+            return []
         },
         centroCustoTemFilial() {
-            return this.temFilial && this.centroCustoSelecionado.length > 0;
+            return this.temFilial && this.centroCustoSelecionado.length > 0
         },
         centroCustoTemFilialNovo() {
-            return this.temFilial && this.centroCustoSelecionadoNovo.length > 0;
+            return this.temFilial && this.centroCustoSelecionadoNovo.length > 0
         },
         paramsExport() {
-            return this.controle.dados;
+            return this.controle.dados
         }
     },
     methods: {
         urlParamGet() {
-            const urlParams = new URLSearchParams(window.location.search);
-            this.controle.dados.token = urlParams.get('token') || '';
-            if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 20;
-            if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao');
-            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca');
-            if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao');
-            if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio');
-            if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim');
-            if (urlParams.get('dataInicio') || urlParams.get('dataFim')) this.controle.dados.filtroPeriodo = true;
+            const urlParams = new URLSearchParams(window.location.search)
+            this.controle.dados.token = urlParams.get('token') || ''
+            if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 20
+            if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao')
+            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
+            if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao')
+            if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
+            if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim')
+            if (urlParams.get('dataInicio') || urlParams.get('dataFim')) this.controle.dados.filtroPeriodo = true
         },
         syncUrlFiltros() {
-            if (typeof this.atualizarUrlMovimentacao !== 'function') return;
-            const d = this.controle.dados;
-            const params = { pages: d.pages || 20, ordenacao: d.ordenacao || 'created_at_desc' };
-            if (d.campoBusca) params.campoBusca = d.campoBusca;
-            if (d.campoStatusAprovacao) params.campoStatusAprovacao = d.campoStatusAprovacao;
-            if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio;
-            if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim;
-            if (d.token) params.token = d.token;
-            this.atualizarUrlMovimentacao(params);
+            if (typeof this.atualizarUrlMovimentacao !== 'function') return
+            const d = this.controle.dados
+            const params = { pages: d.pages || 20, ordenacao: d.ordenacao || 'created_at_desc' }
+            if (d.campoBusca) params.campoBusca = d.campoBusca
+            if (d.campoStatusAprovacao) params.campoStatusAprovacao = d.campoStatusAprovacao
+            if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio
+            if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim
+            if (d.token) params.token = d.token
+            this.atualizarUrlMovimentacao(params)
         },
         changeCentroCusto() {
-            this.form.novo_filial = false;
+            this.form.novo_filial = false
             this.form.novo_centro_custo_filial_id = ''
         },
         changeMantemCentroDeCusto() {
-            this.form.novo_centro_custo_filial_id = '';
-            this.form.novo_centro_custo_id = '';
-            this.form.novo_filial = '';
+            this.form.novo_centro_custo_filial_id = ''
+            this.form.novo_centro_custo_id = ''
+            this.form.novo_filial = ''
         },
         changeMantemFuncao() {
-            this.form.nova_funcao = '';
+            this.form.nova_funcao = ''
+        },
+        changeTreinamentoFuncao() {
+            if (!this.form.treinamento_funcao) {
+                this.form.treinamento_data_inicio = ''
+                this.form.treinamento_data_fim = ''
+                this.form.treinamento_termo_ciencia = []
+                this.form.treinamento_termo_cienciaDel = []
+                this.form.treinamento_certificado = []
+                this.form.treinamento_certificadoDel = []
+            }
         },
         changeMantemCargo() {
-            this.form.autocomplete_label_vaga_nova = '';
-            this.form.nova_vaga_aberta_id = '';
+            this.form.autocomplete_label_vaga_nova = ''
+            this.form.nova_vaga_aberta_id = ''
         },
         changeMantemSalario() {
-            this.form.novo_salario = '';
+            this.form.novo_salario = ''
         },
         changeCnpj() {
             this.form.novo_centro_custo_filial_id = ''
@@ -1100,271 +1279,303 @@ export default {
             }
         },
         selecionaVaga(obj) {
-            this.form.anterior_vaga_aberta_id = obj.id;
-            this.form.autocomplete_label_vaga_anterior = obj.vaga.nome;
+            this.form.anterior_vaga_aberta_id = obj.id
+            this.form.autocomplete_label_vaga_anterior = obj.vaga.nome
         },
         selecionaVagaNovo(obj) {
-            this.form.nova_vaga_aberta_id = obj.id;
-            this.form.autocomplete_label_vaga_nova = obj.vaga.nome;
+            this.form.nova_vaga_aberta_id = obj.id
+            this.form.autocomplete_label_vaga_nova = obj.vaga.nome
         },
         selecionaColaborador(obj) {
-            this.form.colaborador_id = obj.curriculo_id;
-            this.form.autocomplete_label_colaborador = obj.label;
-            this.form.autocomplete_label_colaborador_anterior = obj.label;
+            this.form.colaborador_id = obj.curriculo_id
+            this.form.autocomplete_label_colaborador = obj.label
+            this.form.autocomplete_label_colaborador_anterior = obj.label
 
-            this.form.anterior_centro_custo_id = obj.admissao.centro_custo_id;
-            this.form.anterior_filial = obj.admissao.filial;
-            this.form.anterior_centro_custo_filial_id = this.form.anterior_filial ? obj.admissao.centro_custo_filial_id : null;
-            this.form.admissao_id = obj.admissao.id;
-            this.form.anterior_funcao = obj.admissao.funcao;
-            this.form.anterior_vaga_aberta_id = obj.vaga_aberta.id;
-            this.form.autocomplete_label_vaga_anterior = obj.vaga_aberta.vaga.nome;
-            this.form.anterior_salario = obj.admissao.salario;
+            this.form.anterior_centro_custo_id = obj.admissao.centro_custo_id
+            this.form.anterior_filial = obj.admissao.filial
+            this.form.anterior_centro_custo_filial_id = this.form.anterior_filial ? obj.admissao.centro_custo_filial_id : null
+            this.form.admissao_id = obj.admissao.id
+            this.form.anterior_funcao = obj.admissao.funcao
+            this.form.anterior_vaga_aberta_id = obj.vaga_aberta.id
+            this.form.autocomplete_label_vaga_anterior = obj.vaga_aberta.vaga.nome
+            this.form.anterior_salario = obj.admissao.salario
         },
         resetaCampoColaborador() {
             if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
-                this.form.autocomplete_label_colaborador_anterior = '';
-                this.form.autocomplete_label_colaborador = '';
-                this.form.colaborador_id = '';
+                this.form.autocomplete_label_colaborador_anterior = ''
+                this.form.autocomplete_label_colaborador = ''
+                this.form.colaborador_id = ''
 
-                this.form.anterior_centro_custo_id = '';
-                this.form.anterior_filial = '';
-                this.form.anterior_centro_custo_filial_id = '';
-                this.form.admissao_id = '';
-                this.form.anterior_funcao = '';
-                this.form.anterior_vaga_aberta_id = '';
-                this.form.autocomplete_label_vaga_anterior = '';
-                this.form.anterior_salario = '';
+                this.form.anterior_centro_custo_id = ''
+                this.form.anterior_filial = ''
+                this.form.anterior_centro_custo_filial_id = ''
+                this.form.admissao_id = ''
+                this.form.anterior_funcao = ''
+                this.form.anterior_vaga_aberta_id = ''
+                this.form.autocomplete_label_vaga_anterior = ''
+                this.form.anterior_salario = ''
 
                 setTimeout(() => {
                     if (this.form.colaborador_id === '') {
-                        valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                        $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Colaborador não pode ficar vazio');
+                        valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
+                        $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
+                        mostraErro('Erro', 'O Campo Colaborador não pode ficar vazio')
                     }
-                }, 100);
+                }, 100)
             }
         },
         selecionaFilialCentroDeCusto(centro_custo_id, empresa_id) {
             axios.post(`${URL_ADMIN}/get-filiais/`, {
                 centro_custo_id: centro_custo_id,
-                empresa_id: empresa_id,
+                empresa_id: empresa_id
             }).then(res => {
-                this.filiais_centro_de_custo = res.data.filiais_centro_de_custo;
+                this.filiais_centro_de_custo = res.data.filiais_centro_de_custo
             }).catch(error => {
-                this.preload = false;
-            });
+                this.preload = false
+            })
         },
         selecionaNovoCargo(obj) {
-            this.form.novo_cargo_id = obj.id;
-            this.form.autocomplete_label_novo_cargo = obj.label;
-            this.form.autocomplete_label_novo_cargo_anterior = obj.label;
+            this.form.novo_cargo_id = obj.id
+            this.form.autocomplete_label_novo_cargo = obj.label
+            this.form.autocomplete_label_novo_cargo_anterior = obj.label
 
             setTimeout(() => {
                 if (this.form.novo_cargo_id !== '' && this.form.novo_cargo_id === this.form.cargo_anterior_id) {
-                    valida_campo_vazio($(`#cargo_anterior_${this.hash}`), 1);
-                    $(`#${this.hash} #cargo_anterior_${this.hash}`).focus().trigger('blur');
-                    mostraErro('Erro', 'O NOVO CARGO não pode ser igual ao CARGO ANTERIOR');
-                    this.form.novo_cargo_id = '';
-                    this.form.autocomplete_label_novo_cargo = '';
-                    this.form.autocomplete_label_novo_cargo_anterior = '';
+                    valida_campo_vazio($(`#cargo_anterior_${this.hash}`), 1)
+                    $(`#${this.hash} #cargo_anterior_${this.hash}`).focus().trigger('blur')
+                    mostraErro('Erro', 'O NOVO CARGO não pode ser igual ao CARGO ANTERIOR')
+                    this.form.novo_cargo_id = ''
+                    this.form.autocomplete_label_novo_cargo = ''
+                    this.form.autocomplete_label_novo_cargo_anterior = ''
                 }
-            }, 100);
+            }, 100)
 
         },
         resetaCampoNovoCargo() {
             if (this.form.autocomplete_label_novo_cargo !== this.form.autocomplete_label_novo_cargo) {
-                this.form.autocomplete_label_novo_cargo = '';
-                this.form.autocomplete_label_novo_cargo = '';
-                this.form.novo_cargo_id = '';
+                this.form.autocomplete_label_novo_cargo = ''
+                this.form.autocomplete_label_novo_cargo = ''
+                this.form.novo_cargo_id = ''
 
                 setTimeout(() => {
                     if (this.form.novo_cargo_id === '') {
-                        valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1);
-                        $(`#${this.hash} #novo_cargo_${this.hash}`).focus().trigger('blur');
-                        mostraErro('Erro', 'O Campo Novo Cargo não pode ficar vazio');
+                        valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1)
+                        $(`#${this.hash} #novo_cargo_${this.hash}`).focus().trigger('blur')
+                        mostraErro('Erro', 'O Campo Novo Cargo não pode ficar vazio')
                     }
-                }, 100);
+                }, 100)
             }
         },
         listaCentroCusto() {
             axios.post(`${URL_PUBLICO}/centro-custos/`)
                 .then(res => {
-                    this.centro_custos = res.data.centro_custos;
+                    this.centro_custos = res.data.centro_custos
                 })
                 .catch(error => {
-                    this.preload = false;
-                });
+                    this.preload = false
+                })
         },
         formNovo() {
-            this.cadastrado = false;
-            this.cadastrando = true;
-            this.atualizado = false;
-            this.aprovando = false;
-            this.aprovandoExtra = false;
-            this.aprovandoRh = false;
-            this.visualizar = false;
-            this.podeanexar = true;
+            this.cadastrado = false
+            this.cadastrando = true
+            this.atualizado = false
+            this.aprovando = false
+            this.aprovandoExtra = false
+            this.aprovandoRh = false
+            this.visualizar = false
+            this.podeanexar = true
 
-            this.tituloJanela = "Solicitação de Mudança de Cargo";
+            this.tituloJanela = 'Solicitação de Mudança de Cargo'
             this.form = _.cloneDeep(this.formDefault) //copia
-            formReset();
-            setupCampo();
-            this.listaCentroCusto();
+            formReset()
+            setupCampo()
+            this.listaCentroCusto()
         },
 
+        validarTreinamento() {
+            if (!this.form.treinamento_funcao) {
+                return true
+            }
+
+            if (!this.form.treinamento_data_inicio || this.form.treinamento_data_inicio.trim() === '') {
+                mostraErro('', 'A data de início do treinamento é obrigatória')
+                return false
+            }
+
+            if (!this.form.treinamento_data_fim || this.form.treinamento_data_fim.trim() === '') {
+                mostraErro('', 'A data de fim do treinamento é obrigatória')
+                return false
+            }
+
+            // Validar que data início não é maior que data fim
+            if (this.form.treinamento_data_inicio && this.form.treinamento_data_fim) {
+                const dataInicioParts = this.form.treinamento_data_inicio.split('/')
+                const dataFimParts = this.form.treinamento_data_fim.split('/')
+
+                if (dataInicioParts.length === 3 && dataFimParts.length === 3) {
+                    const dataInicio = new Date(parseInt(dataInicioParts[2]), parseInt(dataInicioParts[1]) - 1, parseInt(dataInicioParts[0]))
+                    const dataFim = new Date(parseInt(dataFimParts[2]), parseInt(dataFimParts[1]) - 1, parseInt(dataFimParts[0]))
+
+                    if (dataInicio > dataFim) {
+                        mostraErro('', 'A data de início do treinamento não pode ser maior que a data de fim do treinamento')
+                        return false
+                    }
+                }
+            }
+
+            if (!this.form.treinamento_termo_ciencia || this.form.treinamento_termo_ciencia.length === 0) {
+                mostraErro('', 'O Termo de Ciência de Treinamento é obrigatório quando há treinamento na função')
+                return false
+            }
+
+            if (!this.form.treinamento_certificado || this.form.treinamento_certificado.length === 0) {
+                mostraErro('', 'O Certificado de Treinamento é obrigatório quando há treinamento na função')
+                return false
+            }
+
+            return true
+        },
         cadastrar() {
             if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1);
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur');
-                this.resetaCampoColaborador();
-                return false;
+                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
+                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
+                this.resetaCampoColaborador()
+                return false
             }
 
             if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash_gestor}`), 1);
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur');
-                mostraErro('', 'Campo GESTOR não pode ficar vazio');
-                return false;
+                valida_campo_vazio($(`#gestor_${this.hash_gestor}`), 1)
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
+                mostraErro('', 'Campo GESTOR não pode ficar vazio')
+                return false
             }
 
-            $(`#${this.hash} :input:visible`).trigger('blur');
+            $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
                 mostraErro('', 'Verifique os campos marcados')
-                return false;
+                return false
             }
 
             if (this.form.mantem_centro_custo && this.form.mantem_cargo && this.form.mantem_salario && this.form.mantem_funcao) {
-                mostraErro('', 'Nenhuma mudança foi solicitada');
-                return false;
+                mostraErro('', 'Nenhuma mudança foi solicitada')
+                return false
             }
 
-            this.preload = true;
+            // Validações de treinamento
+            if (!this.validarTreinamento()) {
+                return false
+            }
+
+            this.preload = true
 
             axios.post(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo`, this.form)
                 .then(response => {
-                    $(`#${this.hash} `).modal('hide');
-                    let data = response.data;
-                    mostraSucesso('', 'Solicitação registrada com sucesso!');
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+                    $(`#${this.hash} `).modal('hide')
+                    let data = response.data
+                    mostraSucesso('', 'Solicitação registrada com sucesso!')
+                    this.$refs.componente.buscar()
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
+                    this.preload = false
                 })
         },
 
         formOpen(id) {
-            Object.assign(this.form, this.formDefault);
-            this.form.id = id;
-            this.cadastrando = false;
-            this.aprovando = false;
-            this.aprovandoExtra = false;
-            this.aprovandoRh = false;
-            this.editando = false;
-            this.visualizar = false;
+            Object.assign(this.form, this.formDefault)
+            this.form.id = id
+            this.cadastrando = false
+            this.aprovando = false
+            this.aprovandoExtra = false
+            this.aprovandoRh = false
+            this.editando = false
+            this.visualizar = false
 
-            this.tituloJanela = `#${id}`;
+            this.tituloJanela = `#${id}`
 
-            formReset();
-            this.preload = true;
+            formReset()
+            this.preload = true
 
             axios.get(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${id}/editar`)
                 .then(response => {
-                    let data = response.data;
-                    this.form.centro_custo_id = data.centro_custo_id;
-                    this.form.colaborador_id = data.colaborador_id;
-                    Object.assign(this.form, data);
-                    this.listaCentroCusto();
+                    let data = response.data
+                    this.form.centro_custo_id = data.centro_custo_id
+                    this.form.colaborador_id = data.colaborador_id
+                    Object.assign(this.form, data)
+                    this.listaCentroCusto()
 
-                    this.tituloJanela = `#${id} Solicitação de Mudança de Cargo`;
+                    this.tituloJanela = `#${id} Solicitação de Mudança de Cargo`
 
-                    this.form.status_aprovacao_gestor = data.status_aprovacao_gestor === null ? "" : data.status_aprovacao_gestor;
-                    this.form.status_aprovacao_extra = data.status_aprovacao_extra === null ? "" : data.status_aprovacao_extra;
-                    this.form.status_aprovacao_rh = data.status_aprovacao_rh === null ? "" : data.status_aprovacao_rh;
-                    this.form.obs_gestor_aprovacao = data.obs_gestor_aprovacao;
-                    this.form.obs_aprovacao_extra = data.obs_aprovacao_extra;
-                    this.form.obs_rh = data.obs_rh;
+                    this.form.status_aprovacao_gestor = data.status_aprovacao_gestor === null ? '' : data.status_aprovacao_gestor
+                    this.form.status_aprovacao_extra = data.status_aprovacao_extra === null ? '' : data.status_aprovacao_extra
+                    this.form.status_aprovacao_rh = data.status_aprovacao_rh === null ? '' : data.status_aprovacao_rh
+                    this.form.obs_gestor_aprovacao = data.obs_gestor_aprovacao
+                    this.form.obs_aprovacao_extra = data.obs_aprovacao_extra
+                    this.form.obs_rh = data.obs_rh
 
                     // Dados de aprovação extra
                     if (data.aprovacao_extra) {
-                        this.form.aprovacao_extra_nome = data.aprovacao_extra.nome || '';
+                        this.form.aprovacao_extra_nome = data.aprovacao_extra.nome || ''
                     }
-                    this.form.data_aprovacao_extra = data.data_aprovacao_extra || '';
+                    this.form.data_aprovacao_extra = data.data_aprovacao_extra || ''
 
-                    this.preload = false;
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
-                });
+                    this.preload = false
+                })
         },
         aprovarGestor() {
-            $(`#${this.hash} :input:visible`).trigger("blur");
+            $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
 
-            this.preload = true;
-
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovargestor`, this.form)
-                .then(response => {
-                    let data = response.data;
-                    mostraSucesso("", "Registro salvo com sucesso!");
-                    $(`#${this.hash} `).modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
-                })
-                .catch(error => {
-                    this.preload = false;
-                });
-        },
-        aprovarExtra() {
-            $(`#${this.hash} :input:visible`).trigger("blur");
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+            // Validações de treinamento
+            if (!this.validarTreinamento()) {
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
             axios.put(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovarextra`, this.form)
                 .then(response => {
-                    let data = response.data;
-                    mostraSucesso("", "Registro salvo com sucesso!");
-                    $(`#${this.hash} `).modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+                    let data = response.data
+                    mostraSucesso('', 'Registro salvo com sucesso!')
+                    $(`#${this.hash} `).modal('hide')
+                    this.$refs.componente.buscar()
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
-                });
+                    this.preload = false
+                })
         },
         aprovarRh() {
-            $(`#${this.hash} :input:visible`).trigger("blur");
+            $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
-            this.preload = true;
+            this.preload = true
 
             axios.put(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovarrh`, this.form)
                 .then(response => {
-                    let data = response.data;
-                    mostraSucesso("", "Registro salvo com sucesso!");
-                    $(`#${this.hash} `).modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+                    let data = response.data
+                    mostraSucesso('', 'Registro salvo com sucesso!')
+                    $(`#${this.hash} `).modal('hide')
+                    this.$refs.componente.buscar()
+                    this.preload = false
                 })
                 .catch(error => {
-                    this.preload = false;
-                });
+                    this.preload = false
+                })
         },
         selecionarTodos(event) {
             if (event.target.checked) {
-                this.selecionados = this.lista.map(item => item.id);
+                this.selecionados = this.lista.map(item => item.id)
             } else {
-                this.selecionados = [];
+                this.selecionados = []
             }
         },
         carregou(dados) {
@@ -1374,30 +1585,30 @@ export default {
                 nome_aprovacao_extra: dados.nome_aprovacao_extra,
                 aprovar_por_gestor: dados.aprovar_por_gestor,
                 aprovar_por_rh: dados.aprovar_por_rh
-            });
+            })
 
-            this.lista = dados.itens;
-            this.aprovaGestor = dados.aprovar_por_gestor;
-            this.aprovaExtra = dados.pode_aprovar_extra || false;
-            this.aprovaRh = dados.aprovar_por_rh;
-            this.temAprovacaoExtra = dados.tem_aprovacao_extra || false;
-            this.nomeAprovacaoExtra = dados.nome_aprovacao_extra || 'Aprovação Extra';
+            this.lista = dados.itens
+            this.aprovaGestor = dados.aprovar_por_gestor
+            this.aprovaExtra = dados.pode_aprovar_extra || false
+            this.aprovaRh = dados.aprovar_por_rh
+            this.temAprovacaoExtra = dados.tem_aprovacao_extra || false
+            this.nomeAprovacaoExtra = dados.nome_aprovacao_extra || 'Aprovação Extra'
 
             console.log('SolicitacaoMudaCargo - Variáveis setadas:', {
                 aprovaExtra: this.aprovaExtra,
                 temAprovacaoExtra: this.temAprovacaoExtra,
                 nomeAprovacaoExtra: this.nomeAprovacaoExtra
-            });
+            })
 
-            this.controle.carregando = false;
+            this.controle.carregando = false
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
-        },
+            this.$refs.componente.atual = 1
+            this.$refs.componente.buscar()
+        }
     }
 }
 </script>
