@@ -924,8 +924,8 @@
             <ul aria-expanded="false">
                 @can('relatorio_avaliacao_90_dias')
                     <li>
-                        <a href="{{ route('g.relatorios.avaliacao90dias.index') }}" parent="relatorios" key="avaliacao90dias">
-                            Avaliação 90 Dias
+                        <a href="{{ route('g.relatorios.avaliacaoExperiencia.index') }}" parent="relatorios" key="avaliacao_experiencia">
+                        Avaliação de Experiência
                         </a>
                     </li>
                  @endcan

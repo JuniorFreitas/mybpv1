@@ -261,7 +261,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'ocorrencia_tag', 'descricao' => 'Acessar Ocorrencia Tag'];
         $lista[] = ['nome' => 'ocorrencia_setor', 'descricao' => 'Acessar Ocorrencia Setor'];
 
-        $lista[] = ['nome' => 'admissao_historico_aba_avaliacao_noventa_dias', 'descricao' => 'Acessar Avaliação'];
+        $lista[] = ['nome' => 'admissao_historico_aba_avaliacao_noventa_dias', 'descricao' => 'Acessar Avaliação de Experiência'];
         $lista[] = ['nome' => 'avaliacao_noventa_insert', 'descricao' => 'Inserir Avaliação'];
 
         $lista[] = ['nome' => 'cadastro_beneficio', 'descricao' => 'Acessar Beneficio'];

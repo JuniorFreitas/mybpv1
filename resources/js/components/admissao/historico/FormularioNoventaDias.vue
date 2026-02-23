@@ -3,6 +3,7 @@
         <!-- Usando o componente reutilizável -->
         <avaliacao-noventa-dias
             :feedback-id="feedback_id"
+            :url-base-gerar-link="urlBaseGerarLink"
             modal-id="janelaFormulario"
             modal-pai="janelaHistorico"
             :exibir-vencimentos="true"
@@ -26,6 +27,10 @@ export default {
         feedback_id: {
             type: Number,
             required: true
+        },
+        urlBaseGerarLink: {
+            type: String,
+            default: ''
         },
         model: {
             type: Array

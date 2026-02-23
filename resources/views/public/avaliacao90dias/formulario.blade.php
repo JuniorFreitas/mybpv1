@@ -255,8 +255,8 @@
                     <i class="fas fa-clipboard-check"></i>
                 @endif
             </div>
-            <h2 class="header-title">Avaliação de 90 Dias</h2>
-            <p class="header-subtitle">{{ $numero_avaliacao }}ª Avaliação de Desempenho</p>
+            <h2 class="header-title">Avaliação de Experiência</h2>
+            <p class="header-subtitle">{{ $numero_avaliacao }}ª Avaliação de Experiência</p>
             
             <!-- Informações do Colaborador -->
             <div class="info-colaborador">
@@ -397,6 +397,37 @@
                     @enderror
                 </div>
 
+                <!-- Definição sobre o colaborador -->
+                <div class="form-group mt-4 definicao-contrato-section">
+                    <label class="d-block">
+                        <i class="fas fa-gavel"></i> <strong>Definição sobre o colaborador *</strong>
+                    </label>
+                    <div class="d-flex flex-wrap gap-3 mt-2">
+                        <div class="custom-control custom-radio">
+                            <input type="radio"
+                                   class="custom-control-input @error('definicao_contrato') is-invalid @enderror"
+                                   id="definicao_prorroga"
+                                   name="definicao_contrato"
+                                   value="prorroga"
+                                   {{ old('definicao_contrato') === 'prorroga' ? 'checked' : '' }}
+                                   required>
+                            <label class="custom-control-label" for="definicao_prorroga">Prorroga o contrato</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                            <input type="radio"
+                                   class="custom-control-input @error('definicao_contrato') is-invalid @enderror"
+                                   id="definicao_finaliza"
+                                   name="definicao_contrato"
+                                   value="finaliza"
+                                   {{ old('definicao_contrato') === 'finaliza' ? 'checked' : '' }}>
+                            <label class="custom-control-label" for="definicao_finaliza">Finaliza o contrato</label>
+                        </div>
+                    </div>
+                    @error('definicao_contrato')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <!-- Botão Submit -->
                 <div class="text-center mt-4">
                     <button type="submit" class="btn btn-primary btn-submit">
@@ -449,9 +480,20 @@
                 }
             });
 
+            var definicaoChecked = document.querySelector('input[name="definicao_contrato"]:checked');
+            if (!definicaoChecked) {
+                e.preventDefault();
+                var sec = document.querySelector('.definicao-contrato-section');
+                if (sec) {
+                    sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    sec.classList.add('border-danger');
+                }
+                return;
+            }
+            document.querySelector('.definicao-contrato-section') && document.querySelector('.definicao-contrato-section').classList.remove('border-danger');
+
             if (!allAnswered) {
                 e.preventDefault();
-                // Foca a primeira pergunta com erro
                 if (firstError) {
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     const firstLabel = firstError.querySelector('.nota-option label');

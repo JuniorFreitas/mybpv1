@@ -50,7 +50,7 @@ class AvaliacaoNoventaVencimentoJob implements ShouldQueue
             $agora = new DataHora();
             $agora = $agora->dataCompleta();
 
-            $listaDeEmprasaID = Sistema::listaEmpresas();
+            $listaDeEmprasaID = Sistema::listaEmpresasParaScheduleAvaliacaoExperiencia();
 
             foreach ($listaDeEmprasaID as $empresa_id) {
 
