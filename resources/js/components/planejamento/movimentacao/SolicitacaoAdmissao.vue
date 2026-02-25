@@ -32,7 +32,7 @@
 
                             <div class="col-12 col-md-6">
                                 <div class="form-group">
-                                    <label>Nome do Colaborador <span class="text-danger" v-if="cadastrando">*</span></label>
+                                    <label>Nome do Colaborador</label>
                                     <input type="text" class="form-control form-control-sm" v-model="form.nome_pessoa"
                                            :id="`nome_pessoa_${hash}`"
                                            placeholder="Nome do colaborador a ser admitido"
@@ -96,15 +96,13 @@
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
-                                    <label>Tipo de contrato <span class="text-danger">*</span></label>
+                                    <label>Tipo de admissão <span class="text-danger">*</span></label>
                                     <select v-model="form.tipo_contrato" class="form-control form-control-sm"
                                             :disabled="visualizar || aprovandoRh || aprovando"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
                                         <option value="">Selecione</option>
-                                        <option value="Intermitente">Intermitente</option>
-                                        <option value="Fixo">Fixo</option>
-                                        <option value="Aprendiz">Aprendiz</option>
+                                        <option v-for="item in tiposAdmissao" :key="item" :value="item">{{ item }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -359,6 +357,16 @@
                         </select>
                     </div>
                 </div>
+                <div class="col-12 col-md-3">
+                    <div class="form-group">
+                        <label>Tipo contrato</label>
+                        <select class="form-control form-control-sm" v-model="controle.dados.tipo_contrato"
+                                :disabled="controle.carregando" @change="atualizar()">
+                            <option value="">Todos os tipos de contrato</option>
+                            <option v-for="item in tiposAdmissao" :key="item" :value="item">{{ item }}</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="col-12 col-md-2">
                     <div class="form-group">
                         <label>Ordenar por</label>
@@ -529,7 +537,7 @@
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-file-contract text-muted"></i>
-                            <span class="detail-label">Tipo Contrato:</span>
+                            <span class="detail-label">Tipo contrato:</span>
                             <span class="detail-value">{{ item.tipo_contrato }}</span>
                         </div>
                         <div class="detail-item" v-if="item.salario_format">
@@ -741,6 +749,7 @@ export default {
             formDefault: null,
             lista: [],
             centro_custos: [],
+            tiposAdmissao: [],
 
             // colaborador_ativo: `autocomplete/colaboradores/`,
             urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/admissoes-prevista/atualizar`,
@@ -750,6 +759,7 @@ export default {
                     pages: 20,
                     campoBusca: '',
                     campoStatusAprovacao: '',
+                    tipo_contrato: '',
                     filtroPeriodo: false,
                     dataInicio: '',
                     dataFim: '',
@@ -763,6 +773,7 @@ export default {
         this.urlParamGet();
         this.formDefault = _.cloneDeep(this.form) //copia
         this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao);
+        this.carregarTiposAdmissao();
         this.$nextTick(() => this.atualizar());
     },
     watch: {
@@ -826,6 +837,13 @@ export default {
         },
     },
     methods: {
+        carregarTiposAdmissao() {
+            axios.get(`${URL_ADMIN}/planejamento/movimentacao/admissoes-prevista/tipos-contrato`)
+                .then(res => {
+                    this.tiposAdmissao = Array.isArray(res.data) ? res.data : [];
+                })
+                .catch(() => { this.tiposAdmissao = []; });
+        },
         urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search);
             this.controle.dados.token = urlParams.get('token') || '';
@@ -833,6 +851,7 @@ export default {
             if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao');
             if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca');
             if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao');
+            if (urlParams.get('tipo_contrato')) this.controle.dados.tipo_contrato = urlParams.get('tipo_contrato');
             if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio');
             if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim');
             if (urlParams.get('dataInicio') || urlParams.get('dataFim')) this.controle.dados.filtroPeriodo = true;
@@ -843,6 +862,7 @@ export default {
             const params = { pages: d.pages || 20, ordenacao: d.ordenacao || 'created_at_desc' };
             if (d.campoBusca) params.campoBusca = d.campoBusca;
             if (d.campoStatusAprovacao) params.campoStatusAprovacao = d.campoStatusAprovacao;
+            if (d.tipo_contrato) params.tipo_contrato = d.tipo_contrato;
             if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio;
             if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim;
             if (d.token) params.token = d.token;
@@ -948,15 +968,7 @@ export default {
         validaNomePessoa(event) {
             const el = event && event.target ? event.target : document.getElementById(`nome_pessoa_${this.hash}`);
             if (!el) return;
-            if (!this.cadastrando) {
-                el.classList.remove('is-invalid');
-                return;
-            }
-            if (!this.form.nome_pessoa || !String(this.form.nome_pessoa).trim()) {
-                el.classList.add('is-invalid');
-            } else {
-                el.classList.remove('is-invalid');
-            }
+            el.classList.remove('is-invalid');
         },
 
         formNovo() {
@@ -999,12 +1011,6 @@ export default {
             $(`#${this.hash} :input:visible`).trigger('blur');
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
                 mostraErro('', 'Verifique os campos marcados')
-                return false;
-            }
-
-            if (!this.form.nome_pessoa || !String(this.form.nome_pessoa).trim()) {
-                this.validaNomePessoa({ target: document.getElementById(`nome_pessoa_${this.hash}`) });
-                mostraErro('', 'Campo Nome do Colaborador é obrigatório na solicitação.');
                 return false;
             }
 
