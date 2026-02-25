@@ -638,6 +638,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             });
 
             Route::group(['as' => 'solicitacao_admissoes.'], function () {
+                Route::get('admissoes-prevista/tipos-contrato', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'tiposContrato'])->name('admissoes-prevista.tipos-contrato');
                 Route::post('admissoes-prevista/atualizacao-status', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizacaoStatus'])->name('admissoes-prevista.atualizacaoStatus');
                 Route::post('admissoes-prevista/atualizar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('admissoes-prevista/{admissoesPrevista}/aprovar', [\App\Http\Controllers\AdmissoesPrevistaController::class, 'aprovar'])->name('aprovar');
