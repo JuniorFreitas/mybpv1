@@ -5,6 +5,40 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.2.2] - 2026-02-24
+
+### Adicionado
+
+-   **Carteira de Treinamento – Assinaturas por segmento**
+    -   Campo `segmento_treinamento_id` na tabela `carteira_assinaturas`: assinaturas podem ser **padrão** (null, todos os segmentos) ou **específicas** de um segmento (ALUMAR, VALE, etc.).
+    -   No PDF da carteira, cada treinamento usa a assinatura do segmento quando existir; caso contrário, a assinatura padrão da empresa (SESMT e Gestor/RH).
+    -   Cadastro de Assinatura Carteira (em Treinamento Indústria): novo campo **Segmento de treinamento** (opcional). Listagem exibe coluna Segmento (Padrão ou nome do segmento).
+    -   Serviço `App\Services\Treinamento\CarteiraImagemCache`: cache de imagens da carteira em base64 (cabeçalho, verso, assinaturas) com TTL 30 dias; chaves incluem `filemtime` / `updated_at` para invalidação automática ao atualizar arquivos ou anexos.
+    -   PDF da carteira passa a usar imagens em base64 a partir do cache quando disponível, reduzindo I/O e melhorando performance na geração do PDF.
+
+-   **Migrations**
+    -   `add_segmento_treinamento_id_to_carteira_assinaturas_table`: coluna `segmento_treinamento_id` (nullable, FK para `segmentos_treinamento`).
+    -   `add_ordem_to_carteira_assinaturas_anexos_table`: coluna `ordem` na pivot para compatibilidade com `updateExistingPivot` no cadastro de assinaturas.
+
+### Modificado
+
+-   **Assinatura Carteira – Local no menu**
+    -   Cadastro de **Assinatura Carteira** deixou de ficar em **Treinamento SGI** e passou a ficar em **Treinamento Indústria**: botão e modal no componente `TreinamentoIndustria.vue`; componente `AssinaturaCarteira.vue` movido para `resources/js/components/cadastros/treinamentoindustria/`.
+
+-   **Carteira de Treinamento – Resolução de assinaturas**
+    -   `Cliente::CarteiraAssinaturaSesmt()` e `CarteiraAssinaturaGestorRh()` passam a considerar apenas assinaturas **padrão** (`whereNull('segmento_treinamento_id')`).
+    -   `TreinamentoController::resolverAssinaturaCarteira()` passa a buscar primeiro assinatura do segmento e depois a padrão da empresa; uso de `CarteiraImagemCache::assinaturaParaArray()` para retorno com base64 em cache.
+
+-   **PDF Carteira – Imagens em base64 com cache**
+    -   Cabeçalho e verso do segmento: preenchimento de `cabecalho_img_base64` e `verso_img_base64` no payload (via `CarteiraImagemCache::imagemPublicaParaBase64()`); view `cart_treinamento.blade.php` usa base64 quando presente, com fallback para `asset()`.
+
+### Corrigido
+
+-   **Cadastro de Assinatura Carteira**
+    -   Erro *Unknown column 'ordem' in 'field list'* ao atualizar assinatura: adicionada coluna `ordem` na tabela pivot `carteira_assinaturas_anexos` e uso de `ordem` no `attach` de novos anexos.
+
+---
+
 ## [1.2.1] - 2026-02-21
 
 ### Modificado

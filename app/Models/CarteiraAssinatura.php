@@ -43,6 +43,7 @@ class CarteiraAssinatura extends Model
         'arquivo_id',
         'nome',
         'tipo',
+        'segmento_treinamento_id',
         'ativo',
     ];
 
@@ -52,6 +53,7 @@ class CarteiraAssinatura extends Model
         'arquivo_id' => 'int',
         'nome' => 'string',
         'tipo' => 'string',
+        'segmento_treinamento_id' => 'int',
         'ativo' => 'boolean',
     ];
 
@@ -71,6 +73,11 @@ class CarteiraAssinatura extends Model
     public function Empresa()
     {
         return $this->belongsTo(Cliente::class, 'empresa_id');
+    }
+
+    public function SegmentoTreinamento()
+    {
+        return $this->belongsTo(SegmentoTreinamento::class, 'segmento_treinamento_id');
     }
 
     public function Anexos()

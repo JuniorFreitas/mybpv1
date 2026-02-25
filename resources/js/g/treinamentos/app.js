@@ -2,6 +2,7 @@ import datepicker from '../../components/DatePicker'
 import ExportacaoMixin from '../../mixins/Exportacoes'
 import { Estados } from '../../mixins/Utils'
 import Upload from '../../components/Upload.vue'
+import DateRangeFilter from '../../components/DateRangeFilter.vue'
 
 const app = new Vue({
     mixins: [ExportacaoMixin],
@@ -9,7 +10,8 @@ const app = new Vue({
     el: '#app',
     components: {
         datepicker,
-        Upload
+        Upload,
+        DateRangeFilter
     },
     data: {
         tituloJanela: 'Treinamentos',
@@ -162,11 +164,15 @@ const app = new Vue({
                 campoFoto: '',
                 campo_dataInicio: '',
                 campo_dataFim: '',
-                campoVencimento: '',
+                campoVencimento: false,
+                dataInicioVencimento: '',
+                dataFimVencimento: '',
                 vencimento: '',
                 treinamentos: '',
                 treinamentos_selecionados: [],
                 campoPeriodoTreinado: false,
+                dataInicioPeriodoTreinado: '',
+                dataFimPeriodoTreinado: '',
                 periodoTreinado: '',
                 campoCnpj: '',
                 campoCentroCusto: ''
@@ -684,6 +690,26 @@ const app = new Vue({
         atualizar() {
             this.$refs.componente.atual = 1
             this.$refs.componente.buscar()
+        },
+
+        atualizarVencimentoString() {
+            const d = this.controle.dados
+            if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) {
+                d.vencimento = d.dataInicioVencimento + ' até ' + d.dataFimVencimento
+            } else {
+                d.vencimento = ''
+            }
+            this.atualizar()
+        },
+
+        atualizarPeriodoTreinadoString() {
+            const d = this.controle.dados
+            if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) {
+                d.periodoTreinado = d.dataInicioPeriodoTreinado + ' até ' + d.dataFimPeriodoTreinado
+            } else {
+                d.periodoTreinado = ''
+            }
+            this.atualizar()
         },
 
         // Novos métodos para dar suporte ao UI aprimorado

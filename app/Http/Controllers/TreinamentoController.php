@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\JobExportaTreinamentos;
 use App\Models\Admissao;
 use App\Models\Arquivo;
+use App\Models\CarteiraAssinatura;
 use App\Models\CentroCusto;
 use App\Models\ClienteConfig;
 use App\Models\Pivot\TreinamentoVencimento;
@@ -14,6 +15,7 @@ use App\Models\Sistema;
 use App\Models\Treinamento;
 use App\Models\TreinamentoVencimentoHistorico;
 use App\Models\Vencimento;
+use App\Services\Treinamento\CarteiraImagemCache;
 use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -720,10 +722,21 @@ class TreinamentoController extends Controller
                 $segmentoId = $segmento ? $segmento->id : null;
                 $segmentoConfig = ($segmento && is_array($segmento->config_carteira ?? null)) ? $segmento->config_carteira : [];
                 $segmentoSlug = $segmento ? $segmento->slug : 'alumar';
+                // Imagens do segmento em base64 com cache (path + filemtime na chave = invalida ao atualizar arquivo)
+                $pathCabecalho = !empty($segmentoConfig['cabecalho_img']) ? $segmentoConfig['cabecalho_img'] : 'images/carteira/cabecalho_carteira_alumar.webp';
+                $pathVerso = !empty($segmentoConfig['verso_img']) ? $segmentoConfig['verso_img'] : 'images/carteira/verso_carteira_alumar.webp';
+                $segmentoConfig['cabecalho_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathCabecalho);
+                $segmentoConfig['verso_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathVerso);
                 // setAttribute para que toArray() inclua na view (carteira e bloqueio usam essas configs)
                 $item->setAttribute('segmento_config', $segmentoConfig);
                 $item->setAttribute('segmento_slug', $segmentoSlug);
                 $item->setAttribute('telefone', $telefone);
+                // Assinaturas por segmento: busca na carteira_assinaturas por empresa + tipo + segmento (ou padrão com segmento null)
+                $empresaId = auth()->user()->empresa_id;
+                $assinaturaSesmt = $this->resolverAssinaturaCarteira($empresaId, $segmentoId, CarteiraAssinatura::TIPO_SESMT);
+                $assinaturaGestorRh = $this->resolverAssinaturaCarteira($empresaId, $segmentoId, CarteiraAssinatura::TIPO_GERENTE_OU_RH);
+                $item->setAttribute('assinatura_sesmt', $assinaturaSesmt);
+                $item->setAttribute('assinatura_gestor_rh', $assinaturaGestorRh);
                 // Carteira: vencimentos do segmento da Admissão (ou sem segmento). Se ficar vazio, fallback para ALUMAR/null para sempre gerar carteira.
                 $vencimentosFiltrados = $item->vencimentos->filter(function ($v) use ($segmentoId) {
                     return $v->segmento_treinamento_id === $segmentoId || $v->segmento_treinamento_id === null;
@@ -749,6 +762,33 @@ class TreinamentoController extends Controller
         }
 
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos', 'tipo', 'empresa'));
+    }
+
+    /**
+     * Resolve assinatura da carteira: primeiro tenta assinatura do segmento (carteira_assinaturas.segmento_treinamento_id),
+     * senão usa a padrão da empresa (segmento_treinamento_id null).
+     *
+     * @param int $empresaId
+     * @param int|null $segmentoId ID do segmento do treinamento
+     * @param string $tipo CarteiraAssinatura::TIPO_SESMT ou TIPO_GERENTE_OU_RH
+     * @return array|null ['nome' => string, 'tipo' => string, 'url_thumb' => string|null]
+     */
+    private function resolverAssinaturaCarteira(int $empresaId, ?int $segmentoId, string $tipo): ?array
+    {
+        // Preferir assinatura específica do segmento; senão, a padrão (segmento null)
+        $a = null;
+        if ($segmentoId) {
+            $a = CarteiraAssinatura::where('empresa_id', $empresaId)->where('ativo', true)->where('tipo', $tipo)
+                ->where('segmento_treinamento_id', $segmentoId)->with('Anexos')->first();
+        }
+        if (!$a) {
+            $a = CarteiraAssinatura::where('empresa_id', $empresaId)->where('ativo', true)->where('tipo', $tipo)
+                ->whereNull('segmento_treinamento_id')->with('Anexos')->first();
+        }
+        if (!$a) {
+            return null;
+        }
+        return CarteiraImagemCache::assinaturaParaArray($a);
     }
 
     public function enviarCarteiraEmail(Request $request)

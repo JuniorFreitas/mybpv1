@@ -628,41 +628,33 @@
     <fieldset>
         <legend class="text-uppercase">Filtro</legend>
         <div class="row">
-            <div class="col-12 col-lg-3">
-                <div class="form-check" style="margin-bottom: -11px;">
-                    <input type="checkbox" class="form-check-input" @change="atualizar()"
-                           :disabled="controle.carregando"
-                           id="filtroVencimento"
-                           v-model="controle.dados.campoVencimento"
-                    >
-                    <label class="form-check-label cursor-pointer" for="filtroVencimento">Por período de
-                        vencimento</label>
-                </div>
-                <div class="form-group">
-                    <datepicker range formsm label="" @onselect="atualizar()"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.vencimento"
-                    ></datepicker>
-                </div>
-            </div>
+            <date-range-filter
+                :enabled.sync="controle.dados.campoVencimento"
+                :start-date.sync="controle.dados.dataInicioVencimento"
+                :end-date.sync="controle.dados.dataFimVencimento"
+                :disabled="controle.carregando"
+                :id-suffix="'vencimento-' + hash"
+                label="Por período de vencimento"
+                wrapper-class="col-12 col-lg-3"
+                @update:startDate="atualizarVencimentoString"
+                @update:endDate="atualizarVencimentoString"
+                @update:enabled="atualizarVencimentoString"
+            >
+            </date-range-filter>
 
-            <div class="col-12 col-lg-3 ">
-                <div class="form-check" style="margin-bottom: -11px;">
-                    <input type="checkbox" class="form-check-input" @change="atualizar()"
-                           :disabled="controle.carregando"
-                           id="filtroPeriodoTreinado"
-                           v-model="controle.dados.campoPeriodoTreinado"
-                    >
-                    <label class="form-check-label cursor-pointer" for="filtroPeriodoTreinado">Por período
-                        treinado</label>
-                </div>
-                <div class="form-group">
-                    <datepicker range formsm label="" @onselect="atualizar()"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.periodoTreinado"
-                    ></datepicker>
-                </div>
-            </div>
+            <date-range-filter
+                :enabled.sync="controle.dados.campoPeriodoTreinado"
+                :start-date.sync="controle.dados.dataInicioPeriodoTreinado"
+                :end-date.sync="controle.dados.dataFimPeriodoTreinado"
+                :disabled="controle.carregando"
+                :id-suffix="'periodo-treinado-' + hash"
+                label="Por período treinado"
+                wrapper-class="col-12 col-lg-3"
+                @update:startDate="atualizarPeriodoTreinadoString"
+                @update:endDate="atualizarPeriodoTreinadoString"
+                @update:enabled="atualizarPeriodoTreinadoString"
+            >
+            </date-range-filter>
 
             <div class="col-12 col-lg-3">
                 <label>Admitidos</label>

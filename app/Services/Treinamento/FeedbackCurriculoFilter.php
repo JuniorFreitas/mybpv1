@@ -270,8 +270,9 @@ class FeedbackCurriculoFilter
      */
     private function applyDateFilters(): self
     {
-        // Filtro de vencimento
-        if (isset($this->filters['campoVencimento']) && $this->filters['campoVencimento'] == 'true' && isset($this->filters['vencimento'])) {
+        // Filtro de vencimento (aceita boolean do Vue ou string 'true')
+        $campoVencimentoAtivo = isset($this->filters['campoVencimento']) && ($this->filters['campoVencimento'] === true || $this->filters['campoVencimento'] == 'true');
+        if ($campoVencimentoAtivo && !empty($this->filters['vencimento'])) {
             $periodo = explode(' até ', $this->filters['vencimento']);
             if (count($periodo) === 2) {
                 $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
@@ -285,8 +286,9 @@ class FeedbackCurriculoFilter
             }
         }
 
-        // Filtro de período treinado
-        if (isset($this->filters['campoPeriodoTreinado']) && $this->filters['campoPeriodoTreinado'] == 'true' && isset($this->filters['periodoTreinado'])) {
+        // Filtro de período treinado (aceita boolean do Vue ou string 'true')
+        $campoPeriodoTreinadoAtivo = isset($this->filters['campoPeriodoTreinado']) && ($this->filters['campoPeriodoTreinado'] === true || $this->filters['campoPeriodoTreinado'] == 'true');
+        if ($campoPeriodoTreinadoAtivo && !empty($this->filters['periodoTreinado'])) {
             $periodo_treinado = explode(' até ', $this->filters['periodoTreinado']);
             if (count($periodo_treinado) === 2) {
                 $dataInicio = new DataHora($periodo_treinado[0] . ' 00:00:00');
