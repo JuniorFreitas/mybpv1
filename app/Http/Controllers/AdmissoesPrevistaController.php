@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobAdmissaoPrevistaExportaExcel;
 use App\Jobs\Movimentacao\AdmissaoPrevista\JobNotificacaoRecursiva;
+use App\Models\Admissao;
 use App\Models\AdmissoesPrevista;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
@@ -30,14 +31,10 @@ class AdmissoesPrevistaController extends Controller
             [
                 'centro_custo_id' => 'required',
                 'centro_custo_filial_id' => 'required_if:filial,true',
-                'tipo_contrato' => 'required',
+                'tipo_contrato' => 'required|in:' . implode(',', Admissao::TODOS_TIPOS_ADMISSAO),
                 'cargo_id' => 'required',
                 'salario_format' => 'required',
-                'nome_pessoa' => ['required', 'string', 'max:255', function ($attr, $value, $fail) {
-                    if (trim((string) $value) === '') {
-                        $fail('O campo Nome do Colaborador é obrigatório na solicitação.');
-                    }
-                }],
+                'nome_pessoa' => ['nullable', 'string', 'max:255'],
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -79,6 +76,13 @@ class AdmissoesPrevistaController extends Controller
      */
     public function edit(AdmissoesPrevista $admissoesPrevista)
     {
+        // Normaliza tipo_contrato para o mesmo padrão do processo de admissão (tipo_admissao)
+        $tipo = $admissoesPrevista->tipo_contrato;
+        if ($tipo !== null && $tipo !== '') {
+            $map = ['Fixo' => Admissao::TIPO_ADMISSAO_FIXO, 'Intermitente' => Admissao::TIPO_ADMISSAO_INTERMITENTE, 'Aprendiz' => Admissao::TIPO_ADMISSAO_APRENDIZ];
+            $admissoesPrevista->tipo_contrato = $map[$tipo] ?? (in_array($tipo, Admissao::TODOS_TIPOS_ADMISSAO, true) ? $tipo : Admissao::TIPO_ADMISSAO_FIXO);
+        }
+
         $admissoesPrevista->autocomplete_label_gestor_modal = $admissoesPrevista->GestorAprovacao ? $admissoesPrevista->GestorAprovacao->nome : '';
         $admissoesPrevista->autocomplete_label_gestor_modal_anterior = $admissoesPrevista->GestorAprovacao ? $admissoesPrevista->GestorAprovacao->nome : '';
 
@@ -101,6 +105,16 @@ class AdmissoesPrevistaController extends Controller
     }
 
     /**
+     * Lista de tipos de contrato (mesmo do processo de admissão) para o filtro e campo "Tipo de contrato".
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function tiposContrato()
+    {
+        return response()->json(Admissao::TODOS_TIPOS_ADMISSAO);
+    }
+
+    /**
      * Update the specified resource in storage.
      *
      * @param \Illuminate\Http\Request $request
@@ -117,7 +131,7 @@ class AdmissoesPrevistaController extends Controller
             $dados,
             [
                 'centro_custo_id' => 'required',
-                'tipo_contrato' => 'required',
+                'tipo_contrato' => 'required|in:' . implode(',', Admissao::TODOS_TIPOS_ADMISSAO),
                 'cargo_id' => 'required',
                 'salario_format' => 'required',
             ]

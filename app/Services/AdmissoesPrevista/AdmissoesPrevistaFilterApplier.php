@@ -27,6 +27,7 @@ class AdmissoesPrevistaFilterApplier
         $this->applyPeriodo($query);
         $this->applyCampoBusca($query);
         $this->applyCampoStatusAprovacao($query);
+        $this->applyTipoContrato($query);
         $this->applyPermissoes($query);
         $this->applyOrdenacao($query);
     }
@@ -112,6 +113,15 @@ class AdmissoesPrevistaFilterApplier
             $q->where('status_aprovacao', AdmissoesPrevista::STATUS_REPROVADO)
                 ->orWhere('status_aprovacao_rh', AdmissoesPrevista::STATUS_REPROVADO);
         });
+    }
+
+    private function applyTipoContrato(Builder $query): void
+    {
+        $tipo = $this->filtros['tipo_contrato'] ?? $this->filtros['campoTipoAdmissao'] ?? null;
+        if ($tipo === null || $tipo === '') {
+            return;
+        }
+        $query->where('tipo_contrato', $tipo);
     }
 
     private function applyPermissoes(Builder $query): void
